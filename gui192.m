@@ -535,22 +535,29 @@ cd(SettingsPathName)
 eval(['load ',SettingsFileName])
     
 %%% Clears the current settings, using the clearalgorithm function.
-handles = clearalgorithm('1', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('2', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('3', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('4', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('5', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('6', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('7', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('8', handles, 'NoConfirm');
-guidata(gcbo, handles);
+%%%handles = clearalgorithm('1', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('2', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('3', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('4', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('5', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('6', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('7', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+%%%handles = clearalgorithm('8', handles, 'NoConfirm');
+%%%guidata(gcbo, handles);
+
+%%%Hardcoded num of variables here!
+for i=1:8,
+    handles = clearalgorithm(num2str(i), handles, 'NoConfirm');
+    guidata(gcbo, handles);
+end
+
 %%% The last clearalgorithm function leaves the indicator bar set at
 %%% algorithm 8, so the following makes it invisible.
 set(handles.Indicator8,'Visible','off');
@@ -560,118 +567,140 @@ set(handles.Indicator8,'Visible','off');
 %%% before creating a field for it in the handles structure.  For the
 %%% algorithm names and the pixel size, this code also displays the values
 %%% in the GUI.
-if isempty(Settings{1}) == 0, handles.Vvariable1_01 = Settings{1}; end
-if isempty(Settings{2}) == 0, handles.Vvariable1_02 = Settings{2}; end
-if isempty(Settings{3}) == 0, handles.Vvariable1_03 = Settings{3}; end
-if isempty(Settings{4}) == 0, handles.Vvariable1_04 = Settings{4}; end
-if isempty(Settings{5}) == 0, handles.Vvariable1_05 = Settings{5}; end
-if isempty(Settings{6}) == 0, handles.Vvariable1_06 = Settings{6}; end
-if isempty(Settings{7}) == 0, handles.Vvariable1_07 = Settings{7}; end
-if isempty(Settings{8}) == 0, handles.Vvariable1_08 = Settings{8}; end
-if isempty(Settings{9}) == 0, handles.Vvariable1_09 = Settings{9}; end
-if isempty(Settings{10}) == 0, handles.Vvariable1_10 = Settings{10}; end
-if isempty(Settings{11}) == 0, handles.Vvariable1_11 = Settings{11}; end
-  
-if isempty(Settings{12}) == 0, handles.Vvariable2_01 = Settings{12}; end
-if isempty(Settings{13}) == 0, handles.Vvariable2_02 = Settings{13}; end
-if isempty(Settings{14}) == 0, handles.Vvariable2_03 = Settings{14}; end
-if isempty(Settings{15}) == 0, handles.Vvariable2_04 = Settings{15}; end
-if isempty(Settings{16}) == 0, handles.Vvariable2_05 = Settings{16}; end
-if isempty(Settings{17}) == 0, handles.Vvariable2_06 = Settings{17}; end
-if isempty(Settings{18}) == 0, handles.Vvariable2_07 = Settings{18}; end
-if isempty(Settings{19}) == 0, handles.Vvariable2_08 = Settings{19}; end
-if isempty(Settings{20}) == 0, handles.Vvariable2_09 = Settings{20}; end
-if isempty(Settings{21}) == 0, handles.Vvariable2_10 = Settings{21}; end
-if isempty(Settings{22}) == 0, handles.Vvariable2_11 = Settings{22}; end
 
-if isempty(Settings{23}) == 0, handles.Vvariable3_01 = Settings{23}; end
-if isempty(Settings{24}) == 0, handles.Vvariable3_02 = Settings{24}; end
-if isempty(Settings{25}) == 0, handles.Vvariable3_03 = Settings{25}; end
-if isempty(Settings{26}) == 0, handles.Vvariable3_04 = Settings{26}; end
-if isempty(Settings{27}) == 0, handles.Vvariable3_05 = Settings{27}; end
-if isempty(Settings{28}) == 0, handles.Vvariable3_06 = Settings{28}; end
-if isempty(Settings{29}) == 0, handles.Vvariable3_07 = Settings{29}; end
-if isempty(Settings{30}) == 0, handles.Vvariable3_08 = Settings{30}; end
-if isempty(Settings{31}) == 0, handles.Vvariable3_09 = Settings{31}; end
-if isempty(Settings{32}) == 0, handles.Vvariable3_10 = Settings{32}; end
-if isempty(Settings{33}) == 0, handles.Vvariable3_11 = Settings{33}; end
 
-if isempty(Settings{34}) == 0, handles.Vvariable4_01 = Settings{34}; end
-if isempty(Settings{35}) == 0, handles.Vvariable4_02 = Settings{35}; end
-if isempty(Settings{36}) == 0, handles.Vvariable4_03 = Settings{36}; end
-if isempty(Settings{37}) == 0, handles.Vvariable4_04 = Settings{37}; end
-if isempty(Settings{38}) == 0, handles.Vvariable4_05 = Settings{38}; end
-if isempty(Settings{39}) == 0, handles.Vvariable4_06 = Settings{39}; end
-if isempty(Settings{40}) == 0, handles.Vvariable4_07 = Settings{40}; end
-if isempty(Settings{41}) == 0, handles.Vvariable4_08 = Settings{41}; end
-if isempty(Settings{42}) == 0, handles.Vvariable4_09 = Settings{42}; end
-if isempty(Settings{43}) == 0, handles.Vvariable4_10 = Settings{43}; end
-if isempty(Settings{44}) == 0, handles.Vvariable4_11 = Settings{44}; end
 
-if isempty(Settings{45}) == 0, handles.Vvariable5_01 = Settings{45}; end
-if isempty(Settings{46}) == 0, handles.Vvariable5_02 = Settings{46}; end
-if isempty(Settings{47}) == 0, handles.Vvariable5_03 = Settings{47}; end
-if isempty(Settings{48}) == 0, handles.Vvariable5_04 = Settings{48}; end
-if isempty(Settings{49}) == 0, handles.Vvariable5_05 = Settings{49}; end
-if isempty(Settings{50}) == 0, handles.Vvariable5_06 = Settings{50}; end
-if isempty(Settings{51}) == 0, handles.Vvariable5_07 = Settings{51}; end
-if isempty(Settings{52}) == 0, handles.Vvariable5_08 = Settings{52}; end
-if isempty(Settings{53}) == 0, handles.Vvariable5_09 = Settings{53}; end
-if isempty(Settings{54}) == 0, handles.Vvariable5_10 = Settings{54}; end
-if isempty(Settings{55}) == 0, handles.Vvariable5_11 = Settings{55}; end
+for i=1:8,
+    for j=1:11,
+        if (j < 10)
+            stringend = strcat('0',num2str(j));
+        else
+            stringend = num2str(j);
+        end
+    if isempty(Settings{(i-1)*11 + j}) == 0, eval(strcat('handles.Vvariable',num2str(i),'_',stringend,'=Settings{(i-1)*11 + j};')); end
+    end
+end
 
-if isempty(Settings{56}) == 0, handles.Vvariable6_01 = Settings{56}; end
-if isempty(Settings{57}) == 0, handles.Vvariable6_02 = Settings{57}; end
-if isempty(Settings{58}) == 0, handles.Vvariable6_03 = Settings{58}; end
-if isempty(Settings{59}) == 0, handles.Vvariable6_04 = Settings{59}; end
-if isempty(Settings{60}) == 0, handles.Vvariable6_05 = Settings{60}; end
-if isempty(Settings{61}) == 0, handles.Vvariable6_06 = Settings{61}; end
-if isempty(Settings{62}) == 0, handles.Vvariable6_07 = Settings{62}; end
-if isempty(Settings{63}) == 0, handles.Vvariable6_08 = Settings{63}; end
-if isempty(Settings{64}) == 0, handles.Vvariable6_09 = Settings{64}; end
-if isempty(Settings{65}) == 0, handles.Vvariable6_10 = Settings{65}; end
-if isempty(Settings{66}) == 0, handles.Vvariable6_11 = Settings{66}; end
 
-if isempty(Settings{67}) == 0, handles.Vvariable7_01 = Settings{67}; end
-if isempty(Settings{68}) == 0, handles.Vvariable7_02 = Settings{68}; end
-if isempty(Settings{69}) == 0, handles.Vvariable7_03 = Settings{69}; end
-if isempty(Settings{70}) == 0, handles.Vvariable7_04 = Settings{70}; end
-if isempty(Settings{71}) == 0, handles.Vvariable7_05 = Settings{71}; end
-if isempty(Settings{72}) == 0, handles.Vvariable7_06 = Settings{72}; end
-if isempty(Settings{73}) == 0, handles.Vvariable7_07 = Settings{73}; end
-if isempty(Settings{74}) == 0, handles.Vvariable7_08 = Settings{74}; end
-if isempty(Settings{75}) == 0, handles.Vvariable7_09 = Settings{75}; end
-if isempty(Settings{76}) == 0, handles.Vvariable7_10 = Settings{76}; end
-if isempty(Settings{77}) == 0, handles.Vvariable7_11 = Settings{77}; end
 
-if isempty(Settings{78}) == 0, handles.Vvariable8_01 = Settings{78}; end
-if isempty(Settings{79}) == 0, handles.Vvariable8_02 = Settings{79}; end
-if isempty(Settings{80}) == 0, handles.Vvariable8_03 = Settings{80}; end
-if isempty(Settings{81}) == 0, handles.Vvariable8_04 = Settings{81}; end
-if isempty(Settings{82}) == 0, handles.Vvariable8_05 = Settings{82}; end
-if isempty(Settings{83}) == 0, handles.Vvariable8_06 = Settings{83}; end
-if isempty(Settings{84}) == 0, handles.Vvariable8_07 = Settings{84}; end
-if isempty(Settings{85}) == 0, handles.Vvariable8_08 = Settings{85}; end
-if isempty(Settings{86}) == 0, handles.Vvariable8_09 = Settings{86}; end
-if isempty(Settings{87}) == 0, handles.Vvariable8_10 = Settings{87}; end
-if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
+%%%if isempty(Settings{1}) == 0, handles.Vvariable1_01 = Settings{1}; end
+%%%if isempty(Settings{2}) == 0, handles.Vvariable1_02 = Settings{2}; end
+%%%if isempty(Settings{3}) == 0, handles.Vvariable1_03 = Settings{3}; end
+%%%if isempty(Settings{4}) == 0, handles.Vvariable1_04 = Settings{4}; end
+%%%if isempty(Settings{5}) == 0, handles.Vvariable1_05 = Settings{5}; end
+%%%if isempty(Settings{6}) == 0, handles.Vvariable1_06 = Settings{6}; end
+%%%if isempty(Settings{7}) == 0, handles.Vvariable1_07 = Settings{7}; end
+%%%if isempty(Settings{8}) == 0, handles.Vvariable1_08 = Settings{8}; end
+%%%if isempty(Settings{9}) == 0, handles.Vvariable1_09 = Settings{9}; end
+%%%if isempty(Settings{10}) == 0, handles.Vvariable1_10 = Settings{10}; end
+%%%if isempty(Settings{11}) == 0, handles.Vvariable1_11 = Settings{11}; end
 
-if isempty(Settings{89}) == 0, handles.Valgorithmname1 = Settings{89}; 
-    set(handles.AlgorithmName1,'string',handles.Valgorithmname1), end
-if isempty(Settings{90}) == 0, handles.Valgorithmname2 = Settings{90}; 
-    set(handles.AlgorithmName2,'string',handles.Valgorithmname2), end
-if isempty(Settings{91}) == 0, handles.Valgorithmname3 = Settings{91}; 
-    set(handles.AlgorithmName3,'string',handles.Valgorithmname3), end
-if isempty(Settings{92}) == 0, handles.Valgorithmname4 = Settings{92}; 
-    set(handles.AlgorithmName4,'string',handles.Valgorithmname4), end
-if isempty(Settings{93}) == 0, handles.Valgorithmname5 = Settings{93}; 
-    set(handles.AlgorithmName5,'string',handles.Valgorithmname5), end
-if isempty(Settings{94}) == 0, handles.Valgorithmname6 = Settings{94}; 
-    set(handles.AlgorithmName6,'string',handles.Valgorithmname6), end
-if isempty(Settings{95}) == 0, handles.Valgorithmname7 = Settings{95}; 
-    set(handles.AlgorithmName7,'string',handles.Valgorithmname7), end
-if isempty(Settings{96}) == 0, handles.Valgorithmname8 = Settings{96}; 
-    set(handles.AlgorithmName8,'string',handles.Valgorithmname8), end
+%%%if isempty(Settings{12}) == 0, handles.Vvariable2_01 = Settings{12}; end
+%%%if isempty(Settings{13}) == 0, handles.Vvariable2_02 = Settings{13}; end
+%%%if isempty(Settings{14}) == 0, handles.Vvariable2_03 = Settings{14}; end
+%%%if isempty(Settings{15}) == 0, handles.Vvariable2_04 = Settings{15}; end
+%%%if isempty(Settings{16}) == 0, handles.Vvariable2_05 = Settings{16}; end
+%%%if isempty(Settings{17}) == 0, handles.Vvariable2_06 = Settings{17}; end
+%%%if isempty(Settings{18}) == 0, handles.Vvariable2_07 = Settings{18}; end
+%%%if isempty(Settings{19}) == 0, handles.Vvariable2_08 = Settings{19}; end
+%%%if isempty(Settings{20}) == 0, handles.Vvariable2_09 = Settings{20}; end
+%%%if isempty(Settings{21}) == 0, handles.Vvariable2_10 = Settings{21}; end
+%%%if isempty(Settings{22}) == 0, handles.Vvariable2_11 = Settings{22}; end
+
+%%%if isempty(Settings{23}) == 0, handles.Vvariable3_01 = Settings{23}; end
+%%%if isempty(Settings{24}) == 0, handles.Vvariable3_02 = Settings{24}; end
+%%%if isempty(Settings{25}) == 0, handles.Vvariable3_03 = Settings{25}; end
+%%%if isempty(Settings{26}) == 0, handles.Vvariable3_04 = Settings{26}; end
+%%%if isempty(Settings{27}) == 0, handles.Vvariable3_05 = Settings{27}; end
+%%%if isempty(Settings{28}) == 0, handles.Vvariable3_06 = Settings{28}; end
+%%%if isempty(Settings{29}) == 0, handles.Vvariable3_07 = Settings{29}; end
+%%%if isempty(Settings{30}) == 0, handles.Vvariable3_08 = Settings{30}; end
+%%%if isempty(Settings{31}) == 0, handles.Vvariable3_09 = Settings{31}; end
+%%%if isempty(Settings{32}) == 0, handles.Vvariable3_10 = Settings{32}; end
+%%%if isempty(Settings{33}) == 0, handles.Vvariable3_11 = Settings{33}; end
+
+%%%if isempty(Settings{34}) == 0, handles.Vvariable4_01 = Settings{34}; end
+%%%if isempty(Settings{35}) == 0, handles.Vvariable4_02 = Settings{35}; end
+%%%if isempty(Settings{36}) == 0, handles.Vvariable4_03 = Settings{36}; end
+%%%if isempty(Settings{37}) == 0, handles.Vvariable4_04 = Settings{37}; end
+%%%if isempty(Settings{38}) == 0, handles.Vvariable4_05 = Settings{38}; end
+%%%if isempty(Settings{39}) == 0, handles.Vvariable4_06 = Settings{39}; end
+%%%if isempty(Settings{40}) == 0, handles.Vvariable4_07 = Settings{40}; end
+%%%if isempty(Settings{41}) == 0, handles.Vvariable4_08 = Settings{41}; end
+%%%if isempty(Settings{42}) == 0, handles.Vvariable4_09 = Settings{42}; end
+%%%if isempty(Settings{43}) == 0, handles.Vvariable4_10 = Settings{43}; end
+%%%if isempty(Settings{44}) == 0, handles.Vvariable4_11 = Settings{44}; end
+
+%%%if isempty(Settings{45}) == 0, handles.Vvariable5_01 = Settings{45}; end
+%%%if isempty(Settings{46}) == 0, handles.Vvariable5_02 = Settings{46}; end
+%%%if isempty(Settings{47}) == 0, handles.Vvariable5_03 = Settings{47}; end
+%%%if isempty(Settings{48}) == 0, handles.Vvariable5_04 = Settings{48}; end
+%%%if isempty(Settings{49}) == 0, handles.Vvariable5_05 = Settings{49}; end
+%%%if isempty(Settings{50}) == 0, handles.Vvariable5_06 = Settings{50}; end
+%%%if isempty(Settings{51}) == 0, handles.Vvariable5_07 = Settings{51}; end
+%%%if isempty(Settings{52}) == 0, handles.Vvariable5_08 = Settings{52}; end
+%%%if isempty(Settings{53}) == 0, handles.Vvariable5_09 = Settings{53}; end
+%%%if isempty(Settings{54}) == 0, handles.Vvariable5_10 = Settings{54}; end
+%%%if isempty(Settings{55}) == 0, handles.Vvariable5_11 = Settings{55}; end
+
+%%%if isempty(Settings{56}) == 0, handles.Vvariable6_01 = Settings{56}; end
+%%%if isempty(Settings{57}) == 0, handles.Vvariable6_02 = Settings{57}; end
+%%%if isempty(Settings{58}) == 0, handles.Vvariable6_03 = Settings{58}; end
+%%%if isempty(Settings{59}) == 0, handles.Vvariable6_04 = Settings{59}; end
+%%%if isempty(Settings{60}) == 0, handles.Vvariable6_05 = Settings{60}; end
+%%%if isempty(Settings{61}) == 0, handles.Vvariable6_06 = Settings{61}; end
+%%%if isempty(Settings{62}) == 0, handles.Vvariable6_07 = Settings{62}; end
+%%%if isempty(Settings{63}) == 0, handles.Vvariable6_08 = Settings{63}; end
+%%%if isempty(Settings{64}) == 0, handles.Vvariable6_09 = Settings{64}; end
+%%%if isempty(Settings{65}) == 0, handles.Vvariable6_10 = Settings{65}; end
+%%%if isempty(Settings{66}) == 0, handles.Vvariable6_11 = Settings{66}; end
+
+%%%if isempty(Settings{67}) == 0, handles.Vvariable7_01 = Settings{67}; end
+%%%if isempty(Settings{68}) == 0, handles.Vvariable7_02 = Settings{68}; end
+%%%if isempty(Settings{69}) == 0, handles.Vvariable7_03 = Settings{69}; end
+%%%if isempty(Settings{70}) == 0, handles.Vvariable7_04 = Settings{70}; end
+%%%if isempty(Settings{71}) == 0, handles.Vvariable7_05 = Settings{71}; end
+%%%if isempty(Settings{72}) == 0, handles.Vvariable7_06 = Settings{72}; end
+%%%if isempty(Settings{73}) == 0, handles.Vvariable7_07 = Settings{73}; end
+%%%if isempty(Settings{74}) == 0, handles.Vvariable7_08 = Settings{74}; end
+%%%if isempty(Settings{75}) == 0, handles.Vvariable7_09 = Settings{75}; end
+%%%if isempty(Settings{76}) == 0, handles.Vvariable7_10 = Settings{76}; end
+%%%if isempty(Settings{77}) == 0, handles.Vvariable7_11 = Settings{77}; end
+
+%%%if isempty(Settings{78}) == 0, handles.Vvariable8_01 = Settings{78}; end
+%%%if isempty(Settings{79}) == 0, handles.Vvariable8_02 = Settings{79}; end
+%%%if isempty(Settings{80}) == 0, handles.Vvariable8_03 = Settings{80}; end
+%%%if isempty(Settings{81}) == 0, handles.Vvariable8_04 = Settings{81}; end
+%%%if isempty(Settings{82}) == 0, handles.Vvariable8_05 = Settings{82}; end
+%%%if isempty(Settings{83}) == 0, handles.Vvariable8_06 = Settings{83}; end
+%%%if isempty(Settings{84}) == 0, handles.Vvariable8_07 = Settings{84}; end
+%%%if isempty(Settings{85}) == 0, handles.Vvariable8_08 = Settings{85}; end
+%%%if isempty(Settings{86}) == 0, handles.Vvariable8_09 = Settings{86}; end
+%%%if isempty(Settings{87}) == 0, handles.Vvariable8_10 = Settings{87}; end
+%%%if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
+
+
+for i=1:8,
+    if isempty(Settings{i+88}) == 0, eval(strcat('handles.Valgorithmname', num2str(i),' = Settings{i+88};'))
+        set(eval(strcat('handles.AlgorithmName', num2str(i))),'string',eval(strcat('handles.Valgorithmname', num2str(i)))), end
+end
+
+%%%if isempty(Settings{89}) == 0, handles.Valgorithmname1 = Settings{89}; 
+%%%    set(handles.AlgorithmName1,'string',handles.Valgorithmname1), end
+%%%if isempty(Settings{90}) == 0, handles.Valgorithmname2 = Settings{90}; 
+%%%    set(handles.AlgorithmName2,'string',handles.Valgorithmname2), end
+%%%if isempty(Settings{91}) == 0, handles.Valgorithmname3 = Settings{91}; 
+%%%    set(handles.AlgorithmName3,'string',handles.Valgorithmname3), end
+%%%if isempty(Settings{92}) == 0, handles.Valgorithmname4 = Settings{92}; 
+%%%    set(handles.AlgorithmName4,'string',handles.Valgorithmname4), end
+%%%if isempty(Settings{93}) == 0, handles.Valgorithmname5 = Settings{93}; 
+%%%    set(handles.AlgorithmName5,'string',handles.Valgorithmname5), end
+%%%if isempty(Settings{94}) == 0, handles.Valgorithmname6 = Settings{94}; 
+%%%    set(handles.AlgorithmName6,'string',handles.Valgorithmname6), end
+%%%if isempty(Settings{95}) == 0, handles.Valgorithmname7 = Settings{95}; 
+%%%    set(handles.AlgorithmName7,'string',handles.Valgorithmname7), end
+%%%if isempty(Settings{96}) == 0, handles.Valgorithmname8 = Settings{96}; 
+%%%    set(handles.AlgorithmName8,'string',handles.Valgorithmname8), end
 
 if isempty(Settings{97}) == 0, handles.Vpixelsize = Settings{97}; 
     set(handles.PixelSizeEditBox,'string',handles.Vpixelsize); end
@@ -689,6 +718,20 @@ function SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
 CurrentDirectory = pwd;
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
+
+%%%for i=1:8,
+%%%    for j=1:11,
+%%%        if (j < 10)
+%%%            stringend = strcat('0',num2str(j));
+%%%        else
+%%%            stringend = num2str(j);
+%%%        end
+%%%        if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
+%%%            eval(strcat('handles.Vvariable',num2str(i),'_',stringend,'=Settings{(i-1)*11 + j};'));
+%%%        end
+%%%    end
+%%%end
+
 if isfield(handles,'Vvariable1_01') ==1, 
     Settings{1} = handles.Vvariable1_01; end
 if isfield(handles,'Vvariable1_02') ==1, 
@@ -883,8 +926,8 @@ if isfield(handles,'Valgorithmname4') ==1,
     Settings{92} = handles.Valgorithmname4; end
 if isfield(handles,'Valgorithmname5') ==1, 
     Settings{93} = handles.Valgorithmname5; end
-if isfield(handles,'Valgorithmname6') ==1, 
-    Settings{94} = handles.Valgorithmname6; end
+if isfield(handles,'Valgorithmname6') ==1,
+     Settings{94} = handles.Valgorithmname6; end
 if isfield(handles,'Valgorithmname7') ==1, 
     Settings{95} = handles.Valgorithmname7; end
 if isfield(handles,'Valgorithmname8') ==1, 
@@ -932,6 +975,7 @@ eval(['load ',OutputFileName])
 %%% The following is the same code found in the "Save Settings" button.
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
+
 if isfield(handles,'Vvariable1_01') ==1, 
     Settings{1} = handles.Vvariable1_01; end
 if isfield(handles,'Vvariable1_02') ==1, 
@@ -4406,7 +4450,7 @@ guidata(hObject, handles);
 function HelpStep1_Callback(hObject, eventdata, handles)
 helpdlg('Select the main folder containing the images you want to analyze. You will have the option within load images modules to retrieve images from more than one folder, but the folder selected here will be the default folder.  Use the Browse button to select the folder, or carefully type the full pathname in the box to the right.','Step 1 Help')
 function HelpStep2_Callback(hObject, eventdata, handles)
-helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ÒOUTÓ to avoid confusion.  You do not need to type Ò.matÓ at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called DefaultAlgDirectory.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
+helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?ÒOUT?Ó to avoid confusion.  You do not need to type ?Ò.mat?Ó at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called DefaultAlgDirectory.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
 function HelpStep3_Callback(hObject, eventdata, handles)
 helpdlg('FOR HELP ON INDIVIDUAL MODULES: Click the "Help for this analysis module" button towards the right of the CellProfiler window.       LOAD/CLEAR/VIEW BUTTONS:  Choose image analysis modules in the desired order by clicking "Load" and selecting the corresponding Matlab ".m" file.      SHORTCUTS: Once you have loaded the desired image analysis modules and modified all of the settings as desired, you may save these settings for future use by clicking "Save Settings" and naming the file.  Later, you can click "Load Settings", select this file that you made, and all of the modules and settings will be restored.  ALTERNATELY, if you previously ran an image analysis and you want to repeat the exact analysis, you may click "Extract Settings from an output file".  Select the output file, and the modules and settings used to create it will be extracted.  You then name the settings file and load it using the "Load Settings" button.  Troubleshooting: If you loaded an analysis module by loading a settings file, and then obtained error messages in the Matlab main window, the most likely cause is that the analysis modules loaded are not on the Matlab search path. Be sure that the folder immediately containing the analysis module is on the search path. The search path can be edited by choosing File > Set Path.  Another possibility is that the Settings file was created with old versions of CellProfiler or with old versions of modules.  The Settings file can be opened with any word processor as plain text and you should be able to figure out what the settings were.        TECHNICAL DIAGNOSIS: Clicking here causes text to appear in the main Matlab window.  This text shows the "handles structure" which is sometimes useful for diagnosing problems with the software.','Step 3 Help')
 function HelpStep4_Callback(hObject, eventdata, handles)

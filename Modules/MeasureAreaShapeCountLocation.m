@@ -1,4 +1,4 @@
-sfunction handles = MeasureAreaShapeCountLocation(handles)
+function handles = MeasureAreaShapeCountLocation(handles)
 
 % Help for the Measure Area Shape Count Location module:
 % Category: Measurement

@@ -116,13 +116,18 @@ LowestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = AA
 HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What is the lowest pixel value of the rescaled image?
-%defaultVAR05 = 0
-LowestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = To calculate automatically, type AA to calculate the pixel value automatically from all of the images to be analyzed and AE to calculate the pixel value from each image independently.
 
-%textVAR06 = What is the highest pixel value of the rescaled image?
-%defaultVAR06 = 1
-HighestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = What should the lowest pixel value of the rescaled image be?
+%defaultVAR06 = 0
+LowestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+%textVAR07 = What should the highest pixel value of the rescaled image be?
+%defaultVAR07 = 1
+HighestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

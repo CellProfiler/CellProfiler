@@ -1,6 +1,7 @@
-function handles = AlgLoadImagesOrder(handles)
+function handles = AlgTestVariableBoxes(handles)
 
 % Help for the Load Images Order module:
+% Category: Testing
 %
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.

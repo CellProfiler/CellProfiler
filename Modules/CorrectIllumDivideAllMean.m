@@ -1,4 +1,4 @@
-function handles = AlgCorrectIlluminationDivideAllMean10(handles)
+function handles = AlgCorrectIlluminationDivideAllMean(handles)
 
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.

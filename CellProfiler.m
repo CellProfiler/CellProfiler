@@ -37,7 +37,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 15-Oct-2004 08:34:12
+% Last Modified by GUIDE v2.5 21-Oct-2004 15:43:32
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -255,10 +255,6 @@ else
         %%% Loads these image names into the ListBox.
         set(handles.ListBox,'String',handles.Vfilenames,...
             'Value',1)
-        %%% Retrieves the SelectedTestImageName from the ListBox.
-        Contents = get(handles.ListBox,'String');
-        SelectedTestImageName = Contents{get(handles.ListBox,'Value')};
-        set(handles.TestImageName,'String',[pathname,'/',SelectedTestImageName])
     end
     %%% Displays the chosen directory in the PathToLoadEditBox.
     set(handles.PathToLoadEditBox,'String',pathname);
@@ -1174,71 +1170,6 @@ set(hObject, 'String', initialContents);
 % Update handles structure
 guidata(hObject, handles);
 
-
-%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in SelectTestImageBrowseButton.
-function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
-%%% Opens a user interface window which retrieves a file name and path 
-%%% name for the image to be used as a test image.
-[FileName,PathName] = uigetfile('*.*','Select a test image (nuclei)');
-%%% If the user presses "Cancel", the FileName will = 0 and nothing will
-%%% happen.
-if FileName == 0
-else
-    set(handles.TestImageName,'String',[PathName,FileName])
-    handles.Vtestpathname = PathName;
-    %%% Retrieves the list of image file names from the chosen directory and
-    %%% stores them in the handles structure, using the function
-    %%% RetrieveImageFileNames.
-    handles = RetrieveImageFileNames(handles,PathName);
-    guidata(gcbo, handles);
-    if isempty(handles.Vfilenames)
-        set(handles.ListBox,'String','No image files recognized',...
-            'Value',1)
-    else
-        %%% Loads these image names into the ListBox.
-        set(handles.ListBox,'String',handles.Vfilenames,...
-            'Value',1)
-    end
-end
-cd(CurrentDirectory)
-%%%%%%%%%%%%%%%%%
-
-% --- Executes during object creation, after setting all properties.
-function TestImageName_CreateFcn(hObject, eventdata, handles)
-set(hObject,'BackgroundColor',[1 1 1]);
-
-function TestImageName_Callback(hObject, eventdata, handles)
-
-%%% Retrieves the contents of the edit box.
-UserEntry = get(hObject, 'string');
-%%% Checks whether a file with that name exists.
-if exist(UserEntry) ~= 0
-    %%% If the file exists, leave the contents of the box as is.
-    %%% Retrieves the list of image file names from the chosen directory and
-    %%% stores them in the handles structure, using the function
-    %%% RetrieveImageFileNames.
-    PathName = handles.Vtestpathname;
-    handles = RetrieveImageFileNames(handles,PathName);
-    guidata(hObject, handles);
-    if isempty(handles.Vfilenames)
-        set(handles.ListBox,'String','No image files recognized',...
-            'Value',1)
-    else
-        %%% Loads these image names into the ListBox.
-        set(handles.ListBox,'String',handles.Vfilenames,...
-            'Value',1)
-    end
-else 
-    %%% If the file entered in the box does not exist, give an error
-    %%% message and change the contents of the edit box to blank.
-    errordlg('A file with that name does not exist')
-    set(handles.TestImageName,'String','')
-end
-
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
@@ -1247,11 +1178,6 @@ function ListBox_CreateFcn(hObject, eventdata, handles)
 
 % --- Executes on selection change in ListBox.
 function ListBox_Callback(hObject, eventdata, handles)
-%%% Retrieves the SelectedTestImageName from the ListBox.
-Contents = get(hObject,'String');
-SelectedTestImageName = Contents{get(hObject,'Value')};
-PathName = handles.Vtestpathname;
-set(handles.TestImageName,'String',[PathName,SelectedTestImageName])
 
 %%%%%%%%%%%%%%%%%
 
@@ -1261,12 +1187,6 @@ function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles)
 %%% main Matlab window.
 handles
 msgbox('The handles structure has been printed out at the command line of Matlab.')
-
-%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in AnalyzeTestImageButton.
-function AnalyzeTestImageButton_Callback(hObject, eventdata, handles)
-errordlg('This button is not yet functional')
 
 %%%%%%%%%%%%%%%%%
 
@@ -2818,11 +2738,8 @@ else
                 for VariableNumber=1:handles.MaxVariables;
                     set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
-                set(handles.SelectTestImageBrowseButton,'enable','off')
                 set(handles.ListBox,'enable','off')
-                set(handles.TestImageName,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.TechnicalDiagnosisButton,'enable','off')
-                set(handles.AnalyzeTestImageButton,'enable','off')
                 set(handles.SaveImageAsButton,'enable','off')
                 set(handles.ShowImageButton,'enable','off')
                 set(handles.ShowPixelDataButton,'enable','off')
@@ -3279,11 +3196,8 @@ else
                 set(handles.MoveDownButton,'visible','on');
                 set(handles.CloseFigureButton,'visible','off');
                 set(handles.OpenFigureButton,'visible','off');
-                set(handles.SelectTestImageBrowseButton,'enable','on')
                 set(handles.ListBox,'enable','on')
-                set(handles.TestImageName,'enable','on','foregroundcolor','black')
                 set(handles.TechnicalDiagnosisButton,'enable','on')
-                set(handles.AnalyzeTestImageButton,'enable','on')
                 set(handles.SaveImageAsButton,'enable','on')
                 set(handles.ShowImageButton,'enable','on')
                 set(handles.ShowPixelDataButton,'enable','on')

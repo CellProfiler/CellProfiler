@@ -6,7 +6,15 @@ function handles = LoadSingleImage(handles)
 % Tells CellProfiler where to retrieve a single image and gives the
 % image a meaningful name for the other modules to access.  The module
 % only functions the first time through the pipeline, and thereafter
-% the image is accessible to all
+% the image is accessible to all subsequent image sets being
+% processed. This is particularly useful for loading an image like the
+% Illumination correction image to be used by the CorrectIllumDivide
+% module.
+%
+% Relative pathnames can be used: e.g. enter ../Imagetobeloaded.tif as
+% the name of the file you would like to load and leave the image
+% directory set to the default image directory in order to load the
+% image from the directory one above the default image directory.
 %
 % SAVING IMAGES: The images loaded by this module can be easily saved
 % using the Save Images module, using the name you assign (e.g.

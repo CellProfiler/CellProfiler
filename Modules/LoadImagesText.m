@@ -236,7 +236,7 @@ if SetBeingAnalyzed == 1
                 FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir);
                 %%% Checks whether any files are left.
                 if isempty(FileList{n})
-                    error(['Image processing was canceled because there are no image files with the text "', TextToFind{1}, '" in the chosen directory or subdirectories.'])
+                    error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory or subdirectories.'])
                 end
             end % Goes with: if exist
             %%% Saves the File Lists and Path Names to the handles structure.

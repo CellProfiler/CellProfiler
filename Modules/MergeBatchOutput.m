@@ -9,7 +9,7 @@ function handles = MergeBatchOutput(handles)
 % After a batch run has completed, the individual output files must be
 % merged.  This module takes two arguments, the directory where the
 % output files are located (by default the current default output
-% directory), and the prefix for the batch files.  This modules
+% directory), and the prefix for the batch files.  This module
 % assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat
 % is a batch output file.  When running batches from different
 % analysis runs, make sure they do not write to the same directory.

@@ -8,16 +8,16 @@ function handles = CreateBatchFiles(handles)
 %
 % This module should be placed at the end of an image processing
 % pipeline.  It takes five values as input: the size of each batch
-% that the full set of images should be split into, the patch to the
+% that the full set of images should be split into, the path to the
 % CellProfiler modules on the cluster machines, the path to the images
 % on the remote machine, where in the local system to save the batch
 % files, and finally, a prefix to put on the batch files.
 %
 % After the first image set is processed, batch files are created and
-% saved on the local machines, by default in the same directory as the
+% saved on the local machine, by default in the
 % current default output directory.  Each batch file is of the form
-% Batch_X_to_Y.m, where (The prefix can be changed from Batch_ by the
-% user), X is the first image set to be processed in the particular
+% Batch_X_to_Y.m (The prefix can be changed from Batch_ by the
+% user), where X is the first image set to be processed in the particular
 % batch file, and Y is the last.  There is also a Batch_data.mat file
 % that each script uses to initialize the processing.
 %

@@ -415,10 +415,6 @@ else
 
     handles.Current.NumberOfModules = 0;
     handles.Current.NumberOfModules = length(handles.Settings.ModuleNames);
-
-    %if (isfield(Settings,'NumbersOfVariables')),
-        %handles.Settings.NumbersOfVariables = max(handles.Settings.NumbersOfVariables,Settings.NumbersOfVariables);
-    %end
         
     contents = handles.Settings.ModuleNames;
     set(handles.ModulePipelineListBox,'String',contents);
@@ -429,6 +425,18 @@ else
     guidata(hObject,handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
 
+    %%% If the user loaded settings from a settings file, and the user had
+    %%% to confirm changes because of the Variable Revision Numbers are
+    %%% different, then the Settings file is overwritten with new Variable
+    %%% Revision Numbers.  Note: The user is not prompted!
+    if (isfield(LoadedSettings, 'Settings') & revisionConfirm == 1),
+        Settings.VariableValues = handles.Settings.VariableValues;
+        Settings.NumbersOfVariables = handles.Settings.NumbersOfVariables;
+        Settings.VariableRevisionNumbers = defaultVariableRevisionNumbers;
+        save([SettingsPathname SettingsFileName],'Settings')
+    end
+    
+    
     %%% If the user loaded settings from an output file, prompt them to
     %%% save it as a separate Settings file for future use.
     if isfield(LoadedSettings, 'handles'),

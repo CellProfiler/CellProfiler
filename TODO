@@ -5,7 +5,7 @@ General:
 - 'Fetch new modules from website' button in CP's main GUI.
 - 'Report bug' button in CP's main GUI.
 - 'Start job midway' module, run image set #XXXX (allow putting in a bunch of comma-delimited numbers to allow random), every 50th.
-- Spot Identifier: Figure out Excel mac vs Pc problems.  Allow asking if numbers are in rows or columns.  Check offsets, flipping. Display value only when clicking. Make manual page. Toggle several images.
+- Spot Identifier: Figure out Excel mac vs Pc problems (Anne has an email from Mathworks describing the issue, thread QW38).  Allow asking if numbers are in rows or columns.  Check offsets, flipping. Display value only when clicking (see email that Anne has: Mathworks tricks for interactive figures). Make manual page. Toggle several images.
 - Image Tiler: Main GUI's error catching is causing problems when sample info is loaded.  Allow zoom in on thumbnail: get filename (GET COORDINATES) and display high res image.  Needs error catching for images to be the same size.  Display window stays open. See tooltips code. Make manual page.  Fails if there are fewer images than the total grid.
 - There is no way to save images which are normally calculated for display only when running on the cluster, because the figure windows are not open so the calculations are skipped.
 - Combine CorrIllumDivideAll with RetrieveImg version.

@@ -63,7 +63,7 @@ IsFormat = imformats(FileFormat);
 if isempty(IsFormat) == 1
     error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
 end
-%%% Retrieve the image you want to analyze and assign it to a variable,
+%%% Retrieves the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
 fieldname = ['dOT', ImageName];
 %%% Checks whether image has been loaded.
@@ -77,25 +77,30 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImageToBeAnalyzed = handles.(fieldname);
-        % figure, imshow(OrigImageToBeAnalyzed), title('OrigImageToBeAnalyzed')
-%%% Update the handles structure.
-%%% Removed for parallel: guidata(gcbo, handles);
 
-%%% Check whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces.
-%%% Determine the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageFileName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
-%%% Find and remove the file format extension within the original file
-%%% name, but only if it is at the end. Strip the original file format extension 
-%%% off of the file name, if it is present, otherwise, leave the original
-%%% name intact.
-CharFileName = char(FileName);
-PotentialDot = CharFileName(end-3:end-3);
-if strcmp(PotentialDot,'.') == 1
-    BareFileName = CharFileName(1:end-4);
-else BareFileName = CharFileName;
+%%% Determines the file name.
+if strcmp(upper(ImageFileName), 'N') == 1
+    %%% Sets the filename to be sequential numbers.
+    FileName = num2str(handles.setbeinganalyzed);
+    CharFileName = char(FileName);
+    BareFileName = CharFileName;
+else
+    %%% Check whether the appendages to be added to the file names of images
+    %%% will result in overwriting the original file, or in a file name that
+    %%% contains spaces.
+    %%% Determine the filename of the image to be analyzed.
+    fieldname = ['dOTFilename', ImageFileName];
+    FileName = handles.(fieldname)(handles.setbeinganalyzed);
+    %%% Find and remove the file format extension within the original file
+    %%% name, but only if it is at the end. Strip the original file format extension
+    %%% off of the file name, if it is present, otherwise, leave the original
+    %%% name intact.
+    CharFileName = char(FileName);
+    PotentialDot = CharFileName(end-3:end-3);
+    if strcmp(PotentialDot,'.') == 1
+        BareFileName = CharFileName(1:end-4);
+    else BareFileName = CharFileName;
+    end
 end
 %%% Assemble the new image name.
 if strcmp(upper(Appendage), 'N') == 1
@@ -128,12 +133,15 @@ if handles.setbeinganalyzed == 1;
 end
 drawnow
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE IMAGE TO HARD DRIVE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+try 
 %%% Save the image to the hard drive.    
 imwrite(OrigImageToBeAnalyzed, NewImageName, FileFormat);
+catch error('The image could not be saved to the hard drive for some reason.')
+end
 
 %%%%%%%%%%%
 %%% HELP %%%
@@ -145,4 +153,3 @@ imwrite(OrigImageToBeAnalyzed, NewImageName, FileFormat);
 %%%%% to be saved can be the original images you loaded (in essence making
 %%%%% CellProfiler work as a file format converter), or any of the
 %%%%% processed images created by CellProfiler during the analysis.
-

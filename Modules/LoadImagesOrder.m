@@ -192,8 +192,6 @@ if SetBeingAnalyzed == 1
             end
         end
     end  % Goes with: for n = 1:4
-    %%% Update the handles structure.
-    %%% Removed for parallel: guidata(gcbo, handles);    
 end
             
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,8 +275,6 @@ for n = 1:4
 end
 %%% Changes back to the original directory.
 cd(CurrentDirectory)
-%%% Update the handles structure.
-%%% Removed for parallel: guidata(gcbo, handles);
 
 %%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%
@@ -369,12 +365,11 @@ end
 
 %%%%% Help for Load Images Order module:
 %%%%% .
-%%%%% This module is required to Load Images Order from the hard drive into a
+%%%%% This module is required to load images from the hard drive into a
 %%%%% format recognizable by CellProfiler.  The images are given a
 %%%%% meaningful name, which is then used by subsequent modules to retrieve
 %%%%% the proper image.  If more than five images per set must be loaded,
 %%%%% more than one Load Images Order module can be run sequentially. 
-
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -135,27 +135,23 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Block size. This should be set large enough that every square block 
-%textVAR04 = of pixels is likely to contain some background.
-%defaultVAR04 = 60
-BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR03 = Block size. This should be set large enough that every square block of pixels is likely to contain some background.
+%defaultVAR03 = 60
+BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR05 = If you have already created an illumination correction image to be used, enter the 
-%textVAR06 = path & file name of the image below. To calculate the illumination correction image 
-%textVAR07 = from all the images of this color that will be processed, leave a period in the box.#LongBox#
-%defaultVAR07 = .
-IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,07});
+%textVAR04 = If you have already created an illumination correction image to be used, enter the path & file name of the image below. To calculate the illumination correction image from all the images of this color that will be processed, leave a period in the box.#LongBox#
+%defaultVAR04 = .
+IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR08 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
-%defaultVAR08 = N
-IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR05 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
+%defaultVAR05 = N
+IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR09 = Enter the pathname to the directory where you want to save that image.
-%textVAR10 = Leave a period (.) to save it to the default output directory #LongBox#
-%defaultVAR10 = .
-IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR06 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
+%defaultVAR06 = .
+IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 2
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

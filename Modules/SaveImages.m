@@ -105,27 +105,23 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Which image's original filename do you want to use as a base
-%textVAR03 = to create the new file name? Type N to use sequential numbers.
-%defaultVAR03 = OrigBlue
-ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR02 = Which image's original filename do you want to use as a base to create the new file name? Type N to use sequential numbers.
+%defaultVAR02 = OrigBlue
+ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR04 = Enter text to append to the image name, or leave "N" to keep
-%textVAR05 = the name the same except for the file extension.
-%defaultVAR04 = N
-Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR03 = Enter text to append to the image name, or leave "N" to keep the name the same except for the file extension.
+%defaultVAR03 = N
+Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR06 = In what file format do you want to save images? Do not include a period
-%defaultVAR06 = tif
-FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR04 = In what file format do you want to save images? Do not include a period
+%defaultVAR04 = tif
+FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR07 = Enter the pathname to the directory where you want to save the images.
-%textVAR08 = Type a period (.) to save images in the default output directory
-%textVAR09 = or type I to save images in the default image directory #LongBox#
-%defaultVAR09 = .
-FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR05 = Enter the pathname to the directory where you want to save the images. Type a period (.) to save images in the default output directory or type I to save images in the default image directory #LongBox#
+%defaultVAR05 = .
+FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

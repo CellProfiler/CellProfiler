@@ -1,4 +1,4 @@
-function handles = AlgAlign(handles)
+function handles = AlgAlignImages(handles)
 
 % Help for the Align module:
 % Category: Pre-processing
@@ -127,12 +127,11 @@ Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = /
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = This module calculates the alignment shift. Do you want to actually 
-%textVAR08 = adjust the images?
-%defaultVAR08 = N
-AdjustImage = upper(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+%textVAR07 = This module calculates the alignment shift. Do you want to actually adjust the images?
+%defaultVAR07 = N
+AdjustImage = upper(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

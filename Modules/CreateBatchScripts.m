@@ -87,29 +87,25 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 100
 BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
 
-%textVAR02 = What is the path to the CellProfiler modules on the cluster machines? 
-%textVAR03 = Leave a period (.) to use the default module directory. (To change
-%textVAR04 = the default module directory, use the Set Preferences button).#LongBox#
+%textVAR02 = What is the path to the CellProfiler modules on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
+%defaultVAR02 = .
+BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+
+%textVAR03 = What is the path to the image directory on the cluster machines? Leave a period (.) to use the default image directory.#LongBox#
+%defaultVAR03 = .
+BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%textVAR04 = What is the path to the directory where you want to save the batch files? Leave a period (.) to use the default output directory.#LongBox#
 %defaultVAR04 = .
-BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What is the path to the image directory on the cluster machines?
-%textVAR06 = Leave a period (.) to use the default image directory.#LongBox#
-%defaultVAR06 = .
-BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR05 = What prefix should be added to the batch file names? #LongBox#
+%defaultVAR05 = Batch_
+BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR07 = What is the path to the directory where you want to save the batch files?
-%textVAR08 = Leave a period (.) to use the default output directory.#LongBox#
-%defaultVAR08 = .
-BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR06 = WARNING: This module should be the last one in the analysis pipeline.
 
-%textVAR09 = What prefix should be added to the batch file names? #LongBox#
-%defaultVAR09 = Batch_
-BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-
-%textVAR10 = WARNING: This module should be the last one in the analysis pipeline.
-
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

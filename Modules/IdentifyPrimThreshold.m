@@ -181,15 +181,17 @@ SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = All
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = on all of the images or type "Each" to calculate the threshold for each individual
-%textVAR06 = image and enter an adjustment factor here (Positive number):
-%defaultVAR06 = 1
-ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR05 = on all of the images or type "Each" to calculate the threshold for each individual image and enter an adjustment factor here (Positive number):
+%defaultVAR05 = 1
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange);  %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

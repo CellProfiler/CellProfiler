@@ -140,10 +140,9 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = ShrunkenNuclei
 ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter the number of pixels by which to shrink the objects
+%textVAR03 = Enter the number of pixels by which to shrink the objects (Positive number, or "Inf" to shrink to a point).
 %defaultVAR03 = 1
 ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%textVAR04 = (Positive number, or "Inf" to shrink to a point)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

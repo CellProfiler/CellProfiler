@@ -3,7 +3,8 @@ function handles = AlgMergeBatchOutput(handles)
 % Help for the Merge Batch Output module:
 % Category: Other
 %
-% This module merges the 
+% This module merges the output from several output files, each resulting
+% from scripts created by the the CreateBatchFiles module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -82,14 +83,16 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What is the path to the directory where the batch files were saved?
-%textVAR02 = Leave a period (.) to retrieve images from the default output directory #LongBox#
-%defaultVAR02 = .
-BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR01 = What is the path to the directory where the batch files were saved? Leave a period (.) to retrieve images from the default output directory #LongBox#
+%defaultVAR01 = .
+BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR03 = What was the prefix of the batch files? #LongBox#
-%defaultVAR03 = Batch_
-BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR02 = What was the prefix of the batch files? #LongBox#
+%defaultVAR02 = Batch_
+BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

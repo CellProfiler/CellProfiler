@@ -140,23 +140,24 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CropBlue
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For rectangular cropping, type R. For any shape (based on an image File), type F
-%textVAR04 = To draw an ellipse on each image, type EE; draw one ellipse for all images: EA
-%defaultVAR04 = R
-Shape = upper(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR03 = For rectangular cropping, type R. For any shape (based on an image File), type F. To draw an ellipse on each image, type EE; draw one ellipse for all images: EA
+%defaultVAR03 = R
+Shape = upper(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR05 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma)
-%defaultVAR05 = 1,1
-LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR04 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma)
+%defaultVAR04 = 1,1
+LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR06 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma)
+%textVAR05 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma)
 %defaultVAR06 = 100,100
-RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR07 = File-based cropping: To crop to another shape, type the location and file name of 
-%textVAR08 = the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#
-%defaultVAR08 = .
-BinaryCropImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR06 = File-based cropping: To crop to another shape, type the location and file name of the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#
+%defaultVAR06 = .
+BinaryCropImageName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

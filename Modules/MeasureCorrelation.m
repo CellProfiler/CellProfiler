@@ -125,8 +125,7 @@ Image8Name = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = /
 Image9Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = What did you call the objects within which to compare the images?
-%textVAR11 = Leave "/" to compare the entire images
+%textVAR10 = What did you call the objects within which to compare the images? Leave "/" to compare the entire images
 %defaultVAR10 = /
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 

@@ -115,22 +115,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = If you have already created an illumination correction image to be used, enter the 
-%textVAR04 = path & file name of the image below. To calculate the illumination correction image 
-%textVAR05 = from all the images of this color that will be processed, leave a period in the box below.#LongBox#
+%textVAR03 = If you have already created an illumination correction image to be used, enter the path & file name of the image below. To calculate the illumination correction image from all the images of this color that will be processed, leave a period in the box below.#LongBox#
+%defaultVAR03 = .
+IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%textVAR04 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
+%defaultVAR04 = N
+IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%textVAR05 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
 %defaultVAR05 = .
-IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,05});
+IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
-%defaultVAR06 = N
-IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-
-%textVAR07 = Enter the pathname to the directory where you want to save that image.
-%textVAR08 = Leave a period (.) to save it to the default output directory #LongBox#
-%defaultVAR08 = .
-IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

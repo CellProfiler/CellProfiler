@@ -116,8 +116,7 @@ ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = 
 %defaultVAR05 = /
 ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%textVAR06 = It is easy to expand the code for more than 5 objects.
-%textVAR07 = See AlgMeasureAreaShapeCountLocation.m for details.
+%textVAR06 = It is easy to expand the code for more than 5 objects. See AlgMeasureAreaShapeCountLocation.m for details.
 
 %%% To expand for more than 5 objects, just add more lines in groups
 %%% of three like those above, then change the line about ten lines

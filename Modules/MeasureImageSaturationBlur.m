@@ -125,10 +125,12 @@ NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = N
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 =  For unused colors, leave "N" in the boxes above.
-%textVAR08 = Do you want to check for blur?
-%defaultVAR08 = Y
-BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR07 =  For unused colors, leave "N" in the boxes above. Do you want to check for blur?
+%defaultVAR07 = Y
+BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%

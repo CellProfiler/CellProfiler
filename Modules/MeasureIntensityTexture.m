@@ -123,24 +123,18 @@ ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %textVAR06 =
 %defaultVAR06 = /
 ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%textVAR07 = Note: it is easy to expand the code for more than 5 objects.
-%textVAR08 = See AlgMeasureIntensityTexture.m for details. 
+%textVAR07 = Measure the fraction of cells with a total intensity greater than or equal to this threshold.  Type N to skip this measurement.
+%defaultVAR07 = N
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+
+%textVAR08 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'. Also, it is easy to expand the code for more than 5 objects. See AlgMeasureIntensityTexture.m for details. 
 
 %%% To expand for more than 5 objects, just add more lines in groups
-%%% of three like those above, then change the line about ten lines
+%%% of three like those above, then change the line about five lines
 %%% down from here (for i = 1:5).
 
-%textVAR09 = Measure the fraction of cells with a total intensity greater
-%textVAR10 = than or equal to this threshold.  Type N to skip this measurement.
-%defaultVAR10 = N
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-
-%textVAR11 = The measurements made by this module will be named based on
-%textVAR12 = your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'.
-
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
-
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:5

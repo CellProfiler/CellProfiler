@@ -89,20 +89,16 @@ CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What do you want to call the images saved in the first location?
 %defaultVAR01 = CFP
-fieldname = ['VariableValues',CurrentModule,'_01'];
-FirstImageName = handles.(fieldname);
+FirstImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = What do you want to call the images saved in the third location?
 %defaultVAR02 = DAPI
-fieldname = ['VariableValues',CurrentModule,'_02'];
-ThirdImageName = handles.(fieldname);
+ThirdImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = What do you want to call the images saved in the fifth location?
 %defaultVAR03 = YFP
-fieldname = ['VariableValues',CurrentModule,'_03'];
-FifthImageName = handles.(fieldname);
+FifthImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = Enter the directory path name where the images are saved.#LongBox#
 %defaultVAR04 = Default directory - leave this text to retrieve images from the directory specified above
-fieldname = ['VariableValues',CurrentModule,'_04'];
-PathName = handles.(fieldname);
+PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

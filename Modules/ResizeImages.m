@@ -1,4 +1,4 @@
-function handles = AlgResize(handles)
+function handles = AlgResizeImages(handles)
 
 % Help for the Resize module:
 % Category: Pre-processing
@@ -98,19 +98,20 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = ResizedBlue
 ResizedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = To shrink the image, enter the resizing factor (0 to 1).
-%textVAR04 = To enlarge the image, enter the resizing factor (greater than 1)
-%defaultVAR04 = 1
-ResizingFactor = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR03 = To shrink the image, enter the resizing factor (0 to 1). To enlarge the image, enter the resizing factor (greater than 1)
+%defaultVAR03 = 1
+ResizingFactor = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR05 = Alternately, leave the shrinking factor set to 1 and enter the desired resulting size 
-%textVAR06 = in pixels: height,width  (This may change the aspect ratio of the image.)
-%defaultVAR06 = 100,100
-SpecificSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR04 = Alternately, leave the shrinking factor set to 1 and enter the desired resulting size in pixels: height,width  (This may change the aspect ratio of the image.)
+%defaultVAR04 = 100,100
+SpecificSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR07 = Enter the interpolation method (N = nearest neighbor, L = Bilinear, C = bicubic)
-%defaultVAR07 = N
-InterpolationMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR05 = Enter the interpolation method (N = nearest neighbor, L = Bilinear, C = bicubic)
+%defaultVAR05 = N
+InterpolationMethod = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -132,7 +133,6 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
-
 
 %%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS%%%

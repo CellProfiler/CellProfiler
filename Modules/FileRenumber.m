@@ -100,10 +100,7 @@ NumberCharactersSuffix = str2double(char(handles.Settings.VariableValues{Current
 %defaultVAR03 = 3
 NumberDigits = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Be very careful since you will be renaming (= overwriting) your files!!
-%textVAR05 = You will have the opportunity to confirm the name change for the first 
-%textVAR06 = image set only.  The folder containing the files must not contain 
-%textVAR07 = subfolders or the subfolders and their contents will also be renamed.
+%textVAR04 = Be very careful since you will be renaming (= overwriting) your files!! You will have the opportunity to confirm the name change for the first image set only.  The folder containing the files must not contain subfolders or the subfolders and their contents will also be renamed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

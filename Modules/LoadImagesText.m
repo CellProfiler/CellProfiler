@@ -152,12 +152,11 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %defaultVAR11 = N
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Enter the path name to the folder where the images to be loaded are located.
-%textVAR13 = Leave a period (.) to retrieve images from the default image directory #LongBox#
-%defaultVAR13 = .
-TypedPathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%textVAR12 = Enter the path name to the folder where the images to be loaded are located. Leave a period (.) to retrieve images from the default image directory #LongBox#
+%defaultVAR12 = .
+TypedPathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

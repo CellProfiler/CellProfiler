@@ -93,15 +93,14 @@ NumberCharactersPrefix = str2double(char(handles.Settings.VariableValues{Current
 %defaultVAR02 = 8
 NumberCharactersSuffix = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
 
-%textVAR03 = Enter any text you want to place between those two portions of filename
-%textVAR04 = Leave "/" to not add any text.
-%defaultVAR04 = /
-TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR03 = Enter any text you want to place between those two portions of filename. Leave "/" to not add any text.
+%defaultVAR03 = /
+TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR05 = Be very careful since you will be renaming (= overwriting) your files!!
-%textVAR06 = You will have the opportunity to confirm the name change for the first 
-%textVAR07 = image set only.  The folder containing the files must not contain 
-%textVAR08 = subfolders or the subfolders and their contents will also be renamed.
+%textVAR04 = Be very careful since you will be renaming (= overwriting) your files!! You will have the opportunity to confirm the name change for the first image set only.  The folder containing the files must not contain subfolders or the subfolders and their contents will also be renamed.
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

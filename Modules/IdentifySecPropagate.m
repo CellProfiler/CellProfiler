@@ -178,22 +178,24 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Nuclei
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the objects identified by this module?
+%textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
 %defaultVAR03 = Cells
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%textVAR04 = (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
 
-%textVAR05 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR05 = 0
-Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
+%defaultVAR04 = 0
+Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR06 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
-%defaultVAR06 = 1
-ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
+%defaultVAR05 = 1
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR07 = Regularization factor (0 to infinity). Larger=distance,0=intensity
-%defaultVAR07 = 0.05
-RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR06 = Regularization factor (0 to infinity). Larger=distance,0=intensity
+%defaultVAR06 = 0.05
+RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

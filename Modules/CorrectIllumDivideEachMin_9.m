@@ -126,10 +126,12 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Block size. This should be set large enough that every square block 
-%textVAR04 = of pixels is likely to contain some background.
-%defaultVAR04 = 60
-BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR03 = Block size. This should be set large enough that every square block of pixels is likely to contain some background.
+%defaultVAR03 = 60
+BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -168,24 +168,27 @@ if NeighborDistance == 0
     NeighborDistance = 4;
 end
 
+
 %%% Determines the neighbors for each object.
 d = max(2,NeighborDistance+1);
-[sr,sc] = size(IncomingLabelMatrixImage);
+[sr,sc] = size(IncomingLabelMatrixImage)
 ImageOfNeighbors = -ones(sr,sc);
+NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
+IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
 se = strel('disk',d,0);                   
 for k = 1:max(IncomingLabelMatrixImage(:))
     % Cut patch
     [r,c] = find(IncomingLabelMatrixImage == k);
     rmax = min(sr,max(r) + (d+1));
     rmin = max(1,min(r) - (d+1));
-    cmax = min(sr,max(c) + (d+1));
+    cmax = min(sc,max(c) + (d+1));
     cmin = max(1,min(c) - (d+1));
     p = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
     % Extend cell boundary
     pextended = imdilate(p==k,se,'same');
     overlap = p.*pextended;
-    NumberOfNeighbors(k) = length(setdiff(unique(overlap(:)),0))-1;
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
+    NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
     ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k); 
 end
 

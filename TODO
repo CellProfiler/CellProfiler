@@ -15,6 +15,7 @@ Infrastructure improvements:
 - Prevent clicking pause/cancel buttons twice.
 - To aid in interactive selection of settings, allow user to create a figure window where images can be dragged and overlaid and toggled back and forth. See Inca and dragndrop in Matlab Central.
 - Have image windows pay attention to aspect ratio of images.
+- Whenever anything is saved to the hard drive, add an error check to see whether the user has permission to write to that location. From within the target directory, run: [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0, then error(INSERT PROPER ERROR STUFF HERE), end
 
 Image analysis modules - New:
 - Make modules to identify objects in transmitted light/DIC images.

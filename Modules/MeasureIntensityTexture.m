@@ -118,21 +118,41 @@ drawnow
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
-%textVAR01 = What did you call the segmented objects that you want to measure?
-%defaultVAR01 = Nuclei
-ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+%textVAR01 = What did you call the greyscale images you want to measure? 
+%defaultVAR01 = OrigBlue
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+%textVAR02 = What did you call the segmented objects that you want to measure?
+%defaultVAR02 = Nuclei
+ObjectNameList{1} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+%textVAR03 = Type / in unused boxes.
+%defaultVAR03 = Cells
+ObjectNameList{2} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+%textVAR04 = 
+%defaultVAR04 = /
+ObjectNameList{3} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+%textVAR05 = 
+%defaultVAR05 = /
+ObjectNameList{4} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+%textVAR06 = 
+%defaultVAR06 = /
+ObjectNameList{5} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 
-%textVAR02 = What did you call the greyscale images you want to measure? 
-%defaultVAR02 = OrigBlue
-ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+%%% NOTE: It's easy to expand the code for more than 5 objects.
 
-%textVAR03 = Measure the fraction of cells with a total intensity greater
-%textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
-%defaultVAR04 = N
-Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+%textVAR07 = Measure the fraction of cells with a total intensity greater
+%textVAR08 = than or equal to this threshold.  Type N to skip this measurement.
+%defaultVAR08 = N
+Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,08});
 
-%textVAR06 = The measurements made by this module will be named based on
-%textVAR07 = your entries, e.g. "OrigRedwithinNuclei".
+%textVAR09 = The measurements made by this module will be named based on
+%textVAR10 = your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'.
+
+%%% START LOOP THROUGH ALL THE OBJECTS
+for i = 1:5
+    ObjectName = ObjectNameList{i};
+if strcmp(ObjectName,'/') == 1
+break
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -270,6 +290,7 @@ end
 %%%
 %%% INTEGRATED INTENSITY (TOTAL INTENSITY PER OBJECT)
 %%%
+drawnow
 
 % The find function (when used as follows) returns the linear index
 % position of all the nonzero elements in the label matrix image.
@@ -318,6 +339,7 @@ end
 %%%
 %%% MEAN INTENSITY (PER OBJECT)
 %%%
+drawnow
 
 %%% Finds the locations and labels for different objects.
 ObjectLocations = find(LabelMatrixImage);
@@ -337,6 +359,7 @@ catch error('There was a problem in the MeasureIntensityTexture module.  The ima
 end
 %%% Avoids divide by zero.
 Areas1(Areas1 < 2) = 2;
+drawnow
 %%% Estimates the standard deviation.
 Temp2 = sparse(ObjectLocations, ObjectLabels, OrigImageToBeAnalyzed2(ObjectLocations));
 StDevIntensity = sqrt(full(sum(Temp2.^2)) ./ (Areas1 - 1));
@@ -367,7 +390,7 @@ end % Goes with: if no objects are in the image.
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
+drawnow
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
 % Each module checks whether its figure is open before calculating
@@ -390,12 +413,15 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     newsize = originalsize;
     newsize(1) = 0;
     newsize(2) = 0;
-    if handles.setbeinganalyzed == 1
+    if handles.setbeinganalyzed == 1 && i == 1
         newsize(3) = originalsize(3)*.5;
         originalsize(3) = originalsize(3)*.5;
         set(ThisAlgFigureNumber, 'position', originalsize);
     end
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    if i == 1
+        displaytext =[];
+    end
     %%% Note that the number of spaces after each measurement name results in
     %%% the measurement numbers lining up properly when displayed in a fixed
     %%% width font.  Also, it costs less than 0.1 seconds to do all of these
@@ -403,10 +429,10 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% means and sums from each measurement's code above.
     %%% Checks whether any objects were found in the image.
     if sum(sum(LabelMatrixImage)) == 0
-        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+        displaytext = strvcat(displaytext,[ObjectName,', Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['Number of ', ObjectName ,':      zero']);
     else
-        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+        displaytext = strvcat(displaytext,[ObjectName,', Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['MeanIntegratedIntensity:          ', num2str(mean(IntegratedIntensity))],...
             ['MeanMeanIntensity:                ', num2str(mean(MeanIntensity))],...
             ['MeanStDevIntensity:               ', num2str(mean(StDevIntensity))],...
@@ -417,8 +443,9 @@ if any(findobj == ThisAlgFigureNumber) == 1;
         end
     end % Goes with: if no objects were in the label matrix image.
     set(displaytexthandle,'string',displaytext)
+drawnow
 end
-
+end
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE

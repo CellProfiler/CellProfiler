@@ -563,13 +563,16 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
     originalsize = get(ThisAlgFigureNumber, 'position');
     newsize = originalsize;
-    if handles.setbeinganalyzed == 1
+    if handles.setbeinganalyzed == 1 && i == 1
         newsize(3) = originalsize(3)*.5;
         set(ThisAlgFigureNumber, 'position', newsize);
     end
     newsize(1) = 0;
     newsize(2) = 0;
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    if i == 1
+        displaytext =[];
+    end
     %%% Note that the number of spaces after each measurement name results in
     %%% the measurement numbers lining up properly when displayed in a fixed
     %%% width font.  Also, it costs less than 0.1 seconds to do all of these
@@ -577,10 +580,10 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% means and sums from each measurement's code above.
     %%% Checks whether any objects were found in the image.
     if sum(sum(LabelMatrixImage)) == 0
-        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+        displaytext = strvcat(displaytext,['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['Number of ', ObjectName ,':      zero']);
     else
-        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+        displaytext = strvcat(displaytext,['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['Number of ', ObjectName ,':      ', num2str(ObjectCount)],...
             ['SumArea:                  ', num2str(sum(Area))],...
             ['MeanArea:                 ', num2str(mean(Area))],...

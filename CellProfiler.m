@@ -630,9 +630,6 @@ if handles.Current.NumberOfModules == 99
     errordlg('CellProfiler in its current state can only handle 99 modules. You have just attempted to load the 100th module. It should be fairly straightforward to modify the code in CellProfiler.m to expand its capabilities.');
     return
 end
-% Find which module slot number this callback was called for.
-ModuleNumber = TwoDigitString(handles.Current.NumberOfModules+1);
-ModuleNums = handles.Current.NumberOfModules+1;
 
 %%% 1. Opens a user interface to retrieve the .m file you want to use.
 %%% Change to the default module directory. This line is within a
@@ -653,17 +650,30 @@ cd(handles.Current.StartupDirectory)
 if ModuleNamedotm == 0,
 else
     %%% The folder containing the desired .m file is added to Matlab's search path.
-    addpath(Pathname)
-    %%% If the module's .m file is not found on the search path, the result
-    %%% of exist is zero, and the user is warned.
-    if exist(ModuleNamedotm,'file') == 0
-        %%% Doublecheck that the module exists on Matlab's search path.
-        if exist(ModuleNamedotm,'file') == 0
-            errordlg('Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.');
-            return
-        else msgbox(['The .m file ', ModuleNamedotm, ...
-                ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it; the module was added to the image analysis pipeline just fine.'])
-        end
+    addpath(Pathname);
+    currentPath = path;
+    numberOfPaths = 0;
+    likelyPath = which(ModuleNamedotm);
+    isMatLabBuiltIn = 0;
+    if(exist(ModuleNamedotm(1:end-2),'builtin') ~= 0)
+        warningString = ['Your module has the same name as a builtin Matlab function.  Perhaps you should consider renaming your module.'];
+        warndlg(warningString);
+    end
+    while(exist(ModuleNamedotm, 'file') ~= 0)
+        numberOfPaths = numberOfPaths+1;
+        removepath{numberOfPaths} = fileparts(which(ModuleNamedotm));
+        rmpath(removepath{numberOfPaths});
+    end
+    if numberOfPaths == 0,
+        %%% If the module's .m file is not found on the search path, the result
+        %%% of exist is zero, and the user is warned.
+        errordlg('Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.');
+        return
+    elseif numberOfPaths == 1,
+        addpath(Pathname);
+    elseif numberOfPaths > 1
+            path(currentPath);
+            warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' likelyPath ' will likely be used']);
     end
     %%% 3. The last two characters (=.m) are removed from the
     %%% ModuleName.m and called ModuleName.
@@ -673,6 +683,10 @@ else
     %%% displays the current module (whose settings are shown).
 
     %%% 4. Saves the ModuleName to the handles structure.
+    % Find which module slot number this callback was called for.
+    ModuleNumber = TwoDigitString(handles.Current.NumberOfModules+1);
+    ModuleNums = handles.Current.NumberOfModules+1;
+
     handles.Settings.ModuleNames{ModuleNums} = ModuleName;
     contents = get(handles.ModulePipelineListBox,'String');
     contents{ModuleNums} = ModuleName;

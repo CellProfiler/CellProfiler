@@ -20,6 +20,7 @@ end
 % Check if the Image Tool window already is open
 ITh = findobj('Tag','Image Tool');
 if ~isempty(ITh)
+    figure(ITh)
     set(ITh,'UserData',handle);                                  % Store the new handle in the UserData property
     th = findobj(get(ITh,'children'),'style','text');            % Get handle to text object
     

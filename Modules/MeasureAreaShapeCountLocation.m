@@ -116,7 +116,27 @@ CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
-ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+ObjectNameList{1} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+%textVAR02 = Type / in unused boxes.
+%defaultVAR02 = Cells
+ObjectNameList{2} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+%textVAR03 = 
+%defaultVAR03 = /
+ObjectNameList{3} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+%textVAR04 = 
+%defaultVAR04 = /
+ObjectNameList{4} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+%textVAR05 = 
+%defaultVAR05 = /
+ObjectNameList{5} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+%textVAR06 = 
+%defaultVAR06 = /
+ObjectNameList{6} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+%textVAR07 = 
+%defaultVAR07 = /
+ObjectNameList{7} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+
+%%% NOTE: It's easy to expand the code for more than 7 objects.
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.Vpixelsize{1});
@@ -128,6 +148,12 @@ PixelSize = str2double(handles.Settings.Vpixelsize{1});
 %%% comparing experiments.  If the user wants to skip some measurements,
 %%% they can alter this .m file to comment out the measurements.
 
+%%% START LOOP THROUGH ALL THE OBJECTS
+for i = 1:7
+    ObjectName = ObjectNameList{i}
+if strcmp(ObjectName,'/') == 1
+break
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -572,7 +598,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     end % Goes with: if no objects were in the label matrix image.
     set(displaytexthandle,'string',displaytext)
 end
-
+end
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 

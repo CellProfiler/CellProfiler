@@ -495,9 +495,9 @@ end
 
 for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)
-        Value = num2str(Results(i,j));
+        Value = Results(i,j);
         HeadingName = [char(cellstr(ImageNames(i,:))),'_', char(cellstr(ImageNames(j,:)))];
-        fieldname = ['ImageCorrelation', HeadingName, ObjectName];
+        fieldname = ['ImageCorrelation', HeadingName, ObjectName]
         handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Value};
     end
 end

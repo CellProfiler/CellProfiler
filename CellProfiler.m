@@ -1813,6 +1813,7 @@ if (strcmp(Answer, 'Single Measurement') == 1),
         EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
         MeasurementToExtract = ['Image', EditedMeasurementToExtract];
         figure;
+        handles.Measurements
         h = bar(cell2mat(handles.Measurements.(MeasurementToExtract)));
         axis tight;
         set(get(h, 'Children'), 'EdgeAlpha', 0);

@@ -50,9 +50,8 @@ function handles = ShowDataOnImage(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 %%% Asks the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
 if RawFileName ~= 0
     load(fullfile(RawPathname,RawFileName));
     %%% Extracts the fieldnames of measurements from the handles structure. 
@@ -61,7 +60,6 @@ if RawFileName ~= 0
     %%% Error detection.
     if isempty(MeasFieldnames)
         errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
-        cd(handles.Current.StartupDirectory);
         return
     else
         %%% Removes the 'Object' prefix from each name for display purposes.
@@ -95,13 +93,11 @@ if RawFileName ~= 0
                     %%% Prompts the user to choose a sample number to be displayed.
                     Answer = inputdlg({'Which sample number do you want to display?'},'Choose sample number',1,{'1'});
                     if isempty(Answer)
-                        cd(handles.Current.StartupDirectory);
                         return
                     end
                     SampleNumber = str2double(Answer{1});
                     TotalNumberImageSets = length(handles.Measurements.(MeasurementToExtract));
                     if SampleNumber > TotalNumberImageSets
-                        cd(handles.Current.StartupDirectory);
                         error(['The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.'])
                     end
                     %%% Looks up the corresponding image file name.
@@ -123,13 +119,11 @@ if RawFileName ~= 0
                         h = msgbox(['Browse to find the image called ', ImageFileName,'.']);
                         %%% Opens a user interface window which retrieves a file name and path 
                         %%% name for the image to be displayed.
-                        cd(handles.Current.DefaultImageDirectory)
-                        [FileName,Pathname] = uigetfile('*.*','Select the image to view');
+                        [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'*.*'),'Select the image to view');
                         delete(h)
                         %%% If the user presses "Cancel", the FileName will = 0 and nothing will
                         %%% happen.
                         if FileName == 0
-                            cd(handles.Current.StartupDirectory);
                             return
                         else
                             %%% Opens and displays the image, with pixval shown.
@@ -207,4 +201,3 @@ if RawFileName ~= 0
         end
     end
 end
-cd(handles.Current.StartupDirectory);

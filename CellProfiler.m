@@ -747,9 +747,10 @@ end
 
 if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
     [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'MATLABBUG11432TP', '*.m'),...
+    'Choose an image analysis module');
 else
-    [ModuleNamedotm,Pathname] = uigetfile('*.m',...
-        'Choose an image analysis module');
+[ModuleNamedotm,Pathname] = uigetfile('*.m',...
+    'Choose an image analysis module');
 end
 
 %%% 2. If the user presses "Cancel", the ModuleNamedotm = 0, and

@@ -1,7 +1,7 @@
 function handles = AlgExtractHeaderInfo(handles)
 
 % Help for the Extract Header Info module:
-% Category: File Handling
+% Category: Measurement
 %
 % This module was written for an old version of CellProfiler and may
 % not be functional anymore, but it serves as an example of how to

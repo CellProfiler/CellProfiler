@@ -16,10 +16,14 @@ function handles = CorrectIllumDivideAllMean(handles)
 % to produce the corrected image.
 %
 % The smoothing can be done by fitting a low-order polynomial to the
-% mean (projection) image (option = P), or by applying a filter
-% to the image. The user enters an even number for the artifact width,
-% and this number is divided by two to obtain the radius of a disk
-% shaped structuring element which is used for filtering. 
+% mean (projection) image (option = P), or by applying a filter to the
+% image. The user enters an even number for the artifact width, and
+% this number is divided by two to obtain the radius of a disk shaped
+% structuring element which is used for filtering. Note that with
+% either mode of calculation, the illumination function is scaled from
+% 1 to infinity, so that if there is substantial variation across the
+% field of view, the rescaling of each image might be dramatic,
+% causing the image to appear darker.
 %
 % If you want to run this module only to calculate the mean and
 % illumination images and not to correct every image in the directory,
@@ -230,7 +234,7 @@ if handles.Current.SetBeingAnalyzed == 1
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 100];
+            PositionMsgBox = [500 BottomOfMsgBox 350 150];
             %%% Retrieves the path where the images are stored from the handles
             %%% structure.
             fieldname = ['Pathname', ImageName];
@@ -305,7 +309,12 @@ if handles.Current.SetBeingAnalyzed == 1
             else try ArtifactWidth = str2num(SmoothingMethod);
                     ArtifactRadius = 0.5*ArtifactWidth;
                     StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
-                    IlluminationImage = ordfilt2(MeanImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
+                    WaitbarText2 = {WaitbarText; ;'Now calculating the illumination function, which may take a long time.'};
+                    waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText2)
+                    IlluminationImage1 = ordfilt2(MeanImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
+                    IlluminationImage = IlluminationImage1 ./ max([min(min(IlluminationImage1)); .00000001]);
+                    WaitbarText3 = {WaitbarText;'Calculations for the illumination function are complete.'};
+                    waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText3)
                 catch
                     error(['The text you entered for the smoothing method in the Correct Illumination Divide All Mean module is unrecognizable for some reason. You must enter a positive, even number or the letter P.  Your entry was ',SmoothingMethod])
                 end

@@ -13,6 +13,7 @@ drawnow
 %defaultVAR01 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 LoadSpotIdentifiers = handles.(fieldname);
+%textVAR02 = You will be able to select any image from any folder once analysis has begun.
 
 %textVAR09 = To save the resulting rotated image, enter a filename (no extension)
 %defaultVAR09 = N
@@ -53,12 +54,12 @@ end
 %%% Determines the figure number to display in.
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
-FigureHandle = figure(ThisAlgFigureNumber); imagesc(OriginalImage); colormap(gray), axis image
-Answer = questdlg('Does the image need to be rotated prior to labeling the spots?', 'Rotate?', 'Yes', 'No', 'Cancel', 'Yes');
+FigureHandle = figure(ThisAlgFigureNumber); imagesc(OriginalImage); colormap(gray), axis image, pixval
+Answer = questdlg('Does the image need to be rotated prior to labeling the spots?', 'Rotate?', 'Yes - by clicking', 'Yes - by coordinates', 'No', 'No');
 if strcmp(Answer, 'Cancel') == 1
     return
 end
-if strcmp(Answer, 'Yes') == 1
+if strcmp(Answer, 'Yes - by clicking') == 1
     Answer2 = questdlg('After closing this window by clicking OK, click on the lower left marker in the image, then the lower right marker, then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.', 'Choose marker points', 'OK', 'Cancel', 'OK');
     if strcmp(Answer2, 'Cancel') == 1
         return
@@ -77,19 +78,44 @@ if strcmp(Answer, 'Yes') == 1
     Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
     AngleToRotateRadians = asin(VertLeg/Hypotenuse);
     AngleToRotateDegrees = AngleToRotateRadians*180/pi;
-
-    PatienceHandle = waitbar(0,'Please be patient; Image rotation in progress');
+    PatienceHandle = msgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
     figure(ThisAlgFigureNumber); imagesc(RotatedImage), colormap(gray), axis image
-        title('Rotated Image'), pixval
-    delete(PatienceHandle)
+    title('Rotated Image'), pixval
+    try, delete(PatienceHandle), end
+elseif strcmp(Answer, 'Yes - by coordinates') == 1
+    Prompts = {'Enter the X coordinate of the lower left marker', 'Enter the Y coordinate of the lower left marker', 'Enter the X coordinate of the lower right marker', 'Enter the Y coordinate of the lower right marker'};
+    Height = size(OriginalImage,1);
+    Width = size(OriginalImage,2);
+    Defaults = {'0', num2str(Height), num2str(Width), num2str(Height)};
+    Answers = inputdlg(Prompts, 'Enter coordinates', 1, Defaults);
+    if isempty(Answers) == 1
+        return
+    end
+    LowerLeftX = str2num(Answers{1});
+    LowerLeftY = str2num(Answers{2});
+    LowerRightX = str2num(Answers{3});
+    LowerRightY = str2num(Answers{4});
+    HorizLeg = LowerRightX - LowerLeftX;
+    VertLeg = LowerLeftY - LowerRightY;
+    Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
+    AngleToRotateRadians = asin(VertLeg/Hypotenuse);
+    AngleToRotateDegrees = AngleToRotateRadians*180/pi;
+    PatienceHandle = msgbox('Please be patient; Image rotation in progress');
+    drawnow
+    RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
+    figure(ThisAlgFigureNumber); imagesc(RotatedImage), colormap(gray), axis image
+    title('Rotated Image'), pixval
+    try, delete(PatienceHandle), end
 end % Goes with questdlg regarding image rotation.
-
 
 Prompts = {'Enter the X coordinate of the top left marker', 'Enter the Y coordinate of the top left marker'};
 Defaults = {'0', '0'};
 Answers = inputdlg(Prompts, 'Top left marker', 1, Defaults);
+    if isempty(Answers) == 1
+        return
+    end
 TopLeftX = str2num(Answers{1});
 TopLeftY = str2num(Answers{2});
 
@@ -111,6 +137,9 @@ TopLeftY = str2num(Answers{2});
 Prompts = {'Enter the number of rows to be marked', 'Enter the number of columns to be marked', 'Enter the spacing between columns (horizontal spacing)', 'Enter the spacing between rows (vertical spacing)', 'Enter the horizontal distance from the top left marker to the nearestwhit spot.', 'Enter the vertical distance from the top left marker to the nearest spot.','Is the first spot at the Left or Right?', 'Is the first spot at the Top or Bottom?'};
 Defaults = {'40', '140', '57', '57', '57', '0','L','B'};
 Answers = inputdlg(Prompts, 'Specifications for this slide', 1, Defaults);
+    if isempty(Answers) == 1
+        return
+    end
 NumberRows = str2num(Answers{1});
 NumberColumns = str2num(Answers{2});
 HorizSpacing = str2num(Answers{3});
@@ -178,7 +207,10 @@ if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
         return
     end
     Answer = inputdlg('What is the name of the excel sheet with the data of interest?');
-    cd(PathName)
+        if isempty(Answer) == 1
+        return
+    end
+cd(PathName)
     SheetName = Answer{1};
     [data_numbers,SpotIdentifyingInfo]=xlsread(FileName,SheetName);
     

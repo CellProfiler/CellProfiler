@@ -210,7 +210,7 @@ if SetBeingAnalyzed == 1
             handles.Pipeline.DIBbitdepth = str2double(Answers{3});
             handles.Pipeline.DIBchannels = str2double(Answers{4});
         else
-            error('The image file type entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+            error(['The image file type "', FileFormat , '" entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
         end
     end
     %%% If the user did not enter any data in the first slot (they put
@@ -231,13 +231,12 @@ if SetBeingAnalyzed == 1
             %%% from the chosen directory.
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-            else
-                FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir);
-                %%% Checks whether any files are left.
-                if isempty(FileList{n})
-                    error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory or subdirectories.'])
-                end
-            end % Goes with: if exist
+            end
+            FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir);
+            %%% Checks whether any files are left.
+            if isempty(FileList{n})
+                error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory or subdirectories.'])
+            end
             %%% Saves the File Lists and Path Names to the handles structure.
             fieldname = ['FileList', ImageName{n}];
             handles.Pipeline.(fieldname) = FileList{n};
@@ -246,8 +245,8 @@ if SetBeingAnalyzed == 1
             %% for reference in saved files
             handles.Measurements.(fieldname) = SpecifiedPathname;
             NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
-        end % Goes with: if isempty
-    end  % Goes with: for i = 1:5
+        end
+    end
     %%% Determines which slots are empty.  None should be zero, because there is
     %%% an error check for that when looping through n = 1:5.
     for g = 1: length(NumberOfFiles)
@@ -543,8 +542,8 @@ else
     DiscardLogical = DiscardLogical1 | DiscardsByExtension;
     %%% Eliminates filenames to be discarded.
     if isempty(DiscardLogical) == 1
-        FileNamesNotMatched = FileNamesNoDir;
-    else FileNamesNotMatched = FileNamesNoDir(~DiscardLogical);
+        NotYetTextMatchedFileNames = FileNamesNoDir;
+    else NotYetTextMatchedFileNames = FileNamesNoDir(~DiscardLogical);
     end
 
     %%% Loops through the names in the Directory listing, looking for the text
@@ -552,9 +551,9 @@ else
     %%% file names that match.
     FileNames = cell(0);
     Count = 1;
-    for i=1:length(FileNamesNotMatched),
-        if findstr(char(FileNamesNotMatched(i)), TextToFind),
-            FileNames{Count} = char(FileNamesNotMatched(i));
+    for i=1:length(NotYetTextMatchedFileNames),
+        if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
+            FileNames{Count} = char(NotYetTextMatchedFileNames(i));
             Count = Count + 1;
         end
     end
@@ -569,15 +568,14 @@ if(strcmp(upper(recurse),'Y'))
             for j = 1:length(MoreFileNames)
                 MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
             end
-            FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
+            if isempty(FileNames) == 1
+                FileNames = MoreFileNames;
+            else
+                FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
+            end
         end
     end
 end
-%%% Checks whether any files are left.
-if isempty(FileNames) == 1
-    errordlg('There are no image files in the chosen directory, according to the Load Images Text module.')
-end
-
 
 % PROGRAM NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE

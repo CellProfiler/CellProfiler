@@ -912,7 +912,7 @@ if (length(AlgorithmHighlighted) > 0)
         if((handles.numVariables(AlgorithmNumber)+numberOfLongBoxes+numberExtraLinesOfDescription) > 12)
             set(handles.slider1,'visible','on');
             set(handles.slider1,'max',((handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25));
-            set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25);
+            set(handles.slider1,'value',get(handles.slider1,'max'));
         end
 
     else

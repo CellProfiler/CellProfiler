@@ -152,6 +152,10 @@ FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 %defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1#LongBox#
 TypedPathname = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
+%textVAR12 = Analyze All Subdirectories (Y or N)?
+%defaultVAR12 = N
+AnalyzeSubDir = char(handles.Settings.Vvariable{CurrentAlgorithmNum,12});
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

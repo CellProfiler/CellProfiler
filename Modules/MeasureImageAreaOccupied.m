@@ -1,6 +1,7 @@
 function handles = AlgMeasureAreaOccupied(handles)
 
 % Help for the Measure Area Occupied module: 
+% Category: Measurement
 % 
 % This module simply measures the total area covered by stain in an
 % image. 
@@ -15,6 +16,11 @@ function handles = AlgMeasureAreaOccupied(handles)
 % adjusted by a user-specified factor. It might be desirable to write
 % a new module where the threshold can be set to a constant value.
 %
+% SAVING IMAGES: If you want to save images produced by this module,
+% alter the code for this module to save those images to the handles
+% structure (see the section marked SAVE DATA TO HANDLES STRUCTURE)
+% and then use the Save Images module.
+% 
 % See also ALGMEASUREAREASHAPEINTENSTXTR,
 % ALGMEASURECORRELATION,
 % ALGMEASUREINTENSITYTEXTURE,
@@ -169,6 +175,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% Saves the Area Occupied measurement to the handles structure.
 fieldname = ['dMTAreaOccupied', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {AreaOccupied};
 

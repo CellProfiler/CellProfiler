@@ -1,6 +1,7 @@
 function handles = AlgIdentifyTertiarySubregion(handles)
 
 % Help for the Identify Tertiary Subregion module: 
+% Category: Object Identification
 %
 % This module will take the identified objects specified in the first
 % box and remove from them the identified objects specified in the
@@ -17,7 +18,27 @@ function handles = AlgIdentifyTertiarySubregion(handles)
 % of the perimeter, aspect ratio, solidity, etc. cannot be made for
 % noncontiguous objects.
 %
-% See also <nothing relevant>.
+% SAVING IMAGES: The images of the objects produced by this module can
+% be easily saved using the Save Images module using the name:
+% Segmented + whatever you called the objects (e.g.
+% SegmentedCytoplasm. This will be a grayscale image where each object
+% is a different intensity.
+% 
+% An additional image is normally calculated for display only: the
+% colored label matrix image (the objects displayed as arbitrary
+% colors). This image, and any other intermediate images of interest,
+% can be saved by altering the code for this module to save those
+% images to the handles structure (see the section of the code marked
+% SAVE DATA TO HANDLES STRUCTURE) and then using the Save Images
+% module.  Important note: The calculations of display images are only
+% performed if the figure window is open, so the figure window must be
+% left open or the Save Images module will fail.  If you are running
+% the job on a cluster, figure windows are not open, so the Save
+% Images module will also fail, unless you go into the code for this
+% module and remove the 'if/end' statement surrounding the DISPLAY
+% RESULTS section.
+%
+% See also identify Primary and Identify Secondary modules.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

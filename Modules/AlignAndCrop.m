@@ -1,6 +1,7 @@
 function handles = AlgAlignAndCrop(handles)
 
 % Help for the Align and Crop module:
+% Category: Pre-processing
 % 
 % This module was written for a specific purpose: to take a larger
 % image of the outlines of cells, with some space around the outside,
@@ -26,6 +27,14 @@ function handles = AlgAlignAndCrop(handles)
 % Note that as long as the input real images of nuclei and of cells
 % are the same dimensions, their output files will have the same
 % dimensions as well.
+%
+% SAVING IMAGES: The aligned, cropped traced images and the aligned,
+% cropped real images produced by this module can be easily saved
+% using the Save Images module, using the names you assign. If you
+% want to save other intermediate images, alter the code for this
+% module to save those images to the handles structure (see the
+% section marked SAVE DATA TO HANDLES STRUCTURE) and then use the Save
+% Images module.
 %
 % See also ALGALIGN.
 

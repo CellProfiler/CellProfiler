@@ -1,6 +1,7 @@
 function handles = AlgMeasureCorrelation(handles)
 
 % Help for the Measure Correlation module:
+% Category: Measurement
 % 
 % Given two or more images, calculates the correlation between the
 % pixel intensities. The correlation can be measured for the entire

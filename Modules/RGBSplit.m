@@ -1,8 +1,16 @@
 function handles = AlgRGBSplit(handles)
 
 % Help for the RGB Split module: 
+% Category: Pre-processing
 %
 % Takes an RGB image and splits into three separate grayscale images.
+%
+% SAVING IMAGES: The three grayscale images produced by this module
+% can be easily saved using the Save Images module, using the names
+% you assign. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
+% the Save Images module.
 %
 % See also ALGRGBTOGRAY, ALGRGBMERGE.
 

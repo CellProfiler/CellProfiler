@@ -1,7 +1,8 @@
 function handles = AlgFileRenumber(handles)
 
 % Help for the File Renumber module:
-% 
+% Category: File Handling
+%
 % File renaming utility that converts numbers within image file names
 % to solve improper ordering of files on Unix/Mac OSX systems.  For
 % example:

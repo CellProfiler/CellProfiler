@@ -1,6 +1,7 @@
 function handles = AlgShrinkPrimaryObjects(handles)
 
 % Help for the Shrink Primary Objects module: 
+% Category: Object Identification
 %
 % The module shrinks primary objects by removing border pixels. The
 % user can specify a certain number of times the border pixels are

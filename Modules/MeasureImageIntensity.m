@@ -1,10 +1,16 @@
 function handles = AlgMeasureTotalIntensity(handles)
 
 % Help for the Total Intensity module:
+% Category: Measurement
 %
 % Measures the total intensity of staining in an image by adding up
 % every pixel's intensity. The user can choose to ignore pixels below
 % or above a particular intensity level.
+%
+% SAVING IMAGES: If you want to save images produced by this module,
+% alter the code for this module to save those images to the handles
+% structure (see the section marked SAVE DATA TO HANDLES STRUCTURE)
+% and then use the Save Images module.
 %
 % See also ALGMEASUREAREAOCCUPIED,
 % ALGMEASUREAREASHAPEINTENSTXTR,

@@ -1,17 +1,19 @@
 function handles = AlgSaveImages(handles)
 
 % Help for the Save Images module: 
+% Category: File Handling
 % 
-% This module allows you to save images to the hard drive.  The images
-% to be saved can be the original images you loaded (in essence making
-% CellProfiler work as a file format converter), or any of the
-% processed images created by CellProfiler during the analysis.
-%
-% SaveImages can also be used as a file format converter by loading
-% files in their original format and then saving them in an alternate
-% format. 
+% This module allows you to save images to the hard drive.  Any of the
+% processed images created by CellProfiler during the analysis can be
+% saved. SaveImages can also be used as a file format converter by
+% loading files in their original format and then saving them in an
+% alternate format.
 % 
-% NEED TO INCLUDE DESCRIPTION OF HOW TO SAVE NON-OBVIOUS IMAGES.
+% If you want to save images that are produced by other modules but
+% that are not given an official name in the settings boxes for that
+% module, alter the code for the module to save those images to the
+% handles structure (see the section of each module's code marked SAVE
+% DATA TO HANDLES STRUCTURE) and then use the Save Images module.
 %
 % See also <nothing relevant>
 

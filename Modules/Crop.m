@@ -1,14 +1,22 @@
 function handles = AlgCrop(handles)
 
 % Help for the Crop module: 
+% Category: Pre-processing
 % 
 % Allows the images to be cropped in any shape: 
-% 
+% Sorry, THIS HELP FILE IS OUTDATED!!
 % Rectangular: enter the
 % pixel coordinates for the left, top and right, bottom corners.
 % 
 % Ellipse: Any other shape: give CellProfiler a black and white
 % image you have prepared which shows the cropping shape.
+%
+% SAVING IMAGES: The cropped images produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
+% the Save Images module.
 %
 % See also <nothing relevant>.
 

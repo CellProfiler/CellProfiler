@@ -1,6 +1,7 @@
 function handles = AlgMeasureAreaShapeIntensTxtr(handles)
 
 % Help for the Measure Area Shape Count module:
+% Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
 % module makes measurements of each object, including area, shape, and

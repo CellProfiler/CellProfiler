@@ -1,6 +1,7 @@
 function handles = AlgLoadImagesOrder(handles)
 
 % Help for the Load Images Order module:
+% Category: File Handling
 %
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
@@ -21,6 +22,12 @@ function handles = AlgLoadImagesOrder(handles)
 %
 % You may have folders within the directory that is being searched;
 % they will be ignored by this module.
+%
+% SAVING IMAGES: The images loaded by this module can be easily saved
+% using the Save Images module, using the name you assign (e.g.
+% OrigBlue).  In the Save Images module, the images can be saved in a
+% different format, allowing this module to function as a file format
+% converter.
 %
 % See also ALGLOADIMAGESTEXT.
 

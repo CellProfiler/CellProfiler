@@ -1,9 +1,17 @@
 function handles = AlgRGBMerge(handles)
 
 % Help for the RGB Merge module: 
+% Category: Pre-processing
 %
 % Takes 1 to 3 images and assigns them to colors in a final, RGB
 % image.  Each color's brightness can be adjusted independently.
+%
+% SAVING IMAGES: The RGB image produced by this module can be easily
+% saved using the Save Images module, using the name you assign. If
+% you want to save other intermediate images, alter the code for this
+% module to save those images to the handles structure (see the
+% section marked SAVE DATA TO HANDLES STRUCTURE) and then use the Save
+% Images module.
 %
 % See also ALGRGBSPLIT, ALGRGBTOGRAY.
 

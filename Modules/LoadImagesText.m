@@ -1,6 +1,7 @@
 function handles = AlgLoadImagesText(handles)
 
 % Help for Load Images Text module:
+% Category: File Handling
 % 
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
@@ -24,6 +25,12 @@ function handles = AlgLoadImagesText(handles)
 % You may have folders within the directory that is being searched,
 % but these folders must not contain the text you are searching for or
 % an error will result.
+%
+% SAVING IMAGES: The images loaded by this module can be easily saved
+% using the Save Images module, using the name you assign (e.g.
+% OrigBlue).  In the Save Images module, the images can be saved in a
+% different format, allowing this module to function as a file format
+% converter.
 %
 % See also ALGLOADIMAGESORDER.
 

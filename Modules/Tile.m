@@ -1,6 +1,7 @@
 function handles = AlgImageTiler(handles)
 
 % Help for the Image Tiler module:
+% Category: Other
 % 
 % Allows many images to be viewed simultaneously, in a grid layout you
 % specify (e.g. in the actual layout in which the images were
@@ -21,6 +22,13 @@ function handles = AlgImageTiler(handles)
 %
 % The file name (automatic) and sample info (optional) can be
 % displayed on each image using buttons in the final figure window.
+%
+% SAVING IMAGES: The tiled image produced by this module can be easily
+% saved using the Save Images module, using the name you assign. If
+% you want to save other intermediate images, alter the code for this
+% module to save those images to the handles structure (see the
+% section marked SAVE DATA TO HANDLES STRUCTURE) and then use the Save
+% Images module.
 %
 % See also ALGSPOTIDENTIFIER.
 

@@ -1,6 +1,7 @@
 function handles = AlgAlign(handles)
 
-% Help for the Align module: 
+% Help for the Align module:
+% Category: Pre-processing
 % 
 % For two or three input images, this module determines the optimal
 % alignment among them.  This works whether the images are correlated
@@ -16,6 +17,13 @@ function handles = AlgAlign(handles)
 % the module's '.m' file and changing the lines after 'FOR DISPLAY
 % PURPOSES ONLY'.  The first line in each set is red, then green, then
 % blue.
+%
+% SAVING IMAGES: The three aligned images produced by this module can
+% be easily saved using the Save Images module, using the names you
+% assign. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
+% the Save Images module.
 %
 % See also ALGALIGNANDCROP.
 

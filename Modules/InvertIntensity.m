@@ -1,8 +1,16 @@
 function handles = AlgInvertIntensity(handles)
 
 % Help for the Invert Intensity module: 
+% Category: Pre-processing
 %
 % The intensities of the image are inverted, so that black becomes white.
+%
+% SAVING IMAGES: The inverted images produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
+% the Save Images module.
 %
 % See also <nothing relevant>.
 

@@ -1,6 +1,7 @@
 function handles = AlgCorrectIllumSubtractAllMin(handles)
 
 % Help for the Correct Illumination Subtract All Min module: 
+% Category: Pre-processing
 % 
 % This module corrects for uneven illumination of each image, based on
 % information from a set of images collected at the same time. 
@@ -26,6 +27,22 @@ function handles = AlgCorrectIllumSubtractAllMin(handles)
 % illumination images and not to correct every image in the directory,
 % simply run the module as usual and use the button on the Timer to
 % stop processing after the first image set.
+%
+% SAVING IMAGES: The illumination corrected images produced by this
+% module can be easily saved using the Save Images module, using the
+% name you assign. The mean image can be saved using the name
+% MeanIlluminationImageAS plus whatever you called the corrected image (e.g.
+% MeanIlluminationImageASCorrBlue). The Illumination correction image can be saved
+% using the name IllumImageAS plus whatever you called the corrected
+% image (e.g. IllumImageASCorrBlue).  Note that using the Save Images
+% module saves a copy of the image in an image file format, which has
+% lost some of the detail that a matlab file format would contain.  In
+% other words, if you want to save the illumination image to use it in
+% a later analysis, you should use the settings boxes within this
+% module to save the illumination image in '.mat' format. If you want
+% to save other intermediate images, alter the code for this module to
+% save those images to the handles structure (see the section marked
+% SAVE DATA TO HANDLES STRUCTURE) and then use the Save Images module.
 %
 % See also ALGCORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
 % ALGCORRECTILLUMDIVIDEALLMEAN,
@@ -233,21 +250,21 @@ if handles.setbeinganalyzed == 1
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
     if exist('MeanIlluminationImage','var') == 1
-        fieldname = ['dOTMeanIlluminationImageAS', ImageName];
+        fieldname = ['dOTMeanIlluminationImageAS', CorrectedImageName];
         handles.(fieldname) = MeanIlluminationImage;        
     end
-    fieldname = ['dOTIllumImageAS', ImageName];
+    fieldname = ['dOTIllumImageAS', CorrectedImageName];
     handles.(fieldname) = IlluminationImage;
 end
 
 %%% The following is run for every image set. Retrieves the mean image
 %%% and illumination image from the handles structure.  The mean image is
 %%% retrieved just for display purposes.
-fieldname = ['dOTMeanIlluminationImageAS', ImageName];
+fieldname = ['dOTMeanIlluminationImageAS', CorrectedImageName];
 if isfield(handles, fieldname) == 1
     MeanIlluminationImage = handles.(fieldname);
 end
-fieldname = ['dOTIllumImageAS', ImageName];
+fieldname = ['dOTIllumImageAS', CorrectedImageName];
 IlluminationImage = handles.(fieldname);
 %%% Corrects the original image based on the IlluminationImage,
 %%% by subtracting each pixel by the value in the IlluminationImage.

@@ -1,11 +1,19 @@
 function handles = AlgApplyThresholdAndShift(handles)
 
-% Help for the Apply Threshold and Shift module:
+% Help for the Apply Threshold and Shift module: (Pre-processing)
+% Category: Pre-processing
 %
 % First, pixels above a certain threshold are set to zero (in case
 % very bright objects need to be excluded).  Then, a user-specified
 % value is subtracted from the entire image to shift all the
 % intensities lower.  Negative pixel intensities are then set to zero.
+%
+% SAVING IMAGES: The thresholded images produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
+% the Save Images module.
 %
 % See also ALGAPPLYTHRESHOLD.
 

@@ -1,6 +1,7 @@
 function handles = AlgSubtractBackground(handles)
 
 % Help for the Subtract Background module:
+% Category: Pre-processing
 %
 % Note that this is not an illumination correction module.  It
 % subtracts a single value from every pixel across the image.

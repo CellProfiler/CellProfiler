@@ -1,6 +1,7 @@
 function handles = AlgSpotIdentifier(handles)
 
 % Help for the Spot Identifier module:
+% Category: Other
 % 
 % Sorry, this module has not yet been documented.  
 %

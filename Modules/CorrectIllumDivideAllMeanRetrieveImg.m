@@ -1,12 +1,29 @@
 function handles = AlgCorrectIllumDivideAllMeanRetrieveImg(handles)
 
 % Help for the Correct Illumination Divide All Mean Retrieve Image module: 
+% Category: Pre-processing
 %
 % This module is like the Correct Illumination Divide All Mean module,
 % except it allows retrieval of an already calculated illumination
 % correction image, e.g. from a previously run output file.  This
 % module has not been extensively tested and was written in a quick
 % emergency situation.
+%
+% SAVING IMAGES: The illumination corrected images produced by this
+% module can be easily saved using the Save Images module, using the
+% name you assign. The mean image can be saved using the name
+% MeanImageAD plus whatever you called the corrected image (e.g.
+% MeanImageADCorrBlue). The Illumination correction image can be saved
+% using the name IllumImageAD plus whatever you called the corrected
+% image (e.g. IllumImageADCorrBlue).  Note that using the Save Images
+% module saves a copy of the image in an image file format, which has
+% lost some of the detail that a matlab file format would contain.  In
+% other words, if you want to save the illumination image to use it in
+% a later analysis, you should use the settings boxes within this
+% module to save the illumination image in '.mat' format. If you want
+% to save other intermediate images, alter the code for this module to
+% save those images to the handles structure (see the section marked
+% SAVE DATA TO HANDLES STRUCTURE) and then use the Save Images module.
 %
 % See also ALGCORRECTILLUMDIVIDEALLMEAN,
 % ALGCORRECTILLUMSUBTRACTALLMIN,
@@ -112,10 +129,10 @@ if handles.setbeinganalyzed == 1
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
     if exist('MeanImage','var') == 1
-        fieldname = ['dOTMeanImageAD', ImageName];
+        fieldname = ['dOTMeanImageAD', CorrectedImageName];
         handles.(fieldname) = MeanImage;        
     end
-    fieldname = ['dOTIllumImageAD', ImageName];
+    fieldname = ['dOTIllumImageAD', CorrectedImageName];
     handles.(fieldname) = IlluminationImage;
     %%% Saves the illumination correction image to the hard
     %%% drive if requested.
@@ -130,11 +147,11 @@ end
 %%% The following is run for every image set. Retrieves the mean image
 %%% and illumination image from the handles structure.  The mean image is
 %%% retrieved just for display purposes.
-fieldname = ['dOTMeanImageAD', ImageName];
+fieldname = ['dOTMeanImageAD', CorrectedImageName];
 if isfield(handles, fieldname) == 1
     MeanImage = handles.(fieldname);
 end
-fieldname = ['dOTIllumImageAD', ImageName];
+fieldname = ['dOTIllumImageAD', CorrectedImageName];
 IlluminationImage = handles.(fieldname);
 %%% Corrects the original image based on the IlluminationImage,
 %%% by dividing each pixel by the value in the IlluminationImage.

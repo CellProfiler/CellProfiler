@@ -1,6 +1,7 @@
 function handles = AlgSaturationBlurCheck(handles)
 
 % Help for the Saturation & Blur Check module: 
+% Category: Measurement
 %
 % The percentage of pixels that are saturated (their intensity value
 % is equal to the maximum possible intensity value for that image
@@ -16,6 +17,11 @@ function handles = AlgSaturationBlurCheck(handles)
 % LeftImage = Image(:,1:end-1)
 % MeanImageValue = mean(Image(:))
 % FocusScore = std(RightImage(:) - LeftImage(:)) / MeanImageValue
+%
+% SAVING IMAGES: If you want to save images produced by this module,
+% alter the code for this module to save those images to the handles
+% structure (see the section marked SAVE DATA TO HANDLES STRUCTURE)
+% and then use the Save Images module.
 %
 % See also <nothing relevant>
 

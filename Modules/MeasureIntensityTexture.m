@@ -1,6 +1,7 @@
 function handles = AlgMeasureIntensityTexture(handles)
 
 % Help for the Measure Intensity Texture module: 
+% Category: Measurement
 % 
 % Given an image with objects identified (e.g. nuclei or cells), this
 % module makes measurements of the intensity and texture of each

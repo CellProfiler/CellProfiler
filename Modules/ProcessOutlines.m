@@ -1,8 +1,19 @@
 function handles = AlgProcessOutlines(handles)
 
 % Help for the Process Outlines module:
+% Category: Pre-processing
+%
 % Sorry, help does not yet exist for this module.  We wrote it really
 % quickly for a collaborator.
+%
+% SAVING IMAGES: The images of the objects produced by this module can
+% be easily saved using the Save Images module using the name:
+% Segmented + whatever you called the objects (e.g. SegmentedCells).
+% This will be a grayscale image where each object is a different
+% intensity. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
+% the Save Images module.
 %
 % See also <nothing relevant>
 
@@ -137,7 +148,7 @@ end
 drawnow
 
 %%% Saves the processed image to the handles structure.
-fieldname = ['dOT',ObjectName];
+fieldname = ['dOTSegmented',ObjectName];
 handles.(fieldname) = ObjectsIdentifiedImage;
 
 %%% Determines the filename of the image to be analyzed.

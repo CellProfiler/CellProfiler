@@ -1,6 +1,7 @@
 function handles = AlgIdentifySecDistance(handles)
 
 % Help for the Identify Secondary Distance module:
+% Category: Object Identification
 %
 % Based on another module's identification of primary objects, this
 % module identifies secondary objects when no specific staining is
@@ -23,6 +24,27 @@ function handles = AlgIdentifySecDistance(handles)
 % two sets of objects have already been identified (e.g. nuclei and
 % cell regions are used to define the cytoplasm objects, which are
 % tertiary objects).
+%
+% SAVING IMAGES: The images of the objects produced by this module can
+% be easily saved using the Save Images module using the name:
+% Segmented + whatever you called the objects (e.g. SegmentedCells).
+% This will be a grayscale image where each object is a different
+% intensity.
+% 
+% Several additional images are normally calculated for display only,
+% including the colored label matrix image (the objects displayed as
+% arbitrary colors), object outlines, and object outlines overlaid on
+% the original image, and object outlines plus primary object outlines
+% on the original image. These images can be saved by altering the
+% code for this module to save those images to the handles structure
+% (see the section of the code marked SAVE DATA TO HANDLES STRUCTURE)
+% and then using the Save Images module.  Important note: The
+% calculations of these display images are only performed if the
+% figure window is open, so the figure window must be left open or the
+% Save Images module will fail.  If you are running the job on a
+% cluster, figure windows are not open, so the Save Images module will
+% also fail, unless you go into the code for this module and remove
+% the 'if/end' statement surrounding the DISPLAY RESULTS section.
 %
 % See also ALGIDENTIFYSECPROPAGATE, ALGIDENTIFYSECWATERSHED.
 

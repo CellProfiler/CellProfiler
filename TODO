@@ -38,7 +38,7 @@ Settings =      ModuleNames: {1x6 cell}
 
      - Have LoadSettings button determine whether a file is a valid Settings file, in particular, if no algorithms were loaded at the time the settings file was saved, does it fail?
 
-     - Remove unnecessary cd's (Ask Ray).
+     - Remove unnecessary cd's and use full pathnames instead (Ask Ray).
 
      - When viewing algorithms in the main GUI, the down arrow should
        move from one highlighted algorithm to the next (right now, the

@@ -1,36 +1,25 @@
 function ManualCompiler %#ok We want to ignore MLint error checking for this line.
-% RAY, this is the updated version, Thursday evening.
+%%% The Manual Compiler must be run from the main CellProfiler
+%%% directory.
 
 fid = fopen('CellProfilerManual.tex', 'w');
-
 fwrite(fid,tex_start());
 
-% 1. Cover page (CPCoverPage.ppt was made in powerpoint - would be
-% nice if we could extract directly from that, but if not I saved it
-% as CPCoverPage.tif)
-
+% 1. Cover page & About CellProfiler page (credits). These pages were
+% made in powerpoint - would be nice if we could extract directly from
+% that, but in the meantime, they are saved png image files.
 fwrite(fid,tex_page(tex_center(tex_image('CPCoverPage.png', '1.0\textwidth'))));
-
-% 2. About CellProfiler page (credits) (CPCredits.ppt was made in
-% powerpoint - would be nice if we could extract directly from that,
-% but if not I saved it as CPCredits.tif)
-
 fwrite(fid,tex_page(tex_center(tex_image('CPCredits.png', '1.0\textwidth'))));
 
-% 3. List of modules - Retrieve the list of modules.
+% 2. Table of contents - Retrieve the list of modules.
 % each module is annotated on the line after "Help for the X module:",
-% so if you search for the text after the Category:, you will find one
+% so searching for the text after the Category:, will find one
 % of five categories: Object Identification, Measurement,
-% Pre-processing, File Handling, Other.  I would like these five
-% headings to be listed in that order, with the list of available
-% algorithms in each category following its heading.  This need not be
-% a true table of contents, because page numbers need not be listed.
-% The modules are going to be in ABC order anyway, so I think page
-% numbers are unnecessary.
-
-path('./Modules', path)
+% Pre-processing, File Handling, Other.  The five
+% headings are listed in that order, with the list of available
+% algorithms in each category following its heading.
+path(fullfile(pwd,'Modules'), path)
 filelist = dir('Modules/*.m');
-
 fwrite(fid,tex_twocolumn(tex_center(tex_huge('Modules\\[3em]'))));
 fwrite(fid,tex_bold(tex_large('Object Identification:\\')));
 for i=1:length(filelist),
@@ -68,11 +57,8 @@ for i=1:length(filelist),
 end
 fwrite(fid, tex_onecolumn());
 
-
-% 3.5 Extract 'help' lines from CellProfiler.m where there is a
-% description of CellProfiler and will soon be info about the Example
-% Image analysis.
-
+% 3 Extract 'help' lines from CellProfiler.m where there is a
+% description of CellProfiler and the Example image analysis.
 fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
 
 % 4. Extract 'help' lines from CPInstallGuide.m, have the title of the
@@ -80,20 +66,13 @@ fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
 % that's convenient.
 fwrite(fid, tex_page(tex_preformatted(help('HelpCPInstallGuide.m'))));
 
-% 5. Screenshot of CellProfiler, with the Data button pushed so the
-% Data buttons are revealed.  I have saved it as a CPscreenshot.TIF
-% (within ExampleImages), but maybe we could have this automatically
-% produced eventually?
-
+% 5. Screenshot of CellProfiler (within ExampleImages), but maybe we
+% could have this automatically produced eventually?
 fwrite(fid, tex_page(tex_image('CPScreenshot.png', '1.0\textwidth')));
 
-% 6. Extract 'help' lines from Help1.m through Help4.m. Have the title
-% of each page be "HelpN".
-
-% 7. Extract 'help' lines from HelpZZZ, where ZZZ is anything else (I
-% guess the order is not critical here).
-
-path('./Help', path);
+% 6. Extract 'help' lines from anything in the help folder starting
+% with 'Help' (the order is not critical here).
+path(fullfile(pwd,'Help'), path);
 filelist = dir('Help/Help*.m');
 for i=1:length(filelist),
   base = basename(filelist(i).name);
@@ -103,27 +82,14 @@ for i=1:length(filelist),
   fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
 end
 
-% 7.5. Extract 'help' lines from ProgrammingNotes.m
-
-fwrite(fid,tex_page([tex_center(tex_huge('Programming Notes\\')) tex_preformatted(help('ProgrammingNotes.m'))]));
-
-% 8. Open each algorithm (alphabetically) and print its name in large
-% bold font at the top of the page (perhaps we should have the
-% official "BlaBla.m" name in small font as a subtitle, and the
-% "Bla Bla" version of the name, extracted from the "Help for the Bla
-% Bla module" line as the title for the page). Extract the lines after
-% "Help for ...." and before the license begins, using the Matlab
-% 'help' function. Print this below the algorithm name. Extract the
-% variables from the algorithm using the same code CP uses, and print
-% this below the algorithm description. Open the corresponding tif
+% 7. Open each module (alphabetically) and print its name in large
+% bold font at the top of the page. Extract the lines after "Help for
+% ...." and before the license begins, using the Matlab 'help'
+% function. Print this below the module name. Open the corresponding
 % image file (in the ExampleImages folder, these always have the exact
 % name as the algorithm), if it exists, and place this at the bottom
-% of the page. [somehow deal with it if there is too much stuff to fit
-% on one page, though I think at the moment each module should fit on
-% one page.]
-
+% of the page.
 filelist = dir('Modules/*.m');
-
 for i=1:length(filelist),
   if file_in_category(['Modules/' filelist(i).name], 'Testing'),
     continue;
@@ -137,19 +103,10 @@ for i=1:length(filelist),
   end
   fwrite(fid,tex_page([heading body im]));
 end
-
-% 9. Add page numbers throughout.
-
-% 10. Save as a pdf.
-
-% 11. Doublecheck that all the modules are present, and that all the
-% help was included (every module's help should end with "See also").
-
 fwrite(fid, tex_end());
 fclose(fid);
 
-
-
+%%% SUBFUNCTIONS %%%
 function s = tex_start()
 s = '\documentclass[letterpaper]{article}\usepackage{graphicx}\setlength{\parindent}{0in}\setlength{\oddsidemargin}{0in}\setlength{\evensidemargin}{0in}\setlength{\topmargin}{0in}\setlength{\headheight}{0in}\setlength{\headsep}{0in}\setlength{\textwidth}{6.5in}\setlength{\textheight}{9.0in}\begin{document}\sffamily';
 
@@ -213,3 +170,5 @@ end
 
 function sout = tex_label(sin)
 sout = ['\label{' sin '}'];
+
+Result = 'Compilation is complete'

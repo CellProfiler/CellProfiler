@@ -37,10 +37,17 @@ for i=1:length(filelist),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
-fwrite(fid,tex_pagebreak());
+fwrite(fid,tex_vertical_space('1em'));
 fwrite(fid,tex_bold(tex_large('Measurement:\\')));
 for i=1:length(filelist),
   if file_in_category(filelist(i).name, 'Measurement'),
+    fwrite(fid,tex_toc_entry(filelist(i).name));
+  end
+end
+fwrite(fid,tex_pagebreak());
+fwrite(fid,tex_bold(tex_large('Pre-processing:\\')));
+for i=1:length(filelist),
+  if file_in_category(filelist(i).name, 'Pre-processing'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
@@ -113,6 +120,9 @@ fwrite(fid,tex_page([tex_center(tex_huge('Programming Notes\\')) tex_preformatte
 filelist = dir('Alg*.m');
 
 for i=1:length(filelist),
+  if file_in_category(filelist(i).name, 'Testing'),
+    continue;
+  end
   base = basename(filelist(i).name);
   base = base(4:end);
   heading = tex_center(tex_huge(['Module: ' base '\\']));
@@ -137,7 +147,7 @@ fclose(fid);
 
 
 function s = tex_start()
-s = '\documentclass[letter]{article}\usepackage{graphicx}\setlength{\parindent}{0in}\setlength{\oddsidemargin}{0in}\setlength{\evensidemargin}{0in}\setlength{\topmargin}{0in}\setlength{\textwidth}{6.5in}\setlength{\textheight}{9.0in}\begin{document}\sffamily';
+s = '\documentclass[letterpaper]{article}\usepackage{graphicx}\setlength{\parindent}{0in}\setlength{\oddsidemargin}{0in}\setlength{\evensidemargin}{0in}\setlength{\topmargin}{0in}\setlength{\headheight}{0in}\setlength{\headsep}{0in}\setlength{\textwidth}{6.5in}\setlength{\textheight}{9.0in}\begin{document}\sffamily';
 
 
 function s = tex_end()
@@ -162,8 +172,8 @@ function sout = tex_bold(sin)
 sout = ['{\bfseries ' sin '}'];
 
 function s = tex_toc_entry(filename)
-endm = strfind(filename, '.m');
-s = [filename(4:(endm-1)) '\dotfill \pageref{' filename(1:(endm-1)) '}\\'];
+b = basename(filename);
+s = [b(4:end) '\dotfill \pageref{' b '}\\'];
 
 
 function c = file_in_category(filename, category)

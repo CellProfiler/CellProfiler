@@ -46,7 +46,7 @@ function handles = AlgIdentifySecWatershed(handles)
 % Note: Primary segmenters produce two output images that are used by
 % this module.  The Pipeline.Segmented image contains the final, edited
 % primary objects (i.e. objects at the border and those that are too
-% small or large have been excluded).  The dOTPrelimSmallSegmented
+% small or large have been excluded).  The PrelimSmallSegmented
 % image is the same except that the objects at the border and the
 % large objects have been included.  These extra objects are used to
 % perform the identification of secondary object outlines, since they

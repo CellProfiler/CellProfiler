@@ -14,14 +14,14 @@ function handles = AlgSaveImages(handles)
 % module, alter the code for the module to save those images to the
 % handles structure and then use the Save Images module.
 % The code should look like this:
-% fieldname = ['dOTSomethingDescriptive(optional)',ImageorObjectNameFromSettingsBox];
-% handles.(fieldname) = ImageProducedBytheModule;
+% fieldname = ['SomethingDescriptive(optional)',ImageorObjectNameFromSettingsBox];
+% handles.Pipeline.(fieldname) = ImageProducedBytheModule;
 % Example 1:
-% fieldname = ['dOTSegmented', ObjectName];
-% handles.(fieldname) = SegmentedObjectImage;
+% fieldname = ['Segmented', ObjectName];
+% handles.Pipeline.(fieldname) = SegmentedObjectImage;
 % Example 2:
-% fieldname = ['dOT', CroppedImageName];
-% handles.(fieldname) = CroppedImage;
+% fieldname = CroppedImageName;
+% handles.Pipeline.(fieldname) = CroppedImage;
 %
 % See also <nothing relevant>
 

@@ -1,4 +1,4 @@
-function handles = CreateBatchFiles(handles)
+function handles = CreateBatchScripts(handles)
 
 % Help for the Create Batch Files module:
 % Category: Other
@@ -229,6 +229,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '                handles.BatchError = [AlgName '' '' lasterr];\n');
     fprintf(BatchFile, '                disp([''Batch Error: '' AlgName '' '' lasterr]);\n');
     fprintf(BatchFile, '                break_outer_loop = 1;\n');
+    fprintf(BatchFile, '                break;\n');
     fprintf(BatchFile, '            end\n');
     fprintf(BatchFile, '        end\n');
     fprintf(BatchFile, '    end\n');

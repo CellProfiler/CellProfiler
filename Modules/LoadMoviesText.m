@@ -5,7 +5,9 @@ function handles = LoadMoviesText(handles)
 %
 % Tells CellProfiler where to retrieve avi-formatted movies (avi
 % movies must be in uncompressed avi format on UNIX and Mac
-% platforms), extracts each frame of each movie as a separate image,
+% platforms) or stk-format movies (stacks of tif images produced by
+% MetaMorph or NIH ImageJ). Once the files are identified, this module
+% extracts each frame of each movie as a separate image,
 % and gives these images a meaningful name for the other modules to
 % access.
 %
@@ -35,9 +37,12 @@ function handles = LoadMoviesText(handles)
 % names of the folders themselves must not contain the text you are
 % searching for or an error will result.
 %
+% The ability to read stk files is due to code by:
+% Francois Nedelec, EMBL, Copyright 1999-2003.
+%
 % ------------------------------------------------------------------
 % NOTE:  MATLAB only reads AVI files, and only UNCOMPRESSED AVI files
-% on UNIX and MAC platforms.  As a result, you need to use 3rd party
+% on UNIX and MAC platforms.  As a result, you may need to use 3rd party
 % software to uncompress AVI files and convert MOV files.  
 % 
 % WINDOWS...
@@ -215,7 +220,7 @@ MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = If an image slot above is not being used, type a slash  /  in the box.
 
-%textVAR10 = Enter the file format of the movies (avi or stk)
+%textVAR10 = Enter the movie file format (avi or stk)
 %defaultVAR10 = avi
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
@@ -231,7 +236,7 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %defaultVAR13 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%textVAR14 = CellProfiler can currently read only uncompressed avi files and stk's from Metamorph. For more details, see the help for this module.
+%textVAR14 = CellProfiler can currently read only certain types of avi and stk movie files. For more details, see the help for this module.
 
 %%%VariableRevisionNumber = 2
 
@@ -302,8 +307,6 @@ if SetBeingAnalyzed == 1
             StartingPositionForThisMovie = 0;
             for MovieFileNumber = 1:length(FileList)
                 CurrentMovieFileName = char(FileList(MovieFileNumber));
-                
-                
                 if strcmpi(FileFormat,'avi') == 1
                     try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
                     catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
@@ -315,8 +318,8 @@ if SetBeingAnalyzed == 1
                         %%% Puts the frame number into the FrameByFrameFileList in the second row.
                         FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                     end
-%%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
                 elseif strcmpi(FileFormat,'stk') == 1
+                    %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
                     [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
                     for FrameNumber = 1:NumFrames
                         %%% Puts the file name into the FrameByFrameFileList in the first row.
@@ -402,23 +405,13 @@ for n = 1:4
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', MovieName{n}];
             Pathname = handles.Pipeline.(fieldname);
-
-
             if strcmpi(FileFormat,'avi') == 1
-
                 LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
                 LoadedImage = im2double(LoadedRawImage.cdata);
-
-
             elseif strcmpi(FileFormat,'stk') == 1
-
                 LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
                 LoadedImage = im2double(LoadedRawImage.data);
-
-
-
             end
-
             %%% Saves the original movie file name to the handles
             %%% structure.  The field is named appropriately based on
             %%% the user's input, in the Pipeline substructure so that
@@ -661,32 +654,6 @@ if(strcmp(upper(recurse),'Y'))
     end
 end
 
-% PROGRAM NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
-% PROGRAMMING NOTE
-% DISPLAYING RESULTS:
-% Some calculations produce images that are used only for display or
-% for saving to the hard drive, and are not used by downstream
-% modules. To speed processing, these calculations are omitted if the
-% figure window is closed and the user does not want to save the
-% images.
-
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -851,7 +818,7 @@ while (ifd_pos ~= 0)
       case 33629       %metamorph stack data?
           TIFIM.MM_stack      = entry.val;
           stack_cnt           = entry.cnt;
-          disp([num2str(stack_cnt), ' frames, read:      ']);
+ %         disp([num2str(stack_cnt), ' frames, read:      ']);
       case 33630       %metamorph stack data: wavelength
           TIFIM.MM_wavelength = entry.val;
       case 33631       %metamorph stack data: gain/background?
@@ -1020,3 +987,29 @@ function  entry = readIFDentry(TIF)
    if ( entry.typecode == 2 ) entry.val = char(entry.val'); end
    
 return;
+
+% PROGRAM NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
+% PROGRAMMING NOTE
+% DISPLAYING RESULTS:
+% Some calculations produce images that are used only for display or
+% for saving to the hard drive, and are not used by downstream
+% modules. To speed processing, these calculations are omitted if the
+% figure window is closed and the user does not want to save the
+% images.
+
+% PROGRAMMING NOTE
+% DRAWNOW BEFORE FIGURE COMMAND:
+% The "drawnow" function executes any pending figure window-related
+% commands.  In general, Matlab does not update figure windows until
+% breaks between image analysis modules, or when a few select commands
+% are used. "figure" and "drawnow" are two of the commands that allow
+% Matlab to pause and carry out any pending figure window- related
+% commands (like zooming, or pressing timer pause or cancel buttons or
+% pressing a help button.)  If the drawnow command is not used
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
+% immediately after the figure line executes, the other commands that
+% have been waiting are executed in the other windows.  Then, when
+% Matlab returns to this module and goes to the subplot line, the
+% figure which is active is not necessarily the correct one. This
+% results in strange things like the subplots appearing in the timer
+% window or in the wrong figure window, or in help dialog boxes.

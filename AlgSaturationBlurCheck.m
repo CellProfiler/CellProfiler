@@ -42,6 +42,7 @@ BlurCheck = handles.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 drawnow
 for ImageNumber = 1:6;
     %%% Read (open) the images you want to analyze and assign them to
@@ -60,6 +61,11 @@ for ImageNumber = 1:6;
         end
         %%% Read the image.
         ImageToCheck{ImageNumber} = handles.(fieldname);
+        %%% Checks that the original image is two-dimensional (i.e. not a color
+        %%% image), which would disrupt several of the image functions.
+        if ndims(ImageToCheck{ImageNumber}) ~= 2
+            error('Image processing was canceled because the Saturation Blur Check module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image. You can run an RGB Split module or RGB to Grayscale module to convert your image to grayscale. Also, you can modify the code to handle each channel of a color image; we just have not done it yet.  This requires making the proper headings in the measurements file and displaying the results properly.')
+        end
         % figure, imshow(ImageToCheck), title('ImageToCheck')
         NumberPixelsSaturated = sum(sum(ImageToCheck{ImageNumber} == 1));
         [m,n] = size(ImageToCheck{ImageNumber});

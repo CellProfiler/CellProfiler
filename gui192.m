@@ -75,7 +75,7 @@ varargout{1} = handles.output;
 global MainGUIhandle
 MainGUIhandle = handles.figure1;
 ClosingFunction = ...
-    'global MainGUIhandle ; answer = questdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch answer; case ''Yes''; delete(MainGUIhandle); case ''No''; return; end; clear answer MainGUIhandle;';
+    'global MainGUIhandle ; answer = questdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch answer; case ''Yes''; delete(MainGUIhandle); case ''No''; return; end; clear answer MainGUIhandle; clear HandleFigureDisplay';
 %%% Sets the closing function of the Main GUI window to be the line above.
 set(MainGUIhandle,'CloseRequestFcn',ClosingFunction);
 
@@ -905,7 +905,7 @@ guidata(gcbo, handles);
 % --- Executes on button press for all ClearAlgorithm buttons.
 function ClearAlgorithm_Callback(hObject, eventdata, handles)
 AlgorithmName = get(hObject,'tag');
-AlgorithmNumber = trimstr(algName,'ClearAlgorithm','left');
+AlgorithmNumber = trimstr(AlgorithmName,'ClearAlgorithm','left');
 handles = ClearAlgorithm_Helper(AlgorithmNumber, handles, 'Confirm');
 
 % separated because it's called elsewhere
@@ -1037,13 +1037,13 @@ else
                     break;
 % FIXME:
                 elseif i < 10;
-                    if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                        set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
+                    if (strncmp(output,['%textVAR' num2str(i),' '],10) == 1);
+                        set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
                         j=1;
                     end
                 else
                     if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                        set(handles.(['VariableDescription',num2str(i)]), 'string', output(13:end),'visible', 'on');
+                        set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
                         j=1;
                     end
                 end
@@ -1085,7 +1085,7 @@ else
         ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VariableNumber);
         if isfield(handles,ConstructedName) == 1;
             set(handles.(['VariableBox' VariableNumber]),...
-                'string',handles.(['Vvariable' AlgorithmNumber '_' VariableBox]),...
+                'string',handles.(['Vvariable' AlgorithmNumber '_' VariableNumber]),...
                 'visible','on');
         else set(handles.(['VariableBox' VariableNumber]),'string','n/a','visible','off');
         end;
@@ -1125,12 +1125,12 @@ end
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles);
+function storevariable(AlgorithmNumberString, VariableNumber, UserEntry, handles);
 %%% This function stores a variable's value in the handles structure, 
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-handles.(['Vvariable' AlgorithmNumber '_' VariableNumber]) = UserEntry;
+handles.(['Vvariable' AlgorithmNumberString '_' VariableNumber]) = UserEntry;
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles);
@@ -1142,7 +1142,7 @@ for i=1:handles.numAlgorithms;
     end
 end
 if tempJ == 0;
-    AlgorithmNumber = 0
+    AlgorithmNumber = 0;
 end
     
 % --- Executes during object creation, after setting all properties.
@@ -1155,32 +1155,29 @@ function VariableBox_Callback(hObject, eventdata, handles);
 %%% determine which algorithm we are dealing with at the moment (by
 %%% running the "whichactive" subfunction), and call the storevariable
 %%% function.
-algName = get(hObject,'tag');
-numVariable = trimstr(algName,'VariableBox','left');
-if (str2num(numVariable)<10)
-    numVarTwoDig = ['0',numVariable];
-else
-    numVarTwoDig = numVariable;
-end
+VariableName = get(hObject,'tag');
+VariableNumber = trimstr(VariableName,'VariableBox','left');
 
-UserEntry = get(handles.(['VariableBox',numVariable]),'string');
+UserEntry = get(handles.(['VariableBox' VariableNumber]),'string');
 AlgorithmNumber = whichactive(handles);
+AlgorithmNumberString = TwoDigitString(AlgorithmNumber);
 if isempty(UserEntry)
     errordlg('Variable boxes must not be left blank')
-    set(handles.(['VariableBox',numVariable]),'string', 'Fill in');
-    storevariable(AlgorithmNumber,numVarTwoDig, 'Fill in', handles);
+    set(handles.(['VariableBox' VariableNumber]),'string', 'Fill in');
+    storevariable(AlgorithmNumberString,VariableNumber, 'Fill in', handles);
 else
     AlgorithmNumber = whichactive(handles);
     if AlgorithmNumber == 0,     
         errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred')
     else
-        storevariable(AlgorithmNumber,numVarTwoDig,UserEntry, handles);
+        AlgorithmNumberString = TwoDigitString(AlgorithmNumber);
+        storevariable(AlgorithmNumberString,VariableNumber,UserEntry, handles);
     end
 end
 
 
 
-
+%{
 function VariableBox1_CreateFcn(hObject, eventdata, handles);
     set(hObject,'BackgroundColor',[1 1 1]);
 
@@ -1378,6 +1375,8 @@ else
         storevariable(AlgorithmNumber,'11',UserEntry, handles);
     end
 end
+%}
+
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SelectTestImageBrowseButton.
@@ -3058,7 +3057,7 @@ else
                 
                 % FIXME: why all the evals?
                 
-                for i=1:8;
+                for i=1:handles.numAlgorithms;
                     if isfield(handles,strcat('Valgorithmname',TwoDigitString(i))) == 1
                         set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','on')
                         set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','on')
@@ -3066,9 +3065,9 @@ else
                             figure('name',[handles.(['Valgorithmname' TwoDigitString(i)]), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
                         global HandleFigureDisplay
                         HandleFigureDisplay(i) = handles.(['FigureDisplay' TwoDigitString(i)]);
-                        ClosingFunction = ['global HandleFigureDisplay; set(HandleFigureDisplay(' int2str(i) '), ''string'', ''Closing...''); drawnow;'];
+                        %ClosingFunction = ['global HandleFigureDisplay; set(HandleFigureDisplay(' int2str(i) '), ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay'];
                         %%% Sets the closing function of the figure window to be the line above.
-                        set(handles.(['figurealgorithm' TwoDigitString(i)]),'CloseRequestFcn',ClosingFunction);
+                        %set(handles.(['figurealgorithm' TwoDigitString(i)]),'CloseRequestFcn',ClosingFunction);
                     end
                 end
                 
@@ -3096,15 +3095,15 @@ else
                     set(handles.figurealgorithm02,'CloseRequestFcn',ClosingFunction02);
                 end
                 
-                if isfield(handles,'Valgorithmname3') == 1
-                    set(handles.FigureDisplay3,'visible','on')
-                    set(handles.ViewAlgorithm3,'visible','on')
-                    handles.figurealgorithm3 = figure...
-                        ('name',[handles.Valgorithmname3, ' Display'], 'Position', [(ScreenWidth*(2/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]); 
-                    global HandleFigureDisplay3
-                    HandleFigureDisplay3 = handles.FigureDisplay3;
-                    ClosingFunction3 = 'global HandleFigureDisplay3; set(HandleFigureDisplay3, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay3';
-                    set(handles.figurealgorithm3,'CloseRequestFcn',ClosingFunction3);
+                if isfield(handles,'Valgorithmname03') == 1
+                    set(handles.FigureDisplay03,'visible','on')
+                    set(handles.ViewAlgorithm03,'visible','on')
+                    handles.figurealgorithm03 = figure...
+                        ('name',[handles.Valgorithmname03, ' Display'], 'Position', [(ScreenWidth*(2/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]); 
+                    global HandleFigureDisplay03
+                    HandleFigureDisplay03 = handles.FigureDisplay03;
+                    ClosingFunction03 = 'global HandleFigureDisplay03; set(HandleFigureDisplay03, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay03';
+                    set(handles.figurealgorithm03,'CloseRequestFcn',ClosingFunction03);
                 end
                 
                 if isfield(handles,'Valgorithmname4') == 1
@@ -3194,7 +3193,7 @@ else
                         Pending(handles.parallel_machines + 1) = 0;
                       end
 
-                      for SlotNumber = 1:8,
+                      for SlotNumber = 1:handles.numAlgorithms,
                           %%% If an algorithm is not chosen in this slot, continue on to the next.
                           AlgNumberAsString = TwoDigitString(SlotNumber);
                           AlgName = ['Valgorithmname' AlgNumberAsString];
@@ -3538,6 +3537,18 @@ else
                 %%% setting the close request function.  That requires looking up
                 %%% handles.figurealgorithm1.  Before looking that up, you have to check to
                 %%% see if it exists or else an error occurs.
+                
+                for i=1:handles.numAlgorithms
+                    AlgorithmNum = TwoDigitString(i);
+                    if isfield(handles,['figurealgorithm' AlgorithmNum]) ==1
+                        if any(findobj == handles.(['figurealgorithm' AlgorithmNum])) == 1;
+                            properhandle = handles.(['figurealgorithm' AlgorithmNum]);
+                            set(properhandle,'CloseRequestFcn','delete(gcf)');
+                        end
+                    end
+                end
+                
+                %{
                 if isfield(handles,'figurealgorithm1') ==1
                     if any(findobj == handles.figurealgorithm1) == 1;
                         properhandle = handles.figurealgorithm1;
@@ -3593,12 +3604,15 @@ else
                         set(properhandle,'CloseRequestFcn','delete(gcf)');
                     end
                 end
+                %}
                 
                 %%% Clears the global variables, if they exist.
+%{              
                 clear text_handle HandleFigureDisplay1 HandleFigureDisplay2
                 clear HandleFigureDisplay3 HandleFigureDisplay4 HandleFigureDisplay5
                 clear HandleFigureDisplay6 HandleFigureDisplay7 HandleFigureDisplay8 
-                clear timer_handle
+%}
+                clear text_handle HandleFigureDisplay timer_handle
                 
                 %%% Removes the temporary measurements and image files from the "buffer",
                 %%% i.e. the handles structure.

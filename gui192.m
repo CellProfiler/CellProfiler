@@ -55,6 +55,7 @@ handles.output = hObject;
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 8;
 handles.numVariables = 11;
+handles.MaxVariables = 99;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -746,7 +747,7 @@ else
     for i=1:handles.numAlgorithms;
         set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
     end;
-    set(handles.(['Indicator' TwoDigitString(str2num(AlgorithmNumber))]),'Visible','on');
+    set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
 
     %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
     %%% to be invisible.
@@ -759,12 +760,9 @@ else
     %%% not used in the new algorithm (they would remain intact and not be
     %%% overwritten). Before removing a variable, you have to check that the
     %%% variable exists or else the 'rmfield' function gives an error.
-
-    % FIXME: Why the call to str2num?  Is it necessary?  Will it go away
-    % when variables are named with two digits?
     for VariableNumber=1:handles.numVariables
         VarNumber = TwoDigitString(VariableNumber);
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VarNumber);
+        ConstructedName = ['Vvariable' AlgorithmNumber '_' VarNumber];
         if isfield(handles,ConstructedName) == 1;
             handles = rmfield(handles, ConstructedName);
         end;
@@ -785,9 +783,7 @@ else
     %%% extracted from the algorithm's .m file and displayed.
     fid=fopen(AlgorithmNamedotm);
     % FIXME: The next two loops need some serious commenting.
-    %        I think the while loop should be "while not_done",
-    %        and 'j' should be replaced with a descriptive name.
-
+    %        I think the while loop should be "while not_done".
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
         breakVariable=0;
@@ -795,12 +791,12 @@ else
             if breakVariable == 1;
                 break;
             elseif VariableNumber < 10;
-                if (strncmp(output,['%textVAR',num2str(VariableNumber),' '],10) == 1);
+                if (strncmp(output,['%textVAR' num2str(VariableNumber) ' '],10) == 1);
                     set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]), 'string', output(12:end),'visible', 'on');
                     breakVariable=1;
                 end
             else
-                if (strncmp(output,['%textVAR',num2str(VariableNumber)],10) == 1);
+                if (strncmp(output,['%textVAR' num2str(VariableNumber)],10) == 1);
                     set(handles.(['VariableDescription',TwoDigitString(VariableNumber)]), 'string', output(13:end),'visible', 'on');
                     breakVariable=1;
                 end
@@ -814,24 +810,24 @@ else
                 %%% FIXME: What is going on here?  Also, the string
                 %%% comparison count needs to be corrected for two digit
                 %%% appended numbers.  Also, get rid of the evals()
-                if (strncmp(output,['%defaultVAR',num2str(VariableNumber),' '],13) == 1); displayval = output(16:end);
+                if (strncmp(output,['%defaultVAR' num2str(VariableNumber)],12) == 1); displayval = output(16:end);
                     set(handles.(['VariableBox',TwoDigitString(VariableNumber)]), 'string', displayval,'visible', 'on');
                     set(handles.(['VariableDescription',TwoDigitString(VariableNumber)]), 'visible', 'on');
-                    ConstructedName = strcat('handles.Vvariable'AlgorithmNumber,'_',TwoDigitString(VariableNumber));
+                    ConstructedName = ['handles.Vvariable' AlgorithmNumber '_' TwoDigitString(VariableNumber)];
                     eval([ConstructedName, '= displayval;']);
                     breakVariable=1;
                 end
             else
-                % FIXME: shouldn't it be strncmp(..., 14)?
-                if (strncmp(output,['%defaultVAR',num2str(VariableNumber),' '],13) == 1); displayval = output(17:end);
-                    set(handles.(['VariableBox',num2str(VariableNumber)]), 'string', displayval,'visible', 'on');
-                    set(handles.(['VariableDescription',num2str(VariableNumber)]), 'visible', 'on');
-                    ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',TwoDigitString(VariableNumber));
+                if (strncmp(output,['%defaultVAR' num2str(VariableNumber)],13) == 1); displayval = output(17:end);
+                    set(handles.(['VariableBox' num2str(VariableNumber)]), 'string', displayval,'visible', 'on');
+                    set(handles.(['VariableDescription' num2str(VariableNumber)]), 'visible', 'on');
+                    ConstructedName = ['handles.Vvariable' AlgorithmNumber '_' TwoDigitString(VariableNumber)];
                     eval([ConstructedName, '= displayval;']);
                     breakVariable=1;
                 end
             end
         end
+        output
     end
     fclose(fid);
 end
@@ -885,9 +881,8 @@ end
 
 %%% 5. Clears the variable values in the handles structure.
 
-% FIXME: str2num?  going away after variable rename?
 for i=1:handles.numVariables,
-    ConstructedName = strcat('Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
+    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',TwoDigitString(i));
     if isfield(handles,ConstructedName) == 1;
         handles = rmfield(handles, ConstructedName);
     end;
@@ -941,7 +936,7 @@ else
             for i=1:handles.numVariables,
                 if j == 1;
                     break;
-% FIXME: These can be merged after the variable renaming, right?
+% FIXME: These can be merged after the variable renaming, right? YES
                 elseif i < 10;
                     if (strncmp(output,['%textVAR' num2str(i),' '],10) == 1);
                         set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
@@ -2604,8 +2599,8 @@ else
                     set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','off');
                 end
                 % FIXME: This should loop just over the number of actual variables in the display.
-                for i=1:11;
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
+                for VariableNumber=1:11;
+                    set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
                 set(handles.SelectTestImageBrowseButton,'enable','off')
                 set(handles.ListBox,'enable','off')
@@ -2724,8 +2719,6 @@ else
                 %%% can find the handles.
 
                 
-                % FIXME: Is this still setting the closing function?  Or is it set somewhere else?
-                
                 for i=1:handles.numAlgorithms;
                     if isfield(handles,strcat('Valgorithmname',TwoDigitString(i))) == 1
                         set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','on')
@@ -2827,7 +2820,6 @@ else
                           set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display'])
                           %%% Sets the closing function of the window appropriately. (See way
                           %%% above where 'ClosingFunction's are defined).
-                          % FIXME: does ClosingFunctionXX still exist?
                           set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' AlgNumberAsString]));
                           %%% Set the button's text to "Close Figure".
                           set(ThisFigDisplay, 'string', 'Close Figure')
@@ -3066,18 +3058,17 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
                 set(handles.ExtractSettings,'enable','on')
-                % FIXME: hardcoded nubmer of algorithms
-                for i=1:8;
-                    set(handles.(['LoadAlgorithm' TwoDigitString(i)]),'visible','on');
-                    set(handles.(['ClearAlgorithm' TwoDigitString(i)]),'visible','on');
-                    set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','off');
-                    set(handles.(['FigureDisplay' TwoDigitString(i)]),'string', 'Close Figure');
-                    set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','on');
+                for AlgorithmNumber=1:handles.numAlgorithms;
+                    set(handles.(['LoadAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
+                    set(handles.(['ClearAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
+                    set(handles.(['FigureDisplay' TwoDigitString(AlgorithmNumber)]),'visible','off');
+                    set(handles.(['FigureDisplay' TwoDigitString(AlgorithmNumber)]),'string', 'Close Figure');
+                    set(handles.(['ViewAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
                 end
                 % FIXME: hardcoded number of variables.  I think this
                 % should be a loop over just the number of variables
                 % in the current algorithm
-                for i=1:11;
+                for i=1:handles.numVariables;
                     set(handles.(['VariableBox' TwoDigitString(i)]),'enable','on','foregroundcolor','black');
                 end
                 set(handles.SelectTestImageBrowseButton,'enable','on')

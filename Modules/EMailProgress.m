@@ -1,7 +1,7 @@
 function handles = AlgEMailProgress(handles)
 
 % Help for the E-Mail Progress module:
-% Category: ?
+% Category: Other
 %
 % This module e-mails the user-specified recipients about the current
 % progress of the image processing algorithms as well as the expected time

@@ -1,8 +1,4 @@
- Short-term (BETA):
-
-
-
-Near-term (soon after beta):
+Near-term:
    Verify that illumination correction keeps values in 0-1.
 
    Test "clear functions" in parallel code. [BETA]
@@ -20,6 +16,7 @@ Near-term (soon after beta):
    * Have lasterr tell us which line number is involved
 
 Long-term:
+Chat with John Fisher about finding subpopulations using lower dimensional space.
 Think about statistical analysis/normalization
 Implement elliptical distance transform for HeLa cells
 Figure out how to run a lot of module combinations/settings in one batch so that the best one can be chosen (by eye or automatically).

@@ -1,0 +1,300 @@
+function handles = AlgLoadImagesText6(handles)
+
+%%% Reads the current algorithm number, since this is needed to find 
+%%% the variable values that the user entered.
+CurrentAlgorithm = handles.currentalgorithm;
+
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+
+%textVAR1 = Type the text that this set of images has in common
+%defaultVAR1 = DAPI
+fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
+TextToFind1 = handles.(fieldname);
+%textVAR2 = What do you want to call these images?
+%defaultVAR2 = OrigBlue
+fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
+ImageName1 = handles.(fieldname);
+%textVAR3 = Type the text that this set of images has in common
+%defaultVAR3 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
+TextToFind2 = handles.(fieldname);
+%textVAR4 = What do you want to call these images?
+%defaultVAR4 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
+ImageName2 = handles.(fieldname);
+%textVAR5 = Type the text that this set of images has in common
+%defaultVAR5 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
+TextToFind3 = handles.(fieldname);
+%textVAR6 = What do you want to call these images?
+%defaultVAR6 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
+ImageName3 = handles.(fieldname);
+%textVAR7 = Type the text that this set of images has in common
+%defaultVAR7 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
+TextToFind4 = handles.(fieldname);
+%textVAR8 = What do you want to call these images?
+%defaultVAR8 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
+ImageName4 = handles.(fieldname);
+%textVAR9 = If an image slot is not being used, type a slash  /  in the box.
+%textVAR10 = Type the file format of the images
+%defaultVAR10 = tif
+fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
+FileFormat = handles.(fieldname);
+%textVAR11 = Carefully type the directory path name where the images to be loaded are located
+%defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
+fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
+TypedPathName = handles.(fieldname);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Determines the current directory so the module can switch back at the
+%%% end.
+CurrentDirectory = cd;
+%%% Determines which image set is being analyzed.
+SetBeingAnalyzed = handles.setbeinganalyzed;
+%%% Stores the text the user entered into cell arrays.
+TextToFind{1} = TextToFind1;
+TextToFind{2} = TextToFind2;
+TextToFind{3} = TextToFind3;
+TextToFind{4} = TextToFind4;
+ImageName{1} = ImageName1;
+ImageName{2} = ImageName2;
+ImageName{3} = ImageName3;
+ImageName{4} = ImageName4;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST IMAGE SET FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Extracting the list of files to be analyzed occurs only the first time
+%%% through this module.
+if SetBeingAnalyzed == 1
+    %%% Checks whether the file format the user entered is readable by Matlab.
+    IsFormat = imformats(FileFormat);
+    if isempty(IsFormat) == 1
+        error('The image file type entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+    end
+    %%% If the user did not enter any data in the first slot (they put
+    %%% a slash in either box), no images are retrieved.
+    if strcmp(TextToFind{1}, '/') == 1 | strcmp(ImageName{1}, '/') == 1
+        error('Image processing was canceled because the first image slot in the Load Images module was left blank.')
+    end
+    %%% For all 4 image slots, the file names are extracted.
+    for n = 1:4
+        %%% Checks whether the two variables required have been entered by
+        %%% the user.
+        if strcmp(TextToFind{n}, '/') == 0 & strcmp(ImageName{n}, '/') == 0
+            if strncmp(TypedPathName, 'Default', 7) == 1
+                FileNames = handles.Vfilenames;
+                PathName = handles.Vpathname;
+                cd(PathName)
+                %%% Loops through the names in the FileNames listing, looking for the text
+                %%% of interest.  Creates the array Match which contains the numbers of the
+                %%% file names that match.
+                Count = 1;
+                if exist('Match') ~= 0
+                    clear('Match')
+                end 
+                for i=1:length(FileNames),
+                    if findstr(char(FileNames(i)), char(TextToFind(n))),
+                        Match(Count) = i;
+                        Count = Count + 1;
+                    end
+                end
+                if exist('Match') == 0
+                    error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
+                end
+                %%% The File List is created by extracting the names of files
+                %%% that matched the text of interest.
+                FileList{n} = FileNames(Match);
+            else
+                %%% If a directory was typed in, the filenames are retrieved
+                %%% from the chosen directory.
+                if exist(TypedPathName) ~= 7
+                    error('Image processing was canceled because the directory typed into the Load Images Text module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
+                else
+                    PathName = TypedPathName;
+                    %%% Lists the contents of the chosen directory.
+                    DirectoryListing = dir(PathName);
+                    %%% Loops through the names in the Directory listing, looking for the text
+                    %%% of interest.  Creates the array Match which contains the numbers of the
+                    %%% file names that match.
+                    Count = 1;
+                    if exist('Match') ~= 0
+                        clear('Match')
+                    end 
+                    for i=1:length(DirectoryListing),
+                        if findstr(DirectoryListing(i).name, char(TextToFind(n))),
+                            Match(Count) = i;
+                            Count = Count + 1;
+                        end
+                    end
+                    if exist('Match') == 0
+                        error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
+                    end
+                    %%% The File List is created by extracting only the names of files (not the
+                    %%% directory or other information stored in the Directory Listing) and
+                    %%% only those files that matched the text of interest.
+                    FileList{n} = {DirectoryListing(Match).name};
+                end % Goes with: if exist - if the directory typed in exists error checking.
+            end % Goes with: if strncmp
+            %%% Saves the File Lists and Path Names to the handles structure.
+            fieldname = ['dOTFileList', ImageName{n}];
+            handles.(fieldname) = FileList{n};
+            fieldname = ['dOTPathName', ImageName{n}];
+            handles.(fieldname) = PathName;
+            NumberOfFiles{n} = num2str(length(FileList{n}));
+        end % Goes with: if isempty
+    end  % Goes with: for i = 1:5
+    %%% Determine which slots are empty.  None should be zero, because there is
+    %%% an error check for that when looping through n = 1:5.
+    for g = 1: length(NumberOfFiles)
+        LogicalSlotsToBeDeleted(g) =  isempty(NumberOfFiles{g});
+    end
+    %%% Remove the empty slots from both the Number of Files array and the
+    %%% Image Name array.
+    NumberOfFiles = NumberOfFiles(~LogicalSlotsToBeDeleted);
+    ImageName2 = ImageName(~LogicalSlotsToBeDeleted);
+    %%% Determine how many unique numbers of files there are.  If all the image
+    %%% types have loaded the same number of images, there should only be one
+    %%% unique number, which is the number of image sets.
+    UniqueNumbers = unique(NumberOfFiles);
+    %%% If NumberOfFiles is not all the same number at each position, generate an error.
+    if length(UniqueNumbers) ~= 1
+        CharImageName = char(ImageName2);
+        CharNumberOfFiles = char(NumberOfFiles);
+        Number = length(CharNumberOfFiles);
+        for f = 1:Number
+            SpacesArray(f,:) = ':     ';
+        end
+        PreErrorText = cat(2, CharImageName, SpacesArray);
+        ErrorText = cat(2, PreErrorText, CharNumberOfFiles);
+        msgbox(ErrorText)
+        error('In the Load Images Text module, the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.')
+    end
+    NumberOfImageSets = str2num(UniqueNumbers{1});
+    %%% Checks whether another load images module has
+    %%% already recorded a number of image sets.  If it
+    %%% has, it will not be set at the default of 1.  Then,
+    %%% it checks whether the number already stored as the
+    %%% number of image sets is equal to the number of
+    %%% image sets that this module has found.  If not, an
+    %%% error message is generated. Note: this will not catch the case
+    %%% where the number of image sets detected by this module is more than 1 and
+    %%% another module has detected only one image set, since there is no
+    %%% way to tell whether the 1 stored in handles.Vnumberimagesets is the
+    %%% default value or a value determined by another image-loading module.
+    if handles.Vnumberimagesets ~= 1;
+        if handles.Vnumberimagesets ~= NumberOfImageSets
+            error(['The number of image sets loaded by the Load Images Text module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Vnumberimagesets), '). Please check the settings.'])    
+        end
+    end
+    handles.Vnumberimagesets = NumberOfImageSets;
+    %%% Update the handles structure.
+    %%% Removed for parallel: guidata(gcbo, handles);
+end % Goes with: if SetBeingAnalyzed == 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LOADING IMAGES EACH TIME %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for n = 1:4
+    %%% This try/catch will catch any problems in the load images module.
+    try 
+        if strcmp(TextToFind{n}, '/') == 0 & strcmp(ImageName{n}, '/') == 0
+            %%% The following runs every time through this module (i.e. for
+            %%% every image set).
+            %%% Determine which image to analyze.
+            fieldname = ['dOTFileList', ImageName{n}];
+            FileList = handles.(fieldname);
+            %%% Determine the file name of the image you want to analyze.
+            CurrentFileName = FileList(SetBeingAnalyzed);
+            %%% Determine the directory to switch to.
+            if (~ isfield(handles, 'parallel_machines')),
+              fieldname = ['dOTPathName', ImageName{n}];
+              PathName = handles.(fieldname);
+            else
+              PathName = handles.RemoteImagePathName;
+            end
+            %%% Switch to the directory
+            cd(PathName);
+            %%% Read (open) the image you want to analyze and assign it to a variable,
+            %%% "LoadedImage".
+            try
+                LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));
+            catch error(['Image processing was canceled because the Load Images Text module could not load the image "', char(CurrentFileName), '" which you specified is in "', FileFormat, '" file format.'])
+            end
+            %%% Saves the original image file name to the handles structure.  The field
+            %%% is named 
+            %%% appropriately based on the user's input, with the 'dOT' prefix added so
+            %%% that this field will be deleted at the end of the analysis batch.
+            fieldname = ['dOTFilename', ImageName{n}];
+            handles.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+            %%% Saves the loaded image to the handles structure.The field is named
+            %%% appropriately based on the user's input.The prefix 'dOT' is added to
+            %%% the beginning of the measurement name so that this field will be
+            %%% deleted at the end of the analysis batch.  
+            fieldname = ['dOT',ImageName{n}];
+            handles.(fieldname) = LoadedImage;
+        end    
+    catch ErrorMessage = lasterr;
+        ErrorNumber(1) = {'first'};
+        ErrorNumber(2) = {'second'};
+        ErrorNumber(3) = {'third'};
+        ErrorNumber(4) = {'fourth'};
+        error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
+    end % Goes with: catch
+end
+%%% Changes back to the original directory.
+cd(CurrentDirectory)
+%%% Update the handles structure.
+%%% Removed for parallel: guidata(gcbo, handles);
+
+%%%%%%%%%%%%%%%%%%%%
+%%% FIGURE WINDOW %%%
+%%%%%%%%%%%%%%%%%%%%
+
+if SetBeingAnalyzed == 1
+%%% The figure window display is unnecessary for this module, so the figure
+%%% window is closed the first time through the module.
+%%% Determines the figure number.
+fieldname = ['figurealgorithm',CurrentAlgorithm];
+ThisAlgFigureNumber = handles.(fieldname);
+%%% If the window is open, it is closed.
+if any(findobj == ThisAlgFigureNumber) == 1;
+    close(ThisAlgFigureNumber)
+end
+end
+
+%%%%%%%%%%%
+%%% HELP %%%
+%%%%%%%%%%%
+
+%%%%% Help for Load Images Text module:
+%%%%% .
+%%%%% This module is required to load images from the hard drive into a
+%%%%% format recognizable by CellProfiler.  The images are given a
+%%%%% meaningful name, which is then used by subsequent modules to retrieve
+%%%%% the proper image.  If more than five images per set must be loaded,
+%%%%% more than one Load Images module can be run sequentially. 
+%%%%% . 
+%%%%% This module is different from the Load Images module because Search
+%%%%% Load Images can be used to load images that are not in a defined
+%%%%% order.  That is, Load Images is useful when images are present in a
+%%%%% repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on,
+%%%%% where images are selected based on how many images are in each set
+%%%%% and what position within each set a particular color is located (e.g.
+%%%%% three images per set, DAPI is always first).  Load Images Text is
+%%%%% used instead to load images that have a particular piece of text in
+%%%%% the name.
+%%%%% .
+%%%%% You may have folders within the directory that is being searched, but
+%%%%% these folders must not contain the text you are searching for or an
+%%%%% error will result.

@@ -1,0 +1,212 @@
+function handles = AlgMeasureTotalIntensity6(handles)
+
+%%% Reads the current algorithm number, since this is needed to find  the
+%%% variable values that the user entered.
+CurrentAlgorithm = handles.currentalgorithm;
+
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
+
+%textVAR1 = What did you call the images you want to process?  
+%defaultVAR1 = OrigGreen
+fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
+ImageName = handles.(fieldname);
+%textVAR3 = What do you want to call the staining measured by this algorithm? 
+%defaultVAR3 = Sytox
+fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
+ObjectName = handles.(fieldname);
+%textVAR4 = Set the threshold above which intensity should be measured (Range = 0-1)
+%defaultVAR4 = 0
+fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
+LowThreshold = str2num(handles.(fieldname));
+%textVAR5 = The threshold should be a bit higher than the typical background pixel value. 
+%textVAR6 = Set the threshold below which intensity should be measured (Range = 0-1)
+%defaultVAR6 = 1
+fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
+HighThreshold = str2num(handles.(fieldname));
+%textVAR7 = To save the adjusted image, enter text to append to the image name  
+%defaultVAR7 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
+SaveImage = handles.(fieldname);
+%textVAR8 =  Otherwise, leave as "N". To save or display other images, press Help button 
+%textVAR9 = In what file format do you want to save images? Do not include a period 
+%defaultVAR9 = tif
+fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
+FileFormat = handles.(fieldname);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Determines the pixel size.
+PixelSize = str2num(handles.Vpixelsize);
+%%% Checks whether the file format the user entered is readable by Matlab.
+IsFormat = imformats(FileFormat);
+if isempty(IsFormat) == 1
+    error('The image file type entered in the Total Intensity module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+end
+%%% Read (open) the image you want to analyze and assign it to a variable,
+%%% "OrigImageToBeAnalyzed".
+fieldname = ['dOT', ImageName];
+%%% Checks whether image has been loaded.
+if isfield(handles, fieldname) == 0
+    %%% If the image is not there, an error message is produced.  The error
+    %%% is not displayed: The error function halts the current function and
+    %%% returns control to the calling function (the analyze all images
+    %%% button callback.)  That callback recognizes that an error was
+    %%% produced because of its try/catch loop and breaks out of the image
+    %%% analysis loop without attempting further modules.
+    error(['Image processing was canceled because the Total Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+end
+OrigImageToBeAnalyzed = handles.(fieldname);
+% figure, imshow(OrigImageToBeAnalyzed), title('OrigImageToBeAnalyzed')
+%%% Update the handles structure.
+%%% Removed for parallel: guidata(gcbo, handles);
+
+%%% Check whether the appendages to be added to the file names of images
+%%% will result in overwriting the original file, or in a file name that
+%%% contains spaces. Determine the filename of the image to be analyzed.
+fieldname = ['dOTFilename', ImageName];
+FileName = handles.(fieldname)(handles.setbeinganalyzed);
+%%% Find and remove the file format extension within the original file
+%%% name, but only if it is at the end. Strip the original file format
+%%% extension  off of the file name, if it is present, otherwise, leave the
+%%% original name intact.
+CharFileName = char(FileName);
+PotentialDot = CharFileName(end-3:end-3);
+if strcmp(PotentialDot,'.') == 1
+    BareFileName = CharFileName(1:end-4);
+else BareFileName = CharFileName;
+end
+%%% Assemble the new image name.
+NewImageName = [BareFileName,SaveImage,'.',FileFormat];
+%%% Check whether the new image name is going to result in a name with
+%%% spaces.
+A = isspace(SaveImage);
+if any(A) == 1
+    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the object outlines image name in the CellSegment17 module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
+end
+%%% Check whether the new image name is going to result in overwriting the
+%%% original file.
+B = strcmp(upper(CharFileName), upper(NewImageName));
+if B == 1
+    error('Image processing was canceled because you have not entered text to append to the object outlines image name in the CellSegment17 module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
+end
+
+%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%
+
+%%% Checks that the original image is two-dimensional (i.e. not a color
+%%% image), which would disrupt several of the image functions.
+if ndims(OrigImageToBeAnalyzed) ~= 2
+    error('Image processing was canceled because the Total Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+end
+%%% Subtract the threshold from the original image.
+ThresholdedOrigImage = OrigImageToBeAnalyzed - LowThreshold;
+ % figure, imshow(ThresholdedOrigImage), title('Intermediate Image 1');
+ThresholdedOrigImage(ThresholdedOrigImage < 0) = 0;
+ % figure, imshow(ThresholdedOrigImage), title('Intermediate Image 2');
+%%% The low threshold is subtracted because it was subtracted from the
+%%% whole image above.
+ThresholdedOrigImage(ThresholdedOrigImage > (HighThreshold-LowThreshold)) = 0;
+ % figure, imshow(ThresholdedOrigImage), title('Intermediate Image 3');
+TotalIntensity = sum(sum(ThresholdedOrigImage));
+TotalArea = sum(sum(ThresholdedOrigImage>0));
+%%% Convert to micrometers.
+TotalArea = TotalArea*PixelSize*PixelSize;
+MeanIntensity = TotalIntensity/TotalArea;
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% user has closed the figure window, so do not do any important
+%%% calculations here. Otherwise an error message will be produced if the
+%%% user has closed the window but you have attempted to access data that
+%%% was supposed to be produced by this part of the code.
+
+%%% Determines the figure number to display in.
+fieldname = ['figurealgorithm',CurrentAlgorithm];
+ThisAlgFigureNumber = handles.(fieldname);
+%%% Check whether that figure is open. This checks all the figure handles
+%%% for one whose handle is equal to the figure number for this algorithm.
+if any(findobj == ThisAlgFigureNumber) == 1;
+    %%% The "drawnow" function executes any pending figure window-related
+    %%% commands.  In general, Matlab does not update figure windows until
+    %%% breaks between image analysis modules, or when a few select
+    %%% commands are used. "figure" and "drawnow" are two of the commands
+    %%% that allow Matlab to pause and carry out any pending figure window-
+    %%% related commands (like zooming, or pressing timer pause or cancel
+    %%% buttons or pressing a help button.)  If the drawnow command is not
+    %%% used immediately prior to the figure(ThisAlgFigureNumber) line,
+    %%% then immediately after the figure line executes, the other commands
+    %%% that have been waiting are executed in the other windows.  Then,
+    %%% when Matlab returns to this module and goes to the subplot line,
+    %%% the figure which is active is not necessarily the correct one. This
+    %%% results in strange things like the subplots appearing in the timer
+    %%% window or in the wrong figure window, or in help dialog boxes.
+    drawnow
+    if handles.setbeinganalyzed == 1
+        %%% Sets the width of the figure window to be appropriate (half width).
+        originalsize = get(ThisAlgFigureNumber, 'position');
+        newsize = originalsize;
+        newsize(3) = 280;
+        set(ThisAlgFigureNumber, 'position', newsize);
+    end
+    %%% Activates the appropriate figure window.
+    figure(ThisAlgFigureNumber);
+    %%% A subplot of the figure window is set to display the original
+    %%% image.
+    subplot(2,1,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    title(['Input Image, Image Set # ',num2str(handles.setbeinganalyzed)]);
+    %%% A subplot of the figure window is set to display the processed
+    %%% image.
+    subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
+    displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', [0 0 265 35],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    displaytext = strvcat(['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
+        ['Mean intensity:      ', num2str(MeanIntensity)],...
+        ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]);
+    set(displaytexthandle,'string',displaytext, 'HorizontalAlignment', 'left')
+    set(ThisAlgFigureNumber,'toolbar','figure')
+end
+%%% Executes pending figure-related commands so that the results are
+%%% displayed.
+drawnow
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fieldname = ['dMTTotalIntensity', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {TotalIntensity};
+
+fieldname = ['dMTMeanIntensity', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
+
+fieldname = ['dMTTotalArea', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {TotalArea};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Determine whether the user wanted to save the adjusted image by
+%%% comparing their entry "SaveImage" with "N" (after converting SaveImage
+%%% to uppercase).
+if strcmp(upper(SaveImage),'N') ~= 1
+    %%% Save the image to the hard drive.    
+    imwrite(ThresholdedOrigImage, NewImageName, FileFormat);
+end
+
+%%%%%%%%%%%
+%%% HELP %%%
+%%%%%%%%%%%
+
+%%%%% Help for the Total Intensity module:
+%%%%% .

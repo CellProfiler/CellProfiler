@@ -1,0 +1,509 @@
+function handles = AlgAlignAndCrop(handles)
+
+%%% Reads the current algorithm number, since this is needed to find 
+%%% the variable values that the user entered.
+CurrentAlgorithm = handles.currentalgorithm;
+
+drawnow
+
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+
+%textVAR1 = What did you call the traced images?
+%defaultVAR1 = OrigTraced
+fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
+TracedImageName = handles.(fieldname);
+%textVAR2 = What do you want to call the aligned, cropped traced images?
+%defaultVAR2 = ACTraced
+fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
+FinishedTracedImageName = handles.(fieldname);
+%textVAR3 = To save the adjusted traced images, enter text to append to the image name.
+%defaultVAR3 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
+SaveTracedImage = handles.(fieldname);
+%textVAR4 = What did you call the real images?
+%defaultVAR4 = OrigReal
+fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
+RealImageName = handles.(fieldname);
+%textVAR5 = What do you want to call the aligned, cropped real images?
+%defaultVAR5 = ACReal
+fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
+FinishedRealImageName = handles.(fieldname);
+%textVAR6 = To save the adjusted real images, enter text to append to the image name.
+%defaultVAR6 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
+SaveRealImage = handles.(fieldname);
+%textVAR7 = If you do not wish to save an image, leave the field as "N".
+%textVAR8 = Enter the printed size of the real image in inches as "height,width" (no quotes).
+%defaultVAR8 = height,width
+fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
+PrintedImageSize = handles.(fieldname);
+%textVAR10 = In what file format do you want to save images? Do not use a period.
+%defaultVAR10 = tif
+fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
+FileFormat = handles.(fieldname);
+%textVAR11 = Enter the page orientation of the traced images (portrait or landscape)
+%defaultVAR11 = portrait
+fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
+Orientation = handles.(fieldname);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Separates the entered dimensions into two variables
+PrintedImageSizeNumerical = str2num(PrintedImageSize);
+PrintedHeight = PrintedImageSizeNumerical(1);
+PrintedWidth = PrintedImageSizeNumerical(2);
+
+%%% Checks that the page orientation is a valid entry
+if strcmp(upper(Orientation),'PORTRAIT') ~= 1
+    if strcmp(upper(Orientation),'LANDSCAPE') ~= 1
+        error('Image processing was canceled because you have not entered a valid response for the page orientaion in the AlgAlignAndCrop module.  Type either landscape or portrait and try again.')
+    end
+end
+
+fieldname = ['dOT', TracedImageName];
+%%% Checks whether the image to be analyzed exists in the handles structure.
+if isfield(handles, fieldname) == 0
+    %%% If the image is not there, an error message is produced.  The error
+    %%% is not displayed: The error function halts the current function and
+    %%% returns control to the calling function (the analyze all images
+    %%% button callback.)  That callback recognizes that an error was
+    %%% produced because of its try/catch loop and breaks out of the image
+    %%% analysis loop without attempting further modules.
+    error(['Image processing was canceled because the AlignAndCrop module could not find the input image.  It was supposed to be named ', TracedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+end
+%%% Reads the image.
+TracedImage = handles.(fieldname);
+% figure, imshow(TracedImage), title('TracedImage')
+
+fieldname = ['dOT', RealImageName];
+%%% Checks whether the image to be analyzed exists in the handles structure.
+if isfield(handles, fieldname) == 0
+    %%% If the image is not there, an error message is produced.  The error
+    %%% is not displayed: The error function halts the current function and
+    %%% returns control to the calling function (the analyze all images
+    %%% button callback.)  That callback recognizes that an error was
+    %%% produced because of its try/catch loop and breaks out of the image
+    %%% analysis loop without attempting further modules.
+    error(['Image processing was canceled because the AlignAndCrop module could not find the input image.  It was supposed to be named ', RealImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+end
+%%% Reads the image.
+RealImage = handles.(fieldname);
+% figure, imshow(RealImage), title('RealImage')
+
+%%% Determine the filenames of the images to be analyzed.
+fieldname = ['dOTFilename', TracedImageName];
+TracedFileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['dOTFilename', RealImageName];
+RealFileName = handles.(fieldname)(handles.setbeinganalyzed);
+
+%%% Checks whether the file format the user entered is readable by Matlab.
+IsFormat = imformats(FileFormat);
+if isempty(IsFormat) == 1
+    error('The image file type entered in the AlignAndCrop module is not recognized by Matlab, or you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+end
+
+%%% Checks whether the appendages to be added to the file names of images
+%%% will result in overwriting the original file, or in a file name that
+%%% contains spaces.
+if strcmp(upper(SaveTracedImage),'N') ~= 1
+    %%% Finds and removes the file format extension within the original file
+    %%% name, but only if it is at the end. Strips the original file format extension 
+    %%% off of the file name, if it is present, otherwise, leaves the original
+    %%% name intact.
+    CharFileName1 = char(TracedFileName);
+    PotentialDot1 = CharFileName1(end-3:end-3);
+    if strcmp(PotentialDot1,'.') == 1
+        BareTracedFileName = CharFileName1(1:end-4);
+    else BareTracedFileName = CharFileName1;
+    end
+    %%% Assembles the new image name.
+    NewTracedImageName = [BareTracedFileName,SaveTracedImage,'.',FileFormat];
+    %%% Checks whether the new image name is going to result in a name with
+    %%% spaces.
+    A = isspace(SaveTracedImage);
+    if any(A) == 1
+        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned traced image name in the AlignAndCrop module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+    %%% Checks whether the new image name is going to result in overwriting the
+    %%% original file.
+    B = strcmp(upper(CharFileName1), upper(NewTracedImageName));
+    if B == 1
+        error('Image processing was canceled because you have not entered text to append to the aligned traced image name in the AlignAndCrop module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+end
+
+%%% Checks whether the appendages to be added to the file names of images
+%%% will result in overwriting the original file, or in a file name that
+%%% contains spaces.
+if strcmp(upper(SaveRealImage),'N') ~= 1
+    %%% Finds and removes the file format extension within the original file
+    %%% name, but only if it is at the end. Strips the original file format extension 
+    %%% off of the file name, if it is present, otherwise, leaves the original
+    %%% name intact.
+    CharFileName2 = char(RealFileName);
+    PotentialDot2 = CharFileName2(end-3:end-3);
+    if strcmp(PotentialDot2,'.') == 1
+        BareRealFileName = CharFileName2(1:end-4);
+    else BareRealFileName = CharFileName2;
+    end
+    %%% Assembles the new image name.
+    NewRealImageName = [BareRealFileName,SaveRealImage,'.',FileFormat];
+    %%% Checks whether the new image name is going to result in a name with
+    %%% spaces.
+    A = isspace(SaveRealImage);
+    if any(A) == 1
+        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned real image name in the AlignAndCrop module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+    %%% Checks whether the new image name is going to result in overwriting the
+    %%% original file.
+    B = strcmp(upper(CharFileName2), upper(NewRealImageName));
+    if B == 1
+        error('Image processing was canceled because you have not entered text to append to the aligned real image name in the AlignAndCrop module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+end
+
+drawnow
+%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%
+%%% creates a two-dimensional, b&w Traced Image to work with during this section
+ExTracedImage = TracedImage(:,:,1);
+PreTracedImage = im2bw(ExTracedImage,.5);
+%%% creates a 2D real image to work with for the size
+ExRealImage = RealImage(:,:,1);
+PreRealImage = im2bw(ExRealImage,.5);
+%%% finds the size of each of the images
+[TracedY,TracedX] = size(PreTracedImage);
+[RealY,RealX] = size(PreRealImage);
+    %warndlg(['The dimensions are as follows: TY=',num2str(TracedY),' TX=',num2str(TracedX),' RY=',num2str(RealY),' RX=',num2str(RealX)],'Alert!')
+%%% checks that for both dimensions, the traced image is bigger than the
+%%% real one
+drawnow
+if TracedX < RealX
+    error('Image processing was canceled in the AlignAndCrop module because the real image is wider than the traced image. Make sure that the resolution is the same for both images.')
+elseif TracedY < RealY
+    error('Image processing was canceled in the AlignAndCrop module because the real image is taller than the traced image.  Make sure that the resolution is the same for both images.')
+end
+
+%%% Finds the resolution along both axes for both sets of images
+RealResolution = RealX / PrintedWidth;
+RealResolution2 = RealY / PrintedHeight;
+if strcmp(upper(Orientation),'PORTRAIT') == 1
+    TracedResolution = TracedX /8.5;
+    TracedResolution2 = TracedY /11;
+        %warndlg('I think that you wrote portrait')
+else TracedResolution = TracedX / (11);
+    TracedResolution2 = TracedY / (8.5);
+        %warndlg('I think that you wrote landscape')
+end
+%%% activate this line to pop up a dialog box with the resolution values in it
+    %warndlg(['RR is ',num2str(RealResolution),',RR2 is ',num2str(RealResolution2),', TR is ',num2str(TracedResolution),', TR2 is ',num2str(TracedResolution2)],'Alert!')
+drawnow
+
+if RealResolution ~= RealResolution2
+    error('Oops.  Due to some fundamental problem in coding of the AlignAndCrop module or in you, the resolution is different depending upon which axis you calculate it.  Re-measure your printed image: you may be trying to be too accurate.')
+end
+if TracedResolution ~= TracedResolution2
+    error('Oops.  Due to some fundamental problem in coding of the AlignAndCrop or in you, the resolution is different depending upon which axis you calculate it.  Most likely, you scanned the image not perfectly at 8.5 by 11 and caused major problems.')
+end
+drawnow
+%%% Resizes the real image to be at the same resolution as the traced image
+ResizingCoefficient = TracedResolution / RealResolution;
+    %warndlg(['Resizing Coefficient = ',num2str(ResizingCoefficient)],'NFO 4 U')
+ResizedRealImage = imresize(RealImage,ResizingCoefficient,'bicubic');
+%%% finds the dimensions of the resized real image
+[RRealX,RRealY] = size(ResizedRealImage);
+    %warndlg(['RRealX = ',num2str(RRealX),', RRealY = ',num2str(RRealY)],'Yeahhhhh, About That...')
+%%% finds the difference in dimensions to create a margin value
+XDifference = TracedX - RRealX;
+YDifference = TracedY - RRealY;
+XMargin = XDifference / 2;
+YMargin = YDifference / 2;
+
+drawnow
+%%% creates a matrix of zeros the size of the traced image
+RealImageBlankSlate = zeros(TracedY,TracedX);
+%%% makes sure images are the right size
+NewImageSizeX = TracedX - 2*(XMargin); 
+NewImageSizeY = TracedY - 2*(YMargin);
+if isequal(NewImageSizeX,RRealX) == 0
+    error('The value (TracedX - 2(XMargin)) is not the same as the value (RRealX) in the AlignAndCrop module')
+elseif isequal(NewImageSizeY,RRealY) == 0
+    error('The value (TracedY - 2(YMargin)) is not the same as the value (RRealY) in the AlignAndCrop')
+end
+drawnow
+%%% rounds each number up, then subtracts the original from that and tests
+%%% equality with zero to see if the numbers are not whole, which then pops
+%%% up messages but does not abort. then it pastes the resized real image
+%%% over the blank image
+RXM = round(XMargin); 
+RYM = round(YMargin);
+XMD = RXM - XMargin; 
+YMD = RYM - YMargin;
+if isequal(XMD,0) == 0
+    if isequal(YMD,0) == 0
+        warndlg(['Warning: neither margin value is an integer, and therefore problems may appear in the very near future. XM = ',num2str(XMargin),', YM = ',num2str(YMargin)],'Feeling Unwhole')
+        YMargin1 = ceil(YMargin); 
+        YMargin2 = floor(YMargin);
+    else warndlg('Warning: the XMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the YMargin value is an integer','Feeling Unwhole')
+    end
+    XMargin1 = ceil(XMargin); 
+    XMargin2 = floor(XMargin);
+elseif isequal(YMD,0) == 0
+    warndlg('Warning: the YMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the XMargin value is an integer','Feeling Unwhole')
+    YMargin1 = ceil(YMargin); 
+    YMargin2 = floor(YMargin);
+else XMargin1 = XMargin; 
+    XMargin2 = XMargin;
+    YMargin1 = YMargin; 
+    YMargin2 = YMargin;
+end
+YBegin = YMargin2 + 1;
+YEnd = TracedY - YMargin1;
+XBegin = XMargin2 + 1;
+XEnd = TracedX - XMargin1;
+RealImageBlankSlate(YBegin:YEnd,XBegin:XEnd) = ResizedRealImage;
+ExpandedRealImage = RealImageBlankSlate;
+
+drawnow
+%%% makes a 2D traced image to work with
+TwoDTracedImage = rgb2gray(TracedImage);
+%%% runs the alignment subfunctions on the two images, working with just
+%%% one layer but applying movements to the whole image
+InvertedTraced = imcomplement(TwoDTracedImage);
+[sx,sy] = autoalign(InvertedTraced,ExpandedRealImage);
+    %warndlg('The autoalign step has completed','Notice:')
+AlignedTracedImage = subim(TwoDTracedImage, sx, sy);
+AlignedRealImage = subim(ExpandedRealImage, -sx, -sy);
+    %warndlg('The subim steps have completed','Notice')
+Results = ['(Traced vs. Real: X ',num2str(sx),', Y ',num2str(sy),')'];
+    %warndlg(['All image processing has completed. Results are ',Results],'Notice:')
+%%% Checks that the size of aligned images is the same
+if isequal(size(AlignedTracedImage),size(AlignedRealImage)) == 0
+    error('After the alignment step was completed in the AlignAndCrop module, the two images were different sizes for some reason.  This is not good.')
+end
+%%% finds the end and begin points for all dimensions of the new images and
+%%% creates the cropping rectangle matrix
+YBeginARI = YBegin + sy;
+YEndARI = YEnd + sy;
+XBeginARI = XBegin + sx;
+XEndARI = XEnd + sx;
+CropRectARI = [XBeginARI YBeginARI (XEndARI - XBeginARI) (YEndARI - YBeginARI)];
+%%% crops both aligned images
+CroppedAlignedTracedImage = imcrop(AlignedTracedImage,CropRectARI);
+CroppedAlignedRealImage = imcrop(AlignedRealImage,CropRectARI);
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% user has closed the figure window, so do not do any important calculations here.
+%%% Otherwise an error message will be produced if the user has closed the
+%%% window but you have attempted to access data that was supposed to be
+%%% produced by this part of the code.
+
+%%% Determines the figure number to display in.
+fieldname = ['figurealgorithm',CurrentAlgorithm];
+ThisAlgFigureNumber = handles.(fieldname);
+%%% Checks whether that figure is open. This checks all the figure handles
+%%% for one whose handle is equal to the figure number for this algorithm.
+if any(findobj == ThisAlgFigureNumber) == 1;
+    drawnow
+    figure(ThisAlgFigureNumber);
+    subplot(2,2,1); imagesc(TracedImage); colormap(gray);
+    title(['Traced Input, Image Set # ',num2str(handles.setbeinganalyzed)]);
+    subplot(2,2,2); imagesc(RealImage); title(['Real Input Image']);
+    subplot(2,2,3); imagesc(CroppedAlignedTracedImage); colormap(gray); title(['Cropped & Aligned Traced Image']);
+    subplot(2,2,4); imagesc(CroppedAlignedRealImage);title(['Cropped & Aligned Real Image']);
+end
+drawnow
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% finds if the user wanted to save the aligned images and if so, saves
+%%% them with the specified appendix
+if strcmp(upper(SaveTracedImage),'N') ~= 1
+    imwrite(CroppedAlignedTracedImage,NewTracedImageName,FileFormat);
+end
+if strcmp(upper(SaveRealImage),'N') ~= 1
+    imwrite(CroppedAlignedRealImage,NewRealImageName,FileFormat);
+end
+
+drawnow
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% The adjusted image is saved to the handles structure so it can be used
+%%% by subsequent algorithms.
+fieldname = ['dOT', FinishedTracedImageName];
+handles.(fieldname) = CroppedAlignedTracedImage;
+fieldname = ['dOT', FinishedRealImageName];
+handles.(fieldname) = CroppedAlignedRealImage;
+
+%%% The original file name is saved to the handles structure in a
+%%% field named after the adjusted image name.
+fieldname = ['dOTFilename', FinishedTracedImageName];
+handles.(fieldname)(handles.setbeinganalyzed) = TracedFileName;
+fieldname = ['dOTFilename', FinishedRealImageName];
+handles.(fieldname)(handles.setbeinganalyzed) = RealFileName;
+
+
+
+%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTIONS %%%
+%%%%%%%%%%%%%%%%%%%
+
+%%% Written by Thouis R. Jones in the AlgAlign module
+
+function [shiftx, shifty] = autoalign(in1, in2)
+%%% Aligns two images using mutual-information and hill-climbing.
+best = mutualinf(in1, in2);
+bestx = 0;
+besty = 0;
+%%% Checks which one-pixel move is best.
+for dx=-1:1,
+    for dy=-1:1,
+        cur = mutualinf(subim(in1, dx, dy), subim(in2, -dx, -dy));
+        if (cur > best),
+            best = cur;
+            bestx = dx;
+            besty = dy;
+        end
+    end
+end
+if (bestx == 0) & (besty == 0),
+    shiftx = 0;
+    shifty = 0;
+    return;
+end
+%%% Remembers the lastd direction we moved.
+lastdx = bestx;
+lastdy = besty;
+%%% Loops until things stop improving.
+while true,
+    [nextx, nexty, newbest] = one_step(in1, in2, bestx, besty, lastdx, lastdy, best);
+    if (nextx == 0) & (nexty == 0),
+        shiftx = bestx;
+        shifty = besty;
+        return;
+    else
+        bestx = bestx + nextx;
+        besty = besty + nexty;
+        best = newbest;
+    end
+end
+
+function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
+%%% Finds the best one pixel move, but only in the same direction(s) we
+%%% moved last time (no sense repeating evaluations)
+nb = best;
+for dx=-1:1,
+    for dy=-1:1,
+        if (dx == ldx) | (dy == ldy),
+            cur = mutualinf(subim(in1, bx+dx, by+dy), subim(in2, -(bx+dx), -(by+dy)));
+            if (cur > nb),
+                nb = cur;
+                nx = dx;
+                ny = dy;
+            end
+        end
+    end
+end
+if (best == nb),
+    %%% no change, so quit searching
+    nx = 0;
+    ny = 0;
+end
+
+function sub = subim(im, dx, dy)
+%%% Subimage with positive or negative offsets
+if (dx > 0),
+    sub = im(:,dx+1:end);
+else
+    sub = im(:,1:end+dx);
+end
+if (dy > 0),
+    sub = sub(dy+1:end,:);
+else
+    sub = sub(1:end+dy,:);
+end
+
+function H = entropy(X)
+%%% Entropy of samples X
+S = imhist(X,256);
+%%% if S is probability distribution function N is 1
+N=sum(sum(S));
+if ((N>0) & (min(S(:))>=0))
+    Snz=nonzeros(S);
+    H=log2(N)-sum(Snz.*log2(Snz))/N;
+else
+    H=0;
+end
+
+function H = entropy2(X,Y)
+%%% joint entropy of paired samples X and Y
+%%% Makes sure images are binned to 256 graylevels
+X = double(im2uint8(X));
+Y = double(im2uint8(Y));
+%%% Creates a combination image of X and Y
+XY = 256*X + Y;
+S = histc(XY(:),0:(256*256-1));
+%%% If S is probability distribution function N is 1
+N=sum(sum(S));          
+if ((N>0) & (min(S(:))>=0))
+    Snz=nonzeros(S);
+    H=log2(N)-sum(Snz.*log2(Snz))/N;
+else
+    H=0;
+end
+
+function I = mutualinf(X, Y)
+%%% Mutual information of images X and Y
+I = entropy(X) + entropy(Y) - entropy2(X,Y);
+
+
+%%%%%%%%%%%
+%%% HELP %%%
+%%%%%%%%%%%
+
+%%%%% Help for the Align and Crop module:
+%%%%% .
+%%%%% This module was written for a specific purpose: to take a larger
+%%%%% image of the outlines of cells, with some space around the outside,
+%%%%% and align it with a real image of cells (or of nuclei).  Fortunately,
+%%%%% it can work for almost any set of images for which one set is larger
+%%%%% than the other and rescaling must be done (and, of course, there are
+%%%%% features shared which can be used to align the images).  Just enter
+%%%%% the larger images as the traced ones, and the smaller ones as the
+%%%%% real images.
+%%%%% .
+%%%%% This module determines the best alignment of two images.  It expects
+%%%%% the first to be a scanned, traced transparency of 8 1/2 by 11 inches,
+%%%%% and the second should be a real image from a microscope.  The
+%%%%% addition of colored registration marks is optional, although very
+%%%%% helpful in alignment.  The module stretches the real image to be at
+%%%%% the same resolution as the traced image, then creates a black
+%%%%% background for it of the same size, then aligns the images, and
+%%%%% finally crops them all to be the same size and taking up the same
+%%%%% area as on the original real image.
+%%%%% In the future, this may be developed to include a way of finding the
+%%%%% optimal scaling of the images to each other; however, no guarantees.
+%%%%% .
+%%%%% Note that as long as the input real images of nuclei and of cells are
+%%%%% the same dimensions, their output files will have the same dimensions
+%%%%% as well.

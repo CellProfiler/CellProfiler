@@ -202,6 +202,8 @@ if SetBeingAnalyzed == 1
                     handles.Vnumberimagesets = NumberOfImageSets;
                 else NumberOfImageSets = handles.Vnumberimagesets;
                 end
+                %%% Preallocates the variable FileList.
+                FileList(NumberOfImageSets) = {''};
                 %%% Loops through the names in the FileNames listing,
                 %%% creating a new list of files.
                 for i = 1:NumberOfImageSets

@@ -96,12 +96,7 @@ Settings =      ModuleNames: {1x6 cell}
        measurements - I am not sure how the exporting would work in
        this case.
 
-- If there are no modules loaded in the main CellProfiler window, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
-
-- The error checking for "there are no images in this folder"
-       should be moved out of CellProfiler.m and into the two Load
-       Images modules, since some pipelines may not require images in
-       order to run properly. (Note: I am not sure if someone did this already).
+JAMES MIGHT WORK ON THIS >>>- If there are no modules loaded in the main CellProfiler window pipeline, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
 
 - For LoadImagesText module, make the error catching more descriptive.
        If there are no image files matching the specified text, right
@@ -109,27 +104,23 @@ Settings =      ModuleNames: {1x6 cell}
        it ought to say "there are no image files in the directory that
        contain the text XXX."
 
-- In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
+JAMES MIGHT WORK ON THIS >>> - In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
 
-- Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
+JAMES MIGHT WORK ON THIS >>> - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
-- The confirmation window upon "cancel after image set" button clicking ought to say "confirm cancel", not "confirm close". 
-
-- Add this to the Show Image help: The Show Image button shows
+JAMES MIGHT WORK ON THIS >>> - Add this to the Open New Image File help: "The Open New Image File button shows
        pixel values in the range 0 to 1.  Images are loaded into
        CellProfiler in this range so that modules behave consistently.
        The display is set to the same range so that, for example, if a
        user wants to look at an image in order to determine which
        threshold to use within a module, the pixel values are directly
-       applicable. 
+       applicable. "
 
-- The Histograms tab at the lower part of the image is called Plot data, but seems to work as described in the manual. Change the manual to match.
+- The Histograms tab at the lower part of the image is called Plot data, but seems to work as described in the manual. Change the manual (= help file) to match.
 
-- The Normalization tab at the bottom of the window is called Data Layout and works differently from the Normalization described in the manual at page 17. Change the manual to match.
+- The Normalization tab at the bottom of the window is called Data Layout and works differently from the Normalization described in the manual at page 17. Change the manual (= help file) to match.
 
 - Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot. 
-
-- Pull RetrieveImageFileNames out of individual modules (and CellProfiler.m) and make it a standalone function.
 
 [Do the following prior to releasing the new beta version:
 - Smart Indent
@@ -202,9 +193,7 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
 
 - When clicking on a module in the list box whose .m file no longer exists in the Modules directory, an error pops up saying the module no longer exists but that the settings will be shown anyway.  The settings are *not* shown in the window, because an error appears in the command window - undefined variable "flagExist" at line 1066.
 
-- In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction, and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
-
-- In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
+- In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction (I think also see lines pertaining to OutputFileOverwrite), and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
 
 - When viewing an algorithm in the pipeline and the corresponding module's .m file no longer exists in the Modules directory, there is a nice error catch and popup message, but it fails to display the current settings and yields this error at the command line:
 ??? Undefined function or variable "flagExist".
@@ -225,9 +214,9 @@ And then, for each subplot or text window, add this line:
 For each title, add properties at the end:
     title('Original Image', 'FontSize', FontSize)
 
--almost- Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
+JAMES MIGHT WORK ON THIS >>>>  CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
-- Allow canceling from the first dialog box when using the Save Image As button.
+JAMES MIGHT WORK ON THIS >>>> - Allow canceling from the first dialog box when using the Save Image As button.
 
 ++ Prevent clicking pause/cancel buttons twice in the timer window.
 
@@ -251,16 +240,16 @@ For each title, add properties at the end:
 
 - Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
 
-- Plot data button: allow adding error bars reflecting stdev or
+JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Plot data button: allow adding error bars reflecting stdev or
        sem to the single parameter, multiple images bar plot (matlab
        central has error bar code). 
 
-- Plot data button: allow displaying two parameters vs. each
+JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Plot data button: allow displaying two parameters vs. each
        other in a scatter plot. 
 
 - Combine CorrIllumDivideAll with RetrieveImg version.
 
-- Compressed histograms: Add Y sample labels, allow to show
+JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Compressed histograms: Add Y sample labels, allow to show
        relative brightness, allow to put in order by mean, change # of
        sig figs.  See hist2 at MC to smooth histograms.  Eventually
        allow histograms to be interactively updated? See automatic
@@ -280,9 +269,9 @@ For each title, add properties at the end:
        stays open. See tooltips code. Make manual page.  Fails if
        there are fewer images than the total grid. 
 
-- For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
+JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
 
-- Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.  Note: for exporting mean, median, and stdev, these values should be calculated on the fly rather than extracted from existing measures in handles.Measurements, so that we can eliminate storing these values in output files.
+JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.  Note: for exporting mean, median, and stdev, these values should be calculated on the fly rather than extracted from existing measures in handles.Measurements, so that we can eliminate storing these values in output files.
 
 - Make a quality-control button that checks results from an output file for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation. (Based on whatever Ray decides is useful).
 
@@ -459,3 +448,13 @@ DONE DURING IAP>>>>>>>
        upside down - need to flip them (flipud).
 
 Done     - Throughout CellProfiler and its modules, remove unnecessary updating of the handles structure (guidata function).
+
+DONE AFTER IAP >>>>
+-------------------
+Done, I think - The error checking for "there are no images in this folder"
+       should be moved out of CellProfiler.m and into the two Load
+       Images modules, since some pipelines may not require images in
+       order to run properly.
+Done - - The confirmation window upon "cancel after image set" button clicking ought to say "confirm cancel", not "confirm close". 
+
+

@@ -756,11 +756,12 @@ cd(CurrentDirectory)
 function [vVariable numVariables VarRevNum] = LoadSettings_Helper(Pathname, AlgorithmName)
 try
     AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
-    fid=fopen([Pathname '\' AlgorithmNamedotm]);
+    fid=fopen(fullfile(Pathname,AlgorithmNamedotm));
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-    
+        vVariable = {[]};
         VarRevNum = 0;
+        numVariables = 0;
         if (strncmp(output,'%defaultVAR',11) == 1),
             displayval = output(17:end);
             istr = output(12:13);

@@ -3588,24 +3588,10 @@ else
     if IsItNotChosen == 1
         helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
     else
-        
         %%% This is the function that actually reads the algorithm's help
         %%% data.
-        Algorithm = strcat('Alg',AlgorithmName,'.m');
-        fid=fopen(Algorithm);
-        while 1;
-            output = fgetl(fid);
-            testifpercent = strncmp(output,'%%%%% ',6);
-            if ~ischar(output); break; end;
-            if testifpercent == 1;
-                doesHelpTextexist = exist('HelpText','var');
-                if doesHelpTextexist == 0 
-                    HelpText = output(6:end);
-                else HelpText = strvcat(HelpText,output(6:end));
-                end;
-            end;
-        end;
-        fclose(fid);
+        AlgorithmNoDotM = strcat('Alg',AlgorithmName);
+        HelpText = help(char(AlgorithmNoDotM));
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
             helpdlg(HelpText, 'Algorithm Help'); 

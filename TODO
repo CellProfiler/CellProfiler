@@ -9,8 +9,6 @@ Lines with NOW are more critical.
 
 Infrastructure improvements:
 
-     - Help Anne create a panel to hide the excess variables when a large number are shown using the slider.  This is the change that In Han made, but Anne was unable to reproduce on her mac.
-
      - Use the User's preference for font size for all figure displays and dialog boxes.
 
      - For the Data tool "Plot Data", when choosing histograms, the dialog box that asks for input from the user (~6 questions) has text that does not fit in the window.  Also, add a checkbox specifying whether to display the results or not (in case the user only wanted to export the raw histogram data). Also, when filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier. Also, flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images.
@@ -122,11 +120,7 @@ Image analysis modules - New:
      - Make a module to expand or shrink secondary objects. (e.g. to
        define membrane compartment) 
 
-     - "Make projection" module (= average, get code from
-       DivideAllMean). Did In Han finish this already?  If so, make a
-       manual page. 
-
-     - Make a module using code from ImageJ
+      - Make a module using code from ImageJ
        http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
        k-means clustering. 
 
@@ -234,17 +228,6 @@ Debugging:
 
      - The confirmation window upon "cancel after image set" button
        clicking ought to say "confirm cancel", not "confirm close". 
-
-     -Done- DOES NOT WORK FOR ANNE; YIELDS ERROR USING IMREAD FUNCTION. We adapted the LoadImagesOrder and LoadImagesText modules to
-       allow loading of DIB format images, but we have so far not
-       adjusted the Show data on image button or the Show image button
-       to load this type of image. Also need to adjust any other modules
-       that use imread, including those which open all the images to
-       calculate something, like CorrectIllum All modules and probably
-       IdentifyPrimThreshold and ApplyThreshold (when the threshold is 
-       automatically calculated).  Also, DIB's are currently being read
-       upside down - need to flip them (flipud).
-
 
 User-friendliness/interface/help:
 
@@ -439,4 +422,17 @@ DONE DURING IAP>>>>>>>
 
      -Done- Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).
 
-     - done Have LoadSettings button determine whether a file is a valid Settings file.
+     - done Have LoadSettings button determine whether a file is a valid Settings file.]
+
+    - Done "Make projection" module (= average, get code from
+       DivideAllMean). 
+
+     -Done- DOES NOT WORK FOR ANNE; YIELDS ERROR USING IMREAD FUNCTION. We adapted the LoadImagesOrder and LoadImagesText modules to
+       allow loading of DIB format images, but we have so far not
+       adjusted the Show data on image button or the Show image button
+       to load this type of image. Also need to adjust any other modules
+       that use imread, including those which open all the images to
+       calculate something, like CorrectIllum All modules and probably
+       IdentifyPrimThreshold and ApplyThreshold (when the threshold is 
+       automatically calculated).  Also, DIB's are currently being read
+       upside down - need to flip them (flipud).

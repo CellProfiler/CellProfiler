@@ -3,9 +3,11 @@ function handles = LoadMoviesOrder(handles)
 % Help for the Load Movies Order module:
 % Category: File Handling
 %
-% Tells CellProfiler where to retrieve movies, extracts each frame of
-% each movie as a separate image, and gives these images a meaningful
-% name for the other modules to access.
+% Tells CellProfiler where to retrieve avi-formatted movies (avi
+% movies must be in uncompressed avi format on UNIX and Mac
+% platforms), extracts each frame of each movie as a separate image,
+% and gives these images a meaningful name for the other modules to
+% access.
 %
 % If more than four movies per set must be loaded, more than one Load
 % Movies Order module can be run sequentially. Running more than one
@@ -24,6 +26,23 @@ function handles = LoadMoviesOrder(handles)
 % You may have subfolders within the folder that is being searched, but the
 % names of the folders themselves must not contain the text you are
 % searching for or an error will result.
+%
+% NOTE:  MATLAB only reads AVI files, and only UNCOMPRESSED AVI files
+% on UNIX and MAC platforms.  As a result, you need to use 3rd party
+% software to uncompress AVI files and convert MOV files.  You can do
+% this with a free software product called RAD Video Tools.  
+% 
+% RAD Video Tools runs on Windows platforms and can be acquired free from:
+%   http://www.radgametools.com/down/Bink/RADTools.exe
+% 
+% To convert a compressed AVI file or a MOV file into an uncompressed AVI:
+%   1. Open RAD Video Tools
+%   2. Select the file you want to convert
+%   3. Click the "Convert a file" button
+%   4. On the next screen, type the desired output file name, and 
+% click the "Convert" button.  Everything else can be left as default.
+%   5. A window will pop up that asks you for the Video Compression to
+% use.  Choose "Full Frames (Uncompressed)", and click OK.
 %
 % SAVING IMAGES: The frames of the movies loaded by this module can be
 % easily saved using the Save Images module, using the name you assign

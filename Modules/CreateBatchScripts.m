@@ -129,7 +129,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 100
 BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
 
-%textVAR02 = What is the path to the CellProfiler on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
+%textVAR02 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
 %defaultVAR02 = .
 BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

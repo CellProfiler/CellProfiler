@@ -300,8 +300,9 @@ function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want t
 
 clear('handles.Settings');
 clear('handles.Current.NumberOfModules');
-
+try
 cd(handles.Current.DefaultOutputDirectory)
+end
 [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.

@@ -390,6 +390,11 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     LastImage = 1;
     NumberOfImages = 1;
 
+        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
+        try
+            save(AnswerFileName{1},'OutputMeasurements')
+        catch errordlg('oops')
+        end
 
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1
@@ -487,6 +492,7 @@ else
             HistogramData = [];
         else HistogramData = histc(OutputMeasurements{CompressedImageNumber},BinLocations);
         end
+
         %%% Deletes the last value of HistogramData, which
         %%% is always a zero (because it's the number of values that match
         %%% + inf).
@@ -503,6 +509,12 @@ else
     %%% Saves this info in a variable, FigureSettings, which
     %%% will be stored later with the figure.
     FigureSettings{3} = FinalHistogramData;
+        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
+        try
+            save(AnswerFileName{1},'OutputMeasurements')
+        catch errordlg('oops')
+        end
+
 
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1

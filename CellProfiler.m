@@ -1205,11 +1205,14 @@ cd(handles.Vworkingdirectory)
 %%% happen.
 if FileName == 0
 else
-    %%% Acquires basic screen info for making buttons in the
-    %%% display window.
-    StdUnit = 'point';
-    StdColor = get(0,'DefaultUIcontrolBackgroundColor');
-    PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
+%%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
+%%% SHOULD CONSIDER ADDING IT BACK.
+%     %%% Acquires basic screen info for making buttons in the
+%     %%% display window.
+%     StdUnit = 'point';
+%     StdColor = get(0,'DefaultUIcontrolBackgroundColor');
+%     PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
+%%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
     Image = im2double(imread([PathName,'/',FileName]));

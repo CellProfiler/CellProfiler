@@ -5,8 +5,23 @@ function handles = AlgLoadImagesOrder(handles)
 % This module is required to load images from the hard drive into a
 % format recognizable by CellProfiler.  The images are given a
 % meaningful name, which is then used by subsequent modules to retrieve
-% the proper image.  If more than five images per set must be loaded,
-% more than one Load Images Order module can be run sequentially. 
+% the proper image.  If more than four images per set must be loaded,
+% more than one Load Images Order module can be run sequentially. Running
+% more than one of these modules also allows images to be retrieved from
+% different folders.
+% 
+% This module is different from the Load Images Text module because
+% Load Images Text can be used to load images that are not in a defined
+% order.  That is, Load Images Order is useful when images are present
+% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
+% on, where images are selected based on how many images are in each
+% set and what position within each set a particular color is located
+% (e.g. three images per set, DAPI is always first).  Load Images Text
+% is used instead to load images that have a particular piece of text
+% in the name.
+%
+% You may have folders within the directory that is being searched; they
+% will be ignored by this module.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -95,7 +110,7 @@ PathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 SetBeingAnalyzed = handles.setbeinganalyzed;
 ImagesPerSet = str2num(ImagesPerSet);
 SpecifiedPathName = PathName;
-%%% If the user left boxes blank, the values are set to 0.
+%%% If the user left boxes blank, sets the values to 0.
 if isempty(NumberInSet1) == 1
     NumberInSet1 = '0';
 end
@@ -113,12 +128,12 @@ NumberInSet{1} = str2num(NumberInSet1);
 NumberInSet{2} = str2num(NumberInSet2);
 NumberInSet{3} = str2num(NumberInSet3);
 NumberInSet{4} = str2num(NumberInSet4);
-%%% Check whether the position in set exceeds the number per set.
+%%% Checks whether the position in set exceeds the number per set.
 Max12 = max(NumberInSet{1}, NumberInSet{2});
 Max34 = max(NumberInSet{3}, NumberInSet{4});
 Max1234 = max(Max12, Max34);
 if ImagesPerSet < Max1234
-    error(['Image processing was canceled because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
+    error(['Image processing was canceled during the Load Images Order module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
 end
 ImageName{1} = ImageName1;
 ImageName{2} = ImageName2;
@@ -149,7 +164,7 @@ if SetBeingAnalyzed == 1
             error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
         end
     end
-    %%% For all 4 image slots, the file names are extracted.
+    %%% For all 4 image slots, exracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
         %%% the user.
@@ -181,7 +196,7 @@ if SetBeingAnalyzed == 1
                         error(['The number of image sets loaded by the Load Images Order module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Vnumberimagesets), '). Please check the settings.'])    
                         end
                     end
-                    %%% The number of image sets is stored in the
+                    %%% Stores the number of image sets in the
                     %%% handles structure.
                     handles.Vnumberimagesets = NumberOfImageSets;
                 else NumberOfImageSets = handles.Vnumberimagesets;
@@ -199,7 +214,7 @@ if SetBeingAnalyzed == 1
                 handles.(fieldname) = PathName;
                 clear FileList
             else
-                %%% If a directory was typed in, the filenames are retrieved
+                %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
                 if exist(SpecifiedPathName) ~= 7
                     error('Image processing was canceled because the directory typed into the Load Images Order module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
@@ -236,19 +251,19 @@ for n = 1:4
     %%% This try/catch will catch any problems in the load images module.
     try
         if NumberInSet{n} ~= 0 & isempty(ImageName{n}) == 0
-            %%% Determine which image to analyze.
+            %%% Determines which image to analyze.
             fieldname = ['dOTFileList', ImageName{n}];
             FileList = handles.(fieldname);
-            %%% Determine the file name of the image you want to analyze.
+            %%% Determines the file name of the image you want to analyze.
             CurrentFileName = FileList(SetBeingAnalyzed);
-            %%% Determine the directory to switch to.
+            %%% Determines the directory to switch to.
             if (~ isfield(handles, 'parallel_machines') | SetBeingAnalyzed == 1),
                 fieldname = ['dOTPathName', ImageName{n}];
                 PathName = handles.(fieldname);
             else
                 PathName = handles.RemoteImagePathName;
             end
-            %%% Switch to the directory
+            %%% Switches to the directory
             try
                 cd(PathName);
             catch error(['Could not CD to ' PathName]);
@@ -311,17 +326,18 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%
 %%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if SetBeingAnalyzed == 1
-%%% The figure window display is unnecessary for this module, so the figure
-%%% window is closed the first time through the module.
-%%% Determines the figure number.
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
-%%% If the window is open, it is closed.
-if any(findobj == ThisAlgFigureNumber) == 1;
-    close(ThisAlgFigureNumber)
-end
+    %%% The figure window display is unnecessary for this module, so the figure
+    %%% window is closed the first time through the module.
+    %%% Determines the figure number.
+    fieldname = ['figurealgorithm',CurrentAlgorithm];
+    ThisAlgFigureNumber = handles.(fieldname);
+    %%% If the window is open, it is closed.
+    if any(findobj == ThisAlgFigureNumber) == 1;
+        close(ThisAlgFigureNumber)
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -339,54 +355,52 @@ FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
 LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 %%% Eliminates directories from the list of file names.
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-
 if isempty(FileNamesNoDir) == 1
     errordlg('There are no files in the chosen directory')
     handles.Vfilenames = [];
 else
-%%% Makes a logical array that marks with a "1" all file names that start
-%%% with a period (hidden files):
-DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
-%%% Makes logical arrays that mark with a "1" all file names that have
-%%% particular suffixes (mat, m, m~, and frk). The dollar sign indicates
-%%% that the pattern must be at the end of the string in order to count as
-%%% matching.  The first line of each set finds the suffix and marks its
-%%% location in a cell array with the index of where that suffix begins;
-%%% the third line converts this cell array of numbers into a logical
-%%% array of 1's and 0's.   cellfun only works on arrays of class 'cell',
-%%% so there is a check to make sure the class is appropriate.  When there
-%%% are very few files in the directory (I think just one), the class is
-%%% not cell for some reason.
-DiscardLogical2Pre = regexpi(FileNamesNoDir, '.mat$','once');
-if strcmp(class(DiscardLogical2Pre), 'cell') == 1
-DiscardLogical2 = cellfun('prodofsize',DiscardLogical2Pre);
-else DiscardLogical2 = [];
-end
-DiscardLogical3Pre = regexpi(FileNamesNoDir, '.m$','once');
-if strcmp(class(DiscardLogical3Pre), 'cell') == 1
-DiscardLogical3 = cellfun('prodofsize',DiscardLogical3Pre);
-else DiscardLogical3 = [];
-end
-DiscardLogical4Pre = regexpi(FileNamesNoDir, '.m~$','once');
-if strcmp(class(DiscardLogical4Pre), 'cell') == 1
-DiscardLogical4 = cellfun('prodofsize',DiscardLogical4Pre);
-else DiscardLogical4 = [];
-end
-DiscardLogical5Pre = regexpi(FileNamesNoDir, '.frk$','once');
-if strcmp(class(DiscardLogical5Pre), 'cell') == 1
-DiscardLogical5 = cellfun('prodofsize',DiscardLogical5Pre);
-else DiscardLogical5 = [];
-end
-
-%%% Combines all of the DiscardLogical arrays into one.
-DiscardLogical = DiscardLogical1 | DiscardLogical2 | DiscardLogical3 | DiscardLogical4 | DiscardLogical5;
-%%% Eliminates filenames to be discarded.
-if isempty(DiscardLogical) == 1
-    FileNames = FileNamesNoDir;
-else FileNames = FileNamesNoDir(~DiscardLogical);
-end
-%%% Checks whether any files are left.
-if isempty(FileNames) == 1
-    errordlg('There are no image files in the chosen directory')
-end
+    %%% Makes a logical array that marks with a "1" all file names that start
+    %%% with a period (hidden files):
+    DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
+    %%% Makes logical arrays that mark with a "1" all file names that have
+    %%% particular suffixes (mat, m, m~, and frk). The dollar sign indicates
+    %%% that the pattern must be at the end of the string in order to count as
+    %%% matching.  The first line of each set finds the suffix and marks its
+    %%% location in a cell array with the index of where that suffix begins;
+    %%% the third line converts this cell array of numbers into a logical
+    %%% array of 1's and 0's.   cellfun only works on arrays of class 'cell',
+    %%% so there is a check to make sure the class is appropriate.  When there
+    %%% are very few files in the directory (I think just one), the class is
+    %%% not cell for some reason.
+    DiscardLogical2Pre = regexpi(FileNamesNoDir, '.mat$','once');
+    if strcmp(class(DiscardLogical2Pre), 'cell') == 1
+        DiscardLogical2 = cellfun('prodofsize',DiscardLogical2Pre);
+    else DiscardLogical2 = [];
+    end
+    DiscardLogical3Pre = regexpi(FileNamesNoDir, '.m$','once');
+    if strcmp(class(DiscardLogical3Pre), 'cell') == 1
+        DiscardLogical3 = cellfun('prodofsize',DiscardLogical3Pre);
+    else DiscardLogical3 = [];
+    end
+    DiscardLogical4Pre = regexpi(FileNamesNoDir, '.m~$','once');
+    if strcmp(class(DiscardLogical4Pre), 'cell') == 1
+        DiscardLogical4 = cellfun('prodofsize',DiscardLogical4Pre);
+    else DiscardLogical4 = [];
+    end
+    DiscardLogical5Pre = regexpi(FileNamesNoDir, '.frk$','once');
+    if strcmp(class(DiscardLogical5Pre), 'cell') == 1
+        DiscardLogical5 = cellfun('prodofsize',DiscardLogical5Pre);
+    else DiscardLogical5 = [];
+    end
+    %%% Combines all of the DiscardLogical arrays into one.
+    DiscardLogical = DiscardLogical1 | DiscardLogical2 | DiscardLogical3 | DiscardLogical4 | DiscardLogical5;
+    %%% Eliminates filenames to be discarded.
+    if isempty(DiscardLogical) == 1
+        FileNames = FileNamesNoDir;
+    else FileNames = FileNamesNoDir(~DiscardLogical);
+    end
+    %%% Checks whether any files are left.
+    if isempty(FileNames) == 1
+        errordlg('There are no image files in the chosen directory')
+    end
 end

@@ -1,25 +1,28 @@
 function handles = AlgLoadImagesText(handles)
-%%%%% Help for Load Images Text module:
-%%%%% .
-%%%%% This module is required to load images from the hard drive into a
-%%%%% format recognizable by CellProfiler.  The images are given a
-%%%%% meaningful name, which is then used by subsequent modules to retrieve
-%%%%% the proper image.  If more than five images per set must be loaded,
-%%%%% more than one Load Images module can be run sequentially. 
-%%%%% . 
-%%%%% This module is different from the Load Images Order module because
-%%%%% Load Images Text can be used to load images that are not in a defined
-%%%%% order.  That is, Load Images Order is useful when images are present
-%%%%% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
-%%%%% on, where images are selected based on how many images are in each
-%%%%% set and what position within each set a particular color is located
-%%%%% (e.g. three images per set, DAPI is always first).  Load Images Text
-%%%%% is used instead to load images that have a particular piece of text
-%%%%% in the name.
-%%%%% .
-%%%%% You may have folders within the directory that is being searched, but
-%%%%% these folders must not contain the text you are searching for or an
-%%%%% error will result.
+
+% Help for Load Images Text module:
+% 
+% This module is required to load images from the hard drive into a
+% format recognizable by CellProfiler.  The images are given a
+% meaningful name, which is then used by subsequent modules to retrieve
+% the proper image.  If more than four images per set must be loaded,
+% more than one Load Images Order module can be run sequentially. Running
+% more than one of these modules also allows images to be retrieved from
+% different folders.
+%  
+% This module is different from the Load Images Order module because
+% Load Images Text can be used to load images that are not in a defined
+% order.  That is, Load Images Order is useful when images are present
+% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
+% on, where images are selected based on how many images are in each
+% set and what position within each set a particular color is located
+% (e.g. three images per set, DAPI is always first).  Load Images Text
+% is used instead to load images that have a particular piece of text
+% in the name.
+% 
+% You may have folders within the directory that is being searched, but
+% these folders must not contain the text you are searching for or an
+% error will result.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -46,43 +49,53 @@ function handles = AlgLoadImagesText(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
+
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
-
 %textVAR01 = Type the text that this set of images has in common
 %defaultVAR01 = DAPI
 TextToFind1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+
 %textVAR02 = What do you want to call these images?
 %defaultVAR02 = OrigBlue
 ImageName1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
 %textVAR03 = Type the text that this set of images has in common
 %defaultVAR03 = /
 TextToFind2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+
 %textVAR04 = What do you want to call these images?
 %defaultVAR04 = /
 ImageName2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+
 %textVAR05 = Type the text that this set of images has in common
 %defaultVAR05 = /
 TextToFind3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+
 %textVAR06 = What do you want to call these images?
 %defaultVAR06 = /
 ImageName3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+
 %textVAR07 = Type the text that this set of images has in common
 %defaultVAR07 = /
 TextToFind4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+
 %textVAR08 = What do you want to call these images?
 %defaultVAR08 = /
 ImageName4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
+
 %textVAR09 = If an image slot is not being used, type a slash  /  in the box.
 %textVAR10 = Type the file format of the images
 %defaultVAR10 = tif
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
+
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located
 %defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
 TypedPathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
@@ -90,6 +103,7 @@ TypedPathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Determines the current directory so the module can switch back at the
 %%% end.
@@ -132,7 +146,7 @@ if SetBeingAnalyzed == 1
     if strcmp(TextToFind{1}, '/') == 1 | strcmp(ImageName{1}, '/') == 1
         error('Image processing was canceled because the first image slot in the Load Images Text module was left blank.')
     end
-    %%% For all 4 image slots, the file names are extracted.
+    %%% For all 4 image slots, extracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
         %%% the user.
@@ -157,11 +171,11 @@ if SetBeingAnalyzed == 1
                 if exist('Match') == 0
                     error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
                 end
-                %%% The File List is created by extracting the names of files
+                %%% Creates the File List by extracting the names of files
                 %%% that matched the text of interest.
                 FileList{n} = FileNames(Match);
             else
-                %%% If a directory was typed in, the filenames are retrieved
+                %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
                 if exist(TypedPathName) ~= 7
                     error('Image processing was canceled because the directory typed into the Load Images Text module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
@@ -199,16 +213,16 @@ if SetBeingAnalyzed == 1
             NumberOfFiles{n} = num2str(length(FileList{n}));
         end % Goes with: if isempty
     end  % Goes with: for i = 1:5
-    %%% Determine which slots are empty.  None should be zero, because there is
+    %%% Determines which slots are empty.  None should be zero, because there is
     %%% an error check for that when looping through n = 1:5.
     for g = 1: length(NumberOfFiles)
         LogicalSlotsToBeDeleted(g) =  isempty(NumberOfFiles{g});
     end
-    %%% Remove the empty slots from both the Number of Files array and the
+    %%% Removes the empty slots from both the Number of Files array and the
     %%% Image Name array.
     NumberOfFiles = NumberOfFiles(~LogicalSlotsToBeDeleted);
     ImageName2 = ImageName(~LogicalSlotsToBeDeleted);
-    %%% Determine how many unique numbers of files there are.  If all the image
+    %%% Determines how many unique numbers of files there are.  If all the image
     %%% types have loaded the same number of images, there should only be one
     %%% unique number, which is the number of image sets.
     UniqueNumbers = unique(NumberOfFiles);
@@ -226,17 +240,16 @@ if SetBeingAnalyzed == 1
         error('In the Load Images Text module, the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.')
     end
     NumberOfImageSets = str2num(UniqueNumbers{1});
-    %%% Checks whether another load images module has
-    %%% already recorded a number of image sets.  If it
-    %%% has, it will not be set at the default of 1.  Then,
-    %%% it checks whether the number already stored as the
-    %%% number of image sets is equal to the number of
-    %%% image sets that this module has found.  If not, an
-    %%% error message is generated. Note: this will not catch the case
-    %%% where the number of image sets detected by this module is more than 1 and
-    %%% another module has detected only one image set, since there is no
-    %%% way to tell whether the 1 stored in handles.Vnumberimagesets is the
-    %%% default value or a value determined by another image-loading module.
+    %%% Checks whether another load images module has already recorded a
+    %%% number of image sets.  If it has, it will not be set at the default
+    %%% of 1.  Then, it checks whether the number already stored as the
+    %%% number of image sets is equal to the number of image sets that this
+    %%% module has found.  If not, an error message is generated. Note:
+    %%% this will not catch the case where the number of image sets
+    %%% detected by this module is more than 1 and another module has
+    %%% detected only one image set, since there is no way to tell whether
+    %%% the 1 stored in handles.Vnumberimagesets is the default value or a
+    %%% value determined by another image-loading module.
     if handles.Vnumberimagesets ~= 1;
         if handles.Vnumberimagesets ~= NumberOfImageSets
             error(['The number of image sets loaded by the Load Images Text module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Vnumberimagesets), '). Please check the settings.'])    
@@ -255,19 +268,19 @@ for n = 1:4
         if strcmp(TextToFind{n}, '/') == 0 & strcmp(ImageName{n}, '/') == 0
             %%% The following runs every time through this module (i.e. for
             %%% every image set).
-            %%% Determine which image to analyze.
+            %%% Determines which image to analyze.
             fieldname = ['dOTFileList', ImageName{n}];
             FileList = handles.(fieldname);
-            %%% Determine the file name of the image you want to analyze.
+            %%% Determines the file name of the image you want to analyze.
             CurrentFileName = FileList(SetBeingAnalyzed);
-            %%% Determine the directory to switch to.
+            %%% Determines the directory to switch to.
             if (~ isfield(handles, 'parallel_machines')),
                 fieldname = ['dOTPathName', ImageName{n}];
                 PathName = handles.(fieldname);
             else
                 PathName = handles.RemoteImagePathName;
             end
-            %%% Switch to the directory
+            %%% Switches to the directory
             cd(PathName);
             %%% Handles a non-Matlab readable file format.
             if isfield(handles, 'dOTDIBwidth') == 1
@@ -332,13 +345,8 @@ if SetBeingAnalyzed == 1
     %%% Determines the figure number.
     fieldname = ['figurealgorithm',CurrentAlgorithm];
     ThisAlgFigureNumber = handles.(fieldname);
-    %%% If the window is open, it is closed.
+    %%% Closes the window if it is open.
     if any(findobj == ThisAlgFigureNumber) == 1;
         close(ThisAlgFigureNumber)
     end
 end
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-

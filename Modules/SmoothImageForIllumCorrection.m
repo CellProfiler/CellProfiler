@@ -160,13 +160,13 @@ drawnow
 %%% so I could not leave this section at the end of the file, where items
 %%% are normally stored to the handles structure.
 
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', OrigImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the corrected image name.
-fieldname = ['Filename', SmoothedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+% %%% Determines the filename of the image to be analyzed.
+% fieldname = ['Filename', OrigImageName];
+% FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
+% %%% Saves the original file name to the handles structure in a
+% %%% field named after the corrected image name.
+% fieldname = ['Filename', SmoothedImageName];
+% handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
 %%%%%%%%%%%%%%%%%%
 
 %%% The following checks to see whether it is appropriate to calculate the

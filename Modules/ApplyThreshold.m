@@ -364,10 +364,10 @@ drawnow
 %%% used by subsequent modules.
 handles.Pipeline.(ThresholdedImageName) = ThresholdedImage;
 
-%%% Determine the filename of the image analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% The original file name is saved to the handles structure in a
-%%% field named after the Thresholded image name.
-fieldname = ['Filename', ThresholdedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+% %%% Determine the filename of the image analyzed.
+% fieldname = ['Filename', ImageName];
+% FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
+% %%% The original file name is saved to the handles structure in a
+% %%% field named after the Thresholded image name.
+% fieldname = ['Filename', ThresholdedImageName];
+% handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

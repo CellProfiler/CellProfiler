@@ -450,13 +450,13 @@ elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
     handles.Pipeline.(fieldname) = ReadyFlag;
 end
 
-%%% The filenames are always saved to the handles structure, because future modules might look them
-%%% up on a per-image basis (even though only one projection image is
-%%% calculated).
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the projected image name.
-fieldname = ['Filename', ProjectedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+% %%% The filenames are always saved to the handles structure, because future
+% %%% modules might look them up on a per-image basis (even though only one
+% %%% projection image is calculated).
+% %%% Determines the filename of the image to be analyzed.
+% fieldname = ['Filename', ImageName];
+% FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
+% %%% Saves the original file name to the handles structure in a
+% %%% field named after the projected image name.
+% fieldname = ['Filename', ProjectedImageName];
+% handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

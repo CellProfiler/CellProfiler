@@ -219,19 +219,20 @@ Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 
-%%% Sets a suitable fontsize. 
-%%% With the current setting, the fontsize is 10pts on a 
-%%% screen with 90 pixels/inch resolution and 8pts on a 
-%%% screen with 116 pixels/inch.
-ScreenResolution = get(0,'ScreenPixelsPerInch');
-FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
-handles.Current.FontSize = FontSize;
+%%% Sets a suitable fontsize. An automatic font size is calculated,
+%%% but it is overridden if the user has set a default font size.
+if exist('LoadedPreferences') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2num(LoadedPreferences.FontSize))
+    handles.Current.FontSize = str2num(LoadedPreferences.FontSize);
+else
+    ScreenResolution = get(0,'ScreenPixelsPerInch');
+    handles.Current.FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
+end
 names = fieldnames(handles);
 for k = 1:length(names)
     if ishandle(handles.(names{k}))
-        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',FontSize,'FontName','Times')
+        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
     end
-end 
+end
 
 cd(handles.Current.StartupDirectory)
 

@@ -298,8 +298,7 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 % --- Executes on button press in LoadPipelineButton.
 function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
-clear('handles.Settings.NumbersOfVariables');
-clear('handles.Settings.VariableValues');
+clear('handles.Settings');
 clear('handles.Current.NumberOfModules');
 
 cd(handles.Current.DefaultOutputDirectory)
@@ -341,15 +340,16 @@ else
     Pathname = uigetdir('','Please select directory where modules are located');
 end
 for ModuleNum=1:length(handles.Settings.ModuleNames),
-    [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
+    [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
     if (isfield(Settings,'VariableRevisionNumbers')),
         SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
     else
         SavedVarRevNum = 0;
     end
-    if(SavedVarRevNum == CurrentVarRevNum)
+    if(SavedVarRevNum == DefVarRevNum)
         if(handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum))
             handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+            handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
             varChoice = 3;
         else
             errorString = 'Variable Revision Number same, but number of variables different for some reason';
@@ -378,8 +378,10 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
     if (varChoice == 1),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+        handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
     elseif (varChoice == 2),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
+        handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
     elseif (varChoice == 0),
         break;
     end

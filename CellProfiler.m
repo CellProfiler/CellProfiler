@@ -3074,8 +3074,6 @@ else
                 %%% If we were using parallel machines, and there are still results pending on them,
                 %%% we need to fetch it back and merge it in.
                 if isfield(handles, 'parallel_machines'),
-                  NumParallelMachines = length(handles.parallel_machines);
-                  
                   for CurrMachine = handles.parallel_machines,
                     if Pending(CurrMachine+1),
                       Pending(CurrMachine+1) = 0;

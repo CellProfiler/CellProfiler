@@ -344,6 +344,7 @@ WANT IT SOMEDAY:
        incorporate it into CellProfiler: SCMD: Saccharomyces
        cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
        1;32 Database issue:D319-22. PMID: 14681423  
+Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
 
 +++ Would like to be able to nicely graph data (Matlab is a bit
        limiting at this point in time) and click on data points to

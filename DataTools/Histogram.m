@@ -112,6 +112,26 @@ for k = 1:length(tmp)
     Measurements{k} = tmp{k}(:,FeatureNo);
 end
 
+%%% Determines whether any sample info has been loaded.  If sample
+%%% info is present, the fieldnames for those are extracted.
+ImportedFieldnames = fieldnames(handles.Measurements.GeneralInfo);
+ImportedFieldnames = ImportedFieldnames(strncmp(ImportedFieldnames,'Imported',8) == 1 | strncmp(ImportedFieldnames,'Filename',8) == 1);
+if ~isempty(ImportedFieldnames)
+    %%% Allows the user to select a heading from the list.
+    [Selection, ok] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 400],...
+        'Name','Select sample info',...
+        'PromptString','Choose the sample info with which to label each histogram.','CancelString','Cancel',...
+        'SelectionMode','single');
+    if ok ~= 0
+        HeadingName = char(ImportedFieldnames(Selection));
+        try SampleNames = handles.Measurements.GeneralInfo.(HeadingName);
+        catch SampleNames = handles.Pipeline.(HeadingName);
+        end
+    else
+        return
+    end
+end
+
 
 %%% Calculates some values for the next dialog box.
 TotalNumberImageSets = length(Measurements);
@@ -159,13 +179,13 @@ while AcceptableAnswers == 0
     % into two sets. We could create a custom version of inputdlg with a
     % vertical slider, but that would be more complicated.
     Answers1 = inputdlg(Prompts(1:6),'Choose histogram settings - page 1',1,Defaults(1:6),'on');
-    
+
     %%% If user clicks cancel button Answers1 will be empty.
     if isempty(Answers1)
         return
     end
     Answers2 = inputdlg(Prompts(7:13),'Choose histogram settings - page 2',1,Defaults(7:13),'on');
-   
+
     %%% If user clicks cancel button Answers2 will be empty.
     if isempty(Answers2)
         return
@@ -267,7 +287,7 @@ while AcceptableAnswers == 0
         errordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{13}, '.']);
         continue
     end
-    
+
     %%% If the user selected A for all, the measurements are not thresholded on some other measurement.
     if ~strcmpi(GreaterOrLessThan,'A')
         [ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles);
@@ -380,7 +400,7 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     LastImage = 1;
     NumberOfImages = 1;
 
-   if strcmpi(GreaterOrLessThan,'A') ~= 1
+    if strcmpi(GreaterOrLessThan,'A') ~= 1
         try
             AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
             save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
@@ -460,7 +480,7 @@ else
         catch errordlg('oops, saving did not work.')
         end
     end
-    
+
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1
         WriteHistToExcel(SaveData, FirstImage, LastImage, XTickLabels,...
@@ -856,21 +876,11 @@ function [ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles)
 
 
 %%% Extract the fieldnames of measurements from the handles structure.
-fields = fieldnames(handles.Measurements);
+MeasFieldnames = fieldnames(handles.Measurements);
 
-% Remove fields that should be ignored
-Ignorefields = {'Pathname' 'Filename' 'ImageThreshold' 'TimeElapsed'};
-tmp = {};
-for k = 1:length(fields)
-    test = 0;
-    for j = 1:length(Ignorefields)
-        if ~isempty(strfind(fields{k},Ignorefields{j}))
-            test = test + 1;
-        end
-    end
-    if test == 0,tmp = cat(1,tmp,fields(k));end           % Field is not among the Ignorefields, store it
-end
-MeasFieldnames = tmp;
+% Remove the 'GeneralInfo' field
+index = setdiff(1:length(MeasFieldnames),strmatch('GeneralInfo',MeasFieldnames));
+MeasFieldnames = MeasFieldnames(index);
 
 %%% Error detection.
 if isempty(MeasFieldnames)

@@ -38,6 +38,8 @@ WANT IT NOW:
        paper somewhere detailing an ellipse-based shape transform
        (maybe Ray has it?). 
 
+- Surrounding many uses of imcpread in various modules and tools is some code asking about the specifications of DIB images, if that is the file format the user specified.  We should change imcpread to take in the file format of images as an optional argument.  If the file format = DIB, then imcpread should look in the handles structure to see whether the user already specified the length, width, channels, etc.  If so, it uses those values and tries to open the image (try/catch). If there is an error, it can ask the user to enter the values in the specifications dialog box and try again.  This will move the code asking about specifications out of each module or data tool and put it all in one place.  This will prevent the user from having to confirm the specifications every time the function is called and will remove the specifications dialog box code from each instance of the function being used.
+
 ---------------------------------------------------
 
 WANT IT SOON (~ for next beta release, late February 2005):

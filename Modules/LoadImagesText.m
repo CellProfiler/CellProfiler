@@ -165,9 +165,6 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines the current directory so the module can switch back at the
-%%% end.
-CurrentDirectory = cd;
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 %%% Stores the text the user entered into cell arrays.
@@ -310,43 +307,12 @@ for n = 1:4
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            %%% Switches to the directory
-            try cd(Pathname);
-            catch error(['The directory ' Pathname, ' does not exist.  Images could not be loaded from that location.']);
-            end
-            %%% Handles a non-Matlab readable file format.
-            if isfield(handles.Pipeline, 'DIBwidth') == 1
-                %%% Opens this non-Matlab readable file format.
-                Width = handles.Pipeline.DIBwidth;
-                Height = handles.Pipeline.DIBheight;
-                Channels = handles.Pipeline.DIBchannels;
-                BitDepth = handles.Pipeline.DIBbitdepth;
-                fid = fopen(char(CurrentFileName), 'r');
-                if (fid == -1),
-                    error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
-                end
-                fread(fid, 52, 'uchar');
-                LoadedImage = zeros(Height,Width,Channels);
-                for c=1:Channels,
-                    [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
-                    if Count < (Width * Height),
-                        fclose(fid);
-                        error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
-                    end
-                    LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
-                end
-                fclose(fid);
-            else
-                %%% Opens Matlab-readable file formats.
-                try
-                    LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));
-                catch error(['Image processing was canceled because the Load Images Text module could not load the image "', char(CurrentFileName), '" which you specified is in "', FileFormat, '" file format.'])
-                end
-            end
-            %%% Saves the original image file name to the handles structure.  The field
-            %%% is named
-            %%% appropriately based on the user's input, in the Pipeline substructure so
-            %%% that this field will be deleted at the end of the analysis batch.
+            LoadedImage = imcpread(fullfile(Pathname,CurrentFileName{1}), handles);
+            %%% Saves the original image file name to the handles
+            %%% structure.  The field is named appropriately based on
+            %%% the user's input, in the Pipeline substructure so that
+            %%% this field will be deleted at the end of the analysis
+            %%% batch.
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Also saved to the handles.Measurements structure for reference in output files.
@@ -364,9 +330,6 @@ for n = 1:4
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
 end
-%%% Changes back to the original directory.
-cd(CurrentDirectory)
-
     
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
@@ -499,7 +462,6 @@ if SetBeingAnalyzed == 1
         close(ThisModuleFigureNumber)
     end
 end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION TO RETRIEVE FILE NAMES %%%

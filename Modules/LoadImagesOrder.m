@@ -11,7 +11,7 @@ function handles = LoadImagesOrder(handles)
 % of these modules also allows images to be retrieved from different
 % folders.  If you want to load all images in a directory, the number
 % of images per set can be set to 1.
-% 
+%
 % Load Images Order is useful when images are present in a repeating
 % order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where
 % images are selected based on how many images are in each set and
@@ -33,10 +33,10 @@ function handles = LoadImagesOrder(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -54,7 +54,7 @@ function handles = LoadImagesOrder(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -78,7 +78,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -89,7 +89,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -104,7 +104,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -195,18 +195,15 @@ ImageName{1} = ImageName1;
 ImageName{2} = ImageName2;
 ImageName{3} = ImageName3;
 ImageName{4} = ImageName4;
-%%% Determines the current directory so the module can switch back at the
-%%% end.
-CurrentDirectory = cd;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -222,12 +219,13 @@ if SetBeingAnalyzed == 1
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
         %%% Checks if the image is a DIB image file.
-        if strcmp(upper(FileFormat),'DIB') == 1
+        if strcmpi(FileFormat,'DIB') == 1
             Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
             handles.Pipeline.DIBwidth = str2double(Answers{1});
             handles.Pipeline.DIBheight = str2double(Answers{2});
             handles.Pipeline.DIBbitdepth = str2double(Answers{3});
             handles.Pipeline.DIBchannels = str2double(Answers{4});
+        elseif strcmpi(FileFormat,'mat') == 1
         else
             error(['The image file type "', FileFormat , '" entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
         end
@@ -286,41 +284,7 @@ for n = 1:4
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            %%% Switches to the directory
-            try cd(Pathname);
-            catch error(['The directory ' Pathname, ' does not exist.  Images could not be loaded from that location.']);
-            end
-            %%% Handles a non-Matlab readable file format.
-            if isfield(handles.Pipeline, 'DIBwidth') == 1
-                %%% Opens this non-Matlab readable file format.
-                Width = handles.Pipeline.DIBwidth;
-                Height = handles.Pipeline.DIBheight;
-                Channels = handles.Pipeline.DIBchannels;
-                BitDepth = handles.Pipeline.DIBbitdepth;
-                fid = fopen(char(CurrentFileName), 'r');
-                if (fid == -1),
-                    error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
-                end
-                fread(fid, 52, 'uchar');
-                LoadedImage = zeros(Height,Width,Channels);
-                for c=1:Channels,
-                    [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
-                    if Count < (Width * Height),
-                        fclose(fid);
-                        error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
-                    end
-                    LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
-                end
-                fclose(fid);
-            else
-                %%% Opens Matlab-readable file formats.
-                try
-                    %%% Read (open) the image you want to analyze and assign it to a variable,
-                    %%% "LoadedImage".
-                    LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));
-                catch error(['Image processing was canceled because the Load Images Order module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
-                end
-            end
+            LoadedImage = imcpread(fullfile(Pathname,CurrentFileName{1}), handles);
             %%% Saves the original image file name to the handles.Pipeline structure.
             %%% The field is named appropriately based on the user's input, and will
             %%% be deleted at the end of the analysis batch.
@@ -340,8 +304,6 @@ for n = 1:4
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Order module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
 end
-%%% Changes back to the original directory.
-cd(CurrentDirectory)
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
@@ -395,7 +357,7 @@ cd(CurrentDirectory)
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -423,7 +385,7 @@ cd(CurrentDirectory)
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a

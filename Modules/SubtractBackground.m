@@ -124,23 +124,34 @@ if handles.setbeinganalyzed == 1
         %%% pixels so this should be safe.
         %%% Starts with a high value for MinimumTenthMinimumPixelValue;
         MinimumTenthMinimumPixelValue = 1;
-        %%% Waitbar shows the percentage of image sets remaining.
-        WaitbarHandle = waitbar(0,'Preliminary calculations are under way for the Subtract Background module.  Subsequent image sets will be processed more quickly than the first image set.');
         %%% Obtains the screen size.
         ScreenSize = get(0,'ScreenSize');
         ScreenHeight = ScreenSize(4);
         PotentialBottom = [0, (ScreenHeight-720)];
         BottomOfMsgBox = max(PotentialBottom);
         PositionMsgBox = [500 BottomOfMsgBox 350 100];
-        set(WaitbarHandle, 'Position', [PositionMsgBox])
         TimeStart = clock;
         NumberOfImages = length(FileList);
+        WaitbarText = 'Preliminary background calculations underway... ';
+        WaitbarHandle = waitbar(1/NumberOfImages, WaitbarText);
+        set(WaitbarHandle, 'Position', [PositionMsgBox])
         for i=1:NumberOfImages
             Image = im2double(imread(char(FileList(i))));
             SortedColumnImage = sort(reshape(Image, [],1));
             TenthMinimumPixelValue = SortedColumnImage(10);
             if TenthMinimumPixelValue == 0
-                msgbox(['Image number ', num2str(i), ', and possibly others in the set, has the 10th dimmest pixel equal to zero, which means there is no camera background to subtract, either because the exposure time was very short, or the camera has 10 or more pixels stuck at zero, or that images have been rescaled such that at least 10 pixels are zero, or that for some other reason you have more than 10 pixels of value zero in the image.  This means that the Subtract Background module will not alter the images in any way, although image processing has not been aborted.'], 'Warning', 'warn','replace')    
+                msgbox([ImageName , ' image number ', num2str(i), ', and possibly others in the set, has the 10th dimmest pixel equal to zero, which means there is no camera background to subtract, either because the exposure time was very short, or the camera has 10 or more pixels stuck at zero, or that images have been rescaled such that at least 10 pixels are zero, or that for some other reason you have more than 10 pixels of value zero in the image.  This means that the Subtract Background module will not alter the images in any way, although image processing has not been aborted.'], 'Warning', 'warn','replace')
+                %%% Stores the minimum tenth minimum pixel value in the handles structure for
+                %%% later use.
+                fieldname = ['dOTIntensityToShift', ImageName];
+                MinimumTenthMinimumPixelValue = 0;
+                handles.(fieldname) = 0;
+                %%% Determines the figure number to close, because no
+                %%% processing will be performed.
+                fieldname = ['figurealgorithm',CurrentAlgorithm];
+                ThisAlgFigureNumber = handles.(fieldname);
+                close(ThisAlgFigureNumber)
+                break
             end
             if TenthMinimumPixelValue < MinimumTenthMinimumPixelValue
                 MinimumTenthMinimumPixelValue = TenthMinimumPixelValue;
@@ -150,26 +161,25 @@ if handles.setbeinganalyzed == 1
             TimePerSet = TimeSoFar/i;
             ImagesRemaining = NumberOfImages - i;
             TimeRemaining = round(TimePerSet*ImagesRemaining);
-            WaitbarText = ['Extracting measurements... ', num2str(TimeRemaining), ' seconds remaining.'];
-            waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
+            WaitbarText = ['Preliminary background calculations underway... ', num2str(TimeRemaining), ' seconds remaining.'];
+            waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText);
             drawnow
         end
-        close(WaitbarHandle) 
+        close(WaitbarHandle)
     catch [ErrorMessage, ErrorMessage2] = lasterr;
         error(['An error occurred in the Subtract Background module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
     %%% Stores the minimum tenth minimum pixel value in the handles structure for
     %%% later use.
     fieldname = ['dOTIntensityToShift', ImageName];
-    handles.(fieldname) = MinimumTenthMinimumPixelValue;        
-    %%% Updates the handles structure.
-    %%% Removed for parallel: guidata(gcbo, handles);
+    handles.(fieldname) = MinimumTenthMinimumPixelValue;
 end
 
 %%% The following is run for every image set. Retrieves the minimum tenth
 %%% minimum pixel value from the handles structure.
-    fieldname = ['dOTIntensityToShift', ImageName];
-    MinimumTenthMinimumPixelValue = handles.(fieldname);        
+fieldname = ['dOTIntensityToShift', ImageName];
+MinimumTenthMinimumPixelValue = handles.(fieldname);
+if MinimumTenthMinimumPixelValue ~= 0
 %%% The MinimumTenthMinimumPixelValue is subtracted from every pixel in the
 %%% original image.  This strategy is similar to that used for the "Apply
 %%% Threshold and Shift" module.
@@ -274,6 +284,9 @@ imwrite(uint8(CorrectedImage), NewImageName, FileFormat);
 end
 
 drawnow
+
+
+end % This end goes with the if MinimumTenthMinimumPixelValue ~= 0 line above.
 
 %%%%%%%%%%%
 %%% HELP %%%

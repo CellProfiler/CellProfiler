@@ -1,6 +1,6 @@
-function handles = AlgSaturationBlurCheck1(handles)
+function handles = AlgSaturationBlurCheck(handles)
 
-%%% Reads the current algorithm number, since this is needed to find 
+%%% Reads the current algorithm number, since this is needed to find
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 
@@ -12,43 +12,42 @@ drawnow
 %textVAR01 = What did you call the image you want to check for saturation and blur?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-NameImageToCheck1 = handles.(fieldname);
+NameImageToCheck{1} = handles.(fieldname);
 %textVAR02 = What did you call the image you want to check for saturation and blur?
 %defaultVAR02 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-NameImageToCheck2 = handles.(fieldname);
+NameImageToCheck{2} = handles.(fieldname);
 %textVAR03 = What did you call the image you want to check for saturation and blur?
 %defaultVAR03 = OrigRed
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-NameImageToCheck3 = handles.(fieldname);
+NameImageToCheck{3} = handles.(fieldname);
 %textVAR04 = What did you call the image you want to check for saturation and blur?
 %defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-NameImageToCheck4 = handles.(fieldname);
+NameImageToCheck{4} = handles.(fieldname);
 %textVAR05 = What did you call the image you want to check for saturation and blur?
 %defaultVAR05 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-NameImageToCheck5 = handles.(fieldname);
+NameImageToCheck{5} = handles.(fieldname);
 %textVAR06 = What did you call the image you want to check for saturation and blur?
 %defaultVAR06 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-NameImageToCheck6 = handles.(fieldname);
-%textVAR08 =  For unused colors, leave "N" in the boxes above.
-%textVAR09 = Enter the blur radius, or leave 'N' to skip blur checking.
-%defaultVAR09 = N
+NameImageToCheck{6} = handles.(fieldname);
+%textVAR07 =  For unused colors, leave "N" in the boxes above.
+%textVAR09 = Type 'N' to skip blur checking
+%defaultVAR09 = Y
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
-BlurRadius = handles.(fieldname);
+BlurCheck = handles.(fieldname);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 for ImageNumber = 1:6;
-    ImageNumber = num2str(ImageNumber);
     %%% Read (open) the images you want to analyze and assign them to
     %%% variables.
-    if strcmp(upper(eval(['NameImageToCheck',ImageNumber])), 'N') ~= 1
-        fieldname = ['dOT', eval(['NameImageToCheck',ImageNumber])];
+    if strcmp(upper(NameImageToCheck{ImageNumber}), 'N') ~= 1
+        fieldname = ['dOT', NameImageToCheck{ImageNumber}];
         %%% Check whether the image to be analyzed exists in the handles structure.
         if isfield(handles, fieldname) == 0
             %%% If the image is not there, an error message is produced.  The error
@@ -57,23 +56,28 @@ for ImageNumber = 1:6;
             %%% button callback.)  That callback recognizes that an error was
             %%% produced because of its try/catch loop and breaks out of the image
             %%% analysis loop without attempting further modules.
-            error(['Image processing was canceled because the Saturation Check module could not find the input image.  It was supposed to be named ', eval(['NameImageToCheck',ImageNumber]), ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+            error(['Image processing was canceled because the Saturation & Blur Check module could not find the input image.  It was supposed to be named ', NameImageToCheck{ImageNumber}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         %%% Read the image.
-        eval(['ImageToCheck',ImageNumber,' = handles.(fieldname);'])
-        % figure, imshow(ImageToCheck1), title('ImageToCheck1')
-        MaximumPixelValue = max(max(eval(['ImageToCheck',ImageNumber])));
-        if MaximumPixelValue == 1
-            eval(['Saturation',ImageNumber,' = 1;'])
-        else eval(['Saturation',ImageNumber,' = 0;'])
-        end
-        
+        ImageToCheck{ImageNumber} = handles.(fieldname);
+        % figure, imshow(ImageToCheck), title('ImageToCheck')
+        NumberPixelsSaturated = sum(sum(ImageToCheck{ImageNumber} == 1));
+        [m,n] = size(ImageToCheck{ImageNumber});
+        TotalPixels = m*n;
+        PercentPixelsSaturated = 100*NumberPixelsSaturated/TotalPixels;
+        PercentSaturation{ImageNumber} = PercentPixelsSaturated;
+
         %%% Check the focus of the images, if desired.
-        if strcmp(upper(BlurRadius), 'N') ~= 1
-            eval(['RightImage = ImageToCheck', ImageNumber, '(:,2:end);'])
-            eval(['LeftImage = ImageToCheck', ImageNumber, '(:,1:end-1);'])
-            eval(['FocusScore', ImageNumber, ' = std(RightImage(:) - LeftImage(:)) / mean(ImageToCheck', ImageNumber, '(:));'])
-            
+        if strcmp(upper(BlurCheck), 'N') ~= 1
+            RightImage = ImageToCheck{ImageNumber}(:,2:end);
+            LeftImage = ImageToCheck{ImageNumber}(:,1:end-1);
+            MeanImageValue = mean(ImageToCheck{ImageNumber}(:));
+            if MeanImageValue == 0
+                FocusScore{ImageNumber} = 0;
+            else
+                FocusScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
+            end
+            %%% ABANDONED WAYS TO MEASURE FOCUS:
             %             eval(['ImageToCheck',ImageNumber,' = histeq(eval([''ImageToCheck'',ImageNumber]));'])
             %             if str2num(BlurRadius) == 0
             %                 BlurredImage = eval(['ImageToCheck',ImageNumber]);
@@ -91,24 +95,21 @@ for ImageNumber = 1:6;
             %             handles.FocusScore2(handles.setbeinganalyzed) = sum(sum(SubtractedImage.*SubtractedImage));
             %             FocusScore = handles.FocusScore
             %             FocusScore2 = handles.FocusScore2
-            
-        %%% Save the Focus Score  to the handles structure.  The field is named 
-        %%% appropriately based on the user's input, with the 'dMT' prefix added so
-        %%% that this field will be deleted at the end of the analysis batch.
-        fieldname = ['dMTFocusScore', eval(['NameImageToCheck',ImageNumber])];
-        handles.(fieldname)(handles.setbeinganalyzed) = {eval(['FocusScore',ImageNumber])};
-        %%% Removed for parallel: guidata(gcbo, handles);
-        else eval(['FocusScore', ImageNumber, ' = ''not checked'';'])
+
+            %%% Save the Focus Score to the handles structure.  The field is named
+            %%% appropriately based on the user's input, with the 'dMT' prefix added so
+            %%% that this field will be deleted at the end of the analysis batch.
+            fieldname = ['dMTFocusScore', NameImageToCheck{ImageNumber}];
+            handles.(fieldname)(handles.setbeinganalyzed) = {FocusScore{ImageNumber}};
         end
-        %%% Save the Saturation recording to the handles structure.  The field is named 
+        %%% Save the Percent Saturation to the handles structure.  The field is named
         %%% appropriately based on the user's input, with the 'dMT' prefix added so
         %%% that this field will be deleted at the end of the analysis batch.
-        fieldname = ['dMTSaturation', eval(['NameImageToCheck',ImageNumber])];
-        handles.(fieldname)(handles.setbeinganalyzed) = {eval(['Saturation',ImageNumber])};
-        %%% Removed for parallel: guidata(gcbo, handles);
-    else         eval(['Saturation',ImageNumber,' = ''not checked'';'])
+        fieldname = ['dMTPercentSaturation', NameImageToCheck{ImageNumber}];
+        handles.(fieldname)(handles.setbeinganalyzed) = {PercentSaturation{ImageNumber}};
     end
 end
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -130,26 +131,23 @@ if any(findobj == ThisAlgFigureNumber) == 1;
         set(ThisAlgFigureNumber, 'position', originalsize);
     end
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth');
-    displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
-        ['1 = Saturated       0 = Not Saturated'],...
-        [NameImageToCheck1, ':    ', num2str(Saturation1)],...
-        [NameImageToCheck2, ':    ', num2str(Saturation2)],...
-        [NameImageToCheck3, ':    ', num2str(Saturation3)],...
+    DisplayText = strvcat(['    Image Set # ',num2str(handles.setbeinganalyzed)],...
         ['      '],...
-        ['      '],...
-        ['FocusScore:'],...
-        [NameImageToCheck1, ':    ', num2str(FocusScore1)],...
-        [NameImageToCheck2, ':    ', num2str(FocusScore2)],...
-        [NameImageToCheck3, ':    ', num2str(FocusScore3)]);
-%         [NameImageToCheck4, ':    ', num2str(Saturation4)],...
-%         [NameImageToCheck5, ':    ', num2str(Saturation5)],...
-%         [NameImageToCheck6, ':    ', num2str(Saturation6)],...
-%         [NameImageToCheck4, ':    ', num2str(FocusScore4)],...
-%         [NameImageToCheck5, ':    ', num2str(FocusScore5)],...
-%         [NameImageToCheck6, ':    ', num2str(FocusScore6)]);
-    set(displaytexthandle,'string',displaytext)
+        ['Percent of pixels that are Saturated:']);
+    for ImageNumber = 1:6
+        try DisplayText = strvcat(DisplayText, ...
+                [NameImageToCheck{ImageNumber}, ':    ', num2str(PercentSaturation{ImageNumber})]);
+        end
+    end
+    DisplayText = strvcat(DisplayText, ['      '],['      '],['Focus Score:']);
+    for ImageNumber = 1:6
+        try DisplayText = strvcat(DisplayText, ...
+                [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);
+        end
+    end
+    set(displaytexthandle,'string',DisplayText)
 end
-% 
+
 %%% Executes pending figure-related commands so that the results are
 %%% displayed.
 drawnow
@@ -158,5 +156,5 @@ drawnow
 %%% HELP %%%
 %%%%%%%%%%%
 
-%%%%% Help for the Saturation Check module: 
+%%%%% Help for the Saturation & Blur Check module: 
 %%%%% .

@@ -1,5 +1,3 @@
-- Fix slider that Anne broke.  Use set/get to obtain the size of the variable panel, rather than hardcoding the size. Also make the variable spacing be a variable rather than hardcoding so it's easy for us to change if necessary.  OLD: 235 80 563 297  NEW: 235 0 563 346.
-
    Change CellProfiler.m code to preallocate if possible, relating to the following variables (line numbers are approximate).
 L 1391 (C 29-40): Array 'Measurements' is constructed using subscripting. Consider preallocating for speed
 L 1485 (C 9-28): Array 'EditedMeasFieldnames' is constructed using subscripting. Consider preallocating for speed
@@ -15,11 +13,7 @@ L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider pr
    Fix the "FIXME" sections in CellProfiler, unless Ray wanted to do it himself
    
 
-   Make closefigures and openfigures not global if possible.
-
 Analyze subdirectories module.
-
-Check version numbers.
 
 
 Look into these two bugs reported:

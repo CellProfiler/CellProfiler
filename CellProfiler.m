@@ -337,7 +337,7 @@ else
     Pathname = uigetdir('','Please select directory where modules are located');
 end
 for ModuleNum=1:length(handles.Settings.ModuleNames),
-    [defVariableValues handles.Settings.NumbersOfVariables(ModuleNum) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
+    [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
     if (isfield(Settings,'VariableRevisionNumbers')),
         SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
     else
@@ -356,7 +356,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
                     savedVariableValues(i) = {''};
                 end
             end
-            varChoice = HelpLoadSavedVariables(savedVariableValues,defVariableValues, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+            varChoice = LoadSavedVariablesSubfunction(savedVariableValues, defVariableValues, defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
             cd(handles.Current.StartupDirectory);
         end
     else
@@ -368,7 +368,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
                 savedVariableValues(i) = {''};
             end
         end
-        varChoice = LoadSavedVariablesSubfunction(savedVariableValues,defVariableValues, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+        varChoice = LoadSavedVariablesSubfunction(savedVariableValues, defVariableValues,  defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
         cd(handles.Current.StartupDirectory);
     end
     if (varChoice == 1),
@@ -419,9 +419,10 @@ end
 cd(handles.Current.StartupDirectory)
 
 %%% SUBFUNCTION %%%
-function [VariableValues NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName)
+function [VariableValues VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName)
 
 VariableValues = {[]};
+VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
 try
@@ -435,6 +436,16 @@ try
             i = str2num(istr);
             VariableValues(i) = {displayval};
             NumbersOfVariables = i;
+        elseif (strncmp(output,'%textVAR',8) == 1);
+            displayval = output(13:end);
+            if(length(displayval) > 8)
+                if(strcmp(displayval(end-8:end),'#LongBox#'))
+                    displayval = displayval(1:end-9);
+                end
+            end
+            istr = output(9:10);
+            i = str2num(istr);
+            VariableDescriptions(i) = {displayval};
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
             try
                 VarRevNum = str2num(output(29:30));

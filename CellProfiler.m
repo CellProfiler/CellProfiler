@@ -17,7 +17,7 @@ function varargout = CellProfiler(varargin)
 %  in a zipped file separate from the source code and manual), type in
 %  the name of an output file (e.g. 'Temp1') in the appropriate box in
 %  CellProfiler, click 'Load settings', choose 'ExampleFlySettings'
-%  and click 'Analyze all images'. An analysis run should begin.
+%  and click 'Analyze images'. An analysis run should begin.
 %
 %      H = CellProfiler returns the handle to a new CellProfiler or
 %      the handle to the existing singleton*.

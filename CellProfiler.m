@@ -3014,9 +3014,6 @@ else
                           %%% cancel request is pending (see below),
                           %%% determine whether a figure closing/opening
                           %%% request is pending.
-                          
-                          %listbox changes
-                          char(handles.FigureDisplayString{SlotNumber})
                           ThisFigDisplayString = char(handles.FigureDisplayString{SlotNumber});
                           if strcmp(ThisFigDisplayString, 'Closing...') == 1
                               Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);

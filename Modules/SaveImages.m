@@ -159,7 +159,7 @@ elseif strcmpi(FileDirectory,'I') == 1
 end
 
 %%% Retrieves the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "Image".
 fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
 if isfield(handles.Pipeline, fieldname)==0,
@@ -171,12 +171,14 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+Image = handles.Pipeline.(fieldname);
 
 %%% Checks whether the file format the user entered is readable by Matlab.
 IsFormat = imformats(FileFormat);
 if isempty(IsFormat) == 1
-    error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+    if strcmpi(FileFormat,'mat') ~= 1
+        error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+    end
 end
 
 %%% Checks whether the appendage is going to result in a name with
@@ -268,9 +270,16 @@ if strcmpi(BitDepth,'8') ~=1
     end
 end
 
-try eval(['imwrite(OrigImageToBeAnalyzed, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
-catch 
-    error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+if strcmpi(FileFormat,'mat') == 1
+    try eval(['save(''',NewFileAndPathName, ''',''Image'')']);
+    catch
+        error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+    end
+else
+    try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
+    catch
+        error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+    end
 end
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:

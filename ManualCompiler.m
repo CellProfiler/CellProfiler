@@ -1,4 +1,5 @@
 function ManualCompiler %#ok We want to ignore MLint error checking for this line.
+% RAY, this is the updated version, Thursday evening.
 
 % 1. Cover page (CPCoverPage.ppt was made in powerpoint - would be
 % nice if we could extract directly from that, but if not I saved it
@@ -19,6 +20,10 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 % The modules are going to be in ABC order anyway, so I think page
 % numbers are unnecessary.
 
+% 3.5 Extract 'help' lines from CellProfiler.m where there is a
+% description of CellProfiler and will soon be info about the Example
+% Image analysis.
+
 % 4. Extract 'help' lines from CPInstallGuide.m, have the title of the
 % page be "CPInstallGuide", or "CellProfiler Installation Guide", if
 % that's convenient.
@@ -33,6 +38,8 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 
 % 7. Extract 'help' lines from HelpZZZ, where ZZZ is anything else (I
 % guess the order is not critical here).
+
+% 7.5. Extract 'help' lines from ProgrammingNotes.m
 
 % 8. Open each algorithm (alphabetically) and print its name in large
 % bold font at the top of the page (perhaps we should have the

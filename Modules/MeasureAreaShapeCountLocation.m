@@ -127,7 +127,7 @@ ObjectNameList{7} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %%% NOTE: It's easy to expand the code for more than 7 objects.
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Settings.Vpixelsize{1});
+PixelSize = str2double(handles.Settings.Vpixelsize);
 
 %%% POTENTIAL IMPROVEMENT: Allow the user to select which measurements will
 %%% be made, particularly for those which take a long time to calculate?

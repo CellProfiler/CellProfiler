@@ -836,10 +836,10 @@ end
 try cd(matlabroot)
     save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
     helpdlg('Your CellProfiler Preferences were successfully set.  They are contained within a folder in the Matlab root directory in a file called CellProfilerPreferences.mat.')
-    handles.Settings.Vpixelsize = PixelSize;
+    handles.Settings.Vpixelsize = PixelSize{1};
     handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
     handles.Vworkingdirectory = WorkingDirectory;
-    set(handles.PixelSizeEditBox,'string',PixelSize);
+    set(handles.PixelSizeEditBox,'string',PixelSize{1});
     %%% Update handles structure.
     guidata(hObject,handles);
 
@@ -847,10 +847,10 @@ catch
     cd(CurrentDirectory)
     try save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
         helpdlg('You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly while you are in the current directory.')
-        handles.Settings.Vpixelsize = PixelSize;
+        handles.Settings.Vpixelsize = PixelSize{1};
         handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
         handles.Vworkingdirectory = WorkingDirectory;
-        set(handles.PixelSizeEditBox,'string',PixelSize);
+        set(handles.PixelSizeEditBox,'string',PixelSize{1});
         %%% Update handles structure.
         guidata(hObject,handles);
 

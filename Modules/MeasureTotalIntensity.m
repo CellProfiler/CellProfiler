@@ -119,7 +119,7 @@ LowThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}
 HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Settings.Vpixelsize{1});
+PixelSize = str2double(handles.Settings.Vpixelsize);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -140,7 +140,7 @@ Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Settings.Vpixelsize{1});
+PixelSize = str2double(handles.Settings.Vpixelsize);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -77,7 +77,7 @@ fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
 % 4. Extract 'help' lines from CPInstallGuide.m, have the title of the
 % page be "CPInstallGuide", or "CellProfiler Installation Guide", if
 % that's convenient.
-fwrite(fid, tex_page(tex_preformatted(help('CPInstallGuide.m'))));
+fwrite(fid, tex_page(tex_preformatted(help('HelpCPInstallGuide.m'))));
 
 % 5. Screenshot of CellProfiler, with the Data button pushed so the
 % Data buttons are revealed.  I have saved it as a CPscreenshot.TIF
@@ -95,6 +95,9 @@ fwrite(fid, tex_page(tex_image('CPScreenshot.png', '1.0\textwidth')));
 filelist = dir('Help*.m');
 for i=1:length(filelist),
   base = basename(filelist(i).name);
+  if (strcmp(base, 'HelpCPInstallGuide') == 1),
+      continue;
+  end
   fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
 end
 

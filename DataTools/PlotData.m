@@ -390,7 +390,7 @@ if ok ~= 0
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else
             %%% Preallocates the variable ListOfMeasurements.
-            ListOfMeasurements{LastImage} = handles.Measurements.(MeasurementToExtract){LastImage};
+            ListOfMeasurements{NumberOfImages} = handles.Measurements.(MeasurementToExtract){LastImage};
             for ImageNumber = FirstImage:LastImage
                 ListOfMeasurements{ImageNumber} = handles.Measurements.(MeasurementToExtract){ImageNumber};
                 HistogramData = histc(ListOfMeasurements{ImageNumber},BinLocations);

@@ -563,7 +563,7 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the Threshold value to the handles structure.
 fieldname = ['ImageThreshold', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Threshold};
+handles.Measurements.GeneralInfo.(fieldname)(handles.Current.SetBeingAnalyzed) = {Threshold};
 
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.

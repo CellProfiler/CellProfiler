@@ -3485,7 +3485,7 @@ AlgorithmNumber = whichactive(handles);
 if AlgorithmNumber == 0
     helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
 else
-    AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]),'String');
+    AlgorithmName = get(handles.(['AlgorithmName' TwoDigitString(AlgorithmNumber)]),'String');
     IsItNotChosen = strncmp(AlgorithmName,'No a',4);
     if IsItNotChosen == 1
         helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')

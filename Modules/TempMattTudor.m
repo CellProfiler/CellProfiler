@@ -1,6 +1,7 @@
-function handles = AlgIdentifyPrimAdaptThresholdC(handles)
+function handles = TempMattTudor(handles)
 
 % Help for the Identify Primary Adaptive Threshold C module: 
+% Category: Testing
 %
 % This image analysis module identifies objects by applying an adaptive
 % threshold to the image.

@@ -14,8 +14,6 @@ L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider pr
 
    Fix the "FIXME" sections in CellProfiler, unless Ray wanted to do it himself
    
-   Add scroll bar interface to allow > 11 variables
-
    "Make projection" module (= average, get code from DivideAllMean). Did In Han finish this already?  If so, make a manual page.
 
    Rescale intensity image (stretch histogram)

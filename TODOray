@@ -1,12 +1,15 @@
- Short-term:
-   Test "clear functions" in parallel code. [BETA]
-
+ Short-term (BETA):
    Move measurements to handles.Measurements
 
    Move Settings (other than algorithms and variables) to
      handles.Settings
   
    Move Pipeline and temporary variables to handles.Pipeline
+
+Near-term (soon after beta):
+   Verify that illumination correction keeps values in 0-1.
+
+   Test "clear functions" in parallel code. [BETA]
 
    * Make saving go faster for cluster jobs 
    
@@ -16,9 +19,9 @@
 
    * Have local CP code copied to the cluster ??
 
-   * Have lasterr tell us which line number is involved
-
    * Rewrite cluster code to use batch mode, modules for parallel work.
+
+   * Have lasterr tell us which line number is involved
 
 Long-term:
 Think about statistical analysis/normalization

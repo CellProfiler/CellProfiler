@@ -100,7 +100,8 @@ PathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,12});
 %defaultVAR80 = type now
 PathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,80});
 
-
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

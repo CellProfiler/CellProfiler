@@ -669,13 +669,33 @@ end
 %%% Splice the subset of variables from the "settings" structure into the
 %%% handles structure.
 
+
 if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
     handles.Settings.Valgorithmname = Settings.Valgorithmname;
-    %% Check to make sure that the modules have not changed
-    Pathname = uigetdir('','Please select directory where modules are located');
+    AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
+    %% Check to make sure that the modules have not changed    
+    if exist(AlgorithmNamedotm,'file')
+        FullPathname = which(AlgorithmNamedotm);
+        [Pathname, filename, ext, versn] = fileparts(FullPathname);
+    else
+        Pathname = uigetdir('','Please select directory where modules are located');
+    end
     for i=1:length(handles.Settings.Valgorithmname),
-        [defVvariable handles.numVariables(i)] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
+        [defVvariable handles.numVariables(i) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
+        if (isfield(Settings,'VariableRevisionNumber')),
+            SavedVarRevNum = Settings.VariableRevisionNumber;
+        else
+            SavedVarRevNum = 0;
+        end
+        if( (SavedVarRevNum ~= 0) & (SavedVarRevNum == CurrentVarRevNum))
+            if(handles.numVariables(i) == Setting.numVariables(i))
+            else
+                errordlg('Variable Revision Number same, but number of variables different for some reason');
+            end
+        else
+            errordlg('Variable Revision Numbers are not the same')
+        end
         handles.Settings.Vvariable(i,1:handles.numVariables(i)) = defVvariable(1:handles.numVariables(i));
         handles.Settings.Vvariable(i,1:Settings.numVariables(i)) = Settings.Vvariable(i,1:Settings.numVariables(i));
     end
@@ -684,10 +704,17 @@ else
     Settings = LoadedSettings.handles;
     if isfield(Settings,'Settings'),
         handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
-        %% Check to make sure that the modules have not changed
-        Pathname = uigetdir('','Please select directory where modules are located');
+        AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
+        if exist(AlgorithmNamedotm,'file')
+            FullPathname = which(AlgorithmNamedotm)
+            [Pathname, filename, ext, versn] = fileparts(FullPathname)
+        else
+            Pathname = uigetdir('','Please select directory where modules are located');
+        end
+    %% Check to make sure that the modules have not changed    
         for i=1:length(handles.Settings.Valgorithmname),
-            [defVvariable handles.numVariables(i)] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
+            [defVvariable handles.numVariables(i) VarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
+            
             handles.Settings.Vvariable(i,1:handles.numVariables(i)) = defVvariable(1:handles.numVariables(i));
             handles.Settings.Vvariable(i,1:Settings.numVariables(i)) = Settings.Settings.Vvariable(i,1:Settings.numVariables(i));
         end  
@@ -724,19 +751,22 @@ end
 cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
-function [vVariable numVariables] = LoadSettings_Helper(Pathname, AlgorithmName)
+function [vVariable numVariables VarRevNum] = LoadSettings_Helper(Pathname, AlgorithmName)
 try
     AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
     fid=fopen([Pathname '\' AlgorithmNamedotm]);
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-
+    
+        VarRevNum = 0;
         if (strncmp(output,'%defaultVAR',11) == 1),
             displayval = output(17:end);
             istr = output(12:13);
             i = str2num(istr);
             vVariable(i) = {displayval};
             numVariables = i;
+        elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
+            VarRevNum = str2num(output(29:30));
         end
     end
     fclose(fid);
@@ -768,6 +798,9 @@ if FileName ~= 0
   end
   if isfield(handles.Settings,'Vpixelsize'),
     Settings.Vpixelsize = handles.Settings.Vpixelsize;
+  end
+  if isfield(handles,'VariableRevisionNumber'),
+      Settings.VariableRevisionNumber = handles.VariableRevisionNumber;
   end
   save([Pathname FileName],'Settings')
   helpdlg('The settings file has been written.')
@@ -967,6 +1000,8 @@ function AddAlgorithm_Callback(hObject,eventdata,handles) %#ok We want to ignore
                 i = str2num(istr);
                 handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
                 handles.numVariables(str2double(AlgorithmNumber)) = i;
+            elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
+                handles.VariableRevisionNumber = str2num(output(29:30));
             end
         end
         fclose(fid);

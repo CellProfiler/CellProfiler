@@ -156,6 +156,9 @@ Pathname = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 %defaultVAR12 = N
 AnalyzeSubDir = char(handles.Settings.Vvariable{CurrentAlgorithmNum,12});
 
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -218,6 +218,10 @@ MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{
 %defaultVAR07 = 3
 BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
+%textVAR08 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
+%defaultVAR08 = No
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
@@ -350,7 +354,10 @@ if MaxSize ~= 99999
 end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly.
+if strncmpi(IncludeEdge,'N',1) == 1
 PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
+else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
+end 
 %%% The PrelimLabelMatrixImage4 is converted to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,1);
 drawnow
@@ -361,7 +368,7 @@ FinalBinary = imfill(FinalBinaryPre, 'holes');
 %%% to "compact" the label matrix: this way, each number corresponds to an
 %%% object, with no numbers skipped.
 FinalLabelMatrixImage = bwlabel(FinalBinary);
-   
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%

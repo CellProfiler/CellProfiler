@@ -216,6 +216,10 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 %defaultVAR06 = 10
 MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
+%textVAR07 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
+%defaultVAR07 = No
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -350,7 +354,11 @@ if MaxSize ~= 99999
 end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly.
-PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
+
+if strncmpi(IncludeEdge,'N',1) == 1
+    PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
+else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
+end
 drawnow
 %%% Converts PrelimLabelMatrixImage4 to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,1);

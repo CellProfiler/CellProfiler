@@ -205,7 +205,7 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above):
+%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above). The value 0 will cause the threshold specified above to always be used:
 %defaultVAR06 = 0
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 

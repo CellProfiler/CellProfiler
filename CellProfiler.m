@@ -74,28 +74,6 @@ global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
 
-%%% Sets a suitable fontsize. An automatic font size is calculated,
-%%% but it is overridden if the user has set a default font size.
-if exist('LoadedPreferences') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2num(LoadedPreferences.FontSize))
-    handles.Current.FontSize = str2num(LoadedPreferences.FontSize);
-else
-    ScreenResolution = get(0,'ScreenPixelsPerInch');
-    handles.Current.FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
-end
-names = fieldnames(handles);
-for k = 1:length(names)
-    if ishandle(handles.(names{k}))
-        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
-    end
-end
-set(0,'UserData',handles.Current.FontSize)
-
-%%% Checks whether the user has the Image Processing Toolbox.
-Answer = license('test','image_toolbox');
-if Answer ~= 1
-    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
-end
-
 %%% Determines the startup directory.
 handles.Current.StartupDirectory = pwd;
 addpath(pwd);
@@ -196,6 +174,30 @@ try
     addpath(CellProfilerModulePathname)
 end
 
+%%% Sets a suitable fontsize. An automatic font size is calculated,
+%%% but it is overridden if the user has set a default font size.
+%%% The fontsize is also saved in the main window's (i.e. "0") UserData property so that
+%%% it can be used for setting the fontsize in dialog boxes.
+if exist('LoadedPreferences') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2num(LoadedPreferences.FontSize))
+    handles.Current.FontSize = str2num(LoadedPreferences.FontSize);
+else
+    ScreenResolution = get(0,'ScreenPixelsPerInch');
+    handles.Current.FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
+end
+names = fieldnames(handles);
+for k = 1:length(names)
+    if ishandle(handles.(names{k}))
+        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
+    end
+end
+set(0,'UserData',handles.Current.FontSize)
+
+%%% Checks whether the user has the Image Processing Toolbox.
+Answer = license('test','image_toolbox');
+if Answer ~= 1
+    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
+end
+
 %%%% Sets up the data and image tools popup menus using the
 %%%% LoadToolsPopUpMenu subfunction.
 handles.Current.ImageToolHelp = LoadToolsPopUpMenu(handles, 'Image');
@@ -229,7 +231,6 @@ GUIheight = GUIsize(4);
 Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
-
 
 cd(handles.Current.StartupDirectory)
 
@@ -1394,7 +1395,7 @@ if exist('EnteredPreferences','var') == 1
                 set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
             end
         end
-
+        set(0,'UserData',handles.Current.FontSize)
         %%% Updates the handles structure to incorporate all the changes.
         guidata(gcbo, handles);
     end

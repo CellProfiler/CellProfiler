@@ -931,9 +931,10 @@ end
 %%%%%%%%%%%%%%%%%
 
 function ViewAlgorithm(handles)
-AlgorithmNumber = TwoDigitString(handles.AlgorithmHighlighted(1));
-AlgorithmNums = str2num(AlgorithmNumber);
-if( handles.numAlgorithms > 0 )
+if (length(handles.AlgorithmHighlighted) > 0)
+    AlgorithmNumber = TwoDigitString(handles.AlgorithmHighlighted(1));
+    AlgorithmNums = str2num(AlgorithmNumber);
+    if( handles.numAlgorithms > 0 )
 
     %%% 2. Sets all 11 VariableBox edit boxes and all 11
     %%% VariableDescriptions to be invisible.
@@ -975,10 +976,12 @@ if( handles.numAlgorithms > 0 )
         else set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
         end
     end
-else
+    else
     helpdlg('Algorithm Not Loaded');
+    end
+else
+    helpdlg('No Algorithm Highlighted');
 end
-
 %%%%%%%%%%%%%%%%%%%%
 %%% CLEAR BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%
@@ -1049,36 +1052,35 @@ ViewAlgorithm(handles);
 
 function MoveUpButton_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
-AlgorithmNums = str2num(handles.AlgorithmHighlighted);
 
-if(str2num(AlgorithmNumber) == 1)
+if(AlgorithmNumber(1) == 1)
     helpdlg('You cannot move an Algorithm higher than the highest slot');
 else
-    AlgorithmUp = TwoDigitString( AlgorithmNums - 1);
+    for AlgUp = 1:length(AlgorithmNumber);
+        AlgorithmUp = AlgorithmNumber(AlgUp)-1;
+        AlgorithmNow = AlgorithmNumber(AlgUp);
     %%% 1. Switches AlgorithmNames
     
-    AlgorithmUpName = char(handles.Settings.Valgorithmname(str2num(AlgorithmUp)));
-    AlgorithmName = char(handles.Settings.Valgorithmname(str2num(AlgorithmNumber)));
-    handles.Settings.Valgorithmname{str2num(AlgorithmUp)} = AlgorithmName;
-    handles.Settings.Valgorithmname{str2num(AlgorithmNumber)} = AlgorithmUpName;
+        AlgorithmUpName = char(handles.Settings.Valgorithmname(AlgorithmUp));
+        AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
+        handles.Settings.Valgorithmname{AlgorithmUp} = AlgorithmName;
+        handles.Settings.Valgorithmname{AlgorithmNow} = AlgorithmUpName;
       
     
     %%% 2. Copy then clear the variable values in the handles structure.
 
     
-    copyVariables = handles.Settings.Vvariable(AlgorithmNums,:);
-    handles.Settings.Vvariable(AlgorithmNums,:) = handles.Settings.Vvariable(str2num(AlgorithmUp),:);
-    handles.Settings.Vvariable(str2num(AlgorithmUp),:) = copyVariables;
-   
+        copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
+        handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmUp,:);
+        handles.Settings.Vvariable(AlgorithmUp,:) = copyVariables;
+    end
     
     %%% 3. Changes the Listbox to show the changes
-    
-    contents = get(handles.AlgorithmBox,'String');
-    contents{str2num(AlgorithmNumber)} = [AlgorithmUpName];
-    contents{str2num(AlgorithmUp)} = [AlgorithmName];
+    contents = handles.Settings.Valgorithmname;
     set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',(str2num(AlgorithmUp)));
-    handles.AlgorithmHighlighted = AlgorithmUp;
+    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted-1);
+    handles.AlgorithmHighlighted = handles.AlgorithmHighlighted-1;
+    
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)
@@ -1090,34 +1092,34 @@ end
 function MoveDownButton_Callback(hObject,eventdata,handles)
 ButtonTag = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
-AlgorithmNums = str2num(handles.AlgorithmHighlighted);
-if(str2num(AlgorithmNumber) >= handles.numAlgorithms)
+
+if(AlgorithmNumber(length(AlgorithmNumber)) >= handles.numAlgorithms)
     helpdlg('You cannot move an Algorithm lower than the lowest slot');
 else
-    AlgorithmDown = TwoDigitString( (str2num(AlgorithmNumber) + 1));
+    for AlgDown = 1:length(AlgorithmNumber);
+        AlgorithmDown = AlgorithmNumber(AlgDown) + 1;
+        AlgorithmNow = AlgorithmNumber(AlgDown);
     %%% 1. Saves the AlgorithmName
     
-    AlgorithmDownName = char(handles.Settings.Valgorithmname(str2num(AlgorithmDown)));
-    AlgorithmName = char(handles.Settings.Valgorithmname(str2num(AlgorithmNumber)));
-    handles.Settings.Valgorithmname{str2num(AlgorithmDown)} = AlgorithmName;
-    handles.Settings.Valgorithmname{str2num(AlgorithmNumber)} = AlgorithmDownName;
+        AlgorithmDownName = char(handles.Settings.Valgorithmname(AlgorithmDown));
+        AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
+        handles.Settings.Valgorithmname{AlgorithmDown} = AlgorithmName;
+        handles.Settings.Valgorithmname{AlgorithmNow} = AlgorithmDownName;
     
 
     %%% 2. Copy then clear the variable values in the handles structure.
   
-    copyVariables = handles.Settings.Vvariable(AlgorithmNums,:);
-    handles.Settings.Vvariable(AlgorithmNums,:) = handles.Settings.Vvariable(str2num(AlgorithmDown),:);
-    handles.Settings.Vvariable(str2num(AlgorithmDown),:) = copyVariables;
-    
+        copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
+        handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmDown,:);
+        handles.Settings.Vvariable(AlgorithmDown,:) = copyVariables;
+    end
 
     %%% 3. Changes the Listbox to show the changes
-    
-    contents = get(handles.AlgorithmBox,'String');
-    contents{str2num(AlgorithmNumber)} = [AlgorithmDownName];
-    contents{str2num(AlgorithmDown)} = [AlgorithmName];
+    contents = handles.Settings.Valgorithmname;
     set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',(str2num(AlgorithmDown)));
-    handles.AlgorithmHighlighted = AlgorithmDown;
+    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted+1);
+    handles.AlgorithmHighlighted = handles.AlgorithmHighlighted+1;
+    
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)

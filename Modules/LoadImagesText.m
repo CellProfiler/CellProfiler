@@ -144,7 +144,9 @@ TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = /
 ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If an image slot is not being used, type a slash  /  in the box.
+%textVAR09 = If an image slot above is not being used, type a slash  /  in the box. Do you want to match the text exactly (E), or use regular expressions (R)?
+%defaultVAR09 = E
+ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Type the file format of the images
 %defaultVAR10 = tif
@@ -158,7 +160,7 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -196,6 +198,10 @@ ImageName{4} = ImageName4;
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
 if SetBeingAnalyzed == 1
+    %%% Makes sure this entry is appropriate.
+    if strncmpi(ExactOrRegExp,'E',1) == 1 | strncmpi(ExactOrRegExp,'R',1) == 1
+    else error('You must enter E or R in the Load Images Text module to look for exact text matches or regular expression text matches.')
+    end
     %%% Checks whether the file format the user entered is readable by Matlab.
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
@@ -229,7 +235,7 @@ if SetBeingAnalyzed == 1
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             end
-            FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir);
+            FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
             %%% Checks whether any files are left.
             if isempty(FileList{n})
                 error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
@@ -467,7 +473,7 @@ end
 %%% SUBFUNCTION TO RETRIEVE FILE NAMES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function FileNames = RetrieveImageFileNames(Pathname, TextToFind, recurse)
+function FileNames = RetrieveImageFileNames(Pathname, TextToFind, recurse, ExactOrRegExp)
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
@@ -514,9 +520,17 @@ else
     FileNames = cell(0);
     Count = 1;
     for i=1:length(NotYetTextMatchedFileNames),
-        if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
-            FileNames{Count} = char(NotYetTextMatchedFileNames(i));
-            Count = Count + 1;
+        if strncmpi(ExactOrRegExp,'E',1) == 1
+            if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
+                FileNames{Count} = char(NotYetTextMatchedFileNames(i));
+                Count = Count + 1;
+            end
+        elseif strncmpi(ExactOrRegExp,'R',1) == 1
+            if regexp(char(NotYetTextMatchedFileNames(i)), TextToFind),
+                FileNames{Count} = char(NotYetTextMatchedFileNames(i));
+                Count = Count + 1;
+            end
+        else error('You must enter E or R in the Load Images Text module to look for exact text matches or regular expression text matches.')
         end
     end
 end
@@ -526,7 +540,7 @@ if(strcmp(upper(recurse),'Y'))
     DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
     if (length(DirNames) > 0)
         for i=1:length(DirNames),
-            MoreFileNames = RetrieveImageFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse);
+            MoreFileNames = RetrieveImageFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse, ExactOrRegExp);
             for j = 1:length(MoreFileNames)
                 MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
             end

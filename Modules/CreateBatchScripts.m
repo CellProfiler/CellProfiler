@@ -3,46 +3,73 @@ function handles = CreateBatchScripts(handles)
 % Help for the Create Batch Scripts module:
 % Category: Other
 %
-% This module writes a batch (set) of Matlab scripts that can be submitted
-% in parallel to a cluster for faster processing.
+% This module writes a batch (set) of Matlab scripts (m-files) that
+% can be submitted in parallel to a cluster for faster processing.
 %
-% This module should be placed at the end of an image processing pipeline.
-% It takes five values as input: the size of each batch that the full set
-% of images should be split into, the path to the CellProfiler modules on
-% the cluster machines, the path to the images on the remote machine, where
-% in the local system to save the batch files, and finally, a prefix to put
-% on the batch files. For jobs that you do not want to split into batches
-% but simply want to run on a separate computer, set the batch size to a
-% very large number (more than the number of image sets), which will create
-% one large job.
+% This module should be placed at the end of an image processing
+% pipeline.  Settings include: the size of each batch that the full set
+% of images should be split into, a prefix to prepend to the batch
+% filenames, and several pathnames.  For jobs that you do not want to
+% split into batches but simply want to run on a separate computer,
+% set the batch size to a very large number (more than the number of
+% image sets), which will create one large job.
 %
 % After the first image set is processed, batch files are created and
-% saved on the local machine, by default in the
-% current default output directory.  Each batch file is of the form
+% saved at the pathname you specify.  Each batch file is of the form
 % Batch_X_to_Y.m (The prefix can be changed from Batch_ by the
 % user), where X is the first image set to be processed in the particular
 % batch file, and Y is the last.  There is also a Batch_data.mat file
-% that each script uses to initialize the processing.
+% that each script needs access to in order to initialize the processing.
 %
 % After the batch files are created, they can be submitted
 % individually to the remote machines.  Note that the batch files and
-% Batch_data.mat file might have to be copied to the remote machines,
-% first.  Details of how remote jobs will be started vary from
-% location to location.  The output files will be written in the
-% directory where the batch files are running, which may or may not be
-% the directory where the batch scripts are located.  Please consult
-% your local cluster experts.
+% Batch_data.mat file might have to be copied to the remote machines
+% in order for them to have access to the data. Details of how remote
+% jobs will be started vary from location to location.  The output
+% files will be written in the directory where the batch files are
+% running, which may or may not be the directory where the batch
+% scripts are located.  Please consult your local cluster experts.
 %
 % After batch processing is complete, the output files can be merged
 % by the MergeBatchOutput module.  For the simplest behavior in
 % merging, it is best to save output files to a unique and initially
-% empty directory.
+% empty directory. 
 %
 % If the batch processing fails for some reason, the handles structure
 % in the output file will have a field BatchError, and the error will
 % also be written to standard out.  Check the output from the batch
 % processes to make sure all batches complete.  Batches that fail for
 % transient reasons can be resubmitted.
+%
+% The following is a script to be run from the command line of a
+% terminal shell that will submit all jobs within a given folder to a
+% cluster for processing. The script is started by typing this at the
+% command line within a directory that contains a copy of the
+% runallbatchjobs.sh file (all typed on one line):
+% ./runallbatchjobs.sh
+% /PATHTOFOLDERCONTAININGBATCHM-FILESANDBATCH_DATA
+% /PATHTOFOLDERWHERETEXTLOGSSHOULDGO BATCHPREFIX
+%
+% Here is the actual code for runallbatchjobs.sh:
+% ------------------
+% #!/bin/sh
+% if test $# -ne 3; then
+%     echo "usage: $0 BatchDir BatchOutputDir BatchFilePrefix" 1>&2
+%     exit 1
+% fi
+% 
+% BATCHDIR=$1
+% BATCHOUTPUTDIR=$2
+% BATCHFILEPREFIX=$3
+% MATLAB=/nfs/apps/matlab701
+% 
+% export DISPLAY=""
+% 
+% for i in $BATCHDIR/$BATCHFILEPREFIX*.m; do
+%     BATCHFILENAME=`basename $i`
+%     bsub -o $BATCHOUTPUTDIR/$BATCHFILENAME.txt -u carpenter@wi.mit.edu -R 'rusage[img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm < $BATCHDIR/$BATCHFILENAME"
+% done
+% ------------------
 %
 % See also MERGEBATCHOUTPUT.
 
@@ -129,33 +156,41 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 100
 BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
 
-%textVAR02 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
-%defaultVAR02 = .
-BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What prefix should be used to name the batch files?
+%defaultVAR02 = Batch_
+BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What is the path to the image directory on the cluster machines? Leave a period (.) to use the default image directory.#LongBox#
+%textVAR03 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
 %defaultVAR03 = .
-BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What is the path to the directory where batch output should be written on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
+%textVAR04 = What is the path to the image directory on the cluster machines? Leave a period (.) to use the default image directory.#LongBox#
 %defaultVAR04 = .
-BatchOutputPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What is the path to the directory where you want to save the batch files (on the local machine)? Leave a period (.) to use the default output directory.#LongBox#
+%textVAR05 = What is the path to the directory where batch output should be written on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
 %defaultVAR05 = .
-BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+BatchOutputPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What is the path to the directory where the batch files will be saved on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
+%textVAR06 = What is the path to the directory where you want to save the batch files? Leave a period (.) to use the default output directory.#LongBox#
 %defaultVAR06 = .
-BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What prefix should be added to the batch file names?
-%defaultVAR07 = Batch_
-BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = What is the path to the directory where the batch data file will be saved on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
+%defaultVAR07 = .
+BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = WARNING: This module should be the last one in the analysis pipeline.
+%textVAR08 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)#LongBox#
+%defaultVAR08 = .
+OldPathname = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 05
+%textVAR09 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)#LongBox#
+%defaultVAR09 = .
+NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+
+%textVAR10 = Note: This module must be the last one in the analysis pipeline.
+
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -181,39 +216,72 @@ if strcmp(BatchCellProfilerPath, '.') == 1,
     BatchCellProfilerPath = fullfile(handles.Preferences.DefaultModuleDirectory, '..');
 end
 
-%%% Save a snapshot of handles.
+%%% Saves a snapshot of handles.
 handles_in = handles;
 
-%%% Check that this is the last module in the analysis path.
+%%% Checks that this is the last module in the analysis path.
 if (CurrentModuleNum ~= handles.Current.NumberOfModules),
     error(['CreateBatchFiles must be the last module in the pipeline.']);
 end;
 
-%%% If this isn't the first image set, we're probably running on the
+%%% If this isn't the first image set, we are running on the
 %%% cluster, and should just continue.
-
 if (handles.Current.SetBeingAnalyzed > 1),
     return;
 end
-        
-%%% We need to rewrite the pathnames in the handles structure for the
-%%% remote machines.
+
+%%% Saves a copy of the handles structure to revert back to later. The
+%%% altered handles must be saved using the variable name 'handles'
+%%% because the save function will not allow us to save a variable
+%%% under a different name.
+PreservedHandles = handles;
+
+%%% Changes parts of several pathnames if the user has
+%%% specified that parts of the pathname are named differently from
+%%% the perspective of the local computer vs. the cluster
+%%% machines.
+if strcmp(OldPathname, '.') ~= 1
+    %%% Changes pathnames in variables within this module.
+    %%% BatchSavePath is not changed, because that function is carried
+    %%% out on the local machine.
+    BatchCellProfilerPath = strrep(BatchCellProfilerPath,OldPathname,NewPathname)
+    BatchImagePath = strrep(BatchImagePath,OldPathname,NewPathname)
+    BatchOutputPath = strrep(BatchOutputPath,OldPathname,NewPathname)
+    BatchRemotePath = strrep(BatchRemotePath,OldPathname,NewPathname)
+    %%% Changes the default output and image pathnames.
+    OldDefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
+    NewDefaultOutputDirectory = strrep(OldDefaultOutputDirectory,OldPathname,NewPathname)
+    handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
+    OldDefaultImageDirectory = handles.Current.DefaultImageDirectory;
+    NewDefaultImageDirectory = strrep(OldDefaultImageDirectory,OldPathname,NewPathname)
+    handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
+end
+
+%%% Makes some changes to the handles structure that will be
+%%% saved and fed to the cluster machines.
+%%% Rewrites the pathnames (relating to where images are stored) in
+%%% the handles structure for the remote machines.
 Fieldnames = fieldnames(handles.Pipeline);
 PathFieldnames = Fieldnames(strncmp(Fieldnames,'Pathname',8)==1);
 for i = 1:length(PathFieldnames),
     handles.Pipeline.(PathFieldnames{i}) = BatchImagePath;
 end
 
-%%% The remote machines need a copy of handles.
+%%% Saves the altered handles in a file which the user will feed to
+%%% the remote machines.
 PathAndFileName = fullfile(BatchSavePath, [BatchFilePrefix 'data.mat']);
 save(PathAndFileName, 'handles', '-v6');
 
-%%% Create the individual batch files
+%%% Reverts to the preserved handles. This prevents errors from
+%%% occurring as a result of the fact that we have changed the default
+%%% output directory, and possibly pathnames (which, actually, I don't
+%%% think is a problem).
+handles = PreservedHandles;
 
+%%% Create the individual batch files
 if (BatchSize <= 0)
     BatchSize = 100;
 end
-
 for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     StartImage = n;
     EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);

@@ -75,7 +75,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
     %%% substructure, so we check for that field first.
     if isfield(OutputFile.handles,'Measurements') == 1
         Fieldnames = fieldnames(OutputFile.handles.Measurements);
-        ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
+        ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1 | strncmp(Fieldnames,'Filename',8) == 1 );
     else ImportedFieldnames = [];
     end
     if isempty(ImportedFieldnames) == 1

@@ -84,14 +84,14 @@ else
             end
             
             %%% Ask the user to name the file.
-            FileName = inputdlg('What do you want to call the resulting measurements file?  To open the file easily in Excel, add ".xls" to the name.','Name the file',1,{BareFileName});
+            FileName = inputdlg('What do you want to call the resulting measurements file?  It will be saved in the default output directory, as specified in the main CellProfiler window. To open the file easily in Excel, add ".xls" to the name.','Name the file',1,{BareFileName});
             %%% If the user presses the Cancel button, the program goes to the end.
             if isempty(FileName)
             else
                 FileName = FileName{1};
                 OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
                 if OutputFileOverwrite ~= 0
-                    errordlg('A file with that name already exists in the directory containing the raw measurements file.  Repeat and choose a different file name.')
+                    errordlg('A file with that name already exists in the default output directory.  Repeat and choose a different file name.')
                 else
                     %%% Extract the measurements.  Waitbar shows the percentage of image sets
                     %%% remaining.

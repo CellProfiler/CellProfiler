@@ -117,7 +117,7 @@ if strcmp(Answer, 'All images') == 1
     FileName = FileName{1};
     OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
-        Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+        Answer = questdlg('A file with that name already exists in the default output directory. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
             cd(handles.Current.StartupDirectory);
             return    
@@ -185,9 +185,9 @@ if strcmp(Answer, 'All images') == 1
     fclose(fid);
     
     if TooWideForXLS,
-      helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.  WARNING: This file contains more than 256 columns, and will not be readable in Excel.'])
+      helpdlg(['The file ', FileName, ' has been written to the default output directory, as specified in the main CellProfiler window.  WARNING: This file contains more than 256 columns, and will not be readable in Excel.'])
     else 
-      helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
+      helpdlg(['The file ', FileName, ' has been written to the default output directory, as specified in the main CellProfiler window.'])
     end
 
     
@@ -272,7 +272,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     FileName = FileName{1};
     OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
-        Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+        Answer = questdlg('A file with that name already exists in the default output directory, as specified in the main CellProfiler window. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
             cd(handles.Current.StartupDirectory);
             return    

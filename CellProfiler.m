@@ -3339,7 +3339,12 @@ else
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
             helpFig = figure(777);
+            set(helpFig,'NumberTitle','off');
             set(helpFig,'name', 'Algorithm Help');
+            set(helpFig,'units','characters');
+            helpFigPos = get(helpFig,'position');
+            set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
+            
             helpUI = uicontrol(...
                 'Parent',helpFig,...
                 'Enable','inactive',...

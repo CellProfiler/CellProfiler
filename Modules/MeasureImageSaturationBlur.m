@@ -1,6 +1,6 @@
-function handles = SaturationBlurCheck(handles)
+function handles = MeasureSaturationBlur(handles)
 
-% Help for the Saturation & Blur Check module: 
+% Help for the Measure Saturation & Blur module: 
 % Category: Measurement
 %
 % The percentage of pixels that are saturated (their intensity value
@@ -103,35 +103,37 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image you want to check for saturation and blur?
+%textVAR01 = What did you call the image you want to check for saturation?
 %defaultVAR01 = OrigBlue
 NameImageToCheck{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What did you call the image you want to check for saturation and blur?
+%textVAR02 = What did you call the image you want to check for saturation?
 %defaultVAR02 = OrigGreen
 NameImageToCheck{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the image you want to check for saturation and blur?
+%textVAR03 = What did you call the image you want to check for saturation?
 %defaultVAR03 = OrigRed
 NameImageToCheck{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What did you call the image you want to check for saturation and blur?
+%textVAR04 = What did you call the image you want to check for saturation?
 %defaultVAR04 = N
 NameImageToCheck{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What did you call the image you want to check for saturation and blur?
+%textVAR05 = What did you call the image you want to check for saturation?
 %defaultVAR05 = N
 NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What did you call the image you want to check for saturation and blur?
+%textVAR06 = What did you call the image you want to check for saturation?
 %defaultVAR06 = N
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 =  For unused colors, leave "N" in the boxes above. Do you want to check for blur?
-%defaultVAR07 = Y
-BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 =  For unused colors, leave "N" in the boxes above.
 
-%%%VariableRevisionNumber = 01
+%textVAR08 =  Do you want to also check the above images for blur?
+%defaultVAR08 = Y
+BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

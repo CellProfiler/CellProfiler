@@ -37,7 +37,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 21-Oct-2004 18:22:51
+% Last Modified by GUIDE v2.5 21-Oct-2004 19:17:40
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1238,20 +1238,23 @@ else
     Image = im2double(imread([PathName,'/',FileName]));
     FigureHandle = figure; imagesc(Image), colormap(gray)
     pixval
-    %%% The following adds the Interactive Zoom button, which relies
-    %%% on the InteractiveZoomSubfunction.m being in the CellProfiler
-    %%% folder.
-    set(FigureHandle, 'Unit',StdUnit)
-    FigurePosition = get(FigureHandle, 'Position');
-    %%% Specifies the function that will be run when the zoom button is
-    %%% pressed.
-    ZoomButtonCallback = 'try, InteractiveZoomSubfunction, catch msgbox(''Could not find the file called InteractiveZoomSubfunction.m which should be located in the CellProfiler folder.''), end';
-    uicontrol('Parent',FigureHandle, ...
-        'CallBack',ZoomButtonCallback, ...
-        'BackgroundColor',StdColor, ...
-        'Position',PointsPerPixel*[FigurePosition(3)-108 5 105 22], ...
-        'String','Interactive Zoom', ...
-        'Style','pushbutton');
+%%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
+%%% SHOULD CONSIDER ADDING IT BACK.
+%     %%% The following adds the Interactive Zoom button, which relies
+%     %%% on the InteractiveZoomSubfunction.m being in the CellProfiler
+%     %%% folder.
+%     set(FigureHandle, 'Unit',StdUnit)
+%     FigurePosition = get(FigureHandle, 'Position');
+%     %%% Specifies the function that will be run when the zoom button is
+%     %%% pressed.
+%     ZoomButtonCallback = 'try, InteractiveZoomSubfunction, catch msgbox(''Could not find the file called InteractiveZoomSubfunction.m which should be located in the CellProfiler folder.''), end';
+%     uicontrol('Parent',FigureHandle, ...
+%         'CallBack',ZoomButtonCallback, ...
+%         'BackgroundColor',StdColor, ...
+%         'Position',PointsPerPixel*[FigurePosition(3)-108 5 105 22], ...
+%         'String','Interactive Zoom', ...
+%         'Style','pushbutton');
+%%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
 end
 cd(CurrentDirectory)
 
@@ -2660,8 +2663,8 @@ cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in AnalyzeAllImagesButton.
-function AnalyzeAllImagesButton_Callback(hObject, eventdata, handles)
+% --- Executes on button press in AnalyzeAllImagesLocalButton.
+function AnalyzeAllImagesLocalButton_Callback(hObject, eventdata, handles)
 CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
 sum = 0;
@@ -2739,7 +2742,7 @@ else
                 set(handles.ShowImageButton,'enable','off')
                 set(handles.ShowPixelDataButton,'enable','off')
                 set(handles.CloseAllFigureWindowsButton,'enable','off')
-                set(handles.AnalyzeAllImagesButton,'enable','off')
+                set(handles.AnalyzeAllImagesLocalButton,'enable','off')
                 set(handles.AnalyzeAllImagesClusterButton,'enable','off')
                 set(handles.ExportDataButton,'enable','off')
                 set(handles.ExportCellByCellButton,'enable','off')                
@@ -3197,7 +3200,7 @@ else
                 set(handles.ShowImageButton,'enable','on')
                 set(handles.ShowPixelDataButton,'enable','on')
                 set(handles.CloseAllFigureWindowsButton,'enable','on')
-                set(handles.AnalyzeAllImagesButton,'enable','on')
+                set(handles.AnalyzeAllImagesLocalButton,'enable','on')
                 set(handles.AnalyzeAllImagesClusterButton,'enable','on')
                 set(handles.ExportDataButton,'enable','on')
                 set(handles.ExportCellByCellButton,'enable','on')                

@@ -2,7 +2,7 @@ function varargout = CellProfiler(varargin)
 
 % CellProfilerTM cell image analysis software
 %
-% CellProfiler cell image analysis software is designed for
+% CellProf'FontSize',handles.FontSizeler cell image analysis software is designed for
 % biologists without training in computer vision or programming to
 % quantitatively measure phenotypes from thousands of images
 % automatically. CellProfiler.m and CellProfiler.fig work together to
@@ -251,8 +251,19 @@ Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 
-
-
+%%% Set a suitable fontsize. 
+%%% With the current setting, the fontsize is 10pts on a 
+%%% screen with 90 pixels/inch resolution and 8pts on a 
+%%% screen with 116 pixels/inch.
+ScreenResolution = get(0,'ScreenPixelsPerInch');
+FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
+handles.FontSize = FontSize;
+names = fieldnames(handles);
+for k = 1:length(names)
+    if ishandle(handles.(names{k}))
+        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',FontSize,'FontName','Times')
+    end
+end 
 
 
 cd(handles.Current.StartupDirectory)
@@ -1639,7 +1650,7 @@ else
                 HelpButtonFunction = 'msgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
                 %%% HelpButton
                 uicontrol('Style', 'pushbutton', ...
-                    'String', '?', 'Position', [460 10 15 30], ...
+                    'String', '?', 'Position', [460 10 15 30], 'FontSize', handles.FontSize,...
                     'Callback', HelpButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
                 %%% The timertext string is read by the analyze all images button's callback
                 %%% at the end of each time around the loop (i.e. at the end of each image

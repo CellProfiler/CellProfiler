@@ -163,7 +163,7 @@ end
 %%% Repeat for the rest of the images.
 if strcmp(Image2Name,'/') ~= 1
     try
-        if isfield(handles, Image2Name) == 0
+        if isfield(handles.Pipeline, Image2Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image2 = handles.Pipeline.(Image2Name);
@@ -175,7 +175,7 @@ if strcmp(Image2Name,'/') ~= 1
 end
 if strcmp(Image3Name,'/') ~= 1
     try
-        if isfield(handles, Image3Name) == 0
+        if isfield(handles.Pipeline, Image3Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image3 = handles.Pipeline.(Image3Name);
@@ -187,7 +187,7 @@ if strcmp(Image3Name,'/') ~= 1
 end
 if strcmp(Image4Name,'/') ~= 1
     try
-        if isfield(handles, Image4Name) == 0
+        if isfield(handles.Pipeline, Image4Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image4Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image4 = handles.Pipeline.(Image4Name);
@@ -199,7 +199,7 @@ if strcmp(Image4Name,'/') ~= 1
 end
 if strcmp(Image5Name,'/') ~= 1
     try
-        if isfield(handles, Image5Name) == 0
+        if isfield(handles.Pipeline, Image5Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image5Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image5 = handles.Pipeline.(Image5Name);
@@ -211,7 +211,7 @@ if strcmp(Image5Name,'/') ~= 1
 end
 if strcmp(Image6Name,'/') ~= 1
     try
-        if isfield(handles, Image6Name) == 0
+        if isfield(handles.Pipeline, Image6Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image6Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image6 = handles.Pipeline.(Image6Name);
@@ -223,7 +223,7 @@ if strcmp(Image6Name,'/') ~= 1
 end
 if strcmp(Image7Name,'/') ~= 1
     try
-        if isfield(handles, Image7Name) == 0
+        if isfield(handles.Pipeline, Image7Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image7Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image7 = handles.Pipeline.(Image7Name);
@@ -235,7 +235,7 @@ if strcmp(Image7Name,'/') ~= 1
 end
 if strcmp(Image8Name,'/') ~= 1
     try
-        if isfield(handles, Image8Name) == 0
+        if isfield(handles.Pipeline, Image8Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image8Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image8 = handles.Pipeline.(Image8Name);
@@ -247,7 +247,7 @@ if strcmp(Image8Name,'/') ~= 1
 end
 if strcmp(Image9Name,'/') ~= 1
     try
-        if isfield(handles, Image9Name) == 0
+        if isfield(handles.Pipeline, Image9Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image9Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image9 = handles.Pipeline.(Image9Name);

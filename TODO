@@ -32,7 +32,8 @@ Image analysis modules - New:
 - Load movies module, with ability to load each frame of a .mov or .avi file.
 - Make a module using code from ImageJ http://rsb.info.nih.gov/ij/plugins/ called Segmentation using k-means clustering.
 - Download code relating to Perlman, Mitchison, et al. Science 2004 and make modules accordingly (Laplacian of Gaussian to identify nuclei)
-- Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells).
+- Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells).  Not sure how to save the individual measurements for each sub-object.
+- Try to get code for yeast segmentation from this paper, and incorporate it into CellProfiler: SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan 1;32 Database issue:D319-22. PMID: 14681423 
 
 Image analysis modules - Improvements:
 - Decide whether to incorporate bug fixes from Matt Tudor into AlgIdentifyPrimAdaptThresholdC (see %MT lines in AlgTempMattTudor.m)

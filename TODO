@@ -50,6 +50,9 @@ Infrastructure improvements:
 
      - All modules: look for speed improvements (esp. imresize?)
 
+     - Add error checking to data-related buttons to determine whether
+       the .mat file the user selected is a valid CellProfiler output
+       file.
 
 Image analysis modules - New:
 
@@ -157,6 +160,22 @@ Data exporting
        are no objects in a particular image, for example.  I am pretty
        sure that export mean data and export cell by cell data will
        result in an error. 
+
+     - For the ExportDataButton in CellProfiler.m, warn the user if
+       'Image' and 'Imported' fields have different numbers of
+       measurements - I am not sure how the exporting would work in
+       this case.
+
+     - For the ExportDataButton in CellProfiler.m, see the line marked
+       TODO, where the three separate Fieldnames variables should be
+       combined into one prior to running the for loops that follow,
+       for the sake of simplicity and speed.
+
+     - For the ExportCellByCell button in CellProfiler.m, add an error
+       check when exporting "All measurements" to notify the user when
+       that image had no objects.  If there are no objects, the export
+       should be canceled.
+
 
 Increasing platform usability:
 

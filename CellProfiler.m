@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 01-Oct-2004 17:23:19
+% Last Modified by GUIDE v2.5 06-Oct-2004 11:14:09
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -548,13 +548,13 @@ else
   end;
   
   if handles.numAlgorithms > 0,
-    %%% Clears the current settings, using the clearalgorithm function.
+    %%% Clears the current settings, using the removealgorithm function.
     for i=1:handles.numAlgorithms,
-      handles = ClearAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
+      handles = RemoveAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
     end
     guidata(gcbo, handles);
     
-    %%% The last clearalgorithm function leaves the indicator bar set at
+    %%% The last removealgorithm function leaves the indicator bar set at
     %%% the last algorithm, so the following makes it invisible.
     %set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
   end
@@ -768,11 +768,11 @@ cd(CurrentDirectory);
 %%% LOAD BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in LoadAlgorithm.
-function LoadAlgorithm_Callback(hObject,eventdata,handles)
+% --- Executes on button press in AddAlgorithm.
+function AddAlgorithm_Callback(hObject,eventdata,handles)
 % Find which algorithm slot number this callback was called for.
 LoadAlgorithmButtonTag = get(hObject,'tag');
-%AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
+%AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'AddAlgorithm','left');
 %AlgorithmNumber = handles.AlgorithmHighlighted;
 AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
 
@@ -899,14 +899,14 @@ end
 %%%%%%%%%%%%%%%%%%%%
 
 
-% --- Executes on button press for all ClearAlgorithm buttons.
-function ClearAlgorithm_Callback(hObject, eventdata, handles)
+% --- Executes on button press for all RemoveAlgorithm buttons.
+function RemoveAlgorithm_Callback(hObject, eventdata, handles)
 AlgorithmName = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
-handles = ClearAlgorithm_Helper(AlgorithmNumber, handles, 'Confirm');
+handles = RemoveAlgorithm_Helper(AlgorithmNumber, handles, 'Confirm');
 
 % separated because it's called elsewhere
-function handles = ClearAlgorithm_Helper(AlgorithmNumber, handles, ConfirmOrNot)
+function handles = RemoveAlgorithm_Helper(AlgorithmNumber, handles, ConfirmOrNot)
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the algorithm.
@@ -1022,7 +1022,7 @@ end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function MoveUp_Callback(hObject,eventdata,handles)
+function MoveUpButton_Callback(hObject,eventdata,handles)
 ButtonTag = get(hObject,'tag');
 %AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
 AlgorithmNumber = handles.AlgorithmHighlighted;
@@ -1082,7 +1082,7 @@ else
     ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
 end
 
-function MoveDown_Callback(hObject,eventdata,handles)
+function MoveDownButton_Callback(hObject,eventdata,handles)
 ButtonTag = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
 if(str2num(AlgorithmNumber) >= handles.numAlgorithms)
@@ -1226,12 +1226,6 @@ end
 
 % --- Executes on selection change in AlgorithmBox.
 function AlgorithmBox_Callback(hObject, eventdata, handles)
-% hObject    handle to AlgorithmBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = get(hObject,'String') returns AlgorithmBox contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from AlgorithmBox
 contents = get(hObject,'String');
 handles.AlgorithmHighlighted = TwoDigitString(get(hObject,'Value'));
 guidata(hObject, handles);
@@ -1241,17 +1235,7 @@ guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function AlgorithmBox_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to AlgorithmBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
+set(hObject,'BackgroundColor',[1 1 1]);
 contents = get(hObject,'String');
 handles.AlgorithmHighlighted = contents{get(hObject,'Value')};
 
@@ -2880,8 +2864,8 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','off')
                 set(handles.SaveCurrentSettingsButton,'enable','off')
                 %listbox changes 
-                set(handles.LoadAlgorithm,'visible','off');
-                set(handles.ClearAlgorithm,'visible','off');
+                set(handles.AddAlgorithm,'visible','off');
+                set(handles.RemoveAlgorithm,'visible','off');
                 set(handles.ViewAlgorithm,'visible','off');
 
                 % FIXME: This should loop just over the number of actual variables in the display.
@@ -3355,8 +3339,8 @@ else
                 set(handles.SaveCurrentSettingsButton,'enable','on')
 
                 %listbox changes
-                set(handles.LoadAlgorithm,'visible','on');
-                set(handles.ClearAlgorithm,'visible','on');
+                set(handles.AddAlgorithm,'visible','on');
+                set(handles.RemoveAlgorithm,'visible','on');
                 set(handles.FigureDisplay,'visible','off');
                 set(handles.FigureDisplay,'string', 'Close Figure');
                 set(handles.ViewAlgorithm,'visible','on');

@@ -2779,9 +2779,9 @@ else
                             figure('name',[handles.(['Valgorithmname' TwoDigitString(i)]), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
                         global HandleFigureDisplay
                         HandleFigureDisplay(i) = handles.(['FigureDisplay' TwoDigitString(i)]);
-                        %ClosingFunction = ['global HandleFigureDisplay; set(HandleFigureDisplay(' int2str(i) '), ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay'];
+                        ClosingFunction = ['global HandleFigureDisplay; set(HandleFigureDisplay(' int2str(i) '), ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay'];
                         %%% Sets the closing function of the figure window to be the line above.
-                        %set(handles.(['figurealgorithm' TwoDigitString(i)]),'CloseRequestFcn',ClosingFunction);
+                        set(handles.(['figurealgorithm' TwoDigitString(i)]),'CloseRequestFcn',ClosingFunction);
                     end
                 end
                 

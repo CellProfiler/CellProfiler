@@ -98,15 +98,24 @@ BatchCellProfilerPath = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %defaultVAR05 = /
 BatchImagePath = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 
-%textVAR06 = What should the batch files be prefixed with (including directory name)#LongBox#
-%defaultVAR06 = ./Batch_
-BatchFilePrefix = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+%textVAR06 = What is the path to the directory where you want to save the batch files?
+%textVAR07 = Leave as '/' to use the same path as on this machine.#LongBox#
+%defaultVAR07 = /
+BatchSavePath = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 
-%textVAR08 = WARNING: This module should be the last one in the analysis pipeline!
+%textVAR08 = With what should the batch files be prefixed? #LongBox#
+%defaultVAR08 = Batch_
+BatchFilePrefix = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
+
+%textVAR09 = WARNING: This module should be the last one in the analysis pipeline!
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if strcmp(BatchSavePath, '/') == 1
+    BatchSavePath = handles.Vpathname;
+end
 
 if strcmp(BatchImagePath, '/') == 1
     BatchImagePath = handles.Vpathname;
@@ -151,7 +160,7 @@ end
 for n = 2:BatchSize:handles.Vnumberimagesets,
     StartImage = n;
     EndImage = min(StartImage + BatchSize - 1, handles.Vnumberimagesets);
-    BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
+    BatchFileName = sprintf('%s/%s%d_to_%d.m', BatchSavePath, BatchFilePrefix, StartImage, EndImage);
     BatchFile = fopen(BatchFileName, 'wt');
 
     fprintf(BatchFile, 'path(''%s'',path);\n', BatchCellProfilerPath);

@@ -8,6 +8,17 @@ Lines with --- are longer term, less critical
 Lines with NOW are more critical.
 
 Infrastructure improvements:
+
+     - When adding a module to the pipeline, check to see whether more than one function with that name exists on the Matlab search path. If so, warn the user, tell the user which pathname to the function will most likely be used, but warn them that this may change if the path is changed by adding modules from another directory.  Suggest that if the module has the same name as a Matlab function, they should consider renaming the module to prevent confusion.
+
+     - In CellProfiler.m, check whether the guidata lines are necessary (marked with a TODO).
+
+     - Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if ModuleNames was a 6 x 1 cell rather than 1 x 6. 
+Settings =      ModuleNames: {1x6 cell}
+             VariableValues: {6x13 cell}
+         NumbersOfVariables: [13 6 5 6 4 8]
+    VariableRevisionNumbers: [2 0 1 0 1 1]
+
      - Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
 
      - Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).
@@ -139,6 +150,8 @@ Image analysis modules - New:
        1;32 Database issue:D319-22. PMID: 14681423  
 
 Image analysis modules - Improvements:
+
+     - Remove all 'cd' commands from modules.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
 
      - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
@@ -370,6 +383,7 @@ GenePattern or Open Microscopy Environment.]]]
 
 
 Very Long Term (i.e., sometime near publication)
+     - Make reference sheet with short descriptions of the modules.
 
      - Make "applications" technical notes and automatic settings
        files to give a good starting place for common applications
@@ -388,3 +402,10 @@ Very Long Term (i.e., sometime near publication)
 
      - Present at conferences
 
+After IAP is completed, do the following prior to releasing the new version:
+
+- Smart Indent
+- M Lint error checking
+- Check for TODO's
+- Test every module & button
+- Prepare updated manual

@@ -165,10 +165,27 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     if size(IntensityProjectionImage) ~= size(MaskedProjectionImage)
         error('Image processing was canceled because the two input images into the Divide Correction Functions module are not the same size')
     end
+    %%% Makes sure neither projection image has zeros to prevent
+    %%% errors when dividing.
+    PixelIntensities = unique(IntensityProjectionImage(:,:));
+    if PixelIntensities(1) == 0
+        %%% The minimum acceptable value is set to 0.01, or the lowest
+        %%% non-zero pixel intensity in the image.
+        MinimumAcceptableValue = min(.01, PixelIntensities(2));
+        IntensityProjectionImage(IntensityProjectionImage == 0) = MinimumAcceptableValue;
+    end
+        %%% Makes sure neither projection image has zeros to prevent
+    %%% errors when dividing.
+    PixelIntensities2 = unique(MaskedProjectionImage(:,:));
+    if PixelIntensities2(1) == 0
+        %%% The minimum acceptable value is set to 0.01, or the lowest
+        %%% non-zero pixel intensity in the image.
+        MinimumAcceptableValue2 = min(.01, PixelIntensities2(2));
+        MaskedProjectionImage(MaskedProjectionImage == 0) = MinimumAcceptableValue2;
+    end
 
     %%% Divides the Intensity projection image by the masked projection image.
     IlluminationFunctionImage = IntensityProjectionImage./MaskedProjectionImage;
-    size(IlluminationFunctionImage)
     ReadyFlag = 1;
 else
     ReadyFlag = 0;

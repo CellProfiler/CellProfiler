@@ -123,7 +123,7 @@ if RawFileName ~= 0
                         h = msgbox(['Browse to find the image called ', ImageFileName,'.']);
                         %%% Opens a user interface window which retrieves a file name and path 
                         %%% name for the image to be displayed.
-                        cd(handles.Current.SelectedImageDirectory)
+                        cd(handles.Current.DefaultImageDirectory)
                         [FileName,Pathname] = uigetfile('*.*','Select the image to view');
                         delete(h)
                         %%% If the user presses "Cancel", the FileName will = 0 and nothing will

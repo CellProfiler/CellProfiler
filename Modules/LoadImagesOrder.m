@@ -245,30 +245,28 @@ if SetBeingAnalyzed == 1
             %%% from the chosen directory.
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-            else
-                FileNames = RetrieveImageFileNames(SpecifiedPathname,AnalyzeSubDir);
-                %%% Checks whether any files have been specified.
-                if isempty(FileNames) == 1
-                    error(['Image processing was canceled because there are no image files of type "', ImageName{n}, '" in the chosen directory or subdirectories, according to the Load Images Order module.'])
-                else
-                    %%% Determines the number of image sets to be analyzed.
-                    NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
-                    handles.Current.NumberOfImageSets = NumberOfImageSets;
-                    %%% Loops through the names in the FileNames listing,
-                    %%% creating a new list of files.
-                    for i = 1:NumberOfImageSets
-                        Number = (i - 1) .* ImagesPerSet + NumberInSet{n};
-                        FileList(i) = FileNames(Number);
-                    end
-                    %%% Saves the File Lists and Path Names to the handles structure.
-                    fieldname = ['FileList', ImageName{n}];
-                    handles.Pipeline.(fieldname) = FileList;
-                    fieldname = ['Pathname', ImageName{n}];
-                    handles.Pipeline.(fieldname) = SpecifiedPathname;
-                    clear FileList % Prevents confusion when loading this value later, for each image set.
-                end
             end
-        end  % Goes with: for n = 1:4
+            FileNames = RetrieveImageFileNames(SpecifiedPathname,AnalyzeSubDir);
+            %%% Checks whether any files have been specified.
+            if isempty(FileNames) == 1
+                error(['Image processing was canceled because there are no image files of type "', ImageName{n}, '" in the chosen directory or subdirectories, according to the Load Images Order module.'])
+            end
+            %%% Determines the number of image sets to be analyzed.
+            NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
+            handles.Current.NumberOfImageSets = NumberOfImageSets;
+            %%% Loops through the names in the FileNames listing,
+            %%% creating a new list of files.
+            for i = 1:NumberOfImageSets
+                Number = (i - 1) .* ImagesPerSet + NumberInSet{n};
+                FileList(i) = FileNames(Number);
+            end
+            %%% Saves the File Lists and Path Names to the handles structure.
+            fieldname = ['FileList', ImageName{n}];
+            handles.Pipeline.(fieldname) = FileList;
+            fieldname = ['Pathname', ImageName{n}];
+            handles.Pipeline.(fieldname) = SpecifiedPathname;
+            clear FileList % Prevents confusion when loading this value later, for each image set.
+        end
     end
 end
 

@@ -208,8 +208,12 @@ for n = 1:4
               PathName = handles.RemoteImagePathName;
             end
             %%% Switch to the directory
-            cd(PathName);
             try
+            cd(PathName);
+          catch error(['Could not CD to ' PathName]);
+            end;
+            try
+              
                 %%% Read (open) the image you want to analyze and assign it to a variable,
                 %%% "LoadedImage".
                 LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));

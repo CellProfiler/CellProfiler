@@ -737,7 +737,7 @@ try
     guidata(hObject,handles);
 
 catch
-    cd(CurrentDir)
+    cd(CurrentDirectory)
     try
         save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
         helpdlg('You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly while you are in the current directory.')

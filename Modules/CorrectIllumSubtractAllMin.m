@@ -250,10 +250,15 @@ if handles.Current.SetBeingAnalyzed == 1
             fieldname = ['FileList', ImageName];
             FileList = handles.Pipeline.(fieldname);
             
+            %%% Saves msgbox's handle into list of figures created, so
+            %%% figure can be closed when 'Close Window' button is pressed.
+            WindowNumber=str2num(handles.Current.CurrentModuleNumber);
+            handles.Figures.(['window' num2str(WindowNumber)]) = h;
+            
             %%% Calculates the best block size that minimizes padding with
             %%% zeros, so that the illumination function will not have dim
             %%% artifacts at the right and bottom edges. (Based on Matlab's
-            %%% bestblk function, but changing the minimum of the range
+            %%% bestblk function, but changing the minimum of the range 
             %%% searched to be 75% of the suggested block size rather than
             %%% 50%.   
             %%% Defines acceptable block sizes.  m and n were

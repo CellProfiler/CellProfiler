@@ -284,6 +284,12 @@ if handles.Current.SetBeingAnalyzed == 1
             %%% format.
             % imwrite(IlluminationImage, 'IlluminationImage.tif', 'tif')
             
+            %%% Saves waitbar's handle into list of figures created, so
+            %%% figure can be closed when 'Close Window' button is pressed.
+            WindowNumber=str2num(handles.Current.CurrentModuleNumber);
+            handles.Figures.(['window' num2str(WindowNumber)]) = WaitbarHandle;
+            %eval(['handles.Figures.window' WindowNumber '= WaitbarHandle;']);
+            
             %%% Saves the illumination correction image to the hard
             %%% drive if requested.
             if strcmp(upper(IllumCorrectFileName), 'N') == 0

@@ -67,6 +67,7 @@ handles.Settings = struct;
 handles.Pipeline = struct;
 handles.Measurements = struct;
 handles.Preferences = struct;
+handles.Figures = struct;
 handles.Current.NumberOfModules = 0;
 
 global closeFigures openFigures;
@@ -1691,6 +1692,15 @@ if strcmp(Answer, 'Yes') == 1
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
     delete(TimerHandles)
+    %%% Finds and closes the remaining windows.
+    totalmodules=handles.Current.NumberOfModules;
+    for i=1:totalmodules;
+        try
+            eval(['OtherFigures(i)=handles.Figures.window' num2str(i) ';'])
+        end
+    end
+    OtherFigures=OtherFigures(OtherFigures ~= 0);
+    delete(OtherFigures)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

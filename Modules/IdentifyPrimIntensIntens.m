@@ -322,14 +322,14 @@ InvertedOriginal = imcomplement(OrigImageToBeAnalyzed);
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
 %%% there are black dots on top of each dark nucleus on a white background.
 Overlaid = imimposemin(InvertedOriginal,MaximaImage);
+
 %%% Identifies watershed lines.
 BlackWatershedLinesPre = watershed(Overlaid);
-%figure, imagesc(BlackWatershedLinesPre)
+
 %%% Superimposes watershed lines as white (255) onto the inverted original
 %%% image.
 WhiteWatershedOnInvertedOrig = InvertedOriginal;
 WhiteWatershedOnInvertedOrig(BlackWatershedLinesPre == 0) = 255;
-%figure, imagesc(WhiteWatershedOnInvertedOrig)
 
 %%% STEP 3: Identifies and extracts the objects, using the watershed lines.
 drawnow
@@ -338,6 +338,7 @@ drawnow
 %%% since we are working with an inverted image now.
 InvertedThreshold = 1 - Threshold;
 BinaryObjectsImage = im2bw(WhiteWatershedOnInvertedOrig,InvertedThreshold);
+
 %%% Inverts the BinaryObjectsImage.
 InvertedBinaryImage = imcomplement(BinaryObjectsImage);
 %%% Fills holes, then identifies objects in the binary image.
@@ -377,11 +378,26 @@ FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,1);
 drawnow
 %%% Holes in the FinalBinaryPre image are filled in.
 FinalBinary = imfill(FinalBinaryPre, 'holes');
+
+
 %%% The image is converted to label matrix format. Even if the above step
 %%% is excluded (filling holes), it is still necessary to do this in order
 %%% to "compact" the label matrix: this way, each number corresponds to an
 %%% object, with no numbers skipped.
 FinalLabelMatrixImage = bwlabel(FinalBinary);
+
+
+% Quick fix: Remove objects with no marker in them
+List = setdiff(unique(FinalLabelMatrixImage(:)),0);
+for k = 1:length(List)
+    index = find(FinalLabelMatrixImage==List(k));         % Get index for Object nr k pixels
+    if sum(MaximaImage(index)) == 0                       % If there is no maxima in these pixels, exclude object
+        FinalLabelMatrixImage(index) = 0;
+    end
+end
+FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage>0);
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

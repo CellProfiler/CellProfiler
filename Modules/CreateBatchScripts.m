@@ -435,8 +435,8 @@ end
 for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     StartImage = n;
     EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-    BatchFileName = sprintf('%s/%s%d_to_%d.m', BatchSavePath, BatchFilePrefix, StartImage, EndImage);
-    BatchFile = fopen(BatchFileName, 'wt');
+    BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
+    BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
 
     fprintf(BatchFile, 'path(''%s'',path);\n', fullfile(BatchCellProfilerPath, 'Modules'));
     fprintf(BatchFile, 'path(''%s'',path);\n', BatchCellProfilerPath);

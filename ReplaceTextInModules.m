@@ -10,9 +10,9 @@ function ReplaceTextInModules(TestMode)
 
 CurrentDirectory = pwd;
 %%% Changes to the directory where CellProfiler.m resides.
-FullPathAndFilename = which('CellProfiler')
-[Pathname,Filename] = fileparts(FullPathAndFilename)
-cd(Pathname)
+FullPathAndFilename = which('CellProfiler');
+[CellProfilerPathname,Filename] = fileparts(FullPathAndFilename);
+try cd(fullfile(CellProfilerPathname,'HandyMatlabScripts')), end
 
 [FileName,PathName] = uigetfile('*.m', 'Choose the M-file with the old text');
 if FileName == 0
@@ -24,24 +24,22 @@ if FileName == 0
     return
 end
 TextToAddInItsPlace = retrievetextfromfile([PathName,FileName])
-PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
-if PathName == 0
-    return
-end
-cd(PathName)
-%%% Retrieves every file in the current directory that ends in ".m"
-FilesAndDirsStructure = dir(PathName);
-FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
-LogicalIsDirectory = [FilesAndDirsStructure.isdir];
-FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-AlgorithmFileNames = cell(0);
-        for i = 1:length(FileNamesNoDir),
-            if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
-                AlgorithmFileNames(length(AlgorithmFileNames)+1) = {FileNamesNoDir{i}(1:end-2)};
-            end
-        end
 
-NumberOfAlgorithmFiles = size(AlgorithmFileNames,2)
+Answer = questdlg('Do you want to choose a single folder, or choose all folders (DataTools, ImageTools, Modules)?','','Single folder','All folders','All folders');
+if strcmp(Answer,'All folders') == 1
+    ModulesFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Modules'));
+    DataToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'DataTools'));
+    ImageToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'ImageTools'));
+    AlgorithmFileNames = horzcat(ModulesFileNames, DataToolsFileNames, ImageToolsFileNames);
+else
+    PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
+    if PathName == 0
+        return
+    end
+    AlgorithmFileNames = RetrieveMFilesFromDirectory(PathName);
+end
+
+NumberOfMFiles = size(AlgorithmFileNames,2)
 Answer = questdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
 if strcmp(Answer,'All') == 1
     Multiple = 1;
@@ -50,14 +48,14 @@ elseif strcmp(Answer,'First') == 1
 else return
 end
 %%% Loops through each Algorithm.
-for i = 1:NumberOfAlgorithmFiles
-    PathFileName = fullfile(PathName,[AlgorithmFileNames{i},'.m']);
+for i = 1:NumberOfMFiles
     %%% Opens each file & reads its contents as a string.
-    OriginalAlgorithmContents = retrievetextfromfile(PathFileName);
+    OriginalAlgorithmContents = retrievetextfromfile([AlgorithmFileNames{i},'.m']);
     PositionsOfLocatedText = strfind(OriginalAlgorithmContents,TextToRemove);
+        [Path,File] = fileparts(AlgorithmFileNames{i});
     if isempty(PositionsOfLocatedText)==1
         %%% If a match was not found, run the following line.
-        Result(i,:) = {['NO replacement for ', AlgorithmFileNames{i}]};
+        NumberOfSuccessfulReplacements(i,:) = {['NONE: ', File]};
     else
         if Multiple == 1
             LimitToReplace = length(PositionsOfLocatedText);
@@ -74,22 +72,35 @@ for i = 1:NumberOfAlgorithmFiles
             NewAlgorithmContents = [PreReplacementText,TextToAddInItsPlace,PostReplacementText];
         end
         if exist('TestMode') == 1
-            Result(NumberOfAlgorithmFiles+1,:) = {'This is test mode only. None of the replacements were actually made'};
+            NumberOfSuccessfulReplacements(NumberOfMFiles+1,:) = {'This is test mode only. None of the replacements were actually made'};
         else
             fid=fopen([AlgorithmFileNames{i},'.m'],'w');
             fwrite(fid,NewAlgorithmContents,'char');
             fclose(fid);
         end
-        Result(i,:) = {[num2str(LimitToReplace),' successful replacement(s) for ', AlgorithmFileNames{i}]};
+        NumberOfSuccessfulReplacements(i,:) = {[num2str(LimitToReplace),': ', File]};
     end
 end
 %%% Prints the results at the command line.
-Result
+NumberOfSuccessfulReplacements
 cd(CurrentDirectory)
 
-%%% SUBFUNCTION
+%%% SUBFUNCTIONS
 function ExtractedText = retrievetextfromfile(PathAndFileName)
 %%% Opens the file and retrieves the TextToRemove.
 fid=fopen(PathAndFileName);
 ExtractedText = char(fread(fid,inf,'char')');
 fclose(fid);
+
+function MFileNames = RetrieveMFilesFromDirectory(PathName)
+%%% Retrieves every file in the current directory that ends in ".m"
+FilesAndDirsStructure = dir(PathName);
+FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
+LogicalIsDirectory = [FilesAndDirsStructure.isdir];
+FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
+MFileNames = cell(0);
+for i = 1:length(FileNamesNoDir),
+    if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
+        MFileNames(length(MFileNames)+1) = {fullfile(PathName,FileNamesNoDir{i}(1:end-2))};
+    end
+end

@@ -1,6 +1,9 @@
 Unclaimed projects/feature requests/bug fixes
 
 General:
+- For Example Images that are just text, move it into the help for that file, because as it is these images are stretched a lot.
+- Remove TM from CellProfiler's name in the help/manual.
+- Can the manual compiler use the powerpoint file directly, or must it be saved as PNG or JPG first, for the cover pages?
 - Rename HelpHistogram and HelpNormalization now that the buttons have different names.
 - Make Images and Data buttons into icons in a toolbar.
 - 'Fetch new modules from website' button in CP's main GUI.

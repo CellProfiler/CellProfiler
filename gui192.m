@@ -535,22 +535,24 @@ cd(SettingsPathName)
 eval(['load ',SettingsFileName])
     
 %%% Clears the current settings, using the clearalgorithm function.
-%%%handles = clearalgorithm('1', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('2', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('3', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('4', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('5', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('6', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('7', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
-%%%handles = clearalgorithm('8', handles, 'NoConfirm');
-%%%guidata(gcbo, handles);
+%{
+handles = clearalgorithm('1', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('2', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('3', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('4', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('5', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('6', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('7', handles, 'NoConfirm');
+guidata(gcbo, handles);
+handles = clearalgorithm('8', handles, 'NoConfirm');
+guidata(gcbo, handles);
+%}
 
 %%%Hardcoded num of variables here!
 for i=1:8,
@@ -581,127 +583,127 @@ for i=1:8,
     end
 end
 
+%{
+if isempty(Settings{1}) == 0, handles.Vvariable1_01 = Settings{1}; end
+if isempty(Settings{2}) == 0, handles.Vvariable1_02 = Settings{2}; end
+if isempty(Settings{3}) == 0, handles.Vvariable1_03 = Settings{3}; end
+if isempty(Settings{4}) == 0, handles.Vvariable1_04 = Settings{4}; end
+if isempty(Settings{5}) == 0, handles.Vvariable1_05 = Settings{5}; end
+if isempty(Settings{6}) == 0, handles.Vvariable1_06 = Settings{6}; end
+if isempty(Settings{7}) == 0, handles.Vvariable1_07 = Settings{7}; end
+if isempty(Settings{8}) == 0, handles.Vvariable1_08 = Settings{8}; end
+if isempty(Settings{9}) == 0, handles.Vvariable1_09 = Settings{9}; end
+if isempty(Settings{10}) == 0, handles.Vvariable1_10 = Settings{10}; end
+if isempty(Settings{11}) == 0, handles.Vvariable1_11 = Settings{11}; end
 
+if isempty(Settings{12}) == 0, handles.Vvariable2_01 = Settings{12}; end
+if isempty(Settings{13}) == 0, handles.Vvariable2_02 = Settings{13}; end
+if isempty(Settings{14}) == 0, handles.Vvariable2_03 = Settings{14}; end
+if isempty(Settings{15}) == 0, handles.Vvariable2_04 = Settings{15}; end
+if isempty(Settings{16}) == 0, handles.Vvariable2_05 = Settings{16}; end
+if isempty(Settings{17}) == 0, handles.Vvariable2_06 = Settings{17}; end
+if isempty(Settings{18}) == 0, handles.Vvariable2_07 = Settings{18}; end
+if isempty(Settings{19}) == 0, handles.Vvariable2_08 = Settings{19}; end
+if isempty(Settings{20}) == 0, handles.Vvariable2_09 = Settings{20}; end
+if isempty(Settings{21}) == 0, handles.Vvariable2_10 = Settings{21}; end
+if isempty(Settings{22}) == 0, handles.Vvariable2_11 = Settings{22}; end
 
-%%%if isempty(Settings{1}) == 0, handles.Vvariable1_01 = Settings{1}; end
-%%%if isempty(Settings{2}) == 0, handles.Vvariable1_02 = Settings{2}; end
-%%%if isempty(Settings{3}) == 0, handles.Vvariable1_03 = Settings{3}; end
-%%%if isempty(Settings{4}) == 0, handles.Vvariable1_04 = Settings{4}; end
-%%%if isempty(Settings{5}) == 0, handles.Vvariable1_05 = Settings{5}; end
-%%%if isempty(Settings{6}) == 0, handles.Vvariable1_06 = Settings{6}; end
-%%%if isempty(Settings{7}) == 0, handles.Vvariable1_07 = Settings{7}; end
-%%%if isempty(Settings{8}) == 0, handles.Vvariable1_08 = Settings{8}; end
-%%%if isempty(Settings{9}) == 0, handles.Vvariable1_09 = Settings{9}; end
-%%%if isempty(Settings{10}) == 0, handles.Vvariable1_10 = Settings{10}; end
-%%%if isempty(Settings{11}) == 0, handles.Vvariable1_11 = Settings{11}; end
+if isempty(Settings{23}) == 0, handles.Vvariable3_01 = Settings{23}; end
+if isempty(Settings{24}) == 0, handles.Vvariable3_02 = Settings{24}; end
+if isempty(Settings{25}) == 0, handles.Vvariable3_03 = Settings{25}; end
+if isempty(Settings{26}) == 0, handles.Vvariable3_04 = Settings{26}; end
+if isempty(Settings{27}) == 0, handles.Vvariable3_05 = Settings{27}; end
+if isempty(Settings{28}) == 0, handles.Vvariable3_06 = Settings{28}; end
+if isempty(Settings{29}) == 0, handles.Vvariable3_07 = Settings{29}; end
+if isempty(Settings{30}) == 0, handles.Vvariable3_08 = Settings{30}; end
+if isempty(Settings{31}) == 0, handles.Vvariable3_09 = Settings{31}; end
+if isempty(Settings{32}) == 0, handles.Vvariable3_10 = Settings{32}; end
+if isempty(Settings{33}) == 0, handles.Vvariable3_11 = Settings{33}; end
 
-%%%if isempty(Settings{12}) == 0, handles.Vvariable2_01 = Settings{12}; end
-%%%if isempty(Settings{13}) == 0, handles.Vvariable2_02 = Settings{13}; end
-%%%if isempty(Settings{14}) == 0, handles.Vvariable2_03 = Settings{14}; end
-%%%if isempty(Settings{15}) == 0, handles.Vvariable2_04 = Settings{15}; end
-%%%if isempty(Settings{16}) == 0, handles.Vvariable2_05 = Settings{16}; end
-%%%if isempty(Settings{17}) == 0, handles.Vvariable2_06 = Settings{17}; end
-%%%if isempty(Settings{18}) == 0, handles.Vvariable2_07 = Settings{18}; end
-%%%if isempty(Settings{19}) == 0, handles.Vvariable2_08 = Settings{19}; end
-%%%if isempty(Settings{20}) == 0, handles.Vvariable2_09 = Settings{20}; end
-%%%if isempty(Settings{21}) == 0, handles.Vvariable2_10 = Settings{21}; end
-%%%if isempty(Settings{22}) == 0, handles.Vvariable2_11 = Settings{22}; end
+if isempty(Settings{34}) == 0, handles.Vvariable4_01 = Settings{34}; end
+if isempty(Settings{35}) == 0, handles.Vvariable4_02 = Settings{35}; end
+if isempty(Settings{36}) == 0, handles.Vvariable4_03 = Settings{36}; end
+if isempty(Settings{37}) == 0, handles.Vvariable4_04 = Settings{37}; end
+if isempty(Settings{38}) == 0, handles.Vvariable4_05 = Settings{38}; end
+if isempty(Settings{39}) == 0, handles.Vvariable4_06 = Settings{39}; end
+if isempty(Settings{40}) == 0, handles.Vvariable4_07 = Settings{40}; end
+if isempty(Settings{41}) == 0, handles.Vvariable4_08 = Settings{41}; end
+if isempty(Settings{42}) == 0, handles.Vvariable4_09 = Settings{42}; end
+if isempty(Settings{43}) == 0, handles.Vvariable4_10 = Settings{43}; end
+if isempty(Settings{44}) == 0, handles.Vvariable4_11 = Settings{44}; end
 
-%%%if isempty(Settings{23}) == 0, handles.Vvariable3_01 = Settings{23}; end
-%%%if isempty(Settings{24}) == 0, handles.Vvariable3_02 = Settings{24}; end
-%%%if isempty(Settings{25}) == 0, handles.Vvariable3_03 = Settings{25}; end
-%%%if isempty(Settings{26}) == 0, handles.Vvariable3_04 = Settings{26}; end
-%%%if isempty(Settings{27}) == 0, handles.Vvariable3_05 = Settings{27}; end
-%%%if isempty(Settings{28}) == 0, handles.Vvariable3_06 = Settings{28}; end
-%%%if isempty(Settings{29}) == 0, handles.Vvariable3_07 = Settings{29}; end
-%%%if isempty(Settings{30}) == 0, handles.Vvariable3_08 = Settings{30}; end
-%%%if isempty(Settings{31}) == 0, handles.Vvariable3_09 = Settings{31}; end
-%%%if isempty(Settings{32}) == 0, handles.Vvariable3_10 = Settings{32}; end
-%%%if isempty(Settings{33}) == 0, handles.Vvariable3_11 = Settings{33}; end
+if isempty(Settings{45}) == 0, handles.Vvariable5_01 = Settings{45}; end
+if isempty(Settings{46}) == 0, handles.Vvariable5_02 = Settings{46}; end
+if isempty(Settings{47}) == 0, handles.Vvariable5_03 = Settings{47}; end
+if isempty(Settings{48}) == 0, handles.Vvariable5_04 = Settings{48}; end
+if isempty(Settings{49}) == 0, handles.Vvariable5_05 = Settings{49}; end
+if isempty(Settings{50}) == 0, handles.Vvariable5_06 = Settings{50}; end
+if isempty(Settings{51}) == 0, handles.Vvariable5_07 = Settings{51}; end
+if isempty(Settings{52}) == 0, handles.Vvariable5_08 = Settings{52}; end
+if isempty(Settings{53}) == 0, handles.Vvariable5_09 = Settings{53}; end
+if isempty(Settings{54}) == 0, handles.Vvariable5_10 = Settings{54}; end
+if isempty(Settings{55}) == 0, handles.Vvariable5_11 = Settings{55}; end
 
-%%%if isempty(Settings{34}) == 0, handles.Vvariable4_01 = Settings{34}; end
-%%%if isempty(Settings{35}) == 0, handles.Vvariable4_02 = Settings{35}; end
-%%%if isempty(Settings{36}) == 0, handles.Vvariable4_03 = Settings{36}; end
-%%%if isempty(Settings{37}) == 0, handles.Vvariable4_04 = Settings{37}; end
-%%%if isempty(Settings{38}) == 0, handles.Vvariable4_05 = Settings{38}; end
-%%%if isempty(Settings{39}) == 0, handles.Vvariable4_06 = Settings{39}; end
-%%%if isempty(Settings{40}) == 0, handles.Vvariable4_07 = Settings{40}; end
-%%%if isempty(Settings{41}) == 0, handles.Vvariable4_08 = Settings{41}; end
-%%%if isempty(Settings{42}) == 0, handles.Vvariable4_09 = Settings{42}; end
-%%%if isempty(Settings{43}) == 0, handles.Vvariable4_10 = Settings{43}; end
-%%%if isempty(Settings{44}) == 0, handles.Vvariable4_11 = Settings{44}; end
+if isempty(Settings{56}) == 0, handles.Vvariable6_01 = Settings{56}; end
+if isempty(Settings{57}) == 0, handles.Vvariable6_02 = Settings{57}; end
+if isempty(Settings{58}) == 0, handles.Vvariable6_03 = Settings{58}; end
+if isempty(Settings{59}) == 0, handles.Vvariable6_04 = Settings{59}; end
+if isempty(Settings{60}) == 0, handles.Vvariable6_05 = Settings{60}; end
+if isempty(Settings{61}) == 0, handles.Vvariable6_06 = Settings{61}; end
+if isempty(Settings{62}) == 0, handles.Vvariable6_07 = Settings{62}; end
+if isempty(Settings{63}) == 0, handles.Vvariable6_08 = Settings{63}; end
+if isempty(Settings{64}) == 0, handles.Vvariable6_09 = Settings{64}; end
+if isempty(Settings{65}) == 0, handles.Vvariable6_10 = Settings{65}; end
+if isempty(Settings{66}) == 0, handles.Vvariable6_11 = Settings{66}; end
 
-%%%if isempty(Settings{45}) == 0, handles.Vvariable5_01 = Settings{45}; end
-%%%if isempty(Settings{46}) == 0, handles.Vvariable5_02 = Settings{46}; end
-%%%if isempty(Settings{47}) == 0, handles.Vvariable5_03 = Settings{47}; end
-%%%if isempty(Settings{48}) == 0, handles.Vvariable5_04 = Settings{48}; end
-%%%if isempty(Settings{49}) == 0, handles.Vvariable5_05 = Settings{49}; end
-%%%if isempty(Settings{50}) == 0, handles.Vvariable5_06 = Settings{50}; end
-%%%if isempty(Settings{51}) == 0, handles.Vvariable5_07 = Settings{51}; end
-%%%if isempty(Settings{52}) == 0, handles.Vvariable5_08 = Settings{52}; end
-%%%if isempty(Settings{53}) == 0, handles.Vvariable5_09 = Settings{53}; end
-%%%if isempty(Settings{54}) == 0, handles.Vvariable5_10 = Settings{54}; end
-%%%if isempty(Settings{55}) == 0, handles.Vvariable5_11 = Settings{55}; end
+if isempty(Settings{67}) == 0, handles.Vvariable7_01 = Settings{67}; end
+if isempty(Settings{68}) == 0, handles.Vvariable7_02 = Settings{68}; end
+if isempty(Settings{69}) == 0, handles.Vvariable7_03 = Settings{69}; end
+if isempty(Settings{70}) == 0, handles.Vvariable7_04 = Settings{70}; end
+if isempty(Settings{71}) == 0, handles.Vvariable7_05 = Settings{71}; end
+if isempty(Settings{72}) == 0, handles.Vvariable7_06 = Settings{72}; end
+if isempty(Settings{73}) == 0, handles.Vvariable7_07 = Settings{73}; end
+if isempty(Settings{74}) == 0, handles.Vvariable7_08 = Settings{74}; end
+if isempty(Settings{75}) == 0, handles.Vvariable7_09 = Settings{75}; end
+if isempty(Settings{76}) == 0, handles.Vvariable7_10 = Settings{76}; end
+if isempty(Settings{77}) == 0, handles.Vvariable7_11 = Settings{77}; end
 
-%%%if isempty(Settings{56}) == 0, handles.Vvariable6_01 = Settings{56}; end
-%%%if isempty(Settings{57}) == 0, handles.Vvariable6_02 = Settings{57}; end
-%%%if isempty(Settings{58}) == 0, handles.Vvariable6_03 = Settings{58}; end
-%%%if isempty(Settings{59}) == 0, handles.Vvariable6_04 = Settings{59}; end
-%%%if isempty(Settings{60}) == 0, handles.Vvariable6_05 = Settings{60}; end
-%%%if isempty(Settings{61}) == 0, handles.Vvariable6_06 = Settings{61}; end
-%%%if isempty(Settings{62}) == 0, handles.Vvariable6_07 = Settings{62}; end
-%%%if isempty(Settings{63}) == 0, handles.Vvariable6_08 = Settings{63}; end
-%%%if isempty(Settings{64}) == 0, handles.Vvariable6_09 = Settings{64}; end
-%%%if isempty(Settings{65}) == 0, handles.Vvariable6_10 = Settings{65}; end
-%%%if isempty(Settings{66}) == 0, handles.Vvariable6_11 = Settings{66}; end
-
-%%%if isempty(Settings{67}) == 0, handles.Vvariable7_01 = Settings{67}; end
-%%%if isempty(Settings{68}) == 0, handles.Vvariable7_02 = Settings{68}; end
-%%%if isempty(Settings{69}) == 0, handles.Vvariable7_03 = Settings{69}; end
-%%%if isempty(Settings{70}) == 0, handles.Vvariable7_04 = Settings{70}; end
-%%%if isempty(Settings{71}) == 0, handles.Vvariable7_05 = Settings{71}; end
-%%%if isempty(Settings{72}) == 0, handles.Vvariable7_06 = Settings{72}; end
-%%%if isempty(Settings{73}) == 0, handles.Vvariable7_07 = Settings{73}; end
-%%%if isempty(Settings{74}) == 0, handles.Vvariable7_08 = Settings{74}; end
-%%%if isempty(Settings{75}) == 0, handles.Vvariable7_09 = Settings{75}; end
-%%%if isempty(Settings{76}) == 0, handles.Vvariable7_10 = Settings{76}; end
-%%%if isempty(Settings{77}) == 0, handles.Vvariable7_11 = Settings{77}; end
-
-%%%if isempty(Settings{78}) == 0, handles.Vvariable8_01 = Settings{78}; end
-%%%if isempty(Settings{79}) == 0, handles.Vvariable8_02 = Settings{79}; end
-%%%if isempty(Settings{80}) == 0, handles.Vvariable8_03 = Settings{80}; end
-%%%if isempty(Settings{81}) == 0, handles.Vvariable8_04 = Settings{81}; end
-%%%if isempty(Settings{82}) == 0, handles.Vvariable8_05 = Settings{82}; end
-%%%if isempty(Settings{83}) == 0, handles.Vvariable8_06 = Settings{83}; end
-%%%if isempty(Settings{84}) == 0, handles.Vvariable8_07 = Settings{84}; end
-%%%if isempty(Settings{85}) == 0, handles.Vvariable8_08 = Settings{85}; end
-%%%if isempty(Settings{86}) == 0, handles.Vvariable8_09 = Settings{86}; end
-%%%if isempty(Settings{87}) == 0, handles.Vvariable8_10 = Settings{87}; end
-%%%if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
-
+if isempty(Settings{78}) == 0, handles.Vvariable8_01 = Settings{78}; end
+if isempty(Settings{79}) == 0, handles.Vvariable8_02 = Settings{79}; end
+if isempty(Settings{80}) == 0, handles.Vvariable8_03 = Settings{80}; end
+if isempty(Settings{81}) == 0, handles.Vvariable8_04 = Settings{81}; end
+if isempty(Settings{82}) == 0, handles.Vvariable8_05 = Settings{82}; end
+if isempty(Settings{83}) == 0, handles.Vvariable8_06 = Settings{83}; end
+if isempty(Settings{84}) == 0, handles.Vvariable8_07 = Settings{84}; end
+if isempty(Settings{85}) == 0, handles.Vvariable8_08 = Settings{85}; end
+if isempty(Settings{86}) == 0, handles.Vvariable8_09 = Settings{86}; end
+if isempty(Settings{87}) == 0, handles.Vvariable8_10 = Settings{87}; end
+if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
+%}
 
 for i=1:8,
     if isempty(Settings{i+88}) == 0, eval(strcat('handles.Valgorithmname', num2str(i),' = Settings{i+88};'))
         set(eval(strcat('handles.AlgorithmName', num2str(i))),'string',eval(strcat('handles.Valgorithmname', num2str(i)))), end
 end
 
-%%%if isempty(Settings{89}) == 0, handles.Valgorithmname1 = Settings{89}; 
-%%%    set(handles.AlgorithmName1,'string',handles.Valgorithmname1), end
-%%%if isempty(Settings{90}) == 0, handles.Valgorithmname2 = Settings{90}; 
-%%%    set(handles.AlgorithmName2,'string',handles.Valgorithmname2), end
-%%%if isempty(Settings{91}) == 0, handles.Valgorithmname3 = Settings{91}; 
-%%%    set(handles.AlgorithmName3,'string',handles.Valgorithmname3), end
-%%%if isempty(Settings{92}) == 0, handles.Valgorithmname4 = Settings{92}; 
-%%%    set(handles.AlgorithmName4,'string',handles.Valgorithmname4), end
-%%%if isempty(Settings{93}) == 0, handles.Valgorithmname5 = Settings{93}; 
-%%%    set(handles.AlgorithmName5,'string',handles.Valgorithmname5), end
-%%%if isempty(Settings{94}) == 0, handles.Valgorithmname6 = Settings{94}; 
-%%%    set(handles.AlgorithmName6,'string',handles.Valgorithmname6), end
-%%%if isempty(Settings{95}) == 0, handles.Valgorithmname7 = Settings{95}; 
-%%%    set(handles.AlgorithmName7,'string',handles.Valgorithmname7), end
-%%%if isempty(Settings{96}) == 0, handles.Valgorithmname8 = Settings{96}; 
-%%%    set(handles.AlgorithmName8,'string',handles.Valgorithmname8), end
-
+%{
+if isempty(Settings{89}) == 0, handles.Valgorithmname1 = Settings{89}; 
+    set(handles.AlgorithmName1,'string',handles.Valgorithmname1), end
+if isempty(Settings{90}) == 0, handles.Valgorithmname2 = Settings{90}; 
+    set(handles.AlgorithmName2,'string',handles.Valgorithmname2), end
+if isempty(Settings{91}) == 0, handles.Valgorithmname3 = Settings{91}; 
+    set(handles.AlgorithmName3,'string',handles.Valgorithmname3), end
+if isempty(Settings{92}) == 0, handles.Valgorithmname4 = Settings{92}; 
+    set(handles.AlgorithmName4,'string',handles.Valgorithmname4), end
+if isempty(Settings{93}) == 0, handles.Valgorithmname5 = Settings{93}; 
+    set(handles.AlgorithmName5,'string',handles.Valgorithmname5), end
+if isempty(Settings{94}) == 0, handles.Valgorithmname6 = Settings{94}; 
+    set(handles.AlgorithmName6,'string',handles.Valgorithmname6), end
+if isempty(Settings{95}) == 0, handles.Valgorithmname7 = Settings{95}; 
+    set(handles.AlgorithmName7,'string',handles.Valgorithmname7), end
+if isempty(Settings{96}) == 0, handles.Valgorithmname8 = Settings{96}; 
+    set(handles.AlgorithmName8,'string',handles.Valgorithmname8), end
+%}
 if isempty(Settings{97}) == 0, handles.Vpixelsize = Settings{97}; 
     set(handles.PixelSizeEditBox,'string',handles.Vpixelsize); end
 
@@ -732,255 +734,7 @@ for i=1:8,
     end
 end
 
-%%%if isfield(handles,'Vvariable1_01') ==1, 
-%%%    Settings{1} = handles.Vvariable1_01; end
-%%%if isfield(handles,'Vvariable1_02') ==1, 
-%%%    Settings{2} = handles.Vvariable1_02; end
-%%%if isfield(handles,'Vvariable1_03') ==1, 
-%%%    Settings{3} = handles.Vvariable1_03; end
-%%%if isfield(handles,'Vvariable1_04') ==1, 
-%%%    Settings{4} = handles.Vvariable1_04; end
-%%%if isfield(handles,'Vvariable1_05') ==1, 
-%%%    Settings{5} = handles.Vvariable1_05; end
-%%%if isfield(handles,'Vvariable1_06') ==1, 
-%%%    Settings{6} = handles.Vvariable1_06; end
-%%%if isfield(handles,'Vvariable1_07') ==1, 
-%%%    Settings{7} = handles.Vvariable1_07; end
-%%%if isfield(handles,'Vvariable1_08') ==1, 
-%%%    Settings{8} = handles.Vvariable1_08; end
-%%%if isfield(handles,'Vvariable1_09') ==1, 
-%%%    Settings{9} = handles.Vvariable1_09; end
-%%%if isfield(handles,'Vvariable1_10') ==1, 
-%%%    Settings{10} = handles.Vvariable1_10; end
-%%%if isfield(handles,'Vvariable1_11') ==1, 
-%%%    Settings{11} = handles.Vvariable1_11; end
-
-%%%if isfield(handles,'Vvariable2_01') ==1, 
-%%%    Settings{12} = handles.Vvariable2_01; end
-%%%if isfield(handles,'Vvariable2_02') ==1, 
-%%%    Settings{13} = handles.Vvariable2_02; end
-%%%if isfield(handles,'Vvariable2_03') ==1, 
-%%%    Settings{14} = handles.Vvariable2_03; end
-%%%if isfield(handles,'Vvariable2_04') ==1, 
-%%%    Settings{15} = handles.Vvariable2_04; end
-%%%if isfield(handles,'Vvariable2_05') ==1, 
-%%%    Settings{16} = handles.Vvariable2_05; end
-%%%if isfield(handles,'Vvariable2_06') ==1, 
-%%%    Settings{17} = handles.Vvariable2_06; end
-%%%if isfield(handles,'Vvariable2_07') ==1, 
-%%%    Settings{18} = handles.Vvariable2_07; end
-%%%if isfield(handles,'Vvariable2_08') ==1, 
-%%%    Settings{19} = handles.Vvariable2_08; end
-%%%if isfield(handles,'Vvariable2_09') ==1, 
-%%%    Settings{20} = handles.Vvariable2_09; end
-%%%if isfield(handles,'Vvariable2_10') ==1, 
-%%%    Settings{21} = handles.Vvariable2_10; end
-%%%if isfield(handles,'Vvariable2_11') ==1, 
-%%%    Settings{22} = handles.Vvariable2_11; end
-
-%%%if isfield(handles,'Vvariable3_01') ==1, 
-%%%    Settings{23} = handles.Vvariable3_01; end
-%%%if isfield(handles,'Vvariable3_02') ==1, 
-%%%    Settings{24} = handles.Vvariable3_02; end
-%%%if isfield(handles,'Vvariable3_03') ==1, 
-%%%    Settings{25} = handles.Vvariable3_03; end
-%%%if isfield(handles,'Vvariable3_04') ==1, 
-%%%    Settings{26} = handles.Vvariable3_04; end
-%%%if isfield(handles,'Vvariable3_05') ==1, 
-%%%    Settings{27} = handles.Vvariable3_05; end
-%%%if isfield(handles,'Vvariable3_06') ==1, 
-%%%    Settings{28} = handles.Vvariable3_06; end
-%%%if isfield(handles,'Vvariable3_07') ==1, 
-%%%    Settings{29} = handles.Vvariable3_07; end
-%%%if isfield(handles,'Vvariable3_08') ==1, 
-%%%    Settings{30} = handles.Vvariable3_08; end
-%%%if isfield(handles,'Vvariable3_09') ==1, 
-%%%    Settings{31} = handles.Vvariable3_09; end
-%%%if isfield(handles,'Vvariable3_10') ==1, 
-%%%    Settings{32} = handles.Vvariable3_10; end
-%%%if isfield(handles,'Vvariable3_11') ==1, 
-%%%    Settings{33} = handles.Vvariable3_11; end
-
-%%%if isfield(handles,'Vvariable4_01') ==1, 
-%%%    Settings{34} = handles.Vvariable4_01; end
-%%%if isfield(handles,'Vvariable4_02') ==1, 
-%%%    Settings{35} = handles.Vvariable4_02; end
-%%%if isfield(handles,'Vvariable4_03') ==1, 
-%%%    Settings{36} = handles.Vvariable4_03; end
-%%%if isfield(handles,'Vvariable4_04') ==1, 
-%%%    Settings{37} = handles.Vvariable4_04; end
-%%%if isfield(handles,'Vvariable4_05') ==1, 
-%%%    Settings{38} = handles.Vvariable4_05; end
-%%%if isfield(handles,'Vvariable4_06') ==1, 
-%%%    Settings{39} = handles.Vvariable4_06; end
-%%%if isfield(handles,'Vvariable4_07') ==1, 
-%%%    Settings{40} = handles.Vvariable4_07; end
-%%%if isfield(handles,'Vvariable4_08') ==1, 
-%%%    Settings{41} = handles.Vvariable4_08; end
-%%%if isfield(handles,'Vvariable4_09') ==1, 
-%%%    Settings{42} = handles.Vvariable4_09; end
-%%%if isfield(handles,'Vvariable4_10') ==1, 
-%%%    Settings{43} = handles.Vvariable4_10; end
-%%%if isfield(handles,'Vvariable4_11') ==1, 
-%%%    Settings{44} = handles.Vvariable4_11; end
-
-%%%if isfield(handles,'Vvariable5_01') ==1, 
-%%%    Settings{45} = handles.Vvariable5_01; end
-%%%if isfield(handles,'Vvariable5_02') ==1, 
-%%%    Settings{46} = handles.Vvariable5_02; end
-%%%if isfield(handles,'Vvariable5_03') ==1, 
-%%%    Settings{47} = handles.Vvariable5_03; end
-%%%if isfield(handles,'Vvariable5_04') ==1, 
-%%%    Settings{48} = handles.Vvariable5_04; end
-%%%if isfield(handles,'Vvariable5_05') ==1, 
-%%%    Settings{49} = handles.Vvariable5_05; end
-%%%if isfield(handles,'Vvariable5_06') ==1, 
-%%%    Settings{50} = handles.Vvariable5_06; end
-%%%if isfield(handles,'Vvariable5_07') ==1, 
-%%%    Settings{51} = handles.Vvariable5_07; end
-%%%if isfield(handles,'Vvariable5_08') ==1, 
-%%%    Settings{52} = handles.Vvariable5_08; end
-%%%if isfield(handles,'Vvariable5_09') ==1, 
-%%%    Settings{53} = handles.Vvariable5_09; end
-%%%if isfield(handles,'Vvariable5_10') ==1, 
-%%%    Settings{54} = handles.Vvariable5_10; end
-%%%if isfield(handles,'Vvariable5_11') ==1, 
-%%%    Settings{55} = handles.Vvariable5_11; end
-
-%%%if isfield(handles,'Vvariable6_01') ==1, 
-%%%    Settings{56} = handles.Vvariable6_01; end
-%%%if isfield(handles,'Vvariable6_02') ==1, 
-%%%    Settings{57} = handles.Vvariable6_02; end
-%%%if isfield(handles,'Vvariable6_03') ==1, 
-%%%    Settings{58} = handles.Vvariable6_03; end
-%%%if isfield(handles,'Vvariable6_04') ==1, 
-%%%    Settings{59} = handles.Vvariable6_04; end
-%%%if isfield(handles,'Vvariable6_05') ==1, 
-%%%    Settings{60} = handles.Vvariable6_05; end
-%%%if isfield(handles,'Vvariable6_06') ==1, 
-%%%    Settings{61} = handles.Vvariable6_06; end
-%%%if isfield(handles,'Vvariable6_07') ==1, 
-%%%    Settings{62} = handles.Vvariable6_07; end
-%%%if isfield(handles,'Vvariable6_08') ==1, 
-%%%    Settings{63} = handles.Vvariable6_08; end
-%%%if isfield(handles,'Vvariable6_09') ==1, 
-%%%    Settings{64} = handles.Vvariable6_09; end
-%%%if isfield(handles,'Vvariable6_10') ==1, 
-%%%    Settings{65} = handles.Vvariable6_10; end
-%%%if isfield(handles,'Vvariable6_11') ==1, 
-%%%    Settings{66} = handles.Vvariable6_11; end
-
-%%%if isfield(handles,'Vvariable7_01') ==1, 
-%%%    Settings{67} = handles.Vvariable7_01; end
-%%%if isfield(handles,'Vvariable7_02') ==1, 
-%%%    Settings{68} = handles.Vvariable7_02; end
-%%%if isfield(handles,'Vvariable7_03') ==1, 
-%%%    Settings{69} = handles.Vvariable7_03; end
-%%%if isfield(handles,'Vvariable7_04') ==1, 
-%%%    Settings{70} = handles.Vvariable7_04; end
-%%%if isfield(handles,'Vvariable7_05') ==1, 
-%%%    Settings{71} = handles.Vvariable7_05; end
-%%%if isfield(handles,'Vvariable7_06') ==1, 
-%%%    Settings{72} = handles.Vvariable7_06; end
-%%%if isfield(handles,'Vvariable7_07') ==1, 
-%%%    Settings{73} = handles.Vvariable7_07; end
-%%%if isfield(handles,'Vvariable7_08') ==1, 
-%%%    Settings{74} = handles.Vvariable7_08; end
-%%%if isfield(handles,'Vvariable7_09') ==1, 
-%%%    Settings{75} = handles.Vvariable7_09; end
-%%%if isfield(handles,'Vvariable7_10') ==1, 
-%%%    Settings{76} = handles.Vvariable7_10; end
-%%%if isfield(handles,'Vvariable7_11') ==1, 
-%%%    Settings{77} = handles.Vvariable7_11; end
-
-%%%if isfield(handles,'Vvariable8_01') ==1, 
-%%%    Settings{78} = handles.Vvariable8_01; end
-%%%if isfield(handles,'Vvariable8_02') ==1, 
-%%%    Settings{79} = handles.Vvariable8_02; end
-%%%if isfield(handles,'Vvariable8_03') ==1, 
-%%%    Settings{80} = handles.Vvariable8_03; end
-%%%if isfield(handles,'Vvariable8_04') ==1, 
-%%%    Settings{81} = handles.Vvariable8_04; end
-%%%if isfield(handles,'Vvariable8_05') ==1, 
-%%%    Settings{82} = handles.Vvariable8_05; end
-%%%if isfield(handles,'Vvariable8_06') ==1, 
-%%%    Settings{83} = handles.Vvariable8_06; end
-%%%if isfield(handles,'Vvariable8_07') ==1, 
-%%%    Settings{84} = handles.Vvariable8_07; end
-%%%if isfield(handles,'Vvariable8_08') ==1, 
-%%%    Settings{85} = handles.Vvariable8_08; end
-%%%if isfield(handles,'Vvariable8_09') ==1, 
-%%%    Settings{86} = handles.Vvariable8_09; end
-%%%if isfield(handles,'Vvariable8_10') ==1, 
-%%%    Settings{87} = handles.Vvariable8_10; end
-%%%if isfield(handles,'Vvariable8_11') ==1, 
-%%%    Settings{88} = handles.Vvariable8_11; end
-
-%%%if isfield(handles,'Valgorithmname1') ==1, 
-%%%    Settings{89} = handles.Valgorithmname1; end
-%%%if isfield(handles,'Valgorithmname2') ==1, 
-%%%    Settings{90} = handles.Valgorithmname2; end
-%%%if isfield(handles,'Valgorithmname3') ==1, 
-%%%    Settings{91} = handles.Valgorithmname3; end
-%%%if isfield(handles,'Valgorithmname4') ==1, 
-%%%    Settings{92} = handles.Valgorithmname4; end
-%%%if isfield(handles,'Valgorithmname5') ==1, 
-%%%    Settings{93} = handles.Valgorithmname5; end
-%%%if isfield(handles,'Valgorithmname6') ==1,
-%%%     Settings{94} = handles.Valgorithmname6; end
-%%%if isfield(handles,'Valgorithmname7') ==1, 
-%%%    Settings{95} = handles.Valgorithmname7; end
-%%%if isfield(handles,'Valgorithmname8') ==1, 
-%%%    Settings{96} = handles.Valgorithmname8; end
-
-for i=1:8,
-    if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        eval(strcat('Settings{i+88} = handles.Valgorithmname', num2str(i), ';')); end
-end
-
-if isfield(handles,'Vpixelsize') ==1, 
-    Settings{97} = handles.Vpixelsize; end
-
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the settings. Do not forget to type in the desired filename.');
-uiwait(h) 
-
-%%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
-
-helpdlg('The settings file has been written.')
-
-%%% Switches back to the original directory.
-cd(CurrentDirectory)
-
-%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in ExtractSettings.
-function ExtractSettings_Callback(hObject, eventdata, handles)
-%%% Runs a separate function that extracts settings.  I have made this a
-%%% separate function, because I don't want the handles structure of the
-%%% Main GUI to get mixed up with the handles structure loaded from the
-%%% output file.
-extractsettings %%% Note that the handles structure is not an argument.
-
-function extractsettings
-%%% Determines the current directory so it can switch back when done.
-CurrentDirectory = pwd;
-%%% Opens a dialog for the user to select the file from which to extract
-%%% settings.
-[OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
-%%% If the user presses "Cancel", the OutputFileName will = 0 and nothing will
-%%% happen.
-if OutputFileName == 0
-else
-%%% Loads the Output file, which means that the handles structure is
-%%% loaded into the workspace of this function.
-cd(PathName)
-eval(['load ',OutputFileName])
-%%% The following is the same code found in the "Save Settings" button.
-%%% Checks if a field is present, and if it is, the value is stored in the 
-%%% cell array called "Settings". 
-
+%{
 if isfield(handles,'Vvariable1_01') ==1, 
     Settings{1} = handles.Vvariable1_01; end
 if isfield(handles,'Vvariable1_02') ==1, 
@@ -1164,7 +918,280 @@ if isfield(handles,'Vvariable8_10') ==1,
     Settings{87} = handles.Vvariable8_10; end
 if isfield(handles,'Vvariable8_11') ==1, 
     Settings{88} = handles.Vvariable8_11; end
+%}
 
+for i=1:8,
+    if isfield(handles, strcat('Valgorithmname', num2str(i))),
+        eval(strcat('Settings{i+88} = handles.Valgorithmname', num2str(i), ';')); end
+end
+
+%{
+if isfield(handles,'Valgorithmname1') ==1, 
+    Settings{89} = handles.Valgorithmname1; end
+if isfield(handles,'Valgorithmname2') ==1, 
+    Settings{90} = handles.Valgorithmname2; end
+if isfield(handles,'Valgorithmname3') ==1, 
+    Settings{91} = handles.Valgorithmname3; end
+if isfield(handles,'Valgorithmname4') ==1, 
+    Settings{92} = handles.Valgorithmname4; end
+if isfield(handles,'Valgorithmname5') ==1, 
+    Settings{93} = handles.Valgorithmname5; end
+if isfield(handles,'Valgorithmname6') ==1,
+     Settings{94} = handles.Valgorithmname6; end
+if isfield(handles,'Valgorithmname7') ==1, 
+    Settings{95} = handles.Valgorithmname7; end
+if isfield(handles,'Valgorithmname8') ==1, 
+    Settings{96} = handles.Valgorithmname8; end
+%}
+
+if isfield(handles,'Vpixelsize') ==1, 
+    Settings{97} = handles.Vpixelsize; end
+
+h = msgbox('In the next window, select the directory location where you would like to save the new file containing the settings. Do not forget to type in the desired filename.');
+uiwait(h) 
+
+%%% The "Settings" variable is saved to the file name the user chooses.
+VariableToSave = {'Settings'};
+uisave(VariableToSave)
+
+helpdlg('The settings file has been written.')
+
+%%% Switches back to the original directory.
+cd(CurrentDirectory)
+
+%%%%%%%%%%%%%%%%%
+
+% --- Executes on button press in ExtractSettings.
+function ExtractSettings_Callback(hObject, eventdata, handles)
+%%% Runs a separate function that extracts settings.  I have made this a
+%%% separate function, because I don't want the handles structure of the
+%%% Main GUI to get mixed up with the handles structure loaded from the
+%%% output file.
+extractsettings %%% Note that the handles structure is not an argument.
+
+function extractsettings
+%%% Determines the current directory so it can switch back when done.
+CurrentDirectory = pwd;
+%%% Opens a dialog for the user to select the file from which to extract
+%%% settings.
+[OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
+%%% If the user presses "Cancel", the OutputFileName will = 0 and nothing will
+%%% happen.
+if OutputFileName == 0
+else
+%%% Loads the Output file, which means that the handles structure is
+%%% loaded into the workspace of this function.
+cd(PathName)
+eval(['load ',OutputFileName])
+%%% The following is the same code found in the "Save Settings" button.
+%%% Checks if a field is present, and if it is, the value is stored in the 
+%%% cell array called "Settings". 
+
+for i=1:8,
+    for j=1:11,
+        if (j < 10)
+            stringend = strcat('0',num2str(j));
+        else
+            stringend = num2str(j);
+        end
+        if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
+            eval(strcat('Settings{(i-1)*11 + j} =  handles.Vvariable',num2str(i),'_',stringend,';'));
+        end
+    end
+end
+
+%{
+if isfield(handles,'Vvariable1_01') ==1, 
+    Settings{1} = handles.Vvariable1_01; end
+if isfield(handles,'Vvariable1_02') ==1, 
+    Settings{2} = handles.Vvariable1_02; end
+if isfield(handles,'Vvariable1_03') ==1, 
+    Settings{3} = handles.Vvariable1_03; end
+if isfield(handles,'Vvariable1_04') ==1, 
+    Settings{4} = handles.Vvariable1_04; end
+if isfield(handles,'Vvariable1_05') ==1, 
+    Settings{5} = handles.Vvariable1_05; end
+if isfield(handles,'Vvariable1_06') ==1, 
+    Settings{6} = handles.Vvariable1_06; end
+if isfield(handles,'Vvariable1_07') ==1, 
+    Settings{7} = handles.Vvariable1_07; end
+if isfield(handles,'Vvariable1_08') ==1, 
+    Settings{8} = handles.Vvariable1_08; end
+if isfield(handles,'Vvariable1_09') ==1, 
+    Settings{9} = handles.Vvariable1_09; end
+if isfield(handles,'Vvariable1_10') ==1, 
+    Settings{10} = handles.Vvariable1_10; end
+if isfield(handles,'Vvariable1_11') ==1, 
+    Settings{11} = handles.Vvariable1_11; end
+
+if isfield(handles,'Vvariable2_01') ==1, 
+    Settings{12} = handles.Vvariable2_01; end
+if isfield(handles,'Vvariable2_02') ==1, 
+    Settings{13} = handles.Vvariable2_02; end
+if isfield(handles,'Vvariable2_03') ==1, 
+    Settings{14} = handles.Vvariable2_03; end
+if isfield(handles,'Vvariable2_04') ==1, 
+    Settings{15} = handles.Vvariable2_04; end
+if isfield(handles,'Vvariable2_05') ==1, 
+    Settings{16} = handles.Vvariable2_05; end
+if isfield(handles,'Vvariable2_06') ==1, 
+    Settings{17} = handles.Vvariable2_06; end
+if isfield(handles,'Vvariable2_07') ==1, 
+    Settings{18} = handles.Vvariable2_07; end
+if isfield(handles,'Vvariable2_08') ==1, 
+    Settings{19} = handles.Vvariable2_08; end
+if isfield(handles,'Vvariable2_09') ==1, 
+    Settings{20} = handles.Vvariable2_09; end
+if isfield(handles,'Vvariable2_10') ==1, 
+    Settings{21} = handles.Vvariable2_10; end
+if isfield(handles,'Vvariable2_11') ==1, 
+    Settings{22} = handles.Vvariable2_11; end
+
+if isfield(handles,'Vvariable3_01') ==1, 
+    Settings{23} = handles.Vvariable3_01; end
+if isfield(handles,'Vvariable3_02') ==1, 
+    Settings{24} = handles.Vvariable3_02; end
+if isfield(handles,'Vvariable3_03') ==1, 
+    Settings{25} = handles.Vvariable3_03; end
+if isfield(handles,'Vvariable3_04') ==1, 
+    Settings{26} = handles.Vvariable3_04; end
+if isfield(handles,'Vvariable3_05') ==1, 
+    Settings{27} = handles.Vvariable3_05; end
+if isfield(handles,'Vvariable3_06') ==1, 
+    Settings{28} = handles.Vvariable3_06; end
+if isfield(handles,'Vvariable3_07') ==1, 
+    Settings{29} = handles.Vvariable3_07; end
+if isfield(handles,'Vvariable3_08') ==1, 
+    Settings{30} = handles.Vvariable3_08; end
+if isfield(handles,'Vvariable3_09') ==1, 
+    Settings{31} = handles.Vvariable3_09; end
+if isfield(handles,'Vvariable3_10') ==1, 
+    Settings{32} = handles.Vvariable3_10; end
+if isfield(handles,'Vvariable3_11') ==1, 
+    Settings{33} = handles.Vvariable3_11; end
+
+if isfield(handles,'Vvariable4_01') ==1, 
+    Settings{34} = handles.Vvariable4_01; end
+if isfield(handles,'Vvariable4_02') ==1, 
+    Settings{35} = handles.Vvariable4_02; end
+if isfield(handles,'Vvariable4_03') ==1, 
+    Settings{36} = handles.Vvariable4_03; end
+if isfield(handles,'Vvariable4_04') ==1, 
+    Settings{37} = handles.Vvariable4_04; end
+if isfield(handles,'Vvariable4_05') ==1, 
+    Settings{38} = handles.Vvariable4_05; end
+if isfield(handles,'Vvariable4_06') ==1, 
+    Settings{39} = handles.Vvariable4_06; end
+if isfield(handles,'Vvariable4_07') ==1, 
+    Settings{40} = handles.Vvariable4_07; end
+if isfield(handles,'Vvariable4_08') ==1, 
+    Settings{41} = handles.Vvariable4_08; end
+if isfield(handles,'Vvariable4_09') ==1, 
+    Settings{42} = handles.Vvariable4_09; end
+if isfield(handles,'Vvariable4_10') ==1, 
+    Settings{43} = handles.Vvariable4_10; end
+if isfield(handles,'Vvariable4_11') ==1, 
+    Settings{44} = handles.Vvariable4_11; end
+
+if isfield(handles,'Vvariable5_01') ==1, 
+    Settings{45} = handles.Vvariable5_01; end
+if isfield(handles,'Vvariable5_02') ==1, 
+    Settings{46} = handles.Vvariable5_02; end
+if isfield(handles,'Vvariable5_03') ==1, 
+    Settings{47} = handles.Vvariable5_03; end
+if isfield(handles,'Vvariable5_04') ==1, 
+    Settings{48} = handles.Vvariable5_04; end
+if isfield(handles,'Vvariable5_05') ==1, 
+    Settings{49} = handles.Vvariable5_05; end
+if isfield(handles,'Vvariable5_06') ==1, 
+    Settings{50} = handles.Vvariable5_06; end
+if isfield(handles,'Vvariable5_07') ==1, 
+    Settings{51} = handles.Vvariable5_07; end
+if isfield(handles,'Vvariable5_08') ==1, 
+    Settings{52} = handles.Vvariable5_08; end
+if isfield(handles,'Vvariable5_09') ==1, 
+    Settings{53} = handles.Vvariable5_09; end
+if isfield(handles,'Vvariable5_10') ==1, 
+    Settings{54} = handles.Vvariable5_10; end
+if isfield(handles,'Vvariable5_11') ==1, 
+    Settings{55} = handles.Vvariable5_11; end
+
+if isfield(handles,'Vvariable6_01') ==1, 
+    Settings{56} = handles.Vvariable6_01; end
+if isfield(handles,'Vvariable6_02') ==1, 
+    Settings{57} = handles.Vvariable6_02; end
+if isfield(handles,'Vvariable6_03') ==1, 
+    Settings{58} = handles.Vvariable6_03; end
+if isfield(handles,'Vvariable6_04') ==1, 
+    Settings{59} = handles.Vvariable6_04; end
+if isfield(handles,'Vvariable6_05') ==1, 
+    Settings{60} = handles.Vvariable6_05; end
+if isfield(handles,'Vvariable6_06') ==1, 
+    Settings{61} = handles.Vvariable6_06; end
+if isfield(handles,'Vvariable6_07') ==1, 
+    Settings{62} = handles.Vvariable6_07; end
+if isfield(handles,'Vvariable6_08') ==1, 
+    Settings{63} = handles.Vvariable6_08; end
+if isfield(handles,'Vvariable6_09') ==1, 
+    Settings{64} = handles.Vvariable6_09; end
+if isfield(handles,'Vvariable6_10') ==1, 
+    Settings{65} = handles.Vvariable6_10; end
+if isfield(handles,'Vvariable6_11') ==1, 
+    Settings{66} = handles.Vvariable6_11; end
+
+if isfield(handles,'Vvariable7_01') ==1, 
+    Settings{67} = handles.Vvariable7_01; end
+if isfield(handles,'Vvariable7_02') ==1, 
+    Settings{68} = handles.Vvariable7_02; end
+if isfield(handles,'Vvariable7_03') ==1, 
+    Settings{69} = handles.Vvariable7_03; end
+if isfield(handles,'Vvariable7_04') ==1, 
+    Settings{70} = handles.Vvariable7_04; end
+if isfield(handles,'Vvariable7_05') ==1, 
+    Settings{71} = handles.Vvariable7_05; end
+if isfield(handles,'Vvariable7_06') ==1, 
+    Settings{72} = handles.Vvariable7_06; end
+if isfield(handles,'Vvariable7_07') ==1, 
+    Settings{73} = handles.Vvariable7_07; end
+if isfield(handles,'Vvariable7_08') ==1, 
+    Settings{74} = handles.Vvariable7_08; end
+if isfield(handles,'Vvariable7_09') ==1, 
+    Settings{75} = handles.Vvariable7_09; end
+if isfield(handles,'Vvariable7_10') ==1, 
+    Settings{76} = handles.Vvariable7_10; end
+if isfield(handles,'Vvariable7_11') ==1, 
+    Settings{77} = handles.Vvariable7_11; end
+
+if isfield(handles,'Vvariable8_01') ==1, 
+    Settings{78} = handles.Vvariable8_01; end
+if isfield(handles,'Vvariable8_02') ==1, 
+    Settings{79} = handles.Vvariable8_02; end
+if isfield(handles,'Vvariable8_03') ==1, 
+    Settings{80} = handles.Vvariable8_03; end
+if isfield(handles,'Vvariable8_04') ==1, 
+    Settings{81} = handles.Vvariable8_04; end
+if isfield(handles,'Vvariable8_05') ==1, 
+    Settings{82} = handles.Vvariable8_05; end
+if isfield(handles,'Vvariable8_06') ==1, 
+    Settings{83} = handles.Vvariable8_06; end
+if isfield(handles,'Vvariable8_07') ==1, 
+    Settings{84} = handles.Vvariable8_07; end
+if isfield(handles,'Vvariable8_08') ==1, 
+    Settings{85} = handles.Vvariable8_08; end
+if isfield(handles,'Vvariable8_09') ==1, 
+    Settings{86} = handles.Vvariable8_09; end
+if isfield(handles,'Vvariable8_10') ==1, 
+    Settings{87} = handles.Vvariable8_10; end
+if isfield(handles,'Vvariable8_11') ==1, 
+    Settings{88} = handles.Vvariable8_11; end
+%}
+
+for i=1:8,
+    if isfield(handles, strcat('Valgorithmname', num2str(i))),
+        eval(strcat('Settings{i+88} = handles.Valgorithmname', num2str(i), ';')); end
+end
+
+%{
 if isfield(handles,'Valgorithmname1') ==1, 
     Settings{89} = handles.Valgorithmname1; end
 if isfield(handles,'Valgorithmname2') ==1, 
@@ -1181,6 +1208,7 @@ if isfield(handles,'Valgorithmname7') ==1,
     Settings{95} = handles.Valgorithmname7; end
 if isfield(handles,'Valgorithmname8') ==1, 
     Settings{96} = handles.Valgorithmname8; end
+%}
 
 if isfield(handles,'Vpixelsize') ==1, 
     Settings{97} = handles.Vpixelsize; end
@@ -1359,10 +1387,19 @@ end;
 %%% not used in the new algorithm (they would remain intact and not be
 %%% overwritten). Before removing a variable, you have to check that the
 %%% variable exists or else the 'rmfield' function gives an error.
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
+    
+    for i=1:11,
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',num2str(i));
+        if isfield(handles,ConstructedName) == 1;
+            handles = rmfield(handles, ConstructedName);
+        end;
+    end;
+
+%{
+            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
-              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
+             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
@@ -1371,7 +1408,7 @@ end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
+             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
@@ -1380,7 +1417,7 @@ end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
             if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
+             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
@@ -1392,6 +1429,7 @@ end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
+%}
 
 %%% 6. The last two characters (=.m) are removed from the
 %%% AlgorithmName.m and called AlgorithmName.
@@ -1412,88 +1450,114 @@ set(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
 fid=fopen(AlgorithmNamedotm);
       while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-          if       strncmp(output,'%textVAR1 ',10) == 1; 
-              set(handles.VariableDescription1,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR2 ',10) == 1; 
-              set(handles.VariableDescription2,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR3 ',10) == 1; 
-              set(handles.VariableDescription3,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR4 ',10) == 1; 
-              set(handles.VariableDescription4,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR5 ',10) == 1; 
-              set(handles.VariableDescription5,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR6 ',10) == 1; 
-              set(handles.VariableDescription6,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR7 ',10) == 1; 
-              set(handles.VariableDescription7,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR8 ',10) == 1; 
-              set(handles.VariableDescription8,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR9 ',10) == 1; 
-              set(handles.VariableDescription9,'string',output(12:end),'visible','on');
-          elseif strncmp(output,'%textVAR10',10) == 1; 
-              set(handles.VariableDescription10,'string',output(13:end),'visible','on');
-          elseif strncmp(output,'%textVAR11',10) == 1; 
-              set(handles.VariableDescription11,'string',output(13:end),'visible','on');
-%%% 9. The default value for each variable is extracted from the algorithm's       
-%%% .m file and displayed. The variables' values are stored in the handles structure.
 
-     elseif strncmp(output,'%defaultVAR1 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox1,'string',displayval,'visible','on');
-              set(handles.VariableDescription1,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','01');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR2 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox2,'string',displayval,'visible','on');
-              set(handles.VariableDescription2,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','02');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR3 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox3,'string',displayval,'visible','on');
-              set(handles.VariableDescription3,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','03');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR4 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox4,'string',displayval,'visible','on');
-              set(handles.VariableDescription4,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','04');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR5 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox5,'string',displayval,'visible','on');
-              set(handles.VariableDescription5,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','05');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR6 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox6,'string',displayval,'visible','on');
-              set(handles.VariableDescription6,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','06');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR7 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox7,'string',displayval,'visible','on');
-              set(handles.VariableDescription7,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','07');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR8 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox8,'string',displayval,'visible','on');
-              set(handles.VariableDescription8,'visible','on');
-           ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','08');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR9 ',13) == 1; displayval = output(16:end);
-              set(handles.VariableBox9,'string',displayval,'visible','on');
-              set(handles.VariableDescription9,'visible','on');
-          ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','09');
-              eval([ConstructedName, '= displayval;']);
-     elseif strncmp(output,'%defaultVAR10 ',13) == 1; displayval = output(17:end);
-              set(handles.VariableBox10,'string',displayval,'visible','on');
-              set(handles.VariableDescription10,'visible','on');
-           ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','10');
-              eval([ConstructedName, '= displayval;']);
-   elseif strncmp(output,'%defaultVAR11 ',13) == 1; displayval = output(17:end);
-              set(handles.VariableBox11,'string',displayval,'visible','on');
-              set(handles.VariableDescription11,'visible','on');
-           ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','11');
-              eval([ConstructedName, '= displayval;']);
-          end
+        
+        j=0;
+        for i=1:11,
+            if j == 1;
+                break;
+            elseif i < 10;
+                if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
+                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(12:end),'visible', 'on');
+                    j=1;
+                end
+            else
+                if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
+                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(13:end),'visible', 'on');
+                    j=1
+                end
+            end
+        end
+        
+%{
+        if strncmp(output,'%textVAR1 ',10) == 1;
+            set(handles.VariableDescription1,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR2 ',10) == 1;
+            set(handles.VariableDescription2,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR3 ',10) == 1;
+            set(handles.VariableDescription3,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR4 ',10) == 1;
+            set(handles.VariableDescription4,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR5 ',10) == 1;
+            set(handles.VariableDescription5,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR6 ',10) == 1;
+            set(handles.VariableDescription6,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR7 ',10) == 1;
+            set(handles.VariableDescription7,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR8 ',10) == 1;
+            set(handles.VariableDescription8,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR9 ',10) == 1;
+            set(handles.VariableDescription9,'string',output(12:end),'visible','on');
+        elseif strncmp(output,'%textVAR10',10) == 1;
+            set(handles.VariableDescription10,'string',output(13:end),'visible','on');
+        elseif strncmp(output,'%textVAR11',10) == 1;
+            set(handles.VariableDescription11,'string',output(13:end),'visible','on');
+
+
+            %%% 9. The default value for each variable is extracted from the algorithm's
+            %%% .m file and displayed. The variables' values are stored in the handles structure.
+
+        elseif strncmp(output,'%defaultVAR1 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox1,'string',displayval,'visible','on');
+            set(handles.VariableDescription1,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','01');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR2 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox2,'string',displayval,'visible','on');
+            set(handles.VariableDescription2,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','02');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR3 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox3,'string',displayval,'visible','on');
+            set(handles.VariableDescription3,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','03');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR4 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox4,'string',displayval,'visible','on');
+            set(handles.VariableDescription4,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','04');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR5 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox5,'string',displayval,'visible','on');
+            set(handles.VariableDescription5,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','05');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR6 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox6,'string',displayval,'visible','on');
+            set(handles.VariableDescription6,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','06');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR7 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox7,'string',displayval,'visible','on');
+            set(handles.VariableDescription7,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','07');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR8 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox8,'string',displayval,'visible','on');
+            set(handles.VariableDescription8,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','08');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR9 ',13) == 1; displayval = output(16:end);
+            set(handles.VariableBox9,'string',displayval,'visible','on');
+            set(handles.VariableDescription9,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','09');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR10 ',13) == 1; displayval = output(17:end);
+            set(handles.VariableBox10,'string',displayval,'visible','on');
+            set(handles.VariableDescription10,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','10');
+            eval([ConstructedName, '= displayval;']);
+        elseif strncmp(output,'%defaultVAR11 ',13) == 1; displayval = output(17:end);
+            set(handles.VariableBox11,'string',displayval,'visible','on');
+            set(handles.VariableDescription11,'visible','on');
+            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','11');
+            eval([ConstructedName, '= displayval;']);
+
+        end
+
+%}
       end
+      
 fclose(fid);
 end
 

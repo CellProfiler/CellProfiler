@@ -1018,7 +1018,7 @@ if (length(AlgorithmHighlighted) > 0)
             if (i <= handles.numVariables(AlgorithmNumber))
                 if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
                     vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
-                    if ( ( length(vVariableString) > 20) | (flagExist) )
+                    if ( ( length(vVariableString) > 13) | (flagExist) )
                         numberOfLongBoxes = numberOfLongBoxes+1;
                         set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
                     else

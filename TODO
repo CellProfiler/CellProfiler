@@ -13,13 +13,13 @@ Infrastructure improvements:
 
      - Use the User's preference for font size for all figure displays and dialog boxes.
 
-     -Done- Make the help button next to the image/data tools work.  It should pop open a listbox asking you to choose which tool's help you would like to see, and then it should extract the help from the tool's m-file.  The listbox should also give general help, i.e. "You can add your own tools by writing Matlab m-files, placing them in the ImageTools or DataTools folder, and restarting CellProfiler."
+     - For the Data tool "Plot Data", when choosing histograms, the dialog box that asks for input from the user (~6 questions) has text that does not fit in the window.  Also, add a checkbox specifying whether to display the results or not (in case the user only wanted to export the raw histogram data). Also, when filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier.
 
-     -Done- When adding a module to the pipeline, check to see whether more than one function with that name exists on the Matlab search path. If so, warn the user, tell the user which pathname to the function will most likely be used, but warn them that this may change if the path is changed by adding modules from another directory.  Suggest that if the module has the same name as a Matlab function, they should consider renaming the module to prevent confusion.
+     - For the Export Mean Data DataTool, ask the user whether whether they want images or measurements as rows vs. columns (see ExportCellByCell for an example).
 
-     -Done- When adding a module to the pipeline, CellProfiler checks in a fairly rudimentary way whether it is a valid CellProfiler module and warns the user. However, the module is then half-loaded so nothing works properly and you have to restart CellProfiler. This checking should be more sophisticated, and should recover by not loading the module at all.
+     - (low priority) For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
 
-     -Done- In CellProfiler.m, check whether the guidata lines are necessary (marked with a TODO).  (They were unnecessary)
+     - For the image and data tools help, doubleclicking in the listbox should call the okbuttoncallback function.
 
      - Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if ModuleNames was a 6 x 1 cell rather than 1 x 6. 
 Settings =      ModuleNames: {1x6 cell}
@@ -50,9 +50,6 @@ Settings =      ModuleNames: {1x6 cell}
      - 'Start job midway' module, run image set #XXXX (allow putting
        in a bunch of comma-delimited numbers to allow random), every
        50th. 
-
-     - Timer: Have the time for first set separate from the time for
-       subsequent sets. 
 
      - Have the save settings function automatically add SET to the
        name > can't currently do it with uisave. 
@@ -158,8 +155,6 @@ Image analysis modules - New:
        1;32 Database issue:D319-22. PMID: 14681423  
 
 Image analysis modules - Improvements:
-
-     DONE!! - Allow the Save Images module to deal with different bit depths, in case the user wants to save images in 16-bit (e.g. with PNG or JPG). Also allow the user to save an image as a binary (black/white rather than grayscale, so that any nonzero pixels = 1, most useful for viewing a label matrix).
 
      - Remove all 'cd' commands from modules.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
 
@@ -428,4 +423,21 @@ After IAP is completed, do the following prior to releasing the new version:
 - M Lint error checking
 - Check for TODO's
 - Test every module & button
+- Especially, try canceling and closing & opening figure windows
 - Prepare updated manual
+
+DONE DURING IAP>>>>>>>
+
+     -Done- Make the help button next to the image/data tools work.  It should pop open a listbox asking you to choose which tool's help you would like to see, and then it should extract the help from the tool's m-file.  The listbox should also give general help, i.e. "You can add your own tools by writing Matlab m-files, placing them in the ImageTools or DataTools folder, and restarting CellProfiler."
+
+     -Done- When adding a module to the pipeline, check to see whether more than one function with that name exists on the Matlab search path. If so, warn the user, tell the user which pathname to the function will most likely be used, but warn them that this may change if the path is changed by adding modules from another directory.  Suggest that if the module has the same name as a Matlab function, they should consider renaming the module to prevent confusion.
+
+     -Done- When adding a module to the pipeline, CellProfiler checks in a fairly rudimentary way whether it is a valid CellProfiler module and warns the user. However, the module is then half-loaded so nothing works properly and you have to restart CellProfiler. This checking should be more sophisticated, and should recover by not loading the module at all.
+
+     -Done- In CellProfiler.m, check whether the guidata lines are necessary (marked with a TODO).  (They were unnecessary)
+
+     DONE!! - Allow the Save Images module to deal with different bit depths, in case the user wants to save images in 16-bit (e.g. with PNG or JPG). Also allow the user to save an image as a binary (black/white rather than grayscale, so that any nonzero pixels = 1, most useful for viewing a label matrix).
+
+     -Almost done- Timer: Have the time for first set separate from the time for
+       subsequent sets. 
+

@@ -2,6 +2,7 @@ CellProfiler cell image analysis software development
 November 8, 2004
 
 Infrastructure improvements:
+- When viewing algorithms in the main GUI, the down arrow should move from one highlighted algorithm to the next (right now, the dotted line highlighting moves but nothing happens).
 - In the main GUI, add a box to enter the default output directory.  Make all kinds of changes to default/working/current directories.
 - Allow running on a cluster in interactive mode
 - Allow running on a cluster in batch mode
@@ -38,6 +39,7 @@ Image analysis modules - New:
 - Try to get code for yeast segmentation from this paper, and incorporate it into CellProfiler: SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan 1;32 Database issue:D319-22. PMID: 14681423 
 
 Image analysis modules - Improvements:
+- Save Image As module: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird).
 - Add more texture measurements to the MeasureIntensityTexture module. Perhaps use texture measurements from Murphy, Velliste, and Porreca 2003.  The image processing toolbox 5.0.1 has new texture analysis tools, though they would need to be adapted to deal with individual objects rather than entire images: 
 entropy -- Calculates the entropy of an intensity image
 entropyfilt -- Calculates the local entropy of an intensity image

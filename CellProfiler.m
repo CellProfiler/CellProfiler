@@ -805,7 +805,7 @@ else
         AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
         if exist(AlgorithmNamedotm,'file')
             FullPathname = which(AlgorithmNamedotm)
-            [Pathname, filename, ext, versn] = fileparts(FullPathname)
+            [Pathname, filename, ext, versn] = fileparts(FullPathname);
         else
             Pathname = uigetdir('','Please select directory where modules are located');
         end
@@ -850,14 +850,16 @@ cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 function [vVariable numVariables VarRevNum] = LoadSettings_Helper(Pathname, AlgorithmName)
+
+vVariable = {[]};
+VarRevNum = 0;
+numVariables = 0;
+
 try
     AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
     fid=fopen(fullfile(Pathname,AlgorithmNamedotm));
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-        vVariable = {[]};
-        VarRevNum = 0;
-        numVariables = 0;
         if (strncmp(output,'%defaultVAR',11) == 1),
             displayval = output(17:end);
             istr = output(12:13);
@@ -872,7 +874,7 @@ try
 catch
     errordlg('Algorithm could not be found in directory specified','Error')
 end
-    
+
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveSettingsButton.

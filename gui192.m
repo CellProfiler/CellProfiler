@@ -727,15 +727,15 @@ CurrentDirectory = pwd;
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
-for i=1:8,
-    for j=1:11,
+for i=1:handles.numAlgorithms,
+    for j=1:handles.numVariables,
         if (j < 10)
             stringend = strcat('0',num2str(j));
         else
             stringend = num2str(j);
         end
         if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-            Settings{(i-1)*11 + j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
+            Settings{(i-1)*handles.numVariables + j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
     end
 end
 
@@ -925,9 +925,9 @@ if isfield(handles,'Vvariable8_11') ==1,
     Settings{88} = handles.Vvariable8_11; end
 %}
 
-for i=1:8,
+for i=1:handles.numAlgorithms,
     if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        Settings{i+88} = handles.(['Valgorithmname',num2str(i)]); end
+        Settings{i+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',num2str(i)]); end
 end
 
 %{
@@ -950,7 +950,7 @@ if isfield(handles,'Valgorithmname8') ==1,
 %}
 
 if isfield(handles,'Vpixelsize') ==1, 
-    Settings{97} = handles.Vpixelsize; end
+    Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; end
 
 h = msgbox('In the next window, select the directory location where you would like to save the new file containing the settings. Do not forget to type in the desired filename.');
 uiwait(h) 
@@ -992,15 +992,15 @@ eval(['load ',OutputFileName])
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
-for i=1:8,
-    for j=1:11,
+for i=1:handles.numAlgorithms,
+    for j=1:handles.numVariables,
         if (j < 10)
             stringend = strcat('0',num2str(j));
         else
             stringend = num2str(j);
         end
         if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-            Settings{(i-1)*11+j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
+            Settings{(i-1)*handles.numVariables+j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
     end
 end
 
@@ -1190,9 +1190,9 @@ if isfield(handles,'Vvariable8_11') ==1,
     Settings{88} = handles.Vvariable8_11; end
 %}
 
-for i=1:8,
+for i=1:handles.numAlgorithms,
     if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        Settings{i+88} = handles.(['Valgorithmname',num2str(i)]); end
+        Settings{i+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',num2str(i)]); end
 end
 
 %{
@@ -1215,7 +1215,7 @@ if isfield(handles,'Valgorithmname8') ==1,
 %}
 
 if isfield(handles,'Vpixelsize') ==1, 
-    Settings{97} = handles.Vpixelsize; end
+    Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; end
 
 h = msgbox('In the next window, select the directory location where you would like to save the new file containing the extracted settings. Do not forget to type in the desired filename.');
 uiwait(h) 
@@ -1296,6 +1296,13 @@ end
 %%% LOAD BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%
 
+% --- Executes on button press in LoadAlgorithm.
+function LoadAlgorithm_Callback(hObject,eventdata,handles)
+algName = get(hObject,'tag');
+numAlg = trimstr(algName,'LoadAlgorithm','left');
+loadalgorithm(num2str(numAlg),handles);
+
+%{
 % --- Executes on button press in LoadAlgorithm1.
 function LoadAlgorithm1_Callback(hObject, eventdata, handles)
 loadalgorithm('1', handles);
@@ -1320,7 +1327,7 @@ loadalgorithm('7', handles);
 % --- Executes on button press in LoadAlgorithm8.
 function LoadAlgorithm8_Callback(hObject, eventdata, handles)
 loadalgorithm('8', handles);
-
+%}
 %%%%%%%
 
 function loadalgorithm(AlgorithmNumber, handles)
@@ -3748,9 +3755,9 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','off')
                 set(handles.SaveCurrentSettingsButton,'enable','off')
                 set(handles.ExtractSettings,'enable','off')
-                for i=1:8;
-                    set(eval(strcat('handles.LoadAlgorithm',num2str(i))),'visible','off');
-                    set(eval(strcat('handles.ClearAlgorithm',num2str(i))),'visible','off');
+                for i=1:handles.numAlgorithms;
+                    set(handles.(['LoadAlgorithm',num2str(i)]),'visible','off');
+                    set(handles.(['ClearAlgorithm',num2str(i)]),'visible','off');
                     set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','off');
                 end
                 for i=1:11;
@@ -4644,6 +4651,71 @@ guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%%%%%
 %%% Aux Functions %%%
 %%%%%%%%%%%%%%%%%%%%%
+
+function y = trimstr( s, stripchars, leftorright )
+%TRIMSTR  Strip the whitespace and the defined characters from string.
+%   TRIMSTR( S, CHARS, LEFTORRIGHT ) strips the whitespace and the
+%   characters defined in CHARS from the string S. By default both sides 
+%   will be trimmed. With 'left' or 'right' you may choose to trim the  
+%   leading or trailing part only.
+%
+%   Examples:    o trimstr( ', a, b, c,', ',' )         --> 'a, b, c'
+%                o trimstr( ', a, b, c,', 'left' )      --> ', a, b, c,'
+%                o trimstr( ', a, b, c,', ',', 'left' ) --> 'a, b, c,'
+
+if isempty( s )
+  y = s([]);
+else
+ if ~ischar( s )
+   error( 'Input must be a string (char array).' );
+ end
+ 
+   % arguments
+ sc = '';        % stripchars
+ lor = 0;        % leftorright (0: both, 1: left, 2: right)
+ if (nargin == 2)
+   if strcmpi( stripchars, 'left' )
+     lor = 1; 
+   elseif strcmpi( stripchars, 'right' )
+     lor = 2; 
+   else
+     sc = stripchars;
+   end;
+  elseif nargin == 3
+    sc = stripchars;
+    if strcmpi( leftorright, 'left' )
+      lor = 1; 
+    elseif strcmpi( leftorright, 'right' )
+      lor = 2; 
+    else
+      error( 'Third argument must be ''left'' or ''right''' );
+    end;
+  end
+     
+    % start, end index
+  ind1 = 1;               
+  ind2 = size( s, 2 );
+  
+    % get indexes (avoiding ismember if possible is faster)
+  if isempty( sc )
+    ind = find( ~isspace( s ) );
+  else
+    ind = find( ~isspace( s ) & ~ismember( s, sc ) );
+  end;
+  if (lor == 0) | (lor == 1)
+    ind1 = min( ind );
+  end; %if both or left side
+  if (lor == 0) | (lor == 2)
+    ind2 = max( ind );
+  end; %if both or right side
+   
+    % output the trimmed string
+  y = s(ind1:ind2);
+  if isempty( y )
+    y = s([]);
+  end;  
+     
+end; %if s isempty
 
 
 %%%%%%%%%%%%%%%%%%%

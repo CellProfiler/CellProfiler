@@ -253,7 +253,7 @@ if SetBeingAnalyzed == 1
             fieldname = ['Pathname', ImageName{n}];
             handles.Pipeline.(fieldname) = SpecifiedPathname;
             %% for reference in saved files
-            handles.Measurements.GeneralInfo.(fieldname) = SpecifiedPathname;
+            handles.Measurements.(fieldname) = SpecifiedPathname;
             NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
             clear FileList % Prevents confusion when loading this value later, for each image set.
        end
@@ -330,7 +330,7 @@ for n = 1:4
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Also saved to the handles.Measurements structure for reference in output files.
-            handles.Measurements.GeneralInfo.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+            handles.Measurements.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Saves the loaded image to the handles structure.  The field is named
             %%% appropriately based on the user's input, and put into the Pipeline
             %%% substructure so it will be deleted at the end of the analysis batch.

@@ -324,7 +324,8 @@ PrelimLabelMatrixImage1 = bwlabel(ThresholdedImage);
 AreaLocations = find(PrelimLabelMatrixImage1);
 AreaLabels = PrelimLabelMatrixImage1(AreaLocations);
 drawnow
-%%% Creates a sparse matrix with column as label and row as location, with
+%%% Creates a sparse matrix with column as label and row as location,
+%%% with
 %%% a 1 at (A,B) if location A has label B.  Summing the columns gives the
 %%% count of area pixels with a given label.  E.g. Areas(L) is the number
 %%% of pixels with label L.
@@ -336,7 +337,7 @@ PrelimLabelMatrixImage2 = PrelimLabelMatrixImage1;
 PrelimLabelMatrixImage2(AreasImage < MinSize) = 0;
 %%% Relabels so that labels are consecutive. This is important for
 %%% downstream modules (IdentifySec).
-PrelimLabelMatrixImage2 = bwlabel(im2bw(PrelimLabelMatrixImage2,.1));
+PrelimLabelMatrixImage2 = bwlabel(im2bw(PrelimLabelMatrixImage2,.5));
 drawnow
 %%% Overwrites the large objects with zeros.
 PrelimLabelMatrixImage3 = PrelimLabelMatrixImage2;
@@ -350,7 +351,7 @@ PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
 end
 %%% Converts PrelimLabelMatrixImage4 to binary.
-FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,1);
+FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,.5);
 %%% Converts the image to label matrix format. It is necessary to do this
 %%% in order to "compact" the label matrix: this way, each number
 %%% corresponds to an object, with no numbers skipped.
@@ -385,7 +386,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Creates the structuring element that will be used for dilation.
     StructuringElement = strel('square',3);
     %%% Converts the FinalLabelMatrixImage to binary.
-    FinalBinaryImage = im2bw(FinalLabelMatrixImage,1);
+    FinalBinaryImage = im2bw(FinalLabelMatrixImage,.5);
     %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
     DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
     %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,

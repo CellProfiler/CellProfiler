@@ -299,7 +299,7 @@ drawnow
 %%% that objects whose nuclei are on the edge of the image and who are
 %%% larger or smaller than the specified size are discarded.
 %%% Converts the EditedPrimaryBinaryImage to binary.
-EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage);
+EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
 %%% Finds the locations and labels for different regions.
 area_locations2 = find(PropagatedImage);
 area_labels2 = PropagatedImage(area_locations2);

@@ -340,7 +340,7 @@ PrelimLabelMatrixImage2 = PrelimLabelMatrixImage1;
 PrelimLabelMatrixImage2(AreasImage < MinSize) = 0;
 %%% Relabels so that labels are consecutive. This is important for
 %%% downstream modules (IdentifySec).
-PrelimLabelMatrixImage2 = bwlabel(im2bw(PrelimLabelMatrixImage2,.1));
+PrelimLabelMatrixImage2 = bwlabel(im2bw(PrelimLabelMatrixImage2,.5));
 %%% The large objects are overwritten with zeros.
 drawnow
 PrelimLabelMatrixImage3 = PrelimLabelMatrixImage2;
@@ -356,7 +356,7 @@ end
 
 %%% The PrelimLabelMatrixImage4 is converted to binary.
 drawnow
-FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,1);
+FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,.5);
 %%% Holes in the FinalBinaryPre image are filled in.
 FinalBinary = imfill(FinalBinaryPre, 'holes');
 %%% The image is converted to label matrix format. Even if the above step
@@ -397,7 +397,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Creates the structuring element that will be used for dilation.
     StructuringElement = strel('square',3);
     %%% Converts the FinalLabelMatrixImage to binary.
-    FinalBinaryImage = im2bw(FinalLabelMatrixImage,1);
+    FinalBinaryImage = im2bw(FinalLabelMatrixImage,.5);
     %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
     DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
     %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,

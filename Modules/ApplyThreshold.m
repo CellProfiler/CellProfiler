@@ -121,7 +121,7 @@ HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum
 %defaultVAR05 = 0
 DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Binary option: Enter the threshold to use to make the incoming image binary (black and white) where pixels below this value will be zero and above this value will be 1. If instead you want to use the settings above to preserve grayscale information, enter 0 here.
+%textVAR06 = Binary option: Enter the threshold to use to make the incoming image binary (black and white) where pixels equal to or below this value will be zero and above this value will be 1. If instead you want to use the settings above to preserve grayscale information, enter 0 here.
 %defaultVAR06 = 0
 BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 

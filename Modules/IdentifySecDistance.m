@@ -209,7 +209,7 @@ StructuringElement = strel('disk', DistanceToDilate);
 %%% Dilates the preliminary label matrix image (edited for small only).
 DilatedPrelimSecObjectLabelMatrixImage = imdilate(PrelimPrimaryLabelMatrixImage, StructuringElement);
 %%% Converts to binary.
-DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,0.1);
+DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,.5);
 %%% Computes nearest neighbor image of nuclei centers so that the dividing
 %%% line between secondary objects is halfway between them rather than
 %%% favoring the primary object with the greater label number.
@@ -267,7 +267,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Calculates BothOutlinesOnOriginalImage for displaying in the figure
     %%% window in subplot(2,2,4).
     %%% Converts the PrimaryLabelMatrixImage to binary.
-    PrimaryBinaryImage = im2bw(PrimaryLabelMatrixImage,.1);
+    PrimaryBinaryImage = im2bw(PrimaryLabelMatrixImage,.5);
     %%% Dilates the Primary Binary Image by one pixel (8 neighborhood).
     StructuringElement2 = strel('square',3);
     DilatedPrimaryBinaryImage = imdilate(PrimaryBinaryImage, StructuringElement2);

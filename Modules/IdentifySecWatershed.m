@@ -322,7 +322,7 @@ InvertedThresholdedOrigImage = imcomplement(ThresholdedOrigImage);
 %%% to identify the edges of the primary objects.
 drawnow
 %%% Converts the PrelimPrimaryLabelMatrixImage to binary.
-PrelimPrimaryBinaryImage = im2bw(PrelimPrimaryLabelMatrixImage, 1);
+PrelimPrimaryBinaryImage = im2bw(PrelimPrimaryLabelMatrixImage,.5);
 %%% Creates the structuring element that will be used for dilation.
 StructuringElement = strel('square',3);
 %%% Dilates the Primary Binary Image by one pixel (8 neighborhood).
@@ -367,7 +367,7 @@ Overlaid = imimposemin(AbsSobeledImage, BinaryMarkerImage);
 %%% Perform the watershed on the marked absolute-value Sobel Image. 
 BlackWatershedLinesPre = watershed(Overlaid);
 %%% Bug workaround (see step 9).
-BlackWatershedLinesPre2 = im2bw(BlackWatershedLinesPre,1);
+BlackWatershedLinesPre2 = im2bw(BlackWatershedLinesPre,.5);
 BlackWatershedLines = bwlabel(BlackWatershedLinesPre2);
 
 %%% STEP 6: Identify and extract the secondary objects, using the watershed
@@ -376,7 +376,7 @@ drawnow
 %%% The BlackWatershedLines image is a label matrix where the watershed
 %%% lines = 0 and each distinct object is assigned a number starting at 1.
 %%% This image is converted to a binary image where all the objects = 1.
-SecondaryObjects1 = im2bw(BlackWatershedLines,1);
+SecondaryObjects1 = im2bw(BlackWatershedLines,.5);
 %%% Identifies objects in the binary image using bwlabel.
 %%% Note: Matlab suggests that in some circumstances bwlabeln is faster
 %%% than bwlabel, even for 2D images.  I found that in this case it is
@@ -460,7 +460,7 @@ SecondWatershedPre = watershed(MarkedInvertedOrigImage);
 %%% reasonable fix to convert the result of the watershed to binary and
 %%% remake the label matrix so that each label is used only once. In later
 %%% steps, inappropriate regions are weeded out anyway.
-SecondWatershedPre2 = im2bw(SecondWatershedPre,1);
+SecondWatershedPre2 = im2bw(SecondWatershedPre,.5);
 SecondWatershed = bwlabel(SecondWatershedPre2);
 drawnow
 
@@ -471,7 +471,7 @@ drawnow
 %%% specified size are discarded.
 
 %%% Converts the EditedPrimaryBinaryImage to binary.
-EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage);
+EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
 %%% Finds the locations and labels for different regions.
 area_locations2 = find(SecondWatershed);
 area_labels2 = SecondWatershed(area_locations2);

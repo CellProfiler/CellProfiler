@@ -876,17 +876,20 @@ if (length(AlgorithmHighlighted) > 0)
         for i=1:handles.numVariables(AlgorithmNumber),
             if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
                 if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
+                    descriptionString = get(handles.(['VariableDescription' TwoDigitString(i)]), 'string');
+                    flagExist = 0;
+                    if(length(descriptionString > 8))
+                        if(strcmp(descriptionString(end-8:end),'#LongBox#'))
+                            flagExist = 1;
+                            set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', descriptionString(1:end-9))
+                        end
+                    end
                     linesVarDes = length(textwrap(handles.(['VariableDescription' TwoDigitString(i)]),{get(handles.(['VariableDescription' TwoDigitString(i)]),'string')}));
                     numberExtraLinesOfDescription = numberExtraLinesOfDescription + linesVarDes - 1;
                     set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 291-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 465 23*(linesVarDes)]);
                 end
                 vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
-                varLength = length(vVariableString);
-                if( varCheckFlag(vVariableString) )
-                    vVariableString = varRemoveFlag(vVariableString);
-                    numberOfLongBoxes = numberOfLongBoxes+1;
-                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
-                elseif ( varLength > 20)
+                if ( ( length(vVariableString) > 20) | (flagExist) )
                     numberOfLongBoxes = numberOfLongBoxes+1;
                     set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
                 else
@@ -911,31 +914,6 @@ if (length(AlgorithmHighlighted) > 0)
 else
     helpdlg('No module highlighted.');
 end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Helper Functions For Adding/Removing #LongBox# Flag from Modules%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function varString = varRemoveFlag(varStringWithFlag)
-varStringLength = length(varStringWithFlag);
-varString = varStringWithFlag(1:varStringLength - 9);
-
-function varString = varAddFlag(varStringNoFlag)
-varString = [varStringNoFlag '#LongBox#']
-
-function varFlagExist = varCheckFlag(varString)
-varStringLength = length(varString);
-if ( varStringLength > 8)
-    if ( strcmp(varString(varStringLength-8:varStringLength), '#LongBox#') )
-        varFlagExist = 1;
-    else
-        varFlagExist = 0;
-    end
-else
-    varFlagExist = 0;
-end
-
-
 
 %%%%%%%%%%%%%%%%%%%%
 %%% REMOVE BUTTON %%%
@@ -1107,11 +1085,7 @@ function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles)
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
 
-if( varCheckFlag( char(handles.Settings.Vvariable{AlgorithmNumber, str2double(VariableNumber) } )))
-    handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber) ) = {varAddFlag(UserEntry)};
-else
 handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber)) = {UserEntry};
-end
 guidata(gcbo, handles);
 
 

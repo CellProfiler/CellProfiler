@@ -134,10 +134,9 @@ IllumCorrectFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 
 %textVAR09 = If you have already created an illumination correction image to be used, enter the 
 %textVAR10 = path & file name of the image below. To calculate the illumination correction image 
-%textVAR11 = from all the images of this color that will be processed, leave a slash in the box below.
-%defaultVAR11 = /#LongBox#
-varWithLongBox = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
-IllumCorrectPathAndFileName = varWithLongBox(1:(length(varWithLongBox)-9));
+%textVAR11 = from all the images of this color that will be processed, leave a slash in the box below.#LongBox#
+%defaultVAR11 = /
+IllumCorrectPathAndFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

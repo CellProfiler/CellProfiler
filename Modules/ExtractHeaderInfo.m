@@ -100,8 +100,8 @@ ThirdImageName = handles.(fieldname);
 %defaultVAR03 = YFP
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 FifthImageName = handles.(fieldname);
-%textVAR11 = Enter the directory path name where the images are saved.
-%defaultVAR11 = Default directory - leave this text to retrieve images from the directory specified above#LongBox#
+%textVAR11 = Enter the directory path name where the images are saved.#LongBox#
+%defaultVAR11 = Default directory - leave this text to retrieve images from the directory specified above
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 PathName = handles.(fieldname);
 

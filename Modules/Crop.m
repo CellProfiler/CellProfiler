@@ -155,10 +155,9 @@ LeftTop = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 RightBottom = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 
 %textVAR10 = File-based cropping: To crop to another shape, type the location and file name of 
-%textVAR11 = the binary image to guide the cropping (Zero values will be removed).  Type carefully!  
-%defaultVAR11 = /#LongBox#
-varWithLongBox = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
-BinaryCropImageName = varWithLongBox(1:(length(varWithLongBox)-9));
+%textVAR11 = the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#
+%defaultVAR11 = /
+BinaryCropImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -239,6 +239,9 @@ cd(handles.Current.StartupDirectory)
 % Update handles structure
 guidata(hObject, handles);
 
+% Set default output filename
+set(handles.OutputFileNameEditBox,'string','DefaultOUT')
+
 % --- Outputs from this function are returned to the command line.
 function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 % Get default command line output from handles structure
@@ -1852,6 +1855,11 @@ if ~isempty(UserEntry)
         UserEntry = UserEntry(1:index(end)-1);
     end
     
+    % If there is now 'OUT' in the filename, add it.
+    if isempty(findstr(lower(UserEntry),'out'))
+        UserEntry = [UserEntry 'OUT'];
+    end
+    
     % Find the files with the same base name and extract highest number
     % If the dir-command takes a long time when there are a lot of files
     % in a directory, another solution might be to try different numberings
@@ -1874,6 +1882,7 @@ if ~isempty(UserEntry)
     else
         set(handles.OutputFileNameEditBox,'string',UserEntry)
     end
+    drawnow
 end
 guidata(gcbo, handles);
 
@@ -1894,8 +1903,15 @@ if sum == 0
 else
     
     % Call Callback function of FileNameEditBox to update filename
+    tmp = get(handles.OutputFileNameEditBox,'string');
     OutputFileNameEditBox_Callback(hObject, eventdata, handles)
-    
+    if ~strcmp(tmp,get(handles.OutputFileNameEditBox,'string'))
+        Answer = questdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes');
+        if strcmp(Answer,'Cancel')
+            return
+        end
+    end
+        
     %%% Checks whether an output file name has been specified.
     if isempty(get(handles.OutputFileNameEditBox,'string'))
         errordlg('You have not entered an output file name in Step 2.');

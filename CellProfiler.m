@@ -2438,7 +2438,7 @@ end
 function ToolsHelpSubfunction(handles, ImageOrData, ToolsCellArray)
 global toolsChoice;
 ToolsCellArray(1) = [];
-okbuttoncallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
+okbuttoncallback = '); toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
 cancelbuttoncallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); global toolsChoice; toolsChoice = 0; close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
 
 MainWinPos = get(handles.figure1,'Position');

@@ -1219,9 +1219,30 @@ cd(Directory)
 %%% happen.
 if FileName == 0
 else
+    %%% Acquires basic screen info for making buttons in the
+    %%% display window.
+    StdUnit = 'point';
+    StdColor = get(0,'DefaultUIcontrolBackgroundColor');
+    PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
+    
+    %%% Reads the image.
     Image = im2double(imread([PathName,'/',FileName]));
-    figure, imagesc(Image), colormap(gray)
+    FigureHandle = figure; imagesc(Image), colormap(gray)
     pixval
+    %%% The following adds the Interactive Zoom button, which relies
+    %%% on the InteractiveZoomSubfunction.m being in the CellProfiler
+    %%% folder.
+    set(FigureHandle, 'Unit',StdUnit)
+    FigurePosition = get(FigureHandle, 'Position');
+    %%% Specifies the function that will be run when the zoom button is
+    %%% pressed.
+    ZoomButtonCallback = 'try, InteractiveZoomSubfunction, catch msgbox(''Could not find the file called InteractiveZoomSubfunction.m which should be located in the CellProfiler folder.''), end';
+    ZoomButtonHandle = uicontrol('Parent',FigureHandle, ...
+        'CallBack',ZoomButtonCallback, ...
+        'BackgroundColor',StdColor, ...
+        'Position',PointsPerPixel*[FigurePosition(3)-108 5 105 22], ...
+        'String','Interactive Zoom', ...
+        'Style','pushbutton');
 end
 cd(CurrentDirectory)
 
@@ -3422,7 +3443,6 @@ else
   end;  
      
 end; %if s isempty
-
 
 %%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%

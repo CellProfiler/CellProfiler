@@ -1362,6 +1362,10 @@ else
                     %%% Extract the measurements.  Waitbar shows the percentage of image sets
                     %%% remaining.
                     WaitbarHandle = waitbar(0,'Extracting measurements...');
+                    %%% Preallocate the variable Measurements.
+                    Fieldname = cell2mat(MeasFieldnames(length(MeasFieldnames)));
+                    Measurements(NumberOfImages,length(MeasFieldnames)) = {handles.(Fieldname){NumberOfImages}};
+                    %%% Finished preallocating the variable Measurements.
                     TimeStart = clock;
                     for imagenumber = 1:NumberOfImages
                         for FieldNumber = 1:length(MeasFieldnames)
@@ -2042,11 +2046,13 @@ if ok ~= 0
                 h = helpdlg(['The file ', SaveData, ' has been written to the directory where the raw measurements file is located.']);
                 waitfor(h)
             end
-            
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%% Calculates histogram data for non-cumulative histogram %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else
+            %%% Preallocates the variable ListOfMeasurements.
+ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
             for ImageNumber = FirstImage:LastImage
                 ListOfMeasurements{ImageNumber} = handles.(MeasurementToExtract){ImageNumber};
                 HistogramData = histc(ListOfMeasurements{ImageNumber},BinLocations);
@@ -2059,7 +2065,7 @@ if ok ~= 0
                     SampleName = SampleNames{ImageNumber};
                     HistogramTitles{ImageNumber} = ['#', num2str(ImageNumber), ': ' , SampleName];
                 else HistogramTitles{ImageNumber} = ['Image #', num2str(ImageNumber)];
-                end                 
+                end
             end 
             
             %%% Saves the data to an excel file if desired.

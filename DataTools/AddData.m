@@ -37,7 +37,7 @@ else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirec
     if fOutName == 0
         return
     else
-        try OutputFile = load(fullfile(pOutName fOutName));
+        try OutputFile = load(fullfile(pOutName,fOutName));
         catch error('Sorry, the file could not be loaded for some reason.')
         end
     end
@@ -233,7 +233,7 @@ else
                 %%% For future output files:
             elseif strcmp(ExistingOrMemory, 'Memory') == 1
                 %%% Checks to see if the heading exists already.
-                if isfield(handles.Measurements, ['Imported',char(SingleHeading)]) == 1
+                if isfield(handles.Measurements.GeneralInfo, ['Imported',char(SingleHeading)]) == 1
                     Answer = CPquestdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
                     %%% Allows canceling.
                     if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
@@ -247,11 +247,11 @@ else
 
                 elseif strcmp(Answer,'Yes') == 1 | strcmp(Answer, 'Newfield') == 1
                     if strcmp(Answer,'Yes') == 1
-                        handles.Measurements = rmfield(handles.Measurements, ['Imported',char(SingleHeading)]);
+                        handles.Measurements.GeneralInfo = rmfield(handles.Measurements.GeneralInfo, ['Imported',char(SingleHeading)]);
                         guidata(gcbo,handles)
                     end
                     %%% Tries to make a field with that name.
-                    try handles.Measurements.(['Imported',char(SingleHeading)]) = [];
+                    try handles.Measurements.GeneralInfo.(['Imported',char(SingleHeading)]) = [];
                         HeadingApproved = 1;
                     catch
                         MessageHandle = errordlg(['The heading name ',char(SingleHeading),' is not acceptable for some reason. Please try again.']);
@@ -263,7 +263,7 @@ else
                 %%% old output files may not have the 'Measurements'
                 %%% substructure, so we check for that field first.
                 if isfield(OutputFile.handles, 'Measurements') == 1
-                    if isfield(OutputFile.handles.Measurements, ['Imported',char(SingleHeading)]) == 1
+                    if isfield(OutputFile.handles.Measurements.GeneralInfo, ['Imported',char(SingleHeading)]) == 1
                         Answer = CPquestdlg(['Sample info with the heading ',char(SingleHeading),' already exists in the output file.  Do you want to overwrite?']);
                         %%% Allows canceling.
                         if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
@@ -279,10 +279,10 @@ else
 
                 elseif strcmp(Answer,'Yes') == 1 | strcmp(Answer, 'Newfield') == 1
                     if strcmp(Answer,'Yes') == 1
-                        OutputFile.handles.Measurements = rmfield(OutputFile.handles.Measurements,['Imported',char(SingleHeading)]);
+                        OutputFile.handles.Measurements.GeneralInfo = rmfield(OutputFile.handles.Measurements.GeneralInfo,['Imported',char(SingleHeading)]);
                     end
                     %%% Tries to make a field with that name.
-                    try OutputFile.handles.Measurements.(['Imported',char(SingleHeading)]) = [];
+                    try OutputFile.handles.Measurements.GeneralInfo.(['Imported',char(SingleHeading)]) = [];
                         HeadingApproved = 1;
                     catch
                         MessageHandle = errordlg(['The heading name ',char(SingleHeading),' is not acceptable for some reason. Please try again.']);
@@ -296,12 +296,12 @@ else
         if strcmp(ExistingOrMemory, 'Memory') == 1
             %%% For future files:
             %%% Saves the column of sample info to the handles.
-            handles.Measurements.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
+            handles.Measurements.GeneralInfo.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
             guidata(gcbo,handles)
         else
             %%% For an existing file:
             %%% Saves the column of sample info to the handles structure from an existing output file.
-            OutputFile.handles.Measurements.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
+            OutputFile.handles.Measurements.GeneralInfo(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
         end
     end
 end

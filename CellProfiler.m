@@ -46,7 +46,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 01-Nov-2004 14:17:07
+% Last Modified by GUIDE v2.5 01-Nov-2004 16:32:55
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -369,7 +369,6 @@ else
         %%% A is equal to '' (two quote marks).  In either case, skip to the end; 
         %%% don't save anything. 
         if (isempty(A)) 
-          ;
         elseif strcmp(A,'') == 1, 
             errordlg('Sample info was not saved, because no heading was entered.');
         elseif isfield(handles, A) == 1
@@ -853,7 +852,9 @@ if (length(AlgorithmHighlighted) > 0)
         end
 
         %%% 2.25 Remove slider and move panel back to original position
-        set(handles.variablepanel, 'position', [46 5.3846 108.4 23.154]);
+        %%% if panel location gets changed in guide, must change the
+        %%% position values here as well
+        set(handles.variablepanel, 'position', [235 80 563 297]);
         set(handles.slider1,'visible','off');
 
         %%% 2.5 Checks whether an algorithm is loaded in this slot.
@@ -890,8 +891,8 @@ if (length(AlgorithmHighlighted) > 0)
 
         if(handles.numVariables(AlgorithmNumber) > 12)
             set(handles.slider1,'visible','on');
-            set(handles.slider1,'max',(handles.numVariables(AlgorithmNumber)-12)*1.77);
-            set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12)*1.77);
+            set(handles.slider1,'max',(handles.numVariables(AlgorithmNumber)-12)*25);
+            set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12)*25);
         end
 
     else
@@ -1506,9 +1507,6 @@ if strcmp(Answer, 'All images') == 1
     HeadingToDisplay = char(HeadingFieldnames(Selection));
     %%% Extracts the headings.
     ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
-
-    %%% Have the user choose which of image/cells should be rows/columns
-    RowColAnswer = questdlg('Which layout do you want images and cells to follow in the exported data?  WARNING: Excel spreadsheets can only have 256 columns.','','Rows = Cells, Columns = Images','Rows = Images, Columns = Cells','Rows = Cells, Columns = Images');
     
     %%% Determines the suggested file name.
     try
@@ -1547,66 +1545,20 @@ if strcmp(Answer, 'All images') == 1
     fwrite(fid, char(MeasurementToExtract), 'char');
     fwrite(fid, sprintf('\n'), 'char');
     
-    TooWideForXLS = 0;
-    if (strcmp(RowColAnswer, 'Rows = Images, Columns = Cells')),
-      %%% Writes the data, row by row: one row for each image.
-      for ImageNumber = 1:TotalNumberImageSets
+    %%% Writes the data, row by row: one row for each image.
+    for ImageNumber = 1:TotalNumberImageSets
         %%% Writes the heading in the first column.
         fwrite(fid, char(ListOfHeadings(ImageNumber)), 'char');
         %%% Tabs to the next column.
         fwrite(fid, sprintf('\t'), 'char');
         %%% Writes the measurements for that image in successive columns.
-        if (length(Measurements{ImageNumber}) > 256),
-          TooWideForXLS = 1;
-        end
         fprintf(fid,'%d\t',Measurements{ImageNumber});
         %%% Returns to the next row.
         fwrite(fid, sprintf('\n'), 'char');
-      end
-    else
-      %%% Writes the data, row by row: one column for each image.
-
-      % Check for truncation
-      if (TotalNumberImageSets > 255),
-        TooWideForXLS = 1;
-      end
-      
-      %%% Writes the heading in the first row.
-      for ImageNumber = 1:TotalNumberImageSets
-        fwrite(fid, char(ListOfHeadings(ImageNumber)), 'char');
-        %%% Tabs to the next column.
-        fwrite(fid, sprintf('\t'), 'char');
-      end
-      %%% Returns to the next row.
-      fwrite(fid, sprintf('\n'), 'char');
-
-      %%% find the number of cells in the largest set
-      maxlength = 0;
-      for ImageNumber = 1:TotalNumberImageSets
-        maxlength = max(maxlength, length(Measurements{ImageNumber}));
-      end
-      
-      for CellNumber = 1:maxlength,
-        for ImageNumber = 1:TotalNumberImageSets
-          if (length(Measurements{ImageNumber}) >= CellNumber),
-            fprintf(fid, '%d\t', Measurements{ImageNumber}(CellNumber));
-          else
-            fprintf(fid, '\t');
-          end
-        end
-        %%% Returns to the next row.
-        fwrite(fid, sprintf('\n'), 'char');
-      end
-      %%% Closes the file
     end
+    %%% Closes the file
     fclose(fid);
-    
-    if TooWideForXLS,
-      helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.  WARNING: This file contains more than 256 columns, and will not be readable in Excel.'])
-    else 
-      helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
-    end
-
+    helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
     
 elseif strcmp(Answer, 'All measurements') == 1
     TotalNumberImageSets = handles.setbeinganalyzed;
@@ -3455,7 +3407,8 @@ function slider1_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 scrollPos = get(hObject,'max') - get(hObject, 'Value');
-set(handles.variablepanel, 'position', [46 5.3846+scrollPos 108.4 23.154]);
+variablepanelPos = get(handles.variablepanel, 'position');
+set(handles.variablepanel, 'position', [235 80+scrollPos 563 297]);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -3479,12 +3432,12 @@ function handles = createVariablePanel(handles)
 for i=1:99,
     handles.(['VariableBox' TwoDigitString(i)]) = uicontrol(...
         'Parent',handles.variablepanel,...
-        'Units','characters',...
+        'Units','pixels',...
         'BackgroundColor',[1 1 1],...
         'Callback','CellProfiler(''VariableBox_Callback'',gcbo,[],guidata(gcbo))',...
         'FontName','Times',...
         'FontSize',12,...
-        'Position',[92 22.7-1.77*i 15.6 1.61538461538462],...
+        'Position',[470 301-25*i 94 23],...
         'String','n/a',...
         'Style','edit',...
         'CreateFcn', 'CellProfiler(''VariableBox_CreateFcn'',gcbo,[],guidata(gcbo))',...
@@ -3494,14 +3447,14 @@ for i=1:99,
 
     handles.(['VariableDescription' TwoDigitString(i)]) = uicontrol(...
         'Parent',handles.variablepanel,...
-        'Units','characters',...
+        'Units','pixels',...
         'BackgroundColor',[0.699999988079071 0.699999988079071 0.899999976158142],...
         'CData',[],...
         'FontName','Times',...
         'FontSize',12,...
         'FontWeight','bold',...
         'HorizontalAlignment','right',...
-        'Position',[0.1 22.7-1.77*i 90 1.30769230769231],...
+        'Position',[2 301-25*i 465 23],...
         'String','No analysis module has been loaded',...
         'Style','text',...
         'Tag',['VariableDescription' TwoDigitString(i)],...
@@ -3511,11 +3464,8 @@ for i=1:99,
         'CreateFcn', '');
 end
 
-
 % --- Executes during object creation, after setting all properties.
 function topPanelFrame_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to topPanelFrame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
-

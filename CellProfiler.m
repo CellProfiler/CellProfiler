@@ -879,20 +879,28 @@ if (length(AlgorithmHighlighted) > 0)
         end
         %%% 4. The stored values for the variables are extracted from the handles
         %%% structure and displayed in the edit boxes.
+        numberOfLongBoxes = 0;
         for i=1:handles.numVariables(AlgorithmNumber),
             if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
                 set(handles.(['VariableBox' TwoDigitString(i)]),...
                     'string',char(handles.Settings.Vvariable(AlgorithmNumber,i)),...
                     'visible','on');
+                set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 295-25*(i+numberOfLongBoxes) 465 23]);
+                if ( length(handles.Settings.Vvariable{AlgorithmNumber, i}) > 20)
+                    numberOfLongBoxes = numberOfLongBoxes+1;
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes) 539 23]);
+                else 
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes) 94 23]);
+                end
             else set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
             end
         end
 
         %%% 5.  Set the slider
 
-        if(handles.numVariables(AlgorithmNumber) > 12)
+        if((handles.numVariables(AlgorithmNumber)+numberOfLongBoxes) > 12)
             set(handles.slider1,'visible','on');
-            set(handles.slider1,'max',(handles.numVariables(AlgorithmNumber)-12)*25);
+            set(handles.slider1,'max',((handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes)*25));
             set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12)*25);
         end
 

@@ -149,7 +149,7 @@ for i = 1:length(PathFieldnames),
 end
 
 %%% The remote machines need a copy of handles.  
-save([BatchFilePrefix 'data.mat'], 'handles');
+save([BatchSavePath,'/',BatchFilePrefix 'data.mat'], 'handles');
 
 %%% Create the individual batch files
 

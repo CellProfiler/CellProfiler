@@ -175,13 +175,24 @@ while AcceptableAnswers == 0
     end
 
     %%% Creates the dialog box for user input.
-    Answers = inputdlg(Prompts,'Choose histogram settings',1,Defaults,'on');
-    %%% TO DO: reset the width of the dialog box: it's too narrow!
-
-    %%% Allows cancel button to function.
-    if isempty(Answers)
+    % Replaced: Answers = inputdlg(Prompts,'Choose histogram settings',1,Defaults,'on');
+    % Workaround because input dialog box is too tall. Break questions up
+    % into two sets. We could create a custom version of inputdlg with a
+    % vertical slider, but that would be more complicated.
+    Answers1 = inputdlg(Prompts(1:6),'Choose histogram settings - page 1',1,Defaults(1:6),'on');
+    %%% If user clicks cancel button Answers1 will be empty.
+    if isempty(Answers1)
         return
     end
+    Answers2 = inputdlg(Prompts(7:12),'Choose histogram settings - page 2',1,Defaults(7:12),'on');
+    %%% If user clicks cancel button Answers2 will be empty.
+    if isempty(Answers2)
+        return
+    end
+    %%% If both sets were non-empty, concatenate into Answers. 
+    Answers = { Answers1{:} Answers2{:} }
+    clear Answers1 Answers2;
+    %%% TO DO: reset the width of the dialog box: it's too narrow!
 
     %%% Error checking for individual answers being empty.
     ErrorFlag = 0;

@@ -3663,4 +3663,53 @@ end; %if s isempty
 function HelpStep1_Callback(hObject, eventdata, handles)
 helpdlg('Select the main folder containing the images you want to analyze. You will have the option within load images modules to retrieve images from more than one folder, but the folder selected here will be the default folder.  Use the Browse button to select the folder, or carefully type the full pathname in the box to the right.','Step 1 Help')
 function HelpStep2_Callback(hObject, eventdata, handles)
-helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ')
+helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?OUT? to avoid confusion.  You do not need to type ?.mat? at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called CellProfilerPreferences.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
+function HelpStep3_Callback(hObject, eventdata, handles)
+helpdlg('FOR HELP ON INDIVIDUAL MODULES: Click the "Help for this analysis module" button towards the right of the CellProfiler window.       LOAD/CLEAR/VIEW BUTTONS:  Choose image analysis modules in the desired order by clicking "Load" and selecting the corresponding Matlab ".m" file.      SHORTCUTS: Once you have loaded the desired image analysis modules and modified all of the settings as desired, you may save these settings for future use by clicking "Save Settings" and naming the file.  Later, you can click "Load Settings", select this file that you made, and all of the modules and settings will be restored.  ALTERNATELY, if you previously ran an image analysis and you want to repeat the exact analysis, you may click "Extract Settings from an output file".  Select the output file, and the modules and settings used to create it will be extracted.  You then name the settings file and load it using the "Load Settings" button.  Troubleshooting: If you loaded an analysis module by loading a settings file, and then obtained error messages in the Matlab main window, the most likely cause is that the analysis modules loaded are not on the Matlab search path. Be sure that the folder immediately containing the analysis module is on the search path. The search path can be edited by choosing File > Set Path.  Another possibility is that the Settings file was created with old versions of CellProfiler or with old versions of modules.  The Settings file can be opened with any word processor as plain text and you should be able to figure out what the settings were.        TECHNICAL DIAGNOSIS: Clicking here causes text to appear in the main Matlab window.  This text shows the "handles structure" which is sometimes useful for diagnosing problems with the software.','Step 3 Help')
+function HelpStep4_Callback(hObject, eventdata, handles)
+helpdlg('THIS DOES NOT YET WORK!!   CHOOSE TEST IMAGE: Using either the Browse button, the pull-down menu, or the text box (type carefully!), choose the image file that is the first in the set you would like to analyze.  Then click "Analyze test image".','Step 4 Help')
+function HelpStep5_Callback(hObject, eventdata, handles)
+helpdlg('SHOW PIXEL DATA: If you have an image displayed in a figure window and would like to determine the X, Y position or the intensity at a particular pixel, click this button.        CLOSE ALL FIGURES AND TIMERS: Click this button to close all open figure/image windows and timers. The main CellProfiler window and any error/message windows will remain open. You will be asked for confirmation first before the windows are all closed.           EXTRACT DATA: Once image analysis is complete, click this button and select the output file to extract the measurements and other information about the analysis.  The data will be converted to a delimited text file which can be read by most programs.  By naming the file with the extension for Microsoft Excel (.xls), the file is usually easily openable by that program.       ANALYZE ALL IMAGES: All of the images in the selected directory/directories will be analyzed using the modules and settings you have specified.  You will have the option to cancel at any time.  At the end of each data set, the data are stored in the output file.','Step 5 Help')
+function HelpStep6_Callback(hObject, eventdata, handles)
+helpdlg('Help will be displayed here.','Step 6 Help')
+
+% --- Executes on button press in HelpForThisAnalysisModule.  
+function HelpForThisAnalysisModule_Callback(hObject, eventdata, handles)
+%%% First, check to see whether there is a specific algorithm loaded.
+%%% If not, it opens a help dialog which explains how to pick one.
+AlgorithmNumber = whichactive(handles);
+if AlgorithmNumber == 0
+    helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
+else
+    AlgorithmName = handles.(['Valgorithmname' TwoDigitString(AlgorithmNumber)]);
+    IsItNotChosen = strncmp(AlgorithmName,'No a',4);
+    if IsItNotChosen == 1
+        helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
+    else
+        
+        %%% This is the function that actually reads the algorithm's help
+        %%% data.
+        Algorithm = strcat('Alg',AlgorithmName,'.m');
+        fid=fopen(Algorithm);
+        while 1;
+            output = fgetl(fid);
+            testifpercent = strncmp(output,'%%%%% ',6);
+            if ~ischar(output); break; end;
+            if testifpercent == 1;
+                doesHelpTextexist = exist('HelpText','var');
+                if doesHelpTextexist == 0 
+                    HelpText = output(6:end);
+                else HelpText = strvcat(HelpText,output(6:end));
+                end;
+            end;
+        end;
+        fclose(fid);
+        DoesHelpExist = exist('HelpText','var');
+        if DoesHelpExist == 1
+            helpdlg(HelpText, 'Algorithm Help'); 
+        else helpdlg('Sorry, there is no help information for this analysis module.','This is not helpful')
+        end;
+    end;
+end;
+
+%%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%

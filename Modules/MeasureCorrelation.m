@@ -1,5 +1,7 @@
 function handles = AlgMeasureCorrelation(handles)
 
+% Help for the Correlation module:
+% Sorry, this module has not yet been documented.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -26,48 +28,56 @@ function handles = AlgMeasureCorrelation(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current algorithm number, since this is needed to find the
 %%% variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
-drawnow
-
 %textVAR01 = Enter the names of each image type to be compared. If a box is unused, leave "/"
 %defaultVAR01 = OrigBlue
 Image1Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+
 %textVAR02 = All pairwise comparisons will be performed.
 %defaultVAR02 = OrigGreen
 Image2Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
 %textVAR03 = 
 %defaultVAR03 = OrigRed
 Image3Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+
 %textVAR04 = 
 %defaultVAR04 = /
 Image4Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+
 %textVAR05 = 
 %defaultVAR05 = /
 Image5Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+
 %textVAR06 = 
 %defaultVAR06 = /
 Image6Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+
 %textVAR07 = 
 %defaultVAR07 = /
 Image7Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+
 %textVAR08 = 
 %defaultVAR08 = /
 Image8Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
+
 %textVAR09 = 
 %defaultVAR09 = /
 Image9Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+
 %textVAR10 = What did you call the objects within which to compare the images?
+%textVAR11 = Leave "/" to compare the entire images
 %defaultVAR10 = /
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
-%textVAR11 = Leave "/" to compare the entire images
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -76,7 +86,7 @@ drawnow
 
 if strcmp(Image1Name,'/') ~= 1
     try
-        %%% Read (open) the images you want to analyze and assign it to a variable.
+        %%% Reads (opens) the image you want to analyze and assigns it to a variable.
         fieldname = ['dOT', Image1Name];
         %%% Checks whether image has been loaded.
         if isfield(handles, fieldname) == 0
@@ -89,7 +99,6 @@ if strcmp(Image1Name,'/') ~= 1
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image1Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         Image1 = handles.(fieldname);
-            % figure, imshow(Image1), title('Image1'), colormap(gray)
         %%% Checks that the original image is two-dimensional (i.e. not a color
         %%% image), which would disrupt several of the image functions.
         if ndims(Image1) ~= 2
@@ -213,14 +222,12 @@ if strcmp(ObjectName,'/') ~= 1
         error(['Image processing has been canceled. Prior to running the Measure Correlation module, you must have previously run an algorithm that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName, ' as a result of a previous algorithm, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
     end
     MaskLabelMatrixImage = handles.(fieldname);
-    % figure, imshow(MaskLabelMatrixImage), title('MaskLabelMatrixImage')
 end
-%%% Update the handles structure.
-%%% Removed for parallel: guidata(gcbo, handles);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Starts out with empty variables.
 ImageMatrix = [];
@@ -296,17 +303,16 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% Determines the figure number to display in.
+fieldname = ['figurealgorithm',CurrentAlgorithm];
+ThisAlgFigureNumber = handles.(fieldname);
+%%% Checks whether that figure is open. This checks all the figure handles
+%%% for one whose handle is equal to the figure number for this algorithm.
+%%% Note: Everything between the "if" and "end" is not carried out if the
 %%% user has closed the figure window, so do not do any important
 %%% calculations here. Otherwise an error message will be produced if the
 %%% user has closed the window but you have attempted to access data that
 %%% was supposed to be produced by this part of the code.
-
-%%% Determines the figure number to display in.
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
-%%% Check whether that figure is open. This checks all the figure handles
-%%% for one whose handle is equal to the figure number for this algorithm.
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows until
@@ -344,27 +350,22 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     set(Displaytexthandle,'string',TextToDisplay)
     set(ThisAlgFigureNumber,'toolbar','figure')
 end
-%%% Executes pending figure-related commands so that the results are
-%%% displayed.
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+if strcmp(ObjectName,'/') == 1
+ObjectName = 'overall';
+else ObjectName = ['within',ObjectName];
+end
 
 HeadingName = [];
 for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)
         Value = num2str(Results(i,j));
         HeadingName = [char(cellstr(ImageNames(i,:))),'_', char(cellstr(ImageNames(j,:)))];
-        fieldname = ['dMTCorrelation', HeadingName];
+        fieldname = ['dMTCorrelation', HeadingName, ObjectName];
         handles.(fieldname)(handles.setbeinganalyzed) = {Value};
     end
 end
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for the Correlation module:
-%%%%% .

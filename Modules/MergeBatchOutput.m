@@ -131,6 +131,10 @@ BatchData = load([BatchPath,'/',BatchFilePrefix 'data.mat']);
 
 %%% Merge into the measurements
 handles.Measurements = BatchData.handles.Measurements;
+
+%%% Also merge the pipeline after the first image set
+handles.Pipeline = BatchData.handles.Pipeline;
+
 Fieldnames = fieldnames(handles.Measurements);
 
 FileList = dir(BatchPath);

@@ -1,13 +1,42 @@
-function handles = AlgFileRenamer1(handles)
+function handles = AlgFileRenamer(handles)
+
+% Help for File Renamer module:
+% Sorry, this module has not yet been documented.
+
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the File Renamer module.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
+
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
-
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
 
 %textVAR01 = How many characters at the beginning of the file name do you want to retain?
 %defaultVAR01 = 6
@@ -18,11 +47,11 @@ NumberCharactersPrefix = str2num(char(handles.Settings.Vvariable{CurrentAlgorith
 NumberCharactersSuffix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
 
 %textVAR03 = Enter any text you want to place between those two portions of filename
-%defaultVAR03 = /
-TextToAdd = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Leave "/" to not add any text.
+%defaultVAR04 = /
+TextToAdd = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
-%textVAR06 = Be very careful since you will be renaming (=overwriting) your files!!
+%textVAR06 = Be very careful since you will be renaming (= overwriting) your files!!
 %textVAR07 = It is recommended to test this on copies of images in a separate directory first.
 %textVAR08 = The folder containing the files must not contain any subfolders or the
 %textVAR09 = subfolder and its contents will also be renamed.
@@ -31,7 +60,7 @@ TextToAdd = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% The following retrieves all the image file names and the number of
+%%% Retrieves all the image file names and the number of
 %%% images per set so they can be used by the algorithm.  
 FileNames = handles.Vfilenames;
 if strcmp(class(TextToAdd), 'char') ~= 1
@@ -58,7 +87,8 @@ for n = 1:length(FileNames)
     end
     if strcmp(OldFilename,NewFilename) ~= 1
         movefile(OldFilename,NewFilename) 
-    end     
+    end    
+    drawnow
 end
 
 %%% This line will "cancel" processing after the first time through this
@@ -80,36 +110,3 @@ ThisAlgFigureNumber = handles.(fieldname);
 if any(findobj == ThisAlgFigureNumber) == 1;
     delete(ThisAlgFigureNumber)
 end
-drawnow
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for File Renamer module:
-%%%%% .
-
-
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the ______________________.
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$

@@ -347,6 +347,7 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1
+    FontSize = handles.Current.FontSize;
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == 1
         originalsize = get(ThisModuleFigureNumber, 'position');
@@ -371,15 +372,17 @@ if any(findobj == ThisModuleFigureNumber) == 1
 % figure which is active is not necessarily the correct one. This
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.    figure(ThisModuleFigureNumber);
-    subplot(2,1,2)
-    imagesc(ImOfNeighbors),axis image
-    colormap([0 0 0;jet(max(ImOfNeighbors(:)))]);
-    colorbar('SouthOutside','FontSize',8)
-    set(gca,'FontSize',8)
-    title('Cells colored according to the number of neighbors')
+    figure(ThisModuleFigureNumber)
     subplot(2,1,1)
     imagesc(ColoredLabelMatrixImage)
-    title('Cells colored according to their original colors')
+    title('Cells colored according to their original colors','FontSize',FontSize)
+    set(gca,'FontSize',FontSize)
+    subplot(2,1,2)
+    imagesc(ImOfNeighbors)
+    colormap([0 0 0;jet(max(ImOfNeighbors(:)))]);
+    colorbar('SouthOutside','FontSize',FontSize)
+    title('Cells colored according to the number of neighbors','FontSize',FontSize)
+    set(gca,'FontSize',FontSize)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

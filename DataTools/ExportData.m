@@ -21,9 +21,18 @@ function handles = ExportData(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP','*.mat'),'Select the raw measurements file');
+    PathToSave = handles.Current.DefaultOutputDirectory;
+else
+    [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+    PathToSave = RawPathname;
+end
+
+if RawFileName == 0
+    return
+end
 
 LoadedHandles = load(fullfile(RawPathname, RawFileName));
 
@@ -143,8 +152,6 @@ for Object = 1:length(ObjectNames)
         fprintf(fid,'\n');                                         % Separate image sets with a blank row
     end
     fclose(fid);
-    cd(handles.Current.StartupDirectory);
-
 end
 
 

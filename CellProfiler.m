@@ -940,7 +940,7 @@ for i=1:handles.numVariables(str2num(AlgorithmNumber));
 end;
 
 %%% 6. Update the number of algorithms loaded
-
+handles.numAlgorithms = 0;
 for i=1:handles.MaxAlgorithms,
   if isfield(handles, ['Valgorithmname' TwoDigitString(i)]),
     handles.numAlgorithms = i;

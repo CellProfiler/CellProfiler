@@ -1292,7 +1292,7 @@ else
     %%% Extract the fieldnames of measurements from the handles structure.
     Fieldnames = fieldnames(handles.Measurements);
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
-    Fieldnames = fieldnames(handles.Pipeline);
+    Fieldnames = fieldnames(handles.Measurements);
     FileFieldNames = Fieldnames(strncmp(Fieldnames, 'Filename', 8)==1);
     %%% Determines whether any sample info has been loaded.  If sample info has
     %%% been loaded, the heading for that sample info would be listed in

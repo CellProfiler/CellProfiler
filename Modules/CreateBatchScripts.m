@@ -89,16 +89,16 @@ CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 BatchSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
 
 %textVAR02 = What is the path to the CellProfiler algorithms on the cluster machines? 
-%textVAR03 = Leave as '/' to use the same path as on this machine.
+%textVAR03 = Leave as '/' to use the same path as on this machine.#LongBox#
 %defaultVAR03 = /
 BatchCellProfilerPath = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR04 = What is the path to the image directory on the cluster machines?
-%textVAR05 = Leave as '/' to use the same path as on this machine.
+%textVAR05 = Leave as '/' to use the same path as on this machine.#LongBox#
 %defaultVAR05 = /
 BatchImagePath = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 
-%textVAR06 = What should the batch files be prefixed with (including directory name)
+%textVAR06 = What should the batch files be prefixed with (including directory name)#LongBox#
 %defaultVAR06 = ./Batch_
 BatchFilePrefix = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 

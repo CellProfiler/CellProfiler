@@ -37,7 +37,13 @@ Image analysis modules - New:
 - Try to get code for yeast segmentation from this paper, and incorporate it into CellProfiler: SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan 1;32 Database issue:D319-22. PMID: 14681423 
 
 Image analysis modules - Improvements:
-- Add more texture measurements to the MeasureIntensityTexture module. Perhaps use texture measurements from Murphy, Velliste, and Porreca 2003.
+- Add more texture measurements to the MeasureIntensityTexture module. Perhaps use texture measurements from Murphy, Velliste, and Porreca 2003.  The image processing toolbox 5.0.1 has new texture analysis tools, though they would need to be adapted to deal with individual objects rather than entire images: 
+entropy -- Calculates the entropy of an intensity image
+entropyfilt -- Calculates the local entropy of an intensity image
+graycomatrix -- Computes the gray-level co-occurrence matrix from an image
+graycoprops -- Extracts properties from a gray-level co-occurrence matrix
+rangefilt -- Calculates the local range of an image
+stdfilt -- Calculates the standard deviation of an image
 - Decide whether to incorporate bug fixes from Matt Tudor into AlgIdentifyPrimAdaptThresholdC (see %MT lines in AlgTempMattTudor.m)
 - Make measure windows expand to fit the number of lines of data that are produced.
 - Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original.

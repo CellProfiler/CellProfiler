@@ -552,11 +552,13 @@ if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
     handles.Settings.Valgorithmname = Settings.Valgorithmname;
     handles.Settings.Vvariable = Settings.Vvariable;
+    handles.Settings.Vpixelsize = Settings.Vpixelsize;
 else
     Settings = LoadedSettings.handles;
     if isfield(Settings,'Settings'),
         handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
         handles.Settings.Vvariable = Settings.Settings.Vvariable;
+        handles.Settings.Vpixelsize = Settings.Settings.Vpixelsize;
     end
 end
 
@@ -568,8 +570,7 @@ handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 set(handles.AlgorithmBox,'Value',1);
-handles.Settings.Vpixelsize = Settings.Vpixelsize;
-set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);
+set(handles.PixelSizeEditBox,'string',handles.Settings.Vpixelsize);
 
 %%% Update handles structure.
 guidata(hObject,handles);
@@ -580,7 +581,7 @@ ViewAlgorithm(handles);
 if isfield(LoadedSettings, 'handles'),
     Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
     if strcmp(Answer, 'Yes') == 1
-        SaveCurrentSettingsButton_Callback(hObject, eventdata, handles);
+        SaveSettingsButton_Callback(hObject, eventdata, handles);
     end
 end
 cd(CurrentDirectory)

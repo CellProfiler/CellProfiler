@@ -1382,14 +1382,14 @@ else
     %%% 3. Set all the indicator bars (which tell you which algorithm
     %%% you are editing settings for) to be invisible and then set
     %%% the one you are working on to be visible.
-    for i=1:8;
-        set(eval(strcat('handles.Indicator',num2str(i))),'Visible','off');
+    for i=1:handles.numAlgorithms;
+        set(handles.(['Indicator',num2str(i)]),'Visible','off');
     end;
     set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
 
     %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
     %%% to be invisible.
-    for i = 1:11;
+    for i = 1:handles.numVariables;
         set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off');
         set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off');
     end;
@@ -1399,7 +1399,7 @@ else
     %%% overwritten). Before removing a variable, you have to check that the
     %%% variable exists or else the 'rmfield' function gives an error.
 
-    for i=1:11,
+    for i=1:handles.numVariables,
         if (i<10);
             stringend = ['0',num2str(i)];
         end
@@ -1462,51 +1462,49 @@ set(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
 %%% 8. The text description for each variable for the chosen algorithm is 
 %%% extracted from the algorithm's .m file and displayed.  
 fid=fopen(AlgorithmNamedotm);
-      while 1;
-        output = fgetl(fid); if ~ischar(output); break; end;
+while 1;
+    output = fgetl(fid); if ~ischar(output); break; end;
 
-        
-        j=0;
-        for i=1:11,
-            if j == 1;
-                break;
-            elseif i < 10;
-                if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                    set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
-                    j=1;
-                end
-            else
-                if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                    set(handles.(['VariableDescription',num2str(i)]), 'string', output(13:end),'visible', 'on');
-                    j=1;
-                end
+    j=0;
+    for i=1:handles.numVariables,
+        if j == 1;
+            break;
+        elseif i < 10;
+            if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
+                set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
+                j=1;
+            end
+        else
+            if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
+                set(handles.(['VariableDescription',num2str(i)]), 'string', output(13:end),'visible', 'on');
+                j=1;
             end
         end
-        j=0;
-        for i=1:11,
-            if j == 1;
-                break;
-            elseif i < 10;
-                if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
-                    set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
-                    set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
-                    ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','0',num2str(i));
-                    eval([ConstructedName, '= displayval;']);
-                    j=1;
-                end
-            else
-                if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
-                    set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
-                    set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
-                    ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',num2str(i));
-                    eval([ConstructedName, '= displayval;']);
-                    j=1;
-                end
+    end
+    j=0;
+    for i=1:handles.numVariables,
+        if j == 1;
+            break;
+        elseif i < 10;
+            if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
+                set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
+                set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
+                ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','0',num2str(i));
+                eval([ConstructedName, '= displayval;']);
+                j=1;
+            end
+        else
+            if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
+                set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
+                set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
+                ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',num2str(i));
+                eval([ConstructedName, '= displayval;']);
+                j=1;
             end
         end
-
-
-        
+    end
+end
+      
 %{
         if strncmp(output,'%textVAR1 ',10) == 1;
             set(handles.VariableDescription1,'string',output(12:end),'visible','on');
@@ -1594,7 +1592,6 @@ fid=fopen(AlgorithmNamedotm);
         end
 
 %}
-      end
 
       fclose(fid);
 end
@@ -1606,6 +1603,14 @@ guidata(gcbo, handles);
 %%% CLEAR BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%
 
+
+% --- Executes on button press for all ClearAlgorithm buttons.
+function ClearAlgorithm_Callback(hObject, eventdata, handles)
+algName = get(hObject,'tag');
+numAlg = trimstr(algName,'ClearAlgorithm','left');
+handles = clearalgorithm(num2str(numAlg),handles, 'Confirm');
+
+%{
 % --- Executes on button press in ClearAlgorithm1.
 function ClearAlgorithm1_Callback(hObject, eventdata, handles)
 %%% Runs the function "clearalgorithm" with input argument AlgorithmNumber
@@ -1625,6 +1630,7 @@ function ClearAlgorithm7_Callback(hObject, eventdata, handles)
 handles = clearalgorithm('7', handles, 'Confirm');
 function ClearAlgorithm8_Callback(hObject, eventdata, handles)
 handles = clearalgorithm('8', handles, 'Confirm');
+%}
 
 function handles = clearalgorithm(AlgorithmNumber, handles, ConfirmOrNot)
 
@@ -1647,21 +1653,21 @@ set(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
 %%% 3. Set all the indicator bars (which tell you which algorithm 
 %%% you are editing settings for) to be invisible and then set 
 %%% the one you are working on to be visible.
-for i=1:8
-   set(eval(strcat('handles.Indicator',num2str(i))),'Visible','off');
+for i=1:handles.numAlgorithms
+   set(handles.(['Indicator',num2str(i)]),'Visible','off');
 end
 set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
 
 %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
 %%% to be invisible.
-for i = 1:11
+for i = 1:handles.numVariables
    set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off')
    set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off')
 end
 
 %%% 5. Clears the variable values in the handles structure.
 
-for i=1:11,
+for i=1:handles.numVariables,
     if(i<10);
         ConstructedName = strcat('Vvariable',AlgorithmNumber,'_0',num2str(i));
     else
@@ -1714,6 +1720,13 @@ guidata(gcbo, handles);
 %%% VIEW BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%
 
+% --- Executes on button press in ViewAlgorithm.
+function ViewAlgorithm_Callback(hObject,eventdata,handles)
+algName = get(hObject,'tag');
+numAlg = trimstr(algName,'ViewAlgorithm','left');
+viewalgorithm(num2str(numAlg),handles)
+
+%{
 % --- Executes on button press in ViewAlgorithm1.
 function ViewAlgorithm1_Callback(hObject, eventdata, handles)
 viewalgorithm('1',handles)
@@ -1731,12 +1744,13 @@ function ViewAlgorithm7_Callback(hObject, eventdata, handles)
 viewalgorithm('7',handles)
 function ViewAlgorithm8_Callback(hObject, eventdata, handles)
 viewalgorithm('8',handles)
+%}
 
 function viewalgorithm(AlgorithmNumber, handles)
 %%% 1. Set all the indicator bars (which tell you which algorithm 
 %%% you are editing settings for) to be invisible and then set 
 %%% the one you are working on to be visible.
-for i=1:8
+for i=1:handles.numAlgorithms
     set(eval(strcat('handles.Indicator',num2str(i))),'Visible','off');
 end
 set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
@@ -1744,7 +1758,7 @@ set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
 
 %%% 2. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
-for i = 1:11
+for i = 1:handles.numVariables
     set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off','String','n/a')
     set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off')
 end
@@ -1766,9 +1780,9 @@ else
         fid=fopen(AlgorithmNamedotm);
         while 1;
             output = fgetl(fid); if ~ischar(output); break; end;
-            
+
             j=0;
-            for i=1:11,
+            for i=1:handles.numVariables,
                 if j == 1;
                     break;
                 elseif i < 10;
@@ -1783,45 +1797,45 @@ else
                     end
                 end
             end
-            
+
             %{
             if     strncmp(output,'%textVAR1 ',10) == 1;
-                set(handles.VariableDescription1,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription1,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR2 ',10) == 1;
-                set(handles.VariableDescription2,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription2,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR3 ',10) == 1;
-                set(handles.VariableDescription3,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription3,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR4 ',10) == 1;
-                set(handles.VariableDescription4,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription4,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR5 ',10) == 1;
-                set(handles.VariableDescription5,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription5,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR6 ',10) == 1;
-                set(handles.VariableDescription6,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription6,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR7 ',10) == 1;
-                set(handles.VariableDescription7,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription7,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR8 ',10) == 1;
-                set(handles.VariableDescription8,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription8,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR9 ',10) == 1;
-                set(handles.VariableDescription9,'string',output(12:end),'visible','on');
+            set(handles.VariableDescription9,'string',output(12:end),'visible','on');
             elseif strncmp(output,'%textVAR10',10) == 1;
-                set(handles.VariableDescription10,'string',output(13:end),'visible','on');
+            set(handles.VariableDescription10,'string',output(13:end),'visible','on');
             elseif strncmp(output,'%textVAR11',10) == 1;
-                set(handles.VariableDescription11,'string',output(13:end),'visible','on');
+            set(handles.VariableDescription11,'string',output(13:end),'visible','on');
             end
             %}
         end
         fclose(fid);
-    end    
+    end
     %%% 4. The stored values for the variables are extracted from the handles
     %%% structure and displayed in the edit boxes.
 
-    for i=1:11,
+    for i=1:handles.numVariables,
         if(i<10);
             numstring = strcat('0',num2str(i));
         else
             numstring = num2str(i);
         end
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',numstring);
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',numstring);
         if isfield(handles,ConstructedName) == 1;
             set(handles.(['VariableBox',num2str(i)]),'string',...
                 eval(['handles.Vvariable',AlgorithmNumber,strcat('_',numstring)]),'visible','on');
@@ -1829,72 +1843,72 @@ else
         end;
     end;
 end
-%{    
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox1,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_01']),'visible','on');
-    else set(handles.VariableBox1,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox2,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_02']),'visible','on');
-    else set(handles.VariableBox2,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox3,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_03']),'visible','on');
-    else set(handles.VariableBox3,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox4,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_04']),'visible','on');
-    else set(handles.VariableBox4,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox5,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_05']),'visible','on');
-    else set(handles.VariableBox5,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox6,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_06']),'visible','on');
-    else set(handles.VariableBox6,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox7,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_07']),'visible','on');
-    else set(handles.VariableBox7,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox8,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_08']),'visible','on');
-    else set(handles.VariableBox8,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox9,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_09']),'visible','on');
-    else set(handles.VariableBox9,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox10,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_10']),'visible','on');
-    else set(handles.VariableBox10,'string','n/a','visible','off');
-    end
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
-    if isfield(handles,ConstructedName) == 1
-        set(handles.VariableBox11,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_11']),'visible','on');
-    else set(handles.VariableBox11,'string','n/a','visible','off');
+%{
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox1,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_01']),'visible','on');
+else set(handles.VariableBox1,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox2,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_02']),'visible','on');
+else set(handles.VariableBox2,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox3,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_03']),'visible','on');
+else set(handles.VariableBox3,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox4,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_04']),'visible','on');
+else set(handles.VariableBox4,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox5,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_05']),'visible','on');
+else set(handles.VariableBox5,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox6,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_06']),'visible','on');
+else set(handles.VariableBox6,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox7,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_07']),'visible','on');
+else set(handles.VariableBox7,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox8,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_08']),'visible','on');
+else set(handles.VariableBox8,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox9,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_09']),'visible','on');
+else set(handles.VariableBox9,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox10,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_10']),'visible','on');
+else set(handles.VariableBox10,'string','n/a','visible','off');
+end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
+if isfield(handles,ConstructedName) == 1
+set(handles.VariableBox11,'string',...
+eval(['handles.Vvariable',AlgorithmNumber,'_11']),'visible','on');
+else set(handles.VariableBox11,'string','n/a','visible','off');
 end
 %}
 
@@ -1905,7 +1919,14 @@ end
 
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
+function FigureDisplay_Callback(hObject, eventdata, handles)
+algName = get(hObject,'tag');
+numAlg = trimstr(algName,'FigureDisplay','left');
+CurrentHandle = handles.(['FigureDisplay',num2str(numAlg)]);
+alterfigurewindow(CurrentHandle)
 
+
+%{
 % --- Executes on button press in FigureDisplay1.
 function FigureDisplay1_Callback(hObject, eventdata, handles)
 CurrentHandle = handles.FigureDisplay1;
@@ -1945,6 +1966,8 @@ alterfigurewindow(CurrentHandle)
 function FigureDisplay8_Callback(hObject, eventdata, handles)
 CurrentHandle = handles.FigureDisplay8;
 alterfigurewindow(CurrentHandle)
+%}
+
 
 function alterfigurewindow(CurrentHandle)
 ButtonStatus = get(CurrentHandle, 'string');
@@ -1981,15 +2004,16 @@ guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles);
 tempJ = 0;
-for i=1:8;
-    if strncmp(get(eval(strcat('handles.Indicator',num2str(i))),'visible'),'on',2) == 1
+for i=1:handles.numAlgorithms;
+    if strncmp(get(handles.(['Indicator',num2str(i)]),'visible'),'on',2) == 1
         AlgorithmNumber = i;
         tempJ = 1;
     end
-    if tempJ == 0;
-        AlgorithmNumber = 0;
-    end
 end
+if tempJ == 0;
+    AlgorithmNumber = 0
+end
+
     
 %{
 if     strncmp(get(handles.Indicator1,'visible'),'on',2) == 1, 

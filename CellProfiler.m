@@ -690,8 +690,10 @@ if (isfield(LoadedSettings, 'Settings')),
         end
         if( (SavedVarRevNum ~= 0) & (SavedVarRevNum == CurrentVarRevNum))
             if(handles.numVariables(i) == Setting.numVariables(i))
+                handles.Settings.Vvariable = Settings.Vvariable;
             else
                 errordlg('Variable Revision Number same, but number of variables different for some reason');
+                
             end
         else
             errordlg('Variable Revision Numbers are not the same')

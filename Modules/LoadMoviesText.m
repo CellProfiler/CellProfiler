@@ -35,12 +35,14 @@ function handles = LoadMoviesText(handles)
 % names of the folders themselves must not contain the text you are
 % searching for or an error will result.
 %
+% ------------------------------------------------------------------
 % NOTE:  MATLAB only reads AVI files, and only UNCOMPRESSED AVI files
 % on UNIX and MAC platforms.  As a result, you need to use 3rd party
-% software to uncompress AVI files and convert MOV files.  You can do
-% this with a free software product called RAD Video Tools.  
+% software to uncompress AVI files and convert MOV files.  
 % 
-% RAD Video Tools runs on Windows platforms and can be acquired free from:
+% WINDOWS...
+% To convert movies to uncompressed avi format, you can use a free
+% software product called RAD Video Tools, which is available from:
 %   http://www.radgametools.com/down/Bink/RADTools.exe
 % 
 % To convert a compressed AVI file or a MOV file into an uncompressed AVI:
@@ -51,6 +53,47 @@ function handles = LoadMoviesText(handles)
 % click the "Convert" button.  Everything else can be left as default.
 %   5. A window will pop up that asks you for the Video Compression to
 % use.  Choose "Full Frames (Uncompressed)", and click OK.
+%
+% MAC OSX...
+% The iMovie program which comes with Mac OSX can be used to convert
+% movies to uncompressed avi format as follows: 
+% 
+% 1. File > New Project
+% 2. File > Import (select the movie)
+% 3. File > Share
+% 	Choose the QuickTime tab
+% 	Compress movie for Expert Settings, click Share
+% 	Name the file, choose Export: Movie to Avi
+% 	Click Options...
+% 	Click Settings...
+% 		Compression = None
+% 		Depth = Millions of Colors (NOT "+")
+% 		Quality = best
+% 		Frames per second = doesn't matter. 
+% 	OK, OK, Save
+% 
+% 4. To check/troubleshoot the conversion, you can use the following commands in Matlab:  
+% >> MovieInfo = aviinfo('My Great Movie3.avi')
+% 
+% MovieInfo = 
+%               Filename: 'My Great Movie3.avi'
+%               FileSize: 481292920
+%            FileModDate: '25-Mar-2005 09:59:56'
+%              NumFrames: 422
+%        FramesPerSecond: 20
+%                  Width: 720
+%                 Height: 528
+%              ImageType: 'truecolor'
+%       VideoCompression: 'none'
+%                Quality: 4.2950e+07
+%     NumColormapEntries: 0
+% 
+% The following error means that the Depth was improper (either you
+% tried to save in grayscale or the wrong bit depth color):
+% >> movie = aviread('My Great Movie2.avi');
+% ??? Error using ==> aviread
+% Bitmap data must be 8-bit Index images or 24-bit TrueColor images
+% ------------------------------------------------------------------
 %
 % SAVING IMAGES: The frames of the movies loaded by this module can be
 % easily saved using the Save Images module, using the name you assign

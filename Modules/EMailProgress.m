@@ -258,9 +258,9 @@ drawnow
 % button. These preferences are loaded upon launching CellProfiler.
 % The PixelSize, DefaultImageDirectory, and DefaultOutputDirectory
 % fields can be changed for the current session by the user using edit
-% boxes in the main CellProfiler window. They are therefore also saved
-% in handles.Current, which is most likely where you should retrieve
-% this information if needed within a module.
+% boxes in the main CellProfiler window, which changes their values in
+% handles.Current. Therefore, handles.Current is most likely where you
+% should retrieve this information if needed within a module.
 %   Fields currently in handles.Preferences: PixelSize, FontSize,
 % DefaultModuleDirectory, DefaultOutputDirectory,
 % DefaultImageDirectory.

@@ -119,8 +119,14 @@ LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 %defaultVAR04 = 1
 HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
+%textVAR05 = Exclude pixels within this many pixels of an excluded bright object
+%defaultVAR05 = 0
+ExpansionDistance = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
+
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -141,7 +147,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Measure Total Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
-
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -168,9 +173,18 @@ end
 %%% Subtracts the threshold from the original image.
 ThresholdedOrigImage = OrigImageToBeAnalyzed - LowThreshold;
 ThresholdedOrigImage(ThresholdedOrigImage < 0) = 0;
-%%% The low threshold is subtracted because it was subtracted from the
-%%% whole image above.
-ThresholdedOrigImage(ThresholdedOrigImage > (HighThreshold-LowThreshold)) = 0;
+
+%%% Expands the mask around bright regions if requested.
+if ExpansionDistance ~= 0
+    BinaryBrightRegions = im2bw(ThresholdedOrigImage,HighThreshold-LowThreshold);
+    ExpandedBinaryBrightRegions = bwmorph(BinaryBrightRegions, 'dilate', ExpansionDistance);
+    ThresholdedOrigImage(ExpandedBinaryBrightRegions == 1) = 0;
+else
+    %%% The low threshold is subtracted because it was subtracted from the
+    %%% whole image above.
+    ThresholdedOrigImage(ThresholdedOrigImage > (HighThreshold-LowThreshold)) = 0;
+end
+
 TotalIntensity = sum(sum(ThresholdedOrigImage));
 TotalArea = sum(sum(ThresholdedOrigImage>0));
 %%% Converts to micrometers.
@@ -226,7 +240,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the processed
     %%% image.
     subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 265 35],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 265 55],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
     displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...
         ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]};

@@ -476,7 +476,7 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in LoadSettingsFromFileButton.
 function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
-[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file')
+[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
@@ -801,11 +801,11 @@ else
 
     for i=1:handles.MaxVariables,
       if (strncmp(output,['%defaultVAR' TwoDigitString(i)],13) == 1),
-        % FIXME: check this offset.
         displayval = output(17:end);
         set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
         set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
         handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]) = displayval;
+        handles.numVariables(str2num(AlgorithmNumber)) = i;
         break;
       end
     end

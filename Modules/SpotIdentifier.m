@@ -213,7 +213,7 @@ RotateMethod = upper(RotateMethod);
 if strncmp(RotateMethod, 'N',1) == 1
     RotatedImage = OriginalImage;
 elseif strncmp(RotateMethod, 'M',1) == 1
-    Answer2 = questdlg('After closing this window by clicking OK, click on the lower left marker in the image, then the lower right marker, then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.','Rotate image using the mouse','OK','Cancel','OK');
+    Answer2 = CPquestdlg('After closing this window by clicking OK, click on the lower left marker in the image, then the lower right marker, then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.','Rotate image using the mouse','OK','Cancel','OK');
     waitfor(Answer2)
     if strcmp(Answer2, 'Cancel') == 1
         error('Image processing was canceled during the Spot Identifier module.')
@@ -280,7 +280,7 @@ if strncmp(MarkingMethod,'C',1) == 1
     TopLeftY = str2double(Answers{2});
 elseif strncmp(MarkingMethod,'M',1) == 1
     %%% Sets the top, left of the grid based on mouse clicks.
-    Answer3 = questdlg('After closing this window by clicking OK, click on the top left marker in the image then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.', 'Choose marker point', 'OK', 'Cancel', 'OK');
+    Answer3 = CPquestdlg('After closing this window by clicking OK, click on the top left marker in the image then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.', 'Choose marker point', 'OK', 'Cancel', 'OK');
     if strcmp(Answer3, 'Cancel') == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end

@@ -267,7 +267,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %%% Checks whether the new image name is going to overwrite the
         %%% original file.
         if exist(NewFileAndPathName) == 2
-            Answer = questdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+            Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
             if strcmp(Answer,'Cancel') == 1
                 error('Image processing was canceled')
             end

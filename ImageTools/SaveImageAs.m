@@ -43,7 +43,7 @@ if isempty(Answers) ~= 1
     ProposedFileAndPathname = [handles.Current.DefaultOutputDirectory,'/',CompleteFileName];%%% TODO: Fix filename construction.
     OutputFileOverwrite = exist(ProposedFileAndPathname,'file');
     if OutputFileOverwrite ~= 0
-        Answer = questdlg(['A file with the name ', CompleteFileName, ' already exists at ', handles.Current.DefaultOutputDirectory,'. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
+        Answer = CPquestdlg(['A file with the name ', CompleteFileName, ' already exists at ', handles.Current.DefaultOutputDirectory,'. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
         if strcmp(Answer,'Yes') == 1;
             imwrite(ClickedImage, ProposedFileAndPathname, Extension)
             CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);

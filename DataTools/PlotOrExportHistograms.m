@@ -273,7 +273,7 @@ while AcceptableAnswers == 0
         SaveData = fullfile(RawPathname,SaveData);
         OutputFileOverwrite = exist(SaveData,'file');
         if OutputFileOverwrite ~= 0
-            Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+            Answer = CPquestdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
             if strcmp(Answer, 'No') == 1
                 continue
             end

@@ -133,7 +133,7 @@ for n = 1:length(FileNames)
     end
     if n == 1
         DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.'];
-        Answer = questdlg(DialogText, 'Confirm file name change','OK','Cancel','Cancel');
+        Answer = CPquestdlg(DialogText, 'Confirm file name change','OK','Cancel','Cancel');
         if strcmp(Answer, 'Cancel') == 1
             error('File renumbering was canceled at your request.')
         end

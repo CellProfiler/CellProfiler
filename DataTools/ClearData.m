@@ -24,7 +24,7 @@ function handles = ClearData(handles)
 
 cd(handles.Current.DefaultOutputDirectory)
 
-ExistingOrMemory = questdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
+ExistingOrMemory = CPquestdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
     cd(handles.Current.StartupDirectory)

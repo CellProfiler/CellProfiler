@@ -27,7 +27,7 @@ function handles = AddData(handles)
 % $Revision$
 
 cd(handles.Current.DefaultOutputDirectory)
-ExistingOrMemory = questdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
+ExistingOrMemory = CPquestdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
     return
@@ -51,7 +51,7 @@ end
 %%% happen.
 if fname == 0
 else extension = fname(end-2:end);
-    HeadingsPresent = questdlg('Does the first row of your file contain headings?', 'Are headings present?', 'Yes', 'No', 'Cancel', 'Yes');
+    HeadingsPresent = CPquestdlg('Does the first row of your file contain headings?', 'Are headings present?', 'Yes', 'No', 'Cancel', 'Yes');
     %%% Allows canceling.
     if strcmp(HeadingsPresent, 'Cancel') == 1 | isempty(HeadingsPresent) == 1
         return
@@ -236,7 +236,7 @@ else
             elseif strcmp(ExistingOrMemory, 'Memory') == 1
                 %%% Checks to see if the heading exists already.
                 if isfield(handles.Measurements, ['Imported',char(SingleHeading)]) == 1
-                    Answer = questdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
+                    Answer = CPquestdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
                     %%% Allows canceling.
                     if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
                         CancelOption = 1;
@@ -266,7 +266,7 @@ else
                 %%% substructure, so we check for that field first.
                 if isfield(OutputFile.handles, 'Measurements') == 1
                     if isfield(OutputFile.handles.Measurements, ['Imported',char(SingleHeading)]) == 1
-                        Answer = questdlg(['Sample info with the heading ',char(SingleHeading),' already exists in the output file.  Do you want to overwrite?']);
+                        Answer = CPquestdlg(['Sample info with the heading ',char(SingleHeading),' already exists in the output file.  Do you want to overwrite?']);
                         %%% Allows canceling.
                         if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
                             CancelOption = 1;

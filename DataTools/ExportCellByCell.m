@@ -33,7 +33,7 @@ if RawFileName == 0
 end
 LoadedHandles = load(fullfile(RawPathname, RawFileName));
 
-Answer = questdlg('Do you want to export cell by cell data for all measurements from one image, or data from all images for one measurement?','','All measurements','All images','All measurements');
+Answer = CPquestdlg('Do you want to export cell by cell data for all measurements from one image, or data from all images for one measurement?','','All measurements','All images','All measurements');
 
 if strcmp(Answer, 'All images') == 1
     %%% Extract the fieldnames of cell by cell measurements from the handles structure. 
@@ -88,7 +88,7 @@ if strcmp(Answer, 'All images') == 1
     HeadingToDisplay = char(HeadingFieldnames(Selection));
 
     %%% Have the user choose which of image/cells should be rows/columns
-    RowColAnswer = questdlg('Which layout do you want images and cells to follow in the exported data?  WARNING: Excel spreadsheets can only have 256 columns.','','Rows = Cells, Columns = Images','Rows = Images, Columns = Cells','Rows = Cells, Columns = Images');
+    RowColAnswer = CPquestdlg('Which layout do you want images and cells to follow in the exported data?  WARNING: Excel spreadsheets can only have 256 columns.','','Rows = Cells, Columns = Images','Rows = Images, Columns = Cells','Rows = Cells, Columns = Images');
     %%% Extracts the headings.
     try ListOfHeadings = LoadedHandles.handles.Pipeline.(HeadingToDisplay);
     catch ListOfHeadings = LoadedHandles.handles.Measurements.(HeadingToDisplay);
@@ -117,7 +117,7 @@ if strcmp(Answer, 'All images') == 1
     FileName = FileName{1};
     OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
-        Answer = questdlg('A file with that name already exists in the default output directory. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+        Answer = CPquestdlg('A file with that name already exists in the default output directory. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
             cd(handles.Current.StartupDirectory);
             return    
@@ -272,7 +272,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     FileName = FileName{1};
     OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
-        Answer = questdlg('A file with that name already exists in the default output directory, as specified in the main CellProfiler window. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+        Answer = CPquestdlg('A file with that name already exists in the default output directory, as specified in the main CellProfiler window. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
             cd(handles.Current.StartupDirectory);
             return    

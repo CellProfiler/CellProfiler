@@ -25,7 +25,7 @@ if FileName == 0
 end
 TextToAddInItsPlace = retrievetextfromfile([PathName,FileName])
 
-Answer = questdlg('Do you want to choose a single folder, or choose all folders (DataTools, ImageTools, Modules)?','','Single folder','All folders','All folders');
+Answer = CPquestdlg('Do you want to choose a single folder, or choose all folders (DataTools, ImageTools, Modules)?','','Single folder','All folders','All folders');
 if strcmp(Answer,'All folders') == 1
     ModulesFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Modules'));
     DataToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'DataTools'));
@@ -40,7 +40,7 @@ else
 end
 
 NumberOfMFiles = size(AlgorithmFileNames,2)
-Answer = questdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
+Answer = CPquestdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
 if strcmp(Answer,'All') == 1
     Multiple = 1;
 elseif strcmp(Answer,'First') == 1

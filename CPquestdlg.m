@@ -1,4 +1,4 @@
-function ButtonName=questdlg(Question,Title,Btn1,Btn2,Btn3,Default)
+function ButtonName = CPquestdlg(Question,Title,Btn1,Btn2,Btn3,Default)
 %
 % This function should only be used within CellProfiler
 %

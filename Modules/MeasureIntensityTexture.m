@@ -53,14 +53,14 @@ function handles = AlgMeasureIntensityTexture(handles)
 % module (minus Alg), and it will automatically be included in the
 % manual page as well.  Follow the convention of: purpose of the
 % module, description of the variables and acceptable range for each,
-% how it works (technical description), info on which images can be
+% how it works (technical description), info on which images can be 
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank
 % line so that it does not show up in the help displays.  Do not
 % change the programming notes in any modules! These are standard
 % across all modules for maintenance purposes, so anything
 % module-specific should be kept separate.
-
+%
 % PROGRAMMING NOTE
 % DRAWNOW:
 % The 'drawnow' function allows figure windows to be updated and

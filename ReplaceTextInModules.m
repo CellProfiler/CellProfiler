@@ -8,6 +8,11 @@ function ReplaceTextInModules(TestMode)
 %%% files will not be altered but you can see which replacements will
 %%% be made, run ReplaceTextInModules('test').
 
+CurrentDirectory = pwd;
+%%% Changes to the directory where CellProfiler.m resides.
+FullPathAndFilename = which('CellProfiler')
+[Pathname,Filename] = fileparts(FullPathAndFilename)
+cd(Pathname)
 
 [FileName,PathName] = uigetfile('*.m', 'Choose the M-file with the old text');
 if FileName == 0
@@ -24,14 +29,19 @@ if PathName == 0
     return
 end
 cd(PathName)
-%%% Retrieves every file in the current directory that begins with
-%%% "Alg".
+%%% Retrieves every file in the current directory that ends in ".m"
 FilesAndDirsStructure = dir(PathName);
 FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
 LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-AlgorithmFileNames = FileNamesNoDir(strncmp(FileNamesNoDir,'Alg',3));
-NumberOfAlgorithmFiles = size(AlgorithmFileNames,1)
+AlgorithmFileNames = cell(0);
+        for i = 1:length(FileNamesNoDir),
+            if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
+                AlgorithmFileNames(length(AlgorithmFileNames)+1) = {FileNamesNoDir{i}(1:end-2)};
+            end
+        end
+
+NumberOfAlgorithmFiles = size(AlgorithmFileNames,2)
 Answer = questdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
 if strcmp(Answer,'All') == 1
     Multiple = 1;
@@ -41,12 +51,13 @@ else return
 end
 %%% Loops through each Algorithm.
 for i = 1:NumberOfAlgorithmFiles
+    PathFileName = fullfile(PathName,[AlgorithmFileNames{i},'.m']);
     %%% Opens each file & reads its contents as a string.
-    OriginalAlgorithmContents = retrievetextfromfile(cell2mat([AlgorithmFileNames(i,:)]));
+    OriginalAlgorithmContents = retrievetextfromfile(PathFileName);
     PositionsOfLocatedText = strfind(OriginalAlgorithmContents,TextToRemove);
     if isempty(PositionsOfLocatedText)==1
         %%% If a match was not found, run the following line.
-        Result(i,:) = {['NO replacement for ', cell2mat(AlgorithmFileNames(i,:))]};
+        Result(i,:) = {['NO replacement for ', AlgorithmFileNames{i}]};
     else
         if Multiple == 1
             LimitToReplace = length(PositionsOfLocatedText);
@@ -65,15 +76,16 @@ for i = 1:NumberOfAlgorithmFiles
         if exist('TestMode') == 1
             Result(NumberOfAlgorithmFiles+1,:) = {'This is test mode only. None of the replacements were actually made'};
         else
-            fid=fopen(cell2mat([AlgorithmFileNames(i,:)]),'w');
+            fid=fopen(AlgorithmFileNames{i},'w');
             fwrite(fid,NewAlgorithmContents,'char');
             fclose(fid);
         end
-        Result(i,:) = {[num2str(LimitToReplace),' successful replacement(s) for ', cell2mat(AlgorithmFileNames(i,:))]};
+        Result(i,:) = {[num2str(LimitToReplace),' successful replacement(s) for ', AlgorithmFileNames{i}]};
     end
 end
 %%% Prints the results at the command line.
 Result
+cd(CurrentDirectory)
 
 %%% SUBFUNCTION
 function ExtractedText = retrievetextfromfile(PathAndFileName)

@@ -6,21 +6,20 @@ help ProgrammingNotes
 % PROGRAMMING NOTE
 % HELP:
 % The first unbroken block of lines will be extracted as help by
-% CellProfiler's 'Help for this analysis module' button as well as
-% Matlab's built in 'help' and 'doc' functions at the command line. It
-% will also be used to automatically generate a manual page for the
-% module. An example image demonstrating the function of the module
-% can also be saved in tif format, using the same name as the
-% algorithm (minus Alg), and it will automatically be included in the
-% manual page as well.  Follow the convention of: purpose of the
-% module, description of the variables and acceptable range for each,
-% how it works (technical description), info on which images can be 
-% saved, and See also CAPITALLETTEROTHERALGORITHMS. The license/author
-% information should be separated from the help lines with a blank
-% line so that it does not show up in the help displays.  Do not
-% change the programming notes in any modules! These are standard
-% across all modules for maintenance purposes, so anything
-% module-specific should be kept separate.
+% CellProfiler's 'Help for this analysis module' button as well as Matlab's
+% built in 'help' and 'doc' functions at the command line. It will also be
+% used to automatically generate a manual page for the module. An example
+% image demonstrating the function of the module can also be saved in tif
+% format, using the same name as the module, and it will automatically be
+% included in the manual page as well.  Follow the convention of: purpose
+% of the module, description of the variables and acceptable range for
+% each, how it works (technical description), info on which images can be 
+% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
+% information should be separated from the help lines with a blank line so
+% that it does not show up in the help displays.  Do not change the
+% programming notes in any modules! These are standard across all modules
+% for maintenance purposes, so anything module-specific should be kept
+% separate.
 %
 % PROGRAMMING NOTE
 % DRAWNOW:
@@ -34,28 +33,16 @@ help ProgrammingNotes
 %
 % PROGRAMMING NOTE
 % VARIABLE BOXES AND TEXT: 
-% The '%textVAR' lines contain the text which is displayed in the GUI
-% next to each variable box. The '%defaultVAR' lines contain the
-% default values which are displayed in the variable boxes when the
-% user loads the algorithm. The line of code after the textVAR and
-% defaultVAR extracts the value that the user has entered from the
-% handles structure and saves it as a variable in the workspace of
-% this algorithm with a descriptive name. The syntax is important for
-% the %textVAR and %defaultVAR lines: be sure there is a space before
-% and after the equals sign and also that the capitalization is as
-% shown.  Don't allow the text to wrap around to another line; the
-% second line will not be displayed.  If you need more space to
-% describe a variable, you can refer the user to the help file, or you
-% can put text in the %textVAR line above or below the one of
-% interest, and do not include a %defaultVAR line so that the variable
-% edit box for that variable will not be displayed; the text will
-% still be displayed. CellProfiler is currently being restructured to
-% handle more than 11 variable boxes. Keep in mind that you can have
-% several inputs into the same box: for example, a box could be
-% designed to receive two numbers separated by a comma, as long as you
-% write a little extraction algorithm that separates the input into
-% two distinct variables.  Any extraction algorithms like this should
-% be within the VARIABLES section of the code, at the end.
+% The '%textVAR' lines contain the variable descriptions which are
+% displayed in the CellProfiler main window next to each variable box. This
+% text will wrap appropriately so it can be as long as desired. The
+% '%defaultVAR' lines contain the default values which are displayed in the
+% variable boxes when the user loads the algorithm. The line of code after
+% the textVAR and defaultVAR extracts the value that the user has entered
+% from the handles structure and saves it as a variable in the workspace of
+% this algorithm with a descriptive name. The syntax is important for the
+% %textVAR and %defaultVAR lines: be sure there is a space before and after
+% the equals sign and also that the capitalization is as shown. 
 %
 % PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 

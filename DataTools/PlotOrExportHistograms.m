@@ -6,7 +6,7 @@ function handles = PlotOrExportHistogrs(handles)
 % The individual object measurements can be displayed in histogram
 % format using this tool.  As prompted, select the output file
 % containing the measurements, then choose the measurement parameter
-% to be displayed.
+% to be displayed, and the sample information label.
 %
 % You may then choose which images' measurements to display or export
 % (To display data from only one image, enter that image's number as
@@ -22,8 +22,9 @@ function handles = PlotOrExportHistogrs(handles)
 % sample); whether you want to display the results as a compressed
 % histogram (heatmap) rather than a conventional histogram; whether
 % you want to export the data (tab-delimited format, which can be
-% opened in Excel); and whether you want to display the histograms
-% (Impractical when exporting large amounts of data). It may
+% opened in Excel); whether you want each row in the exported histogram
+% to contain an image or a bin; and whether you want to display the 
+% histograms (Impractical when exporting large amounts of data). It may
 % take some time to then process the data. 
 %
 % X axis labels for histograms: Typically, the X axis labels will be

@@ -4,7 +4,13 @@ function handles = AlgFileRenamer(handles)
 % Category: File Handling
 %
 % File renaming utility that deletes or adds text anywhere within
-% image file names.
+% image file names. Be very careful since you will be renaming (=
+% overwriting) your files!! This module is designed to work alone,
+% without a Load Images module. It will therefore rename every file
+% within the default image directory. You will have the opportunity to
+% confirm the name change for the first image set only.  The folder
+% containing the files must not contain subfolders or the subfolders
+% and their contents will also be renamed.
 %
 % See also ALGFILERENUMBER.
 
@@ -99,7 +105,7 @@ NumberCharactersSuffix = str2double(char(handles.Settings.VariableValues{Current
 %defaultVAR03 = /
 TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Be very careful since you will be renaming (= overwriting) your files!! You will have the opportunity to confirm the name change for the first image set only.  The folder containing the files must not contain subfolders or the subfolders and their contents will also be renamed.
+%textVAR04 = Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
 
 %%%VariableRevisionNumber = 01
 % The variables have changed for this module.

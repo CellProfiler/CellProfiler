@@ -8,6 +8,14 @@ function handles = AlgFileRenumber(handles)
 % example:
 % DrosDAPI_1.tif becomes DrosDAPI_001.tif
 % DrosDAPI_10.tif	becomes DrosDAPI_010.tif
+% 
+% Be very careful since you will be renaming (=
+% overwriting) your files!! This module is designed to work alone,
+% without a Load Images module. It will therefore rename every file
+% within the default image directory. You will have the opportunity to
+% confirm the name change for the first image set only.  The folder
+% containing the files must not contain subfolders or the subfolders
+% and their contents will also be renamed.
 %
 % See also ALGFILERENAMER.
 

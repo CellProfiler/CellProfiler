@@ -149,7 +149,7 @@ for i = 1:length(PathFieldnames),
 end
 
 %%% The remote machines need a copy of handles.  
-save([BatchSavePath,'/',BatchFilePrefix 'data.mat'], 'handles');
+save([BatchSavePath,'/',BatchFilePrefix 'data.mat'], 'handles', '-v6');
 
 %%% Create the individual batch files
 
@@ -188,6 +188,7 @@ for n = 2:BatchSize:handles.Vnumberimagesets,
     fprintf(BatchFile, '                eval([''handles = Alg'',AlgName,''(handles);''])\n');
     fprintf(BatchFile, '            catch\n');
     fprintf(BatchFile, '                handles.BatchError = [AlgName '' '' lasterr];\n');
+    fprintf(BatchFile, '                disp([''Batch Error: '' AlgName '' '' lasterr];\n');
     fprintf(BatchFile, '                break_outer_loop = 1;\n');
     fprintf(BatchFile, '            end\n');
     fprintf(BatchFile, '        end\n');

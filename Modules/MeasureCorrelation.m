@@ -347,6 +347,10 @@ if strcmp(ObjectName,'/') ~= 1
     MaskBinaryImageColumn = MaskLabelMatrixImageColumn>0;
     %%% Yields the locations of nonzero pixels.
     ObjectLocations = find(MaskBinaryImageColumn);
+    if (length(ObjectLocations) == 0),
+        %%% If there is no data, return without saving to handles
+        return;
+    end
     %%% Removes the non-object pixels from the image matrix.
     ObjectImageMatrix = ImageMatrix(ObjectLocations,:);
     %%% Calculates the correlation coefficient.
@@ -492,6 +496,10 @@ if strcmp(ObjectName,'/') == 1
 ObjectName = 'overall';
 else ObjectName = ['within',ObjectName];
 end
+
+%%% Warning: this module will exit before reaching this point if there
+%%% are no objects defined in the mask when it is requested.  See
+%%% above.
 
 for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)

@@ -214,7 +214,7 @@ end
 NewFileAndPathName = fullfile(FileDirectory, NewImageName);
 OldFileAndPathName = fullfile(FileDirectory, CharFileName);
 if strcmpi(OldFileAndPathName, NewFileAndPathName) == 1
-    error('Image processing was canceled because the specifications in the Save Images module will result in image files being overwritten.')
+    error('Image processing was canceled because the specifications in the Save Images module will result in the original image being overwritten.')
 end
 
 % PROGRAMMING NOTE

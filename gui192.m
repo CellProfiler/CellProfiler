@@ -719,219 +719,224 @@ CurrentDirectory = pwd;
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
-%%%for i=1:8,
-%%%    for j=1:11,
-%%%        if (j < 10)
-%%%            stringend = strcat('0',num2str(j));
-%%%        else
-%%%            stringend = num2str(j);
-%%%        end
-%%%        if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-%%%            eval(strcat('handles.Vvariable',num2str(i),'_',stringend,'=Settings{(i-1)*11 + j};'));
-%%%        end
-%%%    end
-%%%end
+for i=1:8,
+    for j=1:11,
+        if (j < 10)
+            stringend = strcat('0',num2str(j));
+        else
+            stringend = num2str(j);
+        end
+        if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
+            eval(strcat('Settings{(i-1)*11 + j} =  handles.Vvariable',num2str(i),'_',stringend,';'));
+        end
+    end
+end
 
-if isfield(handles,'Vvariable1_01') ==1, 
-    Settings{1} = handles.Vvariable1_01; end
-if isfield(handles,'Vvariable1_02') ==1, 
-    Settings{2} = handles.Vvariable1_02; end
-if isfield(handles,'Vvariable1_03') ==1, 
-    Settings{3} = handles.Vvariable1_03; end
-if isfield(handles,'Vvariable1_04') ==1, 
-    Settings{4} = handles.Vvariable1_04; end
-if isfield(handles,'Vvariable1_05') ==1, 
-    Settings{5} = handles.Vvariable1_05; end
-if isfield(handles,'Vvariable1_06') ==1, 
-    Settings{6} = handles.Vvariable1_06; end
-if isfield(handles,'Vvariable1_07') ==1, 
-    Settings{7} = handles.Vvariable1_07; end
-if isfield(handles,'Vvariable1_08') ==1, 
-    Settings{8} = handles.Vvariable1_08; end
-if isfield(handles,'Vvariable1_09') ==1, 
-    Settings{9} = handles.Vvariable1_09; end
-if isfield(handles,'Vvariable1_10') ==1, 
-    Settings{10} = handles.Vvariable1_10; end
-if isfield(handles,'Vvariable1_11') ==1, 
-    Settings{11} = handles.Vvariable1_11; end
+%%%if isfield(handles,'Vvariable1_01') ==1, 
+%%%    Settings{1} = handles.Vvariable1_01; end
+%%%if isfield(handles,'Vvariable1_02') ==1, 
+%%%    Settings{2} = handles.Vvariable1_02; end
+%%%if isfield(handles,'Vvariable1_03') ==1, 
+%%%    Settings{3} = handles.Vvariable1_03; end
+%%%if isfield(handles,'Vvariable1_04') ==1, 
+%%%    Settings{4} = handles.Vvariable1_04; end
+%%%if isfield(handles,'Vvariable1_05') ==1, 
+%%%    Settings{5} = handles.Vvariable1_05; end
+%%%if isfield(handles,'Vvariable1_06') ==1, 
+%%%    Settings{6} = handles.Vvariable1_06; end
+%%%if isfield(handles,'Vvariable1_07') ==1, 
+%%%    Settings{7} = handles.Vvariable1_07; end
+%%%if isfield(handles,'Vvariable1_08') ==1, 
+%%%    Settings{8} = handles.Vvariable1_08; end
+%%%if isfield(handles,'Vvariable1_09') ==1, 
+%%%    Settings{9} = handles.Vvariable1_09; end
+%%%if isfield(handles,'Vvariable1_10') ==1, 
+%%%    Settings{10} = handles.Vvariable1_10; end
+%%%if isfield(handles,'Vvariable1_11') ==1, 
+%%%    Settings{11} = handles.Vvariable1_11; end
 
-if isfield(handles,'Vvariable2_01') ==1, 
-    Settings{12} = handles.Vvariable2_01; end
-if isfield(handles,'Vvariable2_02') ==1, 
-    Settings{13} = handles.Vvariable2_02; end
-if isfield(handles,'Vvariable2_03') ==1, 
-    Settings{14} = handles.Vvariable2_03; end
-if isfield(handles,'Vvariable2_04') ==1, 
-    Settings{15} = handles.Vvariable2_04; end
-if isfield(handles,'Vvariable2_05') ==1, 
-    Settings{16} = handles.Vvariable2_05; end
-if isfield(handles,'Vvariable2_06') ==1, 
-    Settings{17} = handles.Vvariable2_06; end
-if isfield(handles,'Vvariable2_07') ==1, 
-    Settings{18} = handles.Vvariable2_07; end
-if isfield(handles,'Vvariable2_08') ==1, 
-    Settings{19} = handles.Vvariable2_08; end
-if isfield(handles,'Vvariable2_09') ==1, 
-    Settings{20} = handles.Vvariable2_09; end
-if isfield(handles,'Vvariable2_10') ==1, 
-    Settings{21} = handles.Vvariable2_10; end
-if isfield(handles,'Vvariable2_11') ==1, 
-    Settings{22} = handles.Vvariable2_11; end
+%%%if isfield(handles,'Vvariable2_01') ==1, 
+%%%    Settings{12} = handles.Vvariable2_01; end
+%%%if isfield(handles,'Vvariable2_02') ==1, 
+%%%    Settings{13} = handles.Vvariable2_02; end
+%%%if isfield(handles,'Vvariable2_03') ==1, 
+%%%    Settings{14} = handles.Vvariable2_03; end
+%%%if isfield(handles,'Vvariable2_04') ==1, 
+%%%    Settings{15} = handles.Vvariable2_04; end
+%%%if isfield(handles,'Vvariable2_05') ==1, 
+%%%    Settings{16} = handles.Vvariable2_05; end
+%%%if isfield(handles,'Vvariable2_06') ==1, 
+%%%    Settings{17} = handles.Vvariable2_06; end
+%%%if isfield(handles,'Vvariable2_07') ==1, 
+%%%    Settings{18} = handles.Vvariable2_07; end
+%%%if isfield(handles,'Vvariable2_08') ==1, 
+%%%    Settings{19} = handles.Vvariable2_08; end
+%%%if isfield(handles,'Vvariable2_09') ==1, 
+%%%    Settings{20} = handles.Vvariable2_09; end
+%%%if isfield(handles,'Vvariable2_10') ==1, 
+%%%    Settings{21} = handles.Vvariable2_10; end
+%%%if isfield(handles,'Vvariable2_11') ==1, 
+%%%    Settings{22} = handles.Vvariable2_11; end
 
-if isfield(handles,'Vvariable3_01') ==1, 
-    Settings{23} = handles.Vvariable3_01; end
-if isfield(handles,'Vvariable3_02') ==1, 
-    Settings{24} = handles.Vvariable3_02; end
-if isfield(handles,'Vvariable3_03') ==1, 
-    Settings{25} = handles.Vvariable3_03; end
-if isfield(handles,'Vvariable3_04') ==1, 
-    Settings{26} = handles.Vvariable3_04; end
-if isfield(handles,'Vvariable3_05') ==1, 
-    Settings{27} = handles.Vvariable3_05; end
-if isfield(handles,'Vvariable3_06') ==1, 
-    Settings{28} = handles.Vvariable3_06; end
-if isfield(handles,'Vvariable3_07') ==1, 
-    Settings{29} = handles.Vvariable3_07; end
-if isfield(handles,'Vvariable3_08') ==1, 
-    Settings{30} = handles.Vvariable3_08; end
-if isfield(handles,'Vvariable3_09') ==1, 
-    Settings{31} = handles.Vvariable3_09; end
-if isfield(handles,'Vvariable3_10') ==1, 
-    Settings{32} = handles.Vvariable3_10; end
-if isfield(handles,'Vvariable3_11') ==1, 
-    Settings{33} = handles.Vvariable3_11; end
+%%%if isfield(handles,'Vvariable3_01') ==1, 
+%%%    Settings{23} = handles.Vvariable3_01; end
+%%%if isfield(handles,'Vvariable3_02') ==1, 
+%%%    Settings{24} = handles.Vvariable3_02; end
+%%%if isfield(handles,'Vvariable3_03') ==1, 
+%%%    Settings{25} = handles.Vvariable3_03; end
+%%%if isfield(handles,'Vvariable3_04') ==1, 
+%%%    Settings{26} = handles.Vvariable3_04; end
+%%%if isfield(handles,'Vvariable3_05') ==1, 
+%%%    Settings{27} = handles.Vvariable3_05; end
+%%%if isfield(handles,'Vvariable3_06') ==1, 
+%%%    Settings{28} = handles.Vvariable3_06; end
+%%%if isfield(handles,'Vvariable3_07') ==1, 
+%%%    Settings{29} = handles.Vvariable3_07; end
+%%%if isfield(handles,'Vvariable3_08') ==1, 
+%%%    Settings{30} = handles.Vvariable3_08; end
+%%%if isfield(handles,'Vvariable3_09') ==1, 
+%%%    Settings{31} = handles.Vvariable3_09; end
+%%%if isfield(handles,'Vvariable3_10') ==1, 
+%%%    Settings{32} = handles.Vvariable3_10; end
+%%%if isfield(handles,'Vvariable3_11') ==1, 
+%%%    Settings{33} = handles.Vvariable3_11; end
 
-if isfield(handles,'Vvariable4_01') ==1, 
-    Settings{34} = handles.Vvariable4_01; end
-if isfield(handles,'Vvariable4_02') ==1, 
-    Settings{35} = handles.Vvariable4_02; end
-if isfield(handles,'Vvariable4_03') ==1, 
-    Settings{36} = handles.Vvariable4_03; end
-if isfield(handles,'Vvariable4_04') ==1, 
-    Settings{37} = handles.Vvariable4_04; end
-if isfield(handles,'Vvariable4_05') ==1, 
-    Settings{38} = handles.Vvariable4_05; end
-if isfield(handles,'Vvariable4_06') ==1, 
-    Settings{39} = handles.Vvariable4_06; end
-if isfield(handles,'Vvariable4_07') ==1, 
-    Settings{40} = handles.Vvariable4_07; end
-if isfield(handles,'Vvariable4_08') ==1, 
-    Settings{41} = handles.Vvariable4_08; end
-if isfield(handles,'Vvariable4_09') ==1, 
-    Settings{42} = handles.Vvariable4_09; end
-if isfield(handles,'Vvariable4_10') ==1, 
-    Settings{43} = handles.Vvariable4_10; end
-if isfield(handles,'Vvariable4_11') ==1, 
-    Settings{44} = handles.Vvariable4_11; end
+%%%if isfield(handles,'Vvariable4_01') ==1, 
+%%%    Settings{34} = handles.Vvariable4_01; end
+%%%if isfield(handles,'Vvariable4_02') ==1, 
+%%%    Settings{35} = handles.Vvariable4_02; end
+%%%if isfield(handles,'Vvariable4_03') ==1, 
+%%%    Settings{36} = handles.Vvariable4_03; end
+%%%if isfield(handles,'Vvariable4_04') ==1, 
+%%%    Settings{37} = handles.Vvariable4_04; end
+%%%if isfield(handles,'Vvariable4_05') ==1, 
+%%%    Settings{38} = handles.Vvariable4_05; end
+%%%if isfield(handles,'Vvariable4_06') ==1, 
+%%%    Settings{39} = handles.Vvariable4_06; end
+%%%if isfield(handles,'Vvariable4_07') ==1, 
+%%%    Settings{40} = handles.Vvariable4_07; end
+%%%if isfield(handles,'Vvariable4_08') ==1, 
+%%%    Settings{41} = handles.Vvariable4_08; end
+%%%if isfield(handles,'Vvariable4_09') ==1, 
+%%%    Settings{42} = handles.Vvariable4_09; end
+%%%if isfield(handles,'Vvariable4_10') ==1, 
+%%%    Settings{43} = handles.Vvariable4_10; end
+%%%if isfield(handles,'Vvariable4_11') ==1, 
+%%%    Settings{44} = handles.Vvariable4_11; end
 
-if isfield(handles,'Vvariable5_01') ==1, 
-    Settings{45} = handles.Vvariable5_01; end
-if isfield(handles,'Vvariable5_02') ==1, 
-    Settings{46} = handles.Vvariable5_02; end
-if isfield(handles,'Vvariable5_03') ==1, 
-    Settings{47} = handles.Vvariable5_03; end
-if isfield(handles,'Vvariable5_04') ==1, 
-    Settings{48} = handles.Vvariable5_04; end
-if isfield(handles,'Vvariable5_05') ==1, 
-    Settings{49} = handles.Vvariable5_05; end
-if isfield(handles,'Vvariable5_06') ==1, 
-    Settings{50} = handles.Vvariable5_06; end
-if isfield(handles,'Vvariable5_07') ==1, 
-    Settings{51} = handles.Vvariable5_07; end
-if isfield(handles,'Vvariable5_08') ==1, 
-    Settings{52} = handles.Vvariable5_08; end
-if isfield(handles,'Vvariable5_09') ==1, 
-    Settings{53} = handles.Vvariable5_09; end
-if isfield(handles,'Vvariable5_10') ==1, 
-    Settings{54} = handles.Vvariable5_10; end
-if isfield(handles,'Vvariable5_11') ==1, 
-    Settings{55} = handles.Vvariable5_11; end
+%%%if isfield(handles,'Vvariable5_01') ==1, 
+%%%    Settings{45} = handles.Vvariable5_01; end
+%%%if isfield(handles,'Vvariable5_02') ==1, 
+%%%    Settings{46} = handles.Vvariable5_02; end
+%%%if isfield(handles,'Vvariable5_03') ==1, 
+%%%    Settings{47} = handles.Vvariable5_03; end
+%%%if isfield(handles,'Vvariable5_04') ==1, 
+%%%    Settings{48} = handles.Vvariable5_04; end
+%%%if isfield(handles,'Vvariable5_05') ==1, 
+%%%    Settings{49} = handles.Vvariable5_05; end
+%%%if isfield(handles,'Vvariable5_06') ==1, 
+%%%    Settings{50} = handles.Vvariable5_06; end
+%%%if isfield(handles,'Vvariable5_07') ==1, 
+%%%    Settings{51} = handles.Vvariable5_07; end
+%%%if isfield(handles,'Vvariable5_08') ==1, 
+%%%    Settings{52} = handles.Vvariable5_08; end
+%%%if isfield(handles,'Vvariable5_09') ==1, 
+%%%    Settings{53} = handles.Vvariable5_09; end
+%%%if isfield(handles,'Vvariable5_10') ==1, 
+%%%    Settings{54} = handles.Vvariable5_10; end
+%%%if isfield(handles,'Vvariable5_11') ==1, 
+%%%    Settings{55} = handles.Vvariable5_11; end
 
-if isfield(handles,'Vvariable6_01') ==1, 
-    Settings{56} = handles.Vvariable6_01; end
-if isfield(handles,'Vvariable6_02') ==1, 
-    Settings{57} = handles.Vvariable6_02; end
-if isfield(handles,'Vvariable6_03') ==1, 
-    Settings{58} = handles.Vvariable6_03; end
-if isfield(handles,'Vvariable6_04') ==1, 
-    Settings{59} = handles.Vvariable6_04; end
-if isfield(handles,'Vvariable6_05') ==1, 
-    Settings{60} = handles.Vvariable6_05; end
-if isfield(handles,'Vvariable6_06') ==1, 
-    Settings{61} = handles.Vvariable6_06; end
-if isfield(handles,'Vvariable6_07') ==1, 
-    Settings{62} = handles.Vvariable6_07; end
-if isfield(handles,'Vvariable6_08') ==1, 
-    Settings{63} = handles.Vvariable6_08; end
-if isfield(handles,'Vvariable6_09') ==1, 
-    Settings{64} = handles.Vvariable6_09; end
-if isfield(handles,'Vvariable6_10') ==1, 
-    Settings{65} = handles.Vvariable6_10; end
-if isfield(handles,'Vvariable6_11') ==1, 
-    Settings{66} = handles.Vvariable6_11; end
+%%%if isfield(handles,'Vvariable6_01') ==1, 
+%%%    Settings{56} = handles.Vvariable6_01; end
+%%%if isfield(handles,'Vvariable6_02') ==1, 
+%%%    Settings{57} = handles.Vvariable6_02; end
+%%%if isfield(handles,'Vvariable6_03') ==1, 
+%%%    Settings{58} = handles.Vvariable6_03; end
+%%%if isfield(handles,'Vvariable6_04') ==1, 
+%%%    Settings{59} = handles.Vvariable6_04; end
+%%%if isfield(handles,'Vvariable6_05') ==1, 
+%%%    Settings{60} = handles.Vvariable6_05; end
+%%%if isfield(handles,'Vvariable6_06') ==1, 
+%%%    Settings{61} = handles.Vvariable6_06; end
+%%%if isfield(handles,'Vvariable6_07') ==1, 
+%%%    Settings{62} = handles.Vvariable6_07; end
+%%%if isfield(handles,'Vvariable6_08') ==1, 
+%%%    Settings{63} = handles.Vvariable6_08; end
+%%%if isfield(handles,'Vvariable6_09') ==1, 
+%%%    Settings{64} = handles.Vvariable6_09; end
+%%%if isfield(handles,'Vvariable6_10') ==1, 
+%%%    Settings{65} = handles.Vvariable6_10; end
+%%%if isfield(handles,'Vvariable6_11') ==1, 
+%%%    Settings{66} = handles.Vvariable6_11; end
 
-if isfield(handles,'Vvariable7_01') ==1, 
-    Settings{67} = handles.Vvariable7_01; end
-if isfield(handles,'Vvariable7_02') ==1, 
-    Settings{68} = handles.Vvariable7_02; end
-if isfield(handles,'Vvariable7_03') ==1, 
-    Settings{69} = handles.Vvariable7_03; end
-if isfield(handles,'Vvariable7_04') ==1, 
-    Settings{70} = handles.Vvariable7_04; end
-if isfield(handles,'Vvariable7_05') ==1, 
-    Settings{71} = handles.Vvariable7_05; end
-if isfield(handles,'Vvariable7_06') ==1, 
-    Settings{72} = handles.Vvariable7_06; end
-if isfield(handles,'Vvariable7_07') ==1, 
-    Settings{73} = handles.Vvariable7_07; end
-if isfield(handles,'Vvariable7_08') ==1, 
-    Settings{74} = handles.Vvariable7_08; end
-if isfield(handles,'Vvariable7_09') ==1, 
-    Settings{75} = handles.Vvariable7_09; end
-if isfield(handles,'Vvariable7_10') ==1, 
-    Settings{76} = handles.Vvariable7_10; end
-if isfield(handles,'Vvariable7_11') ==1, 
-    Settings{77} = handles.Vvariable7_11; end
+%%%if isfield(handles,'Vvariable7_01') ==1, 
+%%%    Settings{67} = handles.Vvariable7_01; end
+%%%if isfield(handles,'Vvariable7_02') ==1, 
+%%%    Settings{68} = handles.Vvariable7_02; end
+%%%if isfield(handles,'Vvariable7_03') ==1, 
+%%%    Settings{69} = handles.Vvariable7_03; end
+%%%if isfield(handles,'Vvariable7_04') ==1, 
+%%%    Settings{70} = handles.Vvariable7_04; end
+%%%if isfield(handles,'Vvariable7_05') ==1, 
+%%%    Settings{71} = handles.Vvariable7_05; end
+%%%if isfield(handles,'Vvariable7_06') ==1, 
+%%%    Settings{72} = handles.Vvariable7_06; end
+%%%if isfield(handles,'Vvariable7_07') ==1, 
+%%%    Settings{73} = handles.Vvariable7_07; end
+%%%if isfield(handles,'Vvariable7_08') ==1, 
+%%%    Settings{74} = handles.Vvariable7_08; end
+%%%if isfield(handles,'Vvariable7_09') ==1, 
+%%%    Settings{75} = handles.Vvariable7_09; end
+%%%if isfield(handles,'Vvariable7_10') ==1, 
+%%%    Settings{76} = handles.Vvariable7_10; end
+%%%if isfield(handles,'Vvariable7_11') ==1, 
+%%%    Settings{77} = handles.Vvariable7_11; end
 
-if isfield(handles,'Vvariable8_01') ==1, 
-    Settings{78} = handles.Vvariable8_01; end
-if isfield(handles,'Vvariable8_02') ==1, 
-    Settings{79} = handles.Vvariable8_02; end
-if isfield(handles,'Vvariable8_03') ==1, 
-    Settings{80} = handles.Vvariable8_03; end
-if isfield(handles,'Vvariable8_04') ==1, 
-    Settings{81} = handles.Vvariable8_04; end
-if isfield(handles,'Vvariable8_05') ==1, 
-    Settings{82} = handles.Vvariable8_05; end
-if isfield(handles,'Vvariable8_06') ==1, 
-    Settings{83} = handles.Vvariable8_06; end
-if isfield(handles,'Vvariable8_07') ==1, 
-    Settings{84} = handles.Vvariable8_07; end
-if isfield(handles,'Vvariable8_08') ==1, 
-    Settings{85} = handles.Vvariable8_08; end
-if isfield(handles,'Vvariable8_09') ==1, 
-    Settings{86} = handles.Vvariable8_09; end
-if isfield(handles,'Vvariable8_10') ==1, 
-    Settings{87} = handles.Vvariable8_10; end
-if isfield(handles,'Vvariable8_11') ==1, 
-    Settings{88} = handles.Vvariable8_11; end
+%%%if isfield(handles,'Vvariable8_01') ==1, 
+%%%    Settings{78} = handles.Vvariable8_01; end
+%%%if isfield(handles,'Vvariable8_02') ==1, 
+%%%    Settings{79} = handles.Vvariable8_02; end
+%%%if isfield(handles,'Vvariable8_03') ==1, 
+%%%    Settings{80} = handles.Vvariable8_03; end
+%%%if isfield(handles,'Vvariable8_04') ==1, 
+%%%    Settings{81} = handles.Vvariable8_04; end
+%%%if isfield(handles,'Vvariable8_05') ==1, 
+%%%    Settings{82} = handles.Vvariable8_05; end
+%%%if isfield(handles,'Vvariable8_06') ==1, 
+%%%    Settings{83} = handles.Vvariable8_06; end
+%%%if isfield(handles,'Vvariable8_07') ==1, 
+%%%    Settings{84} = handles.Vvariable8_07; end
+%%%if isfield(handles,'Vvariable8_08') ==1, 
+%%%    Settings{85} = handles.Vvariable8_08; end
+%%%if isfield(handles,'Vvariable8_09') ==1, 
+%%%    Settings{86} = handles.Vvariable8_09; end
+%%%if isfield(handles,'Vvariable8_10') ==1, 
+%%%    Settings{87} = handles.Vvariable8_10; end
+%%%if isfield(handles,'Vvariable8_11') ==1, 
+%%%    Settings{88} = handles.Vvariable8_11; end
 
-if isfield(handles,'Valgorithmname1') ==1, 
-    Settings{89} = handles.Valgorithmname1; end
-if isfield(handles,'Valgorithmname2') ==1, 
-    Settings{90} = handles.Valgorithmname2; end
-if isfield(handles,'Valgorithmname3') ==1, 
-    Settings{91} = handles.Valgorithmname3; end
-if isfield(handles,'Valgorithmname4') ==1, 
-    Settings{92} = handles.Valgorithmname4; end
-if isfield(handles,'Valgorithmname5') ==1, 
-    Settings{93} = handles.Valgorithmname5; end
-if isfield(handles,'Valgorithmname6') ==1,
-     Settings{94} = handles.Valgorithmname6; end
-if isfield(handles,'Valgorithmname7') ==1, 
-    Settings{95} = handles.Valgorithmname7; end
-if isfield(handles,'Valgorithmname8') ==1, 
-    Settings{96} = handles.Valgorithmname8; end
+%%%if isfield(handles,'Valgorithmname1') ==1, 
+%%%    Settings{89} = handles.Valgorithmname1; end
+%%%if isfield(handles,'Valgorithmname2') ==1, 
+%%%    Settings{90} = handles.Valgorithmname2; end
+%%%if isfield(handles,'Valgorithmname3') ==1, 
+%%%    Settings{91} = handles.Valgorithmname3; end
+%%%if isfield(handles,'Valgorithmname4') ==1, 
+%%%    Settings{92} = handles.Valgorithmname4; end
+%%%if isfield(handles,'Valgorithmname5') ==1, 
+%%%    Settings{93} = handles.Valgorithmname5; end
+%%%if isfield(handles,'Valgorithmname6') ==1,
+%%%     Settings{94} = handles.Valgorithmname6; end
+%%%if isfield(handles,'Valgorithmname7') ==1, 
+%%%    Settings{95} = handles.Valgorithmname7; end
+%%%if isfield(handles,'Valgorithmname8') ==1, 
+%%%    Settings{96} = handles.Valgorithmname8; end
+
+for i=1:8,
+    if isfield(handles, strcat('Valgorithmname', num2str(i))),
+        eval(strcat('Settings{i+88} = handles.Valgorithmname', num2str(i), ';')); end
+end
 
 if isfield(handles,'Vpixelsize') ==1, 
     Settings{97} = handles.Vpixelsize; end

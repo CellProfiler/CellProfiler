@@ -398,17 +398,18 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(3) = 350;
-        set(ThisModuleFigureNumber, 'position', newsize);
+        set(ThisModuleFigureNumber, 'position', newsize,'color',[1 1 1]);
     end
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
     %%% Displays the results.
-    Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 335 400],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [20 20 335 400],...
+        'fontname','times','FontSize',get(0,'UserData'),'backgroundcolor',[1,1,1],'horizontalalignment','left');
     TextToDisplay = ['Image Set # ',num2str(handles.Current.SetBeingAnalyzed)];
     for i = 1:size(ImageNames,1)-1
         for j = i+1:size(ImageNames,1)
             Value = num2str(Results(i,j));
-            TextToDisplay = strvcat(TextToDisplay, [ImageNames(i,:),'/', ImageNames(j,:),' Correlation: ',Value]); %#ok We want to ignore MLint error checking for this line.
+            TextToDisplay = strvcat(TextToDisplay, [ImageNames(i,:),'/', ImageNames(j,:),' correlation: ',Value]); %#ok We want to ignore MLint error checking for this line.
         end
     end
     set(Displaytexthandle,'string',TextToDisplay)
@@ -537,19 +538,21 @@ drawnow
 % the last image set, which was left in handles.Pipeline.
 
 if strcmp(ObjectName,'/') == 1
-ObjectName = 'overall';
-else ObjectName = ['within',ObjectName];
+    ObjectName = 'Image';
 end
 
 %%% Warning: this module will exit before reaching this point if there
 %%% are no objects defined in the mask when it is requested.  See
 %%% above.
-
+Correlation = [];
+CorrelationFeatures = {};
 for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)
-        Value = Results(i,j);
-        HeadingName = [char(cellstr(ImageNames(i,:))), char(cellstr(ImageNames(j,:)))];
-        fieldname = ['ImageCorrelation', HeadingName, ObjectName];
-        handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Value};
+        Correlation = [Correlation Results(i,j)];
+        CorrelationFeatures = cat(2,CorrelationFeatures, {['Correlation ',char(ImageNames(i,:)),' and ', char(ImageNames(j,:))]});
     end
 end
+handles.Measurements.(ObjectName).CorrelationFeatures = CorrelationFeatures;
+handles.Measurements.(ObjectName).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
+
+        

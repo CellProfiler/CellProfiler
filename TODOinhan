@@ -39,3 +39,5 @@ Error in ==> CellProfiler at 56
    RGB to Grayscale module [BETA]
 
    Rescale intensity image (stretch histogram)
+
+   Make closefigures and openfigures not global if possible.

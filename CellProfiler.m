@@ -603,7 +603,7 @@ cd(handles.Current.DefaultOutputDirectory)
 %%% Allows canceling.
 if FileName ~= 0
     %%% Allows user to save pipeline setting as a readable text file (.txt)
-    SaveText = questdlg('Do you want to save settings as a text file also?');
+    SaveText = questdlg('Do you want to save settings as a text file also?','Save as text?','No');
     if strcmp(SaveText,'Cancel') == 1
         return
     end

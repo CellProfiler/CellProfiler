@@ -48,10 +48,7 @@ elseif strcmp(ExistingOrMemory, 'Memory') == 1
         % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
         % the cancel button or closed the window Action == 0.
         if Action == 1
-            ListToShow = handles.Measurements.(char(SelectedFieldName));
-            listdlg('ListString',ListToShow, 'ListSize', [300 600],...
-                'Name','Preview your sample info/data','PromptString',...
-                char(SelectedFieldName),'SelectionMode','single');
+            CPtextdisplaybox(ListToShow, char(SelectedFieldName))
             %%% The OK buttons within this window don't do anything.
         else
             %%% If the user pressed "cancel" or closes the window, Action = 0, so
@@ -99,9 +96,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
                 if strcmp(class(ListToShow{1}),'double') == 1
                     ListToShow = sprintf('%d\n',cell2mat(ListToShow));
                 end
-                listdlg('ListString',ListToShow, 'ListSize', [300 600],...
-                    'Name','Preview your sample info/data','PromptString',...
-                    char(SelectedFieldName),'SelectionMode','single');
+                CPtextdisplaybox(ListToShow, char(SelectedFieldName))
                 %%% The OK buttons within this window don't do anything.
             catch errordlg('Sorry, there was an error displaying this sample info or data. This function may not yet work properly on mixed numerical and text data.')
             end

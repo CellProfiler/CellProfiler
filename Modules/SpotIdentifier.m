@@ -44,7 +44,7 @@ function handles = AlgSpotIdentifier(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.22 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

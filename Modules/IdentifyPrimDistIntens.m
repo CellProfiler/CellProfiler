@@ -120,7 +120,7 @@ function handles = AlgIdentifyPrimDistIntens(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.21 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

@@ -22,7 +22,7 @@ function handles = AlgFileRenumber(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.14 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

@@ -32,7 +32,7 @@ function handles = AlgRescaleIntensity(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.00 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

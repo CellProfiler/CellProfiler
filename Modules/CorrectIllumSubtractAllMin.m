@@ -61,7 +61,7 @@ function handles = AlgCorrectIllumSubtractAllMin(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.16 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

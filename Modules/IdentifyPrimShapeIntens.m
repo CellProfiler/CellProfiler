@@ -120,7 +120,7 @@ function handles = AlgIdentifyPrimShapeIntens(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.1 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

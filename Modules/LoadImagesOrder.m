@@ -42,7 +42,7 @@ function handles = AlgLoadImagesOrder(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.27 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

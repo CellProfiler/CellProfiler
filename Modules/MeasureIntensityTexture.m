@@ -40,7 +40,7 @@ function handles = AlgMeasureIntensityTexture(handles)
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
 %
-% $Revision 1.26 $
+% $Revision$
 
 % PROGRAMMING NOTE
 % HELP:

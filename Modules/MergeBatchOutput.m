@@ -113,7 +113,10 @@ BatchData = load([BatchPath,'/',BatchFilePrefix 'data.mat']);
 handles.Measurements = BatchData.handles.Measurements;
 Fieldnames = fieldnames(handles.Measurements);
 
-FileList = dir([BatchPath '/' BatchFilePrefix '*_to_*_OUT.mat']);
+FileList = dir(BatchPath);
+Matches = ~ cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
+FileList = FileList(Matches);
+
 for i = 1:length(FileList),
     SubsetData = load(FileList(i).name);
     FileList(i).name
@@ -124,15 +127,13 @@ for i = 1:length(FileList),
 
     SubSetMeasurements = SubsetData.handles.Measurements;
 
-    for j = 1:length(SubSetMeasurements),
-        for fieldnum=1:length(Fieldnames),
-            idxs = ~ cellfun('isempty', SubSetMeasurements.(Fieldnames{fieldnum}));
-            lo = min(find(idxs(2:end))+1);
-            hi = max(find(idxs(2:end))+1);
-            disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
-            handles.Measurements.(Fieldnames{fieldnum})(idxs) = ...
-                SubSetMeasurements.(Fieldnames{fieldnum})(idxs);
-        end
+    for fieldnum=1:length(Fieldnames),
+        idxs = ~ cellfun('isempty', SubSetMeasurements.(Fieldnames{fieldnum}));
+        lo = min(find(idxs(2:end))+1);
+        hi = max(find(idxs(2:end))+1);
+        disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
+        handles.Measurements.(Fieldnames{fieldnum})(idxs) = ...
+            SubSetMeasurements.(Fieldnames{fieldnum})(idxs);
     end
 end
 

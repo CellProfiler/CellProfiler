@@ -101,10 +101,10 @@ MsgOff=7;
 IconWidth=38;
 
 if strcmp(IconString,'none'),
-  FigWidth=125;
+  FigWidth=325;
   MsgTxtWidth=FigWidth-2*MsgOff;
 else,
-  FigWidth=190;
+  FigWidth=390;
   MsgTxtWidth=FigWidth-2*MsgOff-IconWidth;
 end
 FigHeight=50;

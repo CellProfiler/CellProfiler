@@ -13,7 +13,8 @@ function varargout = CellProfiler(varargin)
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before CellProfiler_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to CellProfiler_OpeningFcn via varargin.
+%      stop.  All inputs are passed to CellProfiler_OpeningFcn via
+%      varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
@@ -114,6 +115,7 @@ set(handles.PathToLoadEditBox,'String',pwd);
 %%% Stores some initial values in the handles structure.
 handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
 handles.Vpathname = pwd;
+handles.Vtestpathname = pwd;
 guidata(hObject, handles);
 
 %%% Retrieves the list of image file names from the chosen directory and
@@ -228,7 +230,6 @@ pathname = uigetdir('','Choose the directory of images to be analyzed');
 %%% happen.
 if pathname == 0
 else
-    cd (pathname);
     %%% Saves the pathname in the handles structure.
     handles.Vpathname = pathname;
     guidata(hObject,handles)
@@ -247,10 +248,10 @@ else
         %%% Retrieves the SelectedTestImageName from the ListBox.
         Contents = get(handles.ListBox,'String');
         SelectedTestImageName = Contents{get(handles.ListBox,'Value')};
-        set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
+        set(handles.TestImageName,'String',[pathname,'/',SelectedTestImageName])
     end
     %%% Displays the chosen directory in the PathToLoadEditBox.
-    set(handles.PathToLoadEditBox,'String',pwd);
+    set(handles.PathToLoadEditBox,'String',pathname);
 end
 
 %%%%%%%%%%%%%%%%%
@@ -264,8 +265,6 @@ function PathToLoadEditBox_Callback(hObject, eventdata, handles)
 pathname = get(hObject,'string');
 %%% Checks whether a directory with that name exists.
 if exist(pathname) ~= 0
-%%% If the directory exists, change to that directory
-cd (pathname);
 %%% Saves the pathname in the handles structure.
 handles.Vpathname = pathname;
 guidata(hObject,handles)
@@ -475,10 +474,11 @@ function OutputFileName_CreateFcn(hObject, eventdata, handles)
     set(hObject,'BackgroundColor',[1 1 1]);
 
 function OutputFileName_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Change to the directory that was specified in Step 1 (Path to load edit
 %%% box), if possible.
 try pathname = get(handles.PathToLoadEditBox,'string');
-    cd (pathname);
+    cd(pathname);
 catch 
 end
 %%% Gets the user entry and stores it in the handles structure using the
@@ -499,7 +499,6 @@ else
 guidata(gcbo, handles);
 %%% Checks whether a file with that name already exists, to warn the user
 %%% that the file will be overwritten.
-CurrentDirectory = cd;
     if exist([CurrentDirectory,'/',UserEntry]) ~= 0
         errordlg(['A file with the name ',UserEntry,...
                 ' exists.  Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
@@ -510,6 +509,7 @@ CurrentDirectory = cd;
     end
 end
 guidata(gcbo, handles);
+cd(CurrentDirectory)
 
 function handles = store1variable(VariableName,UserEntry, handles);
 %%% This function stores a variable's value in the handles structure, 
@@ -523,7 +523,7 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in LoadSettingsFromFileButton.
 function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
+CurrentDirectory = cd;
 [SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
@@ -686,221 +686,220 @@ cd(CurrentDirectory)
 
 % --- Executes on button press in SaveCurrentSettingsButton.
 function SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
-%%% Checks if a field is present, and if it is, the value is stored in the 
-%%% cell array called "Settings". 
-if isfield(handles,'Vvariable1_01') ==1, 
+CurrentDirectory = cd;
+%%% Checks if a field is present, and if it is, the value is stored in the
+%%% cell array called "Settings".
+if isfield(handles,'Vvariable1_01') ==1,
     Settings{1} = handles.Vvariable1_01; end
-if isfield(handles,'Vvariable1_02') ==1, 
+if isfield(handles,'Vvariable1_02') ==1,
     Settings{2} = handles.Vvariable1_02; end
-if isfield(handles,'Vvariable1_03') ==1, 
+if isfield(handles,'Vvariable1_03') ==1,
     Settings{3} = handles.Vvariable1_03; end
-if isfield(handles,'Vvariable1_04') ==1, 
+if isfield(handles,'Vvariable1_04') ==1,
     Settings{4} = handles.Vvariable1_04; end
-if isfield(handles,'Vvariable1_05') ==1, 
+if isfield(handles,'Vvariable1_05') ==1,
     Settings{5} = handles.Vvariable1_05; end
-if isfield(handles,'Vvariable1_06') ==1, 
+if isfield(handles,'Vvariable1_06') ==1,
     Settings{6} = handles.Vvariable1_06; end
-if isfield(handles,'Vvariable1_07') ==1, 
+if isfield(handles,'Vvariable1_07') ==1,
     Settings{7} = handles.Vvariable1_07; end
-if isfield(handles,'Vvariable1_08') ==1, 
+if isfield(handles,'Vvariable1_08') ==1,
     Settings{8} = handles.Vvariable1_08; end
-if isfield(handles,'Vvariable1_09') ==1, 
+if isfield(handles,'Vvariable1_09') ==1,
     Settings{9} = handles.Vvariable1_09; end
-if isfield(handles,'Vvariable1_10') ==1, 
+if isfield(handles,'Vvariable1_10') ==1,
     Settings{10} = handles.Vvariable1_10; end
-if isfield(handles,'Vvariable1_11') ==1, 
+if isfield(handles,'Vvariable1_11') ==1,
     Settings{11} = handles.Vvariable1_11; end
 
-if isfield(handles,'Vvariable2_01') ==1, 
+if isfield(handles,'Vvariable2_01') ==1,
     Settings{12} = handles.Vvariable2_01; end
-if isfield(handles,'Vvariable2_02') ==1, 
+if isfield(handles,'Vvariable2_02') ==1,
     Settings{13} = handles.Vvariable2_02; end
-if isfield(handles,'Vvariable2_03') ==1, 
+if isfield(handles,'Vvariable2_03') ==1,
     Settings{14} = handles.Vvariable2_03; end
-if isfield(handles,'Vvariable2_04') ==1, 
+if isfield(handles,'Vvariable2_04') ==1,
     Settings{15} = handles.Vvariable2_04; end
-if isfield(handles,'Vvariable2_05') ==1, 
+if isfield(handles,'Vvariable2_05') ==1,
     Settings{16} = handles.Vvariable2_05; end
-if isfield(handles,'Vvariable2_06') ==1, 
+if isfield(handles,'Vvariable2_06') ==1,
     Settings{17} = handles.Vvariable2_06; end
-if isfield(handles,'Vvariable2_07') ==1, 
+if isfield(handles,'Vvariable2_07') ==1,
     Settings{18} = handles.Vvariable2_07; end
-if isfield(handles,'Vvariable2_08') ==1, 
+if isfield(handles,'Vvariable2_08') ==1,
     Settings{19} = handles.Vvariable2_08; end
-if isfield(handles,'Vvariable2_09') ==1, 
+if isfield(handles,'Vvariable2_09') ==1,
     Settings{20} = handles.Vvariable2_09; end
-if isfield(handles,'Vvariable2_10') ==1, 
+if isfield(handles,'Vvariable2_10') ==1,
     Settings{21} = handles.Vvariable2_10; end
-if isfield(handles,'Vvariable2_11') ==1, 
+if isfield(handles,'Vvariable2_11') ==1,
     Settings{22} = handles.Vvariable2_11; end
 
-if isfield(handles,'Vvariable3_01') ==1, 
+if isfield(handles,'Vvariable3_01') ==1,
     Settings{23} = handles.Vvariable3_01; end
-if isfield(handles,'Vvariable3_02') ==1, 
+if isfield(handles,'Vvariable3_02') ==1,
     Settings{24} = handles.Vvariable3_02; end
-if isfield(handles,'Vvariable3_03') ==1, 
+if isfield(handles,'Vvariable3_03') ==1,
     Settings{25} = handles.Vvariable3_03; end
-if isfield(handles,'Vvariable3_04') ==1, 
+if isfield(handles,'Vvariable3_04') ==1,
     Settings{26} = handles.Vvariable3_04; end
-if isfield(handles,'Vvariable3_05') ==1, 
+if isfield(handles,'Vvariable3_05') ==1,
     Settings{27} = handles.Vvariable3_05; end
-if isfield(handles,'Vvariable3_06') ==1, 
+if isfield(handles,'Vvariable3_06') ==1,
     Settings{28} = handles.Vvariable3_06; end
-if isfield(handles,'Vvariable3_07') ==1, 
+if isfield(handles,'Vvariable3_07') ==1,
     Settings{29} = handles.Vvariable3_07; end
-if isfield(handles,'Vvariable3_08') ==1, 
+if isfield(handles,'Vvariable3_08') ==1,
     Settings{30} = handles.Vvariable3_08; end
-if isfield(handles,'Vvariable3_09') ==1, 
+if isfield(handles,'Vvariable3_09') ==1,
     Settings{31} = handles.Vvariable3_09; end
-if isfield(handles,'Vvariable3_10') ==1, 
+if isfield(handles,'Vvariable3_10') ==1,
     Settings{32} = handles.Vvariable3_10; end
-if isfield(handles,'Vvariable3_11') ==1, 
+if isfield(handles,'Vvariable3_11') ==1,
     Settings{33} = handles.Vvariable3_11; end
 
-if isfield(handles,'Vvariable4_01') ==1, 
+if isfield(handles,'Vvariable4_01') ==1,
     Settings{34} = handles.Vvariable4_01; end
-if isfield(handles,'Vvariable4_02') ==1, 
+if isfield(handles,'Vvariable4_02') ==1,
     Settings{35} = handles.Vvariable4_02; end
-if isfield(handles,'Vvariable4_03') ==1, 
+if isfield(handles,'Vvariable4_03') ==1,
     Settings{36} = handles.Vvariable4_03; end
-if isfield(handles,'Vvariable4_04') ==1, 
+if isfield(handles,'Vvariable4_04') ==1,
     Settings{37} = handles.Vvariable4_04; end
-if isfield(handles,'Vvariable4_05') ==1, 
+if isfield(handles,'Vvariable4_05') ==1,
     Settings{38} = handles.Vvariable4_05; end
-if isfield(handles,'Vvariable4_06') ==1, 
+if isfield(handles,'Vvariable4_06') ==1,
     Settings{39} = handles.Vvariable4_06; end
-if isfield(handles,'Vvariable4_07') ==1, 
+if isfield(handles,'Vvariable4_07') ==1,
     Settings{40} = handles.Vvariable4_07; end
-if isfield(handles,'Vvariable4_08') ==1, 
+if isfield(handles,'Vvariable4_08') ==1,
     Settings{41} = handles.Vvariable4_08; end
-if isfield(handles,'Vvariable4_09') ==1, 
+if isfield(handles,'Vvariable4_09') ==1,
     Settings{42} = handles.Vvariable4_09; end
-if isfield(handles,'Vvariable4_10') ==1, 
+if isfield(handles,'Vvariable4_10') ==1,
     Settings{43} = handles.Vvariable4_10; end
-if isfield(handles,'Vvariable4_11') ==1, 
+if isfield(handles,'Vvariable4_11') ==1,
     Settings{44} = handles.Vvariable4_11; end
 
-if isfield(handles,'Vvariable5_01') ==1, 
+if isfield(handles,'Vvariable5_01') ==1,
     Settings{45} = handles.Vvariable5_01; end
-if isfield(handles,'Vvariable5_02') ==1, 
+if isfield(handles,'Vvariable5_02') ==1,
     Settings{46} = handles.Vvariable5_02; end
-if isfield(handles,'Vvariable5_03') ==1, 
+if isfield(handles,'Vvariable5_03') ==1,
     Settings{47} = handles.Vvariable5_03; end
-if isfield(handles,'Vvariable5_04') ==1, 
+if isfield(handles,'Vvariable5_04') ==1,
     Settings{48} = handles.Vvariable5_04; end
-if isfield(handles,'Vvariable5_05') ==1, 
+if isfield(handles,'Vvariable5_05') ==1,
     Settings{49} = handles.Vvariable5_05; end
-if isfield(handles,'Vvariable5_06') ==1, 
+if isfield(handles,'Vvariable5_06') ==1,
     Settings{50} = handles.Vvariable5_06; end
-if isfield(handles,'Vvariable5_07') ==1, 
+if isfield(handles,'Vvariable5_07') ==1,
     Settings{51} = handles.Vvariable5_07; end
-if isfield(handles,'Vvariable5_08') ==1, 
+if isfield(handles,'Vvariable5_08') ==1,
     Settings{52} = handles.Vvariable5_08; end
-if isfield(handles,'Vvariable5_09') ==1, 
+if isfield(handles,'Vvariable5_09') ==1,
     Settings{53} = handles.Vvariable5_09; end
-if isfield(handles,'Vvariable5_10') ==1, 
+if isfield(handles,'Vvariable5_10') ==1,
     Settings{54} = handles.Vvariable5_10; end
-if isfield(handles,'Vvariable5_11') ==1, 
+if isfield(handles,'Vvariable5_11') ==1,
     Settings{55} = handles.Vvariable5_11; end
 
-if isfield(handles,'Vvariable6_01') ==1, 
+if isfield(handles,'Vvariable6_01') ==1,
     Settings{56} = handles.Vvariable6_01; end
-if isfield(handles,'Vvariable6_02') ==1, 
+if isfield(handles,'Vvariable6_02') ==1,
     Settings{57} = handles.Vvariable6_02; end
-if isfield(handles,'Vvariable6_03') ==1, 
+if isfield(handles,'Vvariable6_03') ==1,
     Settings{58} = handles.Vvariable6_03; end
-if isfield(handles,'Vvariable6_04') ==1, 
+if isfield(handles,'Vvariable6_04') ==1,
     Settings{59} = handles.Vvariable6_04; end
-if isfield(handles,'Vvariable6_05') ==1, 
+if isfield(handles,'Vvariable6_05') ==1,
     Settings{60} = handles.Vvariable6_05; end
-if isfield(handles,'Vvariable6_06') ==1, 
+if isfield(handles,'Vvariable6_06') ==1,
     Settings{61} = handles.Vvariable6_06; end
-if isfield(handles,'Vvariable6_07') ==1, 
+if isfield(handles,'Vvariable6_07') ==1,
     Settings{62} = handles.Vvariable6_07; end
-if isfield(handles,'Vvariable6_08') ==1, 
+if isfield(handles,'Vvariable6_08') ==1,
     Settings{63} = handles.Vvariable6_08; end
-if isfield(handles,'Vvariable6_09') ==1, 
+if isfield(handles,'Vvariable6_09') ==1,
     Settings{64} = handles.Vvariable6_09; end
-if isfield(handles,'Vvariable6_10') ==1, 
+if isfield(handles,'Vvariable6_10') ==1,
     Settings{65} = handles.Vvariable6_10; end
-if isfield(handles,'Vvariable6_11') ==1, 
+if isfield(handles,'Vvariable6_11') ==1,
     Settings{66} = handles.Vvariable6_11; end
 
-if isfield(handles,'Vvariable7_01') ==1, 
+if isfield(handles,'Vvariable7_01') ==1,
     Settings{67} = handles.Vvariable7_01; end
-if isfield(handles,'Vvariable7_02') ==1, 
+if isfield(handles,'Vvariable7_02') ==1,
     Settings{68} = handles.Vvariable7_02; end
-if isfield(handles,'Vvariable7_03') ==1, 
+if isfield(handles,'Vvariable7_03') ==1,
     Settings{69} = handles.Vvariable7_03; end
-if isfield(handles,'Vvariable7_04') ==1, 
+if isfield(handles,'Vvariable7_04') ==1,
     Settings{70} = handles.Vvariable7_04; end
-if isfield(handles,'Vvariable7_05') ==1, 
+if isfield(handles,'Vvariable7_05') ==1,
     Settings{71} = handles.Vvariable7_05; end
-if isfield(handles,'Vvariable7_06') ==1, 
+if isfield(handles,'Vvariable7_06') ==1,
     Settings{72} = handles.Vvariable7_06; end
-if isfield(handles,'Vvariable7_07') ==1, 
+if isfield(handles,'Vvariable7_07') ==1,
     Settings{73} = handles.Vvariable7_07; end
-if isfield(handles,'Vvariable7_08') ==1, 
+if isfield(handles,'Vvariable7_08') ==1,
     Settings{74} = handles.Vvariable7_08; end
-if isfield(handles,'Vvariable7_09') ==1, 
+if isfield(handles,'Vvariable7_09') ==1,
     Settings{75} = handles.Vvariable7_09; end
-if isfield(handles,'Vvariable7_10') ==1, 
+if isfield(handles,'Vvariable7_10') ==1,
     Settings{76} = handles.Vvariable7_10; end
-if isfield(handles,'Vvariable7_11') ==1, 
+if isfield(handles,'Vvariable7_11') ==1,
     Settings{77} = handles.Vvariable7_11; end
 
-if isfield(handles,'Vvariable8_01') ==1, 
+if isfield(handles,'Vvariable8_01') ==1,
     Settings{78} = handles.Vvariable8_01; end
-if isfield(handles,'Vvariable8_02') ==1, 
+if isfield(handles,'Vvariable8_02') ==1,
     Settings{79} = handles.Vvariable8_02; end
-if isfield(handles,'Vvariable8_03') ==1, 
+if isfield(handles,'Vvariable8_03') ==1,
     Settings{80} = handles.Vvariable8_03; end
-if isfield(handles,'Vvariable8_04') ==1, 
+if isfield(handles,'Vvariable8_04') ==1,
     Settings{81} = handles.Vvariable8_04; end
-if isfield(handles,'Vvariable8_05') ==1, 
+if isfield(handles,'Vvariable8_05') ==1,
     Settings{82} = handles.Vvariable8_05; end
-if isfield(handles,'Vvariable8_06') ==1, 
+if isfield(handles,'Vvariable8_06') ==1,
     Settings{83} = handles.Vvariable8_06; end
-if isfield(handles,'Vvariable8_07') ==1, 
+if isfield(handles,'Vvariable8_07') ==1,
     Settings{84} = handles.Vvariable8_07; end
-if isfield(handles,'Vvariable8_08') ==1, 
+if isfield(handles,'Vvariable8_08') ==1,
     Settings{85} = handles.Vvariable8_08; end
-if isfield(handles,'Vvariable8_09') ==1, 
+if isfield(handles,'Vvariable8_09') ==1,
     Settings{86} = handles.Vvariable8_09; end
-if isfield(handles,'Vvariable8_10') ==1, 
+if isfield(handles,'Vvariable8_10') ==1,
     Settings{87} = handles.Vvariable8_10; end
-if isfield(handles,'Vvariable8_11') ==1, 
+if isfield(handles,'Vvariable8_11') ==1,
     Settings{88} = handles.Vvariable8_11; end
 
-if isfield(handles,'Valgorithmname1') ==1, 
+if isfield(handles,'Valgorithmname1') ==1,
     Settings{89} = handles.Valgorithmname1; end
-if isfield(handles,'Valgorithmname2') ==1, 
+if isfield(handles,'Valgorithmname2') ==1,
     Settings{90} = handles.Valgorithmname2; end
-if isfield(handles,'Valgorithmname3') ==1, 
+if isfield(handles,'Valgorithmname3') ==1,
     Settings{91} = handles.Valgorithmname3; end
-if isfield(handles,'Valgorithmname4') ==1, 
+if isfield(handles,'Valgorithmname4') ==1,
     Settings{92} = handles.Valgorithmname4; end
-if isfield(handles,'Valgorithmname5') ==1, 
+if isfield(handles,'Valgorithmname5') ==1,
     Settings{93} = handles.Valgorithmname5; end
-if isfield(handles,'Valgorithmname6') ==1, 
+if isfield(handles,'Valgorithmname6') ==1,
     Settings{94} = handles.Valgorithmname6; end
-if isfield(handles,'Valgorithmname7') ==1, 
+if isfield(handles,'Valgorithmname7') ==1,
     Settings{95} = handles.Valgorithmname7; end
-if isfield(handles,'Valgorithmname8') ==1, 
+if isfield(handles,'Valgorithmname8') ==1,
     Settings{96} = handles.Valgorithmname8; end
 
-if isfield(handles,'Vpixelsize') ==1, 
+if isfield(handles,'Vpixelsize') ==1,
     Settings{97} = handles.Vpixelsize; end
 
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the settings. Do not forget to type in the desired filename.');
-uiwait(h) 
-
 %%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
-
-helpdlg('The settings file has been written.')
+[FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+%%% Allows canceling.
+if FileName ~= 0
+    save([PathName,FileName],'Settings')
+    helpdlg('The settings file has been written.')
+end
 
 %%% Switches back to the original directory.
 cd(CurrentDirectory)
@@ -917,7 +916,7 @@ extractsettings %%% Note that the handles structure is not an argument.
 
 function extractsettings
 %%% Determines the current directory so it can switch back when done.
-CurrentDirectory = pwd;
+CurrentDirectory = cd;
 %%% Opens a dialog for the user to select the file from which to extract
 %%% settings.
 [OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
@@ -925,225 +924,226 @@ CurrentDirectory = pwd;
 %%% happen.
 if OutputFileName == 0
 else
-%%% Loads the Output file, which means that the handles structure is
-%%% loaded into the workspace of this function.
-cd(PathName)
-eval(['load ',OutputFileName])
-%%% The following is the same code found in the "Save Settings" button.
-%%% Checks if a field is present, and if it is, the value is stored in the 
-%%% cell array called "Settings". 
-if isfield(handles,'Vvariable1_01') ==1, 
-    Settings{1} = handles.Vvariable1_01; end
-if isfield(handles,'Vvariable1_02') ==1, 
-    Settings{2} = handles.Vvariable1_02; end
-if isfield(handles,'Vvariable1_03') ==1, 
-    Settings{3} = handles.Vvariable1_03; end
-if isfield(handles,'Vvariable1_04') ==1, 
-    Settings{4} = handles.Vvariable1_04; end
-if isfield(handles,'Vvariable1_05') ==1, 
-    Settings{5} = handles.Vvariable1_05; end
-if isfield(handles,'Vvariable1_06') ==1, 
-    Settings{6} = handles.Vvariable1_06; end
-if isfield(handles,'Vvariable1_07') ==1, 
-    Settings{7} = handles.Vvariable1_07; end
-if isfield(handles,'Vvariable1_08') ==1, 
-    Settings{8} = handles.Vvariable1_08; end
-if isfield(handles,'Vvariable1_09') ==1, 
-    Settings{9} = handles.Vvariable1_09; end
-if isfield(handles,'Vvariable1_10') ==1, 
-    Settings{10} = handles.Vvariable1_10; end
-if isfield(handles,'Vvariable1_11') ==1, 
-    Settings{11} = handles.Vvariable1_11; end
+    %%% Loads the Output file, which means that the handles structure is
+    %%% loaded into the workspace of this function.
+    cd(PathName)
+    eval(['load ',OutputFileName])
+    %%% The following is the same code found in the "Save Settings" button.
+    %%% Checks if a field is present, and if it is, the value is stored in the
+    %%% cell array called "Settings".
+    if isfield(handles,'Vvariable1_01') ==1,
+        Settings{1} = handles.Vvariable1_01; end
+    if isfield(handles,'Vvariable1_02') ==1,
+        Settings{2} = handles.Vvariable1_02; end
+    if isfield(handles,'Vvariable1_03') ==1,
+        Settings{3} = handles.Vvariable1_03; end
+    if isfield(handles,'Vvariable1_04') ==1,
+        Settings{4} = handles.Vvariable1_04; end
+    if isfield(handles,'Vvariable1_05') ==1,
+        Settings{5} = handles.Vvariable1_05; end
+    if isfield(handles,'Vvariable1_06') ==1,
+        Settings{6} = handles.Vvariable1_06; end
+    if isfield(handles,'Vvariable1_07') ==1,
+        Settings{7} = handles.Vvariable1_07; end
+    if isfield(handles,'Vvariable1_08') ==1,
+        Settings{8} = handles.Vvariable1_08; end
+    if isfield(handles,'Vvariable1_09') ==1,
+        Settings{9} = handles.Vvariable1_09; end
+    if isfield(handles,'Vvariable1_10') ==1,
+        Settings{10} = handles.Vvariable1_10; end
+    if isfield(handles,'Vvariable1_11') ==1,
+        Settings{11} = handles.Vvariable1_11; end
 
-if isfield(handles,'Vvariable2_01') ==1, 
-    Settings{12} = handles.Vvariable2_01; end
-if isfield(handles,'Vvariable2_02') ==1, 
-    Settings{13} = handles.Vvariable2_02; end
-if isfield(handles,'Vvariable2_03') ==1, 
-    Settings{14} = handles.Vvariable2_03; end
-if isfield(handles,'Vvariable2_04') ==1, 
-    Settings{15} = handles.Vvariable2_04; end
-if isfield(handles,'Vvariable2_05') ==1, 
-    Settings{16} = handles.Vvariable2_05; end
-if isfield(handles,'Vvariable2_06') ==1, 
-    Settings{17} = handles.Vvariable2_06; end
-if isfield(handles,'Vvariable2_07') ==1, 
-    Settings{18} = handles.Vvariable2_07; end
-if isfield(handles,'Vvariable2_08') ==1, 
-    Settings{19} = handles.Vvariable2_08; end
-if isfield(handles,'Vvariable2_09') ==1, 
-    Settings{20} = handles.Vvariable2_09; end
-if isfield(handles,'Vvariable2_10') ==1, 
-    Settings{21} = handles.Vvariable2_10; end
-if isfield(handles,'Vvariable2_11') ==1, 
-    Settings{22} = handles.Vvariable2_11; end
+    if isfield(handles,'Vvariable2_01') ==1,
+        Settings{12} = handles.Vvariable2_01; end
+    if isfield(handles,'Vvariable2_02') ==1,
+        Settings{13} = handles.Vvariable2_02; end
+    if isfield(handles,'Vvariable2_03') ==1,
+        Settings{14} = handles.Vvariable2_03; end
+    if isfield(handles,'Vvariable2_04') ==1,
+        Settings{15} = handles.Vvariable2_04; end
+    if isfield(handles,'Vvariable2_05') ==1,
+        Settings{16} = handles.Vvariable2_05; end
+    if isfield(handles,'Vvariable2_06') ==1,
+        Settings{17} = handles.Vvariable2_06; end
+    if isfield(handles,'Vvariable2_07') ==1,
+        Settings{18} = handles.Vvariable2_07; end
+    if isfield(handles,'Vvariable2_08') ==1,
+        Settings{19} = handles.Vvariable2_08; end
+    if isfield(handles,'Vvariable2_09') ==1,
+        Settings{20} = handles.Vvariable2_09; end
+    if isfield(handles,'Vvariable2_10') ==1,
+        Settings{21} = handles.Vvariable2_10; end
+    if isfield(handles,'Vvariable2_11') ==1,
+        Settings{22} = handles.Vvariable2_11; end
 
-if isfield(handles,'Vvariable3_01') ==1, 
-    Settings{23} = handles.Vvariable3_01; end
-if isfield(handles,'Vvariable3_02') ==1, 
-    Settings{24} = handles.Vvariable3_02; end
-if isfield(handles,'Vvariable3_03') ==1, 
-    Settings{25} = handles.Vvariable3_03; end
-if isfield(handles,'Vvariable3_04') ==1, 
-    Settings{26} = handles.Vvariable3_04; end
-if isfield(handles,'Vvariable3_05') ==1, 
-    Settings{27} = handles.Vvariable3_05; end
-if isfield(handles,'Vvariable3_06') ==1, 
-    Settings{28} = handles.Vvariable3_06; end
-if isfield(handles,'Vvariable3_07') ==1, 
-    Settings{29} = handles.Vvariable3_07; end
-if isfield(handles,'Vvariable3_08') ==1, 
-    Settings{30} = handles.Vvariable3_08; end
-if isfield(handles,'Vvariable3_09') ==1, 
-    Settings{31} = handles.Vvariable3_09; end
-if isfield(handles,'Vvariable3_10') ==1, 
-    Settings{32} = handles.Vvariable3_10; end
-if isfield(handles,'Vvariable3_11') ==1, 
-    Settings{33} = handles.Vvariable3_11; end
+    if isfield(handles,'Vvariable3_01') ==1,
+        Settings{23} = handles.Vvariable3_01; end
+    if isfield(handles,'Vvariable3_02') ==1,
+        Settings{24} = handles.Vvariable3_02; end
+    if isfield(handles,'Vvariable3_03') ==1,
+        Settings{25} = handles.Vvariable3_03; end
+    if isfield(handles,'Vvariable3_04') ==1,
+        Settings{26} = handles.Vvariable3_04; end
+    if isfield(handles,'Vvariable3_05') ==1,
+        Settings{27} = handles.Vvariable3_05; end
+    if isfield(handles,'Vvariable3_06') ==1,
+        Settings{28} = handles.Vvariable3_06; end
+    if isfield(handles,'Vvariable3_07') ==1,
+        Settings{29} = handles.Vvariable3_07; end
+    if isfield(handles,'Vvariable3_08') ==1,
+        Settings{30} = handles.Vvariable3_08; end
+    if isfield(handles,'Vvariable3_09') ==1,
+        Settings{31} = handles.Vvariable3_09; end
+    if isfield(handles,'Vvariable3_10') ==1,
+        Settings{32} = handles.Vvariable3_10; end
+    if isfield(handles,'Vvariable3_11') ==1,
+        Settings{33} = handles.Vvariable3_11; end
 
-if isfield(handles,'Vvariable4_01') ==1, 
-    Settings{34} = handles.Vvariable4_01; end
-if isfield(handles,'Vvariable4_02') ==1, 
-    Settings{35} = handles.Vvariable4_02; end
-if isfield(handles,'Vvariable4_03') ==1, 
-    Settings{36} = handles.Vvariable4_03; end
-if isfield(handles,'Vvariable4_04') ==1, 
-    Settings{37} = handles.Vvariable4_04; end
-if isfield(handles,'Vvariable4_05') ==1, 
-    Settings{38} = handles.Vvariable4_05; end
-if isfield(handles,'Vvariable4_06') ==1, 
-    Settings{39} = handles.Vvariable4_06; end
-if isfield(handles,'Vvariable4_07') ==1, 
-    Settings{40} = handles.Vvariable4_07; end
-if isfield(handles,'Vvariable4_08') ==1, 
-    Settings{41} = handles.Vvariable4_08; end
-if isfield(handles,'Vvariable4_09') ==1, 
-    Settings{42} = handles.Vvariable4_09; end
-if isfield(handles,'Vvariable4_10') ==1, 
-    Settings{43} = handles.Vvariable4_10; end
-if isfield(handles,'Vvariable4_11') ==1, 
-    Settings{44} = handles.Vvariable4_11; end
+    if isfield(handles,'Vvariable4_01') ==1,
+        Settings{34} = handles.Vvariable4_01; end
+    if isfield(handles,'Vvariable4_02') ==1,
+        Settings{35} = handles.Vvariable4_02; end
+    if isfield(handles,'Vvariable4_03') ==1,
+        Settings{36} = handles.Vvariable4_03; end
+    if isfield(handles,'Vvariable4_04') ==1,
+        Settings{37} = handles.Vvariable4_04; end
+    if isfield(handles,'Vvariable4_05') ==1,
+        Settings{38} = handles.Vvariable4_05; end
+    if isfield(handles,'Vvariable4_06') ==1,
+        Settings{39} = handles.Vvariable4_06; end
+    if isfield(handles,'Vvariable4_07') ==1,
+        Settings{40} = handles.Vvariable4_07; end
+    if isfield(handles,'Vvariable4_08') ==1,
+        Settings{41} = handles.Vvariable4_08; end
+    if isfield(handles,'Vvariable4_09') ==1,
+        Settings{42} = handles.Vvariable4_09; end
+    if isfield(handles,'Vvariable4_10') ==1,
+        Settings{43} = handles.Vvariable4_10; end
+    if isfield(handles,'Vvariable4_11') ==1,
+        Settings{44} = handles.Vvariable4_11; end
 
-if isfield(handles,'Vvariable5_01') ==1, 
-    Settings{45} = handles.Vvariable5_01; end
-if isfield(handles,'Vvariable5_02') ==1, 
-    Settings{46} = handles.Vvariable5_02; end
-if isfield(handles,'Vvariable5_03') ==1, 
-    Settings{47} = handles.Vvariable5_03; end
-if isfield(handles,'Vvariable5_04') ==1, 
-    Settings{48} = handles.Vvariable5_04; end
-if isfield(handles,'Vvariable5_05') ==1, 
-    Settings{49} = handles.Vvariable5_05; end
-if isfield(handles,'Vvariable5_06') ==1, 
-    Settings{50} = handles.Vvariable5_06; end
-if isfield(handles,'Vvariable5_07') ==1, 
-    Settings{51} = handles.Vvariable5_07; end
-if isfield(handles,'Vvariable5_08') ==1, 
-    Settings{52} = handles.Vvariable5_08; end
-if isfield(handles,'Vvariable5_09') ==1, 
-    Settings{53} = handles.Vvariable5_09; end
-if isfield(handles,'Vvariable5_10') ==1, 
-    Settings{54} = handles.Vvariable5_10; end
-if isfield(handles,'Vvariable5_11') ==1, 
-    Settings{55} = handles.Vvariable5_11; end
+    if isfield(handles,'Vvariable5_01') ==1,
+        Settings{45} = handles.Vvariable5_01; end
+    if isfield(handles,'Vvariable5_02') ==1,
+        Settings{46} = handles.Vvariable5_02; end
+    if isfield(handles,'Vvariable5_03') ==1,
+        Settings{47} = handles.Vvariable5_03; end
+    if isfield(handles,'Vvariable5_04') ==1,
+        Settings{48} = handles.Vvariable5_04; end
+    if isfield(handles,'Vvariable5_05') ==1,
+        Settings{49} = handles.Vvariable5_05; end
+    if isfield(handles,'Vvariable5_06') ==1,
+        Settings{50} = handles.Vvariable5_06; end
+    if isfield(handles,'Vvariable5_07') ==1,
+        Settings{51} = handles.Vvariable5_07; end
+    if isfield(handles,'Vvariable5_08') ==1,
+        Settings{52} = handles.Vvariable5_08; end
+    if isfield(handles,'Vvariable5_09') ==1,
+        Settings{53} = handles.Vvariable5_09; end
+    if isfield(handles,'Vvariable5_10') ==1,
+        Settings{54} = handles.Vvariable5_10; end
+    if isfield(handles,'Vvariable5_11') ==1,
+        Settings{55} = handles.Vvariable5_11; end
 
-if isfield(handles,'Vvariable6_01') ==1, 
-    Settings{56} = handles.Vvariable6_01; end
-if isfield(handles,'Vvariable6_02') ==1, 
-    Settings{57} = handles.Vvariable6_02; end
-if isfield(handles,'Vvariable6_03') ==1, 
-    Settings{58} = handles.Vvariable6_03; end
-if isfield(handles,'Vvariable6_04') ==1, 
-    Settings{59} = handles.Vvariable6_04; end
-if isfield(handles,'Vvariable6_05') ==1, 
-    Settings{60} = handles.Vvariable6_05; end
-if isfield(handles,'Vvariable6_06') ==1, 
-    Settings{61} = handles.Vvariable6_06; end
-if isfield(handles,'Vvariable6_07') ==1, 
-    Settings{62} = handles.Vvariable6_07; end
-if isfield(handles,'Vvariable6_08') ==1, 
-    Settings{63} = handles.Vvariable6_08; end
-if isfield(handles,'Vvariable6_09') ==1, 
-    Settings{64} = handles.Vvariable6_09; end
-if isfield(handles,'Vvariable6_10') ==1, 
-    Settings{65} = handles.Vvariable6_10; end
-if isfield(handles,'Vvariable6_11') ==1, 
-    Settings{66} = handles.Vvariable6_11; end
+    if isfield(handles,'Vvariable6_01') ==1,
+        Settings{56} = handles.Vvariable6_01; end
+    if isfield(handles,'Vvariable6_02') ==1,
+        Settings{57} = handles.Vvariable6_02; end
+    if isfield(handles,'Vvariable6_03') ==1,
+        Settings{58} = handles.Vvariable6_03; end
+    if isfield(handles,'Vvariable6_04') ==1,
+        Settings{59} = handles.Vvariable6_04; end
+    if isfield(handles,'Vvariable6_05') ==1,
+        Settings{60} = handles.Vvariable6_05; end
+    if isfield(handles,'Vvariable6_06') ==1,
+        Settings{61} = handles.Vvariable6_06; end
+    if isfield(handles,'Vvariable6_07') ==1,
+        Settings{62} = handles.Vvariable6_07; end
+    if isfield(handles,'Vvariable6_08') ==1,
+        Settings{63} = handles.Vvariable6_08; end
+    if isfield(handles,'Vvariable6_09') ==1,
+        Settings{64} = handles.Vvariable6_09; end
+    if isfield(handles,'Vvariable6_10') ==1,
+        Settings{65} = handles.Vvariable6_10; end
+    if isfield(handles,'Vvariable6_11') ==1,
+        Settings{66} = handles.Vvariable6_11; end
 
-if isfield(handles,'Vvariable7_01') ==1, 
-    Settings{67} = handles.Vvariable7_01; end
-if isfield(handles,'Vvariable7_02') ==1, 
-    Settings{68} = handles.Vvariable7_02; end
-if isfield(handles,'Vvariable7_03') ==1, 
-    Settings{69} = handles.Vvariable7_03; end
-if isfield(handles,'Vvariable7_04') ==1, 
-    Settings{70} = handles.Vvariable7_04; end
-if isfield(handles,'Vvariable7_05') ==1, 
-    Settings{71} = handles.Vvariable7_05; end
-if isfield(handles,'Vvariable7_06') ==1, 
-    Settings{72} = handles.Vvariable7_06; end
-if isfield(handles,'Vvariable7_07') ==1, 
-    Settings{73} = handles.Vvariable7_07; end
-if isfield(handles,'Vvariable7_08') ==1, 
-    Settings{74} = handles.Vvariable7_08; end
-if isfield(handles,'Vvariable7_09') ==1, 
-    Settings{75} = handles.Vvariable7_09; end
-if isfield(handles,'Vvariable7_10') ==1, 
-    Settings{76} = handles.Vvariable7_10; end
-if isfield(handles,'Vvariable7_11') ==1, 
-    Settings{77} = handles.Vvariable7_11; end
+    if isfield(handles,'Vvariable7_01') ==1,
+        Settings{67} = handles.Vvariable7_01; end
+    if isfield(handles,'Vvariable7_02') ==1,
+        Settings{68} = handles.Vvariable7_02; end
+    if isfield(handles,'Vvariable7_03') ==1,
+        Settings{69} = handles.Vvariable7_03; end
+    if isfield(handles,'Vvariable7_04') ==1,
+        Settings{70} = handles.Vvariable7_04; end
+    if isfield(handles,'Vvariable7_05') ==1,
+        Settings{71} = handles.Vvariable7_05; end
+    if isfield(handles,'Vvariable7_06') ==1,
+        Settings{72} = handles.Vvariable7_06; end
+    if isfield(handles,'Vvariable7_07') ==1,
+        Settings{73} = handles.Vvariable7_07; end
+    if isfield(handles,'Vvariable7_08') ==1,
+        Settings{74} = handles.Vvariable7_08; end
+    if isfield(handles,'Vvariable7_09') ==1,
+        Settings{75} = handles.Vvariable7_09; end
+    if isfield(handles,'Vvariable7_10') ==1,
+        Settings{76} = handles.Vvariable7_10; end
+    if isfield(handles,'Vvariable7_11') ==1,
+        Settings{77} = handles.Vvariable7_11; end
 
-if isfield(handles,'Vvariable8_01') ==1, 
-    Settings{78} = handles.Vvariable8_01; end
-if isfield(handles,'Vvariable8_02') ==1, 
-    Settings{79} = handles.Vvariable8_02; end
-if isfield(handles,'Vvariable8_03') ==1, 
-    Settings{80} = handles.Vvariable8_03; end
-if isfield(handles,'Vvariable8_04') ==1, 
-    Settings{81} = handles.Vvariable8_04; end
-if isfield(handles,'Vvariable8_05') ==1, 
-    Settings{82} = handles.Vvariable8_05; end
-if isfield(handles,'Vvariable8_06') ==1, 
-    Settings{83} = handles.Vvariable8_06; end
-if isfield(handles,'Vvariable8_07') ==1, 
-    Settings{84} = handles.Vvariable8_07; end
-if isfield(handles,'Vvariable8_08') ==1, 
-    Settings{85} = handles.Vvariable8_08; end
-if isfield(handles,'Vvariable8_09') ==1, 
-    Settings{86} = handles.Vvariable8_09; end
-if isfield(handles,'Vvariable8_10') ==1, 
-    Settings{87} = handles.Vvariable8_10; end
-if isfield(handles,'Vvariable8_11') ==1, 
-    Settings{88} = handles.Vvariable8_11; end
+    if isfield(handles,'Vvariable8_01') ==1,
+        Settings{78} = handles.Vvariable8_01; end
+    if isfield(handles,'Vvariable8_02') ==1,
+        Settings{79} = handles.Vvariable8_02; end
+    if isfield(handles,'Vvariable8_03') ==1,
+        Settings{80} = handles.Vvariable8_03; end
+    if isfield(handles,'Vvariable8_04') ==1,
+        Settings{81} = handles.Vvariable8_04; end
+    if isfield(handles,'Vvariable8_05') ==1,
+        Settings{82} = handles.Vvariable8_05; end
+    if isfield(handles,'Vvariable8_06') ==1,
+        Settings{83} = handles.Vvariable8_06; end
+    if isfield(handles,'Vvariable8_07') ==1,
+        Settings{84} = handles.Vvariable8_07; end
+    if isfield(handles,'Vvariable8_08') ==1,
+        Settings{85} = handles.Vvariable8_08; end
+    if isfield(handles,'Vvariable8_09') ==1,
+        Settings{86} = handles.Vvariable8_09; end
+    if isfield(handles,'Vvariable8_10') ==1,
+        Settings{87} = handles.Vvariable8_10; end
+    if isfield(handles,'Vvariable8_11') ==1,
+        Settings{88} = handles.Vvariable8_11; end
 
-if isfield(handles,'Valgorithmname1') ==1, 
-    Settings{89} = handles.Valgorithmname1; end
-if isfield(handles,'Valgorithmname2') ==1, 
-    Settings{90} = handles.Valgorithmname2; end
-if isfield(handles,'Valgorithmname3') ==1, 
-    Settings{91} = handles.Valgorithmname3; end
-if isfield(handles,'Valgorithmname4') ==1, 
-    Settings{92} = handles.Valgorithmname4; end
-if isfield(handles,'Valgorithmname5') ==1, 
-    Settings{93} = handles.Valgorithmname5; end
-if isfield(handles,'Valgorithmname6') ==1, 
-    Settings{94} = handles.Valgorithmname6; end
-if isfield(handles,'Valgorithmname7') ==1, 
-    Settings{95} = handles.Valgorithmname7; end
-if isfield(handles,'Valgorithmname8') ==1, 
-    Settings{96} = handles.Valgorithmname8; end
+    if isfield(handles,'Valgorithmname1') ==1,
+        Settings{89} = handles.Valgorithmname1; end
+    if isfield(handles,'Valgorithmname2') ==1,
+        Settings{90} = handles.Valgorithmname2; end
+    if isfield(handles,'Valgorithmname3') ==1,
+        Settings{91} = handles.Valgorithmname3; end
+    if isfield(handles,'Valgorithmname4') ==1,
+        Settings{92} = handles.Valgorithmname4; end
+    if isfield(handles,'Valgorithmname5') ==1,
+        Settings{93} = handles.Valgorithmname5; end
+    if isfield(handles,'Valgorithmname6') ==1,
+        Settings{94} = handles.Valgorithmname6; end
+    if isfield(handles,'Valgorithmname7') ==1,
+        Settings{95} = handles.Valgorithmname7; end
+    if isfield(handles,'Valgorithmname8') ==1,
+        Settings{96} = handles.Valgorithmname8; end
 
-if isfield(handles,'Vpixelsize') ==1, 
-    Settings{97} = handles.Vpixelsize; end
+    if isfield(handles,'Vpixelsize') ==1,
+        Settings{97} = handles.Vpixelsize; end
 
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the extracted settings. Do not forget to type in the desired filename.');
-uiwait(h) 
-%%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
-helpdlg('The settings file has been written.')
-%%% Switches back to the original directory.
-cd(CurrentDirectory)
+    %%% The "Settings" variable is saved to the file name the user chooses.
+    [FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+    %%% Allows canceling.
+    if FileName ~= 0
+        save([PathName,FileName],'Settings')
+        helpdlg('The settings file has been written.')
+    end
+
+    cd(CurrentDirectory)
 end
 
 %%%%%%%%%%%%%%%%%
@@ -1177,7 +1177,7 @@ end
 function AlgorithmDirectory_Callback(hObject, eventdata, handles)
 %%% Determine what the current directory is, so you can change back 
 %%% when this process is done.
-CurrentDir = pwd;
+CurrentDir = cd;
 %%% Open a dialog box to get the directory from the user.
 DefAlgDir = uigetdir('The directory you choose will be set as the default directory when "Load" analysis module is chosen in STEP 3 (Image analysis settings).','Where are the analysis modules?');
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
@@ -1250,7 +1250,7 @@ function loadalgorithm(AlgorithmNumber, handles)
 
 %%% First, the current directory is stored so we can switch back to it at
 %%% the end of this step:
-CurrentDir = pwd;
+CurrentDir = cd;
 %%% Change to the Matlab root directory.
 cd(matlabroot)
 %%% If the DefaultAlgDirectory .mat file does not exist in the matlabroot
@@ -2002,6 +2002,7 @@ end
 
 % --- Executes on button press in SelectTestImageBrowseButton.
 function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
+
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be used as a test image.
 [FileName,PathName] = uigetfile('*.*','Select a test image (nuclei)');
@@ -2009,7 +2010,8 @@ function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
 %%% happen.
 if FileName == 0
 else
-    set(handles.TestImageName,'String',[PathName,'/',FileName])
+    set(handles.TestImageName,'String',[PathName,FileName])
+    handles.Vtestpathname = PathName;
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
@@ -2022,10 +2024,6 @@ else
         %%% Loads these image names into the ListBox.
         set(handles.ListBox,'String',handles.Vfilenames,...
             'Value',1)
-        %%% Retrieves the SelectedTestImageName from the ListBox.
-        Contents = get(hObject,'String');
-        SelectedTestImageName = Contents{get(hObject,'Value')};
-        set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
     end
 end
 %%%%%%%%%%%%%%%%%
@@ -2035,6 +2033,7 @@ function TestImageName_CreateFcn(hObject, eventdata, handles)
 set(hObject,'BackgroundColor',[1 1 1]);
 
 function TestImageName_Callback(hObject, eventdata, handles)
+
 %%% Retrieves the contents of the edit box.
 UserEntry = get(hObject, 'string');
 %%% Checks whether a file with that name exists.
@@ -2043,7 +2042,7 @@ if exist(UserEntry) ~= 0
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
-    PathName = pwd;
+    PathName = handles.Vtestpathname;
     handles = RetrieveImageFileNames(handles,PathName);
     guidata(hObject, handles);
     if isempty(handles.Vfilenames)
@@ -2072,7 +2071,8 @@ function ListBox_Callback(hObject, eventdata, handles)
 %%% Retrieves the SelectedTestImageName from the ListBox.
 Contents = get(hObject,'String');
 SelectedTestImageName = Contents{get(hObject,'Value')};
-set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
+PathName = handles.Vtestpathname;
+set(handles.TestImageName,'String',[PathName,SelectedTestImageName])
 
 %%%%%%%%%%%%%%%%%
 
@@ -2182,7 +2182,7 @@ end
 % --- Executes on button press in ExportDataButton.
 function ExportDataButton_Callback(hObject, eventdata, handles)
 
-OriginalDirectory = pwd;
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -2307,7 +2307,7 @@ else
     end % This goes with the "Cancel" button on the FileName dialog.
 end % This goes with the "Cancel" button on the RawFileName dialog.
 
-cd(OriginalDirectory);
+cd(CurrentDirectory);
 % In case I want to save data that is 
 % all numbers, with different numbers of rows for each column, the
 % following code might be helpful:
@@ -2323,6 +2323,7 @@ cd(OriginalDirectory);
 
 % --- Executes on button press in ExportCellByCellButton.
 function ExportCellByCellButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -2542,11 +2543,13 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in HistogramButton.
 function HistogramButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -3202,6 +3205,7 @@ if ok ~= 0
         end
     end % Goes with cancel button when selecting the measurement to display.
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
@@ -3331,7 +3335,7 @@ msgbox('The original data and the corrected data are now displayed in the Matlab
 
 % --- Executes on button press in DisplayDataOnImageButton.
 function DisplayDataOnImageButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = cd;
 %%% Asks the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName ~= 0
@@ -3471,12 +3475,13 @@ if RawFileName ~= 0
         end
     end
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeAllImagesButton.
 function AnalyzeAllImagesButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
 sum = 0;
 for i = 1:8
@@ -4299,6 +4304,7 @@ else
     %%% This "end" goes with the error-detecting "The chosen directory does not
     %%% exist."
 end
+cd(CurrentDirectory);
 
 %%% Note: an improvement I would like to make:
 %%% Currently, it is possible to use the Zoom tool in the figure windows to

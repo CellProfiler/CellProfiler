@@ -640,7 +640,7 @@ if FileName ~= 0
         if VariableSize(1) ~= max(size(ModuleNames))
             error('Your settings are not valid.')
         end
-        display = ['Saved Settings, in file ' filename '.txt, Saved on ' date];
+        display = ['Saved Settings, in file ' filename ', Saved on ' date];
         % Loop for each module loaded.
         for p = 1:VariableSize(1)
             Module = [char(ModuleNames(p))];

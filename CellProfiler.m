@@ -3663,4 +3663,4 @@ end; %if s isempty
 function HelpStep1_Callback(hObject, eventdata, handles)
 helpdlg('Select the main folder containing the images you want to analyze. You will have the option within load images modules to retrieve images from more than one folder, but the folder selected here will be the default folder.  Use the Browse button to select the folder, or carefully type the full pathname in the box to the right.','Step 1 Help')
 function HelpStep2_Callback(hObject, eventdata, handles)
-helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?
+helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ')

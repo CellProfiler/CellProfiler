@@ -75,12 +75,15 @@ function handles = AlgCorrectIllumDivideEachMin_10(handles)
 % module. An example image demonstrating the function of the module
 % can also be saved in tif format, using the same name as the
 % algorithm (minus Alg), and it will automatically be included in the
-% manual page as well.  Follow the convention of purpose of the
+% manual page as well.  Follow the convention of: purpose of the
 % module, description of the variables and acceptable range for each,
 % how it works (technical description), info on which images can be 
 % saved, and See also CAPITALLETTEROTHERALGORITHMS. The license/author
 % information should be separated from the help lines with a blank
-% line so that it does not show up in the help displays.
+% line so that it does not show up in the help displays.  Do not
+% change the programming notes in any modules! These are standard
+% across all modules for maintenance purposes, so anything
+% module-specific should be kept separate.
 
 % PROGRAMMING NOTE
 % DRAWNOW:
@@ -189,6 +192,8 @@ drawnow
 % saving.  If the image is not saved correctly, for example, try
 % adding the uint8 command:
 % imwrite(uint8(BlurredImage), FileName, FileFormat);
+% To routinely save images produced by this module, see the help in
+% the SaveImages module.
 
 %%% Calculates a coarse estimate of the background illumination by
 %%% determining the minimum of each block in the image.  If the minimum is
@@ -292,42 +297,58 @@ drawnow
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
-% In CellProfiler (and Matlab in general), each independent function
-% (module) has its own workspace and is not able to 'see' variables
-% produced by other modules. For data or images to be shared from one
-% module to the next, they must be saved to what is called the
-% 'handles structure'. This is a variable of class structure which is
-% called handles. Data which should be saved to the handles structure
-% within each module includes: any images, data or measurements which
-% are to be eventually saved to the hard drive (either in an output
-% file, or using the SaveImages module) or which must be used by a
-% later module in the analysis pipeline. It is important to think
-% about which of these data should be deleted at the end of an
-% analysis run because of the way Matlab saves variables: For example,
-% a user might process 12 image sets of nuclei which results in a set
-% of 12 measurements ("TotalNucArea") stored in the handles structure.
-% In addition, a processed image of nuclei from the last image set is
-% left in the handles structure ("SegmNucImg").  Now, if the user uses
-% a different algorithm which happens to have the same measurement
-% output name "TotalNucArea" to analyze 4 image sets, the 4
-% measurements will overwrite the first 4 measurements of the previous
-% analysis, but the remaining 8 measurements will still be present.
-% So, the user will end up with 12 measurements from the 4 sets.
-% Another potential problem is that if, in the second analysis run,
-% the user runs only an algorithm which depends on the output
-% "SegmNucImg" but does not run an algorithm that produces an image by
-% that name, the algorithm will run just fine: it will just repeatedly
-% use the processed image of nuclei leftover from the last image set,
-% which was left in the handles structure ("SegmNucImg").
+%       In CellProfiler (and Matlab in general), each independent
+% function (module) has its own workspace and is not able to 'see'
+% variables produced by other modules. For data or images to be shared
+% from one module to the next, they must be saved to what is called
+% the 'handles structure'. This is a variable, whose class is
+% 'structure', and whose name is handles. Data which should be saved
+% to the handles structure within each module includes: any images,
+% data or measurements which are to be eventually saved to the hard
+% drive (either in an output file, or using the SaveImages module) or
+% which are to be used by a later module in the analysis pipeline. Any
+% module which produces or passes on an image needs to also pass along
+% the original filename of the image, named after the new image name,
+% so that if the SaveImages module attempts to save the resulting
+% image, it can be named by appending text to the original file name.
+%       It is important to think about which of these data should be
+% deleted at the end of an analysis run because of the way Matlab
+% saves variables: For example, a user might process 12 image sets of
+% nuclei which results in a set of 12 measurements ("TotalNucArea")
+% stored in the handles structure. In addition, a processed image of
+% nuclei from the last image set is left in the handles structure
+% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% happens to have the same measurement output name "TotalNucArea" to
+% analyze 4 image sets, the 4 measurements will overwrite the first 4
+% measurements of the previous analysis, but the remaining 8
+% measurements will still be present. So, the user will end up with 12
+% measurements from the 4 sets. Another potential problem is that if,
+% in the second analysis run, the user runs only an algorithm which
+% depends on the output "SegmNucImg" but does not run an algorithm
+% that produces an image by that name, the algorithm will run just
+% fine: it will just repeatedly use the processed image of nuclei
+% leftover from the last image set, which was left in the handles
+% structure ("SegmNucImg").
 %
 % INCLUDE FURTHER DESCRIPTION OF MEASUREMENTS PER CELL AND PER IMAGE
 % HERE>>>
 %
-% The data extraction functions of CellProfiler are designed to deal
-% with only one "column" of data per named measurement field. So, for
-% example, instead of creating a field of XY locations stored in
-% pairs, it is better to store a field of X locations and a field of Y
-% locations.
+%       Saving measurements: The data extraction functions of
+% CellProfiler are designed to deal with only one "column" of data per
+% named measurement field. So, for example, instead of creating a
+% field of XY locations stored in pairs, it is better to store a field
+% of X locations and a field of Y locations. Measurements must be
+% stored in double format, because the extraction part of the program
+% is designed to deal with that type of array only, not cell or
+% structure arrays. It is wise to include the user's input for
+% 'ObjectName' as part of the fieldname in the handles structure so
+% that multiple modules can be run and their data will not overwrite
+% each other.
+%
+%       Extracting measurements: handles.dMCCenterXNuclei{1}(2) gives
+% the X position for the second object in the first image.
+% handles.dMCAreaNuclei{2}(1) gives the area of the first object in
+% the second image.
 
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent algorithms.

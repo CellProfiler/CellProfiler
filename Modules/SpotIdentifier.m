@@ -79,7 +79,7 @@ MarkingMethod = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 RowsColumns = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %%% Extracts the rows and columns from the user's input.
 try
-    RowsColumnsNumerical = str2double(RowsColumns);
+    RowsColumnsNumerical = str2num(RowsColumns);%#ok We want to ignore MLint error checking for this line.
     NumberRows = RowsColumnsNumerical(1);
     NumberColumns = RowsColumnsNumerical(2);
 catch error('Image processing was canceled because your entry for rows, columns in the Spot Identifier module was not understood.')
@@ -90,7 +90,7 @@ end
 HorizVertSpacing = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %%% Extracts the vertical and horizontal spacing from the user's input.
 try
-    HorizVertSpacingNumerical = str2double(HorizVertSpacing);
+    HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
     VertSpacing = HorizVertSpacingNumerical(1);
     HorizSpacing = HorizVertSpacingNumerical(2);
 catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
@@ -101,7 +101,7 @@ end
 HorizVertOffset = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %%% Extracts the vertical and horizontal offset from the user's input.
 try
-    HorizVertOffsetNumerical = str2double(HorizVertOffset);
+    HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
     VertOffset = HorizVertOffsetNumerical(1);
     HorizOffset = HorizVertOffsetNumerical(2);
 catch error('Image processing was canceled because your entry for the distance from the top left marker to the center of the nearest spot (vertical, horizontal) in the Spot Identifier module was not understood.')
@@ -245,6 +245,7 @@ end
 %%% Converts to a single column.
 LinearNumbers = reshape(NumbersGridShape, 1, NumberSpots);
 %%% Converts to text for display purposes.
+PositionList{length(LinearNumbers)} = num2str(LinearNumbers(length(LinearNumbers)));
 for i = 1:length(LinearNumbers)
     PositionList{i} = num2str(LinearNumbers(i));
 end

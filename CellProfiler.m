@@ -1798,35 +1798,80 @@ end
 % --- Executes during object creation, after setting all properties.
 function OutputFileNameEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
+% OLD OutputFileNameEditBox_Callback function, modified 2/13/2005.
+% function OutputFileNameEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+% Pathname = handles.Current.DefaultOutputDirectory;
+% %%% Gets the user entry and stores it in the handles structure.
+% InitialUserEntry = get(handles.OutputFileNameEditBox,'string');
+% 
+% if isempty(InitialUserEntry)
+%     handles.Current.OutputFilename =[];
+% else
+%     if length(InitialUserEntry) >=7
+%         if strncmpi(InitialUserEntry(end-6:end),'out.mat',7)
+%             UserEntry = InitialUserEntry;
+%         elseif strncmpi(InitialUserEntry(end-3:end),'.mat',4)
+%             UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
+%         else UserEntry = [InitialUserEntry,'OUT.mat'];
+%         end
+%     elseif length(InitialUserEntry) >=4
+%         if strncmp(InitialUserEntry(end-3:end),'.mat',4)
+%             UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
+%         else UserEntry = [InitialUserEntry,'OUT.mat'];
+%         end
+%     else UserEntry = [InitialUserEntry,'OUT.mat'];
+%     end
+%     %%% Checks whether a file with that name already exists, to warn the user
+%     %%% that the file will be overwritten.
+%     if exist([Pathname,'/',UserEntry],'file')    %%% TODO: Fix filename construction.
+%         errordlg(['A file already exists at ', [Pathname,'/',UserEntry],... %%% TODO: Fix filename construction.
+%             '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
+%         set(handles.OutputFileNameEditBox,'string',[])
+%     else
+%         handles.Current.OutputFilename = UserEntry;
+%         set(handles.OutputFileNameEditBox,'string',UserEntry)
+%     end
+% end
+%guidata(gcbo, handles);
+
 function OutputFileNameEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+
 Pathname = handles.Current.DefaultOutputDirectory;
-%%% Gets the user entry and stores it in the handles structure.
-InitialUserEntry = get(handles.OutputFileNameEditBox,'string');
-if isempty(InitialUserEntry)
-    handles.Current.OutputFilename =[];
-else
-    if length(InitialUserEntry) >=7
-        if strncmpi(InitialUserEntry(end-6:end),'out.mat',7) == 1
-            UserEntry = InitialUserEntry;
-        elseif strncmpi(InitialUserEntry(end-3:end),'.mat',4) == 1
-            UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
-        else UserEntry = [InitialUserEntry,'OUT.mat'];
-        end
-    elseif length(InitialUserEntry) >=4
-        if strncmp(InitialUserEntry(end-3:end),'.mat',4) == 1
-        UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
-        else UserEntry = [InitialUserEntry,'OUT.mat'];
-        end
-    else UserEntry = [InitialUserEntry,'OUT.mat'];
+UserEntry = strtrim(get(handles.OutputFileNameEditBox,'string'));
+
+if ~isempty(UserEntry)
+    
+    % Drop '.mat' if the user entered it
+    if strfind(UserEntry,'.mat')
+        UserEntry = UserEntry(1:end-4);
     end
-    %%% Checks whether a file with that name already exists, to warn the user
-    %%% that the file will be overwritten.
-    if exist([Pathname,'/',UserEntry],'file') ~= 0   %%% TODO: Fix filename construction.
-        errordlg(['A file already exists at ', [Pathname,'/',UserEntry],... %%% TODO: Fix filename construction.
-            '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
-        set(handles.OutputFileNameEditBox,'string',[])
-    else 
-        handles.Current.OutputFilename = UserEntry;
+   
+    % Find base name
+    index = findstr(UserEntry,'__');
+    if ~isempty(index)
+        UserEntry = UserEntry(1:index(end)-1);
+    end
+    
+    % Find the files with the same base name and extract highest number
+    % If the dir-command takes a long time when there are a lot of files
+    % in a directory, another solution might be to try different numberings
+    % until an unused number is encountered.
+    if exist(fullfile(Pathname,[UserEntry '.mat']),'file')
+        d = dir(Pathname);
+        numbers = [];
+        for k = 1:length(d);
+            index = findstr(d(k).name,[UserEntry '__']);
+            if ~isempty(index)
+                numbers = [numbers str2num(d(k).name(index(end)+length(UserEntry)+2:end-4))];
+            end
+        end
+        if isempty(numbers)
+            outputnumber = 1;
+        else
+            outputnumber = max(numbers) + 1;
+        end
+        set(handles.OutputFileNameEditBox,'string',sprintf('%s__%d',UserEntry,outputnumber))
+    else
         set(handles.OutputFileNameEditBox,'string',UserEntry)
     end
 end
@@ -1847,12 +1892,15 @@ end
 if sum == 0
     errordlg('You do not have any analysis modules loaded');
 else
+    
+    % Call Callback function of FileNameEditBox to update filename
+    OutputFileNameEditBox_Callback(hObject, eventdata, handles)
+    
     %%% Checks whether an output file name has been specified.
-    if isfield(handles.Current, 'OutputFilename') == 0
-        errordlg('You have not entered an output file name in Step 2.');
-    elseif isempty(handles.Current.OutputFilename)
+    if isempty(get(handles.OutputFileNameEditBox,'string'))
         errordlg('You have not entered an output file name in Step 2.');
     else
+    
     %%% Checks whether the default output directory exists.
         DirDoesNotExist = 0; %%% Initial value.
         try cd(handles.Current.DefaultOutputDirectory)
@@ -1867,15 +1915,8 @@ else
         elseif DirDoesNotExist == 2
             errordlg('The default image directory does not exist');
         else           
-            %%% Checks whether the specified output file name will overwrite an
-            %%% existing file.
-            
-            %%% TODO: Use fullfile to make the following
-            %%% multi-platform compatible.
-            OutputFileOverwrite = exist([cd,'/',handles.Current.OutputFilename],'file');
-            if OutputFileOverwrite ~= 0
-                errordlg('An output file with the name you entered in Step 2 already exists. Overwriting can cause errors and is disallowed, so please enter a new filename.');
-            else
+           
+         
                 %%% Retrieves the list of image file names from the
                 %%% chosen directory, stores them in the handles
                 %%% structure, and displays them in the filenameslistbox, by
@@ -2187,7 +2228,7 @@ else
                     %%% Save all data that is in the handles structure to the output file 
                     %%% name specified by the user.
                     cd(handles.Current.DefaultOutputDirectory)
-                    eval(['save ',handles.Current.OutputFilename, ' handles;'])                   
+                    eval(['save ',get(handles.OutputFileNameEditBox,'string'), ' handles;'])                   
                     %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                     setbeinganalyzed = setbeinganalyzed + 1;
                     handles.Current.SetBeingAnalyzed = setbeinganalyzed;
@@ -2278,7 +2319,7 @@ else
                         listdlg('ListString', HeadingsToBeRemoved, 'PromptString', HeadingsErrorMessage, 'CancelString', 'OK');
                         %%% Save all data that is in the handles structure to the output file 
                         %%% name specified by the user.
-                        eval(['save ',handles.Current.OutputFilename, ' handles;'])
+                        eval(['save ',get(handles.OutputFileNameEditBox','string'), ' handles;'])
                     end % This end goes with the "isempty" line.
                 end % This end goes with the 'isempty' line.    
                 %%% Update the handles structure.
@@ -2384,9 +2425,6 @@ else
                         end
                     end
                 end
-                %%% Clears the output file name to prevent it from being reused.
-                set(handles.OutputFileNameEditBox,'string',[])
-                handles.Current = rmfield(handles.Current,'OutputFilename');
                 guidata(gcbo, handles)
                 
                 %%% This "end" goes with the error-detecting "You have no analysis modules
@@ -2394,9 +2432,7 @@ else
             end
             %%% This "end" goes with the error-detecting "You have not specified an
             %%% output file name".
-        end
-        %%% This "end" goes with the error-detecting "An output file with that name
-        %%% already exists."
+       
     end
     %%% This "end" goes with the error-detecting "The chosen directory does not
     %%% exist."

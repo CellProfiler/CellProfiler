@@ -52,8 +52,6 @@ Settings =      ModuleNames: {1x6 cell}
 
 - Remove all 'cd' commands from modules and use full pathnames instead.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
 
-- it is a bit annoying to have to type in the name of an output file each time you are testing parameters. Have the output file be automatically named (e.g. incrementing numbers (TempCPOUT1.mat, TempCPOUT2.mat) that are not already existing in the output directory) when you press Analyze Images but have not typed a name into the box.
-
 - Display data on image button: it currently is using global
        variables to store the numerical data, rather than using
        UserData.  Thus, the figure cannot be saved with the numerical

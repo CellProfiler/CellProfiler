@@ -7,7 +7,7 @@ function handles = AlgCrop(handles)
 % Rectangular: enter the
 % pixel coordinates for the left, top and right, bottom corners.
 % 
-% Ellipse: Any other shape: give CellProfilerTM a black and white
+% Ellipse: Any other shape: give CellProfiler a black and white
 % image you have prepared which shows the cropping shape.
 
 % The contents of this file are subject to the Mozilla Public License Version 
@@ -125,8 +125,8 @@ if Shape == 'F'
     end
     drawnow
     %%% Removes Rows and Columns that are completely blank.
-    ColumnTotals = sum(BinaryCropImage);
-    RowTotals = sum(BinaryCropImage');
+    ColumnTotals = sum(BinaryCropImage,1);
+    RowTotals = sum(BinaryCropImage,2)';
     warning off all
     ColumnsToDelete = ~logical(ColumnTotals);
     RowsToDelete = ~logical(RowTotals);
@@ -240,8 +240,8 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         PrelimCroppedImage((Channel-1)*ImagePixels + find(BinaryCropImage == 0)) = 0;
     end
     %%% Removes Rows and Columns that are completely blank.
-    ColumnTotals = sum(BinaryCropImage);
-    RowTotals = sum(BinaryCropImage');
+    ColumnTotals = sum(BinaryCropImage,1);
+    RowTotals = sum(BinaryCropImage,2)';
     warning off all
     ColumnsToDelete = ~logical(ColumnTotals);
     RowsToDelete = ~logical(RowTotals);

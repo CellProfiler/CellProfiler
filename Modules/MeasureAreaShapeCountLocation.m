@@ -278,11 +278,9 @@ drawnow
 %%% COUNT
 %%%
     %%% Counts the number of objects in the label matrix image. This
-    %%% does not require that the objects be contiguous. Strange
-    %%% results may ensue with non-contiguous objects. Subtracting the
-    %%% 1 is necessary because zero (the background) would otherwise
-    %%% be counted as an object.
-    ObjectCount = length(unique(LabelMatrixImage(:))) - 1;
+    %%% requires that the objects be contiguous. Strange
+    %%% results may ensue with non-contiguous objects.
+    ObjectCount = max(max(LabelMatrixImage(:)));
     %%% Saves the count to the handles structure.
     fieldname = ['ImageCount', ObjectName];
     handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {ObjectCount};

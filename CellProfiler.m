@@ -592,7 +592,7 @@ handles.numVariables = Settings.numVariables;
 handles.FigureDisplayString = cell(1,99);
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
-handles.AlgorithmHighlighted = '01';
+handles.AlgorithmHighlighted = [1];
 set(handles.AlgorithmBox,'Value',1);
 handles.Vpixelsize = Settings.Vpixelsize;
 set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);

@@ -199,7 +199,7 @@ For each title, add properties at the end:
 
 JAMES MIGHT WORK ON THIS >>>>  CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
-JAMES MIGHT WORK ON THIS >>>> - Allow canceling from the first dialog box when using the Save Image As button.
+- Allow canceling from the first dialog box when using the Save Image As button.
 
 ++ Prevent clicking pause/cancel buttons twice in the timer window.
 
@@ -227,12 +227,12 @@ JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Plot data button: allow adding er
        sem to the single parameter, multiple images bar plot (matlab
        central has error bar code). 
 
-JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Plot data button: allow displaying two parameters vs. each
+- Plot data button: allow displaying two parameters vs. each
        other in a scatter plot. 
 
 - Combine CorrIllumDivideAll with RetrieveImg version.
 
-JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Compressed histograms: Add Y sample labels, allow to show
+- Compressed histograms: Add Y sample labels, allow to show
        relative brightness, allow to put in order by mean, change # of
        sig figs.  See hist2 at MC to smooth histograms.  Eventually
        allow histograms to be interactively updated? See automatic
@@ -252,9 +252,9 @@ JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Compressed histograms: Add Y samp
        stays open. See tooltips code. Make manual page.  Fails if
        there are fewer images than the total grid. 
 
-JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
+- For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
 
-JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.  Note: for exporting mean, median, and stdev, these values should be calculated on the fly rather than extracted from existing measures in handles.Measurements, so that we can eliminate storing these values in output files.
+- Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.  Note: for exporting mean, median, and stdev, these values should be calculated on the fly rather than extracted from existing measures in handles.Measurements, so that we can eliminate storing these values in output files.
 
 - Make a quality-control button that checks results from an output file for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation. (Based on whatever Ray decides is useful).
 

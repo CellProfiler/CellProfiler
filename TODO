@@ -36,6 +36,8 @@ Other:
 Ray:
    Test "clear functions" in parallel code. [BETA]
 
+   Send mail when TODO changes
+
    Move measurements to handles.Measurements
 
    Move Settings (other than algorithms and variables) to

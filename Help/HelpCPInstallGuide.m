@@ -40,6 +40,11 @@ helpdlg(help('CPInstallGuide'))
 %    output file Temp1OUT.mat, which you can explore using the Data
 %    Tools.
 % 
+% 6. For Mac OSX, open the Mac application called "Terminal"
+% (Applications > Utilities > Terminal) and type the following at the
+% command line to ensure that display windows behave properly:
+% defaults write com.apple.x11 wm_click_through -bool true
+% 
 % 
 % CellProfiler was designed for Release 14 of Matlab, although it is
 % possible that many functions will work on Release 13.  It has been

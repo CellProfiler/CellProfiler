@@ -149,7 +149,7 @@ Statistics = regionprops(LabelMatrixImage,'Area', 'ConvexArea', 'MajorAxisLength
 %%% CATCH NAN's -->>
 if sum(isnan(cat(1,Statistics.Solidity))) ~= 0
     error('Image processing was canceled because there was a problem in the Measure Area Shape Intensity Texture module. Some of the measurements could not be made.  This might be because some objects had zero area or because some measurements were attempted that were divided by zero. If you want to make measurements despite this problem, remove the 3 lines in the .m file for this module following the line "%%% CATCH NAN''s". This will result in some non-numeric values in the output file, which will be represented as "NaN" (Not a Number).')
-end
+endp
 
 %%%
 %%% AREA

@@ -1,5 +1,7 @@
 function handles = AlgMeasureTotalIntensity(handles)
 
+% Help for the Total Intensity module:
+% Sorry, this module has not yet been documented.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -26,52 +28,42 @@ function handles = AlgMeasureTotalIntensity(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current algorithm number, since this is needed to find  the
 %%% variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
-drawnow
-
 %textVAR01 = What did you call the images you want to process?  
 %defaultVAR01 = OrigGreen
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
-%textVAR03 = What do you want to call the staining measured by this algorithm? 
-%defaultVAR03 = Sytox
-ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
-%textVAR04 = Set the threshold above which intensity should be measured (Range = 0-1)
-%defaultVAR04 = 0
-LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
-%textVAR05 = The threshold should be a bit higher than the typical background pixel value. 
-%textVAR06 = Set the threshold below which intensity should be measured (Range = 0-1)
-%defaultVAR06 = 1
-HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
-%textVAR07 = To save the adjusted image, enter text to append to the image name  
-%defaultVAR07 = N
-SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
-%textVAR08 =  Otherwise, leave as "N". To save or display other images, press Help button 
-%textVAR09 = In what file format do you want to save images? Do not include a period 
-%defaultVAR09 = tif
-FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+
+%textVAR02 = What do you want to call the staining measured by this algorithm? 
+%defaultVAR02 = Sytox
+ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
+%textVAR03 = Set the threshold above which intensity should be measured (Range = 0-1)
+%defaultVAR03 = 0
+LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
+
+%textVAR04 = The threshold should be a bit higher than the typical background pixel value. 
+%textVAR05 = Set the threshold below which intensity should be measured (Range = 0-1)
+%defaultVAR05 = 1
+HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2num(handles.Vpixelsize{1});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2num(handles.Vpixelsize{1});
-
-%%% Checks whether the file format the user entered is readable by Matlab.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    error('The image file type entered in the Total Intensity module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
-end
-%%% Read (open) the image you want to analyze and assign it to a variable,
+%%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
 fieldname = ['dOT', ImageName];
 %%% Checks whether image has been loaded.
@@ -82,64 +74,29 @@ if isfield(handles, fieldname) == 0
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Total Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled because the Measure Total Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImageToBeAnalyzed = handles.(fieldname);
-% figure, imshow(OrigImageToBeAnalyzed), title('OrigImageToBeAnalyzed')
-%%% Update the handles structure.
-%%% Removed for parallel: guidata(gcbo, handles);
 
-%%% Check whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces. Determine the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
-%%% Find and remove the file format extension within the original file
-%%% name, but only if it is at the end. Strip the original file format
-%%% extension  off of the file name, if it is present, otherwise, leave the
-%%% original name intact.
-CharFileName = char(FileName);
-PotentialDot = CharFileName(end-3:end-3);
-if strcmp(PotentialDot,'.') == 1
-    BareFileName = CharFileName(1:end-4);
-else BareFileName = CharFileName;
-end
-%%% Assemble the new image name.
-NewImageName = [BareFileName,SaveImage,'.',FileFormat];
-%%% Check whether the new image name is going to result in a name with
-%%% spaces.
-A = isspace(SaveImage);
-if any(A) == 1
-    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the object outlines image name in the CellSegment17 module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
-end
-%%% Check whether the new image name is going to result in overwriting the
-%%% original file.
-B = strcmp(upper(CharFileName), upper(NewImageName));
-if B == 1
-    error('Image processing was canceled because you have not entered text to append to the object outlines image name in the CellSegment17 module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
+%%% Checks that the original image is two-dimensional (i.e. not a color
+%%% image), which would disrupt several of the image functions.
+if ndims(OrigImageToBeAnalyzed) ~= 2
+    error('Image processing was canceled because the Measure Total Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
-    error('Image processing was canceled because the Total Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-end
-%%% Subtract the threshold from the original image.
+%%% Subtracts the threshold from the original image.
 ThresholdedOrigImage = OrigImageToBeAnalyzed - LowThreshold;
- % figure, imshow(ThresholdedOrigImage), title('Intermediate Image 1');
 ThresholdedOrigImage(ThresholdedOrigImage < 0) = 0;
- % figure, imshow(ThresholdedOrigImage), title('Intermediate Image 2');
 %%% The low threshold is subtracted because it was subtracted from the
 %%% whole image above.
 ThresholdedOrigImage(ThresholdedOrigImage > (HighThreshold-LowThreshold)) = 0;
- % figure, imshow(ThresholdedOrigImage), title('Intermediate Image 3');
 TotalIntensity = sum(sum(ThresholdedOrigImage));
 TotalArea = sum(sum(ThresholdedOrigImage>0));
-%%% Convert to micrometers.
+%%% Converts to micrometers.
 TotalArea = TotalArea*PixelSize*PixelSize;
 MeanIntensity = TotalIntensity/TotalArea;
 
@@ -148,17 +105,16 @@ MeanIntensity = TotalIntensity/TotalArea;
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% Determines the figure number to display in.
+fieldname = ['figurealgorithm',CurrentAlgorithm];
+ThisAlgFigureNumber = handles.(fieldname);
+%%% Checks whether that figure is open. This checks all the figure handles
+%%% for one whose handle is equal to the figure number for this algorithm.
+%%% Note: Everything between the "if" and "end" is not carried out if the
 %%% user has closed the figure window, so do not do any important
 %%% calculations here. Otherwise an error message will be produced if the
 %%% user has closed the window but you have attempted to access data that
 %%% was supposed to be produced by this part of the code.
-
-%%% Determines the figure number to display in.
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
-%%% Check whether that figure is open. This checks all the figure handles
-%%% for one whose handle is equal to the figure number for this algorithm.
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows until
@@ -198,13 +154,11 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     set(displaytexthandle,'string',displaytext, 'HorizontalAlignment', 'left')
     set(ThisAlgFigureNumber,'toolbar','figure')
 end
-%%% Executes pending figure-related commands so that the results are
-%%% displayed.
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 fieldname = ['dMTTotalIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {TotalIntensity};
@@ -214,22 +168,3 @@ handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
 
 fieldname = ['dMTTotalArea', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {TotalArea};
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% Determine whether the user wanted to save the adjusted image by
-%%% comparing their entry "SaveImage" with "N" (after converting SaveImage
-%%% to uppercase).
-if strcmp(upper(SaveImage),'N') ~= 1
-    %%% Save the image to the hard drive.    
-    imwrite(ThresholdedOrigImage, NewImageName, FileFormat);
-end
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for the Total Intensity module:
-%%%%% .

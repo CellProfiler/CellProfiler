@@ -523,82 +523,75 @@ function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
-[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file');
+[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose a settings or output file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
-else
-  %%% Loads the Settings file.
-  LoadedSettings = load([SettingsPathName SettingsFileName]);
+    return
+end
+%%% Loads the Settings file.
+LoadedSettings = load([SettingsPathName SettingsFileName]);
 
-  if ~ (isfield(LoadedSettings, 'Settings') | isfield(LoadedSettings, 'handles')),
-    errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings or output file (does not contain a variable named ''Settings'' or ''handles'').']);
+if ~ (isfield(LoadedSettings, 'Settings') | isfield(LoadedSettings, 'handles')),
+    errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     cd(CurrentDirectory);
     return;
-  end
+end
 
-  %%% Figure out whether we loaded a Settings or Output file, and put the correct values into Settings
-  if (isfield(LoadedSettings, 'Settings')),
+%%% Figure out whether we loaded a Settings or Output file, and put the correct values into Settings
+if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
-  else 
+else
     Settings = LoadedSettings.handles;
-  end;
-  
-  if handles.numAlgorithms > 0,
+end
+
+if handles.numAlgorithms > 0,
     %%% Clears the current settings, using the removealgorithm function.
     for i=1:handles.numAlgorithms,
-      handles = RemoveAlgorithm_Helper(TwoDigitString(i), hObject, eventdata, handles, 'NoConfirm');
+        handles = RemoveAlgorithm_Helper(TwoDigitString(i), hObject, eventdata, handles, 'NoConfirm');
     end
     guidata(gcbo, handles);
-    
-    %%% The last removealgorithm function leaves the indicator bar set at
-    %%% the last algorithm, so the following makes it invisible.
-    %set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
-  end
+end
 
-  %%% Splice the subset of variables from the "settings" structure into the
-  %%% handles structure.  For each one, it checks whether the value is empty
-  %%% before creating a field for it in the handles structure.  For the
-  %%% algorithm names and the pixel size, this code also displays the values
-  %%% in the GUI.
-
-  handles.numAlgorithms = 0;
-  for AlgorithmNumber=1:handles.MaxAlgorithms,
-      AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
-      if isfield(Settings, AlgorithmFieldName),
-          handles.(AlgorithmFieldName) = Settings.(AlgorithmFieldName);
-          %set(handles.(['AlgorithmName' TwoDigitString(AlgorithmNumber)]) ,'string', handles.(AlgorithmFieldName));
-          contents = get(handles.AlgorithmBox,'String');
-          contents{AlgorithmNumber} = [handles.(AlgorithmFieldName)];
-          set(handles.AlgorithmBox,'String',contents);
-          handles.numAlgorithms = AlgorithmNumber;
-          handles.numVariables(AlgorithmNumber) = 0;
-          for VariableNumber=1:handles.MaxVariables,
-              VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
-              if isfield(Settings, VariableFieldName),
-                  handles.([VariableFieldName]) = Settings.([VariableFieldName]);
-                  handles.numVariables(AlgorithmNumber) = VariableNumber;
-              end
-          end
-      end
-  end
-  
-  if isfield(Settings, 'VpixelSize'),
-    handles.VpixelSize = Settings.VpixelSize;
-  end
-  
-  %%% Update handles structure.
-  guidata(hObject,handles);
-
-  %%% If the user loaded settings from an output file, prompt them to
-  %%% save it as a separate Settings file for future use.
-  if isfield(LoadedSettings, 'handles'),
-    if questdlg('Save settings from output file in a separate, settings-only file?','','Yes','No','Yes') == 'Yes',
-      SaveCurrentSettingsButton_Callback(hObject, eventdata, handles);
+%%% Splice the subset of variables from the "settings" structure into the
+%%% handles structure.  For each one, it checks whether the value is empty
+%%% before creating a field for it in the handles structure.  For the
+%%% algorithm names and the pixel size, this code also displays the values
+%%% in the GUI.
+handles.numAlgorithms = 0;
+for AlgorithmNumber=1:handles.MaxAlgorithms,
+    AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
+    if isfield(Settings, AlgorithmFieldName),
+        handles.(AlgorithmFieldName) = Settings.(AlgorithmFieldName);
+        contents = get(handles.AlgorithmBox,'String');
+        contents{AlgorithmNumber} = [handles.(AlgorithmFieldName)];
+        set(handles.AlgorithmBox,'String',contents);
+        handles.numAlgorithms = AlgorithmNumber;
+        handles.numVariables(AlgorithmNumber) = 0;
+        for VariableNumber=1:handles.MaxVariables,
+            VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+            if isfield(Settings, VariableFieldName),
+                handles.([VariableFieldName]) = Settings.([VariableFieldName]);
+                handles.numVariables(AlgorithmNumber) = VariableNumber;
+            end
+        end
     end
-  end  
-      
+end
 
+if isfield(Settings, 'VpixelSize'),
+    handles.VpixelSize = Settings.VpixelSize;
+end
+
+%%% Update handles structure.
+guidata(hObject,handles);
+
+%%% If the user loaded settings from an output file, prompt them to
+%%% save it as a separate Settings file for future use.
+if isfield(LoadedSettings, 'handles'),
+    Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
+    if  == 'Yes',
+        SaveCurrentSettingsButton_Callback(hObject, eventdata, handles);
+    end
 end
 cd(CurrentDirectory)
 
@@ -623,7 +616,7 @@ if FileName ~= 0
           for VariableNumber=1:handles.MaxVariables,
               VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
               if isfield(handles, VariableFieldName),
-                  Settings.(VariableFieldName) = handles.(VariableFieldName);
+                 Settings.(VariableFieldName) = handles.(VariableFieldName);
               end
           end
       end
@@ -811,22 +804,14 @@ elseif exist(AlgorithmNamedotm) == 0
   end
 else
 
-  %%% 3. Set all the indicator bars (which tell you which algorithm
-  %%% you are editing settings for) to be invisible and then set
-  %%% the one you are working on to be visible.
-  for i=1:handles.numAlgorithms;
-    %set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
-  end;
-  %set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
-
-  %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
+  %%% 43. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
   %%% to be invisible.
   for VariableNumber = 1:handles.MaxVariables;
     set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'visible','off');
     set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]),'visible','off');
   end;
 
-  %%% 5. Clears the variable values in the handles structure in case some are
+  %%% 4. Clears the variable values in the handles structure in case some are
   %%% not used in the new algorithm (they would remain intact and not be
   %%% overwritten). Before removing a variable, you have to check that the
   %%% variable exists or else the 'rmfield' function gives an error.
@@ -838,7 +823,7 @@ else
     end;
   end;
 
-  %%% 6. The last two characters (=.m) are removed from the
+  %%% 5. The last two characters (=.m) are removed from the
   %%% AlgorithmName.m and called AlgorithmName.
   AlgorithmName = AlgorithmNamedotm(4:end-2);
   %%% The name of the algorithm is shown in a text box in the GUI (the text
@@ -846,14 +831,14 @@ else
   %%% displays the current algorithm (whose settings are shown).
   %set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
 
-  %%% 7. Saves the AlgorithmName to the handles structure.
+  %%% 6. Saves the AlgorithmName to the handles structure.
   handles.(['Valgorithmname' AlgorithmNumber]) = AlgorithmName;
   contents = get(handles.AlgorithmBox,'String');
   %contents{get(handles.AlgorithmBox,'Value')} = ['Algorithm ' handles.AlgorithmHighlighted ' - ' AlgorithmName];
   contents{str2num(AlgorithmNumber)} = [AlgorithmName];
   set(handles.AlgorithmBox,'String',contents);
 
-  %%% 8. The text description for each variable for the chosen algorithm is 
+  %%% 7. The text description for each variable for the chosen algorithm is 
   %%% extracted from the algorithm's .m file and displayed.  
   fid=fopen([PathName AlgorithmNamedotm]);
 
@@ -882,7 +867,7 @@ else
    end
   fclose(fid);
 
-  %%% 9. Update handles.numAlgorithms
+  %%% 8. Update handles.numAlgorithms
   if str2num(AlgorithmNumber) > handles.numAlgorithms,
     handles.numAlgorithms = str2num(AlgorithmNumber);
   end
@@ -891,6 +876,62 @@ else
   guidata(gcbo, handles);
   ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
 end
+
+%%%%%%%%%%%%%%%%%
+
+function ViewAlgorithm_Callback(hObject,eventdata,handles)
+ButtonTag = get(hObject,'tag');
+%AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
+
+AlgorithmNumber = handles.AlgorithmHighlighted;
+if( (handles.numAlgorithms > 1) | ((handles.numAlgorithms == 1) & (str2num(AlgorithmNumber) == 1)))
+
+    %%% 2. Sets all 11 VariableBox edit boxes and all 11
+    %%% VariableDescriptions to be invisible.
+    for i = 1:handles.MaxVariables
+        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
+        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+    end
+
+    %%% 2.5 Checks whether an algorithm is loaded in this slot.
+
+    contents = get(handles.AlgorithmBox,'String');
+    AlgorithmName = contents{get(handles.AlgorithmBox,'Value')};
+
+    %%% 3. Extracts and displays the variable descriptors from the .m file.
+    %AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]), 'string');
+    AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
+    if exist(AlgorithmNamedotm) ~= 2
+        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']);
+    else
+        fid=fopen(AlgorithmNamedotm);
+
+        while 1;
+            output = fgetl(fid); if ~ischar(output); break; end;
+            for i=1:handles.MaxVariables,
+                if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
+                    set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+                    break;
+                end
+            end
+        end
+        fclose(fid);
+    end
+    %%% 4. The stored values for the variables are extracted from the handles
+    %%% structure and displayed in the edit boxes.
+    for i=1:handles.numVariables(str2num(AlgorithmNumber)),
+        VariableNumber = TwoDigitString(i);
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VariableNumber);
+        if isfield(handles,ConstructedName) == 1;
+            set(handles.(['VariableBox' VariableNumber]),...
+                'string',handles.(['Vvariable' AlgorithmNumber '_' VariableNumber]),...
+                'visible','on');
+        else set(handles.(['VariableBox' VariableNumber]),'string','n/a','visible','off');
+        end;
+    end;
+else
+    helpdlg('Algorithm Not Loaded');
+end;
 
 %%%%%%%%%%%%%%%%%%%%
 %%% CLEAR BUTTONS %%%
@@ -967,66 +1008,6 @@ set(handles.AlgorithmBox,'String',contents);
 
 
 guidata(gcbo, handles);
-
-
-%%%%%%%%%%%%%%%%%%%
-%%% VIEW BUTTONS %%%
-%%%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in ViewAlgorithm.
-function ViewAlgorithm_Callback(hObject,eventdata,handles)
-ButtonTag = get(hObject,'tag');
-%AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
-
-AlgorithmNumber = handles.AlgorithmHighlighted;
-if( (handles.numAlgorithms > 1) | ((handles.numAlgorithms == 1) & (str2num(AlgorithmNumber) == 1)))
-
-    %%% 2. Sets all 11 VariableBox edit boxes and all 11
-    %%% VariableDescriptions to be invisible.
-    for i = 1:handles.MaxVariables
-        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
-        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
-    end
-
-    %%% 2.5 Checks whether an algorithm is loaded in this slot.
-
-    contents = get(handles.AlgorithmBox,'String');
-    AlgorithmName = contents{get(handles.AlgorithmBox,'Value')};
-
-    %%% 3. Extracts and displays the variable descriptors from the .m file.
-    %AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]), 'string');
-    AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
-    if exist(AlgorithmNamedotm) ~= 2
-        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']);
-    else
-        fid=fopen(AlgorithmNamedotm);
-
-        while 1;
-            output = fgetl(fid); if ~ischar(output); break; end;
-            for i=1:handles.MaxVariables,
-                if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
-                    set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                    break;
-                end
-            end
-        end
-        fclose(fid);
-    end
-    %%% 4. The stored values for the variables are extracted from the handles
-    %%% structure and displayed in the edit boxes.
-    for i=1:handles.numVariables(str2num(AlgorithmNumber)),
-        VariableNumber = TwoDigitString(i);
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VariableNumber);
-        if isfield(handles,ConstructedName) == 1;
-            set(handles.(['VariableBox' VariableNumber]),...
-                'string',handles.(['Vvariable' AlgorithmNumber '_' VariableNumber]),...
-                'visible','on');
-        else set(handles.(['VariableBox' VariableNumber]),'string','n/a','visible','off');
-        end;
-    end;
-else
-    helpdlg('Algorithm Not Loaded');
-end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
@@ -1358,6 +1339,8 @@ errordlg('This button is not yet functional')
 
 % --- Executes on button press in SaveImageAsButton.
 function SaveImageAsButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
+cd(handles.Vworkingdirectory)
 MsgboxHandle = msgbox('Click twice on the image you wish to save. This window will be closed automatically - do not close it or click OK.');
 waitforbuttonpress
 ClickedImage = getimage(gca);
@@ -1386,14 +1369,14 @@ if isempty(Answers) ~= 1
     end
 end
 delete(MsgboxHandle)
+cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowImageButton.
 function ShowImageButton_Callback(hObject, eventdata, handles)
 CurrentDirectory = cd;
-Directory = handles.Vpathname;
-cd(Directory)
+cd(handles.Vworkingdirectory)
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be used as a test image.
 [FileName,PathName] = uigetfile('*.*','Select the image to view');
@@ -2881,10 +2864,10 @@ else
                 set(handles.PixelSizeEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.LoadSettingsFromFileButton,'enable','off')
                 set(handles.SaveCurrentSettingsButton,'enable','off')
-                %listbox changes 
                 set(handles.AddAlgorithm,'visible','off');
                 set(handles.RemoveAlgorithm,'visible','off');
-                set(handles.ViewAlgorithm,'visible','off');
+                set(handles.MoveUpButton,'visible','off');
+                set(handles.MoveDownButton,'visible','off');
 
                 % FIXME: This should loop just over the number of actual variables in the display.
                 for VariableNumber=1:handles.MaxVariables;
@@ -3359,6 +3342,8 @@ else
                 %listbox changes
                 set(handles.AddAlgorithm,'visible','on');
                 set(handles.RemoveAlgorithm,'visible','on');
+                set(handles.MoveUpButton,'visible','on');
+                set(handles.MoveDownButton,'visible','on');
                 set(handles.FigureDisplay,'visible','off');
                 set(handles.FigureDisplay,'string', 'Close Figure');
                 set(handles.ViewAlgorithm,'visible','on');

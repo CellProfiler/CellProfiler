@@ -2148,7 +2148,7 @@ if ok ~= 0
             end
             %%% Saves this info in a variable, FigureSettings, which
             %%% will be stored later with the figure.
-            FigureSettings{3} = FinalHistogramData
+            FigureSettings{3} = FinalHistogramData;
 
             %%% Saves the data to an excel file if desired.
             if strcmp(SaveData,'no') ~= 1
@@ -2419,7 +2419,7 @@ if ok ~= 0
                 'String','Fewer', ...
                 'Style','pushbutton');
             %%% Decimal places X axis labels.
-            Button9Callback = 'FigureSettings = get(gca,''UserData''); PlotBinLocations = FigureSettings{1}; PreXTickLabels = FigureSettings{2}, XTickLabels = PreXTickLabels(2:end-1), AxesHandles = findobj(gcf, ''Type'', ''axes''); set(AxesHandles,''XTick'',PlotBinLocations); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels), Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command), NewNumberValuesPlusFirstLast = [char(PreXTickLabels(1)); NewNumberValues; char(PreXTickLabels(end-1))], CellNumberValues = cellstr(NewNumberValuesPlusFirstLast); set(AxesHandles,''XTickLabel'',CellNumberValues), drawnow'
+            Button9Callback = 'FigureSettings = get(gca,''UserData''); PlotBinLocations = FigureSettings{1}; PreXTickLabels = FigureSettings{2}; XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf, ''Type'', ''axes''); set(AxesHandles,''XTick'',PlotBinLocations); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)]; set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast); clear, drawnow';
             uicontrol('Parent',FigureHandle, ...
                 'Unit',StdUnit, ...
                 'BackgroundColor',StdColor, ...

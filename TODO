@@ -71,7 +71,7 @@ User-friendliness/interface/help:
 - Make "applications" technical notes and automatic settings files to give a good starting place for common applications (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and for common cell types.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.
-- Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot; Remove TM from CellProfiler's name in the help/manual; Rename HelpHistogram and HelpNormalization now that the buttons have different names; Can the manual compiler use the powerpoint file directly, or must it be saved as PNG or JPG first, for the cover pages?
+- Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot; Remove TM from CellProfiler's name in the help/manual; Rename HelpHistogram and HelpNormalization now that the buttons have different names; Can the manual compiler use the powerpoint file directly, or must it be saved as PNG or JPG first, for the cover pages?; Make the Help1-4 and the HelpButtons pages look nicer by giving each section a nicer heading.
 - Make Images and Data buttons into icons in a toolbar in CellProfiler's main GUI.
 - 'Fetch new modules from website' button in CellProfiler's main GUI.
 - 'Report bug' button in CellProfiler's main GUI.

@@ -86,6 +86,7 @@ end
 
 %%% Determines the startup directory.
 handles.Current.StartupDirectory = pwd;
+addpath(pwd);
 
 %%% Retrieves preferences from CellProfilerPreferences.mat, if possible.
 %%% Try loading CellProfilerPreferences.mat first from the matlabroot

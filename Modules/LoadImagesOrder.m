@@ -253,6 +253,9 @@ if SetBeingAnalyzed == 1
             end
             %%% Determines the number of image sets to be analyzed.
             NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
+            if length(FileNames) < ImagesPerSet
+                error(['Image processing was canceled because there are fewer files of type "', ImageName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), than the number of files per set, according to the Load Images Order module.'])
+            end
             handles.Current.NumberOfImageSets = NumberOfImageSets;
             %%% Loops through the names in the FileNames listing,
             %%% creating a new list of files.

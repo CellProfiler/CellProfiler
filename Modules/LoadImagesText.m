@@ -21,10 +21,16 @@ function handles = LoadImagesText(handles)
 % located (e.g. three images per set, DAPI is always first).  Load
 % Images Text is used instead to load images that have a particular
 % piece of text in the name.
+%
+% You have the option of matching text exactly, or using regular
+% expressions to match text. For example, typing image[12]dapi in the box
+% asking for text in common and typing R in the Exact/Regular expression
+% box will select any file containing the digit 1 or 2 immediately in
+% between the text 'image' and 'dapi'.
 % 
-% You may have folders within the directory that is being searched,
-% but these folders must not contain the text you are searching for or
-% an error will result.
+% You may have subfolders within the folder that is being searched, but the
+% names of the folders themselves must not contain the text you are
+% searching for or an error will result.
 %
 % SAVING IMAGES: The images loaded by this module can be easily saved
 % using the Save Images module, using the name you assign (e.g.

@@ -124,7 +124,7 @@ Final polishing/minor wishes:
 - showregions at Matlab Central might be useful for Spotfire-like Interactivity
 - would be nice for save settings button to automatically add SET to the name > can't currently do it with uisave.
 - When there are large numbers of images in a folder, the response of uigetfile is really slow.  Can fix?
-- Check all "save images" boxes; annotate which modules work for grayscale vs color.
+- Annotate which modules work for grayscale vs color.
 - Write out help windows for each module.
 - Website/manuals.  See Matdoc at MC to generate online help.
 - Show example cell types and suggested settings.

@@ -166,7 +166,7 @@ for n = 2:BatchSize:handles.Vnumberimagesets,
     fprintf(BatchFile, '    handles.setbeinganalyzed = BatchSetBeingAnalyzed;\n');
     fprintf(BatchFile, '    setbeinganalyzed = handles.setbeinganalyzed;\n');
     fprintf(BatchFile, '    for SlotNumber = 1:handles.numAlgorithms,\n');
-    fprintf(BatchFile, '        AlgNumberAsString = TwoDigitString(SlotNumber);\n');
+    fprintf(BatchFile, '        AlgNumberAsString = sprintf(''%02d'', SlotNumber);\n');
     fprintf(BatchFile, '        AlgName = char(handles.Settings.Valgorithmname(SlotNumber));\n');
     fprintf(BatchFile, '        if iscellstr(handles.Settings.Valgorithmname(SlotNumber)) == 0\n');
     fprintf(BatchFile, '        else\n');
@@ -183,7 +183,7 @@ for n = 2:BatchSize:handles.Vnumberimagesets,
     fprintf(BatchFile, '        break;\n');
     fprintf(BatchFile, '    end\n');
     fprintf(BatchFile, 'end\n');
-    fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT.m'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
+    fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
 
     fclose(BatchFile);
 end

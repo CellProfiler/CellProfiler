@@ -96,7 +96,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
             %%% from the structure.
             OutputFile.handles.Measurements = rmfield(OutputFile.handles.Measurements,SelectedFieldName);
             %%% Saves the output file with this new sample info.
-            save([pOutName,fOutName],'-struct','OutputFile');
+            save(fullfile(pOutName,fOutName),'-struct','OutputFile');
             h = CPmsgbox(['The sample info was successfully deleted from the output file']);
         end
         %%% This end goes with the error-detecting - "Do you have any sample info

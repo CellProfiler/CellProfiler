@@ -73,7 +73,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
     if fOutName == 0
         return
     else
-        try OutputFile = load([pOutName fOutName]);
+        try OutputFile = load(fullfile(pOutName,fOutName));
         catch error('Sorry, the file could not be loaded for some reason.')
         end
     end

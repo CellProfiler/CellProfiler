@@ -119,7 +119,7 @@ if (handles.Current.SetBeingAnalyzed > 1),
 end
         
 %%% Load the data file
-BatchData = load([BatchPath,'/',BatchFilePrefix 'data.mat']);
+BatchData = load(fullfile(BatchPath,BatchFilePrefix,'data.mat'));
 
 
 %%% Create the SQL script
@@ -203,7 +203,7 @@ FileList = FileList(Matches);
 
 WaitbarHandle = waitbar(0,'Writing SQL files');
 for filenum = 1:length(FileList),
-    SubsetData = load([BatchPath '/' FileList(filenum).name]);
+    SubsetData = load(fullfile(BatchPath,FileList(filenum).name));
     if (isfield(SubsetData.handles, 'BatchError')),
         fclose(SQLMainFile);
         error(['Error writing SQL data from batch file output.  File ' BatchPath '/' FileList(i).name ' encountered an error during batch processing.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);

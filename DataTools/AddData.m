@@ -104,7 +104,7 @@ else extension = fname(end-2:end);
             else
                 %%% For existing output files:
                 %%% Saves the output file with this new sample info.
-                save([pOutName,fOutName],'-struct','OutputFile');
+                save(fullfile(pOutName,fOutName),'-struct','OutputFile');
                 h = CPmsgbox(['The sample info was successfully added to output file']);
                 waitfor(h)
             end
@@ -140,7 +140,7 @@ else extension = fname(end-2:end);
             else
                 %%% For existing output files:
                 %%% Saves the output file with this new sample info.
-                save([pOutName,fOutName],'-struct','OutputFile');
+                save(fullfile(pOutName,fOutName),'-struct','OutputFile');
                 h = CPmsgbox(['The sample info was successfully added to output file']);
                 waitfor(h)
             end

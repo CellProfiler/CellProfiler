@@ -12,7 +12,7 @@ CurrentDirectory = pwd;
 %%% Changes to the directory where CellProfiler.m resides.
 FullPathAndFilename = which('CellProfiler');
 [CellProfilerPathname,Filename] = fileparts(FullPathAndFilename);
-try cd(fullfile(CellProfilerPathname,'HandyMatlabScripts')), end
+try cd(fullfile(CellProfilerPathname,'DeveloperScripts')), end
 
 [FileName,PathName] = uigetfile('*.m', 'Choose the M-file with the old text');
 if FileName == 0
@@ -25,7 +25,7 @@ if FileName == 0
 end
 TextToAddInItsPlace = retrievetextfromfile([PathName,FileName])
 
-Answer = CPquestdlg('Do you want to choose a single folder, or choose all folders (DataTools, ImageTools, Modules)?','','Single folder','All folders','All folders');
+Answer = questdlg('Do you want to choose a single folder, or choose all folders (DataTools, ImageTools, Modules)?','','Single folder','All folders','All folders');
 if strcmp(Answer,'All folders') == 1
     ModulesFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Modules'));
     DataToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'DataTools'));
@@ -40,7 +40,7 @@ else
 end
 
 NumberOfMFiles = size(AlgorithmFileNames,2)
-Answer = CPquestdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
+Answer = questdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
 if strcmp(Answer,'All') == 1
     Multiple = 1;
 elseif strcmp(Answer,'First') == 1

@@ -23,9 +23,9 @@ function handles = PlotOrExportHistograms(handles)
 % histogram (heatmap) rather than a conventional histogram; whether
 % you want to export the data (tab-delimited format, which can be
 % opened in Excel); whether you want each row in the exported histogram
-% to contain an image or a bin; and whether you want to display the 
+% to contain an image or a bin; and whether you want to display the
 % histograms (Impractical when exporting large amounts of data). It may
-% take some time to then process the data. 
+% take some time to then process the data.
 %
 % X axis labels for histograms: Typically, the X axis labels will be
 % too crowded.  This default state is shown because you might want to
@@ -64,7 +64,7 @@ function handles = PlotOrExportHistograms(handles)
 % or greater than the label, but less than the label on the bar to its
 % right.
 %
-% POTENTIAL IMPROVEMENT: 
+% POTENTIAL IMPROVEMENT:
 % - You will then have the option of loading names for
 % each image so that each histogram you make will be labeled with
 % those names (if the measurement file does not already have names
@@ -87,11 +87,11 @@ function handles = PlotOrExportHistograms(handles)
 %
 % $Revision$
 
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+%%% Restored this code, because the uigetfile function does not seem
+%%% to work properly.  It goes to the parent of the directory that was
+%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
 CurrentDir = pwd;
-    cd(handles.Current.DefaultOutputDirectory)
+cd(handles.Current.DefaultOutputDirectory)
 
 
 
@@ -100,9 +100,9 @@ CurrentDir = pwd;
 % [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+%%% Restored this code, because the uigetfile function does not seem
+%%% to work properly.  It goes to the parent of the directory that was
+%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
 
 %%% Allows canceling.
 if RawFileName == 0
@@ -206,7 +206,7 @@ while AcceptableAnswers == 0
     if isempty(Answers2)
         return
     end
-    %%% If both sets were non-empty, concatenate into Answers. 
+    %%% If both sets were non-empty, concatenate into Answers.
     Answers = { Answers1{:} Answers2{:} };
     clear Answers1 Answers2;
     %%% TO DO: reset the width of the dialog box: it's too narrow!
@@ -257,7 +257,7 @@ while AcceptableAnswers == 0
         continue
     end
     CumulativeHistogram = Answers{6};
-    GreaterOrLessThan = Answers{7};    
+    GreaterOrLessThan = Answers{7};
     try ThresholdValue = str2double(Answers{8});
     catch errordlg(['You must enter a number in answer to the question: ', Prompts{8}, '.']);
         continue
@@ -304,6 +304,7 @@ while AcceptableAnswers == 0
         errordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{13}, '.']);
         continue
     end
+
     %%% If the user selected A for all, the measurements are not
     %%% thresholded on some other measurement.
     if strcmpi(GreaterOrLessThan,'A') == 1
@@ -424,12 +425,13 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     LastImage = 1;
     NumberOfImages = 1;
 
-        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
+    if strcmpi(GreaterOrLessThan,'A') ~= 1
         try
+            AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
             save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
         catch errordlg('oops, saving did not work')
         end
-
+    end
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1
         WriteHistToExcel(SaveData, FirstImage, LastImage, XTickLabels,...
@@ -495,12 +497,13 @@ else
     %%% Saves this info in a variable, FigureSettings, which
     %%% will be stored later with the figure.
     FigureSettings{3} = FinalHistogramData;
+    if strcmpi(GreaterOrLessThan,'A') ~= 1
         AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
         try
             save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
         catch errordlg('oops, saving did not work.')
         end
-
+    end
 
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1
@@ -745,151 +748,149 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
     NewPlotBinLocations = 1:length(FinalHistogramData');
     set(AxisHandle,'XTick',NewPlotBinLocations)
     set(FigureHandle,'UserData',FigureSettings)
-end
 end %%% of function PlotOrExportHistograms
 
 function WriteHistToExcel(FileName, FirstImage, LastImage, XTickLabels,...
     FinalHistogramData, MeasurementToExtract, AdditionalInfoForTitle,...
     HistogramTitles, RowImageOrBin)
-    %{
-        Function to write histogram data to tab-separated-value (.tsv) file
-        for input to Excel.
-        FileName        Name of file to write
-        FirstImage      Index of first image (second index to FinalHistogramData)
-        LastImage       Index of first image (second index to FinalHistogramData)
-        XTickLabels     Cell array of labels for Histogram; 1st, last are text,
-                        rest are numeric. Must have dimension no larger than first
-                        dimension of FinalHistogramData (and should be the same).
-        FinalHistogramData  Histogram data, rows=bins, cols=images.
-        MeasurementToExtract    Text name of measurement, used in title
-        AdditionalInfoForTitle  Text, used in title
-        HistogramTitles Cell array of text image labels.
-        RowImageOrBin   String "image" or "bin" to indicate orientation for output:
-                        image => each row is one image, bin => each row is one bin.
-                        (Actually, first letter only is checked, case insensitively.)
-    %}
-    %%% Open the file and name it appropriately.
-    fid = fopen(FileName, 'wt');
-    if fid < 0
-        h = errordlg(['Unable to open output file ',FileName,'.']);
-        waitfor(h);
-        return;
-    end
-    try
-        if strncmpi(RowImageOrBin,'I',1)
-            %%% Each row is an image
-            %%% Write "Bins used" as the title of the first column.
-            fwrite(fid, ['Bins used for ', MeasurementToExtract,AdditionalInfoForTitle,' ->'], 'char');
-            %%% Should check that XTickLabels matches FinalHistogramData.
-            %%% TODO: Should we trust this next statement?
-            NumberBinsToWrite = size(XTickLabels(:),1);
-            fwrite(fid, sprintf('\t'), 'char');
-            fwrite(fid, XTickLabels{1}, 'char');
-            for BinNum = 2:NumberBinsToWrite-1
-                fwrite(fid, sprintf('\t%g',XTickLabels{BinNum}), 'char');
-            end
-            fwrite(fid, sprintf('\t'), 'char');
-            fwrite(fid, XTickLabels{NumberBinsToWrite}, 'char');
-            fwrite(fid, sprintf('\n'), 'char');
+%{
+Function to write histogram data to tab-separated-value (.tsv) file
+for input to Excel.
+FileName        Name of file to write
+FirstImage      Index of first image (second index to FinalHistogramData)
+LastImage       Index of first image (second index to FinalHistogramData)
+XTickLabels     Cell array of labels for Histogram; 1st, last are text,
+rest are numeric. Must have dimension no larger than first
+dimension of FinalHistogramData (and should be the same).
+FinalHistogramData  Histogram data, rows=bins, cols=images.
+MeasurementToExtract    Text name of measurement, used in title
+AdditionalInfoForTitle  Text, used in title
+HistogramTitles Cell array of text image labels.
+RowImageOrBin   String "image" or "bin" to indicate orientation for output:
+image => each row is one image, bin => each row is one bin.
+(Actually, first letter only is checked, case insensitively.)
+%}
+%%% Open the file and name it appropriately.
+fid = fopen(FileName, 'wt');
+if fid < 0
+    h = errordlg(['Unable to open output file ',FileName,'.']);
+    waitfor(h);
+    return;
+end
+try
+    if strncmpi(RowImageOrBin,'I',1)
+        %%% Each row is an image
+        %%% Write "Bins used" as the title of the first column.
+        fwrite(fid, ['Bins used for ', MeasurementToExtract,AdditionalInfoForTitle,' ->'], 'char');
+        %%% Should check that XTickLabels matches FinalHistogramData.
+        %%% TODO: Should we trust this next statement?
+        NumberBinsToWrite = size(XTickLabels(:),1);
+        fwrite(fid, sprintf('\t'), 'char');
+        fwrite(fid, XTickLabels{1}, 'char');
+        for BinNum = 2:NumberBinsToWrite-1
+            fwrite(fid, sprintf('\t%g',XTickLabels{BinNum}), 'char');
+        end
+        fwrite(fid, sprintf('\t'), 'char');
+        fwrite(fid, XTickLabels{NumberBinsToWrite}, 'char');
+        fwrite(fid, sprintf('\n'), 'char');
 
-            WaitbarHandle = waitbar(0,'Writing the histogram data file...');
-            %%% Cycles through the images, one per row
-            NumImages = LastImage-FirstImage+1;
-            for ImageNumber = FirstImage:LastImage
-                %%% Write the HistogramTitle as a heading for the column.
-                fwrite(fid, char(HistogramTitles{ImageNumber}), 'char');
-                for BinNum = 1:NumberBinsToWrite
-                    fwrite(fid, sprintf('\t'), 'char');
-                    fwrite(fid, sprintf('\t%g', FinalHistogramData(BinNum,ImageNumber)), 'char');
-                end
-                fwrite(fid, sprintf('\n'), 'char');
-                waitbar(ImageNumber/NumImages);
-            end
-            close(WaitbarHandle)
-        elseif strncmpi(RowImageOrBin, 'B', 1)
-            %%% Each row is an bin
-            %%% Write "Bins used" as the title of the first column.
-            fwrite(fid, ['Bins used for ', MeasurementToExtract,AdditionalInfoForTitle], 'char');
-            %%% Tab to the second column.
-            fwrite(fid, sprintf('\t'), 'char');
-
-            %%% Cycles through the remaining columns, one column per
-            %%% image.
-            for ImageNumber = FirstImage:LastImage
-                %%% Write the HistogramTitle as a heading for the column.
-                fwrite(fid, char(HistogramTitles{ImageNumber}), 'char');
-                %%% Tab to the next column.
+        WaitbarHandle = waitbar(0,'Writing the histogram data file...');
+        %%% Cycles through the images, one per row
+        NumImages = LastImage-FirstImage+1;
+        for ImageNumber = FirstImage:LastImage
+            %%% Write the HistogramTitle as a heading for the column.
+            fwrite(fid, char(HistogramTitles{ImageNumber}), 'char');
+            for BinNum = 1:NumberBinsToWrite
                 fwrite(fid, sprintf('\t'), 'char');
+                fwrite(fid, sprintf('\t%g', FinalHistogramData(BinNum,ImageNumber)), 'char');
+            end
+            fwrite(fid, sprintf('\n'), 'char');
+            waitbar(ImageNumber/NumImages);
+        end
+        close(WaitbarHandle)
+    elseif strncmpi(RowImageOrBin, 'B', 1)
+        %%% Each row is an bin
+        %%% Write "Bins used" as the title of the first column.
+        fwrite(fid, ['Bins used for ', MeasurementToExtract,AdditionalInfoForTitle], 'char');
+        %%% Tab to the second column.
+        fwrite(fid, sprintf('\t'), 'char');
+
+        %%% Cycles through the remaining columns, one column per
+        %%% image.
+        for ImageNumber = FirstImage:LastImage
+            %%% Write the HistogramTitle as a heading for the column.
+            fwrite(fid, char(HistogramTitles{ImageNumber}), 'char');
+            %%% Tab to the next column.
+            fwrite(fid, sprintf('\t'), 'char');
+        end
+        %%% Return, to the next row.
+        fwrite(fid, sprintf('\n'), 'char');
+
+        WaitbarHandle = waitbar(0,'Writing the histogram data file...');
+        NumberBinsToWrite = size(XTickLabels(:),1);
+        %%% Writes the first X Tick Label (which is a string) in the first
+        %%% column.
+        fwrite(fid, XTickLabels{1}, 'char');
+        %%% Tab to the second column.
+        fwrite(fid, sprintf('\t'), 'char');
+        for ImageNumber = FirstImage:LastImage
+            %%% Writes the first FinalHistogramData in the second column and tab.
+            fwrite(fid, sprintf('%g\t', FinalHistogramData(1,ImageNumber)), 'char');
+        end
+        %%% Return to the next row.
+        fwrite(fid, sprintf('\n'), 'char');
+
+        %%% Writes all the middle values.
+        for i = 2:NumberBinsToWrite-1
+            %%% Writes the XTickLabels (which are numbers) in
+            %%% the remaining columns.
+            fwrite(fid, sprintf('%g\t', XTickLabels{i}), 'char');
+            for ImageNumber = FirstImage:LastImage
+                %%% Writes the FinalHistogramData in the remaining
+                %%% columns, tabbing after each one.
+                fwrite(fid, sprintf('%g\t', FinalHistogramData(i,ImageNumber)), 'char');
             end
             %%% Return, to the next row.
             fwrite(fid, sprintf('\n'), 'char');
-
-            WaitbarHandle = waitbar(0,'Writing the histogram data file...');
-            NumberBinsToWrite = size(XTickLabels(:),1);
-            %%% Writes the first X Tick Label (which is a string) in the first
+            waitbar(i/NumberBinsToWrite)
+        end
+        %%% Writes the last value.
+        if NumberBinsToWrite ~= 1
+            %%% Writes the last PlotBinLocations value (which is a string) in the first
             %%% column.
-            fwrite(fid, XTickLabels{1}, 'char');
+            fwrite(fid, XTickLabels{NumberBinsToWrite}, 'char');
             %%% Tab to the second column.
             fwrite(fid, sprintf('\t'), 'char');
+            %%% Writes the last FinalHistogramData in the remaining columns.
             for ImageNumber = FirstImage:LastImage
-                %%% Writes the first FinalHistogramData in the second column and tab.
-                fwrite(fid, sprintf('%g\t', FinalHistogramData(1,ImageNumber)), 'char');
+                %%% Writes the FinalHistogramData in the remaining
+                %%% columns, tabbing after each one.
+                fwrite(fid, sprintf('%g\t', FinalHistogramData(NumberBinsToWrite,ImageNumber)), 'char');
             end
-            %%% Return to the next row.
+            %%% Return, to the next row.
             fwrite(fid, sprintf('\n'), 'char');
-
-            %%% Writes all the middle values.
-            for i = 2:NumberBinsToWrite-1
-                %%% Writes the XTickLabels (which are numbers) in
-                %%% the remaining columns.
-                fwrite(fid, sprintf('%g\t', XTickLabels{i}), 'char');
-                for ImageNumber = FirstImage:LastImage
-                    %%% Writes the FinalHistogramData in the remaining
-                    %%% columns, tabbing after each one.
-                    fwrite(fid, sprintf('%g\t', FinalHistogramData(i,ImageNumber)), 'char');
-                end
-                %%% Return, to the next row.
-                fwrite(fid, sprintf('\n'), 'char');
-                waitbar(i/NumberBinsToWrite)
-            end
-            %%% Writes the last value.
-            if NumberBinsToWrite ~= 1
-                %%% Writes the last PlotBinLocations value (which is a string) in the first
-                %%% column.
-                fwrite(fid, XTickLabels{NumberBinsToWrite}, 'char');
-                %%% Tab to the second column.
-                fwrite(fid, sprintf('\t'), 'char');
-                %%% Writes the last FinalHistogramData in the remaining columns.
-                for ImageNumber = FirstImage:LastImage
-                    %%% Writes the FinalHistogramData in the remaining
-                    %%% columns, tabbing after each one.
-                    fwrite(fid, sprintf('%g\t', FinalHistogramData(NumberBinsToWrite,ImageNumber)), 'char');
-                end
-                %%% Return, to the next row.
-                fwrite(fid, sprintf('\n'), 'char');
-            end
-            close(WaitbarHandle)
-        else
-            h = errordlg('Neither "image" nor "bin" selected, ',FileName,' will be empty.');
-            waitfor(h);
         end
-    catch
-        h = errordlg(['Problem occurred while writing to ',FileName,'. File is incomplete.']);
+        close(WaitbarHandle)
+    else
+        h = errordlg('Neither "image" nor "bin" selected, ',FileName,' will be empty.');
         waitfor(h);
     end
-    %%% Close the file
-    try
-        fclose(fid);
-    catch
-        h = errordlg(['Unable to close file ',FileName,'.']);
-        waitfor(h);
-        return;
-    end
+catch
+    h = errordlg(['Problem occurred while writing to ',FileName,'. File is incomplete.']);
+    waitfor(h);
+end
+%%% Close the file
+try
+    fclose(fid);
     h = helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
     waitfor(h)
+catch
+    h = errordlg(['Unable to close file ',FileName,'.']);
+    waitfor(h);
+    return;
 end
 
 cd(CurrentDir)
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+%%% Restored this code, because the uigetfile function does not seem
+%%% to work properly.  It goes to the parent of the directory that was
+%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne

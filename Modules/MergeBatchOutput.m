@@ -136,7 +136,7 @@ if (handles.Current.SetBeingAnalyzed > 1),
 end
         
 %%% Load the data file
-BatchData = load([BatchPath,'/',BatchFilePrefix 'data.mat']);
+BatchData = load(fullfile(BatchPath,BatchFilePrefix,'data.mat'));
 
 %%% Merge into the measurements
 handles.Measurements = BatchData.handles.Measurements;

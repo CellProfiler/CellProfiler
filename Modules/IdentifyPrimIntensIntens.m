@@ -2,19 +2,38 @@ function handles = AlgIdentifyPrimIntensIntens(handles)
 
 % Help for the Identify Primary Intensity Intensity module: 
 % 
+% This image analysis module works best for objects that are brighter
+% towards the interior; the objects can be any shape, so they need not
+% be round and uniform in size as would be required for a
+% distance-based algorithm.  The dividing lines between clumped
+% objects should be dim. The module is more successful when then
+% objects have a smooth texture, although increasing the blur radius
+% can improve the outcome on lumpy-textured objects.
+%
+% How it works: 
 % This image analysis module identifies objects by finding peaks in
-% intensity, after the image has been blurred to remove texture.  Once a
-% marker for each object has been identified in this way, a watershed
-% function identifies the lines between objects that are touching each
-% other by looking for the dimmest points between them.  To identify the
-% edges of non-clumped objects, a simple threshold is applied. The
-% algorithm works best for objects that are brighter towards the interior;
-% the objects can be any shape, so they need not be round and uniform in
-% size as would be required for a distance-based algorithm.  The dividing
-% lines between clumped objects should be dim.
+% intensity, after the image has been blurred to remove texture.  Once
+% a marker for each object has been identified in this way, a
+% watershed function identifies the lines between objects that are
+% touching each other by looking for the dimmest points between them.
+% To identify the edges of non-clumped objects, a simple threshold is
+% applied. Objects on the border of the image are ignored, and the
+% user can select a size range, outside which objects will be ignored.
 %
 % SPEED OPTIMIZATION: Note that increasing the blur radius increases
 % the processing time exponentially.
+%
+% What does Primary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

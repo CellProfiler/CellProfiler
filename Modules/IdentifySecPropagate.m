@@ -2,56 +2,71 @@ function handles = AlgIdentifySecPropagate(handles)
 
 % Help for the Identify Secondary Propagate module:
 % 
-% This module assumes that you have a set of primary objects contained
-% within a group of secondary objects, and you want to identify the
-% outlines of the secondary objects.  The primary objects
-% are assumed to be completely within secondary objects (e.g. nuclei
-% within cells).  The module is especially good at determining the
-% dividing lines between clustered cells.
+% This module identifies secondary objects based on a previous
+% module's identification of primary objects.  Each primary object is
+% assumed to be completely within a secondary object (e.g. nuclei
+% within cells stained for actin).  The module is especially good at
+% determining the dividing lines between clustered secondary objects.
+% The dividing lines between objects are determined by a combination
+% of the distance to the nearest primary object and intensity
+% gradients (dividing lines can be either dim or bright). 
 %
 % SETTINGS:
-% Threshold: this setting affects the stringency of
-% object outlines that border the background.  It does not affect the
-% dividing lines between clumped objects. A higher number will result
-% in smaller objects (more stringent). A lower number will result in
-% large objects (less stringent). 
+% Threshold: this setting affects the stringency of object outlines
+% that border the background.  It does not affect the dividing lines
+% between clumped objects. A higher number will result in smaller
+% objects (more stringent). A lower number will result in large
+% objects (less stringent).
+%
 % Regularization factor: This algorithm takes two factors into account
 % when deciding where to draw the dividing line between two touching
 % secondary objects: the distance to the nearest primary object, and
 % the intensity of the secondary object image.  The regularization
-% factor controls the balance between these two considerations: A value
-% of zero means that the distance to the nearest primary object is
-% ignored and the decision is made entirely on the intensity gradient
-% between the two competing primary objects. Larger values weight the
-% distance between the two values more and more heavily.  The
-% regularization factor can be infinitely large, but around 10 or so,
-% the intensity image is almost completely ignored and the dividing
-% line will simply be halfway between the two competing primary
-% objects.
+% factor controls the balance between these two considerations: A
+% value of zero means that the distance to the nearest primary object
+% is ignored and the decision is made entirely on the intensity
+% gradient between the two competing primary objects. Larger values
+% weight the distance between the two values more and more heavily.
+% The regularization factor can be infinitely large, but around 10 or
+% so, the intensity image is almost completely ignored and the
+% dividing line will simply be halfway between the two competing
+% primary objects.
 % 
 % Note: Primary segmenters produce two output images that are used by
 % this module.  The dOTSegmented image contains the final, edited
 % primary objects (i.e. objects at the border and those that are too
 % small or large have been excluded).  The dOTPrelimSmallSegmented
-% image is the same except that the objects at the border and the large
-% objects have been included.  These extra objects are used to perform
-% the identification of secondary object outlines, since they are
-% probably real objects (even if we don't want to measure them).  Small
-% objects are not used at this stage because they are more likely to be
-% artifactual, and so they therefore should not "claim" any secondary
-% object pixels.
+% image is the same except that the objects at the border and the
+% large objects have been included.  These extra objects are used to
+% perform the identification of secondary object outlines, since they
+% are probably real objects (even if we don't want to measure them).
+% Small objects are not used at this stage because they are more
+% likely to be artifactual, and so they therefore should not "claim"
+% any secondary object pixels.
 % 
 % TECHNICAL DESCRIPTION OF THE ALGORITHM: 
 % Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and 
 % limited to MASK.  MASK should be a logical array.  LAMBDA is a 
-% regularization parameter, larger being closer to Euclidean distance in
-% the image plane, and zero being entirely controlled by IMAGE. 
+% regularization parameter, larger being closer to Euclidean distance
+% in the image plane, and zero being entirely controlled by IMAGE. 
 % Propagation of labels is by shortest path to a nonzero label in
 % LABELS_IN.  Distance is the sum of absolute differences in the image
 % in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
 % LAMBDA^2).  Note that there is no separation between adjacent areas
-% with different labels (as there would be using, e.g.,
-% watershed).  Such boundaries must be added in a postprocess.
+% with different labels (as there would be using, e.g., watershed).
+% Such boundaries must be added in a postprocess.
+
+% What does Secondary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -1,7 +1,9 @@
 function handles = AlgFileRenamer(handles)
 
 % Help for File Renamer module:
-% Sorry, this module has not yet been documented.
+%
+% File renaming utility that deletes or adds text anywhere within
+% image file names.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

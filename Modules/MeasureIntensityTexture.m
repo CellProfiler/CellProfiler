@@ -2,17 +2,26 @@ function handles = AlgMeasureIntensityTexture(handles)
 
 % Help for the Measure Intensity Texture module: 
 % 
-% Retrieves a segmented image, in label matrix format, and a corresponding
-% original grayscale image and makes measurements of the objects that are
-% segmented in the image. This module differs from the AlgMeasure module
-% because it lacks measurements of shape and area and includes only
-% intensity and texture.
+% Given an image with objects identified (e.g. nuclei or cells), this
+% module makes measurements of the intensity and texture of each
+% object based on a corresponding grayscale image. Measurements are
+% recorded for each object, and some population measurements are
+% calculated: Mean, Median, Standard Deviation, and in some cases Sum.
+% Note that the standard deviation of intensity is a measure of
+% texture.  We hope to add other measurements of texture to this
+% module.
 %
-% The label matrix image should be "compacted": I mean that each number
-% should correspond to an object, with no numbers skipped.  So, if some
-% objects were discarded from the label matrix image, the image should be
-% converted to binary and re-made into a label matrix image before feeding
-% into this module.
+% How it works:
+% Retrieves a segmented image, in label matrix format, and a
+% corresponding original grayscale image and makes measurements of the
+% objects that are segmented in the image. This module differs from
+% the AlgMeasure module because it lacks measurements of shape and
+% area and includes only intensity and texture. The label matrix image
+% should be "compacted": I mean that each number should correspond to
+% an object, with no numbers skipped. So, if some objects were
+% discarded from the label matrix image, the image should be converted
+% to binary and re-made into a label matrix image before feeding into
+% this module.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

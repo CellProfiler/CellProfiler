@@ -7,24 +7,28 @@ function handles = AlgCorrectIllumDivideEachMin_9(handles)
 % information contained only within that image.  It is preferable to
 % use a correct illumination module that corrects for illumination
 % based on all images acquired at the same time.
-%    First, the minimum pixel value is determined within each
-% "block" of the image.  The block dimensions are entered by the user,
-% and should be large enough that every block is likely to contain some
+%
+% How it works:
+% First, the minimum pixel value is determined within each "block" of
+% the image.  The block dimensions are entered by the user, and should
+% be large enough that every block is likely to contain some
 % "background" pixels, where no cells are located.  Theoretically, the
-% intensity values of these background pixels should always be the same
-% number.  With uneven illumination, the background pixels will vary
-% across the image, and this yields a function that presumably affects
-% the intensity of the "real" pixels, those that comprise cells.
-% Therefore, once the minimums are determined across the image, the
-% minimums are smoothed out. This produces an image
-% that represents the variation in illumination across the field of
-% view.  The original image is *divided* by this image to produce the
+% intensity values of these background pixels should always be the
+% same number.  With uneven illumination, the background pixels will
+% vary across the image, and this yields a function that presumably
+% affects the intensity of the "real" pixels, those that comprise
+% cells. Therefore, once the minimums are determined across the image,
+% the minimums are smoothed out. This produces an image that
+% represents the variation in illumination across the field of view.
+% The original image is *divided* by this image to produce the
 % corrected image.
 % 
-% This module is loosely based on the Matlab demo "Correction of non-uniform
-% illumination" in the Image Processing Toolbox demos "Enhancement"
-% category.
+% This module is loosely based on the Matlab demo "Correction of
+% non-uniform illumination" in the Image Processing Toolbox demos
+% "Enhancement" category.
 % MATLAB6p5/toolbox/images/imdemos/examples/enhance/ipss003.html
+%
+% See also AlgCorrectIllumDivideEachMin_10
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

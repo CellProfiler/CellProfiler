@@ -2,27 +2,30 @@ function handles = AlgLoadImagesText(handles)
 
 % Help for Load Images Text module:
 % 
-% This module is required to load images from the hard drive into a
-% format recognizable by CellProfiler.  The images are given a
-% meaningful name, which is then used by subsequent modules to retrieve
-% the proper image.  If more than four images per set must be loaded,
-% more than one Load Images Order module can be run sequentially. Running
-% more than one of these modules also allows images to be retrieved from
-% different folders.
+% Tells CellProfiler where to retrieve images and gives each image a
+% meaningful name for the other modules to access.
+%
+% If more than four images per set must be loaded, more than one Load
+% Images Text module can be run sequentially. Running more than one of
+% these modules also allows images to be retrieved from different
+% folders. If you want to load all images in a directory, you can
+% enter the file extension as the text for which to search.
 %  
 % This module is different from the Load Images Order module because
-% Load Images Text can be used to load images that are not in a defined
-% order.  That is, Load Images Order is useful when images are present
-% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
-% on, where images are selected based on how many images are in each
-% set and what position within each set a particular color is located
-% (e.g. three images per set, DAPI is always first).  Load Images Text
-% is used instead to load images that have a particular piece of text
-% in the name.
+% Load Images Text can be used to load images that are not in a
+% defined order.  That is, Load Images Order is useful when images are
+% present in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red,
+% and so on, where images are selected based on how many images are in
+% each set and what position within each set a particular color is
+% located (e.g. three images per set, DAPI is always first).  Load
+% Images Text is used instead to load images that have a particular
+% piece of text in the name.
 % 
-% You may have folders within the directory that is being searched, but
-% these folders must not contain the text you are searching for or an
-% error will result.
+% You may have folders within the directory that is being searched,
+% but these folders must not contain the text you are searching for or
+% an error will result.
+%
+% See also AlgLoadImagesOrder.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -1,4 +1,4 @@
-% function LABELS_OUT = AlgSegmentSecPropagateSubfunction(LABELS_IN, IMAGE, MASK, LAMBDA)
+% function LABELS_OUT = AlgSegmentSecPropagateSubfunction(LABELS_IN, IMAGE, MASK, LAMBDA) %#ok
 % 
 % Help for the Segment Secondary Propagate Subfunction:
 % 
@@ -9,8 +9,8 @@
 % 
 % Propagation of labels is by shortest path to a nonzero label in
 % LABELS_IN.  Distance is the sum of absolute differences in the image
-% in a 3x3 neighborhood, combined with LAMBDA via 
-% sqrt(differences^2 + LAMBDA^2).
+% in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
+% LAMBDA^2).
 %
 % Note that there is no separation between adjacent areas with
 % different labels (as there would be using, e.g., watershed).  Such

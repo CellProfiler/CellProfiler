@@ -1,14 +1,20 @@
 function handles = AlgMeasureAreaShapeIntensTxtr(handles)
 
-% Help for the Measure module:
+% Help for the Measure Area Shape Count module:
 %
-% Retrieves a segmented image, in label matrix format, and its
-% corresponding original grayscale image and makes lots of measurements of
-% the objects that are segmented in the image. The label matrix image
-% should be "compacted": I mean that each number should correspond to an
-% object, with no numbers skipped.  So, if some objects were discarded from
-% the label matrix image, the image should be converted to binary and
-% re-made into a label matrix image before feeding into this module.
+% Given an image with objects identified (e.g. nuclei or cells), this
+% module makes measurements of each object, including area, shape, and
+% count. Measurements are recorded for each object, and some
+% population measurements are calculated: Mean, Median, Standard
+% Deviation, and in some cases Sum.
+%
+% TECHNICAL NOTES: Retrieves a segmented image, in label matrix format
+% and makes lots of measurements of the objects that are segmented in
+% the image. The label matrix image should be "compacted": I mean that
+% each number should correspond to an object, with no numbers skipped.
+% So, if some objects were discarded from the label matrix image, the
+% image should be converted to binary and re-made into a label matrix
+% image before feeding into this module.
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

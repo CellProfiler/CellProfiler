@@ -1,7 +1,28 @@
 function handles = AlgIdentifySecDistance(handles)
 
-% Help for the Identify Secondary Distance module: 
-% Sorry, this module has not yet been documented.
+% Help for the Identify Secondary Distance module:
+%
+% Based on another module’s identification of primary objects, this
+% module identifies secondary objects when no specific staining is
+% available.  The edges of the primary objects are simply expanded a
+% particular distance to create the secondary objects. For example, if
+% nuclei are labeled but there is no stain to help locate cell edges,
+% the nuclei can simply be expanded in order to estimate the cell's
+% location.  This is a standard module used in commercial software and
+% is known as the 'donut' or 'annulus' approach for identifying the
+% cytoplasmic compartment.
+%
+% What does Secondary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

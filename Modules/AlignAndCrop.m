@@ -4,28 +4,28 @@ function handles = AlgAlignAndCrop(handles)
 % 
 % This module was written for a specific purpose: to take a larger
 % image of the outlines of cells, with some space around the outside,
-% and align it with a real image of cells (or of nuclei).  Fortunately,
-% it can work for almost any set of images for which one set is larger
-% than the other and rescaling must be done (and, of course, there are
-% features shared which can be used to align the images).  Just enter
-% the larger images as the traced ones, and the smaller ones as the
-% real images.
+% and align it with a real image of cells (or of nuclei).
+% Fortunately, it can work for almost any set of images for which one
+% set is larger than the other and rescaling must be done (and, of
+% course, there are features shared which can be used to align the
+% images).  Just enter the larger images as the traced ones, and the
+% smaller ones as the real images.
 % 
 % This module determines the best alignment of two images.  It expects
-% the first to be a scanned, traced transparency of 8 1/2 by 11 inches,
-% and the second should be a real image from a microscope.  The
-% addition of colored registration marks is optional, although very
-% helpful in alignment.  The module stretches the real image to be at
-% the same resolution as the traced image, then creates a black
+% the first to be a scanned, traced transparency of 8 1/2 by 11
+% inches, and the second should be a real image from a microscope.
+% The addition of colored registration marks is optional, although
+% very helpful in alignment.  The module stretches the real image to
+% be at the same resolution as the traced image, then creates a black
 % background for it of the same size, then aligns the images, and
 % finally crops them all to be the same size and taking up the same
-% area as on the original real image.
-% In the future, this may be developed to include a way of finding the
-% optimal scaling of the images to each other; however, no guarantees.
+% area as on the original real image. In the future, this may be
+% developed to include a way of finding the optimal scaling of the
+% images to each other; however, no guarantees.
 % 
-% Note that as long as the input real images of nuclei and of cells are
-% the same dimensions, their output files will have the same dimensions
-% as well.
+% Note that as long as the input real images of nuclei and of cells
+% are the same dimensions, their output files will have the same
+% dimensions as well.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -38,7 +38,7 @@ function handles = AlgAlignAndCrop(handles)
 % License.
 % 
 % 
-% The Original Code is the ______________________.
+% The Original Code is the Align and Crop module.
 % 
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research
@@ -49,6 +49,7 @@ function handles = AlgAlignAndCrop(handles)
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
+%   Chris Gang
 %
 % $Revision$
 

@@ -1,7 +1,21 @@
 function handles = AlgSaturationBlurCheck(handles)
 
 % Help for the Saturation & Blur Check module: 
-% Sorry, this module has not yet been documented.
+%
+% The percentage of pixels that are saturated (their intensity value
+% is equal to the maximum possible intensity value for that image
+% type) is calculated and stored as a measurement in the output file.
+%
+% The module can also compute and record a focus score (higher =
+% better focus). This calculation takes much longer than the
+% saturation checking, so it is optional. 
+% 
+% How it works:
+% The calculation of the focus score is as follows:
+% RightImage = Image(:,2:end)
+% LeftImage = Image(:,1:end-1)
+% MeanImageValue = mean(Image(:))
+% FocusScore = std(RightImage(:) - LeftImage(:)) / MeanImageValue
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -2,26 +2,27 @@ function handles = AlgLoadImagesOrder(handles)
 
 % Help for the Load Images Order module:
 %
-% This module is required to load images from the hard drive into a
-% format recognizable by CellProfiler.  The images are given a
-% meaningful name, which is then used by subsequent modules to retrieve
-% the proper image.  If more than four images per set must be loaded,
-% more than one Load Images Order module can be run sequentially. Running
-% more than one of these modules also allows images to be retrieved from
-% different folders.
+% Tells CellProfiler where to retrieve images and gives each image a
+% meaningful name for the other modules to access.
+
+% If more than four images per set must be loaded, more than one Load
+% Images Order module can be run sequentially. Running more than one
+% of these modules also allows images to be retrieved from different
+% folders.  If you want to load all images in a directory, the number
+% of images per set can be set to 1.
 % 
-% This module is different from the Load Images Text module because
-% Load Images Text can be used to load images that are not in a defined
-% order.  That is, Load Images Order is useful when images are present
-% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
-% on, where images are selected based on how many images are in each
-% set and what position within each set a particular color is located
-% (e.g. three images per set, DAPI is always first).  Load Images Text
-% is used instead to load images that have a particular piece of text
-% in the name.
+% Load Images Order is useful when images are present in a repeating
+% order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where
+% images are selected based on how many images are in each set and
+% what position within each set a particular color is located (e.g.
+% three images per set, DAPI is always first).  By contrast, Load
+% Images Text is used to load images that have a particular piece of
+% text in the name.
 %
-% You may have folders within the directory that is being searched; they
-% will be ignored by this module.
+% You may have folders within the directory that is being searched;
+% they will be ignored by this module.
+%
+% See also AlgLoadImagesText.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -1,7 +1,11 @@
 function handles = AlgApplyThreshold(handles)
 
-% Help for the Apply Threshold module: 
-% Sorry, this module has not yet been documented.
+% Help for the Apply Threshold module:
+%
+% Pixels below (or above) a certain threshold are set to zero. The
+% remaining pixels retain their original value.
+%
+% See also AlgApplyThresholdAndShift
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -4,9 +4,11 @@ function handles = AlgCorrectIllumDivideAllMeanRetrieveImg(handles)
 %
 % This module is like the Correct Illumination Divide All Mean module,
 % except it allows retrieval of an already calculated illumination
-% correction image, e.g. from a previously run output file.  This module
-% has not been extensively tested and was written in a quick emergency
-% situation.
+% correction image, e.g. from a previously run output file.  This
+% module has not been extensively tested and was written in a quick
+% emergency situation.
+%
+% See also AlgCorrectIllumDivideAllMean.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -1,7 +1,8 @@
 function handles = AlgInvertIntensity(handles)
 
 % Help for the Invert Intensity module: 
-% Sorry, this module has not yet been documented.
+%
+% The intensities of the image are inverted, so that black becomes white.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

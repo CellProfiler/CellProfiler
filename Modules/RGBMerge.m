@@ -1,7 +1,9 @@
 function handles = AlgRGBMerge(handles)
 
 % Help for the RGB Merge module: 
-% Sorry, this module has not yet been documented.
+%
+% Takes 1 to 3 images and assigns them to colors in a final, RGB
+% image.  Each color’s brightness can be adjusted independently.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

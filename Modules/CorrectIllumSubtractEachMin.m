@@ -7,29 +7,35 @@ function handles = AlgCorrectIllumSubtractEachMin(handles)
 % use a correct illumination module that corrects for illumination
 % based on all images acquired at the same time.
 %
-% First, the minimum pixel value is determined within each
-% "block" of the image.  The block dimensions are entered by the user,
-% and should be large enough that every block is likely to contain some
+% How it works:
+% First, the minimum pixel value is determined within each "block" of
+% the image.  The block dimensions are entered by the user, and should
+% be large enough that every block is likely to contain some
 % "background" pixels, where no cells are located.  Theoretically, the
-% intensity values of these background pixels should always be the same
-% number.  With uneven illumination, the background pixels will vary
-% across the image, and this yields a function that presumably affects
-% the intensity of the "real" pixels, those that comprise cells.
-% Therefore, once the minimums are determined across the image, the
-% minimums are smoothed out. This produces an image that represents the
-% variation in illumination across the field of view.  This image is
-% then subtracted from the original image to produce the corrected
-% image.
+% intensity values of these background pixels should always be the
+% same number.  With uneven illumination, the background pixels will
+% vary across the image, and this yields a function that presumably
+% affects the intensity of the "real" pixels, those that comprise
+% cells. Therefore, once the minimums are determined across the image,
+% the minimums are smoothed out. This produces an image that
+% represents the variation in illumination across the field of view.
+% This image is then subtracted from the original image to produce the
+% corrected image.  Note: This is the same strategy as Correct Illum
+% Divide Each Min, but the background is subtracted out of the image
+% instead of divided.
 % 
-% This module does not rescale or otherwise adjust the resulting image,
-% so that intensity measurements will be accurate, assuming that all
-% images should have the same background levels (at spots where no
-% cells are located).
+% This module does not rescale or otherwise adjust the resulting
+% image, so that intensity measurements will be accurate, assuming
+% that all images should have the same background levels (at spots
+% where no cells are located).
 % 
 % This module is based on the Matlab demo "Correction of non-uniform
 % illumination" in the Image Processing Toolbox demos "Enhancement"
 % category.
 % MATLAB6p5/toolbox/images/imdemos/examples/enhance/ipss003.html
+%
+% See also AlgCorrectIllumDivideEachMin, AlgCorrectIllumDivideAllMin,
+% AlgCorrectIllumSubtractAllMin.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -2,12 +2,13 @@ function handles = AlgIdentifySecWatershed(handles)
 
 % Help for the Identify Secondary Watershed module: 
 % 
-% This module assumes that you have a set of primary objects contained
-% within a group of secondary objects, and you want to identify the
-% outlines of the secondary objects.  The primary objects are assumed to be
-% completely within secondary objects (e.g. nuclei within cells).  The
-% module is especially good at determining the dividing lines between
-% clustered cells.
+% This module identifies secondary objects based on a previous
+% module's identification of primary objects.  Each primary object is
+% assumed to be completely within a secondary object (e.g. nuclei
+% within cells stained for actin). The dividing lines between objects
+% are determined by looking for dim lines between objects. It would
+% not be difficult to write a module that looks for bright lines
+% between objects, based on this one.
 %
 % SETTINGS:
 % Threshold adjustment factor: this setting affects the stringency of
@@ -15,28 +16,40 @@ function handles = AlgIdentifySecWatershed(handles)
 % dividing lines between clumped objects. A higher number will result
 % in smaller objects (more stringent). A lower number will result in
 % large objects (less stringent), but at a certain point, depending on
-% the particular image, the objects will become huge and the processing
-% will take a really long time.  To determine whether the number is too
-% low, you can just test it (of course), but a shortcut would be to go
-% into the m-file for this module, take the percent sign off the
-% beginning of the line that says "figure,
+% the particular image, the objects will become huge and the
+% processing will take a really long time.  To determine whether the
+% number is too low, you can just test it (of course), but a shortcut
+% would be to go into the m-file for this module, take the percent
+% sign off the beginning of the line that says "figure,
 % imshow(InvertedThresholdedOrigImage,...", save the file and load the
-% algorithm.  The resulting image that pops up during processing should
-% not have lots of speckles - this adds to the processing time.
-% Rather, there should be rather large regions of black where the cells
-% are located.
+% algorithm.  The resulting image that pops up during processing
+% should not have lots of speckles - this adds to the processing time.
+% Rather, there should be rather large regions of black where the
+% cells are located.
 % 
 % Note: Primary segmenters produce two output images that are used by
 % this module.  The dOTSegmented image contains the final, edited
 % primary objects (i.e. objects at the border and those that are too
 % small or large have been excluded).  The dOTPrelimSmallSegmented
-% image is the same except that the objects at the border and the large
-% objects have been included.  These extra objects are used to perform
-% the identification of secondary object outlines, since they are
-% probably real objects (even if we don't want to measure them).  Small
-% objects are not used at this stage because they are more likely to be
-% artifactual, and so they therefore should not "claim" any secondary
-% object pixels.
+% image is the same except that the objects at the border and the
+% large objects have been included.  These extra objects are used to
+% perform the identification of secondary object outlines, since they
+% are probably real objects (even if we don't want to measure them).
+% Small objects are not used at this stage because they are more
+% likely to be artifactual, and so they therefore should not "claim"
+% any secondary object pixels.
+%
+% What does Secondary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

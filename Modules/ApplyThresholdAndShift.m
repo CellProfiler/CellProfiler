@@ -1,7 +1,13 @@
 function handles = AlgApplyThresholdAndShift(handles)
 
-% Help for the Apply Threshold and Shift module: 
-% Sorry, this module has not yet been documented.
+% Help for the Apply Threshold and Shift module:
+%
+% First, pixels above a certain threshold are set to zero (in case
+% very bright objects need to be excluded).  Then, a user-specified
+% value is subtracted from the entire image to shift all the
+% intensities lower.  Negative pixel intensities are then set to zero.
+%
+% See also AlgApplyThreshold
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

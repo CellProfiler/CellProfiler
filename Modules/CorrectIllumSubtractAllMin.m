@@ -3,21 +3,24 @@ function handles = AlgCorrectIllumSubtractAllMin(handles)
 % Help for the Correct Illumination Subtract All Min module: 
 % 
 % This module corrects for uneven illumination of each image, based on
-% information from a set of images collected at the same time. First, the
-% minimum pixel value is determined within each "block" of each image, and
-% the values are averaged together for all images.  The block dimensions
-% are entered by the user, and should be large enough that every block is
-% likely to contain some "background" pixels, where no cells are located.
-% Theoretically, the intensity values of these background pixels should
-% always be the same number.  With uneven illumination, the background
-% pixels will vary across the image, and this yields a function that
-% presumably affects the intensity of the "real" pixels, those that
-% comprise cells. Therefore, once the average minimums are determined
-% across the images, the minimums are smoothed out. This produces an image
-% that represents the variation in illumination across the field of view.
-% This process is carried out before the first image set is processed. This
-% image is then subtracted from each original image to produce the
-% corrected image.
+% information from a set of images collected at the same time. 
+
+% How it works:
+% First, the minimum pixel value is determined within each "block" of
+% each image, and the values are averaged together for all images.
+% The block dimensions are entered by the user, and should be large
+% enough that every block is likely to contain some "background"
+% pixels, where no cells are located. Theoretically, the intensity
+% values of these background pixels should always be the same number.
+% With uneven illumination, the background pixels will vary across the
+% image, and this yields a function that presumably affects the
+% intensity of the "real" pixels, those that comprise cells.
+% Therefore, once the average minimums are determined across the
+% images, the minimums are smoothed out. This produces an image that
+% represents the variation in illumination across the field of view.
+% This process is carried out before the first image set is processed.
+% This image is then subtracted from each original image to produce
+% the corrected image.
 % 
 % If you want to run this module only to calculate the mean and
 % illumination images and not to correct every image in the directory,

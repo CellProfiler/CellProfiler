@@ -1,7 +1,14 @@
 function handles = AlgCrop(handles)
 
 % Help for the Crop module: 
-% Sorry, this module has not yet been documented.
+% 
+% Allows the images to be cropped in any shape: 
+% 
+% Rectangular: enter the
+% pixel coordinates for the left, top and right, bottom corners.
+% 
+% Ellipse: Any other shape: give CellProfilerTM a black and white
+% image you have prepared which shows the cropping shape.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

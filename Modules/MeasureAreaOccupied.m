@@ -2,13 +2,18 @@ function handles = AlgMeasureAreaOccupied(handles)
 
 % Help for the Measure Area Occupied module: 
 % 
-% This module simply applies a threshold to the incoming image so that
-% any pixels brighter than the specified value are assigned the value 1
-% (white) and the remaining pixels are assigned the value zero (black),
-% producing a binary image.  The number of white pixels are then
-% counted.  This provides a measurement of the area occupied by
+% This module simply measures the total area covered by stain in an
+% image. 
+%
+% How it works:
+% This module applies a threshold to the incoming image so that any
+% pixels brighter than the specified value are assigned the value 1
+% (white) and the remaining pixels are assigned the value zero
+% (black), producing a binary image.  The number of white pixels are
+% then counted.  This provides a measurement of the area occupied by
 % fluorescence.  The threshold is calculated automatically and then
-% adjusted by a user-specified factor.
+% adjusted by a user-specified factor. It might be desirable to write
+% a new module where the threshold can be set to a constant value.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

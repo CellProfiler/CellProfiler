@@ -1,26 +1,27 @@
 function handles = AlgSpotIdentifier(handles)
 
 % Help for the Spot Identifier module:
+% 
 % Sorry, this module has not yet been documented.  
 %
-% It works for our basic needs right now, but improvements/fixes need to be
-% made:
-% (0) I have not tested all of the various ways to rotate and mark the top,
-% left corner spot.
+% It works for our basic needs right now, but improvements/fixes need
+% to be made:
+% (0) I have not tested all of the various ways to rotate and mark the
+% top, left corner spot.
 % (1) I am not confident that the offsets and flipping left/right and
 % top/bottom are accurate at the moment.
 % (2) Loading gene names from an Excel file works only for a PC at the
 % moment, although I think it can be adjusted by skipping or adding an
 % entry to the imported data.
-% (3) Right now the numbers are in columns, and I want to add the option of
-% rows.
-% (4) When clicking "Show coordinates" or "Show sample info", all the numbers across the whole
-% image are displayed, which takes a while and slows down zoom functions.
-% I would like to be able to click on the image and show the coordinates
-% for that spot.
+% (3) Right now the numbers are in columns, and I want to add the
+% option of rows.
+% (4) When clicking "Show coordinates" or "Show sample info", all the
+% numbers across the whole image are displayed, which takes a while
+% and slows down zoom functions. I would like to be able to click on
+% the image and show the coordinates for that spot.
 % (5) We would like to be able to show several images within the same
-% figure window and toggle between them, so that controls and different
-% wavelength images can be compared.
+% figure window and toggle between them, so that controls and
+% different wavelength images can be compared.
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

@@ -3,19 +3,24 @@ function handles = AlgCorrectIllumDivideAllMean(handles)
 % Help for the Correct Illumination Divide All Mean module: 
 %
 % This module corrects for uneven illumination of each image, based on
-% information from a set of images collected at the same time. This module
-% works by averaging together all of the images, then smoothing this image
-% by fitting a low-order polynomial to the resulting average image and
-% rescaling it.  This produces an image that represents the variation in
-% illumination across the field of view.  This process is carried out
-% before the first image set is processed; subsequent image sets use the
-% already calculated image. Each image is divided by this illumination
-% image to produce the corrected image.
+% information from a set of images collected at the same time. 
+
+% How it works:
+% This module works by averaging together all of the images, then
+% smoothing this image by fitting a low-order polynomial to the
+% resulting average image and rescaling it.  This produces an image
+% that represents the variation in illumination across the field of
+% view.  This process is carried out before the first image set is
+% processed; subsequent image sets use the already calculated image.
+% Each image is divided by this illumination image to produce the
+% corrected image.
 %
 % If you want to run this module only to calculate the mean and
 % illumination images and not to correct every image in the directory,
 % simply run the module as usual and use the button on the Timer to
 % stop processing after the first image set.
+%
+% See also AlgCorrectIllumDivideAllMeanRetrieveImg.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -4,18 +4,18 @@ function handles = AlgIdentifyTertiarySubregion(handles)
 %
 % This module will take the identified objects specified in the first
 % box and remove from them the identified objects specified in the
-% second box. For example, "subtracting" the nuclei from the cells will
-% leave just the cytoplasm, the properties of which can then be
-% measured by the MeasureIntensityTexture module. The first objects
-% should therefore be equal in size or larger than the second objects
-% and must completely contain the second objects.  Both images
-% should be the result of a segmentation process, not grayscale images.
-% Note that creating subregions using this module can result in objects
-% that are not contiguous, which does not cause problems when running
-% the Measure Intensity and Texture module, but does cause problems
-% when running the Measure Area Shape Intensity Texture module because
-% calculations of the perimeter, aspect ratio, solidity, etc. cannot be
-% made for noncontiguous objects.
+% second box. For example, "subtracting" the nuclei from the cells
+% will leave just the cytoplasm, the properties of which can then be
+% measured by Measure modules. The first objects should therefore be
+% equal in size or larger than the second objects and must completely
+% contain the second objects.  Both images should be the result of a
+% segmentation process, not grayscale images. Note that creating
+% subregions using this module can result in objects that are not
+% contiguous, which does not cause problems when running the Measure
+% Intensity and Texture module, but does cause problems when running
+% the Measure Area Shape Intensity Texture module because calculations
+% of the perimeter, aspect ratio, solidity, etc. cannot be made for
+% noncontiguous objects.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

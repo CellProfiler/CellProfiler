@@ -1,12 +1,34 @@
 function handles = AlgIdentifyPrimAdaptThresholdA(handles)
 
 % Help for Identify Primary Adaptive Threshold A module: 
-% This image analysis module identifies objects by applying an adaptive
-% threshold to a grayscale image.
+%
+% This image analysis module identifies objects by applying an
+% adaptive threshold to a grayscale image.  Four different methods
+% (A,B,C, and D) of adaptive thresholding can be used to identify
+% objects.  Applies a local threshold at each pixel across the image
+% and then identifies objects which are not touching. Provides more
+% accurate edge determination and slightly better separation of clumps
+% and than a simple threshold; still, it is ideal for well-separated
+% nuclei.
+%
+% Module A: the optimal thresholds are determined using Otsu’s
+% algorithm, for distinct blocks across the image.  The resulting
+% thresholds are blurred.
 %
 % BLOCK SIZE: should be set large enough that every square block of
 % pixels is likely to contain some background and some foreground.
 % Smaller block sizes take more processing time.
+%
+% What does Primary mean? Identify Primary modules identify objects
+% without relying on any information other than a single grayscale
+% input image (e.g. nuclei are typically primary objects). Identify
+% Secondary modules require a grayscale image plus an image where
+% primary objects have already been identified, because the secondary
+% objects' locations are determined in part based on the primary
+% objects (e.g. cells can be secondary objects). Identify Tertiary
+% modules require images where two sets of objects have already been
+% identified (e.g. nuclei and cell regions are used to define the
+% cytoplasm objects, which are tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -3,8 +3,25 @@ function handles = AlgIdentifyPrimThreshold(handles)
 % Help for the Identify Primary Threshold module:
 %
 % This image analysis module identifies objects by simply thresholding
-% the image.  The threshold can be (1) user-specified (2) based on each
-% individual image, or (3) based on all of the images in the set.
+% the image, with a single, global threshold used across the image.
+% This module does not separate clumps well, although it is fast; it
+% is ideal for well-separated nuclei. The threshold can be (1)
+% user-specified (2) based on each individual image, or (3) based on
+% all of the images in the set.  Objects on the border of the image
+% are ignored, and the user can select a size range, outside which
+% objects will be ignored.
+%
+% What does Primary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

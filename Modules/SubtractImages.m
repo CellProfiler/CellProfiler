@@ -2,8 +2,8 @@ function handles = AlgSubtractImages(handles)
 
 % Help for Subtract Images module:
 %
-% Sorry, this module has not yet been documented. It was written for a very
-% specific purpose and it allows blurring and subtracting images.
+% Sorry, this module has not yet been documented. It was written for a
+% very specific purpose and it allows blurring and subtracting images.
 %
 % SPEED OPTIMIZATION: Note that increasing the blur radius increases
 % the processing time exponentially.

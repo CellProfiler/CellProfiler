@@ -1,7 +1,29 @@
 function handles = AlgShrinkPrimaryObjects(handles)
 
 % Help for the Shrink Primary Objects module: 
-% Sorry, this module has not yet been documented.
+%
+% The module shrinks primary objects by removing border pixels. The
+% user can specify a certain number of times the border pixels are
+% removed, or type “Inf” to shrink objects down to a point. Objects
+% are never lost using this module (shrinking stops when an object
+% becomes a single pixel). Sometimes when identifying secondary
+% objects (e.g. cell edges), it is useful to shrink the primary
+% objects (e.g. nuclei) a bit in case the nuclei overlap the cell
+% edges slightly, since the secondary object identifiers demand that
+% the secondary objects completely enclose primary objects. This is
+% handy when the two images are not aligned perfectly, for example.
+%
+% What does Primary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

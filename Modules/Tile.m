@@ -1,7 +1,26 @@
 function handles = AlgImageTiler(handles)
 
 % Help for the Image Tiler module:
-% Sorry, this module has not yet been documented.
+% 
+% Allows many images to be viewed simultaneously, in a grid layout you
+% specify (e.g. in the actual layout in which the images were
+% collected). This module tiles all images on the first time through
+% the module, so you won’t want to run an image routine afterwards
+% that needs to cycle through the image sets.
+%
+% If you want to view a large number of images, you will generate an
+% extremely large file (roughly the MB of all the images added
+% together) which, even if it could be created by Matlab, could not be
+% opened by any image software anyway. Matlab has a limit to the
+% amount of data it can open which prevents you from creating such a
+% gigantic, high resolution file.  Therefore, you can decrease the
+% resolution of each image by entering a fraction where requested.
+% Then, in the window which pops open after ImageTiler finishes, you
+% can use the “Get high res image” button to retrieve the original
+% high resolution image. (This button is not yet functional).
+%
+% The file name (automatic) and sample info (optional) can be
+% displayed on each image using buttons in the final figure window.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -1,7 +1,12 @@
 function handles = AlgFileRenumber(handles)
 
 % Help for the File Renumber module:
-% Sorry, this module has not yet been documented.
+% 
+% File renaming utility that converts numbers within image file names
+% to solve improper ordering of files on Unix/Mac OSX systems.  For
+% example:
+% DrosDAPI_1.tif becomes DrosDAPI_001.tif
+% DrosDAPI_10.tif	becomes DrosDAPI_010.tif
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

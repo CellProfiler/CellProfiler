@@ -2,16 +2,27 @@ function handles = AlgIdentifyPrimAdaptThresholdD(handles)
 
 % Help for the Identify Primary Adaptive Threshold D module: 
 % 
-% This image analysis module identifies objects by applying an adaptive
-% threshold to the image.
+% This image analysis module identifies objects by applying an
+% adaptive threshold to a grayscale image.  Four different methods
+% (A,B,C, and D) of adaptive thresholding can be used to identify
+% objects.  Applies a local threshold at each pixel across the image
+% and then identifies objects which are not touching. Provides more
+% accurate edge determination and slightly better separation of clumps
+% and than a simple threshold; still, it is ideal for well-separated
+% nuclei.
+%
+% Module D: the optimal thresholds are determined by determining the
+% spatially weighted average (Gaussian lowpass) and multiplying by an
+% offset, within the neighborhood of every pixel. Possibly comparable
+% to the method used by Zeiss KS software.
 % 
 % SETTINGS:
 % Neighborhood size (odd number, higher = less stringent): Smaller
-% neighborhood sizes will be more prone to producing objects with small
-% holes and uneven edges (i.e. it is more prone to noise), whereas
-% larger neighborhoods will cause objects to begin merging with each
-% other, at least to a certain extent. Smaller neighborhood sizes take
-% less processing time.
+% neighborhood sizes will be more prone to producing objects with
+% small holes and uneven edges (i.e. it is more prone to noise),
+% whereas larger neighborhoods will cause objects to begin merging
+% with each other, at least to a certain extent. Smaller neighborhood
+% sizes take less processing time.
 % 
 % Sigma (positive number, higher = less stringent): Sigma affects the
 % blurring step, so its behavior can be described in a similar way to
@@ -21,17 +32,29 @@ function handles = AlgIdentifyPrimAdaptThresholdD(handles)
 %
 % Threshold (0 to 1, higher = more stringent): In the intermediate
 % image titled "Before thresholding" in this module's image display
-% window, pixels above the threshold will be counted as part of objects
-% and pixels below the threshold will be counted as background. A lower
-% threshold will be less stringent, although if the value is set too low,
-% the objects become so large they run into each other and are counted
-% as a giant object which might be thrown out because it is touching
-% the border of the image.  You can see if this is happening by
-% displaying the image called ThresholdedImage.
+% window, pixels above the threshold will be counted as part of
+% objects and pixels below the threshold will be counted as
+% background. A lower threshold will be less stringent, although if
+% the value is set too low, the objects become so large they run into
+% each other and are counted as a giant object which might be thrown
+% out because it is touching the border of the image.  You can see if
+% this is happening by displaying the image called ThresholdedImage.
 %
-% NOTE: I DID NOT YET ADJUST THIS MODULE TO USE THRESHOLDS INTELLIGENTLY.
-% There is no adjustment factor, and I am not sure whether it is a good
-% idea to allow one anyway.
+% NOTE: I DID NOT YET ADJUST THIS MODULE TO USE THRESHOLDS
+% INTELLIGENTLY. There is no adjustment factor, and I am not sure
+% whether it is a good idea to allow one anyway.
+%
+% What does Primary mean? 
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License
 % Version 

@@ -2,15 +2,33 @@ function handles = AlgIdentifyPrimDistIntens(handles)
 
 % Help for the Identify Primary Distance Intensity module: 
 %
-% This image analysis module identifies objects by finding peaks in the
-% distance transform of a thresholded image.  Once a marker for each object
-% has been identified in this way, a watershed function identifies the
-% lines between objects that are touching each other by looking for the
-% dimmest points between them.  To identify the edges of non-clumped
-% objects, a simple threshold is applied. The algorithm works best for
-% objects that are round-shaped, where the dividing lines between clumped
-% objects are dim.  The objects need not be brighter towards the interior as is
-% required for the intensity-based algorithm.
+% This image analysis module identifies and separates clumps of
+% objects in a grayscale input image. The algorithm works best for
+% objects that are round-shaped, and where the dividing lines between
+% clumped objects are dim.  The objects need not be brighter towards
+% the interior as is required for the intensity-based algorithms.
+%
+% How it works: 
+% This module identifies objects by finding peaks in the distance
+% transform of a thresholded image.  Once a marker for each object has
+% been identified in this way, a watershed function on the original
+% image identifies the lines between objects that are touching each
+% other by looking for the dimmest points between them.  To identify
+% the edges of non-clumped objects, a simple threshold is applied.
+% Objects on the border of the image are ignored, and the user can
+% select a size range, outside which objects will be ignored.
+%
+% What does Primary mean?
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

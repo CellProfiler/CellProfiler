@@ -2,41 +2,41 @@ function handles = AlgSubtractBackground(handles)
 
 % Help for the Subtract Background module:
 %
-% Note that this is not an illumination correction module.  It subtracts a
-% single value from every pixel across the image.
+% Note that this is not an illumination correction module.  It
+% subtracts a single value from every pixel across the image.
 %
 % The intensity due to camera or illumination or antibody background
 % (intensity where no cells are sitting) can in good conscience be
 % subtracted from the images, but it must be subtracted from every
-% pixel, not just the pixels where cells actually are sitting.  This is
-% because we assume that this staining is additive with real staining.
-% This module calculates the camera background and subtracts this
-% background value from each pixel. This module is identical to the
-% Apply Threshold and Shift module, except in the Subtract Background
-% module, the threshold is automatically calculated the first time
-% through the module. This will not push any values below zero
-% (therefore, we aren’t losing any information).  It moves the baseline
-% up and looks prettier (improves signal to noise) without any
-% 'ethical' concerns.
-%
-% How it actually works: Sort each image’s pixel values and pick the
-% 10th lowest pixel value as the minimum.  Our typical images have a
-% million pixels. We are not choosing the lowest pixel value, because
-% it might be zero if it’s a stuck pixel.  We are pretty sure there
-% won’t be 10 stuck pixels so this should be safe.  Then, take the
-% minimum of these values from all the images.  This scalar value
-% should be subtracted from every pixel in the image.  We are not
-% calculating a different value for each pixel position in the image
-% because in a small image set, that position may always be occupied by
-% real staining.
+% pixel, not just the pixels where cells actually are sitting.  This
+% is because we assume that this staining is additive with real
+% staining. This module calculates the camera background and subtracts
+% this background value from each pixel. This module is identical to
+% the Apply Threshold and Shift module, except in the Subtract
+% Background module, the threshold is automatically calculated the
+% first time through the module. This will not push any values below
+% zero (therefore, we aren’t losing any information).  It moves the
+% baseline up and looks prettier (improves signal to noise) without
+% any 'ethical' concerns.
 %
 % If images have already been quantified, then multiply the scalar by
 % the number of pixels in the image to get the number that should be
 % subtracted from the intensity measurements.
 %
-% If you want to run this module only to calculate the proper threshold
-% to use, simply run the module as usual and use the button on the
-% Timer to stop processing after the first image set.
+% If you want to run this module only to calculate the proper
+% threshold to use, simply run the module as usual and use the button
+% on the Timer to stop processing after the first image set.
+%
+% How it works: 
+% Sort each image's pixel values and pick the 10th lowest pixel value
+% as the minimum.  Our typical images have a million pixels. We are
+% not choosing the lowest pixel value, because it might be zero if
+% it’s a stuck pixel.  We are pretty sure there won’t be 10 stuck
+% pixels so this should be safe.  Then, take the minimum of these
+% values from all the images.  This scalar value should be subtracted
+% from every pixel in the image.  We are not calculating a different
+% value for each pixel position in the image because in a small image
+% set, that position may always be occupied by real staining.
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

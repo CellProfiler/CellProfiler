@@ -6,6 +6,10 @@ function handles = AlgSaveImages(handles)
 % to be saved can be the original images you loaded (in essence making
 % CellProfiler work as a file format converter), or any of the
 % processed images created by CellProfiler during the analysis.
+%
+% SaveImages can also be used as a file format converter by loading
+% files in their original format and then saving them in an alternate
+% format. 
 % 
 % NEED TO INCLUDE DESCRIPTION OF HOW TO SAVE NON-OBVIOUS IMAGES.
 

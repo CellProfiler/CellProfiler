@@ -1,26 +1,26 @@
 function handles = AlgAlign(handles)
 
-%%%%% Help for the Align module: 
-%%%%% .
-%%%%% The optimal alignment between 2 or 3 incoming images is determined.
-%%%%% The images are cropped appropriately according to this alignment, so
-%%%%% the final images will be smaller than the originals by a few pixels
-%%%%% if alignment is necessary.
-%%%%% .
-%%%%% Which image is displayed as which color can be changed by going into
-%%%%% the module's ".m" file and changing the lines after "FOR DISPLAY
-%%%%% PURPOSES ONLY".  The first line in each set is red, then green, then
-%%%%% blue.
+% Help for the Align module: 
 % 
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
+% The optimal alignment between 2 or 3 incoming images is determined.
+% The images are cropped appropriately according to this alignment, so
+% the final images will be smaller than the originals by a few pixels
+% if alignment is necessary.
+% 
+% Which image is displayed as which color can be changed by going into
+% the module's ".m" file and changing the lines after "FOR DISPLAY
+% PURPOSES ONLY".  The first line in each set is red, then green, then
+% blue.
+ 
+% The contents of this file are subject to the Mozilla Public License
+% Version 1.1 (the "License"); you may not use this file except in
+% compliance with the License. You may obtain a copy of the License at 
 % http://www.mozilla.org/MPL/
 % 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
+% Software distributed under the License is distributed on an "AS IS"
+% basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+% License for the specific language governing rights and limitations under
+% the License.
 % 
 % 
 % The Original Code is the Align module.

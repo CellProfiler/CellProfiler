@@ -7,10 +7,10 @@ end
 
 ignore = fread(fid, 52, 'uchar');
 
-im = zeros(height,width,channels);
+im = zeros(height,width,channels, 'uint16');
 
 for c=1:channels,
-  [data, count] = fread(fid, width * height, 'uint16', 0, 'l');
+  [data, count] = fread(fid, width * height, 'uint16=>uint16', 0, 'l');
   if count < (width * height),
     fclose(fid);
     error(['end-of-file encountered in DIBREAD while reading ' filename]);

@@ -270,6 +270,7 @@ else
     set(handles.PathToLoadEditBox,'String',pathname);
 end
 cd(CurrentDirectory)
+
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.

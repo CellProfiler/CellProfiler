@@ -36,7 +36,7 @@ drawnow
 %%% Reads the current algorithm number, since this is needed to find the
 %%% variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = Enter the names of each image type to be compared. If a box is unused, leave "/"
 %defaultVAR01 = OrigBlue

@@ -56,7 +56,7 @@ drawnow
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = The images to be loaded are located in what position in each set? (1,2,3,...)
 %defaultVAR01 = 1

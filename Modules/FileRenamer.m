@@ -36,7 +36,7 @@ drawnow
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = How many characters at the beginning of the file name do you want to retain?
 %defaultVAR01 = 6

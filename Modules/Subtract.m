@@ -41,7 +41,7 @@ drawnow
 %%% Reads the current algorithm number, since this is needed to find
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = Subtract this image (enter the name here)
 %defaultVAR01 = tubulinw3

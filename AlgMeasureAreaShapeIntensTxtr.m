@@ -43,7 +43,7 @@ drawnow
 %%% Reads the current algorithm number, since this is needed to find
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei

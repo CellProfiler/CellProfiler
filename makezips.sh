@@ -1,6 +1,6 @@
 cd ..
 rm CellProfiler.zip
-rm CellProfilerExample.zip
+rm ExampleFlyImages.zip
 
 zip CellProfiler.zip CellProfiler/CellProfiler.m
 zip CellProfiler.zip CellProfiler/CellProfiler.fig
@@ -17,6 +17,6 @@ zip CellProfiler.zip CellProfiler/AlgIdentifySecPropagateSubfunction.mexglx
 zip CellProfiler.zip CellProfiler/AlgIdentifySecPropagateSubfunction.mexmac
 
 cd CellProfiler
-zip ../CellProfilerExample.zip ExampleFlyImages/*.TIF
-zip ../CellProfilerExample.zip ExampleFlyImages/ExampleFlyOUT.mat
-zip ../CellProfilerExample.zip ExampleFlyImages/ExampleFlySettings.mat
+zip ../ExampleFlyImages.zip ExampleFlyImages/*.TIF
+zip ../ExampleFlyImages.zip ExampleFlyImages/ExampleFlyOUT.mat
+zip ../ExampleFlyImages.zip ExampleFlyImages/ExampleFlySettings.mat

@@ -191,8 +191,11 @@ if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')
             fieldname = ['FileList', ImageName];
             FileList = handles.Pipeline.(fieldname);
             %%% Calculates the maximum and minimum pixel values based on all of the images.
-            maxPixelValue = 0;
-            minPixelValue = 255;
+            if (length(FileList) <= 0)
+                error('Image processing was canceled because the Rescale Intensity module found no images to process.');
+            end
+            maxPixelValue = -inf;
+            minPixelValue = inf;
             for i=1:length(FileList)
                 Image = CPimread(fullfile(Pathname,char(FileList(i))), handles);
                 if(max(max(Image)) > maxPixelValue)
@@ -206,8 +209,8 @@ if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')
         catch [ErrorMessage, ErrorMessage2] = lasterr;
             error(['An error occurred in the Rescale Intensity module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
         end
-        HighestPixelOrig = double(maxPixelValue)/255;
-        LowestPixelOrig = double(minPixelValue)/255;
+        HighestPixelOrig = double(maxPixelValue);
+        LowestPixelOrig = double(minPixelValue);
         fieldname = ['MaxPixelValue', ImageName];
         handles.Pipeline.(fieldname) = HighestPixelOrig;
         fieldname = ['MinPixelValue', ImageName];
@@ -239,7 +242,7 @@ OrigImageMod(OrigImageMod > HighestPixelOrig) = HighestPixelOrig;
 %Scales and shifts the original image to produce the rescaled image
 scaleFactor = (HighestPixelRescale - LowestPixelRescale)  / (HighestPixelOrig - LowestPixelOrig);
 shiftFactor = LowestPixelRescale - LowestPixelOrig;
-RescaledImage = OrigImageMod - shiftFactor;
+RescaledImage = OrigImageMod + shiftFactor;
 RescaledImage = RescaledImage * scaleFactor;
 
 

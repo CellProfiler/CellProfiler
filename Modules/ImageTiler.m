@@ -31,7 +31,7 @@ function handles = AlgImageTiler(handles)
 %
 % See also ALGSPOTIDENTIFIER.
 
-% CellProfiler is distributed under the GNU General Public License.
+% CellProfiler is distributed under the GNU contGeneral Public License.
 % See the accompanying file LICENSE for details.
 % 
 % Developed by the Whitehead Institute for Biomedical Research.
@@ -234,7 +234,9 @@ if handles.setbeinganalyzed == 1
             return
         end
         FileList(length(FileList)+1:NumberRows*NumberColumns) = {'none'};
+        if isempty(SampleInfo) ~= 1
         SampleInfo(length(FileList)+1:NumberRows*NumberColumns) = {'none'};
+        end
     elseif NumberRows*NumberColumns < NumberOfImages;
         Answer = questdlg(['You have specified ', num2str(NumberRows), ' rows and ', num2str(NumberColumns), ' columns (=',num2str(NumberRows*NumberColumns),' images), but there are ', num2str(length(FileList)), ' images loaded. Images at the end of the list will not be displayed. Do you want to continue?'],'Continue?','Yes','No','Yes');
         if strcmp(Answer,'No') == 1

@@ -1,4 +1,4 @@
-function handles = AlgIdentifyPrimAdaptiveThresholdA(handles)
+function handles = AlgIdentifyPrimAdaptThresholdA(handles)
 
 % Help for Identify Primary Adaptive Threshold A module: 
 % This image analysis module identifies objects by applying an adaptive
@@ -230,12 +230,14 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% THE FOLLOWING CALCULATIONS ARE FOR DISPLAY PURPOSES ONLY: The
     %%% resulting images are shown in the figure window (if open), or saved
     %%% to the hard drive (if desired).  To speed execution, all of this
-    %%% code has been moved to within the if loop in the figure window
+    %%% code has been moved to within the if statement in the figure window
     %%% display section and then after starting image analysis, the figure
     %%% window can be closed.  Just remember that when the figure window is
     %%% closed, nothing within the if loop is carried out, so you would not
     %%% be able to save images depending on these lines to the hard drive,
-    %%% for example.
+    %%% for example.  If you plan to save images, these lines should be
+    %%% moved outside this if statement.
+
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,2,2).
     %%% Note that the label2rgb function doesn't work when there are no objects

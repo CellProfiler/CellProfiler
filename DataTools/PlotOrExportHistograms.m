@@ -1,4 +1,4 @@
-function handles = PlotOrExportHistogrs(handles)
+function handles = PlotOrExportHistograms(handles)
 
 % Help for the Plot Or Export Histograms tool:
 % Category: Data Tools
@@ -401,11 +401,12 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     LastImage = 1;
     NumberOfImages = 1;
 
-        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
-        try
-            save(AnswerFileName{1},'OutputMeasurements')
-        catch errordlg('oops')
+    if strcmpi(GreaterOrLessThan,'A') ~= 1
+        AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements (must be .mat format), or press cancel to continue.',1,{'temp.mat'},'on');
+        try save(AnswerFileName{1},'OutputMeasurements')
+        catch errordlg('Saving did not work, or else you canceled it.')
         end
+    end
 
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1
@@ -520,12 +521,12 @@ else
     %%% Saves this info in a variable, FigureSettings, which
     %%% will be stored later with the figure.
     FigureSettings{3} = FinalHistogramData;
-        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
-        try
-            save(AnswerFileName{1},'OutputMeasurements')
-        catch errordlg('oops')
+    if strcmpi(GreaterOrLessThan,'A') ~= 1
+        AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements (must be .mat format), or press cancel to continue.',1,{'temp.mat'},'on');
+        try save(AnswerFileName{1},'OutputMeasurements')
+        catch errordlg('Saving did not work, or else you canceled it.')
         end
-
+    end
 
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1

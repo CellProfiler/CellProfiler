@@ -74,6 +74,11 @@ global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
 
+handles.Pipeline = struct;
+handles.Measurements = struct;
+handles.Settings = struct;
+
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -3349,35 +3354,6 @@ else
                         break;  %%% this break is out of the outer loop of image analysis
                     end
 
-
-% PARALLEL DEAD CODE
-%                     %%% Get a list of the measurement fields (after the first pass has run through
-%                     %%% all the modules)
-%                     Fields = fieldnames(handles);
-%                     mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
-%                     MeasurementFields = Fields(mFields);
-%                     
-%                    % If we are using parallel machines, copy the handles structure to them.
-%                    if (isfield(handles, 'parallel_machines')),
-%                        handles_culled = handles;
-%                        deleteFields = strncmp(Fields,'dOT',2);
-%                        keepFields = strncmp(Fields,'dOTFileList',11) | ...
-%                            strncmp(Fields,'dOTPathname',11) | strncmp(Fields,'dOTFilename',11) | ...
-%                            strncmp(Fields,'dOTIllumImage',13) | strncmp(Fields,'dOTIntensityToShift',19) | ...
-%                            strncmp(Fields,'dOTTimeElapsed',14);
-%                        handles_culled = rmfield(handles_culled, Fields(deleteFields & (~keepFields)));
-%                        % Make sure all the functions are cleared, so
-%                        % that any changes to the modules are noticed.
-%                        pnet_remote(handles.parallel_machines, 'EVAL', 'clear functions')
-%                        pnet_remote(handles.parallel_machines, 'PUT', 'handles', handles_culled);
-%                    end
-                    
-
-                    %%% Reads the text in the timer window to check whether it is a cancel
-                    %%% signal, since the text will be overwritten in the calculations for the
-                    %%% timer.  The timer calculations have to be done before canceling because
-                    %%% the time elapsed must be stored in the handles structure and therefore
-                    %%% in the output file.
                     CancelWaiting = get(handles.timertexthandle,'string');
 
                     %%% Make calculations for the Timer window.
@@ -3615,75 +3591,6 @@ end
 errordlg(ErrorExplanation)
 
 %%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in AnalyzeAllImagesClusterButton.
-function AnalyzeAllImagesClusterButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-Prompts = {'Path to CellProfiler on the remote machine(s)','Path to the images on the remote machine(s)','File containing the list of remote machine(s)'};
-
-% set up default values for the answers
-if (~ isfield(handles, 'RemoteCellProfilerPathname'))
-  LocationOfGUI = which('CellProfiler');
-  Slashes = findstr(LocationOfGUI, '/');
-  handles.RemoteCellProfilerPathname = LocationOfGUI(1:Slashes(end));
-  handles.RemoteImagePathname = handles.Vpathname;
-  handles.RemoteMachineListFile = LocationOfGUI(1:Slashes(end));
-end
-
-% pop up the dialog
-Defaults = {handles.RemoteCellProfilerPathname,handles.RemoteImagePathname,handles.RemoteMachineListFile};
-Answers = inputdlg(Prompts,'Provide cluster information',1,Defaults,'on');
-
-if isempty(Answers)
-    return
-end
-
-% Store the answers as new defaults
-handles.RemoteCellProfilerPathname = Answers{1};
-handles.RemoteImagePathname = Answers{2};
-handles.RemoteMachineListFile = Answers{3};
-guidata(hObject, handles);
-
-% Load the list of machines, and connect to each one
-[fid, reason] = fopen(handles.RemoteMachineListFile, 'rt');
-if fid == -1,
-  errordlg(['CellProfiler could not open the list of remote machines (' handles.RemoteMachineListFile ').  The error message was "' reason '"']);
-  return;
-end
-
-pnet_remote('closeall');
-handles.parallel_machines = [];
-
-while 1,
-  RemoteMachine = fgetl(fid) %#ok We want to ignore MLint error checking for this line.
-  % We should put up a dialog here with a CANCEL button.  Also need to
-  % modify pnet_remote to return after a few retries, rather than just
-  % giving up.
-  if (~ ischar(RemoteMachine)),
-    break
-  end
-  if (~ isempty(RemoteMachine)),
-    handles.parallel_machines(length(handles.parallel_machines)+1) = pnet_remote('connect', RemoteMachine);
-  end
-end
-
-if isempty(handles.parallel_machines)
-  errordlg(['CellProfiler could not connetct to any remote machines.  Is the list of machines an empty file (' handles.RemoteMachineListFile ')?']);
-  handles = rmfield(handles, 'parallel_machines');
-  guidata(hObject, handles);
-  return;
-end
-
-% set up the path on the remote machines
-pnet_remote(handles.parallel_machines, 'eval', ['addpath ' handles.RemoteCellProfilerPathname]);
-
-% fake a click on the analyze images button
-AnalyzeImagesButton_Callback(hObject, eventdata, handles);
-
-% clear the list of parallel machines
-handles = rmfield(handles, 'parallel_machines');
-guidata(hObject, handles);
-
-
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% Aux Functions %%%

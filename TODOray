@@ -1,35 +1,45 @@
 Near-term:
-   Incorporate feature measurements from Bob Murphy's lab into our Measure modules (Murphy, Velliste, Porreca 2003 etc).
 
    Verify that illumination correction keeps values in 0-1.
 
-   Test "clear functions" in parallel code. [BETA]
-
-   * Make saving go faster for cluster jobs 
-   
    * Describe how to set up cluster jobs in the manual [BETA]
   
    * Write propagate paper :)
 
-   * Have local CP code copied to the cluster ??
+   * Have local CP code copied to the cluster ??  Or should batch
+     files check versions when they run?
 
-   * Rewrite cluster code to use batch mode, modules for parallel work.
+   Batch merging should produce partial results
 
-   * Have lasterr tell us which line number is involved
+   Batch merge help file
 
 Long-term:
-Chat with John Fisher about finding subpopulations using lower dimensional space.
-Think about statistical analysis/normalization
-Implement elliptical distance transform for HeLa cells
-Figure out how to run a lot of module combinations/settings in one batch so that the best one can be chosen (by eye or automatically).
-Allow figures to be viewed during analysis when running on cluster (optional, but nice)
-Improving/understanding illumination correction and adaptive thresholding (division/rescaling). (For now, use DivideAll Mean.) Especially, fix Adaptive thresholding D5 (wasn't sure what kind of thresholding to allow). Can we make the nuc. Distance module use adaptive thresholding, or is it equivalent to using an "each" corr. Illum or adapthisteq? Improve segmentation between background and cell edges: propagate uses a simple threshold, and watershed uses watershed.  Could maybe use adaptive threshold. Which is better?
-Improve cell segmentation. Can we/do we want to  make the propagate function have a user-specified neighborhood size?
-All modules: look for speed improvements (esp. imresize?)
-Describe all variables and give ranges
+
+Chat with John Fisher about finding subpopulations using lower
+dimensional space.
+
+Improving/understanding illumination correction and adaptive
+thresholding (division/rescaling). (For now, use DivideAll Mean.)
+Especially, fix Adaptive thresholding D5 (wasn't sure what kind of
+thresholding to allow). Can we make the nuc. Distance module use
+adaptive thresholding, or is it equivalent to using an "each"
+corr. Illum or adapthisteq? Improve segmentation between background
+and cell edges: propagate uses a simple threshold, and watershed uses
+watershed.  Could maybe use adaptive threshold. Which is better? 
+
+Improve cell segmentation. Can we/do we want to  make the propagate
+function have a user-specified neighborhood size?
+
 Make all modules parameter-free :)
-Adapt our output to feed into Whitehead's WADE genome-wide database (maybe not?)
+
 Texture measurement
+
 Implement a trous wavelet segmentation algorithm from a paper Anne found (?)
-Compile CellProfiler into Matlab-free version, using Release 14 - check compiler instructions, because some functions are guaranteed not to work, like uisave.
-Look at Matlab central to see if any of these are useful/faster than what we have: auto image registration using mutual information (x2), Graph analysis toolbox, multivariate analysis multispectral
+
+Think about porting to python
+
+Look at Matlab central to see if any of these are useful/faster than
+what we have: auto image registration using mutual information (x2),
+Graph analysis toolbox, multivariate analysis multispectral 
+
+LoG segmentation?

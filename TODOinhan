@@ -12,7 +12,6 @@ L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider pr
 
    Fix the "FIXME" sections in CellProfiler, unless Ray wanted to do it himself
    
-   "Make projection" module (= average, get code from DivideAllMean). Did In Han finish this already?  If so, make a manual page.
 
    Make closefigures and openfigures not global if possible.
 
@@ -21,3 +20,54 @@ Look into font sizes.
 Analyze subdirectories module.
 
 Check version numbers.
+
+
+Look into these two bugs reported:
+     - The Set Preferences Tab only shows "Set default pixel
+       size", and not the other options on page 8 of the manual. So
+       the user can not make a CellProfilerPreferences file.  (This is
+       probably a platform-specific issue,  reported by Arne
+       Heydorn). 
+
+     - Allow the font sizes of GUI elements to be changed for various
+            screen resolutions/platforms.  Make this part of
+            "SetPreferences"?  Here is the quick fix which may help in
+            determining a long term solution: Indeed, the font size is
+            a platform/screen resolution issue.  We are working on
+            addressing this but it is not straightforward. A quick
+            fix, as you mention, is to type 'guide CellProfiler' at
+            the command line of Matlab and adjust the font sizes so
+            that they look good on your screen.  This involves somehow
+            selecting each button/text object (using Select All or by
+            clicking on each element) and adjusting the font size in
+            View > Property Inspector. Some elements (like the
+            module-specific information) must be changed within
+            CellProfiler.m. Find the line: 
+              set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+            and add this line (replacing the number 8 with whatever
+            size is appropriate for your screen): 
+              set(handles.(['VariableDescription' TwoDigitString(i)]),'fontsize',8)
+
+
+
+
+As part of the validation work, you might look at:
+
+     - Allow batches of different settings to be run and their results
+       compared 
+
+     - Allow automatic selection of settings based on hand-traced images
+
+     - Make separate Identify Secondary modules: one for bright lines
+       and one for dark lines between objects.  Also try watershedding
+       the gradient image rather than the original. 
+
+     - Improve background/cell edge finding - threshold vs. adaptive
+       threshold vs. watershed 
+
+     - Write algorithms to compare hand-traced results to CellProfiler
+       results quantitatively, then apply them to our hand-traced data
+       sets. 
+
+     - Get someone to Hand-outline a second set of images to compare
+       to Chris' set. 

@@ -1,0 +1,35 @@
+   Evaluate and possible incorporate feature measurements from Bob
+   Murphy's lab into our Measure modules (Murphy, Velliste, Porreca
+   2003 etc).
+
+    Make a shape-based IdentifyPrim module which recognizes
+    oblong/elliptical objects rather than perfectly round
+    objects. Actually, adopt the current IdentifyPrimShapeIntens to
+    take in an ellipticity factor which can be set to 1 for perfect
+    circles or some other number for oblong objects.  There is a paper
+    somewhere detailing an ellipse-based shape transform (maybe Ray
+    has it?).
+
+
+    Make a module to identify and count and measure objects within
+    previously identified objects (e.g. nucleoli or organelles or
+    speckles within nuclei or cells).  Not sure how to save the
+    individual measurements for each sub-object.
+
+    Add more texture measurements to the MeasureIntensityTexture
+    module. Perhaps use texture measurements from Murphy, Velliste,
+    and Porreca 2003.  The image processing toolbox 5.0.1 has new
+    texture analysis tools, though they would need to be adapted to
+    deal with individual objects rather than entire images:
+       entropy -- Calculates the entropy of an intensity image
+       entropyfilt -- Calculates the local entropy of an intensity image
+       graycomatrix -- Computes the gray-level co-occurrence matrix from an image
+       graycoprops -- Extracts properties from a gray-level co-occurrence matrix
+       rangefilt -- Calculates the local range of an image
+       stdfilt -- Calculates the standard deviation of an image
+
+
+     - Decide whether to incorporate bug fixes from Matt Tudor into
+       AlgIdentifyPrimAdaptThresholdC (see %MT lines in
+       AlgTempMattTudor.m) 
+

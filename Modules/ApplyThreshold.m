@@ -121,7 +121,11 @@ HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum
 %defaultVAR05 = 0
 DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%%%VariableRevisionNumber = 01
+%textVAR06 = Binary option: Enter the threshold to use to make the incoming image binary (black and white) where pixels below this value will be zero and above this value will be 1. If instead you want to use the settings above to preserve grayscale information, enter 0 here.
+%defaultVAR06 = 0
+BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -168,18 +172,22 @@ if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Apply Threshold module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
-%%% Identifies bright object pixels.
-BinaryBrightObjectsImage = zeros(size(OrigImage));
-BinaryBrightObjectsImage(OrigImage >= HighThreshold) = 1;
+if BinaryChoice == 0
+    %%% Identifies bright object pixels.
+    BinaryBrightObjectsImage = zeros(size(OrigImage));
+    BinaryBrightObjectsImage(OrigImage >= HighThreshold) = 1;
     % figure, imagesc(BinaryBrightObjectsImage), title('BinaryBrightObjectsImage'), colormap(gray)
-StructuringElement = strel('disk',DilationValue,8);
-DilatedBinaryBrightObjectsImage = imdilate(BinaryBrightObjectsImage,StructuringElement);
+    StructuringElement = strel('disk',DilationValue,8);
+    DilatedBinaryBrightObjectsImage = imdilate(BinaryBrightObjectsImage,StructuringElement);
     % figure, imagesc(DilatedBinaryBrightObjectsImage), title('DilatedBinaryBrightObjectsImage'), colormap(gray)
-ThresholdedImage = OrigImage;
-ThresholdedImage(DilatedBinaryBrightObjectsImage == 1) = 0;
+    ThresholdedImage = OrigImage;
+    ThresholdedImage(DilatedBinaryBrightObjectsImage == 1) = 0;
     % figure, imagesc(ThresholdedImage), title('ThresholdedImage1'), colormap(gray)
-ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
+    ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
     % figure, imagesc(ThresholdedImage), title('ThresholdedImage2'), colormap(gray)
+else
+    ThresholdedImage = im2bw(OrigImage,BinaryChoice);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

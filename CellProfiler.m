@@ -772,58 +772,64 @@ end
 
 if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
-    handles.Settings.Valgorithmname = Settings.Valgorithmname;
-    AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
-    %% Check to make sure that the modules have not changed    
-    if exist(AlgorithmNamedotm,'file')
-        FullPathname = which(AlgorithmNamedotm);
-        [Pathname, filename, ext, versn] = fileparts(FullPathname);
-    else
-        Pathname = uigetdir('','Please select directory where modules are located');
-    end
-    for i=1:length(handles.Settings.Valgorithmname),
-        [defVvariable handles.numVariables(i) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
-        if (isfield(Settings,'VariableRevisionNumber')),
-            SavedVarRevNum = Settings.VariableRevisionNumber;
-        else
-            SavedVarRevNum = 0;
-        end
-        if( (SavedVarRevNum ~= 0) & (SavedVarRevNum == CurrentVarRevNum))
-            if(handles.numVariables(i) == Setting.numVariables(i))
-                handles.Settings.Vvariable = Settings.Vvariable;
-            else
-                errordlg('Variable Revision Number same, but number of variables different for some reason');
-                
-            end
-        else
-            errordlg('Variable Revision Numbers are not the same')
-        end
-        handles.Settings.Vvariable(i,1:handles.numVariables(i)) = defVvariable(1:handles.numVariables(i));
-        handles.Settings.Vvariable(i,1:Settings.numVariables(i)) = Settings.Vvariable(i,1:Settings.numVariables(i));
-    end
-    handles.Settings.Vpixelsize = Settings.Vpixelsize;
 else
-    Settings = LoadedSettings.handles;
-    if isfield(Settings,'Settings'),
-        handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
-        AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
-        if exist(AlgorithmNamedotm,'file')
-            FullPathname = which(AlgorithmNamedotm)
-            [Pathname, filename, ext, versn] = fileparts(FullPathname);
+    Settings = LoadedSettings.handles.Settings;
+    Settings.numVariables = LoadedSettings.handles.numVariables;
+end
+
+handles.Settings.Valgorithmname = Settings.Valgorithmname;
+AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
+%% Check to make sure that the modules have not changed
+if exist(AlgorithmNamedotm,'file')
+    FullPathname = which(AlgorithmNamedotm);
+    [Pathname, filename, ext, versn] = fileparts(FullPathname);
+else
+    Pathname = uigetdir('','Please select directory where modules are located');
+end
+for algNum=1:length(handles.Settings.Valgorithmname),
+    [defVvariable handles.numVariables(algNum) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(algNum)));
+    if (isfield(Settings,'VariableRevisionNumber')),
+        SavedVarRevNum = Settings.VariableRevisionNumber;
+    else
+        SavedVarRevNum = 0;
+    end
+    if( (SavedVarRevNum ~= 0) & (SavedVarRevNum == CurrentVarRevNum))
+        if(handles.numVariables(algNum) == Setting.numVariables(algNum))
+            handles.Settings.Vvariable = Settings.Vvariable;
+            varChoice = 0;
         else
-            Pathname = uigetdir('','Please select directory where modules are located');
+            errorString = 'Variable Revision Number same, but number of variables different for some reason';
+            cd(Pathname);
+            savedVvariable = Settings.Vvariable(algNum,1:Settings.numVariables(algNum));
+            for i=1:(length(savedVvariable)),
+                if (iscellstr(savedVvariable(i)) == 0)
+                    savedVvariable(i) = {''};
+                end
+            end
+            varChoice = HelpLoadSavedVariables(savedVvariable,defVvariable, errorString, char(handles.Settings.Valgorithmname(algNum)));
+            cd(CurrentDirectory);
         end
-    %% Check to make sure that the modules have not changed    
-        for i=1:length(handles.Settings.Valgorithmname),
-            [defVvariable handles.numVariables(i) VarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
-            
-            handles.Settings.Vvariable(i,1:handles.numVariables(i)) = defVvariable(1:handles.numVariables(i));
-            handles.Settings.Vvariable(i,1:Settings.numVariables(i)) = Settings.Settings.Vvariable(i,1:Settings.numVariables(i));
-        end  
-        handles.Settings.Vpixelsize = Settings.Settings.Vpixelsize;
+    else
+        errorString = 'Variable Revision Numbers are not the same';
+        cd(Pathname);
+        savedVvariable = Settings.Vvariable(algNum,1:Settings.numVariables(algNum));
+        for i=1:(length(savedVvariable)),
+            if (iscellstr(savedVvariable(i)) == 0)
+                savedVvariable(i) = {''};
+            end
+        end
+        varChoice = HelpLoadSavedVariables(savedVvariable,defVvariable, errorString, char(handles.Settings.Valgorithmname(algNum)));
+        cd(CurrentDirectory);
+    end
+    if (varChoice == 1),
+        handles.Settings.Vvariable(algNum,1:handles.numVariables(algNum)) = defVvariable(1:handles.numVariables(algNum));
+        handles.Settings.Vvariable(algNum,1:Settings.numVariables(algNum)) = Settings.Vvariable(algNum,1:Settings.numVariables(algNum));
+    elseif (varChoice == 2),
+        handles.Settings.Vvariable(algNum,1:handles.numVariables(algNum)) = defVvariable(1:handles.numVariables(algNum));
     end
 end
 
+handles.Settings.Vpixelsize = Settings.Vpixelsize;
 
 handles.numAlgorithms = 0;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);

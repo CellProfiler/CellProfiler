@@ -389,3 +389,8 @@ drawnow
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent modules.
 handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+
+%%% Saves the illumination correction image to the handles structure so it can be used by
+%%% subsequent modules.
+handles.Pipeline.(['Illum',CorrectedImageName]) = IlluminationImage;
+

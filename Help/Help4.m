@@ -1,5 +1,6 @@
 function Help4
 
+% Help for Image buttons:
 % SAVE IMAGE AS: 
 % Any image that is displayed can be saved to the hard drive in any
 % standard image file format by clicking this button and following the

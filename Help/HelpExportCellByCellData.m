@@ -1,6 +1,6 @@
 function HelpExportCellByCellData
 
-% EXPORT CELL BY CELL DATA: 
+% Help for EXPORT CELL BY CELL DATA: 
 % This button allows individual cell measurements to be extracted for
 % a particular image and for a particular measurement parameter. The
 % data will be converted to a delimited text file which can be read by

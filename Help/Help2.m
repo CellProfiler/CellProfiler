@@ -1,6 +1,6 @@
 function Help2
 
-% NAME THE OUTPUT FILE: 
+% Help for NAME THE OUTPUT FILE: 
 % Type in the text you want to use to name the output file, which is
 % where all of the information about the analysis as well as any
 % measurements are stored. 'OUT.mat' will be added automatically at

@@ -1,6 +1,6 @@
 function CPInstallGuide
 
-% Installing CellProfilerTM is easy:
+% CellProfiler Installation Guide
 % 
 % 1. Be sure that Matlab and the Image Processing toolbox is installed on
 % your computer and has a valid license. To check for the Image Processing

@@ -1,6 +1,6 @@
 function HelpHistograms
 
-% HISTOGRAMS: 
+% Help for HISTOGRAMS: 
 % The individual cell measurements can be displayed in histogram
 % format using this button.  As prompted, select the output file
 % containing the measurements, then choose the measurement parameter

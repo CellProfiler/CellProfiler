@@ -1,6 +1,6 @@
 function HelpShowDataOnImage
 
-% DISPLAY DATA ON IMAGE: 
+% Help for DISPLAY DATA ON IMAGE: 
 % This allows you to extract measurements from an output file and
 % overlay any measurements that you have made on any image. For
 % example, you could look at the DNA content (e.g.

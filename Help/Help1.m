@@ -1,6 +1,6 @@
 function Help1
 
-% FOLDER OF IMAGES TO BE ANALYZED:
+% Help for FOLDER OF IMAGES TO BE ANALYZED:
 % Select the main folder containing the images you want to analyze.
 % You will have the option within load images modules to retrieve
 % images from more than one folder, but the folder selected here will

@@ -1,6 +1,6 @@
 function HelpAnalyzeImages
 
-% ANALYZE IMAGES:
+% Help for ANALYZE IMAGES:
 % All of the images in the selected directory/directories will be
 % analyzed using the modules and settings you have specified.  You
 % will have the option to cancel at any time.  At the end of each data

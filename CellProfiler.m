@@ -1,16 +1,20 @@
 function varargout = CellProfiler(varargin)
 
-% CellProfiler cell image analysis software
+% CellProfilerTM cell image analysis software
 %
-% CellProfiler.m and CellProfiler.fig work together to create a user
-% interface which allows the analysis of large numbers of images.  New
-% modules can be written for the software using Matlab.
+% CellProfiler cell image analysis software is designed for
+% biologists without training in computer vision or programming to
+% quantitatively measure phenotypes from thousands of images
+% automatically. CellProfiler.m and CellProfiler.fig work together to
+% create a user interface which allows the analysis of large numbers
+% of images.  New modules can be written for the software using
+% Matlab.
 %
-%      CellProfiler, by itself, creates a new CellProfiler or raises the existing
-%      singleton*.
+%      Typing CellProfiler at the command line creates a new
+%      CellProfiler or raises the existing singleton*.
 %
-%      H = CellProfiler returns the handle to a new CellProfiler or the handle to
-%      the existing singleton*.
+%      H = CellProfiler returns the handle to a new CellProfiler or
+%      the handle to the existing singleton*.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -1,6 +1,6 @@
 function handles = AlgIdentifyPrimAdaptThresholdA(handles)
 
-% Help for Identify Primary Adaptive Threshold A module: 
+% Help for the Identify Primary Adaptive Threshold A module: 
 % Category: Object Identification
 %
 % This image analysis module identifies objects by applying an

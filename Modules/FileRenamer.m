@@ -1,6 +1,6 @@
 function handles = AlgFileRenamer(handles)
 
-% Help for File Renamer module:
+% Help for the File Renamer module:
 % Category: File Handling
 %
 % File renaming utility that deletes or adds text anywhere within

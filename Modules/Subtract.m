@@ -1,6 +1,6 @@
 function handles = AlgSubtractImages(handles)
 
-% Help for Subtract Images module:
+% Help for the Subtract Images module:
 % Category: Pre-processing
 %
 % Sorry, this module has not yet been documented. It was written for a

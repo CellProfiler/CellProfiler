@@ -1,6 +1,6 @@
 function HelpExportMeanData
 
-% EXPORT MEAN DATA: 
+% Help for EXPORT MEAN DATA: 
 % Once image analysis is complete, click this button and select the
 % output file to extract the measurements and other information about
 % the analysis.  The data will be converted to a delimited text file

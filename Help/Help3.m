@@ -1,5 +1,6 @@
 function Help3
 
+% Help for Image modules
 % FOR HELP ON INDIVIDUAL MODULES: Click the 'Help for this analysis
 % module' button towards the right of the CellProfiler window.
 %

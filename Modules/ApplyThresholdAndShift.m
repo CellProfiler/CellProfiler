@@ -1,6 +1,6 @@
 function handles = AlgApplyThresholdAndShift(handles)
 
-% Help for the Apply Threshold and Shift module: (Pre-processing)
+% Help for the Apply Threshold and Shift module:
 % Category: Pre-processing
 %
 % First, pixels above a certain threshold are set to zero (in case

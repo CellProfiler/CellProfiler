@@ -1,6 +1,6 @@
 function HelpNormalization
 
-% NORMALIZATION:
+% Help for NORMALIZATION:
 % If there is some sort of artifact that causes a systematic shift in
 % your measurements depending on where the sample was physically
 % located in the layout (e.g. certain parts of the slide were more

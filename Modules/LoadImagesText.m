@@ -1,6 +1,6 @@
 function handles = AlgLoadImagesText(handles)
 
-% Help for Load Images Text module:
+% Help for the Load Images Text module:
 % Category: File Handling
 % 
 % Tells CellProfiler where to retrieve images and gives each image a

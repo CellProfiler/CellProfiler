@@ -222,6 +222,11 @@ Data exporting
        that image had no objects.  If there are no objects, the export
        should be canceled.
 
+     - For LoadImagesText module, make the error catching more descriptive.
+       If there are no image files matching the specified text, right
+       now it just says "there are no image files in the directory." when
+       it ought to say "there are no image files in the directory that
+       contain the text XXX."
 
 Increasing platform usability:
 
@@ -236,7 +241,12 @@ Debugging:
      - We adapted the LoadImagesOrder and LoadImagesText modules to
        allow loading of DIB format images, but we have so far not
        adjusted the Show data on image button or the Show image button
-       to load this type of image. 
+       to load this type of image. Also need to adjust any other modules
+       that use imread, including those which open all the images to
+       calculate something, like CorrectIllum All modules and probably
+       IdentifyPrimThreshold and ApplyThreshold (when the threshold is 
+       automatically calculated).  Also, DIB's are currently being read
+       upside down - need to flip them (flipud).
 
 
 User-friendliness/interface/help:

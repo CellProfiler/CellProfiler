@@ -1,6 +1,6 @@
-function Help1
+function DefaultImageDirectory
 
-% Help for FOLDER OF IMAGES TO BE ANALYZED:
+% Help for the default image directory:
 % Select the main folder containing the images you want to analyze.
 % You will have the option within load images modules to retrieve
 % images from more than one folder, but the folder selected here will
@@ -40,3 +40,9 @@ function Help1
 % * Note that CellProfiler will not run properly if you save
 % CellProfiler.m under a different name, due to the interaction
 % between the CellProfiler.m and CellProfiler.fig files.
+%
+% FILE LIST WINDOW:
+% There is a window which displays the files in the folder of images
+% to be analyzed.  This allows you to check file names or look at the
+% order of images from within CellProfiler.  Selecting file names in
+% this list does not actually do anything.

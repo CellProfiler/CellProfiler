@@ -1,5 +1,25 @@
 function HelpAnalyzeImages
 
+% Help for NAME THE OUTPUT FILE: 
+% Type in the text you want to use to name the output file, which is
+% where all of the information about the analysis as well as any
+% measurements are stored. 'OUT.mat' will be added automatically at
+% the end of whatever you type in the box. The file will be saved in
+% the folder of images to be analyzed that you selected in Step 1,
+% unless you type a full path and file name into the output file name
+% box. The path must not have spaces or weird characters.
+%
+% The program prevents you from entering a name which, when 'OUT.mat'
+% is appended, exists already. This prevents overwriting an output
+% data file by accident.  It also prevents intentionally overwriting
+% an output file for the following reason: when a file is
+% ''overwritten'', instead of completely overwriting the output file,
+% Matlab just replaces some of the old data with the new data.  So, if
+% you have an output file with 12 measurements and the new set of data
+% has only 4 measurements, saving the output file to the same name
+% would produce a file with 12 measurements: the new 4 followed by 8
+% old measurements.
+%
 % Help for ANALYZE IMAGES:
 % All of the images in the selected directory/directories will be
 % analyzed using the modules and settings you have specified.  You

@@ -61,11 +61,11 @@ MinimumThreshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
 %textVAR05 = Enter the threshold adjustment factor (>1 = more stringent, <1 = less stringent)
 %defaultVAR05 = 1
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR06 = Block size, in pixels
 %defaultVAR06 = 100
-BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+BlockSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -73,7 +73,7 @@ BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 drawnow
 
 %%% Determines what the user entered for the size range.
-SizeRangeNumerical = str2num(SizeRange);
+SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
@@ -111,7 +111,7 @@ if strncmp(upper(MinimumThreshold),'A',1) == 1
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.7;
 else
-    try MinimumThreshold = str2num(MinimumThreshold);
+    try MinimumThreshold = str2double(MinimumThreshold);
     catch error('The value entered for the minimum threshold in the Identify Primary Adaptive Threshold module was not correct.')
     end
 end
@@ -124,9 +124,9 @@ end
 MM = floor(BlockSize):-1:floor(min(ceil(m/10),ceil(BlockSize*3/4)));
 NN = floor(BlockSize):-1:floor(min(ceil(n/10),ceil(BlockSize*3/4)));
 %%% Chooses the acceptable block that has the minimum padding.
-[dum,ndx] = min(ceil(m./MM).*MM-m);
+[dum,ndx] = min(ceil(m./MM).*MM-m); %#ok We want to ignore MLint error checking for this line.
 BestBlockSize(1) = MM(ndx);
-[dum,ndx] = min(ceil(n./NN).*NN-n);
+[dum,ndx] = min(ceil(n./NN).*NN-n); %#ok We want to ignore MLint error checking for this line.
 drawnow
 BestBlockSize(2) = NN(ndx);
 BestRows = BestBlockSize(1)*ceil(m/BestBlockSize(1));

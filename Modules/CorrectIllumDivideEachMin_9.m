@@ -71,7 +71,7 @@ CorrectedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = Block size. This should be set large enough that every square block 
 %textVAR04 = of pixels is likely to contain some background.
 %defaultVAR04 = 60
-BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+BlockSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

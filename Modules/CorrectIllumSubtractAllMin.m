@@ -70,7 +70,7 @@ CorrectedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = Block size. This should be set large enough that every square block 
 %textVAR04 = of pixels is likely to contain some background.
 %defaultVAR04 = 60
-BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+BlockSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR08 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
 %defaultVAR08 = N
@@ -147,7 +147,7 @@ if handles.setbeinganalyzed == 1
             BottomOfMsgBox = max(PotentialBottom);
             PositionMsgBox = [500 BottomOfMsgBox 350 100];
             h = msgbox('Preliminary calculations are under way for the Correct Illumination All Subtract module.  Subsequent image sets will be processed more quickly than the first image set.');
-            set(h, 'Position', [PositionMsgBox])
+            set(h, 'Position', PositionMsgBox)
             drawnow
             %%% Retrieves the path where the images are stored from the handles
             %%% structure.
@@ -173,9 +173,9 @@ if handles.setbeinganalyzed == 1
             MM = floor(BlockSize):-1:floor(min(ceil(m/10),ceil(BlockSize*3/4)));
             NN = floor(BlockSize):-1:floor(min(ceil(n/10),ceil(BlockSize*3/4)));
             %%% Chooses the acceptable block that has the minimum padding.
-            [dum,ndx] = min(ceil(m./MM).*MM-m); 
+            [dum,ndx] = min(ceil(m./MM).*MM-m); %#ok We want to ignore MLint error checking for this line.
             BestBlockSize(1) = MM(ndx);
-            [dum,ndx] = min(ceil(n./NN).*NN-n); 
+            [dum,ndx] = min(ceil(n./NN).*NN-n); %#ok We want to ignore MLint error checking for this line.
             BestBlockSize(2) = NN(ndx);
             BestRows = BestBlockSize(1)*ceil(m/BestBlockSize(1));
             BestColumns = BestBlockSize(2)*ceil(n/BestBlockSize(2));
@@ -185,7 +185,6 @@ if handles.setbeinganalyzed == 1
             %%% Calculates a coarse estimate of the background illumination by
             %%% determining the minimum of each block in the image.
             MiniIlluminationImage = blkproc(padarray(im2double(imread(char(FileList(1)))),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
-            % figure, imshow(MiniIlluminationImage), title('first image')
             for i=2:length(FileList)
                 MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(im2double(imread(char(FileList(i)))),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             end
@@ -225,7 +224,7 @@ if handles.setbeinganalyzed == 1
     end    
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
-    if exist('MeanIlluminationImage') == 1
+    if exist('MeanIlluminationImage','var') == 1
         fieldname = ['dOTMeanIlluminationImageAS', ImageName];
         handles.(fieldname) = MeanIlluminationImage;        
     end
@@ -298,7 +297,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% workspace.
     subplot(2,2,2); imagesc(CorrectedImage); 
     title('Illumination Corrected Image');
-    if exist('MeanIlluminationImage') == 1
+    if exist('MeanIlluminationImage','var') == 1
         subplot(2,2,3); imagesc(MeanIlluminationImage); 
         title(['Mean Illumination in all ', ImageName, ' images']);
     end

@@ -1,4 +1,4 @@
-function handles = AlgIdentifyPrimAdaptiveThresholdD(handles)
+function handles = AlgIdentifyPrimAdaptThresholdD(handles)
 
 % Help for the Identify Primary Adaptive Threshold D module: 
 % 
@@ -83,15 +83,15 @@ SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR05 = Enter the threshold (0 to 1, higher = more stringent)
 %defaultVAR05 = .13
-Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR06 = Neighborhood size, in pixels (odd number, higher = less stringent)
 %defaultVAR06 = 31
-NeighborhoodSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+NeighborhoodSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %textVAR07 = Enter sigma (positive number, higher = less stringent)
 %defaultVAR07 = 20
-Sigma = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
+Sigma = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -99,7 +99,7 @@ Sigma = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
 drawnow
 
 %%% Determines what the user entered for the size range.
-SizeRangeNumerical = str2num(SizeRange);
+SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 

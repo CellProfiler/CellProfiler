@@ -133,24 +133,24 @@ if SetBeingAnalyzed == 1
         %%% Checks if the image is a DIB image file.
         if strcmp(upper(FileFormat),'DIB') == 1
             Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
-            handles.dOTDIBwidth = str2num(Answers{1});
-            handles.dOTDIBheight = str2num(Answers{2});
-            handles.dOTDIBbitdepth = str2num(Answers{3});
-            handles.dOTDIBchannels = str2num(Answers{4});
+            handles.dOTDIBwidth = str2double(Answers{1});
+            handles.dOTDIBheight = str2double(Answers{2});
+            handles.dOTDIBbitdepth = str2double(Answers{3});
+            handles.dOTDIBchannels = str2double(Answers{4});
         else
-            error('The image file type entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+            error('The image file type entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
         end
     end
     %%% If the user did not enter any data in the first slot (they put
     %%% a slash in either box), no images are retrieved.
-    if strcmp(TextToFind{1}, '/') == 1 | strcmp(ImageName{1}, '/') == 1
+    if strcmp(TextToFind{1}, '/') == 1 || strcmp(ImageName{1}, '/') == 1
         error('Image processing was canceled because the first image slot in the Load Images Text module was left blank.')
     end
     %%% For all 4 image slots, extracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
         %%% the user.
-        if strcmp(TextToFind{n}, '/') == 0 & strcmp(ImageName{n}, '/') == 0
+        if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
             if strncmp(TypedPathName, 'Default', 7) == 1
                 FileNames = handles.Vfilenames;
                 PathName = handles.Vpathname;
@@ -159,7 +159,7 @@ if SetBeingAnalyzed == 1
                 %%% of interest.  Creates the array Match which contains the numbers of the
                 %%% file names that match.
                 Count = 1;
-                if exist('Match') ~= 0
+                if exist('Match','var') ~= 0
                     clear('Match')
                 end 
                 for i=1:length(FileNames),
@@ -168,7 +168,7 @@ if SetBeingAnalyzed == 1
                         Count = Count + 1;
                     end
                 end
-                if exist('Match') == 0
+                if exist('Match','var') == 0
                     error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
                 end
                 %%% Creates the File List by extracting the names of files
@@ -177,7 +177,7 @@ if SetBeingAnalyzed == 1
             else
                 %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
-                if exist(TypedPathName) ~= 7
+                if exist(TypedPathName,'var') ~= 7
                     error('Image processing was canceled because the directory typed into the Load Images Text module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
                 else
                     PathName = TypedPathName;
@@ -187,7 +187,7 @@ if SetBeingAnalyzed == 1
                     %%% of interest.  Creates the array Match which contains the numbers of the
                     %%% file names that match.
                     Count = 1;
-                    if exist('Match') ~= 0
+                    if exist('Match','var') ~= 0
                         clear('Match')
                     end 
                     for i=1:length(DirectoryListing),
@@ -239,7 +239,7 @@ if SetBeingAnalyzed == 1
         msgbox(ErrorText)
         error('In the Load Images Text module, the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.')
     end
-    NumberOfImageSets = str2num(UniqueNumbers{1});
+    NumberOfImageSets = str2double(UniqueNumbers{1});
     %%% Checks whether another load images module has already recorded a
     %%% number of image sets.  If it has, it will not be set at the default
     %%% of 1.  Then, it checks whether the number already stored as the
@@ -265,7 +265,7 @@ end % Goes with: if SetBeingAnalyzed == 1
 for n = 1:4
     %%% This try/catch will catch any problems in the load images module.
     try
-        if strcmp(TextToFind{n}, '/') == 0 & strcmp(ImageName{n}, '/') == 0
+        if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
             %%% The following runs every time through this module (i.e. for
             %%% every image set).
             %%% Determines which image to analyze.
@@ -293,7 +293,7 @@ for n = 1:4
                 if (fid == -1),
                     error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
                 end
-                Ignore = fread(fid, 52, 'uchar');
+                fread(fid, 52, 'uchar');
                 LoadedImage = zeros(Height,Width,Channels);
                 for c=1:Channels,
                     [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');

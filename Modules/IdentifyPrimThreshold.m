@@ -60,11 +60,11 @@ Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = on all of the images or type "Each" to calculate the threshold for each individual
 %textVAR06 = image and enter an adjustment factor here (Positive number):
 %defaultVAR06 = 1
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 
 %%% Determines what the user entered for the size range.
-SizeRangeNumerical = str2num(SizeRange);
+SizeRangeNumerical = str2num(SizeRange);  %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
@@ -94,7 +94,6 @@ end
 drawnow
 
 if strcmp(upper(Threshold), 'ALL') == 1
-    fieldname = ['dOTThreshold', ImageName];
     if handles.setbeinganalyzed == 1
         try
             %%% Makes note of the current directory so the module can return to it
@@ -109,7 +108,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
             BottomOfMsgBox = max(PotentialBottom);
             PositionMsgBox = [500 BottomOfMsgBox 350 100];
             h = msgbox('Preliminary calculations are under way for the Identify Primary Threshold module.  Subsequent image sets will be processed much more quickly than the first image set.');
-            set(h, 'Position', [PositionMsgBox])
+            set(h, 'Position', PositionMsgBox)
             drawnow
             %%% Retrieves the path where the images are stored from the handles
             %%% structure.
@@ -140,8 +139,8 @@ if strcmp(upper(Threshold), 'ALL') == 1
             % Saves the warning state and disable warnings to prevent divide-by-zero
             % warnings.
             State = warning;
-            warning off;
-            SigmaBSquared = (Mu_t * Omega - Mu).^2 ./ (Omega .* (1 - Omega));
+warning off Matlab:DivideByZero
+SigmaBSquared = (Mu_t * Omega - Mu).^2 ./ (Omega .* (1 - Omega));
             % Restores the warning state.
             warning(State);
             % Finds the location of the maximum value of sigma_b_squared.
@@ -167,7 +166,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
     end
 elseif strcmp(upper(Threshold), 'EACH') == 1
     Threshold = ThresholdAdjustmentFactor*graythresh(OrigImageToBeAnalyzed);
-else Threshold = str2num(Threshold);
+else Threshold = str2double(Threshold);
 end
 ThresholdedImage = im2bw(OrigImageToBeAnalyzed, Threshold);
 drawnow

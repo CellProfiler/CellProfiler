@@ -63,15 +63,15 @@ SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR04 = 0
-Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR05 = 1
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR06 = Enter the Max Suppress N'hood (Non-negative integer ~ the radius of objects)
 %defaultVAR06 = 10
-MaximaSuppressionNeighborhood = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+MaximaSuppressionNeighborhood = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -79,7 +79,7 @@ MaximaSuppressionNeighborhood = str2num(char(handles.Settings.Vvariable{CurrentA
 drawnow
 
 %%% Determines what the user entered for the size range.
-SizeRangeNumerical = str2num(SizeRange);
+SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 

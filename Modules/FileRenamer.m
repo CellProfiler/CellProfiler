@@ -40,11 +40,11 @@ CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = How many characters at the beginning of the file name do you want to retain?
 %defaultVAR01 = 6
-NumberCharactersPrefix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
+NumberCharactersPrefix = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
 
 %textVAR02 = How many characters at the end do you want to retain, including file extension?
 %defaultVAR02 = 8
-NumberCharactersSuffix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
+NumberCharactersSuffix = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
 
 %textVAR03 = Enter any text you want to place between those two portions of filename
 %textVAR04 = Leave "/" to not add any text.

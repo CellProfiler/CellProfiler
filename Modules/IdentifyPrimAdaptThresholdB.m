@@ -62,11 +62,11 @@ MinimumThreshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
 %textVAR05 = Enter the threshold adjustment factor (>1 = more stringent, <1 = less stringent)
 %defaultVAR05 = 1
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR06 = Neighborhood size, in pixels (Odd number)
 %defaultVAR06 = 51
-NeighborhoodSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+NeighborhoodSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -74,7 +74,7 @@ NeighborhoodSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6
 drawnow
 
 %%% Determines what the user entered for the size range.
-SizeRangeNumerical = str2num(SizeRange);
+SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
@@ -112,7 +112,7 @@ if strncmp(upper(MinimumThreshold),'A',1) == 1
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.2;
 else
-    try MinimumThreshold = str2num(MinimumThreshold);
+    try MinimumThreshold = str2double(MinimumThreshold);
     catch error('The value entered for the minimum threshold in the Identify Primary Adaptive Threshold module was not correct.')
     end
 end
@@ -138,18 +138,17 @@ Image = imadjust(Image1,[min(min(Image1)) max(max(Image1))],[0 1]);
 %%% (this assumes a rather sparse distribution of objects so that the
 %%% background predominates in any given neighborhood.)
 AverageFilter = ones(NeighborhoodSize, NeighborhoodSize) / (NeighborhoodSize^2);
-Threshold = conv2(OrigImageToBeAnalyzed, AverageFilter);
+Threshold = conv2(Image, AverageFilter);
 drawnow
 FirstNumber = ceil(NeighborhoodSize/2);
-drawnow
 SecondNumber = NeighborhoodSize - FirstNumber;
-ThresholdMask = (OrigImageToBeAnalyzed - Threshold(FirstNumber:m+SecondNumber, FirstNumber:n+SecondNumber));
+ThresholdMask = (Image - Threshold(FirstNumber:m+SecondNumber, FirstNumber:n+SecondNumber));
 drawnow
 AdjustedThresholdMask = ThresholdMask*ThresholdAdjustmentFactor;
 PreThresholdedImage = AdjustedThresholdMask > 0;
 drawnow
 ThresholdedImage = PreThresholdedImage;
-ThresholdedImage(OrigImageToBeAnalyzed <= MinimumThreshold) = 0;
+ThresholdedImage(Image <= MinimumThreshold) = 0;
 %%% Holes in the ThresholdedImage image are filled in.
 drawnow
 ThresholdedImage = imfill(ThresholdedImage, 'holes');

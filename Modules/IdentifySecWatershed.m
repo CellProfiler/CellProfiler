@@ -88,11 +88,11 @@ SecondaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR05 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR05 = 0
-Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR06 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR06 = 0.75
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -378,7 +378,7 @@ ActualObjectsLabelMatrixImage3 = bwlabel(FinalBinaryImage);
 %%% correspond to the numbers used for nuclei.
 %%% For each object, one label and one label location is acquired and
 %%% stored.
-[LabelsUsed,LabelLocations,Irrelevant] = unique(EditedPrimaryLabelMatrixImage);
+[LabelsUsed,LabelLocations] = unique(EditedPrimaryLabelMatrixImage);
 %%% The +1 increment accounts for the fact that there are zeros in the
 %%% image, while the LabelsUsed starts at 1.
 LabelsUsed(ActualObjectsLabelMatrixImage3(LabelLocations(2:end))+1) = EditedPrimaryLabelMatrixImage(LabelLocations(2:end));

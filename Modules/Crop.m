@@ -132,13 +132,13 @@ if Shape == 'F'
 elseif Shape == 'R'
     %%% Extracts the top, left, bottom, right pixel positions from the user's
     %%% input.
-    LeftTopNumerical = str2num(LeftTop);
+    LeftTopNumerical = str2num(LeftTop); %#ok We want MLint error checking to ignore this line.
     Left = LeftTopNumerical(1);
     Top = LeftTopNumerical(2);
-    RightBottomNumerical = str2num(RightBottom);
+    RightBottomNumerical = str2num(RightBottom); %#ok We want MLint error checking to ignore this line.
     Right = RightBottomNumerical(1);
     Bottom = RightBottomNumerical(2);
-    if Left == 0 | Right == 0 | Bottom == 0 | Top ==0
+    if Left == 0 || Right == 0 || Bottom == 0 || Top ==0
         error('There was a problem in the Cropping module. One of the values entered for the rectangular cropping pixel positions was zero: all values must be integers greater than zero.')
     end
     if Left >= Right
@@ -152,9 +152,9 @@ elseif Shape == 'R'
     catch error('There was a problem in the Cropping module. The values entered for the rectangular cropping pixel positions are not valid.')
     end
 
-elseif Shape == 'EA' | Shape == 'EE'
-    if handles.setbeinganalyzed == 1 | Shape =='EE'
-        if Shape == 'EA'
+elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
+    if handles.setbeinganalyzed == 1 || strcmp(Shape, 'EE') == 1
+        if strcmp(Shape, 'EA') == 1
             %%% Asks the user to open an image file upon which to draw the
             %%% ellipse.
             CurrentDirectory = cd;

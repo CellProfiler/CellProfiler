@@ -52,7 +52,7 @@ OrigImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR04 = Set the number of pixels by which to expand the primary objects [Positive number]
 %defaultVAR04 = 10
-DistanceToDilate = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+DistanceToDilate = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -122,7 +122,7 @@ RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelim
 RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
 drawnow
 %%% Removes objects that are not in the edited PrimaryLabelMatrixImage.
-LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) PrimaryLabelMatrixImage(:)],'rows'),[1]);
+LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) PrimaryLabelMatrixImage(:)],'rows'),1);
 LookUpColumn = LookUpTable(:,2);
 FinalSecObjectsLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
 

@@ -40,15 +40,15 @@ CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 
 %textVAR01 = How many characters precede the image number?
 %defaultVAR01 = 6
-NumberCharactersPrefix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
+NumberCharactersPrefix = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
 
 %textVAR02 = How many characters follow the image number, including file extension?
 %defaultVAR02 = 8
-NumberCharactersSuffix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
+NumberCharactersSuffix = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
 
 %textVAR03 = How many total digits do you want to use for the image number?
 %defaultVAR03 = 3
-NumberDigits = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
+NumberDigits = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
 
 %textVAR05 = Be very careful since you will be renaming (= overwriting) your files!!
 %textVAR06 = It is recommended to test this on copies of images in a separate directory first.

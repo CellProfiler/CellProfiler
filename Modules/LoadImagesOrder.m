@@ -108,7 +108,7 @@ PathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%% Determines which set is being analyzed.
 SetBeingAnalyzed = handles.setbeinganalyzed;
-ImagesPerSet = str2num(ImagesPerSet);
+ImagesPerSet = str2double(ImagesPerSet);
 SpecifiedPathName = PathName;
 %%% If the user left boxes blank, sets the values to 0.
 if isempty(NumberInSet1) == 1
@@ -124,10 +124,10 @@ if isempty(NumberInSet4) == 1
     NumberInSet4 = '0';
 end
 %%% Stores the text the user entered into cell arrays.
-NumberInSet{1} = str2num(NumberInSet1);
-NumberInSet{2} = str2num(NumberInSet2);
-NumberInSet{3} = str2num(NumberInSet3);
-NumberInSet{4} = str2num(NumberInSet4);
+NumberInSet{1} = str2double(NumberInSet1);
+NumberInSet{2} = str2double(NumberInSet2);
+NumberInSet{3} = str2double(NumberInSet3);
+NumberInSet{4} = str2double(NumberInSet4);
 %%% Checks whether the position in set exceeds the number per set.
 Max12 = max(NumberInSet{1}, NumberInSet{2});
 Max34 = max(NumberInSet{3}, NumberInSet{4});
@@ -156,19 +156,19 @@ if SetBeingAnalyzed == 1
         %%% Checks if the image is a DIB image file.
         if strcmp(upper(FileFormat),'DIB') == 1
             Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
-            handles.dOTDIBwidth = str2num(Answers{1});
-            handles.dOTDIBheight = str2num(Answers{2});
-            handles.dOTDIBbitdepth = str2num(Answers{3});
-            handles.dOTDIBchannels = str2num(Answers{4});
+            handles.dOTDIBwidth = str2double(Answers{1});
+            handles.dOTDIBheight = str2double(Answers{2});
+            handles.dOTDIBbitdepth = str2double(Answers{3});
+            handles.dOTDIBchannels = str2double(Answers{4});
         else
-            error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+            error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
         end
     end
     %%% For all 4 image slots, exracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
         %%% the user.
-        if NumberInSet{n} ~= 0 & isempty(ImageName{n}) == 0
+        if NumberInSet{n} ~= 0 && isempty(ImageName{n}) == 0
             if strncmp(SpecifiedPathName, 'Default', 7) == 1
                 PathName = handles.Vpathname;
                 FileNames = handles.Vfilenames;
@@ -216,7 +216,7 @@ if SetBeingAnalyzed == 1
             else
                 %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
-                if exist(SpecifiedPathName) ~= 7
+                if exist(SpecifiedPathName,'var') ~= 7
                     error('Image processing was canceled because the directory typed into the Load Images Order module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
                 else [handles, FileNames] = RetrieveImageFileNames(handles, SpecifiedPathName);
                     if SetBeingAnalyzed == 1
@@ -250,14 +250,14 @@ end
 for n = 1:4
     %%% This try/catch will catch any problems in the load images module.
     try
-        if NumberInSet{n} ~= 0 & isempty(ImageName{n}) == 0
+        if NumberInSet{n} ~= 0 && isempty(ImageName{n}) == 0
             %%% Determines which image to analyze.
             fieldname = ['dOTFileList', ImageName{n}];
             FileList = handles.(fieldname);
             %%% Determines the file name of the image you want to analyze.
             CurrentFileName = FileList(SetBeingAnalyzed);
             %%% Determines the directory to switch to.
-            if (~ isfield(handles, 'parallel_machines') | SetBeingAnalyzed == 1),
+            if (~ isfield(handles, 'parallel_machines') || SetBeingAnalyzed == 1),
                 fieldname = ['dOTPathName', ImageName{n}];
                 PathName = handles.(fieldname);
             else
@@ -279,7 +279,7 @@ for n = 1:4
                 if (fid == -1),
                     error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
                 end
-                Ignore = fread(fid, 52, 'uchar');
+                fread(fid, 52, 'uchar');
                 LoadedImage = zeros(Height,Width,Channels);
                 for c=1:Channels,
                     [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');

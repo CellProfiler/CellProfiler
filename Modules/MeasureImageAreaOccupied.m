@@ -55,14 +55,14 @@ ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR04 = 0
-Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR05 = 0.75
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2num(handles.Vpixelsize{1});
+PixelSize = str2double(handles.Vpixelsize{1});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 12-Oct-2004 16:45:14
+% Last Modified by GUIDE v2.5 07-Oct-2004 11:00:06
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -252,7 +252,7 @@ else
     set(handles.PathToLoadEditBox,'String',pathname);
 end
 cd(CurrentDirectory)
-%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
 function PathToLoadEditBox_CreateFcn(hObject, eventdata, handles)
@@ -772,7 +772,7 @@ AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
 
 %%% First, the current directory is stored so we can switch back to it at
 %%% the end of this step:
-CurrentDir = cd;
+CurrentDirectory = cd;
 %%% Change to the default algorithm directory, whose name is a variable
 %%% that is stored in that .mat file. It is within a try-end pair because
 %%% the user may have changed the folder names leading up to this directory
@@ -785,7 +785,7 @@ end
 [AlgorithmNamedotm,PathName] = uigetfile('*.m',...
     'Choose an image analysis module');
 %%% Change back to the original directory.
-cd(CurrentDir)
+cd(CurrentDirectory)
 
 %%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and
 %%% everything should be left as it was.  If the algorithm is not on
@@ -1453,7 +1453,6 @@ else
 end
 
 %%%%%%%%%%%%%%%%%
-
 % --- Executes on button press in ExportDataButton.
 function ExportDataButton_Callback(hObject, eventdata, handles)
 

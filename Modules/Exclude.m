@@ -3,7 +3,7 @@ function handles = ExcludeObjects(handles)
 % Help for the Exclude Objects module:
 % Category: Object Identification
 %
-% This image analysis module has not yet been documented
+% This image analysis module has not yet been documented.
 %
 % Settings:
 %
@@ -278,14 +278,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(ColoredSegmentedObjectImage);
     title(['Previously identified ', ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the colored label
-    %%% matrix image.
-    subplot(2,2,2); imagesc(ColoredMaskRegionObjectImage);
-    title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,3); imagesc(ColoredNewSegmentedObjectImage2);
+    subplot(2,2,2); imagesc(ColoredNewSegmentedObjectImage2);
     title(RemainingObjectName);
+    %%% A subplot of the figure window is set to display the colored label
+    %%% matrix image.
+    subplot(2,2,3); imagesc(ColoredMaskRegionObjectImage);
+    title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

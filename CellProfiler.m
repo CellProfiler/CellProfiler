@@ -2998,7 +2998,7 @@ else
                     %%% Check first to see that the set being analyzed is not zero, or else an
                     %%% error will be produced when trying to do this.
                     if setbeinganalyzed ~= 0
-                        handles.Pipeline.TimeElapsed{setbeinganalyzed} = toc;
+                        handles.Measurements.TimeElapsed{setbeinganalyzed} = toc;
                         guidata(gcbo, handles)
                     end
                     %%% Save all data that is in the handles structure to the output file 

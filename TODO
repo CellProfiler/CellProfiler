@@ -80,7 +80,7 @@ Settings =      ModuleNames: {1x6 cell}
        measurements - I am not sure how the exporting would work in
        this case.
 
-JAMES MIGHT WORK ON THIS >>>- If there are no modules loaded in the main CellProfiler window pipeline, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
+- If there are no modules loaded in the main CellProfiler window pipeline, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
 
 - For LoadImagesText module, make the error catching more descriptive.
        If there are no image files matching the specified text, right
@@ -88,11 +88,11 @@ JAMES MIGHT WORK ON THIS >>>- If there are no modules loaded in the main CellPro
        it ought to say "there are no image files in the directory that
        contain the text XXX."
 
-JAMES MIGHT WORK ON THIS >>> - In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
+- In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
 
-JAMES MIGHT WORK ON THIS >>> - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
+- Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
-JAMES MIGHT WORK ON THIS >>> - Add this to the Open New Image File help: "The Open New Image File button shows
+- Add this to the Open New Image File help: "The Open New Image File button shows
        pixel values in the range 0 to 1.  Images are loaded into
        CellProfiler in this range so that modules behave consistently.
        The display is set to the same range so that, for example, if a
@@ -198,7 +198,7 @@ For each title, add properties at the end:
     title('Original Image', 'FontSize', FontSize)
 Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code.
 
-JAMES MIGHT WORK ON THIS >>>>  CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
+- CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
 - Allow canceling from the first dialog box when using the Save Image As button.
 
@@ -224,7 +224,7 @@ JAMES MIGHT WORK ON THIS >>>>  CellProfiler.m keeps track of time elapsed, broke
 
 - Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
 
-JAMES MIGHT WORK ON THIS (DATA-RELATED) >>>> - Plot data button: allow adding error bars reflecting stdev or
+JAMES MIGHT HAVE DONE SOME OF THIS >>>> - Plot data button: allow adding error bars reflecting stdev or
        sem to the single parameter, multiple images bar plot (matlab
        central has error bar code). 
 

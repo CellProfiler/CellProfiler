@@ -17,7 +17,7 @@ fwrite(fid,tex_page(tex_center(tex_image('CPCoverPage.png', '1.0\textwidth'))));
 
 fwrite(fid,tex_page(tex_center(tex_image('CPCredits.png', '1.0\textwidth'))));
 
-% 3. List of modules - Retrieve the list of files starting with Alg;
+% 3. List of modules - Retrieve the list of modules.
 % each module is annotated on the line after "Help for the X module:",
 % so if you search for the text after the Category:, you will find one
 % of five categories: Object Identification, Measurement,
@@ -28,40 +28,41 @@ fwrite(fid,tex_page(tex_center(tex_image('CPCredits.png', '1.0\textwidth'))));
 % The modules are going to be in ABC order anyway, so I think page
 % numbers are unnecessary.
 
-filelist = dir('Alg*.m');
+path('./Modules', path)
+filelist = dir('Modules/*.m');
 
 fwrite(fid,tex_twocolumn(tex_center(tex_huge('Modules\\[3em]'))));
 fwrite(fid,tex_bold(tex_large('Object Identification:\\')));
 for i=1:length(filelist),
-  if file_in_category(filelist(i).name, 'Object Identification'),
+  if file_in_category(['Modules/' filelist(i).name], 'Object Identification'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 fwrite(fid,tex_vertical_space('1em'));
 fwrite(fid,tex_bold(tex_large('Measurement:\\')));
 for i=1:length(filelist),
-  if file_in_category(filelist(i).name, 'Measurement'),
+  if file_in_category(['Modules/' filelist(i).name], 'Measurement'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 fwrite(fid,tex_pagebreak());
 fwrite(fid,tex_bold(tex_large('Pre-processing:\\')));
 for i=1:length(filelist),
-  if file_in_category(filelist(i).name, 'Pre-processing'),
+  if file_in_category(['Modules/' filelist(i).name], 'Pre-processing'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 fwrite(fid,tex_vertical_space('1em'));
 fwrite(fid,tex_bold(tex_large('File Handling:\\')));
 for i=1:length(filelist),
-  if file_in_category(filelist(i).name, 'File Handling'),
+  if file_in_category(['Modules/' filelist(i).name], 'File Handling'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 fwrite(fid,tex_vertical_space('1em'));
 fwrite(fid,tex_bold(tex_large('Other:\\')));
 for i=1:length(filelist),
-  if file_in_category(filelist(i).name, 'Other'),
+  if file_in_category(['Modules/' filelist(i).name], 'Other'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
@@ -92,7 +93,8 @@ fwrite(fid, tex_page(tex_image('CPScreenshot.png', '1.0\textwidth')));
 % 7. Extract 'help' lines from HelpZZZ, where ZZZ is anything else (I
 % guess the order is not critical here).
 
-filelist = dir('Help*.m');
+path('./Help', path);
+filelist = dir('Help/Help*.m');
 for i=1:length(filelist),
   base = basename(filelist(i).name);
   if (strcmp(base, 'HelpCPInstallGuide') == 1),
@@ -107,7 +109,7 @@ fwrite(fid,tex_page([tex_center(tex_huge('Programming Notes\\')) tex_preformatte
 
 % 8. Open each algorithm (alphabetically) and print its name in large
 % bold font at the top of the page (perhaps we should have the
-% official "AlgBlaBla.m" name in small font as a subtitle, and the
+% official "BlaBla.m" name in small font as a subtitle, and the
 % "Bla Bla" version of the name, extracted from the "Help for the Bla
 % Bla module" line as the title for the page). Extract the lines after
 % "Help for ...." and before the license begins, using the Matlab
@@ -120,16 +122,15 @@ fwrite(fid,tex_page([tex_center(tex_huge('Programming Notes\\')) tex_preformatte
 % on one page, though I think at the moment each module should fit on
 % one page.]
 
-filelist = dir('Alg*.m');
+filelist = dir('Modules/*.m');
 
 for i=1:length(filelist),
-  if file_in_category(filelist(i).name, 'Testing'),
+  if file_in_category(['Modules/' filelist(i).name], 'Testing'),
     continue;
   end
   base = basename(filelist(i).name);
-  base = base(4:end);
   heading = tex_center(tex_huge(['Module: ' base '\\']));
-  body = [tex_label(['Alg' base]) tex_preformatted(help(filelist(i).name))];
+  body = [tex_label(['Module:' base]) tex_preformatted(help(filelist(i).name))];
   im = '';
   if (length(dir(['ExampleImages/' base '.*'])) > 0),
     im = tex_center(tex_image(base, '1.0\textwidth'));
@@ -176,7 +177,7 @@ sout = ['{\bfseries ' sin '}'];
 
 function s = tex_toc_entry(filename)
 b = basename(filename);
-s = [b(4:end) '\dotfill \pageref{' b '}\\'];
+s = [b '\dotfill \pageref{Module:' b '}\\'];
 
 
 function c = file_in_category(filename, category)

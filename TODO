@@ -60,6 +60,10 @@ Settings =      ModuleNames: {1x6 cell}
        data still accessible.  See histograms for how to use UserData
        to store the numbers with the figure. 
 
+- When a figure has been produced by CellProfiler (either during the analysis run or by one of the ImageTools), and you choose File > Save As, the default directory for saving the figure is Matlab's current directory.  It would be nice if instead the directory were the default output directory. If this is not straightforward, abandon it, because it isn't a huge issue.
+
+- Make the DIB cancel button work in imcpread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like ShowImage.m
+
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
 +++ Make a module to identify and count and measure objects

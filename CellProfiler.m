@@ -1170,7 +1170,7 @@ handles.Settings.Vvariable(str2num(AlgorithmNumberString), str2num(VariableNumbe
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles);
-AlgorithmNumber = str2num(handles.AlgorithmHighlighted);
+AlgorithmNumber = handles.AlgorithmHighlighted(1);
     
 % --- Executes during object creation, after setting all properties.
 function VariableBox_CreateFcn(hObject, eventdata, handles);

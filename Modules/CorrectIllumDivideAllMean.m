@@ -19,7 +19,7 @@ function handles = CorrectIllumDivideAllMean(handles)
 % mean (projection) image (option = P), or by applying a filter
 % to the image. The user enters an even number for the artifact width,
 % and this number is divided by two to obtain the radius of a disk
-% shaped structuring element which is used for filtering.
+% shaped structuring element which is used for filtering. 
 %
 % If you want to run this module only to calculate the mean and
 % illumination images and not to correct every image in the directory,

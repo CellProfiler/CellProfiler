@@ -597,25 +597,87 @@ cd(handles.Current.DefaultOutputDirectory)
 [FileName,Pathname] = uiputfile('*.mat', 'Save Settings As...');
 %%% Allows canceling.
 if FileName ~= 0
-  %%% Checks if a field is present, and if it is, the value is stored in the 
-  %%% structure 'Settings' with the same name.
-  if isfield(handles.Settings,'VariableValues'),
-      Settings.VariableValues = handles.Settings.VariableValues;
-  end
-  if isfield(handles.Settings,'ModuleNames'),
-      Settings.ModuleNames = handles.Settings.ModuleNames;
-  end
-  if isfield(handles.Settings,'NumbersOfVariables'),
-      Settings.NumbersOfVariables = handles.Settings.NumbersOfVariables;
-  end
-  if isfield(handles.Settings,'PixelSize'),
-    Settings.PixelSize = handles.Settings.PixelSize;
-  end
-  if isfield(handles.Settings,'VariableRevisionNumbers'),
-      Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
-  end
-  save([Pathname FileName],'Settings')
-  helpdlg('The settings file has been written.');
+    %%% Allows user to save pipeline setting as a readable text file (.txt)
+    SaveText = questdlg('Do you want to save settings as a text file also?');
+    if strcmp(SaveText,'Cancel') == 1
+        return
+    end
+    %%% Checks if a field is present, and if it is, the value is stored in the
+    %%% structure 'Settings' with the same name.
+    if isfield(handles.Settings,'VariableValues'),
+        Settings.VariableValues = handles.Settings.VariableValues;
+    end
+    if isfield(handles.Settings,'ModuleNames'),
+        Settings.ModuleNames = handles.Settings.ModuleNames;
+    end
+    if isfield(handles.Settings,'NumbersOfVariables'),
+        Settings.NumbersOfVariables = handles.Settings.NumbersOfVariables;
+    end
+    if isfield(handles.Settings,'PixelSize'),
+        Settings.PixelSize = handles.Settings.PixelSize;
+    end
+    if isfield(handles.Settings,'VariableRevisionNumbers'),
+        Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
+    end
+    save([Pathname FileName],'Settings')
+    %%% Writes settings into a readable text file.
+    if strcmp(SaveText,'Yes') == 1
+        VariableValues = handles.Settings.VariableValues;
+        ModuleNames = handles.Settings.ModuleNames;
+        ModuleNamedotm = [char(ModuleNames(1)) '.m'];
+        %Prompt what to save file as, and where to save it.
+        if exist(ModuleNamedotm,'file')
+            FullPathname = which(ModuleNamedotm);
+            [PathnameModules, filename, ext, versn] = fileparts(FullPathname);
+        else
+            %%% If the module.m file is not on the path, it won't be
+            %%% found, so ask the user where the modules are.
+            PathnameModules = uigetdir('','Please select directory where modules are located');
+        end
+        [filename,SavePathname] = uiputfile('*.txt', 'Save Settings As...');
+        % make sure # of modules equals number of variable rows.
+        VariableSize = size(VariableValues);
+        if VariableSize(1) ~= max(size(ModuleNames))
+            error('Your settings are not valid.')
+        end
+        display = ['Saved Settings, in file ' filename '.txt, Saved on ' date];
+        % Loop for each module loaded.
+        for p = 1:VariableSize(1)
+            Module = [char(ModuleNames(p))];
+            display = strvcat(display, ['Module #' num2str(p) ': ' Module]);
+            ModuleNamedotm = [Module '.m'];
+            fid=fopen(fullfile(PathnameModules,ModuleNamedotm));
+            while 1
+                output = fgetl(fid);
+                if ~ischar(output), break, end
+                if (strncmp(output,'%textVAR',8) == 1);
+                    displayval = output(13:end);
+                    istr = output(9:10);
+                    i = str2num(istr);
+                    VariableDescriptions(i) = {displayval};
+                end
+            end
+            fclose(fid);
+            % Loop for each variable in the module.
+            for q = 1:VariableSize(2)
+                VariableDescrip = char(VariableDescriptions(q));
+                try
+                    VariableVal = char(VariableValues(p,q));
+                catch
+                    VariableVal = '  ';
+
+                end
+                display =strvcat(display, ['    ' VariableDescrip '    ' VariableVal]);
+            end
+        end
+        %% tack on rest of Settings information.
+        PixelSizeDisplay = ['Pixel Size: ' handles.Settings.PixelSize];
+        RevisionNumbersDisplay = ['Variable Revision Numbers: ' num2str(handles.Settings.VariableRevisionNumbers)];
+        display = strvcat(display, PixelSizeDisplay, RevisionNumbersDisplay);
+        %% Save to a .txt file.
+        dlmwrite([SavePathname '\' filename], display, 'delimiter', '');
+    end
+  helpdlg('The settings file(s) has been written.');
 end
 cd(handles.Current.StartupDirectory)
 

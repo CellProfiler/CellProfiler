@@ -579,7 +579,7 @@ for i=1:8,
         else
             stringend = num2str(j);
         end
-    if isempty(Settings{(i-1)*11 + j}) == 0, eval(strcat('handles.Vvariable',num2str(i),'_',stringend,'=Settings{(i-1)*11 + j};')); end
+        if isempty(Settings{(i-1)*11 + j}) == 0, handles.(['Vvariable',num2str(i),'_',stringend])=Settings{(i-1)*11 + j}; end
     end
 end
 
@@ -682,8 +682,8 @@ if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
 %}
 
 for i=1:8,
-    if isempty(Settings{i+88}) == 0, eval(strcat('handles.Valgorithmname', num2str(i),' = Settings{i+88};'))
-        set(eval(strcat('handles.AlgorithmName', num2str(i))),'string',eval(strcat('handles.Valgorithmname', num2str(i)))), end
+    if isempty(Settings{i+88}) == 0, handles.(['Valgorithmname',num2str(i)]) = Settings{i+88};
+        set(handles.(['AlgorithmName', num2str(i)]),'string',handles.(['Valgorithmname',num2str(i)])), end
 end
 
 %{
@@ -729,8 +729,7 @@ for i=1:8,
             stringend = num2str(j);
         end
         if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-            eval(strcat('Settings{(i-1)*11 + j} =  handles.Vvariable',num2str(i),'_',stringend,';'));
-        end
+            Settings{(i-1)*11 + j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
     end
 end
 
@@ -922,7 +921,7 @@ if isfield(handles,'Vvariable8_11') ==1,
 
 for i=1:8,
     if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        eval(strcat('Settings{i+88} = handles.Valgorithmname', num2str(i), ';')); end
+        Settings{i+88} = handles.(['Valgorithmname',num2str(i)]); end
 end
 
 %{
@@ -995,8 +994,7 @@ for i=1:8,
             stringend = num2str(j);
         end
         if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-            eval(strcat('Settings{(i-1)*11 + j} =  handles.Vvariable',num2str(i),'_',stringend,';'));
-        end
+            Settings{(i-1)*11+j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
     end
 end
 
@@ -1188,7 +1186,7 @@ if isfield(handles,'Vvariable8_11') ==1,
 
 for i=1:8,
     if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        eval(strcat('Settings{i+88} = handles.Valgorithmname', num2str(i), ';')); end
+        Settings{i+88} = handles.(['Valgorithmname',num2str(i)]); end
 end
 
 %{
@@ -1355,61 +1353,60 @@ end
 %%% everything should be left as it was.  If the algorithm is not on
 %%% Matlab's search path, the user is warned.
 if AlgorithmNamedotm == 0;
-%%% If the algorithm's .m file is not found on the search path, the result
-%%% of exist is zero.  
-elseif exist(AlgorithmNamedotm) == 0    
-        msgbox(['The .m file ', AlgorithmNamedotm, ...
-        ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.']) 
-%%% The folder containing the desired .m file is added to Matlab's search path.
-        addpath(PathName)
-%%% Doublecheck that the algorithm exists on Matlab's search path.
-        if exist(AlgorithmNamedotm) == 0
-        errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')    
-        end
+    %%% If the algorithm's .m file is not found on the search path, the result
+    %%% of exist is zero.
+elseif exist(AlgorithmNamedotm) == 0
+    msgbox(['The .m file ', AlgorithmNamedotm, ...
+        ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
+    %%% The folder containing the desired .m file is added to Matlab's search path.
+    addpath(PathName)
+    %%% Doublecheck that the algorithm exists on Matlab's search path.
+    if exist(AlgorithmNamedotm) == 0
+        errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
+    end
 else
-    
-%%% 3. Set all the indicator bars (which tell you which algorithm 
-%%% you are editing settings for) to be invisible and then set 
-%%% the one you are working on to be visible.
-for i=1:8;
-   set(eval(strcat('handles.Indicator',num2str(i))),'Visible','off');
-end;
-set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
 
-%%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
-%%% to be invisible.
-for i = 1:11;
-   set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off');
-   set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off');
-end;
+    %%% 3. Set all the indicator bars (which tell you which algorithm
+    %%% you are editing settings for) to be invisible and then set
+    %%% the one you are working on to be visible.
+    for i=1:8;
+        set(eval(strcat('handles.Indicator',num2str(i))),'Visible','off');
+    end;
+    set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
 
-%%% 5. Clears the variable values in the handles structure in case some are
-%%% not used in the new algorithm (they would remain intact and not be
-%%% overwritten). Before removing a variable, you have to check that the
-%%% variable exists or else the 'rmfield' function gives an error.
-    
+    %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
+    %%% to be invisible.
+    for i = 1:11;
+        set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off');
+        set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off');
+    end;
+
+    %%% 5. Clears the variable values in the handles structure in case some are
+    %%% not used in the new algorithm (they would remain intact and not be
+    %%% overwritten). Before removing a variable, you have to check that the
+    %%% variable exists or else the 'rmfield' function gives an error.
+
     for i=1:11,
         if (i<10);
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_0',num2str(i));
-        else
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',num2str(i));
+            stringend = ['0',num2str(i)];
         end
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',stringend);
         if isfield(handles,ConstructedName) == 1;
             handles = rmfield(handles, ConstructedName);
         end;
     end;
 
-%{
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
+    %{
+    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
+    if isfield(handles,ConstructedName) == 1;
+    handles = rmfield(handles,ConstructedName); end;
+    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
+    if isfield(handles,ConstructedName) == 1;
+    handles = rmfield(handles,ConstructedName); end;
+    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
+    if isfield(handles,ConstructedName) == 1;
+    handles = rmfield(handles,ConstructedName); end;
+    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
              if isfield(handles,ConstructedName) == 1;
              handles = rmfield(handles,ConstructedName); end;
              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
@@ -1462,12 +1459,12 @@ fid=fopen(AlgorithmNamedotm);
                 break;
             elseif i < 10;
                 if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(12:end),'visible', 'on');
+                    set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
                     j=1;
                 end
             else
                 if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(13:end),'visible', 'on');
+                    set(handles.(['VariableDescription',num2str(i)]), 'string', output(13:end),'visible', 'on');
                     j=1;
                 end
             end
@@ -1478,24 +1475,24 @@ fid=fopen(AlgorithmNamedotm);
                 break;
             elseif i < 10;
                 if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
-                    set(eval(strcat('handles.VariableBox',num2str(i))), 'string', displayval,'visible', 'on');
-                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'visible', 'on');
+                    set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
+                    set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
                     ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','0',num2str(i));
                     eval([ConstructedName, '= displayval;']);
                     j=1;
                 end
             else
                 if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
-                    set(eval(strcat('handles.VariableBox',num2str(i))), 'string', displayval,'visible', 'on');
-                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'visible', 'on');
+                    set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
+                    set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
                     ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',num2str(i));
                     eval([ConstructedName, '= displayval;']);
                     j=1;
                 end
             end
-      end
+        end
 
-        
+
         
 %{
         if strncmp(output,'%textVAR1 ',10) == 1;
@@ -1585,8 +1582,8 @@ fid=fopen(AlgorithmNamedotm);
 
 %}
       end
-      
-fclose(fid);
+
+      fclose(fid);
 end
 
 %%% Updates the handles structure to incorporate all the changes.
@@ -1763,12 +1760,12 @@ else
                     break;
                 elseif i < 10;
                     if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                        set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(12:end),'visible', 'on');
+                        set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
                         j=1;
                     end
                 else
                     if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                        set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(13:end),'visible', 'on');
+                        set(handles.(['VariableDescription',num2str(i)]), 'string', output(13:end),'visible', 'on');
                         j=1;
                     end
                 end
@@ -1804,7 +1801,7 @@ else
     end    
     %%% 4. The stored values for the variables are extracted from the handles
     %%% structure and displayed in the edit boxes.
-    %(
+
     for i=1:11,
         if(i<10);
             numstring = strcat('0',num2str(i));
@@ -1813,12 +1810,12 @@ else
         end
             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',numstring);
         if isfield(handles,ConstructedName) == 1;
-            set(eval(strcat('handles.VariableBox',num2str(i))),'string',...
+            set(handles.(['VariableBox',num2str(i)]),'string',...
                 eval(['handles.Vvariable',AlgorithmNumber,strcat('_',numstring)]),'visible','on');
-        else set(eval(strcat('handles.VariableBox',num2str(i))),'string','n/a','visible','off');
+        else set(handles.(['VariableBox',num2str(i)]),'string','n/a','visible','off');
         end;
     end;
-%}
+end
 %{    
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
     if isfield(handles,ConstructedName) == 1
@@ -1887,7 +1884,7 @@ else
     else set(handles.VariableBox11,'string','n/a','visible','off');
 end
 %}
-end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE DISPLAY BUTTONS %%%

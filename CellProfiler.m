@@ -894,7 +894,11 @@ function slider1_Callback(hObject, eventdata, handles)
 %        of slider
 scrollPos = get(hObject,'max') - get(hObject, 'Value');
 variablepanelPos = get(handles.variablepanel, 'position');
-set(handles.variablepanel, 'position', [235 80+scrollPos 563 297]);
+% Note:  The yPosition is 0 + scrollPos because 0 is the original Y
+% Position of the variablePanel.  If the original location of the
+% variablePanel gets changed, then the constant offset must be changed as
+% well.
+set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
 
 function slider1_CreateFcn(hObject, eventdata, handles)
 

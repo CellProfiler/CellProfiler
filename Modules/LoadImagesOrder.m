@@ -104,7 +104,16 @@ if SetBeingAnalyzed == 1
     %%% Checks whether the file format the user entered is readable by Matlab.
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
-    error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+        %%% Checks if the image is a DIB image file.
+        if strcmp(upper(FileFormat),'DIB') == 1
+            Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
+            handles.DIBwidth = str2num(Answers{1});
+            handles.DIBheight = str2num(Answers{2});
+            handles.DIBbitdepth = str2num(Answers{3});
+            handles.DIBchannels = str2num(Answers{4});
+        end
+    else
+        error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
     end
     %%% For all 4 image slots, the file names are extracted.
     for n = 1:4
@@ -193,7 +202,7 @@ end
 
 for n = 1:4
     %%% This try/catch will catch any problems in the load images module.
-    try 
+    try
         if NumberInSet{n} ~= 0 & isempty(ImageName{n}) == 0
             %%% Determine which image to analyze.
             fieldname = ['dOTFileList', ImageName{n}];
@@ -202,25 +211,51 @@ for n = 1:4
             CurrentFileName = FileList(SetBeingAnalyzed);
             %%% Determine the directory to switch to.
             if (~ isfield(handles, 'parallel_machines') | SetBeingAnalyzed == 1),
-              fieldname = ['dOTPathName', ImageName{n}];
-              PathName = handles.(fieldname);
+                fieldname = ['dOTPathName', ImageName{n}];
+                PathName = handles.(fieldname);
             else
-              PathName = handles.RemoteImagePathName;
+                PathName = handles.RemoteImagePathName;
             end
             %%% Switch to the directory
             try
-            cd(PathName);
-          catch error(['Could not CD to ' PathName]);
+                cd(PathName);
+            catch error(['Could not CD to ' PathName]);
             end;
-            try
-              
-                %%% Read (open) the image you want to analyze and assign it to a variable,
-                %%% "LoadedImage".
-                LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));
-            catch error(['Image processing was canceled because the Load Images Order module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
+            %%% Handles a non-Matlab readable file format.
+            if isfield(handles, 'DIBwidth') == 1
+                %%% Opens this non-Matlab readable file format.
+                Width = handles.DIBwidth;
+                Height = handles.DIBheight;
+                Channels = handles.DIBchannels;
+                BitDepth = handles.DIBbitdepth;
+                fid = fopen(char(CurrentFileName), 'r');
+                if (fid == -1),
+                    error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
+                end
+                Ignore = fread(fid, 52, 'uchar');
+
+                LoadedImage = zeros(Height,Width,Channels);
+
+                for c=1:Channels,
+                    [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+                    if Count < (Width * Height),
+                        fclose(fid);
+                        error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
+                    end
+                    LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+                end
+                fclose(fid);
+            else
+                %%% Opens Matlab-readable file formats.
+                try
+                    %%% Read (open) the image you want to analyze and assign it to a variable,
+                    %%% "LoadedImage".
+                    LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));
+                catch error(['Image processing was canceled because the Load Images Order module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
+                end
             end
             %%% Saves the original image file name to the handles structure.  The field
-            %%% is named 
+            %%% is named
             %%% appropriately based on the user's input, with the 'dOT' prefix added so
             %%% that this field will be deleted at the end of the analysis batch.
             fieldname = ['dOTFilename', ImageName{n}];
@@ -228,10 +263,10 @@ for n = 1:4
             %%% Saves the loaded image to the handles structure.The field is named
             %%% appropriately based on the user's input.The prefix 'dOT' is added to
             %%% the beginning of the measurement name so that this field will be
-            %%% deleted at the end of the analysis batch.  
+            %%% deleted at the end of the analysis batch.
             fieldname = ['dOT',ImageName{n}];
             handles.(fieldname) = LoadedImage;
-        end    
+        end
     catch ErrorMessage = lasterr;
         ErrorNumber(1) = {'first'};
         ErrorNumber(2) = {'second'};
@@ -352,7 +387,7 @@ end
 % License.
 % 
 % 
-% The Original Code is the ______________________.
+% The Original Code is the AlgLoadImagesOrder.m
 % 
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research

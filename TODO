@@ -44,6 +44,9 @@ WANT IT NOW:
 
 WANT IT SOON (~ for next beta release, late February 2005):
 
+
+- Fix CreateBatchScripts, for the option of selecting the default module directory by entering "."  Things were changed recently to add CellProfiler and CellProfiler/Modules to the path, and I am not sure whether this option will still function.
+
 - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
@@ -164,6 +167,8 @@ WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
        check when exporting "All measurements" to notify the user when
        that image had no objects.  If there are no objects, the export
        should be canceled.
+
+- When clicking on a module in the list box whose .m file no longer exists in the Modules directory, an error pops up saying the module no longer exists but that the settings will be shown anyway.  The settings are *not* shown in the window, because an error appears in the command window - undefined variable "flagExist" at line 1066.
 
 - In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction, and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
 

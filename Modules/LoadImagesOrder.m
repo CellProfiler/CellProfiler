@@ -481,9 +481,9 @@ else
         DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
         if (length(DirNames) > 0)
             for i=1:length(DirNames),
-                [handles, MoreFileNames] = RetrieveImageFileNames(handles, [Pathname '\' char(DirNames(i))], recurse);
+                [handles, MoreFileNames] = RetrieveImageFileNames(handles, [Pathname '/' char(DirNames(i))], recurse);
                 for j = 1:length(MoreFileNames)
-                    MoreFileNames{j} = [char(DirNames(i)) '\' char(MoreFileNames(j))];
+                    MoreFileNames{j} = [char(DirNames(i)) '/' char(MoreFileNames(j))];
                 end
                 FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
             end

@@ -3158,6 +3158,9 @@ else
                             strncmp(Fields,'dOTIllumImage',13) | strncmp(Fields,'dOTIntensityToShift',19) | ...
                             strncmp(Fields,'dOTTimeElapsed',14);
                         handles_culled = rmfield(handles_culled, Fields(deleteFields & (~keepFields)));
+                        % Make sure all the functions are cleared, so
+                        % that any changes to the modules are noticed.
+                        pnet_remote(handles.parallel_machines, 'EVAL', 'clear functions')
                         pnet_remote(handles.parallel_machines, 'PUT', 'handles', handles_culled);
                       end
                       

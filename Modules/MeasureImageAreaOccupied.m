@@ -202,17 +202,11 @@ drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
-% Each module checks whether its figure is open before calculating
-% images that are for display only. This is done by examining all the
-% figure handles for one whose handle is equal to the assigned figure
-% number for this module. If the figure is not open, everything
-% between the "if" and "end" is ignored (to speed execution), so do
-% not do any important calculations here. Otherwise an error message
-% will be produced if the user has closed the window but you have
-% attempted to access data that was supposed to be produced by this
-% part of the code. If you plan to save images which are normally
-% produced for display only, the corresponding lines should be moved
-% outside this if statement.
+% Some calculations produce images that are used only for display or
+% for saving to the hard drive, and are not used by downstream
+% modules. To speed processing, these calculations are omitted if the
+% figure window is closed and the user does not want to save the
+% images.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);

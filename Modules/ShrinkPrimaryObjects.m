@@ -26,7 +26,10 @@ function handles = ShrinkPrimaryObjects(handles)
 % cell regions are used to define the cytoplasm objects, which are
 % tertiary objects).
 %
-% SAVING IMAGES: This module produces several images which can be
+% SAVING IMAGES: In addition to the object outlines and the
+% pseudo-colored object images that can be saved using the
+% instructions in the main CellProfiler window for this module,
+% this module produces several additional images which can be
 % easily saved using the Save Images module. These will be grayscale
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
@@ -40,19 +43,11 @@ function handles = ShrinkPrimaryObjects(handles)
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 % 
-% Several additional images are normally calculated for display only,
-% including the colored label matrix image (the objects displayed as
-% arbitrary colors), object outlines, and object outlines overlaid on
-% the original image. These images can be saved by altering the code
-% for this module to save those images to the handles structure (see
-% the SaveImages module help) and then using the Save Images module.
-% Important note: The calculations of these display images are only
-% performed if the figure window is open, so the figure window must be
-% left open or the Save Images module will fail.  If you are running
-% the job on a cluster, figure windows are not open, so the Save
-% Images module will also fail, unless you go into the code for this
-% module and remove the 'if/end' statement surrounding the DISPLAY
-% RESULTS section.
+% Additional image(s) are normally calculated for display only,
+% including the object outlines alone. These images can be saved by
+% altering the code for this module to save those images to the
+% handles structure (see the SaveImages module help) and then using
+% the Save Images module.
 %
 % See also any identify primary module.
 
@@ -235,17 +230,11 @@ drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
-% Each module checks whether its figure is open before calculating
-% images that are for display only. This is done by examining all the
-% figure handles for one whose handle is equal to the assigned figure
-% number for this module. If the figure is not open, everything
-% between the "if" and "end" is ignored (to speed execution), so do
-% not do any important calculations here. Otherwise an error message
-% will be produced if the user has closed the window but you have
-% attempted to access data that was supposed to be produced by this
-% part of the code. If you plan to save images which are normally
-% produced for display only, the corresponding lines should be moved
-% outside this if statement.
+% Some calculations produce images that are used only for display or
+% for saving to the hard drive, and are not used by downstream
+% modules. To speed processing, these calculations are omitted if the
+% figure window is closed and the user does not want to save the
+% images.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);

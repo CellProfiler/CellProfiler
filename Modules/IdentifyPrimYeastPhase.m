@@ -1,12 +1,12 @@
 function handles = IdentifyPrimYeastPhase(handles)
 
-% Help for the Identify Primary Yeast Phase module: 
+% Help for the Identify Primary Yeast Phase module:
 % Category: Object Identification
-% 
+%
 % This module contains code contributed by Ben Kaufmann of MIT.
 %
-% This specialty module has been designed to identify yeast cells
-% using phase contrast images.
+% This module has been designed to identify yeast cells
+% in phase contrast images.
 %
 % Settings:
 %
@@ -16,41 +16,38 @@ function handles = IdentifyPrimYeastPhase(handles)
 % so that it is easy to zoom in on found objects and determine the
 % size of what you think should be excluded.
 %
-% Threshold: The threshold affects the stringency of the lines between
-% the objects and the background. You may enter an absolute number
-% between 0 and 1 for the threshold (use 'Show pixel data' to see the
-% pixel intensities for your images in the appropriate range of 0 to
-% 1), or you may have it calculated for each image individually by
-% typing 0.  There are advantages either way.  An absolute number
-% treats every image identically, but an automatically calculated
-% threshold is more realistic/accurate, though occasionally subject to
-% artifacts.  The threshold which is used for each image is recorded
-% as a measurement in the output file, so if you find unusual
-% measurements from one of your images, you might check whether the
-% automatically calculated threshold was unusually high or low
-% compared to the remaining images.  When an automatic threshold is
-% selected, it may consistently be too stringent or too lenient, so an
-% adjustment factor can be entered as well. The number 1 means no
-% adjustment, 0 to 1 makes the threshold more lenient and greater than
-% 1 (e.g. 1.3) makes the threshold more stringent.
+% Threshold: The threshold affects the identification of the objects
+% in a rather complicated way that will not be decribed here (see the
+% code itself). You may enter an absolute number (which may be
+% negative or positive - use the image tool 'Show pixel data' to see
+% the pixel intensities on the relevant image which is labeled
+% "Inverted enhanced contrast image"), or you may have it
+% automatically calculated for each image individually by typing 0.
+% There are advantages either way.  An absolute number treats every
+% image identically, but an automatically calculated threshold is more
+% realistic/accurate, though occasionally subject to artifacts.  The
+% threshold which is used for each image is recorded as a measurement
+% in the output file, so if you find unusual measurements from one of
+% your images, you might check whether the automatically calculated
+% threshold was unusually high or low compared to the remaining
+% images.  When an automatic threshold is selected, it may
+% consistently be too stringent or too lenient, so an adjustment
+% factor can be entered as well. The number 1 means no adjustment, 0
+% to 1 makes the threshold more lenient and greater than 1 (e.g. 1.3)
+% makes the threshold more stringent. The minimum allowable threshold
+% prevents an unreasonably low threshold from counting noise as
+% objects when there are no bright objects in the field of view. This
+% is intended for use with automatic thresholding; a number entered
+% here will override an absolute threshold. The value -Inf will cause
+% the threshold specified either absolutely or automatically to always
+% be used; this is recommended for this module.
 %
-% Maxima suppression neighborhood & blur radius: These variables
-% affect whether objects close by each other are considered a single
-% object or multiple objects. They do not affect the dividing lines
-% between an object and the background.  If you see too many objects
-% merged that ought to be separate, the values should be lower. If you
-% see too many objects split up that ought to be merged, the values
-% should be higher. The blur radius tries to reduce the texture of
-% objects so that each real, distinct object has only one peak of
-% intensity. The maxima suppression neighborhood should be set to be
-% roughly equivalent to the minimum radius of a real object of
-% interest. Basically, any distinct 'objects' which are found but are
-% within two times this distance from each other will be assumed to be
-% actually two lumpy parts of the same object, and they will be
-% merged. Note that increasing the blur radius increases
-% the processing time exponentially.
+% Minimum possible diameter of a real object: This determines how much
+% objects will be eroded. It should not be set on the low side to
+% avoid overlooking objects that appear to be small during the first
+% thresholding step.
 %
-% How it works: 
+% How it works:
 % This image analysis module identifies objects by finding peaks in
 % intensity, after the image has been blurred to remove texture (based
 % on blur radius).  Once a marker for each object has been identified
@@ -89,7 +86,7 @@ function handles = IdentifyPrimYeastPhase(handles)
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
-% 
+%
 % Additional image(s) are normally calculated for display only,
 % including the object outlines alone. These images can be saved by
 % altering the code for this module to save those images to the
@@ -98,18 +95,18 @@ function handles = IdentifyPrimYeastPhase(handles)
 %
 % See also IDENTIFYPRIMADAPTTHRESHOLDA,
 % IDENTIFYPRIMADAPTTHRESHOLDB,
-% IDENTIFYPRIMADAPTTHRESHOLDC, 
+% IDENTIFYPRIMADAPTTHRESHOLDC,
 % IDENTIFYPRIMADAPTTHRESHOLDD,
-% IDENTIFYPRIMTHRESHOLD, 
+% IDENTIFYPRIMTHRESHOLD,
 % IDENTIFYPRIMSHAPEDIST,
 % IDENTIFYPRIMSHAPEINTENS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -127,7 +124,7 @@ function handles = IdentifyPrimYeastPhase(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -151,7 +148,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -162,7 +159,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -177,12 +174,12 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to process? 
+%textVAR01 = What did you call the images you want to process?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -195,32 +192,32 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR04 = 0.7
+%defaultVAR04 = 0
 Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, >1 = more stringent, <1 = less stringent, 1 = no adjustment):
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above). The value 0 will cause the threshold specified above to always be used:
-%defaultVAR06 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+%textVAR06 = Enter the minimum allowable threshold (this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above). The value -Inf will cause the threshold specified above to always be used; this is recommended for this module
+%defaultVAR06 = -Inf
+MinimumThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Erode size should be...
+%textVAR07 = Minimum possible radius of a real object (even number, in pixels)
 %defaultVAR07 = 7
 ErodeSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
 %textVAR09 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %defaultVAR09 = No
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR10 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR11 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
@@ -243,7 +240,6 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
 
-
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImageToBeAnalyzed) ~= 2
@@ -255,9 +251,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -266,81 +262,66 @@ end
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-MinimumThreshold = str2num(MinimumThreshold);
-Threshold = max(MinimumThreshold,Threshold);
-Thresh2 = Threshold;
-Phase = OrigImageToBeAnalyzed;
+%%% Diameter entry is converted to radius and made into an integer.
+ErodeSize = fix(ErodeSize/2);
 
+%%% Normalize the image.
+OrigImageToBeAnalyzed = OrigImageToBeAnalyzed/mean(mean(OrigImageToBeAnalyzed));
+drawnow
 
-
-
-%% Normalize the image to 10000
- Phase = uint16(Phase*(10000)/(mean(mean(Phase))));
-
-%figure, imagesc(Phase), pixval, colormap(gray), title('Phase')
-
-%% Take complement of image
-PhaseComp = imcomplement(Phase);
-%figure, imagesc(PhaseComp), pixval, colormap(gray), title('PhaseComp')
-%NormalizedPhase = Phase/(mean(mean(Phase)));
-%PhaseComp = (1 - NormalizedPhase);
+%%% Invert the image so black is white.
+InvertedOrigImage = imcomplement(OrigImageToBeAnalyzed);
 
 %% Enhance image for objects of a given size range
-Ienhance = PhaseComp;
-disks=[8 14];
+EnhancedInvertedImage = InvertedOrigImage;
+disks=[8 14];  %%% POSSIBLY MAKE THIS A VARIABLE
 for i=1:length(disks)
-    mask        = strel('disk',disks(i)); 
-    top         = imtophat(PhaseComp,mask);
-    bot         = imbothat(PhaseComp,mask);
-    Ienhance    = imsubtract(imadd(Ienhance,top), bot);
+    mask        = strel('disk',disks(i));
+    top         = imtophat(InvertedOrigImage,mask);
+    bot         = imbothat(InvertedOrigImage,mask);
+    EnhancedInvertedImage    = imsubtract(imadd(EnhancedInvertedImage,top), bot);
+    drawnow
 end
-
-%% Complement enhanced image again
-PhaseHighContrast         = imcomplement(Ienhance);
-
 
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
-if Thresh2 == 0
-    Thresh2 = CPgraythresh(PhaseHighContrast);
-    Thresh2 = Thresh2*ThresholdAdjustmentFactor;
+if Threshold == 0
+    Threshold = CPgraythresh(EnhancedInvertedImage);
+    Threshold = Threshold*ThresholdAdjustmentFactor;
+else
 end
-Thresh2 = max(MinimumThreshold,Thresh2);
+Threshold = max(MinimumThreshold,Threshold);
 
+%%%  1. Threshold for edges
+%%% We cannot use the built in Matlab function
+%%% im2bw(EnhancedInvertedImage,Threshold) to threshold the
+%%% EnhancedInvertedImage image, because it does not allow using a
+%%% threshold outside the range 0 to 1.  So we will use this instead:
+BW = EnhancedInvertedImage;
+BW(BW>Threshold) = 1;
+BW(BW<=Threshold) = 0;
+drawnow
 
-%% Find the centers of cells
-%%  1. Threshold for edges
 %%  2. Erode edges so only centers remain
+BWerode = imerode(BW,strel('disk', ErodeSize));
+drawnow
+
 %%  3. Clean it up
-% figure, imagesc(Ienhance), pixval, colormap(gray), title('Ienhance')
-BW = im2bw(Ienhance,Thresh2);
-BWerode = imerode(BW,strel('disk', ErodeSize)); 
-PhaseMinima = imopen(BWerode,strel('disk', 2));
+OrigImageToBeAnalyzedMinima = imopen(BWerode,strel('disk', 2)); %%% POSSIBLY MAKE THIS A VARIABLE
+drawnow
 
 %% Segment the image with watershed
-%WS          = watershed(Iimpose>Thresh1);  
-WS = watershed(imcomplement(PhaseMinima));
+WS = watershed(imcomplement(OrigImageToBeAnalyzedMinima));
 
-%% Watershed regions are irregularly shaped.  
+%% Watershed regions are irregularly shaped.
 %% To fix the edges: Smooth BW border, then impose this border onto the WS
-BWsmoothed  = imclose(BW,strel('disk',3));
+BWsmoothed  = imclose(BW,strel('disk',3)); %%% POSSIBLY MAKE THIS A VARIABLE
 WS          = immultiply(WS,BW);
+drawnow
 
 %% Smooth the edges
-WSsmoothed = imopen(WS,strel('disk', 6));
-
-%%  Label regions
-% L = bwlabel(WSsmoothed);
-
-
-
-
-
-% InvertedBinaryImage = imcomplement(WSsmoothed);
-InvertedBinaryImage = WSsmoothed;
-PrelimLabelMatrixImage1 = InvertedBinaryImage;
-
-
+PrelimLabelMatrixImage1 = imopen(WS,strel('disk', 6)); %%% POSSIBLY MAKE THIS A VARIABLE
+drawnow
 
 %%% Fills holes, then identifies objects in the binary image.
 %PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
@@ -371,9 +352,9 @@ end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly.
 if strncmpi(IncludeEdge,'N',1) == 1
-PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
+    PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
-end 
+end
 %%% The PrelimLabelMatrixImage4 is converted to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,0.5);
 drawnow
@@ -388,7 +369,7 @@ FinalLabelMatrixImage = bwlabel(FinalBinary);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
@@ -425,22 +406,22 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Determines the grayscale intensity to use for the cell outlines.
     LineIntensity = max(OrigImageToBeAnalyzed(:));
     ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to pause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
@@ -451,7 +432,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    subplot(2,2,3); imagesc(Ienhance); colormap(gray); title(['Inverted enhanced contrast image']);
+    subplot(2,2,3); imagesc(EnhancedInvertedImage); colormap(gray); title(['Inverted enhanced contrast image']);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
     subplot(2,2,4); imagesc(ObjectOutlinesOnOriginalImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
@@ -514,7 +495,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -542,7 +523,7 @@ drawnow
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
@@ -607,7 +588,7 @@ try
         fieldname = ['Outlined',ObjectName];
         handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
     end
-%%% I am pretty sure this try/catch is no longer necessary, but will
-%%% leave in just in case.
+    %%% I am pretty sure this try/catch is no longer necessary, but will
+    %%% leave in just in case.
 catch errordlg('The object outlines or colored objects were not calculated by the Identify Primary Yeast Phase module (possibly because the window is closed) so these images could not be saved to the handles structure. The Save Images module will therefore not function on these images.')
 end

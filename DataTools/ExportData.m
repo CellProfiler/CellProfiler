@@ -33,31 +33,22 @@ LoadedHandles = load(fullfile(RawPathname, RawFileName));
 [ObjectNames,Summary] = ObjectsToExport(handles);
 
 for Object = 1:length(ObjectNames)
+    1
     ObjectName = ObjectNames{Object};
-
+    2
     % Open a file for exporting the measurements
     if strcmp(Summary,'no')
         ExportFileName = [RawFileName(1:end-4),'_',ObjectName,'.xls'];
+        3
     else
         ExportFileName = [RawFileName(1:end-4),'_',ObjectName,'_Summary.xls'];
     end
     fid = fopen(fullfile(RawPathname,ExportFileName),'w');
-
-
+   
+    
     fields = fieldnames(handles.Measurements.(ObjectName));
-
-    %%% Get total number of objects
-    % THIS CODE SHOULD BE USED WHEN WE WANT TO ADD MORE INFO ON THE
-    % TOP ROW
-    %NumObjects = [];
-    %for k = 1:length(fields)
-    %    if isempty(strfind(fields{k},'Features'))
-    %        for j = 1:length(handles.Measurements.(ObjectName).(fields{k}))
-    %            NumObjects = [NumObjects size(handles.Measurements.(ObjectName).(fields{k}){j},1)];
-    %        end
-    %    end
-    %end
-
+    
+   
     %%% Write comma-separated file that can be imported into Excel
     %%%% Header part, general information goes here. Different for
     % summary vs full report.
@@ -75,11 +66,11 @@ for Object = 1:length(ObjectNames)
     % with each column corresponding to a separate feature
     FeatureNames = {};
     Measurements = {};
-    
+    4
     for k = 1:length(fields)
         if ~isempty(strfind(fields{k},'Features'))
             % Concatenate measurement and feature name matrices
-            tmp = handles.Measurements.(ObjectName).(fields{k}(1:end-8));   % Get the associate cell array of measurements
+            tmp = handles.Measurements.(ObjectName).(fields{k}(1:end-8));   % Get the associated cell array of measurements
             if isempty(Measurements)
                 Measurements = tmp;
             else
@@ -148,10 +139,7 @@ function [ObjectNames,Summary] = ObjectsToExport(handles)
 % the Cancel button (or the window was closed). 'Summary' takes on the values'yes'
 % or 'no', depending if the user only wants a summary report (mean and std)
 % or a full report.
-try FontSize = str2num(handles.Preferences.FontSize);
-catch FontSize = 10;
-end
-
+FontSize = get(0,'UserData');
 fields = fieldnames(handles.Measurements);
 
 % Remove fields that should be ignored
@@ -173,11 +161,11 @@ ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
 pos = get(ETh,'position');
 Height = 1.5+length(fields)*0.25;                       % Window height in inches
-set(ETh,'position',[pos(1) pos(2) 5 Height]);
+set(ETh,'position',[pos(1) pos(2) 4 Height]);
 
 % Top text
 uicontrol(ETh,'style','text','String','The following measurements were found:','FontName','Times','FontSize',FontSize,...
-    'units','inches','position',[0 Height-0.2 5 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+    'units','inches','position',[0 Height-0.2 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 
 % Radio buttons for extracted measurements
 h = [];
@@ -196,9 +184,9 @@ summarybutton = uicontrol(ETh,'Style','Radiobutton','units','inches','position',
 
 % Export and Cancel pushbuttons
 uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[0.65 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)')
+    'position',[1.15 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)')
 uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[1.6 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)')
+    'position',[2.1 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)')
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
 
@@ -212,9 +200,11 @@ if get(ETh,'Userdata') == 0
     ObjectNames = [];                                   % The user pressed the Cancel button
     close(ETh)
 elseif get(ETh,'Userdata') == 1
-    buttonchoice = get(h,'Value');
-    buttonchoice = cat(1,buttonchoice{:});
-    ObjectNames = fields(find(buttonchoice));            % Get the fields for which the radiobuttons are enabled
+    buttonchoice = get(h,'Value')
+    if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects
+        buttonchoice = cat(1,buttonchoice{:});
+    end
+    ObjectNames = fields(find(buttonchoice));            % Get the fields for which the radiobuttons are enable
     close(ETh)
 else
     ObjectNames = [];

@@ -1494,7 +1494,7 @@ if strcmp(Answer, 'All images') == 1
     %%% Extract the fieldnames of non-cell by cell measurements from the
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
-    Fieldnames = fieldnames(handles.Pipeline);
+    Fieldnames = fieldnames(handles.Measurements);
     HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
@@ -1649,7 +1649,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Extract the fieldnames of non-cell by cell measurements from the
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
-    Fieldnames = fieldnames(handles.Pipeline);
+    Fieldnames = fieldnames(handles.Measurements);
     HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
@@ -1709,19 +1709,43 @@ elseif strcmp(Answer, 'All measurements') == 1
     fwrite(fid, char(ImageNameToDisplay), 'char');
     fwrite(fid, sprintf('\n'), 'char');
     %%% Writes the data, row by row: one row for each measurement type.
+
+    %%% Writes the headings
     for MeasNumber = 1:length(MeasFieldnames)
-        FieldName = char(MeasFieldnames(MeasNumber));
-        %%% Writes the measurement heading in the first column.
-        fwrite(fid, FieldName, 'char');
-        %%% Tabs to the next column.
-        fwrite(fid, sprintf('\t'), 'char');
-        Measurements = handles.Measurements.(FieldName);
-        Measurements = Measurements';
-        %%% Writes the measurements for that measurement type in successive columns.
-        fprintf(fid,'%d\t',Measurements{ImageNumber});
-        %%% Returns to the next row.
-        fwrite(fid, sprintf('\n'), 'char');
+      FieldName = char(MeasFieldnames(MeasNumber));
+      %%% Writes the measurement heading in the first column.
+      fwrite(fid, FieldName, 'char');
+      %%% Tabs to the next column.
+      fwrite(fid, sprintf('\t'), 'char');
     end
+
+    %%% Find the largest measurement set
+    maxlength = 0;
+    for MeasNumber = 1:length(MeasFieldnames)
+      FieldName = char(MeasFieldnames(MeasNumber));
+      Measurements = handles.Measurements.(FieldName);
+      maxlength = max(maxlength, length(Measurements{ImageNumber}));
+    end
+
+    %%% Returns to the next row.
+    fwrite(fid, sprintf('\n'), 'char');
+      
+    %%% Writes the data row-by-row
+    for idx = 1:maxlength,
+      for MeasNumber = 1:length(MeasFieldnames)
+        FieldName = char(MeasFieldnames(MeasNumber));
+        Measurements = handles.Measurements.(FieldName){ImageNumber};
+        if (length(Measurements) >= idx),
+          %%% Writes the measurements for that measurement type in successive columns.
+          fprintf(fid,'%d\t',Measurements(idx));
+        else
+          fwrite(fid, sprintf('\t'), 'char');
+        end
+      end
+      %%% Returns to the next row.
+      fwrite(fid, sprintf('\n'), 'char');
+    end
+
     %%% Closes the file
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])

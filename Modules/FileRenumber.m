@@ -8,25 +8,25 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-%textVAR1 = How many characters precede the image number?
-%defaultVAR1 = 6
+%textVAR01 = How many characters precede the image number?
+%defaultVAR01 = 6
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 NumberCharactersPrefix = str2num(handles.(fieldname));
 
-%textVAR2 = How many characters follow the image number, including file extension?
-%defaultVAR2 = 8
+%textVAR02 = How many characters follow the image number, including file extension?
+%defaultVAR02 = 8
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 NumberCharactersSuffix = str2num(handles.(fieldname));
 
-%textVAR3 = How many total digits do you want to use for the image number?
-%defaultVAR3 = 3
+%textVAR03 = How many total digits do you want to use for the image number?
+%defaultVAR03 = 3
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 NumberDigits = str2num(handles.(fieldname));
 
-%textVAR5 = Be very careful since you will be renaming (=overwriting) your files!!
-%textVAR6 = It is recommended to test this on copies of images in a separate directory first.
-%textVAR7 = The folder containing the files must not contain any subfolders or the
-%textVAR8 = subfolder and its contents will also be renamed.
+%textVAR05 = Be very careful since you will be renaming (=overwriting) your files!!
+%textVAR06 = It is recommended to test this on copies of images in a separate directory first.
+%textVAR07 = The folder containing the files must not contain any subfolders or the
+%textVAR08 = subfolder and its contents will also be renamed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

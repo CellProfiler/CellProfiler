@@ -9,41 +9,41 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the images you want to process? 
-%defaultVAR1 = OrigGreen
+%textVAR01 = What did you call the images you want to process? 
+%defaultVAR01 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR2 = What did you call the objects that will be used to mark the centers of these objects?
-%defaultVAR2 = Nuclei
+%textVAR02 = What did you call the objects that will be used to mark the centers of these objects?
+%defaultVAR02 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 PrimaryObjectName = handles.(fieldname);
-%textVAR3 = What do you want to call the objects identified by this algorithm?
-%defaultVAR3 = Cells
+%textVAR03 = What do you want to call the objects identified by this algorithm?
+%defaultVAR03 = Cells
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SecondaryObjectName = handles.(fieldname);
 %%% The following is just an extra line of text describing variable 3.
-%textVAR4 = (Note: Data will be produced based on this name, e.g. dMCTotalAreaCells)
+%textVAR04 = (Note: Data will be produced based on this name, e.g. dMCTotalAreaCells)
 
-%textVAR5 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR5 = 0
+%textVAR05 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
+%defaultVAR05 = 0
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 Threshold = str2num(handles.(fieldname));
-%textVAR6 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
-%defaultVAR6 = 1
+%textVAR06 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
+%defaultVAR06 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 ThresholdAdjustmentFactor = str2num(handles.(fieldname));
 
-%textVAR7 = Regularization factor (0 to infinity). Larger=distance,0=intensity
-%defaultVAR7 = 0.05
+%textVAR07 = Regularization factor (0 to infinity). Larger=distance,0=intensity
+%defaultVAR07 = 0.05
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
 RegularizationFactor = str2num(handles.(fieldname));
 
-%textVAR8 = To save object outlines as an image, enter text to append to the name 
-%defaultVAR8 = N
+%textVAR08 = To save object outlines as an image, enter text to append to the name 
+%defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveObjectOutlines = handles.(fieldname);
-%textVAR9 = To save colored object blocks as an image, enter text to append to the name 
-%defaultVAR9 = N
+%textVAR09 = To save colored object blocks as an image, enter text to append to the name 
+%defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveColoredObjects = handles.(fieldname);
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button

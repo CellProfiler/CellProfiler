@@ -19,23 +19,23 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-%textVAR1 = What did you call the segmented objects that you want to measure?
-%defaultVAR1 = Nuclei
+%textVAR01 = What did you call the segmented objects that you want to measure?
+%defaultVAR01 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ObjectName = handles.(fieldname);
 
-%textVAR2 = What did you call the greyscale images you want to measure? 
-%defaultVAR2 = OrigRed
+%textVAR02 = What did you call the greyscale images you want to measure? 
+%defaultVAR02 = OrigRed
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ImageName = handles.(fieldname);
 
-%textVAR3 = Note: it is advisable to use the original image rather than an adjusted image.
-%textVAR4 = Adjustments alter the intensity levels from one image relative to another
-%textVAR5 = so that intensity measurements cannot be accurately compared. If you have
-%textVAR6 = cropped an image, however, the cropped image should be specified here.
+%textVAR03 = Note: it is advisable to use the original image rather than an adjusted image.
+%textVAR04 = Adjustments alter the intensity levels from one image relative to another
+%textVAR05 = so that intensity measurements cannot be accurately compared. If you have
+%textVAR06 = cropped an image, however, the cropped image should be specified here.
 
-%textVAR7 = The measurements made by this module will be named after the two boxes above, 
-%textVAR8 = e.g. "OrigRedwithinNuclei".
+%textVAR07 = The measurements made by this module will be named after the two boxes above, 
+%textVAR08 = e.g. "OrigRedwithinNuclei".
 
 %%% Reads the pixel size that the user entered in the main window
 %%% (micrometers per pixel) and converts it to a number.

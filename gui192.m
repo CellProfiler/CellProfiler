@@ -13,7 +13,7 @@ function varargout = gui192(varargin)
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before gui192_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to gui192_OpeningFcn via varargin.
+%      stop.  All inputs are passed to CellProfiler_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
@@ -102,6 +102,7 @@ set(handles.PathToLoadEditBox,'String',pwd);
 %%% Stores some initial values in the handles structure.
 handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
 handles.Vpathname = pwd;
+handles.Vtestpathname = pwd;
 guidata(hObject, handles);
 
 %%% Retrieves the list of image file names from the chosen directory and
@@ -177,7 +178,6 @@ pathname = uigetdir('','Choose the directory of images to be analyzed');
 %%% happen.
 if pathname == 0
 else
-    cd (pathname);
     %%% Saves the pathname in the handles structure.
     handles.Vpathname = pathname;
     guidata(hObject,handles)
@@ -196,10 +196,10 @@ else
         %%% Retrieves the SelectedTestImageName from the ListBox.
         Contents = get(handles.ListBox,'String');
         SelectedTestImageName = Contents{get(handles.ListBox,'Value')};
-        set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
+        set(handles.TestImageName,'String',[pathname,'/',SelectedTestImageName])
     end
     %%% Displays the chosen directory in the PathToLoadEditBox.
-    set(handles.PathToLoadEditBox,'String',pwd);
+    set(handles.PathToLoadEditBox,'String',pathname);
 end
 
 %%%%%%%%%%%%%%%%%
@@ -213,8 +213,6 @@ function PathToLoadEditBox_Callback(hObject, eventdata, handles)
 pathname = get(hObject,'string');
 %%% Checks whether a directory with that name exists.
 if exist(pathname) ~= 0
-%%% If the directory exists, change to that directory
-cd (pathname);
 %%% Saves the pathname in the handles structure.
 handles.Vpathname = pathname;
 guidata(hObject,handles)
@@ -424,6 +422,7 @@ function OutputFileName_CreateFcn(hObject, eventdata, handles)
     set(hObject,'BackgroundColor',[1 1 1]);
 
 function OutputFileName_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Change to the directory that was specified in Step 1 (Path to load edit
 %%% box), if possible.
 try pathname = get(handles.PathToLoadEditBox,'string');
@@ -459,6 +458,7 @@ else
     end
 end
 guidata(gcbo, handles);
+cd(CurrentDirectory)
 
 function handles = store1variable(VariableName,UserEntry, handles);
 %%% This function stores a variable's value in the handles structure, 
@@ -472,7 +472,7 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in LoadSettingsFromFileButton.
 function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
+CurrentDirectory = cd;
 [SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
@@ -531,7 +531,7 @@ cd(CurrentDirectory)
 
 % --- Executes on button press in SaveCurrentSettingsButton.
 function SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
+CurrentDirectory = cd;
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
@@ -554,14 +554,13 @@ end
 if isfield(handles,'Vpixelsize') ==1, 
     Settings{handles.numAlgorithms*(handles.MaxVariables+1)+1} = handles.Vpixelsize; end
 
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the settings. Do not forget to type in the desired filename.');
-uiwait(h) 
-
 %%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
-
+[FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+%%% Allows canceling.
+if FileName ~= 0
+    save([PathName,FileName],'Settings')
 helpdlg('The settings file has been written.')
+end
 
 %%% Switches back to the original directory.
 cd(CurrentDirectory)
@@ -578,7 +577,7 @@ extractsettings %%% Note that the handles structure is not an argument.
 
 function extractsettings
 %%% Determines the current directory so it can switch back when done.
-CurrentDirectory = pwd;
+CurrentDirectory = cd;
 %%% Opens a dialog for the user to select the file from which to extract
 %%% settings.
 [OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
@@ -610,13 +609,14 @@ if isfield(handles,'Vpixelsize') ==1,
     Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; 
 end
 
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the extracted settings. Do not forget to type in the desired filename.');
-uiwait(h) 
 %%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
+    [FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+    %%% Allows canceling.
+    if FileName ~= 0
+        save([PathName,FileName],'Settings')
 helpdlg('The settings file has been written.')
-%%% Switches back to the original directory.
+    end
+
 cd(CurrentDirectory)
 end
 
@@ -651,7 +651,7 @@ end
 function AlgorithmDirectory_Callback(hObject, eventdata, handles)
 %%% Determine what the current directory is, so you can change back 
 %%% when this process is done.
-CurrentDir = pwd;
+CurrentDir = cd;
 %%% Open a dialog box to get the directory from the user.
 DefAlgDir = uigetdir('The directory you choose will be set as the default directory when "Load" analysis module is chosen in STEP 3 (Image analysis settings).','Where are the analysis modules?');
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
@@ -701,7 +701,7 @@ AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
 
 %%% First, the current directory is stored so we can switch back to it at
 %%% the end of this step:
-CurrentDir = pwd;
+CurrentDir = cd;
 %%% Change to the Matlab root directory.
 cd(matlabroot)
 %%% If the DefaultAlgDirectory .mat file does not exist in the matlabroot
@@ -780,44 +780,34 @@ else
     %%% 7. Saves the AlgorithmName to the handles structure.
     handles.(['Valgorithmname' AlgorithmNumber]) = AlgorithmName;
 
-    %%% 8. The text description for each variable for the chosen algorithm is
-    %%% extracted from the algorithm's .m file and displayed.
+    %%% 8. The text description for each variable for the chosen algorithm is 
+    %%% extracted from the algorithm's .m file and displayed.  
     fid=fopen(AlgorithmNamedotm);
-    % FIXME: The next two loops need some serious commenting.
-    %        I think the while loop should be "while not_done".
-    %  Will be lot clearer when %textVar1 gets changed to %textVar01
+
     while 1;
-        output = fgetl(fid); if ~ischar(output); break; end;
-        for VariableNumber=1:11,
-            if VariableNumber < 10;
-                if (strncmp(output,['%textVAR' num2str(VariableNumber) ' '],10) == 1);
-                    set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]), 'string', output(12:end),'visible', 'on');
-                    handles.numVariables(str2num(AlgorithmNumber)) = handles.numVariables(str2num(AlgorithmNumber))+1;
-                    break;
-                elseif (strncmp(output,['%defaultVAR' num2str(VariableNumber) ' '],13) == 1); displayval = output(16:end);
-                    set(handles.(['VariableBox',TwoDigitString(VariableNumber)]), 'string', displayval,'visible', 'on');
-                    set(handles.(['VariableDescription',TwoDigitString(VariableNumber)]), 'visible', 'on');
-                    ConstructedName = ['handles.Vvariable' AlgorithmNumber '_' TwoDigitString(VariableNumber)];
-                    eval([ConstructedName, '= displayval;']);
-                    break;
-                end
-            else
-                if (strncmp(output,['%textVAR' num2str(VariableNumber)],10) == 1);
-                    set(handles.(['VariableDescription',TwoDigitString(VariableNumber)]), 'string', output(13:end),'visible', 'on');
-                    handles.numVariables(str2num(AlgorithmNumber)) = handles.numVariables(str2num(AlgorithmNumber))+1;
-                    break;
-                elseif (strncmp(output,['%defaultVAR' num2str(VariableNumber)],13) == 1); displayval = output(17:end);
-                    set(handles.(['VariableBox' num2str(VariableNumber)]), 'string', displayval,'visible', 'on');
-                    set(handles.(['VariableDescription' num2str(VariableNumber)]), 'visible', 'on');
-                    ConstructedName = ['handles.Vvariable' AlgorithmNumber '_' TwoDigitString(VariableNumber)];
-                    eval([ConstructedName, '= displayval;']);
-                    break;
-                end
-            end
+      output = fgetl(fid); if ~ischar(output); break; end;
+
+      % FIXME: this doesn't need to loop over MaxVariables
+
+      for i=1:handles.MaxVariables,
+        if (strncmp(output,['%textVAR',TwoDigitString(i)],10) == 1);
+          set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+          break;
         end
+      end
+
+      for i=1:handles.MaxVariables,
+        if (strncmp(output,['%defaultVAR' TwoDigitString(i)],13) == 1),
+          % FIXME: check this offset.
+          displayval = output(17:end);
+          set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
+          set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
+          handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]) = displayval;
+          break;
+        end
+      end
+      fclose(fid);
     end
-    fclose(fid);
-end
 
 %%% Updates the handles structure to incorporate all the changes.
 guidata(gcbo, handles);
@@ -919,19 +909,11 @@ else
         
         while 1;
             output = fgetl(fid); if ~ischar(output); break; end;
-            for i=1:handles.numVariables(str2num(AlgorithmNumber)),
-                % FIXME: These can be merged after the variable renaming, right? YES
-                if i < 10;
-                    if (strncmp(output,['%textVAR' num2str(i),' '],10) == 1);
-                        set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
-                        break;
-                    end
-                else
-                    if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                        set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                        break;
-                    end
-                end
+            for i=1:handles.MaxVariables,
+              if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
+                set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+                break;
+              end
             end
         end
         fclose(fid);
@@ -1039,6 +1021,7 @@ end
 
 % --- Executes on button press in SelectTestImageBrowseButton.
 function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
+
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be used as a test image.
 [FileName,PathName] = uigetfile('*.*','Select a test image (nuclei)');
@@ -1046,7 +1029,8 @@ function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
 %%% happen.
 if FileName == 0
 else
-    set(handles.TestImageName,'String',[PathName,'/',FileName])
+    set(handles.TestImageName,'String',[PathName,FileName])
+    handles.Vtestpathname = PathName;
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
@@ -1059,10 +1043,6 @@ else
         %%% Loads these image names into the ListBox.
         set(handles.ListBox,'String',handles.Vfilenames,...
             'Value',1)
-        %%% Retrieves the SelectedTestImageName from the ListBox.
-        Contents = get(hObject,'String');
-        SelectedTestImageName = Contents{get(hObject,'Value')};
-        set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
     end
 end
 %%%%%%%%%%%%%%%%%
@@ -1072,6 +1052,7 @@ function TestImageName_CreateFcn(hObject, eventdata, handles)
 set(hObject,'BackgroundColor',[1 1 1]);
 
 function TestImageName_Callback(hObject, eventdata, handles)
+
 %%% Retrieves the contents of the edit box.
 UserEntry = get(hObject, 'string');
 %%% Checks whether a file with that name exists.
@@ -1080,7 +1061,7 @@ if exist(UserEntry) ~= 0
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
-    PathName = pwd;
+    PathName = handles.Vtestpathname;
     handles = RetrieveImageFileNames(handles,PathName);
     guidata(hObject, handles);
     if isempty(handles.Vfilenames)
@@ -1109,7 +1090,8 @@ function ListBox_Callback(hObject, eventdata, handles)
 %%% Retrieves the SelectedTestImageName from the ListBox.
 Contents = get(hObject,'String');
 SelectedTestImageName = Contents{get(hObject,'Value')};
-set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
+PathName = handles.Vtestpathname;
+set(handles.TestImageName,'String',[PathName,SelectedTestImageName])
 
 %%%%%%%%%%%%%%%%%
 
@@ -1219,7 +1201,7 @@ end
 % --- Executes on button press in ExportDataButton.
 function ExportDataButton_Callback(hObject, eventdata, handles)
 
-OriginalDirectory = pwd;
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1344,7 +1326,7 @@ else
     end % This goes with the "Cancel" button on the FileName dialog.
 end % This goes with the "Cancel" button on the RawFileName dialog.
 
-cd(OriginalDirectory);
+cd(CurrentDirectory);
 % In case I want to save data that is 
 % all numbers, with different numbers of rows for each column, the
 % following code might be helpful:
@@ -1360,6 +1342,7 @@ cd(OriginalDirectory);
 
 % --- Executes on button press in ExportCellByCellButton.
 function ExportCellByCellButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1579,11 +1562,13 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in HistogramButton.
 function HistogramButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -2239,6 +2224,7 @@ if ok ~= 0
         end
     end % Goes with cancel button when selecting the measurement to display.
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
@@ -2368,7 +2354,7 @@ msgbox('The original data and the corrected data are now displayed in the Matlab
 
 % --- Executes on button press in DisplayDataOnImageButton.
 function DisplayDataOnImageButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = cd;
 %%% Asks the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName ~= 0
@@ -2508,12 +2494,13 @@ if RawFileName ~= 0
         end
     end
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeAllImagesButton.
 function AnalyzeAllImagesButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
 sum = 0;
 for i = 1:handles.numAlgorithms;
@@ -2818,7 +2805,7 @@ else
                       %%% Get a list of the measurement fields (after the first pass has run through
                       %%% all the modules)
                       Fields = fieldnames(handles);
-                      mFields = strncmp(Fields,'dM',2);
+                      mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
                       MeasurementFields = Fields(mFields);
                       
                       % If we are using parallel machines, copy the handles structure to them.
@@ -3051,14 +3038,6 @@ else
                         set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
                     end
                 end
-                % FIXME: hardcoded number of variables.  I think this
-                % should be a loop over just the number of variables
-                % in the current algorithm
-                %{
-                for i=1:handles.numVariables;
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'enable','on','foregroundcolor','black');
-                end
-                %}
                 set(handles.SelectTestImageBrowseButton,'enable','on')
                 set(handles.ListBox,'enable','on')
                 set(handles.TestImageName,'enable','on','foregroundcolor','black')
@@ -3152,6 +3131,7 @@ else
     %%% This "end" goes with the error-detecting "The chosen directory does not
     %%% exist."
 end
+cd(CurrentDirectory);
 
 %%% Note: an improvement I would like to make:
 %%% Currently, it is possible to use the Zoom tool in the figure windows to

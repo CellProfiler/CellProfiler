@@ -9,23 +9,23 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the objects that you want to shrink?
-%defaultVAR1 = Nuclei
+%textVAR01 = What did you call the objects that you want to shrink?
+%defaultVAR01 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ObjectName = handles.(fieldname);
-%textVAR2 = What do you want to call the shrunken objects?
-%defaultVAR2 = ShrunkenNuclei
+%textVAR02 = What do you want to call the shrunken objects?
+%defaultVAR02 = ShrunkenNuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ShrunkenObjectName = handles.(fieldname);
-%textVAR4 = How much do you want to shrink the objects? (Positive number, or "Inf" to shrink to a point)
-%defaultVAR4 = 1
+%textVAR04 = How much do you want to shrink the objects? (Positive number, or "Inf" to shrink to a point)
+%defaultVAR04 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 ShrinkingNumber = handles.(fieldname);
-%textVAR8 = To save the shrunken image as colored blocks, enter text to append to the image name 
-%defaultVAR8 = N
+%textVAR08 = To save the shrunken image as colored blocks, enter text to append to the image name 
+%defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveImage = handles.(fieldname);
-%textVAR9 =  Otherwise, leave as "N". To save or display other images, press Help button
+%textVAR09 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR10 = In what file format do you want to save images? Do not include a period
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];

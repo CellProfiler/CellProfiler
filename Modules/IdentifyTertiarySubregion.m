@@ -9,29 +9,29 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the larger identified objects?
-%defaultVAR1 = Cells
+%textVAR01 = What did you call the larger identified objects?
+%defaultVAR01 = Cells
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 PrimaryObjectName = handles.(fieldname);
-%textVAR2 = What did you call the smaller identified objects?
-%defaultVAR2 = Nuclei
+%textVAR02 = What did you call the smaller identified objects?
+%defaultVAR02 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 SecondaryObjectName = handles.(fieldname);
-%textVAR3 = What do you want to call the new subregions?
-%defaultVAR3 = Cytoplasm
+%textVAR03 = What do you want to call the new subregions?
+%defaultVAR03 = Cytoplasm
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SubregionObjectName = handles.(fieldname);
-%textVAR5 = To save grayscale objects as an image, enter text to append to the image name 
-%defaultVAR5 = N
+%textVAR05 = To save grayscale objects as an image, enter text to append to the image name 
+%defaultVAR05 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 SaveGrayObjects = handles.(fieldname);
-%textVAR6 = To save colored object blocks as an image, enter text to append to the name 
-%defaultVAR6 = N
+%textVAR06 = To save colored object blocks as an image, enter text to append to the name 
+%defaultVAR06 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 SaveColoredObjects = handles.(fieldname);
-%textVAR7 =  Otherwise, leave as "N". To save or display other images, press Help button
-%textVAR8 = In what file format do you want to save images? Do not include a period
-%defaultVAR8 = tif
+%textVAR07 =  Otherwise, leave as "N". To save or display other images, press Help button
+%textVAR08 = In what file format do you want to save images? Do not include a period
+%defaultVAR08 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 FileFormat = handles.(fieldname);
 

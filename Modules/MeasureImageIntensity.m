@@ -9,30 +9,30 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the images you want to process?  
-%defaultVAR1 = OrigGreen
+%textVAR01 = What did you call the images you want to process?  
+%defaultVAR01 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR3 = What do you want to call the staining measured by this algorithm? 
-%defaultVAR3 = Sytox
+%textVAR03 = What do you want to call the staining measured by this algorithm? 
+%defaultVAR03 = Sytox
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 ObjectName = handles.(fieldname);
-%textVAR4 = Set the threshold above which intensity should be measured (Range = 0-1)
-%defaultVAR4 = 0
+%textVAR04 = Set the threshold above which intensity should be measured (Range = 0-1)
+%defaultVAR04 = 0
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 LowThreshold = str2num(handles.(fieldname));
-%textVAR5 = The threshold should be a bit higher than the typical background pixel value. 
-%textVAR6 = Set the threshold below which intensity should be measured (Range = 0-1)
-%defaultVAR6 = 1
+%textVAR05 = The threshold should be a bit higher than the typical background pixel value. 
+%textVAR06 = Set the threshold below which intensity should be measured (Range = 0-1)
+%defaultVAR06 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 HighThreshold = str2num(handles.(fieldname));
-%textVAR7 = To save the adjusted image, enter text to append to the image name  
-%defaultVAR7 = N
+%textVAR07 = To save the adjusted image, enter text to append to the image name  
+%defaultVAR07 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
 SaveImage = handles.(fieldname);
-%textVAR8 =  Otherwise, leave as "N". To save or display other images, press Help button 
-%textVAR9 = In what file format do you want to save images? Do not include a period 
-%defaultVAR9 = tif
+%textVAR08 =  Otherwise, leave as "N". To save or display other images, press Help button 
+%textVAR09 = In what file format do you want to save images? Do not include a period 
+%defaultVAR09 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 FileFormat = handles.(fieldname);
 

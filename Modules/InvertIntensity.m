@@ -9,20 +9,20 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the image to be inverted (made negative)?
-%defaultVAR1 = OrigBlue
+%textVAR01 = What did you call the image to be inverted (made negative)?
+%defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR2 = What do you want to call the inverted image?
-%defaultVAR2 = InvertedBlue
+%textVAR02 = What do you want to call the inverted image?
+%defaultVAR02 = InvertedBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 InvertedImageName = handles.(fieldname);
 
-%textVAR8 = To save the inverted image, enter text to append to the image name 
-%defaultVAR8 = N
+%textVAR08 = To save the inverted image, enter text to append to the image name 
+%defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveImage = handles.(fieldname);
-%textVAR9 =  Otherwise, leave as "N". To save or display other images, press Help button
+%textVAR09 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR10 = In what file format do you want to save images? Do not include a period
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];

@@ -9,29 +9,29 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the primary objects you want to create secondary objects around? 
-%defaultVAR1 = Nuclei
+%textVAR01 = What did you call the primary objects you want to create secondary objects around? 
+%defaultVAR01 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 PrimaryObjectName = handles.(fieldname);
-%textVAR2 = What do you want to call the secondary objects identified by this algorithm?
-%defaultVAR2 = Cells
+%textVAR02 = What do you want to call the secondary objects identified by this algorithm?
+%defaultVAR02 = Cells
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 SecondaryObjectName = handles.(fieldname);
-%textVAR3 = On which image would you like to display the outlines of the secondary objects?
-%defaultVAR3 = OrigGreen
+%textVAR03 = On which image would you like to display the outlines of the secondary objects?
+%defaultVAR03 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 OrigImageName = handles.(fieldname);
-%textVAR5 = Set the number of pixels by which to expand the primary objects [Positive number]
-%defaultVAR5 = 10
+%textVAR05 = Set the number of pixels by which to expand the primary objects [Positive number]
+%defaultVAR05 = 10
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 DistanceToDilate = str2num(handles.(fieldname));
 
-%textVAR8 = To save object outlines as an image, enter text to append to the name 
-%defaultVAR8 = N
+%textVAR08 = To save object outlines as an image, enter text to append to the name 
+%defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveObjectOutlines = handles.(fieldname);
-%textVAR9 = To save colored object blocks as an image, enter text to append to the name 
-%defaultVAR9 = N
+%textVAR09 = To save colored object blocks as an image, enter text to append to the name 
+%defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveColoredObjects = handles.(fieldname);
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button

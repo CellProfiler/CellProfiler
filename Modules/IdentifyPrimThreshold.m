@@ -18,34 +18,34 @@ drawnow
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-%textVAR1 = What did you call the images you want to process? 
-%defaultVAR1 = OrigBlue
+%textVAR01 = What did you call the images you want to process? 
+%defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR2 = What do you want to call the objects identified by this algorithm?
-%defaultVAR2 = Nuclei
+%textVAR02 = What do you want to call the objects identified by this algorithm?
+%defaultVAR02 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ObjectName = handles.(fieldname);
-%textVAR3 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%defaultVAR3 = 1,99999
+%textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
+%defaultVAR03 = 1,99999
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SizeRange = handles.(fieldname);
-%textVAR4 = Set the Threshold (Between 0 and 1). Or, type "All" to calculate the threshold based 
-%defaultVAR4 = All
+%textVAR04 = Set the Threshold (Between 0 and 1). Or, type "All" to calculate the threshold based 
+%defaultVAR04 = All
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 Threshold = handles.(fieldname);
-%textVAR5 = on all of the images or type "Each" to calculate the threshold for each individual
-%textVAR6 = image and enter an adjustment factor here (Positive number):
-%defaultVAR6 = 1
+%textVAR05 = on all of the images or type "Each" to calculate the threshold for each individual
+%textVAR06 = image and enter an adjustment factor here (Positive number):
+%defaultVAR06 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 ThresholdAdjustmentFactor = str2num(handles.(fieldname));
 
-%textVAR8 = To save object outlines as an image, enter text to append to the name 
-%defaultVAR8 = N
+%textVAR08 = To save object outlines as an image, enter text to append to the name 
+%defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveObjectOutlines = handles.(fieldname);
-%textVAR9 = To save colored object blocks as an image, enter text to append to the name 
-%defaultVAR9 = N
+%textVAR09 = To save colored object blocks as an image, enter text to append to the name 
+%defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveColoredObjects = handles.(fieldname);
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button

@@ -9,17 +9,17 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the images you want to convert? 
-%defaultVAR1 = Images
+%textVAR01 = What did you call the images you want to convert? 
+%defaultVAR01 = Images
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR2 = Enter text to append to the image name, or leave "N" to keep
-%textVAR3 = the name the same except for the file extension.
-%defaultVAR3 = N
+%textVAR02 = Enter text to append to the image name, or leave "N" to keep
+%textVAR03 = the name the same except for the file extension.
+%defaultVAR03 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 Appendage = handles.(fieldname);
-%textVAR4 = In what file format do you want to save images? Do not include a period
-%defaultVAR4 = tif
+%textVAR04 = In what file format do you want to save images? Do not include a period
+%defaultVAR04 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 FileFormat = handles.(fieldname);
 

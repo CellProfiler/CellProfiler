@@ -9,13 +9,13 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = Do you want to load spot information from a file?
-%defaultVAR1 = N
+%textVAR01 = Do you want to load spot information from a file?
+%defaultVAR01 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 LoadSpotIdentifiers = handles.(fieldname);
 
-%textVAR9 = To save the resulting rotated image, enter a filename (no extension)
-%defaultVAR9 = N
+%textVAR09 = To save the resulting rotated image, enter a filename (no extension)
+%defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveImage = handles.(fieldname);
 %textVAR10 =  Otherwise, leave as "N". To save or display other images, press Help button

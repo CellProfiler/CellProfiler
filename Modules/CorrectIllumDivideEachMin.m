@@ -9,30 +9,30 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the image to be corrected?
-%defaultVAR1 = OrigBlue
+%textVAR01 = What did you call the image to be corrected?
+%defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR2 = What do you want to call the corrected image?
-%defaultVAR2 = CorrBlue
+%textVAR02 = What do you want to call the corrected image?
+%defaultVAR02 = CorrBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 CorrectedImageName = handles.(fieldname);
 
-%textVAR4 = To save the corrected image, enter text to append to the image name 
-%defaultVAR4 = N
+%textVAR04 = To save the corrected image, enter text to append to the image name 
+%defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 SaveImage = handles.(fieldname);
-%textVAR5 =  Otherwise, leave as "N". To save or display other images, press Help button
-%textVAR6 = In what file format do you want to save images? Do not include a period
-%defaultVAR6 = tif
+%textVAR05 =  Otherwise, leave as "N". To save or display other images, press Help button
+%textVAR06 = In what file format do you want to save images? Do not include a period
+%defaultVAR06 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 FileFormat = handles.(fieldname);
 
-%textVAR8 = Block size. This should be set large enough that every square block 
-%defaultVAR8 = 60
+%textVAR08 = Block size. This should be set large enough that every square block 
+%defaultVAR08 = 60
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 BlockSize = str2num(handles.(fieldname));
-%textVAR9 = of pixels is likely to contain some background. Default = 60 pixels
+%textVAR09 = of pixels is likely to contain some background. Default = 60 pixels
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

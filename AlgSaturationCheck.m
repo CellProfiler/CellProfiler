@@ -9,31 +9,31 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the image you want to check for saturation?
-%defaultVAR1 = OrigBlue
+%textVAR01 = What did you call the image you want to check for saturation?
+%defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 NameImageToCheck1 = handles.(fieldname);
-%textVAR2 = What did you call the image you want to check for saturation?
-%defaultVAR2 = OrigGreen
+%textVAR02 = What did you call the image you want to check for saturation?
+%defaultVAR02 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 NameImageToCheck2 = handles.(fieldname);
-%textVAR3 = What did you call the image you want to check for saturation?
-%defaultVAR3 = OrigRed
+%textVAR03 = What did you call the image you want to check for saturation?
+%defaultVAR03 = OrigRed
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 NameImageToCheck3 = handles.(fieldname);
-%textVAR4 = What did you call the image you want to check for saturation?
-%defaultVAR4 = N
+%textVAR04 = What did you call the image you want to check for saturation?
+%defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 NameImageToCheck4 = handles.(fieldname);
-%textVAR5 = What did you call the image you want to check for saturation?
-%defaultVAR5 = N
+%textVAR05 = What did you call the image you want to check for saturation?
+%defaultVAR05 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 NameImageToCheck5 = handles.(fieldname);
-%textVAR6 = What did you call the image you want to check for saturation?
-%defaultVAR6 = N
+%textVAR06 = What did you call the image you want to check for saturation?
+%defaultVAR06 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 NameImageToCheck6 = handles.(fieldname);
-%textVAR8 =  For unused colors, leave "N" in the boxes above.
+%textVAR08 =  For unused colors, leave "N" in the boxes above.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%

@@ -8,26 +8,26 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-%textVAR1 = How many characters at the beginning of the file name do you want to retain?
-%defaultVAR1 = 6
+%textVAR01 = How many characters at the beginning of the file name do you want to retain?
+%defaultVAR01 = 6
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 NumberCharactersPrefix = str2num(handles.(fieldname));
 
-%textVAR2 = How many characters at the end do you want to retain, including file extension?
-%defaultVAR2 = 8
+%textVAR02 = How many characters at the end do you want to retain, including file extension?
+%defaultVAR02 = 8
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 NumberCharactersSuffix = str2num(handles.(fieldname));
 
-%textVAR3 = Enter any text you want to place between those two portions of filename
-%defaultVAR3 = /
+%textVAR03 = Enter any text you want to place between those two portions of filename
+%defaultVAR03 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 TextToAdd = handles.(fieldname);
-%textVAR4 = Leave "/" to not add any text.
+%textVAR04 = Leave "/" to not add any text.
 
-%textVAR6 = Be very careful since you will be renaming (=overwriting) your files!!
-%textVAR7 = It is recommended to test this on copies of images in a separate directory first.
-%textVAR8 = The folder containing the files must not contain any subfolders or the
-%textVAR9 = subfolder and its contents will also be renamed.
+%textVAR06 = Be very careful since you will be renaming (=overwriting) your files!!
+%textVAR07 = It is recommended to test this on copies of images in a separate directory first.
+%textVAR08 = The folder containing the files must not contain any subfolders or the
+%textVAR09 = subfolder and its contents will also be renamed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

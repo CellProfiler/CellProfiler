@@ -9,28 +9,28 @@ CurrentAlgorithm = handles.currentalgorithm;
 %%%%%%%%%%%%%%%%
 drawnow
 
-%textVAR1 = What did you call the image to be thresholded?
-%defaultVAR1 = OrigBlue
+%textVAR01 = What did you call the image to be thresholded?
+%defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = handles.(fieldname);
-%textVAR2 = What do you want to call the thresholded image?
-%defaultVAR2 = ThreshBlue
+%textVAR02 = What do you want to call the thresholded image?
+%defaultVAR02 = ThreshBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ThresholdedImageName = handles.(fieldname);
-%textVAR4 = Pixels above this value (Range = 0-1) will be set to zero
-%defaultVAR4 = 1
+%textVAR04 = Pixels above this value (Range = 0-1) will be set to zero
+%defaultVAR04 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 HighThreshold = str2num(handles.(fieldname));
-%textVAR5 = This value will be subtracted from the entire image (Range = 0-1)
-%defaultVAR5 = 0
+%textVAR05 = This value will be subtracted from the entire image (Range = 0-1)
+%defaultVAR05 = 0
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 LowThreshold = str2num(handles.(fieldname));
 
-%textVAR8 = To save the thresholded image, enter text to append to the image name 
-%defaultVAR8 = N
+%textVAR08 = To save the thresholded image, enter text to append to the image name 
+%defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveImage = handles.(fieldname);
-%textVAR9 =  Otherwise, leave as "N". To save or display other images, press Help button
+%textVAR09 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR10 = In what file format do you want to save images? Do not include a period
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];

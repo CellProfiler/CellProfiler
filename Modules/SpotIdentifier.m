@@ -78,7 +78,7 @@ MarkingMethod = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 RowsColumns = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %%% Extracts the rows and columns from the user's input.
 try
-    RowsColumnsNumerical = str2num(RowsColumns);
+    RowsColumnsNumerical = str2double(RowsColumns);
     NumberRows = RowsColumnsNumerical(1);
     NumberColumns = RowsColumnsNumerical(2);
 catch error('Image processing was canceled because your entry for rows, columns in the Spot Identifier module was not understood.')
@@ -89,7 +89,7 @@ end
 HorizVertSpacing = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %%% Extracts the vertical and horizontal spacing from the user's input.
 try
-    HorizVertSpacingNumerical = str2num(HorizVertSpacing);
+    HorizVertSpacingNumerical = str2double(HorizVertSpacing);
     VertSpacing = HorizVertSpacingNumerical(1);
     HorizSpacing = HorizVertSpacingNumerical(2);
 catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
@@ -100,7 +100,7 @@ end
 HorizVertOffset = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %%% Extracts the vertical and horizontal offset from the user's input.
 try
-    HorizVertOffsetNumerical = str2num(HorizVertOffset);
+    HorizVertOffsetNumerical = str2double(HorizVertOffset);
     VertOffset = HorizVertOffsetNumerical(1);
     HorizOffset = HorizVertOffsetNumerical(2);
 catch error('Image processing was canceled because your entry for the distance from the top left marker to the center of the nearest spot (vertical, horizontal) in the Spot Identifier module was not understood.')
@@ -138,8 +138,8 @@ if handles.setbeinganalyzed == 1
     %%% Determines the figure number to display in.
     fieldname = ['figurealgorithm',CurrentAlgorithm];
     ThisAlgFigureNumber = handles.(fieldname);
-    FigureHandle = figure(ThisAlgFigureNumber); ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval
-else FigureHandle = figure; ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval
+    FigureHandle = figure(ThisAlgFigureNumber); ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+else FigureHandle = figure; ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
 end
 drawnow
 RotateMethod = upper(RotateMethod);
@@ -167,9 +167,11 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     PatienceHandle = msgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
-    figure(FigureHandle); ImageHandle = imagesc(RotatedImage), colormap(gray), axis image
+    figure(FigureHandle); ImageHandle = imagesc(RotatedImage), colormap(gray), axis image;
     title('Rotated Image'), pixval
-    try, delete(PatienceHandle), end
+    try %#ok We want to ignore MLint error checking for this line.
+        delete(PatienceHandle)
+    end 
 elseif strncmp(RotateMethod, 'C',1) == 1
     %%% Rotates the image based on user-entered coordinates.
     Prompts = {'Enter the X coordinate of the lower left marker', 'Enter the Y coordinate of the lower left marker', 'Enter the X coordinate of the lower right marker', 'Enter the Y coordinate of the lower right marker'};
@@ -180,10 +182,10 @@ elseif strncmp(RotateMethod, 'C',1) == 1
     if isempty(Answers) == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end
-    LowerLeftX = str2num(Answers{1});
-    LowerLeftY = str2num(Answers{2});
-    LowerRightX = str2num(Answers{3});
-    LowerRightY = str2num(Answers{4});
+    LowerLeftX = str2double(Answers{1});
+    LowerLeftY = str2double(Answers{2});
+    LowerRightX = str2double(Answers{3});
+    LowerRightY = str2double(Answers{4});
     HorizLeg = LowerRightX - LowerLeftX;
     VertLeg = LowerLeftY - LowerRightY;
     Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
@@ -207,8 +209,8 @@ if strncmp(MarkingMethod,'C',1) == 1
     if isempty(Answers) == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end
-    TopLeftX = str2num(Answers{1});
-    TopLeftY = str2num(Answers{2});
+    TopLeftX = str2double(Answers{1});
+    TopLeftY = str2double(Answers{2});
 elseif strncmp(MarkingMethod,'M',1) == 1
     %%% Sets the top, left of the grid based on mouse clicks.
     Answer3 = questdlg('After closing this window by clicking OK, click on the top left marker in the image then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.', 'Choose marker point', 'OK', 'Cancel', 'OK');
@@ -332,66 +334,70 @@ NewFigureSize = [30,60, ScreenSize(3)-60, ScreenSize(4)-150];
 set(FigureHandle, 'Position', NewFigureSize)
 axis image
 ShowGridButtonFunction = 'Handles = findobj(''type'',''line''); set(Handles,''visible'',''on''); clear Handles';
-ShowGridButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Show', 'Position', [10 6 45 20], ...
     'Callback', ShowGridButtonFunction, 'parent',gcf);
 HideGridButtonFunction = 'Handles = findobj(''type'',''line''); set(Handles,''visible'',''off''); clear Handles';
-HideGridButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [60 6 45 20], ...
     'Callback', HideGridButtonFunction, 'parent',gcf);
 ChangeGridButtonFunction = 'Handles = findobj(''type'',''line''); try, propedit(Handles), catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; clear Handles';
-ChangeGridButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [110 6 45 20], ...
     'Callback', ChangeGridButtonFunction, 'parent',gcf);
 ShowCoordinatesButtonFunction = 'Handles = findobj(''UserData'',''PositionListHandles''); set(Handles,''visible'',''on''); clear Handles';
-ShowCoordinatesButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Show', 'Position', [170 6 45 20], ...
     'Callback', ShowCoordinatesButtonFunction, 'parent',gcf);
 HideCoordinatesButtonFunction = 'Handles = findobj(''UserData'',''PositionListHandles''); set(Handles,''visible'',''off''); clear Handles';
-HideCoordinatesButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [220 6 45 20], ...
     'Callback', HideCoordinatesButtonFunction, 'parent',gcf);
 ChangeCoordinatesButtonFunction = 'Handles = findobj(''UserData'',''PositionListHandles''); try, propedit(Handles), catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; clear Handles';
-ChangeCoordinatesButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [270 6 45 20], ...
     'Callback', ChangeCoordinatesButtonFunction, 'parent',gcf);
 
 ShowSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''on''); end, clear Handles';
-ShowSpotIdentifyingInfoButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Show', 'Position', [330 6 45 20], ...
     'Callback', ShowSpotIdentifyingInfoButtonFunction, 'parent',gcf);
 HideSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''off''); end, clear Handles';
-HideSpotIdentifyingInfoButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [380 6 45 20], ...
     'Callback', HideSpotIdentifyingInfoButtonFunction, 'parent',gcf);
 ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
-ChangeSpotIdentifyingInfoButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [430 6 45 20], ...
     'Callback', ChangeSpotIdentifyingInfoButtonFunction, 'parent',gcf);
 
 ChangeColormapButtonFunction = 'ImageHandle = findobj(gca, ''type'',''image''); if strcmp(get(ImageHandle,''UserData''),''Color'') == 1, msgbox(''This image was loaded as a color image, so the colormap cannot be changed. You can use an RGB Split or RGB to Grayscale module to change the format of the image prior to running the Spot Identifier module.''), else propedit(ImageHandle), end';
-ChangeColormapButton_handle = uicontrol('Style', 'pushbutton', ...
+uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [490 6 45 20], ...
     'Callback', ChangeColormapButtonFunction, 'parent',gcf);
-TextHandle1 = uicontrol('Parent',gcf, ...
+%%% Text1
+uicontrol('Parent',gcf, ...
     'BackgroundColor',get(gcf,'Color'), ...
     'Position',[10 28 145 14], ...
     'HorizontalAlignment','center', ...
     'String','Gridlines:', ...
     'Style','text');
-TextHandle2 = uicontrol('Parent',gcf, ...
+%%% Text2
+uicontrol('Parent',gcf, ...
     'BackgroundColor',get(gcf,'Color'), ...
     'Position',[170 28 145 14], ...
     'HorizontalAlignment','center', ...
     'String','Coordinates:', ...
     'Style','text');
-TextHandle3 = uicontrol('Parent',gcf, ...
+%%% Text3
+uicontrol('Parent',gcf, ...
     'BackgroundColor',get(gcf,'Color'), ...
     'Position',[330 28 145 14], ...
     'HorizontalAlignment','center', ...
     'String','Spot identifying info:', ...
     'Style','text');
-TextHandle4 = uicontrol('Parent',gcf, ...
+%%% Text4
+uicontrol('Parent',gcf, ...
     'BackgroundColor',get(gcf,'Color'), ...
     'Position',[485 28 55 14], ...
     'HorizontalAlignment','center', ...
@@ -437,14 +443,14 @@ set(gca, 'YTick', GridYLocations(:,1))
 
 %%% Sets the Tick Labels.
 if strcmp(LeftOrRight,'R') == 1
-    set(gca, 'XTickLabel',[fliplr([1:NumberColumns])])
+    set(gca, 'XTickLabel',[fliplr(1:NumberColumns)])
 else
-    set(gca, 'XTickLabel',{[1:NumberColumns]})
+    set(gca, 'XTickLabel',{1:NumberColumns})
 end
 if strcmp(TopOrBottom,'B') == 1
-    set(gca, 'YTickLabel',{fliplr([1:NumberRows])})
+    set(gca, 'YTickLabel',{fliplr(1:NumberRows)})
 else
-    set(gca, 'YTickLabel',{[1:NumberRows]})
+    set(gca, 'YTickLabel',{1:NumberRows})
 end
 
 %%% Adds the toolbar to the figure, which is lost after some of the

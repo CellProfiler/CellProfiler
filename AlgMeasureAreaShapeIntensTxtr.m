@@ -365,7 +365,7 @@ else
     %%% Calculates the percent of cells whose integrated intensity is above the
     %%% user's threshold.
     if strcmp(upper(Threshold),'N') ~= 1
-        NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2num(Threshold));
+        NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
         TotalNumberObjects = length(IntegratedIntensity);
         PercentObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
         fieldname = ['dMTPercentAboveThreshold', ImageName, 'within', ObjectName];

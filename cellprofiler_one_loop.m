@@ -71,7 +71,7 @@ for SlotNumber = 1:handles.numAlgorithms,
       else
         ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error];
       end
-      handles_results.CellProfilerError = ErrorExplanation
+      handles_results.CellProfilerError = ErrorExplanation %#ok We want to ignore MLint error checking for this line.
       %%% Breaks out of the image analysis loop.
       break
     end % Goes with try/catch.

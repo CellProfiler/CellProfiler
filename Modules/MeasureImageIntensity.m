@@ -48,15 +48,15 @@ ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Set the threshold above which intensity should be measured (Range = 0-1)
 %defaultVAR03 = 0
-LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
+LowThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
 
 %textVAR04 = The threshold should be a bit higher than the typical background pixel value. 
 %textVAR05 = Set the threshold below which intensity should be measured (Range = 0-1)
 %defaultVAR05 = 1
-HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2num(handles.Vpixelsize{1});
+PixelSize = str2double(handles.Vpixelsize{1});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

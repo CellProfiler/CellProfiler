@@ -196,7 +196,7 @@ if SetBeingAnalyzed == 1
                             Count = Count + 1;
                         end
                     end
-                    if exist('Match') == 0
+                    if exist('Match','var') == 0
                         error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
                     end
                     %%% The File List is created by extracting only the names of files (not the

@@ -78,10 +78,10 @@ RGBImage = handles.(fieldname);
 
 Size = size(RGBImage);
 if length(Size) ~= 3
-    error(['Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  Is it a color image?  This module was only tested with TIF and BMP images.'])
+    error('Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  Is it a color image?  This module was only tested with TIF and BMP images.')
 end
 if Size(3) ~= 3
-    error(['Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  This module was only tested with TIF and BMP images.'])
+    error('Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  This module was only tested with TIF and BMP images.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%

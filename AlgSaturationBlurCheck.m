@@ -165,16 +165,16 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     end
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth');
     DisplayText = strvcat(['    Image Set # ',num2str(handles.setbeinganalyzed)],...
-        ['      '],...
-        ['Percent of pixels that are Saturated:']);
+        '      ',...
+        'Percent of pixels that are Saturated:');
     for ImageNumber = 1:6
-        try DisplayText = strvcat(DisplayText, ...
+        try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
                 [NameImageToCheck{ImageNumber}, ':    ', num2str(PercentSaturation{ImageNumber})]);
         end
     end
-    DisplayText = strvcat(DisplayText, ['      '],['      '],['Focus Score:']);
+    DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:');
     for ImageNumber = 1:6
-        try DisplayText = strvcat(DisplayText, ...
+        try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
                 [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);
         end
     end

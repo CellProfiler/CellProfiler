@@ -65,9 +65,6 @@ Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR06 = The measurements made by this module will be named based on
 %textVAR07 = your entries, e.g. "OrigRedwithinNuclei".
 
-%%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2num(handles.Vpixelsize{1});
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -156,7 +153,7 @@ Statistics = regionprops(LabelMatrixImage,'Area', 'ConvexArea', 'MajorAxisLength
 
 %%% CATCH NAN's -->>
 if sum(isnan(cat(1,Statistics.Solidity))) ~= 0
-    error('Image processing was canceled because there was a problem in the Measure Intensity Texture module. Some of the measurements could not be made.  This might be because some objects had zero area or because some measurements were attempted that were divided by zero. If you want to make measurements despite this problem, remove the 3 lines in the .m file for this module following the line "%%% CATCH NAN''s". This will result in some non-numeric values in the output file, which will be represented as "NaN" (Not a Number).')
+    error('Image processing was canceled because there was a problem in the Measure Intensity Texture module. Some of the measurements could not be made.  This might be because some objects had zero area or because some measurements were attempted that were divided by zero. If you want to make measurements despite this problem, remove the 3 lines in the .m file for this module following the line "%%% CATCH NAN''s". This will result in some non-numeric values in the output file, which will be represented as NaN (Not a Number).')
 end
 
 %%%
@@ -200,7 +197,7 @@ handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 %%% Calculates the percent of cells whose integrated intensity is above the
 %%% user's threshold.
 if strcmp(upper(Threshold),'N') ~= 1
-    NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2num(Threshold));
+    NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
     TotalNumberObjects = length(IntegratedIntensity);
     PercentObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
     fieldname = ['dMTPercentAboveThreshold', ObjectName];

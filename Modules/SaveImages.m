@@ -85,7 +85,7 @@ OrigImageToBeAnalyzed = handles.(fieldname);
 %%% Checks whether the file format the user entered is readable by Matlab.
 IsFormat = imformats(FileFormat);
 if isempty(IsFormat) == 1
-    error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+    error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
 end
 
 %%% Determines the file name.

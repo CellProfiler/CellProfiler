@@ -57,7 +57,7 @@ ResultingImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR04 = Enter the factor to multiply the subtracted image by:
 %defaultVAR04 = 1
-MultiplyFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+MultiplyFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR05 = Contrast stretch the resulting image?
 %defaultVAR05 = N
@@ -65,7 +65,7 @@ Stretch = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 
 %textVAR06 = Blur radius for the basic image
 %defaultVAR06 = 3
-BlurRadius = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+BlurRadius = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

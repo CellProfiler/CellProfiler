@@ -101,7 +101,7 @@ if strcmp(upper(ShrinkingNumber),'INF') == 1
     ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'shrink', Inf);
     ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'shrink', Inf);
 else 
-    try ShrinkingNumber = str2num(ShrinkingNumber);
+    try ShrinkingNumber = str2double(ShrinkingNumber);
         ShrunkenPrelimSegmentedImage = bwmorph(PrelimSegmentedImage, 'thin', ShrinkingNumber);
         ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'thin', ShrinkingNumber);
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thin', ShrinkingNumber);

@@ -117,28 +117,28 @@ drawnow
 
 %%% If any of the colors are to be left black, creates the appropriate
 %%% image.
-if BlueImageExists == 0 & RedImageExists == 0 & GreenImageExists == 0
+if BlueImageExists == 0 && RedImageExists == 0 && GreenImageExists == 0
     error('Image processing was canceled because you have not selected any images to be merged in the RGB Merge module.')
 end
-if BlueImageExists == 0 & RedImageExists == 0 & GreenImageExists == 1
+if BlueImageExists == 0 && RedImageExists == 0 && GreenImageExists == 1
     BlueImage = zeros(size(GreenImage));
     RedImage = zeros(size(GreenImage));
 end
-if BlueImageExists == 0 & RedImageExists == 1 & GreenImageExists == 0
+if BlueImageExists == 0 && RedImageExists == 1 && GreenImageExists == 0
     BlueImage = zeros(size(RedImage));
     GreenImage = zeros(size(RedImage));
 end
-if BlueImageExists == 1 & RedImageExists == 0 & GreenImageExists == 0
+if BlueImageExists == 1 && RedImageExists == 0 && GreenImageExists == 0
     RedImage = zeros(size(BlueImage));
     GreenImage = zeros(size(BlueImage));
 end
-if BlueImageExists == 1 & RedImageExists == 1 & GreenImageExists == 0
+if BlueImageExists == 1 && RedImageExists == 1 && GreenImageExists == 0
     GreenImage = zeros(size(BlueImage));
 end
-if BlueImageExists == 0 & RedImageExists == 1 & GreenImageExists == 1
+if BlueImageExists == 0 && RedImageExists == 1 && GreenImageExists == 1
     BlueImage = zeros(size(GreenImage));
 end
-if BlueImageExists == 1 & RedImageExists == 0 & GreenImageExists == 1
+if BlueImageExists == 1 && RedImageExists == 0 && GreenImageExists == 1
     RedImage = zeros(size(BlueImage));
 end
 
@@ -157,9 +157,9 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 
-RGBImage(:,:,1) = immultiply(RedImage,str2num(RedAdjustmentFactor));
-RGBImage(:,:,2) = immultiply(GreenImage,str2num(GreenAdjustmentFactor));;
-RGBImage(:,:,3) = immultiply(BlueImage,str2num(BlueAdjustmentFactor));;
+RGBImage(:,:,1) = immultiply(RedImage,str2double(RedAdjustmentFactor));
+RGBImage(:,:,2) = immultiply(GreenImage,str2double(GreenAdjustmentFactor));
+RGBImage(:,:,3) = immultiply(BlueImage,str2double(BlueAdjustmentFactor));
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

@@ -3881,7 +3881,7 @@ else
                       %%% Get a list of the measurement fields (after the first pass has run through
                       %%% all the modules)
                       Fields = fieldnames(handles);
-                      mFields = strncmp(Fields,'dM',2);
+                      mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
                       MeasurementFields = Fields(mFields);
                       
                       % If we are using parallel machines, copy the handles structure to them.

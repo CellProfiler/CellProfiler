@@ -55,7 +55,7 @@ end
 %%% The only thing read back by the central machine is dM fields.
 %%% Copy those to the (empty) results structure
 Fields = fieldnames(handles);
-mFields = strncmp(Fields,'dM',2);
+mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
 MeasurementFields = Fields(mFields);
 
 handles_results.setbeinganalyzed = setbeinganalyzed;

@@ -197,7 +197,11 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = No
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
 
-%%%VariableRevisionNumber = 02
+%textVAR09 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view):
+%defaultVAR09 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+
+%%%VariableRevisionNumber = 3
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,6 +281,9 @@ if Threshold == 0
     %%% Adjusts the threshold by a correction factor.  
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
+MinimumThreshold = str2num(MinimumThreshold);
+Threshold = max(MinimumThreshold,Threshold);
+
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
 

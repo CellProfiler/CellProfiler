@@ -225,6 +225,10 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = No
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 
+%textVAR11 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view):
+%defaultVAR11 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
@@ -305,6 +309,9 @@ if Threshold == 0
     Threshold = graythresh(OrigImageToBeAnalyzed);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
+MinimumThreshold = str2num(MinimumThreshold);
+Threshold = max(MinimumThreshold,Threshold);
+
 %%% Thresholds the image to eliminate dim maxima.
 MaximaImage(~im2bw(OrigImageToBeAnalyzed, Threshold))=0;
 

@@ -7,14 +7,19 @@ function handles = CorrectIllumDivideAllMean(handles)
 % information from a set of images collected at the same time. 
 %
 % How it works:
-% This module works by averaging together all of the images, then
-% smoothing this image by fitting a low-order polynomial to the
-% resulting average image and rescaling it.  This produces an image
-% that represents the variation in illumination across the field of
-% view.  This process is carried out before the first image set is
-% processed; subsequent image sets use the already calculated image.
-% Each image is divided by this illumination image to produce the
-% corrected image.
+% This module works by averaging together all of the images (making a
+% projection), then smoothing this image and rescaling it.  This
+% produces an image that represents the variation in illumination
+% across the field of view.  This process is carried out before the
+% first image set is processed; subsequent image sets use the already
+% calculated image. Each image is divided by this illumination image
+% to produce the corrected image.
+%
+% The smoothing can be done by fitting a low-order polynomial to the
+% mean (projection) image (option = P), or by applying a filter
+% to the image. The user enters an even number for the artifact width,
+% and this number is divided by two to obtain the radius of a disk
+% shaped structuring element which is used for filtering.
 %
 % If you want to run this module only to calculate the mean and
 % illumination images and not to correct every image in the directory,
@@ -149,7 +154,11 @@ ProjectionFileName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = .
 ProjectionPathName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 03
+%textVAR08 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
+%defaultVAR08 = 50
+SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 4
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -253,7 +262,7 @@ if handles.Current.SetBeingAnalyzed == 1
                 TimePerSet = TimeSoFar/i;
                 ImagesRemaining = NumberOfImages - i;
                 TimeRemaining = round(TimePerSet*ImagesRemaining);
-                WaitbarText = {'Calculating the illumination function for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
+                WaitbarText = {'Calculating the projection image for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
                 WaitbarText = char(WaitbarText);
                 waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
                 drawnow
@@ -262,42 +271,51 @@ if handles.Current.SetBeingAnalyzed == 1
                 CurrentTime = clock;
                 TimeSoFar = etime(CurrentTime,TimeStart);
             end
-            WaitbarText = {'Calculations of the illumination function are finished for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.';['Seconds consumed: ',num2str(TimeSoFar),]};
+            WaitbarText = {'Calculations of the projection image are finished for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.';['Seconds consumed: ',num2str(TimeSoFar),]};
             WaitbarText = char(WaitbarText);
             waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
             MeanImage = TotalImage / length(FileList);
-            %%% The following is used to fit a low-dimensional polynomial to the mean image.
-            %%% The result, IlluminationImage, is an image of the smooth illumination function.
-            [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
-            x2 = x.*x;
-            y2 = y.*y;
-            xy = x.*y;
-            o = ones(size(MeanImage));
-            Ind = find(MeanImage > 0);
-            Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(MeanImage(Ind));
-            drawnow
-            IlluminationImage1 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(MeanImage));
-            %%% The final IlluminationImage is produced by dividing each
-            %%% pixel of the illumination image by a scalar: the minimum
-            %%% pixel value anywhere in the illumination image. (If the
-            %%% minimum value is zero, .00000001 is substituted instead.)
-            %%% This rescales the IlluminationImage from 1 to some number.
-            %%% This ensures that the final, corrected image will be in a
-            %%% reasonable range, from zero to 1.
-            drawnow
-            IlluminationImage = IlluminationImage1 ./ max([min(min(IlluminationImage1)); .00000001]);
-               %%% Note: the following "imwrite" saves the illumination
-            %%% correction image in TIF format, but the image is compressed
-            %%% so it is not as smooth as the image that is saved using the
-            %%% "save" function below, which is stored in matlab ".mat"
-            %%% format.
-            % imwrite(IlluminationImage, 'IlluminationImage.tif', 'tif')
-            
+
+            if strcmpi(SmoothingMethod,'P') == 1
+                %%% The following is used to fit a low-dimensional polynomial to the mean image.
+                %%% The result, IlluminationImage, is an image of the smooth illumination function.
+                [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
+                x2 = x.*x;
+                y2 = y.*y;
+                xy = x.*y;
+                o = ones(size(MeanImage));
+                Ind = find(MeanImage > 0);
+                Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(MeanImage(Ind));
+                drawnow
+                IlluminationImage1 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(MeanImage));
+                %%% The final IlluminationImage is produced by dividing each
+                %%% pixel of the illumination image by a scalar: the minimum
+                %%% pixel value anywhere in the illumination image. (If the
+                %%% minimum value is zero, .00000001 is substituted instead.)
+                %%% This rescales the IlluminationImage from 1 to some number.
+                %%% This ensures that the final, corrected image will be in a
+                %%% reasonable range, from zero to 1.
+                drawnow
+                IlluminationImage = IlluminationImage1 ./ max([min(min(IlluminationImage1)); .00000001]);
+                %%% Note: the following "imwrite" saves the illumination
+                %%% correction image in TIF format, but the image is compressed
+                %%% so it is not as smooth as the image that is saved using the
+                %%% "save" function below, which is stored in matlab ".mat"
+                %%% format.
+                % imwrite(IlluminationImage, 'IlluminationImage.tif', 'tif')
+            else try ArtifactWidth = str2num(SmoothingMethod);
+                    ArtifactRadius = 0.5*ArtifactWidth;
+                    StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
+                    IlluminationImage = ordfilt2(MeanImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
+                catch
+                    error(['The text you entered for the smoothing method in the Correct Illumination Divide All Mean module is unrecognizable for some reason. You must enter a positive, even number or the letter P.  Your entry was ',SmoothingMethod])
+                end
+            end
             %%% Saves the illumination correction image to the hard
             %%% drive if requested.
             if strcmp(upper(IllumCorrectFileName), 'N') == 0
                 try if strcmp(IllumCorrectPathName,'.') == 1
-                    IllumCorrectPathName = handles.Current.DefaultOutputDirectory;
+                        IllumCorrectPathName = handles.Current.DefaultOutputDirectory;
                     end
                     PathAndFileName = fullfile(IllumCorrectPathName,IllumCorrectFileName);
                     save(PathAndFileName, 'IlluminationImage')

@@ -284,7 +284,15 @@ end
 % the original filename of the image, named after the new image name,
 % so that if the SaveImages module attempts to save the resulting
 % image, it can be named by appending text to the original file name.
-%       It is important to think about which of these data should be
+% handles.Pipeline is for storing data which must be retrieved by other modules.
+% This data can be overwritten as each image set is processed, or it
+% can be generated once and then retrieved during every subsequent image
+% set's processing, or it can be saved for each image set by
+% saving it according to which image set is being analyzed.
+%       Anything stored in handles.Measurements or handles.Pipeline
+% will be deleted at the end of the analysis run, whereas anything
+% stored in handles.Settings will be retained from one analysis to the
+% next. It is important to think about which of these data should be
 % deleted at the end of an analysis run because of the way Matlab
 % saves variables: For example, a user might process 12 image sets of
 % nuclei which results in a set of 12 measurements ("TotalNucArea")
@@ -302,14 +310,18 @@ end
 % fine: it will just repeatedly use the processed image of nuclei
 % leftover from the last image set, which was left in the handles
 % structure ("SegmNucImg").
-%
-% INCLUDE FURTHER DESCRIPTION OF MEASUREMENTS PER CELL AND PER IMAGE
-% HERE>>>
-%
+%       Note that two types of measurements are typically made: Object
+% and Image measurements.  Object measurements have one number for
+% every object in the image (e.g. ObjectArea) and image measurements
+% have one number for the entire image, which could come from one
+% measurement from the entire image (e.g. ImageTotalIntensity), or
+% which could be an aggregate measurement based on individual object
+% measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
+% ensure that your data will be extracted properly.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
-% field of XY locations stored in pairs, it is better to store a field
+% field of XY locations stored in pairs, they should be split into a field
 % of X locations and a field of Y locations. Measurements must be
 % stored in double format, because the extraction part of the program
 % is designed to deal with that type of array only, not cell or
@@ -317,8 +329,7 @@ end
 % 'ObjectName' as part of the fieldname in the handles structure so
 % that multiple modules can be run and their data will not overwrite
 % each other.
-%
-%       Extracting measurements: handles.dMCCenterXNuclei{1}(2) gives
+%       Extracting measurements: handles.Measurements.CenterXNuclei{1}(2) gives
 % the X position for the second object in the first image.
-% handles.dMCAreaNuclei{2}(1) gives the area of the first object in
+% handles.Measurements.AreaNuclei{2}(1) gives the area of the first object in
 % the second image.

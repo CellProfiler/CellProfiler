@@ -360,6 +360,14 @@ GenePattern or Open Microscopy Environment.]]]
        stays open. See tooltips code. Make manual page.  Fails if
        there are fewer images than the total grid. 
 
+       - Export mean data button: currently, if you enter a filename
+         in use, it warns you and then cancels the export. Instead,
+         the user should be warned and given two options: overwrite,
+         or enter a different name.  For an example of this, see the
+         use of "while" in the PreviewAndSaveColumnOfSampleInfo
+         subfunction in CellProfiler.m
+
+
 
 Very Long Term (i.e., sometime near publication)
 

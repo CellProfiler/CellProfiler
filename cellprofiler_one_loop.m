@@ -16,7 +16,7 @@ handles.setbeinganalyzed = setbeinganalyzed;
 % clear the error variables
 handles_results.CellProfilerError = [];
 
-for SlotNumber = handles.numAlgorithms,
+for SlotNumber = 1:handles.numAlgorithms,
   %%% If an algorithm is not chosen in this slot, continue on to the next.
   AlgNumberAsString = sprintf('%02d', SlotNumber);
   AlgName = ['Valgorithmname' AlgNumberAsString];

@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 07-Oct-2004 11:00:06
+% Last Modified by GUIDE v2.5 12-Oct-2004 16:45:14
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1437,6 +1437,19 @@ if strcmp(Answer, 'Yes') == 1
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
     delete(TimerHandles)
+end
+
+%%%%%%%%%%%%%%%%%
+
+% --- Executes on button press in RevealDataAnalysisButtons.
+function RevealDataAnalysisButtons_Callback(hObject, eventdata, handles)
+CurrentButtonLabel = get(hObject,'string');
+if strcmp(CurrentButtonLabel,'Hide')
+    set(handles.CoverDataAnalysisFrame,'visible','on')
+    set(hObject,'String','Data')
+else
+        set(handles.CoverDataAnalysisFrame,'visible','off')
+            set(hObject,'String','Hide')
 end
 
 %%%%%%%%%%%%%%%%%
@@ -3676,24 +3689,3 @@ else
 end;
 
 %%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%
-
-
-% --- Executes on button press in RevealDataAnalysisButtons.
-function RevealDataAnalysisButtons_Callback(hObject, eventdata, handles)
-CurrentButtonLabel = get(hObject,'string');
-if strcmp(CurrentButtonLabel,'Hide')
-    set(handles.CoverDataAnalysisFrame,'visible','on')
-    set(hObject,'String','Data')
-else
-        set(handles.CoverDataAnalysisFrame,'visible','off')
-            set(hObject,'String','Hide')
-end
-
-%
-% --- Executes on button press in pushbutton101.
-function pushbutton101_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton101 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-

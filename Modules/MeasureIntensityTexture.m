@@ -1,4 +1,31 @@
-function handles = AlgMeasureIntensityTexture1(handles)
+function handles = AlgMeasureIntensityTexture(handles)
+
+
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the Measure Intensity and Texture Module.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
+
 %%% Retrieves a segmented image, in label matrix format, and a
 %%% corresponding original grayscale image and makes 
 %%% measurements of the objects that are segmented in the image.
@@ -259,29 +286,3 @@ end
 
 %%%%% Help for the MeasureIntensityTexture module: 
 %%%%% .
-
-
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the ______________________.
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$

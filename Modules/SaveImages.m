@@ -160,18 +160,22 @@ end
 
 %%% Retrieves the image you want to analyze and assigns it to a variable,
 %%% "Image".
-fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+if isfield(handles.Pipeline, ImageName) == 0,
+    %%% If the image is not there, the module tries in a field named
+    %%% 'Segmented' which would be produced by an Identify module.
+    if isfield(handles.Pipeline, ['Segmented',ImageName])==1,
+        ImageName = ['Segmented',ImageName];
+    else %%% If the image is not there, an error message is produced.  The error
+        %%% is not displayed: The error function halts the current function and
+        %%% returns control to the calling function (the analyze all images
+        %%% button callback.)  That callback recognizes that an error was
+        %%% produced because of its try/catch loop and breaks out of the image
+        %%% analysis loop without attempting further modules.
+        error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but neither that nor an image with the name ', ['Segmented',ImageName] , ' exists.  Perhaps there is a typo in the name.'])
+    end
 end
-Image = handles.Pipeline.(fieldname);
+Image = handles.Pipeline.(ImageName);
 
 %%% Checks whether the file format the user entered is readable by Matlab.
 IsFormat = imformats(FileFormat);

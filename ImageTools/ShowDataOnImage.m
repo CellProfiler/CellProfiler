@@ -133,7 +133,7 @@ if RawFileName ~= 0
                             return
                         else
                             %%% Opens and displays the image, with pixval shown.
-                            ImageToDisplay = im2double(imread([Pathname,'/',FileName])); %%% TODO: Fix filename construction.
+                            ImageToDisplay = imreadimagefile(Pathname,FileName);
                             %%% Allows underscores to be displayed properly.
                             ImageFileName = strrep(ImageFileName,'_','\_');
                             FigureHandle = figure; imagesc(ImageToDisplay), colormap(gray), title([EditedMeasurementToExtract, ' on ', ImageFileName])
@@ -190,3 +190,41 @@ if RawFileName ~= 0
     end
 end
 cd(handles.Current.StartupDirectory);
+
+%%%%%%%%%%%%%%%%%%%%%
+%%%% SUBFUNCTION %%%%
+%%%%%%%%%%%%%%%%%%%%%
+function LoadedImage = imreadimagefile(Pathname, FileName)
+%%% Check extension of FileName
+[pathstr, name, ext] = fileparts(FileName);
+if strcmp('.DIB', upper(ext)),
+    %%% Opens this non-Matlab readable file format.
+    Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
+    Width = str2double(Answers{1});
+    Height = str2double(Answers{2});
+    BitDepth = str2double(Answers{3});
+    Channels = str2double(Answers{4});
+    fid = fopen(fullfile(Pathname, FileName), 'r');
+    if (fid == -1),
+        error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
+    end
+    fread(fid, 52, 'uchar');
+    LoadedImage = zeros(Height,Width,Channels);
+    for c=1:Channels,
+        [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+        if Count < (Width * Height),
+            fclose(fid);
+            error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
+        end
+        LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+    end
+    fclose(fid);
+else
+    %%% Opens Matlab-readable file formats.
+    try
+        %%% Read (open) the image you want to analyze and assign it to a variable,
+        %%% "LoadedImage".
+        LoadedImage = im2double(imread(fullfile(Pathname, FileName)));
+    catch error(['Unable to open the file, perhaps not a valid Image File.']);
+    end
+end

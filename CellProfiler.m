@@ -317,16 +317,6 @@ if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     cd(handles.Current.StartupDirectory)
     return
 end
-try
-    [NumberOfModules, MaxNumberVariables] = size(LoadedSettings.Settings.VariableValues);
-    if (size(LoadedSettings.Settings.ModuleNames,2) ~= NumberOfModules)||(size(LoadedSettings.Settings.NumbersOfVariables,2) ~= NumberOfModules);
-        errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
-        return
-    end
-catch
-    errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
-        return
-end
 %%% Figures out whether we loaded a Settings or Output file, and puts
 %%% the correct values into Settings. Splices the subset of variables
 %%% from the "settings" structure into the handles structure.
@@ -335,6 +325,17 @@ if (isfield(LoadedSettings, 'Settings')),
 else
     Settings = LoadedSettings.handles.Settings;
     Settings.NumbersOfVariables = LoadedSettings.handles.Settings.NumbersOfVariables;
+end
+
+try
+    [NumberOfModules, MaxNumberVariables] = size(Settings.VariableValues);
+    if (size(Settings.ModuleNames,2) ~= NumberOfModules)||(size(Settings.NumbersOfVariables,2) ~= NumberOfModules);
+        errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+        return
+    end
+catch
+    errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+        return
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;

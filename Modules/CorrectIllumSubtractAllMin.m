@@ -31,18 +31,19 @@ function handles = AlgCorrectIllumSubtractAllMin(handles)
 % SAVING IMAGES: The illumination corrected images produced by this
 % module can be easily saved using the Save Images module, using the
 % name you assign. The mean image can be saved using the name
-% MeanIlluminationImageAS plus whatever you called the corrected image (e.g.
-% MeanIlluminationImageASCorrBlue). The Illumination correction image can be saved
-% using the name IllumImageAS plus whatever you called the corrected
-% image (e.g. IllumImageASCorrBlue).  Note that using the Save Images
-% module saves a copy of the image in an image file format, which has
-% lost some of the detail that a matlab file format would contain.  In
-% other words, if you want to save the illumination image to use it in
-% a later analysis, you should use the settings boxes within this
-% module to save the illumination image in '.mat' format. If you want
-% to save other intermediate images, alter the code for this module to
-% save those images to the handles structure (see the section marked
-% SAVE DATA TO HANDLES STRUCTURE) and then use the Save Images module.
+% MeanIlluminationImageAS plus whatever you called the corrected image
+% (e.g. MeanIlluminationImageASCorrBlue). The Illumination correction
+% image can be saved using the name IllumImageAS plus whatever you
+% called the corrected image (e.g. IllumImageASCorrBlue).  Note that
+% using the Save Images module saves a copy of the image in an image
+% file format, which has lost some of the detail that a matlab file
+% format would contain.  In other words, if you want to save the
+% illumination image to use it in a later analysis, you should use the
+% settings boxes within this module to save the illumination image in
+% '.mat' format. If you want to save other intermediate images, alter
+% the code for this module to save those images to the handles
+% structure (see the SaveImages module help) and then use the Save
+% Images module.
 %
 % See also ALGCORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
 % ALGCORRECTILLUMDIVIDEALLMEAN,

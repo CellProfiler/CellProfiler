@@ -9,8 +9,8 @@ function handles = AlgMeasureTotalIntensity(handles)
 %
 % SAVING IMAGES: If you want to save images produced by this module,
 % alter the code for this module to save those images to the handles
-% structure (see the section marked SAVE DATA TO HANDLES STRUCTURE)
-% and then use the Save Images module.
+% structure (see the SaveImages module help) and then use the Save
+% Images module.
 %
 % See also ALGMEASUREAREAOCCUPIED,
 % ALGMEASUREAREASHAPEINTENSTXTR,

@@ -26,6 +26,34 @@ function handles = AlgShrinkPrimaryObjects(handles)
 % cell regions are used to define the cytoplasm objects, which are
 % tertiary objects).
 %
+% SAVING IMAGES: This module produces several images which can be
+% easily saved using the Save Images module. These will be grayscale
+% images where each object is a different intensity. (1) The
+% preliminary segmented image, which includes objects on the edge of
+% the image and objects that are outside the size range can be saved
+% using the name: PrelimSegmented + whatever you called the objects
+% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% which excludes objects smaller than your selected size range can be
+% saved using the name: PrelimSmallSegmented + whatever you called the
+% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% image which excludes objects on the edge of the image and excludes
+% objects outside the size range can be saved using the name:
+% Segmented + whatever you called the objects (e.g. SegmentedNuclei)
+% 
+% Several additional images are normally calculated for display only,
+% including the colored label matrix image (the objects displayed as
+% arbitrary colors), object outlines, and object outlines overlaid on
+% the original image. These images can be saved by altering the code
+% for this module to save those images to the handles structure (see
+% the SaveImages module help) and then using the Save Images module.
+% Important note: The calculations of these display images are only
+% performed if the figure window is open, so the figure window must be
+% left open or the Save Images module will fail.  If you are running
+% the job on a cluster, figure windows are not open, so the Save
+% Images module will also fail, unless you go into the code for this
+% module and remove the 'if/end' statement surrounding the DISPLAY
+% RESULTS section.
+%
 % See also any identify primary module.
 
 % The contents of this file are subject to the Mozilla Public License Version 

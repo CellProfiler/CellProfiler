@@ -12,8 +12,16 @@ function handles = AlgSaveImages(handles)
 % If you want to save images that are produced by other modules but
 % that are not given an official name in the settings boxes for that
 % module, alter the code for the module to save those images to the
-% handles structure (see the section of each module's code marked SAVE
-% DATA TO HANDLES STRUCTURE) and then use the Save Images module.
+% handles structure and then use the Save Images module.
+% The code should look like this:
+% fieldname = ['dOTSomethingDescriptive(optional)',ImageorObjectNameFromSettingsBox];
+% handles.(fieldname) = ImageProducedBytheModule;
+% Example 1:
+% fieldname = ['dOTSegmented', ObjectName];
+% handles.(fieldname) = SegmentedObjectImage;
+% Example 2:
+% fieldname = ['dOT', CroppedImageName];
+% handles.(fieldname) = CroppedImage;
 %
 % See also <nothing relevant>
 

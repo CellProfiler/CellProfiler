@@ -12,8 +12,8 @@ function handles = AlgProcessOutlines(handles)
 % This will be a grayscale image where each object is a different
 % intensity. If you want to save other intermediate images, alter the
 % code for this module to save those images to the handles structure
-% (see the section marked SAVE DATA TO HANDLES STRUCTURE) and then use
-% the Save Images module.
+% (see the SaveImages module help) and then use the Save Images
+% module.
 %
 % See also <nothing relevant>
 

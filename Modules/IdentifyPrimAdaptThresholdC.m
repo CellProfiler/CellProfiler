@@ -50,14 +50,14 @@ function handles = AlgIdentifyPrimAdaptThresholdC(handles)
 % arbitrary colors), object outlines, and object outlines overlaid on
 % the original image. These images can be saved by altering the code
 % for this module to save those images to the handles structure (see
-% the section of the code marked SAVE DATA TO HANDLES STRUCTURE) and
-% then using the Save Images module.  Important note: The calculations
-% of these display images are only performed if the figure window is
-% open, so the figure window must be left open or the Save Images
-% module will fail.  If you are running the job on a cluster, figure
-% windows are not open, so the Save Images module will also fail,
-% unless you go into the code for this module and remove the 'if/end'
-% statement surrounding the DISPLAY RESULTS section.
+% the SaveImages module help) and then using the Save Images module.
+% Important note: The calculations of these display images are only
+% performed if the figure window is open, so the figure window must be
+% left open or the Save Images module will fail.  If you are running
+% the job on a cluster, figure windows are not open, so the Save
+% Images module will also fail, unless you go into the code for this
+% module and remove the 'if/end' statement surrounding the DISPLAY
+% RESULTS section.
 %
 % See also ALGIDENTIFYPRIMADAPTTHRESHOLDA,
 % ALGIDENTIFYPRIMADAPTTHRESHOLDB, 

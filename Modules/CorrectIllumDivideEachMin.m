@@ -33,8 +33,8 @@ function handles = AlgCorrectIllumDivideEachMin_10(handles)
 % module can be easily saved using the Save Images module, using the
 % name you assign. If you want to save other intermediate images,
 % alter the code for this module to save those images to the handles
-% structure (see the section marked SAVE DATA TO HANDLES STRUCTURE)
-% and then use the Save Images module.
+% structure (see the SaveImages module help) and then use the Save
+% Images module.
 %
 % See also ALGCORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
 % ALGCORRECTILLUMSUBTRACTALLMIN,

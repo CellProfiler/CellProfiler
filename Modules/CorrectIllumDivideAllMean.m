@@ -34,8 +34,8 @@ function handles = AlgCorrectIllumDivideAllMean(handles)
 % a later analysis, you should use the settings boxes within this
 % module to save the illumination image in '.mat' format. If you want
 % to save other intermediate images, alter the code for this module to
-% save those images to the handles structure (see the section marked
-% SAVE DATA TO HANDLES STRUCTURE) and then use the Save Images module.
+% save those images to the handles structure (see the SaveImages
+% module help) and then use the Save Images module.
 %
 % See also ALGCORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
 % ALGCORRECTILLUMSUBTRACTALLMIN,

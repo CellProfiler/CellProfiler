@@ -24,6 +24,13 @@ function handles = AlgSpotIdentifier(handles)
 % figure window and toggle between them, so that controls and
 % different wavelength images can be compared.
 %
+% SAVING IMAGES: The rotated image produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. If you want to save other intermediate images, alter the
+% code for this module to save those images to the handles structure
+% (see the SaveImages module help) and then use the Save Images
+% module.
+%
 % See also ALGIMAGETILER.
 
 % The contents of this file are subject to the Mozilla Public License Version

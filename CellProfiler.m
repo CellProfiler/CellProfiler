@@ -68,7 +68,7 @@ handles.output = hObject;
 handles.numAlgorithms = 0;
 handles.MaxAlgorithms = 99;
 handles.MaxVariables = 11;
-handles.AlgorithmHighlighted = [1];
+handles.AlgorithmHighlighted = 1;
 handles.FigureDisplayString = cell(1,99);
 
 % Update handles structure
@@ -200,7 +200,7 @@ DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt)$', 
 if strcmp(class(DiscardsByExtension), 'cell')
   DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
 else 
-  DiscardsByExtension = []
+  DiscardsByExtension = [];
 end
 
 %%% Combines all of the DiscardLogical arrays into one.
@@ -299,7 +299,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in LoadSampleInfo.
-function output = LoadSampleInfo_Callback(hObject, eventdata, handles)
+function LoadSampleInfo_Callback(hObject, eventdata, handles)
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -488,20 +488,19 @@ PathName = get(handles.PathToLoadEditBox,'string');
 %%% Gets the user entry and stores it in the handles structure using the
 %%% store1variable function.
 InitialUserEntry = get(handles.OutputFileName,'string');
-fieldname = {'Voutputfilename'};
 if isempty(InitialUserEntry)
-    handles.Voutputfilename =[]
+    handles.Voutputfilename =[];
     guidata(gcbo, handles);
 else
     if length(InitialUserEntry) >=7
-        if strncmp(lower(InitialUserEntry(end-6:end)),'out.mat',7) == 1
+        if strncmpi(InitialUserEntry(end-6:end),'out.mat',7) == 1
             UserEntry = InitialUserEntry;
-        elseif strncmp(lower(InitialUserEntry(end-3:end)),'.mat',4) == 1
+        elseif strncmpi(InitialUserEntry(end-3:end),'.mat',4) == 1
             UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
         else UserEntry = [InitialUserEntry,'OUT.mat'];
         end
     elseif length(InitialUserEntry) >=4
-        if strncmp(lower(InitialUserEntry(end-3:end)),'.mat',4) == 1
+        if strncmp(InitialUserEntry(end-3:end),'.mat',4) == 1
         UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
         else UserEntry = [InitialUserEntry,'OUT.mat'];
         end
@@ -523,7 +522,7 @@ end
 guidata(gcbo, handles);
 cd(CurrentDirectory)
 
-function handles = store1variable(VariableName,UserEntry, handles);
+function handles = store1variable(VariableName,UserEntry, handles)
 %%% This function stores a variable's value in the handles structure, 
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
@@ -547,7 +546,7 @@ end
 %%% Loads the Settings file.
 LoadedSettings = load([SettingsPathName SettingsFileName]);
 
-if ~ (isfield(LoadedSettings, 'Settings') | isfield(LoadedSettings, 'handles')),
+if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles')),
     errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     cd(CurrentDirectory);
     return;
@@ -578,7 +577,7 @@ handles.FigureDisplayString = cell(1,99);
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 set(handles.AlgorithmBox,'Value',1);
-handles.AlgorithmHighlighted = [1];
+handles.AlgorithmHighlighted = 1;
 handles.Vpixelsize = Settings.Vpixelsize;
 set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);
 
@@ -756,7 +755,6 @@ cd(CurrentDirectory);
 % --- Executes on button press in AddAlgorithm.
 function AddAlgorithm_Callback(hObject,eventdata,handles)
 % Find which algorithm slot number this callback was called for.
-LoadAlgorithmButtonTag = get(hObject,'tag');
 AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
 AlgorithmNums = handles.numAlgorithms+1;
 
@@ -821,7 +819,7 @@ else
   %%% 6. Saves the AlgorithmName to the handles structure.
   handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
   contents = get(handles.AlgorithmBox,'String');
-  contents{AlgorithmNums} = [AlgorithmName];
+  contents{AlgorithmNums} = AlgorithmName;
   set(handles.AlgorithmBox,'String',contents);
 
   %%% 7. The text description for each variable for the chosen algorithm is 
@@ -928,10 +926,10 @@ end
 % --- Executes on button press for RemoveAlgorithm button.
 function RemoveAlgorithm_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
-handles = RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, 'Confirm');
+RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, 'Confirm');
 
 % separated because it's called elsewhere
-function handles = RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, ConfirmOrNot)
+function RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, ConfirmOrNot)
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the algorithm.
@@ -963,7 +961,7 @@ handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 %%% 6. Sets the proper algorithm name to "No analysis module loaded"
 contents = get(handles.AlgorithmBox,'String');
 if(AlgorithmNumber(1)==1)
-    contents{AlgorithmNumber(1)} = ['No Algorithms Loaded'];
+    contents{AlgorithmNumber(1)} = 'No Algorithms Loaded';
 else
     contents{AlgorithmNumber(1)} = [];
 end
@@ -1023,7 +1021,6 @@ end
 %%%%%%%
 
 function MoveDownButton_Callback(hObject,eventdata,handles)
-ButtonTag = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
 if(handles.numAlgorithms<1 || AlgorithmNumber(length(AlgorithmNumber)) >= handles.numAlgorithms)
 else
@@ -1108,7 +1105,7 @@ end
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles);
+function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles)
 %%% This function stores a variable's value in the handles structure, 
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
@@ -1116,15 +1113,15 @@ function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles);
 handles.Settings.Vvariable(AlgorithmNumber, str2num(VariableNumber)) = {UserEntry};
 guidata(gcbo, handles);
 
-function [AlgorithmNumber] = whichactive(handles);
+function [AlgorithmNumber] = whichactive(handles)
 AlgorithmNumber = handles.AlgorithmHighlighted(1);
     
 % --- Executes during object creation, after setting all properties.
-function VariableBox_CreateFcn(hObject, eventdata, handles);
-    set(hObject,'BackgroundColor',[1 1 1]);
+function VariableBox_CreateFcn(hObject, eventdata, handles)
+    set(hObject,'BackgroundColor',[1 1 1])
 
 
-function VariableBox_Callback(hObject, eventdata, handles);
+function VariableBox_Callback(hObject, eventdata, handles)
 %%% The following lines fetch the contents of the edit box,
 %%% determine which algorithm we are dealing with at the moment (by
 %%% running the "whichactive" subfunction), and call the storevariable
@@ -1213,12 +1210,11 @@ if isempty(Answers) ~= 1
         Answer = questdlg(['A file with the name ', CompleteFileName, ' already exists. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
         if strcmp(Answer,'Yes') == 1;
             imwrite(ClickedImage, CompleteFileName, Extension)
-            MsgboxHandle2 = msgbox(['The file ', CompleteFileName, ' has been saved to the current directory']);
-            
+            msgbox(['The file ', CompleteFileName, ' has been saved to the current directory']);
         end
     else
         imwrite(ClickedImage, CompleteFileName, Extension)
-        MsgboxHandle2 = msgbox(['The file ', CompleteFileName, ' has been saved to the current directory']);
+        msgbox(['The file ', CompleteFileName, ' has been saved to the current directory']);
     end
 end
 delete(MsgboxHandle)
@@ -1269,7 +1265,7 @@ cd(CurrentDirectory)
 % --- Executes on button press in ShowPixelDataButton.
 function ShowPixelDataButton_Callback(hObject, eventdata, handles)
 FigureNumber = inputdlg('In which figure number would like to see pixel data?','',1);
-if isempty(FigureNumber) ~= 1
+if ~isempty(FigureNumber)
     FigureNumber = str2num(FigureNumber{1});
     pixval(FigureNumber,'on')
 end
@@ -1920,13 +1916,13 @@ if ok ~= 0
             cd(CurrentDirectory);
             return    
         end
-        if strcmp(YAxisScale, 'relative') ~= 1 & strcmp(YAxisScale, 'absolute') ~= 1
+        if strcmp(YAxisScale, 'relative') ~= 1 && strcmp(YAxisScale, 'absolute') ~= 1
             errordlg('The text you entered for ''Do you want the Y-axis (number of cells) to be absolute or relative?'' was not recognized.');
             cd(CurrentDirectory);
             return
         end
         CompressedHistogram = Answers{6};
-        if strcmp(CompressedHistogram,'yes') ~= 1 & strcmp(CompressedHistogram,'no') ~= 1 
+        if strcmp(CompressedHistogram,'yes') ~= 1 && strcmp(CompressedHistogram,'no') ~= 1 
             errordlg('You must enter "yes" or "no" for displaying the histograms in compressed format.');
             cd(CurrentDirectory);
             return
@@ -2003,7 +1999,7 @@ if ok ~= 0
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% Calculates histogram data for cumulative histogram %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if strcmp(lower(CumulativeHistogram), 'no') ~= 1
+        if strcmpi(CumulativeHistogram, 'no') ~= 1
             [HistogramData,Ignore] = histc(SelectedMeasurementsMatrix,BinLocations);
             %%% Deletes the last value of HistogramData, which is
             %%% always a zero (because it's the number of values
@@ -2013,7 +2009,6 @@ if ok ~= 0
             HistogramTitles{1} = ['Histogram of data from Image #', num2str(FirstImage), ' to #', num2str(LastImage)];
             FirstImage = 1;
             LastImage = 1;
-            ImageNumber = 1;
             NumberOfImages = 1;
             %%% Saves the data to an excel file if desired.
             if strcmp(SaveData,'no') ~= 1
@@ -2066,7 +2061,7 @@ if ok ~= 0
                 close(WaitbarHandle) 
                 %%% Close the file
                 fclose(fid);
-                h = helpdlg(['The file ', SaveData, ' has been written to the directory where the raw measurements file is located.'])
+                h = helpdlg(['The file ', SaveData, ' has been written to the directory where the raw measurements file is located.']);
                 waitfor(h)
             end
             
@@ -2569,9 +2564,8 @@ if RawFileName ~= 0
                     SampleNumber = str2num(Answer{1});
                     TotalNumberImageSets = length(handles.(MeasurementToExtract));
                     if SampleNumber > TotalNumberImageSets
-                        error('The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.')
                         cd(CurrentDirectory);
-                        return
+                        error(['The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.'])
                     end
                     %%% Looks up the corresponding image file name.
                     PotentialImageNames = Fieldnames(strncmp(Fieldnames,'dOTFilename',11)==1);
@@ -2850,8 +2844,8 @@ else
                 %%% before closing the window, to avoid unexpected results.  The handles
                 %%% for each algorithm's figure must be made global so the closing function
                 %%% can find the handles.
-                set(handles.(['CloseFigureButton']),'visible','on')
-                set(handles.(['OpenFigureButton']),'visible','on')
+                set(handles.CloseFigureButton,'visible','on')
+                set(handles.OpenFigureButton,'visible','on')
                 %listbox changes 
                
                 for i=1:handles.numAlgorithms;
@@ -2886,7 +2880,7 @@ else
                     %%% Loop through normally if this is the first
                     %%% image set or this evaluation is being run
                     %%% sequentially (i.e., not in parallel)
-                    if ((setbeinganalyzed == 1) | (~ isfield(handles, 'parallel_machines')))
+                    if ((setbeinganalyzed == 1) || (~ isfield(handles, 'parallel_machines')))
                       % clear the Pending flag if we're using parallel machines
                       if isfield(handles, 'parallel_machines')
                         Pending(handles.parallel_machines + 1) = 0;
@@ -3046,7 +3040,7 @@ else
                                 num2str(toc/setbeinganalyzed)];
                     else time_per_set = 'Time per image set (seconds) = none completed'; 
                     end
-                    timertext = [{timer_elapsed_text; number_analyzed; time_per_set}];
+                    timertext = {timer_elapsed_text; number_analyzed; time_per_set};
                     %%% Display calculations in 
                     %%% the "Timer" window by changing the string property.
                     set(text_handle,'string',timertext)
@@ -3168,10 +3162,9 @@ else
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
                     'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',... 
                     'FontSize',14,'FontWeight','bold','backgroundcolor',[0.7,0.7,0.9]);
-                timertext = [{'IMAGE PROCESSING IS COMPLETE!';total_time_elapsed; ...
-                            number_analyzed; time_per_set}];
+                timertext = {'IMAGE PROCESSING IS COMPLETE!';total_time_elapsed; number_analyzed; time_per_set};
                 set(text_handle,'string',timertext)
-                set(timer_handle,'CloseRequestFcn','closereq');
+                set(timer_handle,'CloseRequestFcn','closereq')
                 
                 %%% Re-enable/disable appropriate buttons.
                 set(handles.BrowseToLoad,'enable','on')
@@ -3360,14 +3353,14 @@ while 1,
   % modify pnet_remote to return after a few retries, rather than just
   % giving up.
   if (~ ischar(RemoteMachine)),
-    break;
+    break
   end
   if (~ isempty(RemoteMachine)),
     handles.parallel_machines(length(handles.parallel_machines)+1) = pnet_remote('connect', RemoteMachine);
   end
 end
 
-if length(handles.parallel_machines) == 0,
+if isempty(handles.parallel_machines)
   errordlg(['CellProfiler could not connetct to any remote machines.  Is the list of machines an empty file (' handles.RemoteMachineListFile ')?']);
   handles = rmfield(handles, 'parallel_machines');
   guidata(hObject, handles);
@@ -3381,7 +3374,7 @@ pnet_remote(handles.parallel_machines, 'eval', ['addpath ' handles.RemoteCellPro
 AnalyzeAllImagesButton_Callback(hObject, eventdata, handles);
 
 % clear the list of parallel machines
-rmfield(handles, 'parallel_machines');
+handles = rmfield(handles, 'parallel_machines');
 guidata(hObject, handles);
 
 
@@ -3393,7 +3386,7 @@ guidata(hObject, handles);
 function twodigit = TwoDigitString(val)
 %TwoDigitString is a function like num2str(int) but it returns a two digit
 %representation of a string for our purposes.
-if ((val > 99) | (val < 0)),
+if ((val > 99) || (val < 0)),
   error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
 end
 twodigit = sprintf('%02d', val);
@@ -3449,10 +3442,10 @@ else
   else
     ind = find( ~isspace( s ) & ~ismember( s, sc ) );
   end;
-  if (lor == 0) | (lor == 1)
+  if (lor == 0) || (lor == 1)
     ind1 = min( ind );
   end; %if both or left side
-  if (lor == 0) | (lor == 2)
+  if (lor == 0) || (lor == 2)
     ind2 = max( ind );
   end; %if both or right side
    

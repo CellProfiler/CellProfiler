@@ -27,6 +27,7 @@ Image analysis modules - New:
 - Align/resize stack of images (like yeast plates). See Matlab demo on image registration. Did Chris already do this?
 
 Image analysis modules - Improvements:
+- Make measure windows expand to fit the number of lines of data that are produced.
 - Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original.
 - Improve background/cell edge finding - threshold vs. adaptive threshold vs. watershed
 - Add background subtraction to the identify sec distance module (make it optional in case a cell stain image is not available).

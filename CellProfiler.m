@@ -793,6 +793,7 @@ elseif exist(AlgorithmNamedotm,'file') == 0
   end
 else
 
+    %{
   %%% 3. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
   %%% to be invisible.
   for VariableNumber = 1:handles.MaxVariables;
@@ -804,6 +805,7 @@ else
   for VariableNumber=1:handles.MaxVariables  
      handles.Settings.Vvariable(AlgorithmNums,VariableNumber) = {[]};
   end;
+    %}
 
   %%% 5. The last two characters (=.m) are removed from the
   %%% AlgorithmName.m and called AlgorithmName.
@@ -824,28 +826,26 @@ else
   fid=fopen([PathName AlgorithmNamedotm]);
 
   while 1;
-    output = fgetl(fid); if ~ischar(output); break; end;
-    
-    % FIXME: this doesn't need to loop over MaxVariables
-    
-    for i=1:handles.MaxVariables,
-      if (strncmp(output,['%textVAR',TwoDigitString(i)],10) == 1);
-        set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-        break;
-      end
-    end
+      output = fgetl(fid); if ~ischar(output); break; end;
 
-    for i=1:handles.MaxVariables,
-      if (strncmp(output,['%defaultVAR' TwoDigitString(i)],13) == 1),
-        displayval = output(17:end);
-        set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
-        set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
-        handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
-        handles.numVariables(str2double(AlgorithmNumber)) = i;
-        break;
+      % FIXME: this doesn't need to loop over MaxVariables
+
+      for i=1:handles.MaxVariables,
+          if (strncmp(output,['%textVAR',TwoDigitString(i)],10) == 1);
+              set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+              break;
+          elseif (strncmp(output,['%defaultVAR' TwoDigitString(i)],13) == 1),
+              displayval = output(17:end);
+              set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
+              set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
+              handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
+              handles.numVariables(str2double(AlgorithmNumber)) = i;
+              break;
+          end
+
       end
-    end
-   end
+
+  end
   fclose(fid);
 
   %%% 8. Update handles.numAlgorithms

@@ -43,8 +43,8 @@ ImageName = handles.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Reads the pixel size that the user entered in the main window
-%%% (micrometers per pixel) and converts it to a number.
-PixelSize = str2num(handles.Vpixelsize);
+%%% (micrometers per pixel).
+PixelSize = str2num(handles.Vpixelsize{1});
 
 %%% Retrieves the label matrix image that contains the segmented objects which
 %%% will be measured with this algorithm.  

@@ -4,7 +4,7 @@ function varargout = CellProfiler(varargin)
 %
 % CellProfiler.m and CellProfiler.fig work together to create a user
 % interface which allows the analysis of large numbers of images.  New
-% modules can be written for the software.
+% modules can be written for the software using Matlab.
 %
 %      CellProfiler, by itself, creates a new CellProfiler or raises the existing
 %      singleton*.
@@ -37,7 +37,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 21-Oct-2004 19:17:40
+% Last Modified by GUIDE v2.5 25-Oct-2004 15:07:04
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -771,7 +771,7 @@ try cd(handles.Vdefaultalgorithmdirectory) %#ok We want to ignore MLint error ch
 end 
 %%% Now, when the dialog box is opened to retrieve an algorithm, the
 %%% directory will be the default algorithm directory.
-[AlgorithmNamedotm,PathName] = uigetfile('*.m',...
+[AlgorithmNamedotm,PathName] = uigetfile('Alg*.m',...
     'Choose an image analysis module');
 %%% Change back to the original directory.
 cd(CurrentDirectory)
@@ -2492,8 +2492,8 @@ msgbox('The original data and the corrected data are now displayed in the Matlab
 
 %%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in DisplayDataOnImageButton.
-function DisplayDataOnImageButton_Callback(hObject, eventdata, handles)
+% --- Executes on button press in ShowDataOnImageButton.
+function ShowDataOnImageButton_Callback(hObject, eventdata, handles)
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -2643,8 +2643,8 @@ cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in AnalyzeAllImagesLocalButton.
-function AnalyzeAllImagesLocalButton_Callback(hObject, eventdata, handles)
+% --- Executes on button press in AnalyzeImagesButton.
+function AnalyzeImagesButton_Callback(hObject, eventdata, handles)
 global closeFigures openFigures;
 CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
@@ -2723,13 +2723,13 @@ else
                 set(handles.ShowImageButton,'enable','off')
                 set(handles.ShowPixelDataButton,'enable','off')
                 set(handles.CloseAllFigureWindowsButton,'enable','off')
-                set(handles.AnalyzeAllImagesLocalButton,'enable','off')
+                set(handles.AnalyzeImagesButton,'enable','off')
                 set(handles.AnalyzeAllImagesClusterButton,'enable','off')
                 set(handles.ExportDataButton,'enable','off')
                 set(handles.ExportCellByCellButton,'enable','off')
                 set(handles.HistogramButton,'enable','off')
                 set(handles.NormalizationButton,'enable','off')
-                set(handles.DisplayDataOnImageButton,'enable','off')
+                set(handles.ShowDataOnImageButton,'enable','off')
 
                 %%% The following code prevents the warning message in the Matlab
                 %%% main window: "Warning: Image is too big to fit on screen":
@@ -3187,13 +3187,13 @@ else
                 set(handles.ShowImageButton,'enable','on')
                 set(handles.ShowPixelDataButton,'enable','on')
                 set(handles.CloseAllFigureWindowsButton,'enable','on')
-                set(handles.AnalyzeAllImagesLocalButton,'enable','on')
+                set(handles.AnalyzeImagesButton,'enable','on')
                 set(handles.AnalyzeAllImagesClusterButton,'enable','on')
                 set(handles.ExportDataButton,'enable','on')
                 set(handles.ExportCellByCellButton,'enable','on')                
                 set(handles.HistogramButton,'enable','on')
                 set(handles.NormalizationButton,'enable','on')
-                set(handles.DisplayDataOnImageButton,'enable','on')
+                set(handles.ShowDataOnImageButton,'enable','on')
                 set(CancelAfterModuleButton_handle,'enable','off')
                 set(CancelAfterImageSetButton_handle,'enable','off')
                 set(PauseButton_handle,'enable','off')
@@ -3456,16 +3456,50 @@ end; %if s isempty
 %%% --- Executes on button press in the permanent Help buttons.
 %%% (The permanent Help buttons are the ones that don't change 
 %%% depending on the algorithm loaded.) 
-function HelpStep1_Callback(hObject, eventdata, handles)
-helpdlg('Select the main folder containing the images you want to analyze. You will have the option within load images modules to retrieve images from more than one folder, but the folder selected here will be the default folder.  Use the Browse button to select the folder, or carefully type the full pathname in the box to the right.','Step 1 Help')
-function HelpStep2_Callback(hObject, eventdata, handles)
-helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with "OUT" to avoid confusion.  You do not need to type ".mat" at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called CellProfilerPreferences.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
-function HelpStep3_Callback(hObject, eventdata, handles)
-helpdlg('FOR HELP ON INDIVIDUAL MODULES: Click the "Help for this analysis module" button towards the right of the CellProfiler window.       LOAD/CLEAR/VIEW BUTTONS:  Choose image analysis modules in the desired order by clicking "Load" and selecting the corresponding Matlab ".m" file.      SHORTCUTS: Once you have loaded the desired image analysis modules and modified all of the settings as desired, you may save these settings for future use by clicking "Save Settings" and naming the file.  Later, you can click "Load Settings", select this file that you made, and all of the modules and settings will be restored.  ALTERNATELY, if you previously ran an image analysis and you want to repeat the exact analysis, you may click "Extract Settings from an output file".  Select the output file, and the modules and settings used to create it will be extracted.  You then name the settings file and load it using the "Load Settings" button.  Troubleshooting: If you loaded an analysis module by loading a settings file, and then obtained error messages in the Matlab main window, the most likely cause is that the analysis modules loaded are not on the Matlab search path. Be sure that the folder immediately containing the analysis module is on the search path. The search path can be edited by choosing File > Set Path.  Another possibility is that the Settings file was created with old versions of CellProfiler or with old versions of modules.  The Settings file can be opened with any word processor as plain text and you should be able to figure out what the settings were.        TECHNICAL DIAGNOSIS: Clicking here causes text to appear in the main Matlab window.  This text shows the "handles structure" which is sometimes useful for diagnosing problems with the software.','Step 3 Help')
-function HelpStep5_Callback(hObject, eventdata, handles)
-helpdlg('SHOW PIXEL DATA: If you have an image displayed in a figure window and would like to determine the X, Y position or the intensity at a particular pixel, click this button.        CLOSE ALL FIGURES AND TIMERS: Click this button to close all open figure/image windows and timers. The main CellProfiler window and any error/message windows will remain open. You will be asked for confirmation first before the windows are all closed.           EXTRACT DATA: Once image analysis is complete, click this button and select the output file to extract the measurements and other information about the analysis.  The data will be converted to a delimited text file which can be read by most programs.  By naming the file with the extension for Microsoft Excel (.xls), the file is usually easily openable by that program.       ANALYZE ALL IMAGES: All of the images in the selected directory/directories will be analyzed using the modules and settings you have specified.  You will have the option to cancel at any time.  At the end of each data set, the data are stored in the output file.','Step 5 Help')
-function HelpStep6_Callback(hObject, eventdata, handles)
-helpdlg('Help will be displayed here.','Step 6 Help')
+function HelpButton1_Callback(hObject, eventdata, handles)
+HelpText = help('Help1.m');
+helpdlg(HelpText,'CellProfiler Help #1')
+
+function HelpButton2_Callback(hObject, eventdata, handles)
+HelpText = help('Help2.m');
+msgbox(HelpText,'CellProfiler Help #2')
+
+function HelpButton3_Callback(hObject, eventdata, handles)
+HelpText = help('Help3.m');
+helpdlg(HelpText,'CellProfiler Help #3')
+
+function HelpButton4_Callback(hObject, eventdata, handles)
+HelpText = help('Help4.m');
+helpdlg(HelpText,'CellProfiler Help #4')
+
+% --- Executes on button press in HelpExportMeanDataButton.
+function HelpExportMeanDataButton_Callback(hObject, eventdata, handles)
+HelpText = help('HelpExportMeanData.m');
+helpdlg(HelpText,'CellProfiler Help: Export mean data')
+
+% --- Executes on button press in HelpExportCellByCellDataButton.
+function HelpExportCellByCellDataButton_Callback(hObject, eventdata, handles)
+HelpText = help('HelpExportCellByCellData.m');
+helpdlg(HelpText,'CellProfiler Help: Export cell by cell data')
+
+% --- Executes on button press in HelpShowDataOnImageButton.
+function HelpShowDataOnImageButton_Callback(hObject, eventdata, handles)
+HelpText = help('HelpShowDataOnImage.m');
+helpdlg(HelpText,'CellProfiler Help: Show data on image')
+
+% --- Executes on button press in HelpHistogramsButton.
+function HelpHistogramsButton_Callback(hObject, eventdata, handles)
+HelpText = help('HelpHistograms.m');
+helpdlg(HelpText,'CellProfiler Help: Histograms')
+
+% --- Executes on button press in HelpNormalizationButton.
+function HelpNormalizationButton_Callback(hObject, eventdata, handles)
+HelpText = help('HelpNormalization.m');
+helpdlg(HelpText,'CellProfiler Help: Normalization')
+
+function HelpAnalyzeImagesButton_Callback(hObject, eventdata, handles)
+HelpText = help('HelpAnalyzeImages.m');
+helpdlg(HelpText,'CellProfiler Help: Analyze images')
 
 % --- Executes on button press in HelpForThisAnalysisModule.  
 function HelpForThisAnalysisModule_Callback(hObject, eventdata, handles)

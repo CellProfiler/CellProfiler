@@ -30,9 +30,9 @@ cd(handles.Current.DefaultOutputDirectory)
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
 else
-    load(fullfile(RawPathname, RawFileName));
+    LoadedHandles = load(fullfile(RawPathname, RawFileName));
     %%% Extract the fieldnames of measurements from the handles structure.
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(LoadedHandles.handles.Measurements);
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5) == 1);
     FileFieldNames = Fieldnames(strncmp(Fieldnames, 'Filename', 8) == 1);
     ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
@@ -52,7 +52,7 @@ else
         elseif isempty(TimeElapsedFieldNames{1}) == 0
         fieldname = TimeElapsedFieldNames{1};
         end
-        TotalNumberImageSets = num2str(length(handles.Measurements.(fieldname)));
+        TotalNumberImageSets = num2str(length(LoadedHandles.handles.Measurements.(fieldname)));
         TotalNumberImageSetsMsg = ['As a shortcut,                     type the numeral 0 to extract data from all ', TotalNumberImageSets, ' image sets.'];
         %%% Ask the user to specify the number of image sets to extract.
         NumberOfImages = inputdlg({['How many image sets do you want to extract?  ',TotalNumberImageSetsMsg]},'Specify number of image sets',1,{'0';' '});
@@ -63,8 +63,8 @@ else
             NumberOfImages = str2double(NumberOfImages{1});
             if NumberOfImages == 0
                 NumberOfImages = str2double(TotalNumberImageSets);
-            elseif NumberOfImages > length(handles.Measurements.(char(MeasFieldnames(1))));
-                errordlg(['There are only ', length(handles.Measurements.(char(MeasFieldnames(1)))), ' image sets total.'])
+            elseif NumberOfImages > length(LoadedHandles.handles.Measurements.(char(MeasFieldnames(1))));
+                errordlg(['There are only ', length(LoadedHandles.handles.Measurements.(char(MeasFieldnames(1)))), ' image sets total.'])
                 %%% TODO: This error checking is only for the first field of
                 %%% measurements.  Should make it more comprehensive.
             end
@@ -109,26 +109,27 @@ else
                     Measurements(NumberOfImages,NumberOfFields) = {[]};
                     %%% Finished preallocating the variable Measurements.
                     TimeStart = clock;
-                    FieldNumber = 0;
                     for imagenumber = 1:NumberOfImages
+                        FieldNumber = 0;
                         for FileNameFieldNumber = 1:NumberOfFileFieldNames
                             Fieldname = cell2mat(FileFieldNames(FileNameFieldNumber));
                             FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber,FieldNumber) = {handles.Pipeline.(Fieldname){imagenumber}};
+                            Measurements(imagenumber,FieldNumber) = {LoadedHandles.handles.Pipeline.(Fieldname){imagenumber}};
                         end
                         for ImportedFieldNumber = 1:NumberOfImportedFieldnames
                             Fieldname = cell2mat(ImportedFieldnames(ImportedFieldNumber));
                             FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber, FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
+                            Measurements(imagenumber,FieldNumber) = {LoadedHandles.handles.Measurements.(Fieldname){imagenumber}};
                         end
-                        for FieldNumber = 1:NumberOfMeasFieldnames
-                            Fieldname = cell2mat(MeasFieldnames(FieldNumber));
-                            Measurements(imagenumber,FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
+                        for MeasFieldNumber = 1:NumberOfMeasFieldnames
+                            Fieldname = cell2mat(MeasFieldnames(MeasFieldNumber));
+                            FieldNumber = FieldNumber + 1;
+                            Measurements(imagenumber,FieldNumber) = {LoadedHandles.handles.Measurements.(Fieldname){imagenumber}};
                         end
                         for TimeElapsedFieldNumber = 1:NumberOfTimeElapsedFieldNames
                             Fieldname = cell2mat(TimeElapsedFieldNames(TimeElapsedFieldNumber));
                             FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber, FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
+                            Measurements(imagenumber, FieldNumber) = {LoadedHandles.handles.Measurements.(Fieldname){imagenumber}};
                         end
                         CurrentTime = clock;
                         TimeSoFar = etime(CurrentTime,TimeStart);
@@ -142,16 +143,16 @@ else
                     %%% Open the file and name it appropriately.
                     fid = fopen(FileName, 'wt');
                     %%% Write the MeasFieldnames as headings for columns.
-                    for i = 1:NumberOfMeasFieldnames
-                        fwrite(fid, char(MeasFieldnames(i)), 'char');
-                        fwrite(fid, sprintf('\t'), 'char');
-                    end
                     for i = 1:NumberOfFileFieldNames
                         fwrite(fid, char(FileFieldNames(i)), 'char');
                         fwrite(fid, sprintf('\t'), 'char');
                     end
                     for i = 1:NumberOfImportedFieldnames
                         fwrite(fid, char(ImportedFieldnames(i)), 'char');
+                        fwrite(fid, sprintf('\t'), 'char');
+                    end
+                    for i = 1:NumberOfMeasFieldnames
+                        fwrite(fid, char(MeasFieldnames(i)), 'char');
                         fwrite(fid, sprintf('\t'), 'char');
                     end
                     for i = 1:NumberOfTimeElapsedFieldNames

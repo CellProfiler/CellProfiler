@@ -31,13 +31,13 @@ if RawFileName == 0
     cd(handles.Current.StartupDirectory);
     return
 end
-load(fullfile(RawPathname, RawFileName));
+LoadedHandles = load(fullfile(RawPathname, RawFileName));
 
 Answer = questdlg('Do you want to export cell by cell data for all measurements from one image, or data from all images for one measurement?','','All measurements','All images','All measurements');
 
 if strcmp(Answer, 'All images') == 1
     %%% Extract the fieldnames of cell by cell measurements from the handles structure. 
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(LoadedHandles.handles.Measurements);
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);
     %%% Error detection.
     if isempty(MeasFieldnames)
@@ -61,13 +61,13 @@ if strcmp(Answer, 'All images') == 1
     end
     EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
     MeasurementToExtract = ['Object', EditedMeasurementToExtract];
-    TotalNumberImageSets = length(handles.Measurements.(MeasurementToExtract));
-    Measurements = handles.Measurements.(MeasurementToExtract);
+    TotalNumberImageSets = length(LoadedHandles.handles.Measurements.(MeasurementToExtract));
+    Measurements = LoadedHandles.handles.Measurements.(MeasurementToExtract);
     
     %%% Extract the fieldnames of non-cell by cell measurements from the
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(LoadedHandles.handles.Measurements);
     HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8) == 1 | strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'TimeElapsed',11) == 1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
@@ -90,8 +90,8 @@ if strcmp(Answer, 'All images') == 1
     %%% Have the user choose which of image/cells should be rows/columns
     RowColAnswer = questdlg('Which layout do you want images and cells to follow in the exported data?  WARNING: Excel spreadsheets can only have 256 columns.','','Rows = Cells, Columns = Images','Rows = Images, Columns = Cells','Rows = Cells, Columns = Images');
     %%% Extracts the headings.
-    try ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
-    catch ListOfHeadings = handles.Measurements.(HeadingToDisplay);
+    try ListOfHeadings = LoadedHandles.handles.Pipeline.(HeadingToDisplay);
+    catch ListOfHeadings = LoadedHandles.handles.Measurements.(HeadingToDisplay);
     end
     %%% Determines the suggested file name.
     try
@@ -192,7 +192,7 @@ if strcmp(Answer, 'All images') == 1
 
     
 elseif strcmp(Answer, 'All measurements') == 1
-    TotalNumberImageSets = handles.Current.SetBeingAnalyzed;
+    TotalNumberImageSets = LoadedHandles.handles.Current.SetBeingAnalyzed;
     %%% Asks the user to specify which image set to export.
     Answers = inputdlg({['Enter the sample number to export. There are ', num2str(TotalNumberImageSets), ' total.']},'Choose samples to export',1,{'1'});
     if isempty(Answers{1})
@@ -211,7 +211,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     end
     
     %%% Extract the fieldnames of cell by cell measurements from the handles structure. 
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(LoadedHandles.handles.Measurements);
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);
     %%% Error detection.
     if isempty(MeasFieldnames)
@@ -223,7 +223,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Extract the fieldnames of non-cell by cell measurements from the
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(LoadedHandles.handles.Measurements);
     HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1 | strncmp(Fieldnames,'Imported',8) == 1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
@@ -243,8 +243,8 @@ elseif strcmp(Answer, 'All measurements') == 1
     end
     HeadingToDisplay = char(HeadingFieldnames(Selection));
     %%% Extracts the headings.
-    try ImageNamesToDisplay = handles.Pipeline.(HeadingToDisplay);
-    catch ImageNamesToDisplay = handles.Measurements.(HeadingToDisplay);
+    try ImageNamesToDisplay = LoadedHandles.handles.Pipeline.(HeadingToDisplay);
+    catch ImageNamesToDisplay = LoadedHandles.handles.Measurements.(HeadingToDisplay);
     end
         ImageNameToDisplay = ImageNamesToDisplay(ImageNumber);
     
@@ -299,7 +299,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     maxlength = 0;
     for MeasNumber = 1:length(MeasFieldnames)
       FieldName = char(MeasFieldnames(MeasNumber));
-      Measurements = handles.Measurements.(FieldName);
+      Measurements = LoadedHandles.handles.Measurements.(FieldName);
       maxlength = max(maxlength, length(Measurements{ImageNumber}));
     end
 
@@ -310,7 +310,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     for idx = 1:maxlength,
       for MeasNumber = 1:length(MeasFieldnames)
         FieldName = char(MeasFieldnames(MeasNumber));
-        Measurements = handles.Measurements.(FieldName){ImageNumber};
+        Measurements = LoadedHandles.handles.Measurements.(FieldName){ImageNumber};
         if (length(Measurements) >= idx),
           %%% Writes the measurements for that measurement type in successive columns.
           fprintf(fid,'%d\t',Measurements(idx));

@@ -191,6 +191,12 @@ end
 LoadToolsPopUpMenu(handles, 'Image');
 LoadToolsPopUpMenu(handles, 'Data');
 
+%%% Adds the Help folder to Matlab's search path.
+try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
+addpath(Pathname)
+catch errordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.')
+end
+
 %%% Sets up the main program window (Main GUI window) so that it asks for
 %%% confirmation prior to closing.
 %%% First, obtains the handle for the main GUI window (aka figure1).
@@ -357,7 +363,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
                 savedVariableValues(i) = {''};
             end
         end
-        varChoice = HelpLoadSavedVariables(savedVariableValues,defVariableValues, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+        varChoice = LoadSavedVariablesSubfunction(savedVariableValues,defVariableValues, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
         cd(handles.Current.StartupDirectory);
     end
     if (varChoice == 1),
@@ -2142,22 +2148,24 @@ else
 end
 
 function PixelPreferencesTechHelp_Callback(hObject, eventdata, handles)
+HelpText = help('HelpPixelPreferencesTech.m');
+helpdlg(HelpText,'CellProfiler Help')
 
 function DefaultImageDirectoryHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpDefaultImageDirectory.m');
-helpdlg(HelpText,'Help')
+helpdlg(HelpText,'CellProfiler Help')
 
 function DefaultOutputDirectoryHelp_Callback(hObject, eventdata, handles)
 HelpText = help('HelpDefaultOutputDirectory.m');
-helpdlg(HelpText,'Help')
+helpdlg(HelpText,'CellProfiler Help')
 
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = 'The help is located within individual m-files for each tool.  We are currently working on the display so that you can view the help using this button.';
 helpdlg(HelpText,'CellProfiler Help')
 
 function DataToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-HelpText = help('Help2.m');
-msgbox(HelpText,'CellProfiler Help')
+HelpText = 'The help is located within individual m-files for each tool.  We are currently working on the display so that you can view the help using this button.';
+helpdlg(HelpText,'CellProfiler Help')
 
 function AnalyzeImagesHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpAnalyzeImages.m');

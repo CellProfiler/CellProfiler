@@ -28,7 +28,7 @@ function DefaultImageDirectory
 % end
 % 
 % Copy that group of lines and rename things with a different number
-% (e.g. 9). Replace “.mat” with the text you want to search for, then
+% (e.g. 9). Replace '.mat' with the text you want to search for, then
 % add DiscardLogical9Pre to the line: 
 % DiscardLogical = DiscardLogical1 |
 % DiscardLogical2 | DiscardLogical3 | DiscardLogical4 | DiscardLogical5 |

@@ -1,19 +1,19 @@
-function varargout = HelpLoadSavedVariables(varargin);
-% HelpLoadSavedVariables M-file for HelpLoadSavedVariables.fig
-%      HelpLoadSavedVariables, by itself, creates a new HelpLoadSavedVariables or raises the existing
+function varargout = LoadSavedVariablesSubfunction(varargin);
+% LoadSavedVariablesSubfunction M-file for LoadSavedVariablesSubfunction.fig
+%      LoadSavedVariablesSubfunction, by itself, creates a new LoadSavedVariablesSubfunction or raises the existing
 %      singleton*.
 %
-%      H = HelpLoadSavedVariables returns the handle to a new HelpLoadSavedVariables or the handle to
+%      H = LoadSavedVariablesSubfunction returns the handle to a new LoadSavedVariablesSubfunction or the handle to
 %      the existing singleton*.
 %
-%      HelpLoadSavedVariables('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in HelpLoadSavedVariables.M with the given input arguments.
+%      LoadSavedVariablesSubfunction('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in LoadSavedVariablesSubfunction.M with the given input arguments.
 %
-%      HelpLoadSavedVariables('Property','Value',...) creates a new HelpLoadSavedVariables or raises the
+%      LoadSavedVariablesSubfunction('Property','Value',...) creates a new LoadSavedVariablesSubfunction or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before HelpLoadSavedVariables_OpeningFunction gets called.  An
+%      applied to the GUI before LoadSavedVariablesSubfunction_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to HelpLoadSavedVariables_OpeningFcn via varargin.
+%      stop.  All inputs are passed to LoadSavedVariablesSubfunction_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
@@ -22,7 +22,7 @@ function varargout = HelpLoadSavedVariables(varargin);
 
 % Copyright 2002-2003 The MathWorks, Inc.
 
-% Edit the above text to modify the response to HelpLoadSavedVariables HelpLoadSavedVariables
+% Edit the above text to modify the response to LoadSavedVariablesSubfunction LoadSavedVariablesSubfunction
 
 % Last Modified by GUIDE v2.5 06-Dec-2004 21:32:18
 
@@ -30,9 +30,9 @@ function varargout = HelpLoadSavedVariables(varargin);
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @HelpLoadSavedVariables_OpeningFcn, ...
-                   'gui_OutputFcn',  @HelpLoadSavedVariables_OutputFcn, ...
-                   'gui_LayoutFcn',  @HelpLoadSavedVariables_LayoutFcn, ...
+                   'gui_OpeningFcn', @LoadSavedVariablesSubfunction_OpeningFcn, ...
+                   'gui_OutputFcn',  @LoadSavedVariablesSubfunction_OutputFcn, ...
+                   'gui_LayoutFcn',  @LoadSavedVariablesSubfunction_LayoutFcn, ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
@@ -46,20 +46,20 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before HelpLoadSavedVariables is made visible.
-function HelpLoadSavedVariables_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before LoadSavedVariablesSubfunction is made visible.
+function LoadSavedVariablesSubfunction_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to HelpLoadSavedVariables (see VARARGIN)
+% varargin   command line arguments to LoadSavedVariablesSubfunction (see VARARGIN)
 
 handles.savedVariables = varargin{1};
 handles.defaultVariables = varargin{2};
 handles.errorString = varargin{3};
 handles.algorithmName = varargin{4};
 
-% Choose default command line output for HelpLoadSavedVariables
+% Choose default command line output for LoadSavedVariablesSubfunction
 handles.output = 0;
 
 % Update handles structure
@@ -83,12 +83,12 @@ set(handles.text2, 'String', newString2);
 savedbox_Callback(handles.savedbox, eventdata, handles);
 defaultbox_Callback(handles.defaultbox, eventdata, handles);
 
-% UIWAIT makes HelpLoadSavedVariables wait for user response (see UIRESUME)
+% UIWAIT makes LoadSavedVariablesSubfunction wait for user response (see UIRESUME)
 uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = HelpLoadSavedVariables_OutputFcn(hObject, eventdata, handles) 
+function varargout = LoadSavedVariablesSubfunction_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -171,7 +171,7 @@ guidata(hObject, handles);
 uiresume(handles.figure1);
 
 % --- Creates and returns a handle to the GUI figure. 
-function h1 = HelpLoadSavedVariables_LayoutFcn(policy)
+function h1 = LoadSavedVariablesSubfunction_LayoutFcn(policy)
 % policy - create a new figure or use a singleton. 'new' or 'reuse'.
 
 persistent hsingleton;
@@ -197,7 +197,7 @@ appdata.GUIDEOptions = struct(...
     'singleton', 1, ...
     'syscolorfig', 1, ...
     'blocking', 0, ...
-    'lastSavedFile', 'C:\mit\urop\CellProfiler\HelpLoadSavedVariables.m');
+    'lastSavedFile', 'C:\mit\urop\CellProfiler\LoadSavedVariablesSubfunction.m');
 appdata.lastValidTag = 'figure1';
 appdata.GUIDELayoutEditor = [];
 
@@ -228,12 +228,12 @@ appdata.lastValidTag = 'savedbox';
 h2 = uicontrol(...
 'Parent',h1,...
 'Units','characters',...
-'Callback','HelpLoadSavedVariables(''savedbox_Callback'',gcbo,[],guidata(gcbo))',...
+'Callback','LoadSavedVariablesSubfunction(''savedbox_Callback'',gcbo,[],guidata(gcbo))',...
 'Position',[9.8 12 30.2 15.4615384615385],...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'HelpLoadSavedVariables(''savedbox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
+'CreateFcn', {@local_CreateFcn, 'LoadSavedVariablesSubfunction(''savedbox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','savedbox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -243,12 +243,12 @@ appdata.lastValidTag = 'defaultbox';
 h3 = uicontrol(...
 'Parent',h1,...
 'Units','characters',...
-'Callback','HelpLoadSavedVariables(''defaultbox_Callback'',gcbo,[],guidata(gcbo))',...
+'Callback','LoadSavedVariablesSubfunction(''defaultbox_Callback'',gcbo,[],guidata(gcbo))',...
 'Position',[49.8 12 30.2 15.4615384615385],...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'HelpLoadSavedVariables(''defaultbox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
+'CreateFcn', {@local_CreateFcn, 'LoadSavedVariablesSubfunction(''defaultbox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','defaultbox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -284,7 +284,7 @@ appdata.lastValidTag = 'savedbutton';
 h6 = uicontrol(...
 'Parent',h1,...
 'Units','characters',...
-'Callback','HelpLoadSavedVariables(''savedbutton_Callback'',gcbo,[],guidata(gcbo))',...
+'Callback','LoadSavedVariablesSubfunction(''savedbutton_Callback'',gcbo,[],guidata(gcbo))',...
 'Position',[13.2 3.38461538461539 22.6 1.92307692307692],...
 'String','Saved Settings',...
 'Tag','savedbutton',...
@@ -297,7 +297,7 @@ appdata.lastValidTag = 'defaultbutton';
 h7 = uicontrol(...
 'Parent',h1,...
 'Units','characters',...
-'Callback','HelpLoadSavedVariables(''defaultbutton_Callback'',gcbo,[],guidata(gcbo))',...
+'Callback','LoadSavedVariablesSubfunction(''defaultbutton_Callback'',gcbo,[],guidata(gcbo))',...
 'Position',[53.8 3.38461538461539 22.6 1.92307692307692],...
 'String','Default Settings',...
 'Tag','defaultbutton',...
@@ -343,16 +343,16 @@ function varargout = gui_mainfcn(gui_State, varargin);
 
 %   GUI_MAINFCN provides these command line APIs for dealing with GUIs
 %
-%      HelpLoadSavedVariables, by itself, creates a new HelpLoadSavedVariables or raises the existing
+%      LoadSavedVariablesSubfunction, by itself, creates a new LoadSavedVariablesSubfunction or raises the existing
 %      singleton*.
 %
-%      H = HelpLoadSavedVariables returns the handle to a new HelpLoadSavedVariables or the handle to
+%      H = LoadSavedVariablesSubfunction returns the handle to a new LoadSavedVariablesSubfunction or the handle to
 %      the existing singleton*.
 %
-%      HelpLoadSavedVariables('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in HelpLoadSavedVariables.M with the given input arguments.
+%      LoadSavedVariablesSubfunction('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in LoadSavedVariablesSubfunction.M with the given input arguments.
 %
-%      HelpLoadSavedVariables('Property','Value',...) creates a new HelpLoadSavedVariables or raises the
+%      LoadSavedVariablesSubfunction('Property','Value',...) creates a new LoadSavedVariablesSubfunction or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before untitled_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -382,11 +382,11 @@ end
 numargin = length(varargin);
 
 if numargin == 0
-    % HelpLoadSavedVariables
+    % LoadSavedVariablesSubfunction
     % create the GUI
     gui_Create = 1;
 elseif isequal(ishandle(varargin{1}), 1) && ispc && iscom(varargin{1}) && isequal(varargin{1},gcbo)
-    % HelpLoadSavedVariables(ACTIVEX,...)    
+    % LoadSavedVariablesSubfunction(ACTIVEX,...)    
     vin{1} = gui_State.gui_Name;
     vin{2} = [get(varargin{1}.Peer, 'Tag'), '_', varargin{end}];
     vin{3} = varargin{1};
@@ -395,10 +395,10 @@ elseif isequal(ishandle(varargin{1}), 1) && ispc && iscom(varargin{1}) && isequa
     feval(vin{:});
     return;
 elseif ischar(varargin{1}) && numargin>1 && isequal(ishandle(varargin{2}), 1)
-    % HelpLoadSavedVariables('CALLBACK',hObject,eventData,handles,...)
+    % LoadSavedVariablesSubfunction('CALLBACK',hObject,eventData,handles,...)
     gui_Create = 0;
 else
-    % HelpLoadSavedVariables(...)
+    % LoadSavedVariablesSubfunction(...)
     % create the GUI and hand varargin to the openingfcn
     gui_Create = 1;
 end

@@ -572,21 +572,20 @@ if ~ (isfield(LoadedSettings, 'Settings') | isfield(LoadedSettings, 'handles')),
 end
 
 %%% Figure out whether we loaded a Settings or Output file, and put the correct values into Settings
+%%% Splice the subset of variables from the "settings" structure into the
+%%% handles structure.
+
 if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
+    handles.Settings.Valgorithmname = Settings.Valgorithmname;
+    handles.Settings.Vvariable = Settings.Vvariable;
 else
     Settings = LoadedSettings.handles;
+    handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
+    handles.Settings.Vvariable = Settings.Settings.Vvariable;
 end
 
-
-%%% Splice the subset of variables from the "settings" structure into the
-%%% handles structure.  For each one, it checks whether the value is empty
-%%% before creating a field for it in the handles structure.  For the
-%%% algorithm names and the pixel size, this code also displays the values
-%%% in the GUI.
 handles.numAlgorithms = 0;
-handles.Settings.Valgorithmname = Settings.Valgorithmname;
-handles.Settings.Vvariable = Settings.Vvariable;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 handles.numVariables = Settings.numVariables;
 handles.FigureDisplayString = cell(1,99);
@@ -980,10 +979,14 @@ end
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 
-while(handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) > handles.numAlgorithms)
+
+while((isempty(handles.AlgorithmHighlighted)==0) && (handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) > handles.numAlgorithms) )
     handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) = [];
 end
 
+if(isempty(handles.AlgorithmHighlighted))
+    handles.AlgorithmHighlighted = handles.numAlgorithms;
+end
 set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
 
 guidata(gcbo, handles);

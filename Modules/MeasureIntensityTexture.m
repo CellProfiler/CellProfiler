@@ -265,13 +265,12 @@ if sum(sum(LabelMatrixImage)) == 0
     handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {0};
 else
 
-%%% The regionprops command extracts a lot of measurements.  It
-%%% is most efficient to call the regionprops command once for all the
-%%% properties rather than calling it for each property separately.
-Statistics = regionprops(LabelMatrixImage,'Area', 'ConvexArea', 'MajorAxisLength', 'MinorAxisLength', 'Eccentricity', 'Solidity', 'Extent', 'Centroid');
-
 %%% CATCH NAN's -->>
-if sum(isnan(cat(1,Statistics.Solidity))) ~= 0
+%%% I am not sure whether this module actually requires this step.
+%%% The Area measurements are only used for this error catching, so
+%%% it's a time-consuming error check.
+Statistics = regionprops(LabelMatrixImage,'Area');
+if sum(isnan(cat(1,Statistics.Area))) ~= 0
     error('Image processing was canceled because there was a problem in the Measure Intensity Texture module. Some of the measurements could not be made.  This might be because some objects had zero area or because some measurements were attempted that were divided by zero. If you want to make measurements despite this problem, remove the 3 lines in the .m file for this module following the line %%% CATCH NANs. This will result in some non-numeric values in the output file, which will be represented as NaN (Not a Number).')
 end
 

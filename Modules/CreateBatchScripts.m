@@ -150,7 +150,7 @@ BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR07 = WARNING: This module should be the last one in the analysis pipeline.
+%textVAR08 = WARNING: This module should be the last one in the analysis pipeline.
 
 %%%VariableRevisionNumber = 04
 

@@ -1,4 +1,4 @@
-function handles = AlgApplyThreshold_1(handles)
+function handles = AlgApplyThreshold(handles)
 
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.

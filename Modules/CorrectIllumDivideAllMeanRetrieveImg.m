@@ -5,9 +5,10 @@ function handles = AlgCorrectIllumDivideAllMeanRetrieveImg(handles)
 %
 % This module is like the Correct Illumination Divide All Mean module,
 % except it allows retrieval of an already calculated illumination
-% correction image, e.g. from a previously run output file.  This
-% module has not been extensively tested and was written in a quick
-% emergency situation.
+% correction image, from a previously run output file or from a
+% previously saved illumination correction image, in .mat format.
+% This module has not been extensively tested and was written in a
+% quick emergency situation.
 %
 % SAVING IMAGES: The illumination corrected images produced by this
 % module can be easily saved using the Save Images module, using the
@@ -180,12 +181,18 @@ end
 %%% correction from a file.
 if handles.Current.SetBeingAnalyzed == 1
     if strcmp(IllumCorrectPathAndFileName, '.') ~= 1
+        %%% Tries loading from an output file.
         try StructureIlluminationImage = load(IllumCorrectPathAndFileName);
-           fieldname = ['IllumImageAD', ImageName];
-           IlluminationImage = StructureIlluminationImage.handles.Pipeline.(fieldname);
-        catch error(['Image processing was canceled because there was a problem loading the image ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.'])
+        catch error(['Image processing was canceled because there was a problem loading the file ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.'])
         end
-    end    
+        try fieldname = ['IllumImageAD', CorrectedImageName];
+            IlluminationImage = StructureIlluminationImage.handles.Pipeline.(fieldname);
+        catch
+            try IlluminationImage = StructureIlluminationImage.IlluminationImage;
+            catch error(['Image processing was canceled because an illumination image could not be found in the file you selected: ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.  If the file you selected is an output file, the name entered in the CorrectIllumDivideAllMeanRetrieveImg module must match the corrected image name in the output file.'])
+            end
+        end
+    end
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
     if exist('MeanImage','var') == 1

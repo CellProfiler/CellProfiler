@@ -43,6 +43,7 @@ if nargout
 else
     gui_mainfcn(gui_State, varargin{:});
 end
+
 % End initialization code - DO NOT EDIT
 
 % --- Executes just before gui192 is made visible.
@@ -50,6 +51,10 @@ function gui192_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for gui192
 handles.output = hObject;
+
+% The Number of Algorithms/Variables hardcoded in
+handles.numAlgorithms = 8;
+handles.numVariables = 11;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -555,14 +560,15 @@ guidata(gcbo, handles);
 %}
 
 %%%Hardcoded num of variables here!
-for i=1:8,
+for i=1:handles.numAlgorithms,
     handles = clearalgorithm(num2str(i), handles, 'NoConfirm');
     guidata(gcbo, handles);
 end
 
 %%% The last clearalgorithm function leaves the indicator bar set at
 %%% algorithm 8, so the following makes it invisible.
-set(handles.Indicator8,'Visible','off');
+%%%set(handles.Indicator8,'Visible','off');
+set(handles.(['Indicator',num2str(i)]),'Visible','off');
 
 %%% Splice the subset of variables from the "settings" structure into the
 %%% handles structure.  For each one, it checks whether the value is empty
@@ -572,8 +578,8 @@ set(handles.Indicator8,'Visible','off');
 
 
 
-for i=1:8,
-    for j=1:11,
+for i=1:handles.numAlgorithms,
+    for j=1:handles.numVariables,
         if (j < 10)
             stringend = strcat('0',num2str(j));
         else
@@ -681,8 +687,8 @@ if isempty(Settings{87}) == 0, handles.Vvariable8_10 = Settings{87}; end
 if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
 %}
 
-for i=1:8,
-    if isempty(Settings{i+88}) == 0, handles.(['Valgorithmname',num2str(i)]) = Settings{i+88};
+for i=1:handles.numAlgorithms,
+    if isempty(Settings{i+handles.numAlgorithms*handles.numVariables}) == 0, handles.(['Valgorithmname',num2str(i)]) = Settings{i+handles.numAlgorithms*handles.numVariables};
         set(handles.(['AlgorithmName', num2str(i)]),'string',handles.(['Valgorithmname',num2str(i)])), end
 end
 
@@ -704,7 +710,7 @@ if isempty(Settings{95}) == 0, handles.Valgorithmname7 = Settings{95};
 if isempty(Settings{96}) == 0, handles.Valgorithmname8 = Settings{96}; 
     set(handles.AlgorithmName8,'string',handles.Valgorithmname8), end
 %}
-if isempty(Settings{97}) == 0, handles.Vpixelsize = Settings{97}; 
+if isempty(Settings{handles.numAlgorithms*(1+handles.numVariables)+1}) == 0, handles.Vpixelsize = Settings{handles.numAlgorithms*(1+handles.numVariables)+1}; 
     set(handles.PixelSizeEditBox,'string',handles.Vpixelsize); end
 
 %%% Update handles structure.
@@ -4633,6 +4639,11 @@ AnalyzeAllImagesButton_Callback(hObject, eventdata, handles);
 rmfield(handles, 'parallel_machines');
 guidata(hObject, handles);
 
+
+
+%%%%%%%%%%%%%%%%%%%%%
+%%% Aux Functions %%%
+%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%

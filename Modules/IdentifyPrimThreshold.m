@@ -187,12 +187,16 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
+%textVAR06 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
+%defaultVAR06 = No
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange);  %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -337,8 +341,11 @@ if MaxSize ~= 99999
     PrelimLabelMatrixImage3(AreasImage > MaxSize) = 0;
 end
 %%% Removes objects that are touching the edge of the image, since they
-%%% won't be measured properly.
+%%% won't be measured properly, if the user has requested this.
+if strncmpi(IncludeEdge,'N',1) == 1
 PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
+else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
+end
 %%% Converts PrelimLabelMatrixImage4 to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,1);
 %%% Converts the image to label matrix format. It is necessary to do this

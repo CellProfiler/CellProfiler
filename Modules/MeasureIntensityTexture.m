@@ -53,7 +53,7 @@ fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 
 %textVAR02 = What did you call the greyscale images you want to measure? 
-%defaultVAR02 = OrigRed
+%defaultVAR02 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 

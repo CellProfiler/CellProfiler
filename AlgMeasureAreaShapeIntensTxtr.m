@@ -27,10 +27,14 @@ ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
-%textVAR03 = Note: it is advisable to use the original image rather than an adjusted image.
-%textVAR04 = Adjustments alter the intensity levels from one image relative to another
-%textVAR05 = so that intensity measurements cannot be accurately compared. If you have
-%textVAR06 = cropped an image, however, the cropped image should be specified here.
+%textVAR03 = Measure the percent of cells with a total intensity greater
+%textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
+%defaultVAR04 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
+Threshold = handles.(fieldname);
+
+%textVAR09 = The measurements made by this module will be named based on
+%textVAR10 = your entries, e.g. "OrigRedwithinNuclei".
 
 %%% POTENTIAL IMPROVEMENT: Allow the user to select which measurements will
 %%% be made, particularly for those which take a long time to calculate?
@@ -354,6 +358,16 @@ handles.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
 fieldname = ['dMTSumIntegratedIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 
+%%% Calculates the percent of cells whose integrated intensity is above the
+%%% user's threshold.
+if strcmp(upper(Threshold),'N') ~= 1
+    NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2num(Threshold));
+    TotalNumberObjects = length(IntegratedIntensity);
+    PercentObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
+    fieldname = ['dMTPercentAboveThreshold', ObjectName];
+    handles.(fieldname)(handles.setbeinganalyzed) = {PercentObjectsAboveThreshold};
+end
+
 %%%
 %%% MEAN INTENSITY (PER OBJECT)
 %%%
@@ -569,6 +583,10 @@ else
         ['MeanStDevIntensity:       ', num2str(mean(StDevIntensity))],...
         ['SumIntegratedIntensity:   ', num2str(sum(IntegratedIntensity))],...
         ['SumArea:                  ', num2str(sum(Area))]);
+        if strcmp(upper(Threshold),'N') ~= 1
+            displaytext = strvcat(displaytext,...
+            ['Percent above intensity threshold:', num2str(PercentObjectsAboveThreshold)]);
+        end
 end % Goes with: if no objects were in the label matrix image.
 set(displaytexthandle,'string',displaytext)
 end

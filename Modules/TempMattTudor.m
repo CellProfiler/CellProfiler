@@ -217,7 +217,7 @@ drawnow
 
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% Checks whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
 %%% Note: Everything between the "if" and "end" is not carried out if the
@@ -225,7 +225,7 @@ ThisAlgFigureNumber = handles.Current.(fieldname);
 %%% calculations here. Otherwise an error message will be produced if the
 %%% user has closed the window but you have attempted to access data that
 %%% was supposed to be produced by this part of the code.
-if any(findobj == ThisAlgFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber) == 1;
     %%% THE FOLLOWING CALCULATIONS ARE FOR DISPLAY PURPOSES ONLY: The
     %%% resulting images are shown in the figure window (if open), or saved
     %%% to the hard drive (if desired).  To speed execution, all of this
@@ -273,7 +273,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% that allow Matlab to pause and carry out any pending figure window-
     %%% related commands (like zooming, or pressing timer pause or cancel
     %%% buttons or pressing a help button.)  If the drawnow command is not
-    %%% used immediately prior to the figure(ThisAlgFigureNumber) line,
+    %%% used immediately prior to the figure(ThisModuleFigureNumber) line,
     %%% then immediately after the figure line executes, the other commands
     %%% that have been waiting are executed in the other windows.  Then,
     %%% when Matlab returns to this module and goes to the subplot line,
@@ -281,7 +281,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% This results in strange things like the subplots appearing in the
     %%% timer window or in the wrong figure window, or in help dialog boxes.
     drawnow
-    figure(ThisAlgFigureNumber);
+    figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
@@ -616,7 +616,7 @@ drawnow
 
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
 %%% Note: Everything between the "if" and "end" is not carried out if the
@@ -624,7 +624,7 @@ ThisAlgFigureNumber = handles.Current.(fieldname);
 %%% calculations here. Otherwise an error message will be produced if the
 %%% user has closed the window but you have attempted to access data that
 %%% was supposed to be produced by this part of the code.
-if any(findobj == ThisAlgFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber) == 1;
     %%% THE FOLLOWING CALCULATIONS ARE FOR DISPLAY PURPOSES ONLY: The
     %%% resulting images are shown in the figure window (if open), or saved
     %%% to the hard drive (if desired).  To speed execution, all of this
@@ -667,7 +667,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% that allow Matlab to pause and carry out any pending figure window-
     %%% related commands (like zooming, or pressing timer pause or cancel
     %%% buttons or pressing a help button.)  If the drawnow command is not
-    %%% used immediately prior to the figure(ThisAlgFigureNumber) line,
+    %%% used immediately prior to the figure(ThisModuleFigureNumber) line,
     %%% then immediately after the figure line executes, the other commands
     %%% that have been waiting are executed in the other windows.  Then,
     %%% when Matlab returns to this module and goes to the subplot line,
@@ -675,7 +675,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% This results in strange things like the subplots appearing in the
     %%% timer window or in the wrong figure window, or in help dialog boxes.
     drawnow
-    figure(ThisAlgFigureNumber);
+    figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(pink);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);

@@ -1,4 +1,4 @@
-function handles = AlgMeasureAreaShapeCountLocation(handles)
+function handles = MeasureAreaShapeCountLocation(handles)
 
 % Help for the Measure Area Shape Count Location module:
 % Category: Measurement
@@ -20,10 +20,10 @@ function handles = AlgMeasureAreaShapeCountLocation(handles)
 % image should be converted to binary and re-made into a label matrix
 % image before feeding into this module.
 %
-% See also ALGMEASUREAREAOCCUPIED,
-% ALGMEASURECORRELATION,
-% ALGMEASUREINTENSITYTEXTURE,
-% ALGMEASURETOTALINTENSITY.
+% See also MEASUREAREAOCCUPIED,
+% MEASURECORRELATION,
+% MEASUREINTENSITYTEXTURE,
+% MEASURETOTALINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -118,7 +118,7 @@ ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = 
 %defaultVAR05 = /
 ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%textVAR06 = It is easy to expand the code for more than 5 objects. See AlgMeasureAreaShapeCountLocation.m for details.
+%textVAR06 = It is easy to expand the code for more than 5 objects. See MeasureAreaShapeCountLocation.m for details.
 
 %%% To expand for more than 5 objects, just add more lines in groups
 %%% of three like those above, then change the line about ten lines
@@ -262,7 +262,7 @@ drawnow
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8
@@ -594,18 +594,18 @@ end % Goes with: if no objects are in the image.
 % outside this if statement.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisAlgFigureNumber) == 1;
-    figure(ThisAlgFigureNumber);
-    originalsize = get(ThisAlgFigureNumber, 'position');
+ThisModuleFigureNumber = handles.Current.(fieldname);
+if any(findobj == ThisModuleFigureNumber) == 1;
+    figure(ThisModuleFigureNumber);
+    originalsize = get(ThisModuleFigureNumber, 'position');
     newsize = originalsize;
     if handles.Current.SetBeingAnalyzed == 1 && i == 1
         newsize(3) = originalsize(3)*.5;
-        set(ThisAlgFigureNumber, 'position', newsize);
+        set(ThisModuleFigureNumber, 'position', newsize);
     end
     newsize(1) = 0;
     newsize(2) = 0;
-    displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
     if i == 1
         displaytext =[];
     end
@@ -660,7 +660,7 @@ end
 % Matlab to pause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
 % immediately after the figure line executes, the other commands that
 % have been waiting are executed in the other windows.  Then, when
 % Matlab returns to this module and goes to the subplot line, the

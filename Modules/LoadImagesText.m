@@ -1,4 +1,4 @@
-function handles = AlgLoadImagesText(handles)
+function handles = LoadImagesText(handles)
 
 % Help for the Load Images Text module:
 % Category: File Handling
@@ -32,7 +32,7 @@ function handles = AlgLoadImagesText(handles)
 % different format, allowing this module to function as a file format
 % converter.
 %
-% See also ALGLOADIMAGESORDER.
+% See also LOADIMAGESORDER.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -489,7 +489,7 @@ cd(CurrentDirectory)
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8
@@ -510,10 +510,10 @@ if SetBeingAnalyzed == 1
     %%% window is closed the first time through the module.
     %%% Determines the figure number.
     fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisAlgFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = handles.Current.(fieldname);
     %%% Closes the window if it is open.
-    if any(findobj == ThisAlgFigureNumber) == 1;
-        close(ThisAlgFigureNumber)
+    if any(findobj == ThisModuleFigureNumber) == 1;
+        close(ThisModuleFigureNumber)
     end
 end
 
@@ -634,7 +634,7 @@ end
 % Matlab to pause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
 % immediately after the figure line executes, the other commands that
 % have been waiting are executed in the other windows.  Then, when
 % Matlab returns to this module and goes to the subplot line, the

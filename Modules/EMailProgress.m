@@ -1,4 +1,4 @@
-function handles = AlgEMailProgress(handles)
+function handles = EMailProgress(handles)
 
 % Help for the E-Mail Progress module:
 % Category: Other
@@ -178,10 +178,10 @@ if SetBeingAnalyzed == 1
     %%% window is closed the first time through the module.
     %%% Determines the figure number.
     fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisAlgFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = handles.Current.(fieldname);
     %%% If the window is open, it is closed.
-    if any(findobj == ThisAlgFigureNumber) == 1;
-        close(ThisAlgFigureNumber)
+    if any(findobj == ThisModuleFigureNumber) == 1;
+        close(ThisModuleFigureNumber)
     end
 end
 
@@ -306,7 +306,7 @@ drawnow
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8

@@ -1,4 +1,4 @@
-function handles = AlgMeasureIntensityTexture(handles)
+function handles = MeasureIntensityTexture(handles)
 
 % Help for the Measure Intensity Texture module:
 % Category: Measurement
@@ -16,18 +16,18 @@ function handles = AlgMeasureIntensityTexture(handles)
 % Retrieves a segmented image, in label matrix format, and a
 % corresponding original grayscale image and makes measurements of the
 % objects that are segmented in the image. This module differs from
-% the AlgMeasure module because it lacks measurements of shape and
-% area and includes only intensity and texture. The label matrix image
-% should be "compacted": I mean that each number should correspond to
-% an object, with no numbers skipped. So, if some objects were
-% discarded from the label matrix image, the image should be converted
-% to binary and re-made into a label matrix image before feeding into
-% this module.
+% the MeasureAreaShapeCountLocation module because it lacks
+% measurements of shape and area and includes only intensity and
+% texture. The label matrix image should be "compacted": that is,
+% each number should correspond to an object, with no numbers skipped.
+% So, if some objects were discarded from the label matrix image, the
+% image should be converted to binary and re-made into a label matrix
+% image before feeding into this module.
 %
-% See also ALGMEASUREAREAOCCUPIED,
-% ALGMEASUREAREASHAPEINTENSTXTR,
-% ALGMEASURECORRELATION,
-% ALGMEASURETOTALINTENSITY.
+% See also MEASUREAREAOCCUPIED,
+% MEASUREAREASHAPECOUNTLOCATION,
+% MEASURECORRELATION,
+% MEASURETOTALINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -129,7 +129,7 @@ ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = N
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'. Also, it is easy to expand the code for more than 5 objects. See AlgMeasureIntensityTexture.m for details. 
+%textVAR08 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'. Also, it is easy to expand the code for more than 5 objects. See MeasureIntensityTexture.m for details. 
 
 %%% To expand for more than 5 objects, just add more lines in groups
 %%% of three like those above, then change the line about five lines
@@ -284,7 +284,7 @@ for i = 1:5
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8
@@ -455,19 +455,19 @@ for i = 1:5
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
     fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisAlgFigureNumber = handles.Current.(fieldname);
-    if any(findobj == ThisAlgFigureNumber) == 1;
-        figure(ThisAlgFigureNumber);
-        originalsize = get(ThisAlgFigureNumber, 'position');
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    if any(findobj == ThisModuleFigureNumber) == 1;
+        figure(ThisModuleFigureNumber);
+        originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(1) = 0;
         newsize(2) = 0;
         if handles.Current.SetBeingAnalyzed == 1 && i == 1
             newsize(3) = originalsize(3)*.5;
             originalsize(3) = originalsize(3)*.5;
-            set(ThisAlgFigureNumber, 'position', originalsize);
+            set(ThisModuleFigureNumber, 'position', originalsize);
         end
-        displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
         if i == 1
             displaytext =[];
         end
@@ -517,7 +517,7 @@ end
 % Matlab to pause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
 % immediately after the figure line executes, the other commands that
 % have been waiting are executed in the other windows.  Then, when
 % Matlab returns to this module and goes to the subplot line, the

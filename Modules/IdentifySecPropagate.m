@@ -1,4 +1,4 @@
-function handles = AlgIdentifySecPropagate(handles)
+function handles = IdentifySecPropagate(handles)
 
 % Help for the Identify Secondary Propagate module:
 % Category: Object Identification
@@ -91,8 +91,8 @@ function handles = AlgIdentifySecPropagate(handles)
 % code for this module and remove the 'if/end' statement surrounding
 % the DISPLAY RESULTS section.
 %
-% See also ALGIDENTIFYSECPROPAGATESUBFUNCTION, ALGIDENTIFYSECDISTANCE,
-% ALGIDENTIFYSECWATERSHED.
+% See also IDENTIFYSECPROPAGATESUBFUNCTION, IDENTIFYSECDISTANCE,
+% IDENTIFYSECWATERSHED.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -282,10 +282,10 @@ ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
 %%% STEP 2: Starting from the identified primary objects, the secondary
 %%% objects are identified using the propagate function, written by Thouis
 %%% R. Jones. Calls the function
-%%% "AlgIdentifySecPropagateSubfunction.mexmac" (or whichever version is
+%%% "IdentifySecPropagateSubfunction.mexmac" (or whichever version is
 %%% appropriate for the computer platform being used), which consists of C
 %%% code that has been compiled to run quickly within Matlab.
-PropagatedImage = AlgIdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImageToBeAnalyzed,ThresholdedOrigImage,RegularizationFactor);
+PropagatedImage = IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImageToBeAnalyzed,ThresholdedOrigImage,RegularizationFactor);
 drawnow
 
 %%% STEP 3: Remove objects that are not desired, edited objects.  The
@@ -372,8 +372,8 @@ drawnow
 % outside this if statement.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisAlgFigureNumber) == 1;
+ThisModuleFigureNumber = handles.Current.(fieldname);
+if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,2,2).
     %%% Note that the label2rgb function doesn't work when there are no objects
@@ -413,7 +413,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     BothOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
     drawnow
     %%% Activates the appropriate figure window.
-    figure(ThisAlgFigureNumber);
+    figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
@@ -538,7 +538,7 @@ drawnow
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8

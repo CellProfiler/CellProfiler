@@ -218,16 +218,16 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '    handles.Current.SetBeingAnalyzed = BatchSetBeingAnalyzed;\n');
     fprintf(BatchFile, '    setbeinganalyzed = handles.Current.SetBeingAnalyzed;\n');
     fprintf(BatchFile, '    for SlotNumber = 1:handles.Current.NumberOfModules,\n');
-    fprintf(BatchFile, '        AlgNumberAsString = sprintf(''%%02d'', SlotNumber);\n');
-    fprintf(BatchFile, '        AlgName = char(handles.Settings.ModuleNames(SlotNumber));\n');
+    fprintf(BatchFile, '        ModuleNumberAsString = sprintf(''%%02d'', SlotNumber);\n');
+    fprintf(BatchFile, '        ModuleName = char(handles.Settings.ModuleNames(SlotNumber));\n');
     fprintf(BatchFile, '        if iscellstr(handles.Settings.ModuleNames(SlotNumber)) == 0\n');
     fprintf(BatchFile, '        else\n');
-    fprintf(BatchFile, '            handles.Current.CurrentModuleNumber = AlgNumberAsString;\n');
+    fprintf(BatchFile, '            handles.Current.CurrentModuleNumber = ModuleNumberAsString;\n');
     fprintf(BatchFile, '            try\n');
-    fprintf(BatchFile, '                eval([''handles = '',AlgName,''(handles);''])\n');
+    fprintf(BatchFile, '                eval([''handles = '',ModuleName,''(handles);''])\n');
     fprintf(BatchFile, '            catch\n');
-    fprintf(BatchFile, '                handles.BatchError = [AlgName '' '' lasterr];\n');
-    fprintf(BatchFile, '                disp([''Batch Error: '' AlgName '' '' lasterr]);\n');
+    fprintf(BatchFile, '                handles.BatchError = [ModuleName '' '' lasterr];\n');
+    fprintf(BatchFile, '                disp([''Batch Error: '' ModuleName '' '' lasterr]);\n');
     fprintf(BatchFile, '                break_outer_loop = 1;\n');
     fprintf(BatchFile, '                break;\n');
     fprintf(BatchFile, '            end\n');
@@ -274,10 +274,10 @@ handles = handles_in;
 %%% window is closed if it was previously open.
 %%% Determines the figure number.
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% If the window is open, it is closed.
-if any(findobj == ThisAlgFigureNumber) == 1;
-    delete(ThisAlgFigureNumber)
+if any(findobj == ThisModuleFigureNumber) == 1;
+    delete(ThisModuleFigureNumber)
 end
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
@@ -304,7 +304,7 @@ end
 % Matlab to pause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
 % immediately after the figure line executes, the other commands that
 % have been waiting are executed in the other windows.  Then, when
 % Matlab returns to this module and goes to the subplot line, the
@@ -416,7 +416,7 @@ end
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8

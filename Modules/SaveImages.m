@@ -1,4 +1,4 @@
-function handles = AlgSaveImages(handles)
+function handles = SaveImages(handles)
 
 % Help for the Save Images module: 
 % Category: File Handling
@@ -225,10 +225,10 @@ end
 
 %%% Determines the figure number.
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% The figure window is closed since there is nothing to display.
 if handles.Current.SetBeingAnalyzed == 1;
-    delete(ThisAlgFigureNumber)
+    delete(ThisModuleFigureNumber)
 end
 drawnow
 
@@ -264,7 +264,7 @@ end
 % Matlab to pause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
 % immediately after the figure line executes, the other commands that
 % have been waiting are executed in the other windows.  Then, when
 % Matlab returns to this module and goes to the subplot line, the
@@ -376,7 +376,7 @@ end
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8

@@ -1,4 +1,4 @@
-function handles = AlgMeasureCorrelation(handles)
+function handles = MeasureCorrelation(handles)
 
 % Help for the Measure Correlation module:
 % Category: Measurement
@@ -8,10 +8,10 @@ function handles = AlgMeasureCorrelation(handles)
 % images, or individual correlation measurements can be made for each
 % individual object, as defined by another module.
 %
-% See also ALGMEASUREAREAOCCUPIED,
-% ALGMEASUREAREASHAPEINTENSTXTR,
-% ALGMEASUREINTENSITYTEXTURE,
-% ALGMEASURETOTALINTENSITY.
+% See also MEASUREAREAOCCUPIED,
+% MEASUREAREASHAPECOUNTLOCATION,
+% MEASUREINTENSITYTEXTURE,
+% MEASURETOTALINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -380,8 +380,8 @@ drawnow
 % outside this if statement.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
-ThisAlgFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisAlgFigureNumber) == 1;
+ThisModuleFigureNumber = handles.Current.(fieldname);
+if any(findobj == ThisModuleFigureNumber) == 1;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -391,7 +391,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
 % Matlab to pause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
 % immediately after the figure line executes, the other commands that
 % have been waiting are executed in the other windows.  Then, when
 % Matlab returns to this module and goes to the subplot line, the
@@ -401,15 +401,15 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     drawnow
     if handles.Current.SetBeingAnalyzed == 1;
         %%% Sets the width of the figure window to be appropriate (half width).
-        originalsize = get(ThisAlgFigureNumber, 'position');
+        originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(3) = 350;
-        set(ThisAlgFigureNumber, 'position', newsize);
+        set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% Activates the appropriate figure window.
-    figure(ThisAlgFigureNumber);
+    figure(ThisModuleFigureNumber);
     %%% Displays the results.
-    Displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', [0 0 335 400],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 335 400],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
     TextToDisplay = ['Image Set # ',num2str(handles.Current.SetBeingAnalyzed)];
     for i = 1:size(ImageNames,1)-1
         for j = i+1:size(ImageNames,1)
@@ -418,7 +418,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
         end
     end
     set(Displaytexthandle,'string',TextToDisplay)
-    set(ThisAlgFigureNumber,'toolbar','figure')
+    set(ThisModuleFigureNumber,'toolbar','figure')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -530,7 +530,7 @@ drawnow
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8

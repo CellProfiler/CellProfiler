@@ -19,7 +19,7 @@
 % different labels (as there would be using, e.g., watershed).  Such
 % boundaries must be added in a postprocess.
 %
-% See also ALGIDENTIFYSECPROPAGATE.
+% See also IDENTIFYSECPROPAGATE.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

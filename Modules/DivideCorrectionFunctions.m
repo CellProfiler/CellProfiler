@@ -104,7 +104,7 @@ MaskedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNu
 %defaultVAR03 = IllumCorrImgBlue
 IlluminationFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%%%VariableRevisionNumber = 0
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -183,9 +183,17 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         MinimumAcceptableValue2 = min(.01, PixelIntensities2(2));
         MaskedProjectionImage(MaskedProjectionImage == 0) = MinimumAcceptableValue2;
     end
-
     %%% Divides the Intensity projection image by the masked projection image.
-    IlluminationFunctionImage = IntensityProjectionImage./MaskedProjectionImage;
+    IlluminationImage = IntensityProjectionImage./MaskedProjectionImage;
+    drawnow
+    %%% The final IlluminationImage is produced by dividing each
+    %%% pixel of the illumination image by a scalar: the minimum
+    %%% pixel value anywhere in the illumination image. (If the
+    %%% minimum value is zero, .00000001 is substituted instead.)
+    %%% This rescales the IlluminationImage from 1 to some number.
+    %%% This ensures that the final, corrected image will be in a
+    %%% reasonable range, from zero to 1.
+    IlluminationFunctionImage = IlluminationImage ./ max([min(min(IlluminationImage)); .00000001]);
     ReadyFlag = 1;
 else
     ReadyFlag = 0;

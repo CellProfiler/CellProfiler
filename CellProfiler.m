@@ -66,7 +66,6 @@ handles.output = hObject;
 
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 0;
-handles.numVariables = zeros(1,99);
 handles.MaxAlgorithms = 99;
 handles.MaxVariables = 11;
 handles.AlgorithmHighlighted = [1];
@@ -568,18 +567,22 @@ if (isfield(LoadedSettings, 'Settings')),
     handles.Settings.Vvariable = Settings.Vvariable;
 else
     Settings = LoadedSettings.handles;
-    handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
-    handles.Settings.Vvariable = Settings.Settings.Vvariable;
+    if isfield(Settings,'Settings'),
+        handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
+        handles.Settings.Vvariable = Settings.Settings.Vvariable;
+    end
 end
 
+if isfield(Settings,'numVariables'),
+    handles.numVariables = Settings.numVariables;
+end
 handles.numAlgorithms = 0;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);
-handles.numVariables = Settings.numVariables;
 handles.FigureDisplayString = cell(1,99);
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
-handles.AlgorithmHighlighted = [1];
 set(handles.AlgorithmBox,'Value',1);
+handles.AlgorithmHighlighted = [1];
 handles.Vpixelsize = Settings.Vpixelsize;
 set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);
 
@@ -610,11 +613,15 @@ if FileName ~= 0
   %%% Checks if a field is present, and if it is, the value is stored in the 
   %%% structure 'Settings' with the same name
   
-  
-  Settings.Vvariable = handles.Settings.Vvariable;
-  Settings.Valgorithmname = handles.Settings.Valgorithmname;
-  Settings.numVariables = handles.numVariables;
-  
+  if isfield(handles,'Settings.Vvariable'),
+      Settings.Vvariable = handles.Settings.Vvariable;
+  end
+  if isfield(handles,'Settings.Valgorithmname'),
+      Settings.Valgorithmname = handles.Settings.Valgorithmname;
+  end
+  if isfield(handles,'numVariables'),
+      Settings.numVariables = handles.numVariables;
+  end
   if isfield(handles,'Vpixelsize'),
     Settings.Vpixelsize = handles.Vpixelsize;
   end
@@ -949,13 +956,15 @@ for AlgDelete = 1:length(AlgorithmNumber);
     handles.Settings.Valgorithmname(AlgorithmNumber(AlgDelete)-AlgDelete+1) = [];
     %%% 3. Clears the variable values in the handles structure.
     handles.Settings.Vvariable(AlgorithmNumber(AlgDelete)-AlgDelete+1,:) = [];
+    %%% 4. Clears the number of variables in each algorithm slot from handles structure.
+    handles.numVariables(AlgorithmNumber(AlgDelete)-AlgDelete+1) = [];
 end
 
-%%% 4. Update the number of algorithms loaded
+%%% 5. Update the number of algorithms loaded
 handles.numAlgorithms = 0;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 
-%%% 5. Sets the proper algorithm name to "No analysis module loaded"
+%%% 6. Sets the proper algorithm name to "No analysis module loaded"
 contents = get(handles.AlgorithmBox,'String');
 if(AlgorithmNumber(1)==1)
     contents{AlgorithmNumber(1)} = ['No Algorithms Loaded'];
@@ -985,9 +994,7 @@ ViewAlgorithm(handles);
 
 function MoveUpButton_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
-
-if(AlgorithmNumber(1) == 1)
-    helpdlg('This module is already in the first position. It cannot be moved up.');
+if(handles.numAlgorithms < 1 || AlgorithmNumber(1) == 1)
 else
     for AlgUp = 1:length(AlgorithmNumber);
         AlgorithmUp = AlgorithmNumber(AlgUp)-1;
@@ -1001,12 +1008,17 @@ else
         copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
         handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmUp,:);
         handles.Settings.Vvariable(AlgorithmUp,:) = copyVariables;
+        %%% 3. Copy then clear the num of variables in the handles
+        %%% structure.
+        copyNumVariables = handles.numVariables(AlgorithmNow);
+        handles.numVariables(AlgorithmNow) = handles.numVariables(AlgorithmUp);
+        handles.numVariables(AlgorithmUp) = copyNumVariables;
     end
-    %%% 3. Changes the Listbox to show the changes
+    %%% 4. Changes the Listbox to show the changes
     contents = handles.Settings.Valgorithmname;
-    set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted-1);
     handles.AlgorithmHighlighted = handles.AlgorithmHighlighted-1;
+    set(handles.AlgorithmBox,'String',contents);
+    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)
@@ -1017,9 +1029,7 @@ end
 function MoveDownButton_Callback(hObject,eventdata,handles)
 ButtonTag = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
-
-if(AlgorithmNumber(length(AlgorithmNumber)) >= handles.numAlgorithms)
-    helpdlg('This module is already in the last position. It cannot be moved down.');
+if(handles.numAlgorithms<1 || AlgorithmNumber(length(AlgorithmNumber)) >= handles.numAlgorithms)
 else
     for AlgDown = 1:length(AlgorithmNumber);
         AlgorithmDown = AlgorithmNumber(AlgDown) + 1;
@@ -1033,8 +1043,13 @@ else
         copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
         handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmDown,:);
         handles.Settings.Vvariable(AlgorithmDown,:) = copyVariables;
+        %%% 3. Copy then clear the num of variables in the handles
+        %%% structure.
+        copyNumVariables = handles.numVariables(AlgorithmNow);
+        handles.numVariables(AlgorithmNow) = handles.numVariables(AlgorithmDown);
+        handles.numVariables(AlgorithmDown) = copyNumVariables;
     end
-    %%% 3. Changes the Listbox to show the changes
+    %%% 4. Changes the Listbox to show the changes
     contents = handles.Settings.Valgorithmname;
     set(handles.AlgorithmBox,'String',contents);
     set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted+1);

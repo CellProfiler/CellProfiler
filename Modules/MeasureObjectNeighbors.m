@@ -4,11 +4,18 @@ function handles = MeasureNeighbors(handles)
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module determines how many neighbors each object has.
+% module determines how many neighbors each object has. The user
+% selects the distance within which objects should be considered
+% neighbors.
 %
 % How it works:
-% Retrieves a segmented image, in label matrix format, 
-%
+% Retrieves a segmented image of the objects, in label matrix format.
+% The objects are expanded by the number of pixels the user specifies,
+% and then the module counts up how many other objects the object
+% is overlapping. Alternately, the module can measure the number of
+% neighbors each object has if every object were expanded up until the
+% point where it hits another object.  To use this option, enter 0
+% (the number zero) for the pixel distance.
 %
 % See also <nothing relevant>.
 
@@ -97,6 +104,15 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
 %defaultVAR02 = 0
 NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR03 = If you are expanding objects until touching, enter the name of these new objects
+%defaultVAR03 = ExpandedCells
+
+
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR04 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
+%defaultVAR04 = 0
+SaveColoredNeighbors = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
 
 %%%VariableRevisionNumber = 1
 
@@ -113,6 +129,22 @@ if ~isfield(handles.Pipeline,fieldname)
     error(['Image processing has been canceled. Prior to running the Measure Neighbors module, you must have previously run a segmentation module.  You specified in the MeasureNeighbors module that the desired image was named ', IncomingLabelMatrixImageName(10:end), ', the Measure Neighbors module cannot locate this image.']);
 end
 IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
+
+%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%
+
+% PROGRAMMING NOTE
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
+% figure, imshow(BlurredImage, []), title('BlurredImage') 
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% imwrite(BlurredImage, FileName, FileFormat);
+% Note that you may have to alter the format of the image before
+% saving.  If the image is not saved correctly, for example, try
+% adding the uint8 command:
+% imwrite(uint8(BlurredImage), FileName, FileFormat);
+% To routinely save images produced by this module, see the help in
+% the SaveImages module.
 
 
 if NeighborDistance == 0
@@ -140,18 +172,11 @@ end
 
 
 
-    if sum(sum(IncomingLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
-    else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
-    end
 
 
 
 
-if isempty(str2num(handles.Settings.VariableValues{CurrentModuleNum,2}))
-    error('No distance value specified in the Measure Neighbors module')
-end
-d = max(2,str2num(handles.Settings.VariableValues{CurrentModuleNum,2})+1);
+d = max(2,NeighborDistance+1);
 
 [sr,sc] = size(IncomingLabelMatrixImage);
 ImOfNeighbors = -ones(sr,sc);
@@ -176,10 +201,10 @@ for k = 1:max(IncomingLabelMatrixImage(:))
 end
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
@@ -318,31 +343,7 @@ if any(findobj == ThisModuleFigureNumber) == 1
         newsize(3) = 0.5*originalsize(3);
         set(ThisModuleFigureNumber, 'position', newsize);
     end
-    figure(ThisModuleFigureNumber);
-    subplot(2,1,2)
-    imagesc(ImOfNeighbors),axis image
-    colormap([0 0 0;jet(max(ImOfNeighbors(:)))]);
-    colorbar('SouthOutside','FontSize',8)
-    set(gca,'FontSize',8)
-    title('Cells colored according to the number of neighbors')
-    subplot(2,1,1)
-    imagesc(ColoredLabelMatrixImage)
-    title('Cells colored according to their original colors')
-end
-
-% PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
-% PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
-% figure, imshow(BlurredImage, []), title('BlurredImage')
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
-% imwrite(BlurredImage, FileName, FileFormat);
-% Note that you may have to alter the format of the image before
-% saving.  If the image is not saved correctly, for example, try
-% adding the uint8 command:
-% imwrite(uint8(BlurredImage), FileName, FileFormat);
-% To routinely save images produced by this module, see the help in
-% the SaveImages module.
-
+    drawnow
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -358,4 +359,26 @@ end
 % Matlab returns to this module and goes to the subplot line, the
 % figure which is active is not necessarily the correct one. This
 % results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
+% window or in the wrong figure window, or in help dialog boxes.    figure(ThisModuleFigureNumber);
+    subplot(2,1,2)
+    imagesc(ImOfNeighbors),axis image
+    colormap([0 0 0;jet(max(ImOfNeighbors(:)))]);
+    colorbar('SouthOutside','FontSize',8)
+    set(gca,'FontSize',8)
+    title('Cells colored according to the number of neighbors')
+    subplot(2,1,1)
+    imagesc(ColoredLabelMatrixImage)
+    title('Cells colored according to their original colors')
+end
+if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveColoredNeighbors,'Y',1) == 1
+
+    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
+    %%% window in subplot(2,2,2).
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+
+    if sum(sum(IncomingLabelMatrixImage)) >= 1
+        ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
+    else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+    end
+

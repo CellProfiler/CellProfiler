@@ -20,6 +20,8 @@ function varargout = CellProfiler(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
+% $Revision$
+
 % HINTS:
 % hObject    handle to the object of the function (see GCBO)
 % handles    structure with handles and user data (see GUIDATA)

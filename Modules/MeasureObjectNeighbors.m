@@ -338,14 +338,19 @@ drawnow
 % the last image set, which was left in handles.Pipeline.
 
 %%% Saves neighbor measurements to handles structure.
-fieldname = ['ObjectNumberNeighbors', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberOfNeighbors};
-fieldname = ['SubObjectIdentityOfNeighbors', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
-%%% To extract individual SubObject measurements, use code like this:
-%%% handles.Measurements.SubObjectIdentityOfNeighborsCells{1}{3}
-%%% Where 1 is the image number and 3 is the object number. This
-%%% yields a list of the objects who are neighbors with object 3.
+handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {NumberOfNeighbors};
+handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors'};
+
+% This field is different from the usual measurements. To avoid problems with export modules etc we don't
+% add a IdentityOfNeighborsFeatures field. It will then be "invisible" to
+% export modules, which look for fields with 'Features' in the name.
+handles.Measurements.(ObjectName).IdentityOfNeighbors(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
+
+
+%%% Example: To extract the number of neighbor for objects called Cells, use code like this:
+%%% handles.Measurements.Cells.IdentityOfNeighborsCells{1}{3}
+%%% where 1 is the image number and 3 is the object number. This
+%%% yields a list of the objects who are neighbors with Cell object 3.
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

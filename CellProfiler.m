@@ -1064,30 +1064,47 @@ end
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
 function CloseFigureButton_Callback(hObject, eventdata, handles)
-AlgorithmName = get(hObject,'tag');
-AlgorithmNumber = trimstr(AlgorithmName,'FigureDisplay','left');
-CurrentHandle = handles.(['FigureDisplay' AlgorithmNumber]);
-ButtonStatus = get(CurrentHandle, 'string');
+AlgorithmNumber = handles.AlgorithmHighlighted;
+thisFigString = char(handles.FigureDisplayString{AlgorithmNumber});
+if(strcmp(thisFigString, 'Closing...') == 0)
+handles.FigureDisplayString{AlgorithmNumber} = 'Closing...';
+end
+guidata(hObject, handles);
 %%% First case: closing or opening is already in progress; Don't do
 %%% anything.
+%{
+CurrentHandle = handles.(['CloseFigureButton']);
+ButtonStatus = get(CurrentHandle, 'string');
 if strcmp(ButtonStatus, 'Closing...') == 1 
-elseif strcmp(ButtonStatus, 'Opening...') == 1 
 elseif strcmp(ButtonStatus, 'Close Figure') == 1 
     %%% Setting the text to "Closing" will allow this window to close at the
     %%% end of the current image set.
     set(CurrentHandle,'string', 'Closing...')
     %%% Refreshes the Main GUI window.
     drawnow
+end
+%}
+
+% --- Executes on button press in OpenFigureButton.
+function OpenFigureButton_Callback(hObject, eventdata, handles)
+AlgorithmNumber = handles.AlgorithmHighlighted;
+thisFigString = char(handles.FigureDisplayString{AlgorithmNumber});
+if(strcmp(thisFigString, 'Opening...') == 0)
+handles.FigureDisplayString{AlgorithmNumber} = 'Opening...';
+end
+guidata(hObject, handles);
+%{
+CurrentHandle = handles.(['OpenFigureButton']);
+ButtonStatus = get(CurrentHandle, 'string');
+if strcmp(ButtonStatus, 'Opening...') == 1 
 elseif strcmp(ButtonStatus, 'Open Figure') == 1 
-    %%% Setting the text to "Opening" will allow this window to open at the
+    %%% Setting the text to "Closing" will allow this window to close at the
     %%% end of the current image set.
     set(CurrentHandle,'string', 'Opening...')
     %%% Refreshes the Main GUI window.
     drawnow
 end
-
-% --- Executes on button press in OpenFigureButton.
-function OpenFigureButton_Callback(hObject, eventdata, handles)
+%}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
@@ -2999,27 +3016,22 @@ else
                           %%% request is pending.
                           
                           %listbox changes
-                          ThisFigDisplayString = handles.FigureDisplayString{1,str2num(AlgNumberAsString)};
+                          char(handles.FigureDisplayString{SlotNumber})
+                          ThisFigDisplayString = char(handles.FigureDisplayString{SlotNumber});
                           if strcmp(ThisFigDisplayString, 'Closing...') == 1
                               Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
-                              delete(Thisfigurealgorithm)
-                              %%% Set the button's text to "Open Figure".
-                              ThisFigDisplayString = 'Open Figure';
+                              delete(Thisfigurealgorithm);
+                              handles.FigureDisplayString{SlotNumber} = 'Closed';
                               %%% Refreshes the Main GUI window, or else "Open Figure" is not
                               %%% displayed.
-                              %drawnow
-                          elseif strcmp(ThisFigDisplayString, 'Opening...') == 1
+                          elseif (strcmp(ThisFigDisplayString, 'Opening...') == 1);
                               Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
-                              figure(Thisfigurealgorithm)
-                              set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display'])
+                              figure(Thisfigurealgorithm);
+                              set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display']);
                               %%% Sets the closing function of the window appropriately. (See way
                               %%% above where 'ClosingFunction's are defined).
                               set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' AlgNumberAsString]));
-                              %%% Set the button's text to "Close Figure".
-                              ThisFigDisplayString = 'Close Figure';
-                              %%% Refreshes the Main GUI window, or else "Close Figure" is not
-                              %%% displayed.
-                              %drawnow
+                              handles.FigureDisplayString{SlotNumber} = 'Opened';
                           end
 
                       end %%% ends loop over slot number

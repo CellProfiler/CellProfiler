@@ -242,7 +242,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '        break;\n');
     fprintf(BatchFile, '    end\n');
     fprintf(BatchFile, 'end\n');
-    fprintf(BatchFile, 'cd(%s);\n', BatchOutputPath);
+    fprintf(BatchFile, 'cd(''%s'');\n', BatchOutputPath);
     fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
     fclose(BatchFile);
 end

@@ -1856,7 +1856,7 @@ if ~isempty(UserEntry)
         UserEntry = UserEntry(1:index(end)-1);
     end
     
-    % If there is now 'OUT' in the filename, add it.
+    % If there is no 'OUT' in the filename, add it.
     if isempty(findstr(lower(UserEntry),'out'))
         UserEntry = [UserEntry 'OUT'];
     end

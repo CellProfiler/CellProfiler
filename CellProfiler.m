@@ -36,7 +36,7 @@ function varargout = CellProfiler(varargin)
 % $Revision$
 
 
-% Last Modified by GUIDE v2.5 01-Nov-2004 20:25:45
+% Last Modified by GUIDE v2.5 13-Dec-2004 10:57:28
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -70,14 +70,11 @@ handles = createVariablePanel(handles);
 % Choose default command line output for CellProfiler
 handles.output = hObject;
 
-% The Number of Modules/Variables hardcoded in
-handles.Current.NumberOfModules = 0;
-handles.Current.MaxNumberOfVariables = 99;
-
 %%% Creates variables for later use.
 handles.Settings = struct;
 handles.Pipeline = struct;
 handles.Measurements = struct;
+handles.Current.NumberOfModules = 0;
 
 global closeFigures openFigures;
 closeFigures = [];
@@ -115,7 +112,7 @@ catch handles.Settings.PixelSize = get(handles.PixelSizeEditBox,'string');
 end
 
 try handles.Current.DefaultModuleDirectory = DefaultModuleDirectory;
-catch handles.Current.DefaultModuleDirectory = pwd;
+catch handles.Current.DefaultModuleDirectory = pwd; %Use which CellProfiler pathname & modules subdirectory.
 end
 
 try handles.Current.DefaultOutputDirectory = DefaultOutputDirectory;
@@ -1419,7 +1416,7 @@ if (length(ModuleHighlighted) > 0)
     if( handles.Current.NumberOfModules > 0 )
         %%% 2. Sets all VariableBox edit boxes and all
         %%% VariableDescriptions to be invisible.
-        for i = 1:handles.Current.MaxNumberOfVariables,
+        for i = 1:99,
             set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
             set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
         end
@@ -1521,7 +1518,7 @@ end
 
 %%% 1. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
-for i = 1:handles.Current.MaxNumberOfVariables
+for i = 1:99
     set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
     set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
@@ -3503,7 +3500,7 @@ else
                 set(handles.MoveDownButton,'visible','off');
 
                 % FIXME: This should loop just over the number of actual variables in the display.
-                for VariableNumber=1:handles.Current.MaxNumberOfVariables;
+                for VariableNumber=1:99;
                     set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
                 set(handles.ListBox,'enable','off')
@@ -4091,3 +4088,37 @@ else
 end
 
 %%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%
+
+
+% --- Executes on button press in pushbutton108.
+function pushbutton108_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton108 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on selection change in popupmenu10.
+function popupmenu10_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns popupmenu10 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu10
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu10_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+

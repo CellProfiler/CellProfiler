@@ -126,7 +126,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 100
 BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
 
-%textVAR02 = What is the path to the CellProfiler modules on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
+%textVAR02 = What is the path to the CellProfiler on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
 %defaultVAR02 = .
 BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -152,7 +152,7 @@ BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = WARNING: This module should be the last one in the analysis pipeline.
 
-%%%VariableRevisionNumber = 04
+%%%VariableRevisionNumber = 05
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -175,7 +175,7 @@ if strcmp(BatchOutputPath, '.') == 1
 end
 
 if strcmp(BatchCellProfilerPath, '.') == 1,
-    BatchCellProfilerPath = handles.Preferences.DefaultModuleDirectory;
+    BatchCellProfilerPath = fullfile(handles.Preferences.DefaultModuleDirectory, '..');
 end
 
 %%% Save a snapshot of handles.
@@ -217,6 +217,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     BatchFileName = sprintf('%s/%s%d_to_%d.m', BatchSavePath, BatchFilePrefix, StartImage, EndImage);
     BatchFile = fopen(BatchFileName, 'wt');
 
+    fprintf(BatchFile, 'path(''%s'',path);\n', fullfile(BatchCellProfilerPath, 'Modules'));
     fprintf(BatchFile, 'path(''%s'',path);\n', BatchCellProfilerPath);
     fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);

@@ -50,7 +50,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 07-Oct-2004 11:00:06
+% Last Modified by GUIDE v2.5 15-Oct-2004 08:34:12
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1168,7 +1168,7 @@ end
 
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
-function FigureDisplay_Callback(hObject, eventdata, handles)
+function CloseFigureButton_Callback(hObject, eventdata, handles)
 AlgorithmName = get(hObject,'tag');
 AlgorithmNumber = trimstr(AlgorithmName,'FigureDisplay','left');
 CurrentHandle = handles.(['FigureDisplay' AlgorithmNumber]);
@@ -1190,6 +1190,9 @@ elseif strcmp(ButtonStatus, 'Open Figure') == 1
     %%% Refreshes the Main GUI window.
     drawnow
 end
+
+% --- Executes on button press in OpenFigureButton.
+function OpenFigureButton_Callback(hObject, eventdata, handles)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
@@ -3018,11 +3021,8 @@ else
                 %%% before closing the window, to avoid unexpected results.  The handles
                 %%% for each algorithm's figure must be made global so the closing function
                 %%% can find the handles.
-
-                
-                set(handles.(['FigureDisplay']),'visible','on')
-               % set(handles.(['ViewAlgorithm']),'visible','on')
-               
+                set(handles.(['CloseFigureButton']),'visible','on')
+                set(handles.(['OpenFigureButton']),'visible','on')
                 %listbox changes 
                
                 for i=1:handles.numAlgorithms;
@@ -3038,7 +3038,6 @@ else
                             %}
                     end
                 end
-                
                 
                 %%% For the first time through, the number of image sets
                 %%% will not yet have been determined.  So, the Number of
@@ -3371,21 +3370,18 @@ else
                 set(handles.PixelSizeEditBox,'enable','on','foregroundcolor','black')
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
-
                 %listbox changes
-                set(handles.AddAlgorithm,'visible','on');
-                set(handles.RemoveAlgorithm,'visible','on');
-                set(handles.MoveUpButton,'visible','on');
-                set(handles.MoveDownButton,'visible','on');
-                set(handles.FigureDisplay,'visible','off');
-                set(handles.FigureDisplay,'string', 'Close Figure');
-            %    set(handles.ViewAlgorithm,'visible','on');
-
                 for AlgorithmNumber=1:handles.numAlgorithms;
                     for VariableNumber = 1:handles.numVariables(AlgorithmNumber);
                         set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
                     end
                 end
+                set(handles.AddAlgorithm,'visible','on');
+                set(handles.RemoveAlgorithm,'visible','on');
+                set(handles.MoveUpButton,'visible','on');
+                set(handles.MoveDownButton,'visible','on');
+                set(handles.CloseFigureButton,'visible','off');
+                set(handles.OpenFigureButton,'visible','off');
                 set(handles.SelectTestImageBrowseButton,'enable','on')
                 set(handles.ListBox,'enable','on')
                 set(handles.TestImageName,'enable','on','foregroundcolor','black')

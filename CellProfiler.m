@@ -2,7 +2,7 @@ function varargout = CellProfiler(varargin)
 
 % CellProfilerTM cell image analysis software
 %
-% CellProf'FontSize',handles.FontSizeler cell image analysis software is designed for
+% CellProfiler cell image analysis software is designed for
 % biologists without training in computer vision or programming to
 % quantitatively measure phenotypes from thousands of images
 % automatically. CellProfiler.m and CellProfiler.fig work together to
@@ -163,7 +163,7 @@ end
 %%% in, the handles.Current values and edit box displays are set.
 handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
 handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
-handles.Current.PixelSize = handles.Preferences.PixelSize;
+handles.Settings.PixelSize = handles.Preferences.PixelSize;
 %%% (No need to set a current module directory or display it in an
 %%% edit box; the one stored in preferences is the only one ever
 %%% used).
@@ -1188,7 +1188,7 @@ if exist('EnteredPreferences','var') == 1
         %%% in, the handles.Current values and edit box displays are set.
         handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
         handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
-        handles.Current.PixelSize = handles.Preferences.PixelSize;
+        handles.Settings.PixelSize = handles.Preferences.PixelSize;
         %%% (No need to set a current module directory or display it in an
         %%% edit box; the one stored in preferences is the only one ever
         %%% used).

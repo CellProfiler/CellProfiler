@@ -617,7 +617,9 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
         set(h,'XTickLabel',XTickLabels)
         set(h,'XTick',PlotBinLocations)
         set(gca,'UserData',FigureSettings)
-        title(HistogramTitles{ImageNumber})
+        % Fix underscores in HistogramTitles
+        AdjustedHistogramTitle = strrep(HistogramTitles{ImageNumber},'_','\_');
+        title(AdjustedHistogramTitle)
         if Increment == 1
             set(get(h,'YLabel'),'String','Number of objects')
         end

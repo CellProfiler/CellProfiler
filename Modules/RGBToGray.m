@@ -94,8 +94,8 @@ drawnow
 
 %%% Converts Image to Gray
 InitialGrayscaleImage = OrigImage(:,:,1)*RedIntensity+OrigImage(:,:,2)*GreenIntensity+OrigImage(:,:,3)*BlueIntensity;
-%%% Divides by 3 to make sure the image is in the proper 0 to 1 range.
-GrayscaleImage = InitialGrayscaleImage/3;
+%%% Divides by the sum of the weights to make sure the image is in the proper 0 to 1 range.
+GrayscaleImage = InitialGrayscaleImage/sum(RedIntensity+GreenIntensity+BlueIntensity);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

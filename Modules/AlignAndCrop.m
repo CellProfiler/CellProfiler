@@ -1,44 +1,90 @@
 function handles = AlgAlignAndCrop(handles)
 
+% Help for the Align and Crop module:
+% 
+% This module was written for a specific purpose: to take a larger
+% image of the outlines of cells, with some space around the outside,
+% and align it with a real image of cells (or of nuclei).  Fortunately,
+% it can work for almost any set of images for which one set is larger
+% than the other and rescaling must be done (and, of course, there are
+% features shared which can be used to align the images).  Just enter
+% the larger images as the traced ones, and the smaller ones as the
+% real images.
+% 
+% This module determines the best alignment of two images.  It expects
+% the first to be a scanned, traced transparency of 8 1/2 by 11 inches,
+% and the second should be a real image from a microscope.  The
+% addition of colored registration marks is optional, although very
+% helpful in alignment.  The module stretches the real image to be at
+% the same resolution as the traced image, then creates a black
+% background for it of the same size, then aligns the images, and
+% finally crops them all to be the same size and taking up the same
+% area as on the original real image.
+% In the future, this may be developed to include a way of finding the
+% optimal scaling of the images to each other; however, no guarantees.
+% 
+% Note that as long as the input real images of nuclei and of cells are
+% the same dimensions, their output files will have the same dimensions
+% as well.
+
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the ______________________.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
+
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
+
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
-drawnow
-
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
-
 %textVAR01 = What did you call the traced images?
 %defaultVAR01 = OrigTraced
 TracedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
-%textVAR02 = What do you want to call the aligned, cropped traced images?
-%defaultVAR02 = ACTraced
-FinishedTracedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
-%textVAR03 = To save the adjusted traced images, enter text to append to the image name.
-%defaultVAR03 = N
-SaveTracedImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
-%textVAR04 = What did you call the real images?
-%defaultVAR04 = OrigReal
-RealImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
-%textVAR05 = What do you want to call the aligned, cropped real images?
-%defaultVAR05 = ACReal
-FinishedRealImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
-%textVAR06 = To save the adjusted real images, enter text to append to the image name.
-%defaultVAR06 = N
-SaveRealImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
-%textVAR07 = If you do not wish to save an image, leave the field as "N".
-%textVAR08 = Enter the printed size of the real image in inches as "height,width" (no quotes).
-%defaultVAR08 = height,width
-PrintedImageSize = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
-%textVAR10 = In what file format do you want to save images? Do not use a period.
-%defaultVAR10 = tif
-FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
-%textVAR11 = Enter the page orientation of the traced images (portrait or landscape)
-%defaultVAR11 = portrait
-Orientation = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+
+%textVAR02 = What did you call the real images?
+%defaultVAR02 = OrigReal
+RealImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
+%textVAR03 = What do you want to call the aligned, cropped traced images?
+%defaultVAR03 = ACTraced
+FinishedTracedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+
+%textVAR04 = What do you want to call the aligned, cropped real images?
+%defaultVAR04 = ACReal
+FinishedRealImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+
+%textVAR05 = Enter the printed size of the real image in inches as "height,width" (no quotes).
+%defaultVAR05 = height,width
+PrintedImageSize = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+
+%textVAR06 = Enter the page orientation of the traced images (portrait or landscape)
+%defaultVAR06 = portrait
+Orientation = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -93,80 +139,11 @@ TracedFileName = handles.(fieldname)(handles.setbeinganalyzed);
 fieldname = ['dOTFilename', RealImageName];
 RealFileName = handles.(fieldname)(handles.setbeinganalyzed);
 
-%%% Checks whether the file format the user entered is readable by Matlab.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    error('The image file type entered in the AlignAndCrop module is not recognized by Matlab, or you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
-end
-
-%%% Checks whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces.
-if strcmp(upper(SaveTracedImage),'N') ~= 1
-    %%% Finds and removes the file format extension within the original file
-    %%% name, but only if it is at the end. Strips the original file format extension 
-    %%% off of the file name, if it is present, otherwise, leaves the original
-    %%% name intact.
-    CharFileName1 = char(TracedFileName);
-    PotentialDot1 = CharFileName1(end-3:end-3);
-    if strcmp(PotentialDot1,'.') == 1
-        BareTracedFileName = CharFileName1(1:end-4);
-    else BareTracedFileName = CharFileName1;
-    end
-    %%% Assembles the new image name.
-    NewTracedImageName = [BareTracedFileName,SaveTracedImage,'.',FileFormat];
-    %%% Checks whether the new image name is going to result in a name with
-    %%% spaces.
-    A = isspace(SaveTracedImage);
-    if any(A) == 1
-        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned traced image name in the AlignAndCrop module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-    %%% Checks whether the new image name is going to result in overwriting the
-    %%% original file.
-    B = strcmp(upper(CharFileName1), upper(NewTracedImageName));
-    if B == 1
-        error('Image processing was canceled because you have not entered text to append to the aligned traced image name in the AlignAndCrop module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-end
-
-%%% Checks whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces.
-if strcmp(upper(SaveRealImage),'N') ~= 1
-    %%% Finds and removes the file format extension within the original file
-    %%% name, but only if it is at the end. Strips the original file format extension 
-    %%% off of the file name, if it is present, otherwise, leaves the original
-    %%% name intact.
-    CharFileName2 = char(RealFileName);
-    PotentialDot2 = CharFileName2(end-3:end-3);
-    if strcmp(PotentialDot2,'.') == 1
-        BareRealFileName = CharFileName2(1:end-4);
-    else BareRealFileName = CharFileName2;
-    end
-    %%% Assembles the new image name.
-    NewRealImageName = [BareRealFileName,SaveRealImage,'.',FileFormat];
-    %%% Checks whether the new image name is going to result in a name with
-    %%% spaces.
-    A = isspace(SaveRealImage);
-    if any(A) == 1
-        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned real image name in the AlignAndCrop module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-    %%% Checks whether the new image name is going to result in overwriting the
-    %%% original file.
-    B = strcmp(upper(CharFileName2), upper(NewRealImageName));
-    if B == 1
-        error('Image processing was canceled because you have not entered text to append to the aligned real image name in the AlignAndCrop module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-end
-
-drawnow
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
+
 %%% creates a two-dimensional, b&w Traced Image to work with during this section
 ExTracedImage = TracedImage(:,:,1);
 PreTracedImage = im2bw(ExTracedImage,.5);
@@ -319,26 +296,11 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     subplot(2,2,3); imagesc(CroppedAlignedTracedImage); colormap(gray); title(['Cropped & Aligned Traced Image']);
     subplot(2,2,4); imagesc(CroppedAlignedRealImage);title(['Cropped & Aligned Real Image']);
 end
-drawnow
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% finds if the user wanted to save the aligned images and if so, saves
-%%% them with the specified appendix
-if strcmp(upper(SaveTracedImage),'N') ~= 1
-    imwrite(CroppedAlignedTracedImage,NewTracedImageName,FileFormat);
-end
-if strcmp(upper(SaveRealImage),'N') ~= 1
-    imwrite(CroppedAlignedRealImage,NewRealImageName,FileFormat);
-end
-
-drawnow
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The adjusted image is saved to the handles structure so it can be used
 %%% by subsequent algorithms.
@@ -353,8 +315,6 @@ fieldname = ['dOTFilename', FinishedTracedImageName];
 handles.(fieldname)(handles.setbeinganalyzed) = TracedFileName;
 fieldname = ['dOTFilename', FinishedRealImageName];
 handles.(fieldname)(handles.setbeinganalyzed) = RealFileName;
-
-
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
@@ -467,61 +427,3 @@ end
 function I = mutualinf(X, Y)
 %%% Mutual information of images X and Y
 I = entropy(X) + entropy(Y) - entropy2(X,Y);
-
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for the Align and Crop module:
-%%%%% .
-%%%%% This module was written for a specific purpose: to take a larger
-%%%%% image of the outlines of cells, with some space around the outside,
-%%%%% and align it with a real image of cells (or of nuclei).  Fortunately,
-%%%%% it can work for almost any set of images for which one set is larger
-%%%%% than the other and rescaling must be done (and, of course, there are
-%%%%% features shared which can be used to align the images).  Just enter
-%%%%% the larger images as the traced ones, and the smaller ones as the
-%%%%% real images.
-%%%%% .
-%%%%% This module determines the best alignment of two images.  It expects
-%%%%% the first to be a scanned, traced transparency of 8 1/2 by 11 inches,
-%%%%% and the second should be a real image from a microscope.  The
-%%%%% addition of colored registration marks is optional, although very
-%%%%% helpful in alignment.  The module stretches the real image to be at
-%%%%% the same resolution as the traced image, then creates a black
-%%%%% background for it of the same size, then aligns the images, and
-%%%%% finally crops them all to be the same size and taking up the same
-%%%%% area as on the original real image.
-%%%%% In the future, this may be developed to include a way of finding the
-%%%%% optimal scaling of the images to each other; however, no guarantees.
-%%%%% .
-%%%%% Note that as long as the input real images of nuclei and of cells are
-%%%%% the same dimensions, their output files will have the same dimensions
-%%%%% as well.
-
-
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the ______________________.
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$

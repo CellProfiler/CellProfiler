@@ -478,7 +478,7 @@ for i = 1:5
         %%% Checks whether any objects were found in the image.
         if ObjectCount == 0
             displaytext = strvcat(displaytext,[ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
-                ['Number of ', ObjectName ,':      zero']);
+                ['Number of ', OriginalObjectName ,':      zero']);
         else
             displaytext = strvcat(displaytext,[ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
                 ['MeanIntegratedIntensity:          ', num2str(mean(IntegratedIntensity))],...

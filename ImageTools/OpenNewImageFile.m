@@ -24,7 +24,7 @@ function handles = OpenNewImageFile(handles)
 
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be shown.
-[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'MATLABBUG11432TP','*.*'),'Select the image to view');
+[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'MATLABBUG11432TP','*'),'Select the image to view');
     %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
 if FileName == 0

@@ -446,7 +446,6 @@ else
                         for columncount = 1:length(headernames),
                             for samplelength = 2:length(SampleNames),
                                 [handleheadernameinfo(samplelength-1,1), SampleNames(samplelength)] = strtok(SampleNames(samplelength), ',');
-                                samplelength = samplelength + 1;
                             end
                             outputfile.handles.(char(headernames(columncount))) = handleheadernameinfo;
                             %%% Also need to add this heading name (field name) to the headings
@@ -458,7 +457,6 @@ else
                                 %%% name in position 1.
                             else outputfile.handles.headings(1)  = headernames(columncount);
                             end
-                            columncount = columncount + 1;
                         end
                         save([pOutName fOutName],'-struct','outputfile');
                         msgbox('Sample Info added to output file');
@@ -487,7 +485,6 @@ else
                         for columncount = 1:length(headernames),
                             for samplelength = 2:length(SampleNames),
                                 [handleheadernameinfo(samplelength-1,1), SampleNames(samplelength)] = strtok(SampleNames(samplelength), ',');
-                                samplelength = samplelength + 1;
                             end
                             handles.(char(headernames(columncount))) = handleheadernameinfo;
                             %%% Also need to add this heading name (field name) to the headings
@@ -500,7 +497,6 @@ else
                             else handles.headings(1)  = headernames(columncount);
                             end
                             guidata(hObject, handles);
-                            columncount = columncount + 1;
                         end
                     catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
                     end % Goes with catch
@@ -921,7 +917,6 @@ else
 
   %%% 4. Saves the AlgorithmName to the handles structure.
   handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
-  handles.Settings.Vvariable(AlgorithmNums, 99) = {[]};
   contents = get(handles.AlgorithmBox,'String');
   contents{AlgorithmNums} = AlgorithmName;
   set(handles.AlgorithmBox,'String',contents);
@@ -1019,18 +1014,20 @@ if (length(AlgorithmHighlighted) > 0)
                 numberExtraLinesOfDescription = numberExtraLinesOfDescription + linesVarDes - 1;
                 set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 292+linesVarDes-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 464 23*(linesVarDes)-3*linesVarDes]);
             end
-            
-            if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
-                vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
-                if ( ( length(vVariableString) > 20) | (flagExist) )
-                    numberOfLongBoxes = numberOfLongBoxes+1;
-                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
+
+            if (i <= handles.numVariables(AlgorithmNumber))
+                if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
+                    vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
+                    if ( ( length(vVariableString) > 20) | (flagExist) )
+                        numberOfLongBoxes = numberOfLongBoxes+1;
+                        set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
+                    else
+                        set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 94 23]);
+                    end
+                    set(handles.(['VariableBox' TwoDigitString(i)]),'string',vVariableString,'visible','on');
                 else
-                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 94 23]);
+                    set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
                 end
-                set(handles.(['VariableBox' TwoDigitString(i)]),'string',vVariableString,'visible','on');
-            else
-                set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
             end
         end
 

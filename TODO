@@ -8,7 +8,7 @@ WANT IT NOW:
 
 - Change File Renamer to work with a load images module rather than independently, so that we can rename every third file, for example, or rename based on existing text.
 
-- Make measure windows expand to fit the number of lines of data that are produced. 
+- Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - The menu often doesn't return to the default first position ('DataTools' or 'ImageTools') after running a tool.
 
@@ -189,13 +189,14 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
        for the sake of simplicity and speed.
 
 - Use the User's preference for font size for all figure displays and dialog boxes.  Do this by adding this line:
-    FontSize = handles.Current.FontSize;
+	FontSize = get(0,'UserData');
 After the line in the DISPLAY RESULTS section:
 if any(findobj == ThisModuleFigureNumber) == 1
 And then, for each subplot or text window, add this line:
     set(gca,'FontSize',FontSize)
 For each title, add properties at the end:
     title('Original Image', 'FontSize', FontSize)
+Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code.
 
 JAMES MIGHT WORK ON THIS >>>>  CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 

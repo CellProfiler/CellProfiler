@@ -141,6 +141,34 @@ Settings =      ModuleNames: {1x6 cell}
 
 WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 
+***********
++++ Make image tools more accessible/intuitive:
+Create an image toolbar to replace the drop down menu in the main CP GUI 
+- The toolbar should have a horizontal orientation due to the drop down menu
+- One row of tiny icon-buttons for standard image tools
+- Below that, a drop down menu for infrequently used/custom tools
+- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
+- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
+- When clicking on any image, have the toolbar become active/come to the top of all other windows.
+
+For standard image tools:
+[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
+- Have tooltips appear upon mouse-over of each button that show the name of the tool 
+- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
+
+For infrequently used/custom tools:
+[ShowDataOnImage, any other .m file in the ImageTools folder]
+- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
+- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
+
+Other implementation notes:
+- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
+ImageHandle  = imagesc(Image);
+set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
+This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
+- Possibly add DataTools to the same toolbar, just have it divided in half?
+************
+
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
 
 +++ Download code relating to Perlman, Mitchison, et al. Science

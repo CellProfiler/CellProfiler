@@ -12,7 +12,7 @@ function handles = MeasureTexture(handles)
 % Retrieves a segmented image, in label matrix format, and a
 % corresponding original grayscale image and makes measurements of the
 % objects that are segmented in the image. The label matrix image should
-% be "compacted": that is, each number should correspond to an object, 
+% be "compacted": that is, each number should correspond to an object,
 % with no numbers skipped.
 % So, if some objects were discarded from the label matrix image, the
 % image should be converted to binary and re-made into a label matrix
@@ -114,9 +114,19 @@ ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = /
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR08 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBlue_Nuclei', 'OrigBlue_Cells'. 
+%textVAR08 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBlue_Nuclei', 'OrigBlue_Cells'.
 
 %%%VariableRevisionNumber = 02
+
+%%% Set up the window for displaying the results
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+if any(findobj == ThisModuleFigureNumber);
+    figure(ThisModuleFigureNumber);
+    set(ThisModuleFigureNumber,'color',[1 1 1])
+    columns = 1;
+end
+
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:3
@@ -288,23 +298,32 @@ for i = 1:3
 
     %%% Initilize measurement structure
 
-    BasicFeatures    = {'Mean intensity','Standard deviation','Minimum intensity','Maximum intensity'};
-    HaralickFeatures = {'H1. Angular second moment',...
-        'H2. Contrast',...
-        'H3. Correlation',...
-        'H4. Variance',...
-        'H5. Inverse difference moment',...
-        'H6. Sum average',...
-        'H7. Sum variance',...
-        'H8. Sum entropy',...
-        'H9. Entropy',...
-        'H10. Difference variance',...
-        'H11. Difference entropy',...
-        'H12. Information Measure 1',...
-        'H13. Information Measure 2'};
+    BasicFeatures    = {'IntegratedIntensity',...
+        'MeanIntensity',...
+        'StdIntensity',...
+        'MinIntensity',...
+        'MaxIntensity',...
+        'IntegratedIntensityEdge',...
+        'MeanIntensityEdge',...
+        'StdIntensityEdge',...
+        'MinIntensityEdge',...
+        'MaxIntensityEdge',...
+        'MassDisplacement'};
 
-    handles.Measurements.TextureBasic.Features = BasicFeatures;
-    handles.Measurements.TextureHaralick.Features = HaralickFeatures;
+    HaralickFeatures = {'H1_AngularSecondMoment',...
+        'H2_Contrast',...
+        'H3_Correlation',...
+        'H4_Variance',...
+        'H5_InverseDifferenceMoment',...
+        'H6_SumAverage',...
+        'H7_SumVariance',...
+        'H8_SumEntropy',...
+        'H9_Entropy',...
+        'H10_DifferenceVariance',...
+        'H11_DifferenceEntropy',...
+        'H12_InformationMeasure1',...
+        'H13_InformationMeasure2'};
+
 
     %%% Count objects
     ObjectCount = max(LabelMatrixImage(:));
@@ -319,10 +338,11 @@ for i = 1:3
         index = sub2ind([sr sc],r,c);
 
         %%% Measure basic set of texture features
-        Basic(Object,1) = mean(OrigImageToBeAnalyzed(index));
-        Basic(Object,2) = std(OrigImageToBeAnalyzed(index));
-        Basic(Object,3) = min(OrigImageToBeAnalyzed(index));
-        Basic(Object,4) = max(OrigImageToBeAnalyzed(index));
+        Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
+        Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
+        Basic(Object,3) = std(OrigImageToBeAnalyzed(index));
+        Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
+        Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
 
         %%% Cut patches so that we don't have to deal with entire images
         rmax = min(sr,max(r));
@@ -332,110 +352,106 @@ for i = 1:3
         BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
         Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
 
+        % Get perimeter in order to calculate edge features
+        perim = bwperim(BWim);
+        perim = perim(find(perim));
+        Basic(Object,6) = sum(perim);
+        Basic(Object,7) = mean(perim);
+        Basic(Object,8) = std(perim);
+        Basic(Object,9) = min(perim);
+        Basic(Object,10) = max(perim);
+
+        % Calculate the Mass displacment, which is the distance between
+        % the center of gravity in the gray level image and the binary
+        % image.
+        BWx = sum([1:size(BWim,2)].*sum(BWim,1))/sum([1:size(BWim,2)]);
+        BWy = sum([1:size(BWim,1)]'.*sum(BWim,2))/sum([1:size(BWim,1)]);
+        Greyx = sum([1:size(Greyim,2)].*sum(Greyim,1))/sum([1:size(Greyim,2)]);
+        Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
+        Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2);
+
         %%% Get Haralick features
         Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
     end
 
     %%% Save measurements
-    handles.Measurements.TextureBasic.(ObjectName)(handles.Current.SetBeingAnalyzed) = {Basic};
-    handles.Measurements.TextureHaralick.(ObjectName)(handles.Current.SetBeingAnalyzed) = {Haralick};
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-% PROGRAMMING NOTE
-% DISPLAYING RESULTS:
-% Some calculations produce images that are used only for display or
-% for saving to the hard drive, and are not used by downstream
-% modules. To speed processing, these calculations are omitted if the
-% figure window is closed and the user does not want to save the
-% images.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-    figure(ThisModuleFigureNumber);
-    originalsize = get(ThisModuleFigureNumber, 'position');
-    set(ThisModuleFigureNumber,'color',[1 1 1])
-    newsize = originalsize;
-    newsize(1) = 0;
-    newsize(2) = 0;
-    if handles.Current.SetBeingAnalyzed == 1 && i == 1
-        newsize(3) = originalsize(3)*.5;
-        originalsize(3) = originalsize(3)*.5;
-        set(ThisModuleFigureNumber, 'position', originalsize);
+    for k = 1:length(BasicFeatures)
+        handles.Measurements.Texture.Basic.(BasicFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Basic(:,k)};
+        handles.Measurements.Texture.Basic.(BasicFeatures{k}).(ObjectName).Image(handles.Current.SetBeingAnalyzed) = ...
+            {[mean(Basic(:,k)) median(Basic(:,k)) std(Basic(:,k))]};
+    end
+    for  k = 1:length(HaralickFeatures)
+        handles.Measurements.Texture.Haralick.(HaralickFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Haralick(:,k)};
+        handles.Measurements.Texture.Haralick.(HaralickFeatures{k}).(ObjectName).Image(handles.Current.SetBeingAnalyzed) = ...
+            {[mean(Haralick(:,k)) median(Haralick(:,k)) std(Haralick(:,k))]};
     end
 
-    %%% Generate report
-    % Header
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
-        'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',10,'fontweight','bold','string',sprintf('Average texture features for image set #%d',handles.Current.SetBeingAnalyzed));
-    
-    % Number of objects
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
-        'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',8,'fontweight','bold','string','Number of objects:');
 
-    % Text for Basic features
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
-        'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',8,'fontweight','bold','string','Basic features:');
-    for k = 1:4
-        q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+    %%% Report measurements
+
+    if any(findobj == ThisModuleFigureNumber);
+        % This first block writes the same text several times
+        % Header
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
+            'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',10,'fontweight','bold','string',sprintf('Average texture features for image set #%d',handles.Current.SetBeingAnalyzed));
+
+        % Number of objects
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'string',BasicFeatures{k});
-    end
+            'fontsize',8,'fontweight','bold','string','Number of objects:');
 
-    % Text for Haralick features
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.55 0.3 0.03],...
-        'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',8,'fontweight','bold','string','Haralick features:');
-    for k = 1:13
-        q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.55-0.04*k 0.3 0.03],...
+        % Text for Basic features
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'string',HaralickFeatures{k});
-    end
-
-    ObjectNames = fieldnames(handles.Measurements.TextureBasic);
-    col = 0;
-    for j = 1:length(ObjectNames)
-        if ~strcmp(ObjectNames{j},'Features')
-            col = col + 1;
-            % Title
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(col-1) 0.9 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'fontweight','bold','string',ObjectNames{j});
-            
-            % Number of objects
-            m = size(handles.Measurements.TextureBasic.(ObjectNames{j}){handles.Current.SetBeingAnalyzed},1);
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(col-1) 0.85 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'string',num2str(m));
-
-           
-            % Basic features
-            m = mean(handles.Measurements.TextureBasic.(ObjectNames{j}){handles.Current.SetBeingAnalyzed});
-            for k = 1:4
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(col-1) 0.8-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',8,'string',sprintf('%0.2f',m(k)));
-            end
-            
-            % Haralick features
-            m = mean(handles.Measurements.TextureHaralick.(ObjectNames{j}){handles.Current.SetBeingAnalyzed});
-            for k = 1:13
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(col-1) 0.55-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',8,'string',sprintf('%0.2f',m(k)));
-            end
+            'fontsize',8,'fontweight','bold','string','Basic features:');
+        for k = 1:4
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',BasicFeatures{k});
         end
+
+        % Text for Haralick features
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.55 0.3 0.03],...
+            'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'fontweight','bold','string','Haralick features:');
+        for k = 1:13
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.55-0.04*k 0.3 0.03],...
+                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',HaralickFeatures{k});
+        end
+
+        % The name of the object image
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.9 0.2 0.03],...
+            'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'fontweight','bold','string',ObjectName);
+
+        % Number of objects
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.85 0.2 0.03],...
+            'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'string',num2str(ObjectCount));
+
+
+        % Basic features
+        for k = 1:4
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',sprintf('%0.2f',mean(Basic(:,k))));
+        end
+
+        % Haralick features
+        for k = 1:13
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.55-0.04*k 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',sprintf('%0.2f',mean(Haralick(:,k))));
+        end
+    
+        % This variable is used to write results in the correct column
+        % and to determine the correct window size
+        columns = columns + 1;
     end
 end
 drawnow
-
 
 
 function H = CalculateHaralick(im,mask)
@@ -446,7 +462,7 @@ function H = CalculateHaralick(im,mask)
 % im    - A grey level image
 % mask  - A binary mask
 %
-% Currently, this implementation uses 8 different grey levels
+% Currently, the implementation uses 8 different grey levels
 % and calculates the co-occurence matrix for a horizontal shift
 % of 1 pixel.
 %
@@ -500,7 +516,7 @@ P = P/length(im1);
 
 
 %%% Calculate features from the co-occurence matrix
-% First, Pre-calculate of some quantities that are used in
+% First, pre-calculate a few quantities that are used in
 % several features.
 px = sum(P,2);
 py = sum(P,1);

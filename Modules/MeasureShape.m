@@ -9,17 +9,14 @@ function handles = MeasureShape(handles)
 %
 % How it works:
 % Retrieves a segmented image, in label matrix format and makes measurements
-% of the objects that are segmented in the image. The label matrix image 
-% should be "compacted": that is, each number should correspond to an object, 
+% of the objects that are segmented in the image. The label matrix image
+% should be "compacted": that is, each number should correspond to an object,
 % with no numbers skipped. So, if some objects were discarded from the label
-% matrix image, the image should be converted to binary and re-made into a 
+% matrix image, the image should be converted to binary and re-made into a
 % label matrix image before feeding into this module.
 %
-% See also MEASUREAREAOCCUPIED,
-% MEASUREAREASHAPECOUNTLOCATION,
-% MEASURECORRELATION,
-% MEASURETOTALINTENSITY.
-
+% See also MEASURETEXTURE, MEASURECORRELATION,
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -106,7 +103,7 @@ ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Cells
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = 
+%textVAR03 =
 %defaultVAR03 = /
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -116,6 +113,17 @@ ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 01
 
+
+%%% Set up the window for displaying the results
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+if any(findobj == ThisModuleFigureNumber);
+    figure(ThisModuleFigureNumber);
+    set(ThisModuleFigureNumber,'color',[1 1 1])
+    columns = 1;
+end
+
+
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
@@ -123,7 +131,7 @@ PixelSize = str2double(handles.Settings.PixelSize);
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:3
     ObjectName = ObjectNameList{i};
-    if strcmp(ObjectName,'/') == 1
+    if strcmp(ObjectName,'/')
         break
     end
 
@@ -132,7 +140,7 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-    
+
     %%% Retrieves the label matrix image that contains the segmented objects which
     %%% will be measured with this module.
     fieldname = ['Segmented', ObjectName];
@@ -263,29 +271,28 @@ for i = 1:3
     % will just repeatedly use the processed image of nuclei leftover from
     % the last image set, which was left in handles.Pipeline.
 
-    
+
     %%% Initialize
     BasicFeatures    = {'Area',...
-                        'Eccentricity',...
-                        'Solidity',...
-                        'Extent',...
-                        'Euler number',...
-                        'Perimeter',...
-                        'Form factor'};
-    handles.Measurements.ShapeBasic.Features = BasicFeatures;
-    
+        'Eccentricity',...
+        'Solidity',...
+        'Extent',...
+        'EulerNumber',...
+        'Perimeter',...
+        'FormFactor'};
+
     %%% Get the basic shape features
     props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber');
-    
+
     % Perimeter
     perim = bwperim(LabelMatrixImage>0).*LabelMatrixImage;
     perim = perim(:);
     perim = perim(find(perim));
     Perimeter = (hist(perim,[1:max(perim)])*PixelSize)';
-    
+
     % Form factor
     FormFactor = 4*pi*cat(1,props.Area) ./ Perimeter.^2;
-   
+
     Basic = [cat(1,props.Area)*PixelSize^2,...
         cat(1,props.Eccentricity),...
         cat(1,props.Solidity),...
@@ -293,37 +300,36 @@ for i = 1:3
         cat(1,props.EulerNumber),...
         Perimeter,...
         FormFactor];
-    
-    
+
+
     %%% Calculate Zernike shape features
-    
-    % Get index for Zernike functions 
+
+    % Get index for Zernike functions
     index = [];
     ZernikeFeatures = {};
     for n = 0:12
         for m = 0:n
             if rem(n-m,2) == 0
-                index = [index;n m]; 
-                ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Z%d,%d',n,m)});
+                index = [index;n m];
+                ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Z%d_%d',n,m)});
             end
         end
     end
-    handles.Measurements.ShapeZernike.Features = ZernikeFeatures;
-    
+
     % Use ConvexArea to automatically calculate the average equivalent diameter
-    % of the objects, and then use this diameter to determine the grid size 
+    % of the objects, and then use this diameter to determine the grid size
     % of the Zernike functions
     tmp = regionprops(LabelMatrixImage,'ConvexArea');
     diameter = floor(sqrt(4/pi*mean(cat(1,tmp.ConvexArea)))+1);
     if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
-    
+
     diameter=50;
     % Calculate the Zernike basis functions
     [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
     r = sqrt(x.^2+y.^2);
     phi = atan(y./(x+eps));
     Zf = zeros(size(x,1),size(x,2),size(index,1));
-  
+
     for k = 1:size(index,1)
         n = index(k,1);
         m = index(k,2);
@@ -334,136 +340,112 @@ for i = 1:3
         s(r>1) = 0;
         Zf(:,:,k) = s;
     end
-    
+
     % Pad the Label image with zeros so that the Zernike
     % features can be calculated also for objects close to
     % the border
     [sr,sc] = size(LabelMatrixImage);
     PaddedLabelMatrixImage = [zeros(diameter,2*diameter+sc);
-                              zeros(sr,diameter) LabelMatrixImage zeros(sr,diameter)
-                              zeros(diameter,2*diameter+sc)];
-  
+        zeros(sr,diameter) LabelMatrixImage zeros(sr,diameter)
+        zeros(diameter,2*diameter+sc)];
+
     % Loop over objects to calculate Zernike moments. Center the functions
     % over the centroids of the objects.
-    tmp = regionprops(PaddedLabelMatrixImage,'Centroid');                     
+    tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
     Centroids = cat(1,tmp.Centroid);
     Zernike = zeros(size(Centroids,1),size(index,1));
     for Object = 1:size(Centroids,1)
-        
+
         % Get image patch
-        cx = round(Centroids(Object,1));        
+        cx = round(Centroids(Object,1));
         cy = round(Centroids(Object,2));
         rmax = round(Centroids(Object,2)+(diameter-1)/2);
         rmin = round(Centroids(Object,2)-(diameter-1)/2);
         cmax = round(Centroids(Object,1)+(diameter-1)/2);
         cmin = round(Centroids(Object,1)-(diameter-1)/2);
         BWpatch   = PaddedLabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-       
+
         % Apply Zernike functions
         Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(index,1)]).*Zf))))';
-        
+
     end
-    
+
     %%% Save measurements
-    handles.Measurements.ShapeBasic.(ObjectName)(handles.Current.SetBeingAnalyzed) = {Basic};
-    handles.Measurements.ShapeZernike.(ObjectName)(handles.Current.SetBeingAnalyzed) = {Zernike};
-end
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-% PROGRAMMING NOTE
-% DISPLAYING RESULTS:
-% Some calculations produce images that are used only for display or
-% for saving to the hard drive, and are not used by downstream
-% modules. To speed processing, these calculations are omitted if the
-% figure window is closed and the user does not want to save the
-% images.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-    figure(ThisModuleFigureNumber);
-    originalsize = get(ThisModuleFigureNumber, 'position');
-    set(ThisModuleFigureNumber,'color',[1 1 1])
-    newsize = originalsize;
-    newsize(1) = 0;
-    newsize(2) = 0;
-    if handles.Current.SetBeingAnalyzed == 1 && i == 1
-        newsize(3) = originalsize(3)*.5;
-        originalsize(3) = originalsize(3)*.5;
-        set(ThisModuleFigureNumber, 'position', originalsize);
-    end
-
-    %%% Generate report
-    % Header
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
-        'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',10,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed));
-    
-    % Number of objects
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
-        'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',8,'fontweight','bold','string','Number of objects:');
-
-    % Text for Basic features
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
-        'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',8,'fontweight','bold','string','Basic features:');
     for k = 1:length(BasicFeatures)
-        q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'string',BasicFeatures{k});
+        handles.Measurements.Shape.Basic.(BasicFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Basic(:,k)};
+        handles.Measurements.Shape.Basic.(BasicFeatures{k}).(ObjectName).Image(handles.Current.SetBeingAnalyzed) = ...
+            {[mean(Basic(:,k)) median(Basic(:,k)) std(Basic(:,k))]};
+    end
+    for  k = 1:length(ZernikeFeatures)
+        handles.Measurements.Shape.Zernike.(ZernikeFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Zernike(:,k)};
+        handles.Measurements.Shape.Zernike.(ZernikeFeatures{k}).(ObjectName).Image(handles.Current.SetBeingAnalyzed) = ...
+            {[mean(Zernike(:,k)) median(Zernike(:,k)) std(Zernike(:,k))]};
     end
 
-    % Text for Zernike features
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45 0.3 0.03],...
-        'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-        'fontsize',8,'fontweight','bold','string','5 first Zernike features:');
-    for k = 1:5
-        q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.3 0.03],...
+    %%% Report measurements
+    if any(findobj == ThisModuleFigureNumber);
+        % This first block writes the same text several times
+        % Header
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
+            'HorizontalAlignment','center','Backgroundcolor',[1 1 1],'fontname','times',...
+            'fontsize',10,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed));
+
+        % Number of objects
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
+            'HorizontalAlignment','left','Backgroundcolor',[1 1 1],'fontname','times',...
+            'fontsize',8,'fontweight','bold','string','Number of objects:');
+
+        % Text for Basic features
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'string',ZernikeFeatures{k});
-    end
-
-    ObjectNames = fieldnames(handles.Measurements.ShapeBasic);
-    col = 0;
-    for j = 1:length(ObjectNames)
-        if ~strcmp(ObjectNames{j},'Features')
-            col = col + 1;
-            % Title
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(col-1) 0.9 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'fontweight','bold','string',ObjectNames{j});
-            
-            % Number of objects
-            m = size(handles.Measurements.ShapeBasic.(ObjectNames{j}){handles.Current.SetBeingAnalyzed},1);
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(col-1) 0.85 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'string',num2str(m));
-
-           % Basic shape features
-            m = mean(handles.Measurements.ShapeBasic.(ObjectNames{j}){handles.Current.SetBeingAnalyzed});
-            for k = 1:length(BasicFeatures)
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(col-1) 0.8-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',8,'string',sprintf('%0.2f',m(k)));
-            end
-           
-            % Zernike shape features
-            m = mean(handles.Measurements.ShapeZernike.(ObjectNames{j}){handles.Current.SetBeingAnalyzed});
-            for k = 1:5
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(col-1) 0.45-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',8,'string',sprintf('%0.2f',m(k)));
-            end
-            
+            'fontsize',8,'fontweight','bold','string','Basic features:');
+        for k = 1:length(BasicFeatures)
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',BasicFeatures{k});
         end
+
+        % Text for Zernike features
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45 0.3 0.03],...
+            'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'fontweight','bold','string','5 first Zernike features:');
+        for k = 1:5
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.3 0.03],...
+                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',ZernikeFeatures{k});
+        end
+
+
+        % The name of the object image
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.9 0.2 0.03],...
+            'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'fontweight','bold','string',ObjectName);
+
+        % Number of objects
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.85 0.2 0.03],...
+            'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'string',num2str(max(LabelMatrixImage(:))));
+
+        % Basic shape features
+        for k = 1:length(BasicFeatures)
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',sprintf('%0.2f',mean(Basic(:,k))));
+        end
+
+        % Zernike shape features
+        for k = 1:5
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.45-0.04*k 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',sprintf('%0.2f',mean(Zernike(:,k))));
+        end
+        
+        % This variable is used to write results in the correct column
+        % and to determine the correct window size
+        columns = columns + 1;
     end
 end
-drawnow
+
 
 function f = fak(n)
 if n==0

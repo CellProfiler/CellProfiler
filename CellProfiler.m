@@ -74,10 +74,26 @@ global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
 
+%%% Sets a suitable fontsize. An automatic font size is calculated,
+%%% but it is overridden if the user has set a default font size.
+if exist('LoadedPreferences') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2num(LoadedPreferences.FontSize))
+    handles.Current.FontSize = str2num(LoadedPreferences.FontSize);
+else
+    ScreenResolution = get(0,'ScreenPixelsPerInch');
+    handles.Current.FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
+end
+names = fieldnames(handles);
+for k = 1:length(names)
+    if ishandle(handles.(names{k}))
+        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
+    end
+end
+set(0,'UserData',handles.Current.FontSize)
+
 %%% Checks whether the user has the Image Processing Toolbox.
 Answer = license('test','image_toolbox');
 if Answer ~= 1
-    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.')
+    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
 %%% Determines the startup directory.
@@ -188,7 +204,8 @@ handles.Current.DataToolHelp = LoadToolsPopUpMenu(handles, 'Data');
 %%% Adds the Help folder to Matlab's search path.
 try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
 addpath(Pathname)
-catch errordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.')
+catch 
+    errordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
 end
 
 %%% Sets up the main program window (Main GUI window) so that it asks for
@@ -213,20 +230,6 @@ Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 
-%%% Sets a suitable fontsize. An automatic font size is calculated,
-%%% but it is overridden if the user has set a default font size.
-if exist('LoadedPreferences') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2num(LoadedPreferences.FontSize))
-    handles.Current.FontSize = str2num(LoadedPreferences.FontSize);
-else
-    ScreenResolution = get(0,'ScreenPixelsPerInch');
-    handles.Current.FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
-end
-names = fieldnames(handles);
-for k = 1:length(names)
-    if ishandle(handles.(names{k}))
-        set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
-    end
-end
 
 cd(handles.Current.StartupDirectory)
 
@@ -456,7 +459,7 @@ try
     end
     fclose(fid);
 catch
-    errordlg('Module could not be found in directory specified','Error')
+    errordlg('Module could not be found in directory specified','Error');
 end
 
 %%% SUBFUNCTION %%%
@@ -593,7 +596,7 @@ if FileName ~= 0
       Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
   end
   save([Pathname FileName],'Settings')
-  helpdlg('The settings file has been written.')
+  helpdlg('The settings file has been written.');
 end
 cd(handles.Current.StartupDirectory)
 
@@ -698,7 +701,7 @@ else
     end
     fclose(fid);
     if lastVariableCheck == 0
-        errordlg(['blahThe module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.'])
+        errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
         return
     end
     
@@ -931,7 +934,7 @@ if (length(ModuleHighlighted) > 0)
             end
             fclose(fid);
             if lastVariableCheck == 0
-                errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.'])
+                errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
                 return  
             end
         end
@@ -995,9 +998,11 @@ if (length(ModuleHighlighted) > 0)
             set(handles.slider1,'max',((handles.Settings.NumbersOfVariables(ModuleNumber)-14+numberOfLongBoxes+numberExtraLinesOfDescription)*25));
             set(handles.slider1,'value',get(handles.slider1,'max'));
         end
-    else helpdlg('No modules are loaded.');
+    else 
+        helpdlg('No modules are loaded.');
     end
-else helpdlg('No module highlighted.');
+else 
+    helpdlg('No module highlighted.');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1028,15 +1033,15 @@ VariableNumberStr = VariableName(12:13);
 UserEntry = get(handles.(['VariableBox' VariableNumberStr]),'string');
 ModuleNumber = whichactive(handles);
 if isempty(UserEntry)
-  errordlg('Variable boxes must not be left blank')
+  errordlg('Variable boxes must not be left blank');
   set(handles.(['VariableBox' VariableNumberStr]),'string', 'Fill in');
   storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
 else
   if ModuleNumber == 0,     
-    errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred')
+    errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');
   else
     storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
-    end
+  end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1106,12 +1111,12 @@ function PixelSizeEditBox_Callback(hObject, eventdata, handles) %#ok We want to 
 %%% error message if it is not a number.
 user_entry = str2double(get(hObject,'string'));
 if isnan(user_entry)
-    errordlg('You must enter a numeric value','Bad Input','modal')
+    errordlg('You must enter a numeric value','Bad Input','modal');
     set(hObject,'string','0.25')
     %%% Checks to see whether the user input is positive, and generates an
     %%% error message if it is not.
 elseif user_entry<=0
-    errordlg('You entered a value less than or equal to zero','Bad Input','modal')
+    errordlg('You entered a value less than or equal to zero','Bad Input','modal');
     set(hObject,'string', '0.25')
 else
     %%% Gets the user entry and stores it in the handles structure.
@@ -1465,7 +1470,8 @@ if exist(pathname,'dir') ~= 0
     %%% message, change the contents of the edit box back to the
     %%% previously selected directory, and change the contents of the
     %%% filenameslistbox back to the previously selected directory.
-else errordlg('A directory with that name does not exist')
+else 
+    errordlg('A directory with that name does not exist');
 end
 %%% Whether or not the directory exists and was updated, we want to
 %%% update the GUI display to show the currrently stored information.
@@ -1500,7 +1506,7 @@ if isempty(FileNamesNoDir)
     %%% Test whether this is during CellProfiler launching, in which case
     %%% the following error is unnecessary.
     if strcmp(get(handles.FilenamesListBox,'String'),'Listbox') ~= 1
-        errordlg('There are no files in the chosen directory')
+        errordlg('There are no files in the chosen directory');
     end
 else
     DiscardsHidden = strncmp(FileNamesNoDir,'.',1);
@@ -1524,7 +1530,7 @@ else
         %%% Test whether this is during CellProfiler launching, in which case
         %%% the following error is unnecessary.
         if strcmp(get(handles.FilenamesListBox,'String'),'Listbox') ~= 1
-            errordlg('There are no files in the chosen directory')
+            errordlg('There are no files in the chosen directory');
         end
     else
         %%% Stores the final list of file names in the handles structure
@@ -1576,7 +1582,8 @@ if exist(pathname,'dir') ~= 0
     %%% message, change the contents of the edit box back to the
     %%% previously selected directory, and change the contents of the
     %%% filenameslistbox back to the previously selected directory.
-else errordlg('A directory with that name does not exist')
+else 
+    errordlg('A directory with that name does not exist');
 end
 %%% Whether or not the directory exists and was updated, we want to
 %%% update the GUI display to show the currrently stored information.
@@ -1631,7 +1638,7 @@ SelectedTool = ListOfTools{SelectedValue};
 %%% nothing is done.
 if strcmp(SelectedTool, PopUpMenuLabel) == 1
 elseif strcmp(SelectedTool, NoneLoadedText) == 1
-    errordlg(['There are no tools loaded, because CellProfiler could not find the ',ToolsFolder, ' directory, which should be located within the directory where the current CellProfiler.m resides.'])
+    errordlg(['There are no tools loaded, because CellProfiler could not find the ',ToolsFolder, ' directory, which should be located within the directory where the current CellProfiler.m resides.']);
 else
     try eval(['handles = ', SelectedTool,'(handles);'])
     catch 
@@ -1639,8 +1646,8 @@ else
         %%% the last error was actually just canceling by the user
         %%% within the function, no error box is opened. Maybe this
         %%% already works automatically; not sure.
-        errordlg(['An error occurred while attempting to run the tool you selected.  The error was "' lasterr '"'])
-    end
+        errordlg(['An error occurred while attempting to run the tool you selected.  The error was "' lasterr '"']);
+     end
 end
 %%% Resets the display to the first position (so "Data tools" is
 %%% displayed).
@@ -1745,13 +1752,14 @@ sum = 0; %%% Initial value.
 for i = 1:handles.Current.NumberOfModules;
     sum = sum + iscellstr(handles.Settings.ModuleNames(i));
 end
-if sum == 0, errordlg('You do not have any analysis modules loaded')
+if sum == 0
+    errordlg('You do not have any analysis modules loaded');
 else
     %%% Checks whether an output file name has been specified.
     if isfield(handles.Current, 'OutputFilename') == 0
-        errordlg('You have not entered an output file name in Step 2.')
+        errordlg('You have not entered an output file name in Step 2.');
     elseif isempty(handles.Current.OutputFilename)
-        errordlg('You have not entered an output file name in Step 2.')
+        errordlg('You have not entered an output file name in Step 2.');
     else
     %%% Checks whether the default output directory exists.
         DirDoesNotExist = 0; %%% Initial value.
@@ -1763,9 +1771,9 @@ else
         catch DirDoesNotExist = 2;
         end
         if DirDoesNotExist == 1
-            errordlg('The default output directory does not exist')
+            errordlg('The default output directory does not exist');
         elseif DirDoesNotExist == 2
-            errordlg('The default image directory does not exist')
+            errordlg('The default image directory does not exist');
         else           
             %%% Checks whether the specified output file name will overwrite an
             %%% existing file.
@@ -1774,7 +1782,7 @@ else
             %%% multi-platform compatible.
             OutputFileOverwrite = exist([cd,'/',handles.Current.OutputFilename],'file'); %%% TODO: Fix filename construction.
             if OutputFileOverwrite ~= 0
-                errordlg('An output file with the name you entered in Step 2 already exists. Overwriting can cause errors and is disallowed, so please enter a new filename.')
+                errordlg('An output file with the name you entered in Step 2 already exists. Overwriting can cause errors and is disallowed, so please enter a new filename.');
             else
                 %%% Retrieves the list of image file names from the
                 %%% chosen directory, stores them in the handles
@@ -1846,22 +1854,22 @@ else
                 %%% timer text.
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
                     'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',...
-                    'FontSize',14,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
+                    'FontSize',handles.Current.FontSize+2,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
                 %%% Saves text handle to the handles structure.
                 handles.timertexthandle = text_handle;
                 %%% Creates the Cancel and Pause buttons.
                 PauseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Pause', 'Position', [5 10 40 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
                 CancelAfterImageSetButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after image set', 'Position', [50 10 120 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
                 CancelAfterModuleButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after module', 'Position', [175 10 115 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
                 CancelNowCloseButton_handle = uicontrol('Style', 'pushbutton', ...
-                    'String', 'Cancel now & close CellProfiler', 'Position', [295 10 160 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'String', 'Cancel & close CellProfiler', 'Position', [295 10 160 30], ...
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
                 %%% Sets the functions to be called when the Cancel and Pause buttons
                 %%% within the Timer window are pressed.
                 PauseButtonFunction = 'h = msgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
@@ -1875,7 +1883,7 @@ else
                 HelpButtonFunction = 'msgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
                 %%% HelpButton
                 uicontrol('Style', 'pushbutton', ...
-                    'String', '?', 'Position', [460 10 15 30], 'FontSize', 12,...
+                    'String', '?', 'Position', [460 10 15 30], 'FontName','Times','FontSize', handles.Current.FontSize,...
                     'Callback', HelpButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
                 %%% The timertext string is read by the analyze all images button's callback
                 %%% at the end of each time around the loop (i.e. at the end of each image
@@ -1957,11 +1965,11 @@ else
                                 eval(['handles = ',ModuleName,'(handles);'])
                             catch
                                 if exist([ModuleName,'.m'],'file') ~= 2,
-                                    errordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
+                                    errordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
                                 else
                                     %%% Runs the errorfunction function that catches errors and
                                     %%% describes to the user what to do.
-                                    errorfunction(ModuleNumberAsString)
+                                    errorfunction(ModuleNumberAsString,handles.Current.FontSize)
                                 end
                                 %%% Causes break out of the image analysis loop (see below)
                                 break_outer_loop = 1;
@@ -2028,14 +2036,15 @@ else
 
                     CancelWaiting = get(handles.timertexthandle,'string');
 
-                    %%% Make calculations for the Timer window.
-                    time_elapsed = num2str(toc);
+                    %%% Make calculations for the Timer window. Round to
+                    %%% 1/10:th of seconds
+                    time_elapsed = num2str(round(toc*10)/10);
                     timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
                     number_analyzed = ['Number of image sets analyzed = ',...
                             num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
                     if setbeinganalyzed ~=0
                         time_per_set = ['Time per image set (seconds) = ', ...
-                                num2str(toc/setbeinganalyzed)];
+                                num2str(round(10*toc/setbeinganalyzed)/10)];
                     else time_per_set = 'Time per image set (seconds) = none completed'; 
                     end
                     timertext = {timer_elapsed_text; number_analyzed; time_per_set};
@@ -2136,17 +2145,17 @@ else
                 guidata(gcbo, handles)
                 
                 %%% Calculate total time elapsed and display Complete in the Timer window.
-                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(toc)];
+                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(round(10*toc)/10)];
                 number_analyzed = ['Number of image sets analyzed = ',...
                         num2str(setbeinganalyzed - 1)];
                 if setbeinganalyzed ~=1
                     time_per_set = ['Time per image set (seconds) = ', ...
-                            num2str(toc/(setbeinganalyzed - 1))];
+                            num2str(round(10*toc/(setbeinganalyzed - 1))/10)];
                 else time_per_set = 'Time per image set (seconds) = none completed'; 
                 end
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
                     'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',... 
-                    'FontSize',14,'FontWeight','bold','backgroundcolor',[0.7,0.7,0.9]);
+                    'FontSize',handles.Current.FontSize,'FontWeight','bold','backgroundcolor',[0.7,0.7,0.9]);
                 timertext = {'IMAGE PROCESSING IS COMPLETE!';total_time_elapsed; number_analyzed; time_per_set};
                 set(text_handle,'string',timertext)
                 set(timer_handle,'CloseRequestFcn','closereq')
@@ -2247,7 +2256,7 @@ cd(handles.Current.StartupDirectory);
 %%% would require redefining the Zoom tool's action, which is not likely to
 %%% be a simple task.
 
-function errorfunction(CurrentModuleNumber)
+function errorfunction(CurrentModuleNumber,FontSize)
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
@@ -2260,7 +2269,8 @@ elseif isempty(strfind(Error,'bad magic')) == 0
 else
     ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in module ', CurrentModuleNumber];
 end
-errordlg(ErrorExplanation)
+errordlg(ErrorExplanation);
+
 
 %%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%
@@ -2269,7 +2279,7 @@ errordlg(ErrorExplanation)
 %%% --- Executes on button press in the Help buttons.
 function PipelineModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpPipelineOfModules.m');
-helpdlg(HelpText,'CellProfiler Help')
+helpdlg(HelpText,'CellProfiler Help');
 
 function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% First, check to see whether there is a specific module loaded.
@@ -2280,7 +2290,7 @@ NoModuleSelectedHelpMsg = ['You do not have an analysis module loaded.' 10 10 ..
     GeneralIndividualModuleHelpText];
 ModuleNumber = whichactive(handles);
 if ModuleNumber == 0
-    helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module')
+    helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
 else
     try ModuleName = handles.Settings.ModuleNames(ModuleNumber);
         %%% This is the function that actually reads the module's help
@@ -2329,23 +2339,25 @@ else
                 set(helpScrollUI,'max',(length(outstring)-27)*1.09);
                 set(helpScrollUI,'value',(length(outstring)-27)*1.09);
             end
-        else helpdlg(['Sorry, there is no help information for this image analysis module.',GeneralIndividualModuleHelpText],'Image analysis module help')
+        else 
+            helpdlg(['Sorry, there is no help information for this image analysis module.',GeneralIndividualModuleHelpText],'Image analysis module help');
         end
-    catch helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module')
+    catch 
+        helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
     end
 end
 
 function PixelPreferencesTechHelp_Callback(hObject, eventdata, handles)
 HelpText = help('HelpPixelPreferencesTech.m');
-helpdlg(HelpText,'CellProfiler Help')
+helpdlg(HelpText,'CellProfiler Help');
 
 function DefaultImageDirectoryHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpDefaultImageDirectory.m');
-helpdlg(HelpText,'CellProfiler Help')
+helpdlg(HelpText,'CellProfiler Help');
 
 function DefaultOutputDirectoryHelp_Callback(hObject, eventdata, handles)
 HelpText = help('HelpDefaultOutputDirectory.m');
-helpdlg(HelpText,'CellProfiler Help')
+helpdlg(HelpText,'CellProfiler Help');
 
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ListOfTools = get(handles.ImageToolsPopUpMenu, 'string');
@@ -2532,6 +2544,6 @@ clear toolsChoice;
 
 function AnalyzeImagesHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpAnalyzeImages.m');
-helpdlg(HelpText,'CellProfiler Help')
+helpdlg(HelpText,'CellProfiler Help');
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%

@@ -131,13 +131,15 @@ drawnow
 
 
 %%% Makes sure that the File Directory specified by the user 
+
 if(strcmp(FileDirectory,'current'))
 else
-    if(strcmp(FileDirectory(end),'\'))
+    if(isdir(FileDirectory))
     else
-        FileDirectory = [FileDirectory '\'];
+        error(['Image processing was cancelled because the specified directory does not exist']);
     end
 end
+
         
 %%% Retrieves the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
@@ -242,7 +244,7 @@ try
     if(strcmp(FileDirectory,'current'))
         imwrite(OrigImageToBeAnalyzed, NewImageName, FileFormat);
     else
-        imwrite(OrigImageToBeAnalyzed, [FileDirectory NewImageName], FileFormat);
+        imwrite(OrigImageToBeAnalyzed, fullfile(FileDirectory,NewImageName), FileFormat);
     end
 catch error('The image could not be saved to the hard drive for some reason.')
 end

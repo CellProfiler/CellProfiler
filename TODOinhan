@@ -1,5 +1,3 @@
-LoadImagesOrder and LoadImagesText should have an option to load images from all subdirectories: Analyze all subdirectories (Y or N)?
-
    Change CellProfiler.m code to preallocate if possible, relating to the following variables (line numbers are approximate).
 L 1391 (C 29-40): Array 'Measurements' is constructed using subscripting. Consider preallocating for speed
 L 1485 (C 9-28): Array 'EditedMeasFieldnames' is constructed using subscripting. Consider preallocating for speed
@@ -17,3 +15,9 @@ L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider pr
    "Make projection" module (= average, get code from DivideAllMean). Did In Han finish this already?  If so, make a manual page.
 
    Make closefigures and openfigures not global if possible.
+
+Look into font sizes.
+
+Analyze subdirectories module.
+
+Check version numbers.

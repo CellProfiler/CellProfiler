@@ -472,7 +472,7 @@ end
 
 % --- Executes during object creation, after setting all properties.
 function OutputFileName_CreateFcn(hObject, eventdata, handles)
-    set(hObject,'BackgroundColor',[1 1 1]);
+set(hObject,'BackgroundColor',[1 1 1]);
 
 function OutputFileName_Callback(hObject, eventdata, handles)
 CurrentDirectory = cd;
@@ -485,12 +485,19 @@ if isempty(InitialUserEntry)
     handles.Voutputfilename =[]
     guidata(gcbo, handles);
 else
-    if length(InitialUserEntry) >=4
-        if strncmp(lower(InitialUserEntry(end-3:end)),'.mat',4) == 0
-            UserEntry = [InitialUserEntry,'OUT.mat'];
-        else UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
+    if length(InitialUserEntry) >=7
+        if strncmp(lower(InitialUserEntry(end-6:end)),'out.mat',7) == 1
+            UserEntry = InitialUserEntry;
+        elseif strncmp(lower(InitialUserEntry(end-3:end)),'.mat',4) == 1
+            UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
+        else UserEntry = [InitialUserEntry,'OUT.mat'];
         end
-    else  UserEntry = [InitialUserEntry,'OUT.mat'];
+    elseif length(InitialUserEntry) >=4
+        if strncmp(lower(InitialUserEntry(end-3:end)),'.mat',4) == 1
+        UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
+        else UserEntry = [InitialUserEntry,'OUT.mat'];
+        end
+    else UserEntry = [InitialUserEntry,'OUT.mat'];
     end
     guidata(gcbo, handles);
     %%% Checks whether a file with that name already exists, to warn the user
@@ -577,10 +584,8 @@ for AlgorithmNumber=1:handles.MaxAlgorithms,
         end
     end
 end
-
-if isfield(Settings, 'VpixelSize'),
-    handles.VpixelSize = Settings.VpixelSize;
-end
+handles.Vpixelsize = Settings.Vpixelsize;
+set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);
 
 %%% Update handles structure.
 guidata(hObject,handles);
@@ -589,7 +594,7 @@ guidata(hObject,handles);
 %%% save it as a separate Settings file for future use.
 if isfield(LoadedSettings, 'handles'),
     Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
-    if Answer == 'Yes',
+    if strcmp(Answer, 'Yes') == 1
         SaveCurrentSettingsButton_Callback(hObject, eventdata, handles);
     end
 end
@@ -605,10 +610,8 @@ cd(handles.Vworkingdirectory)
 [FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
 %%% Allows canceling.
 if FileName ~= 0
-
   %%% Checks if a field is present, and if it is, the value is stored in the 
   %%% structure 'Settings' with the same name
-  
   for AlgorithmNumber=1:handles.numAlgorithms,
       AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
       if isfield(handles, AlgorithmFieldName),
@@ -621,11 +624,9 @@ if FileName ~= 0
           end
       end
   end
-
   if isfield(handles,'Vpixelsize'),
     Settings.Vpixelsize = handles.Vpixelsize;
   end
-
   save([PathName FileName],'Settings')
   helpdlg('The settings file has been written.')
 end

@@ -1,8 +1,8 @@
 function handles = SaveImages(handles)
 
-% Help for the Save Images module: 
+% Help for the Save Images module:
 % Category: File Handling
-% 
+%
 % This module allows you to save images to the hard drive.  Any of the
 % processed images created by CellProfiler during the analysis can be
 % saved. SaveImages can also be used as a file format converter by
@@ -12,7 +12,7 @@ function handles = SaveImages(handles)
 % with images that are not 8 bit.  For example, you may wish to alter
 % the code to handle 16 bit images.  These features will hopefully be
 % added soon.
-% 
+%
 % If you want to save images that are produced by other modules but
 % that are not given an official name in the settings boxes for that
 % module, alter the code for the module to save those images to the
@@ -31,10 +31,10 @@ function handles = SaveImages(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -52,7 +52,7 @@ function handles = SaveImages(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -76,7 +76,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -87,7 +87,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -102,12 +102,12 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to save? 
+%textVAR01 = What did you call the images you want to save?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -135,157 +135,183 @@ BitDepth = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = Y
 CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Warning! It is possible to overwrite existing files using this module! 
+%textVAR08 = At what point in the pipeline do you want to save the image? Enter E for every time through the pipeline (every image set), F for first, and L for last.
+%defaultVAR08 = E
+SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 04
+%textVAR09 = If you are only saving the image once (e.g. last or first option), enter the filename to use (with no extension). To use the automatically determined filename (derived from the source images), enter A.
+%defaultVAR09 = A
+OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+
+%textVAR10 = Warning! It is possible to overwrite existing files using this module!
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(FileDirectory,'.') == 1
-    FileDirectory = handles.Current.DefaultOutputDirectory;
-    %%% Makes sure that the File Directory specified by the user exists.
-    if isdir(FileDirectory) ~= 1
-        error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
-    end
-elseif strcmpi(FileDirectory,'I') == 1
-    FileDirectory = handles.Current.DefaultImageDirectory;
-    %%% Makes sure that the File Directory specified by the user exists.
-    if isdir(FileDirectory) ~= 1
-        error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
-    end
-end
-
-%%% Retrieves the image you want to analyze and assigns it to a variable,
-%%% "Image".
-%%% Checks whether image has been loaded.
-if isfield(handles.Pipeline, ImageName) == 0,
-    %%% If the image is not there, the module tries in a field named
-    %%% 'Segmented' which would be produced by an Identify module.
-    if isfield(handles.Pipeline, ['Segmented',ImageName])==1,
-        ImageName = ['Segmented',ImageName];
-    else %%% If the image is not there, an error message is produced.  The error
-        %%% is not displayed: The error function halts the current function and
-        %%% returns control to the calling function (the analyze all images
-        %%% button callback.)  That callback recognizes that an error was
-        %%% produced because of its try/catch loop and breaks out of the image
-        %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but neither that nor an image with the name ', ['Segmented',ImageName] , ' exists.  Perhaps there is a typo in the name.'])
-    end
-end
-Image = handles.Pipeline.(ImageName);
-
-%%% Checks whether the file format the user entered is readable by Matlab.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    if strcmpi(FileFormat,'mat') ~= 1
-        error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
-    end
-end
-
-%%% Checks whether the appendage is going to result in a name with
-%%% spaces.
-Spaces = isspace(Appendage);
-if any(Spaces) == 1
-    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the image name in the Save Images module.')
-end
-
-%%% Determines the file name.
-if strcmp(upper(ImageFileName), 'N') == 1
-    %%% Sets the filename to be sequential numbers.
-    FileName = num2str(handles.Current.SetBeingAnalyzed);
-    CharFileName = char(FileName);
-    BareFileName = CharFileName;
-else
-    %%% Checks whether the appendages to be added to the file names of images
-    %%% will result in overwriting the original file, or in a file name that
-    %%% contains spaces.
-    %%% Determine the filename of the image to be analyzed.
-    fieldname = ['Filename', ImageFileName];
-    FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-    %%% If subdirectories are being analyzed, the filename will
-    %%% include subdirectory pathnames.
-    [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
-    if strcmpi(FileDirectory,'S') == 1
-        FileDirectory = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
-        %%% Makes sure that the File Directory specified by the user exists.
-        if isdir(FileDirectory) ~= 1
-            error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
-        end
-    end
-end
-
-%%% Assembles the new image name.
-if strcmp(upper(Appendage), 'N') == 1
-    Appendage = [];
-end
-NewImageName = [BareFileName,Appendage,'.',FileFormat];
-NewFileAndPathName = fullfile(FileDirectory, NewImageName);
-if strcmpi(CheckOverwrite,'Y') == 1
-    %%% Checks whether the new image name is going to overwrite the
-    %%% original file.
-    if exist(NewFileAndPathName) == 2
-        Answer = questdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
-        if strcmp(Answer,'Cancel') == 1
-            error('Image processing was canceled')
-        end
-    end
-end
-
-% PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
-% imwrite(BlurredImage, FileName, FileFormat);
-% Note that you may have to alter the format of the image before
-% saving.  If the image is not saved correctly, for example, try
-% adding the uint8 command:
-% imwrite(uint8(BlurredImage), FileName, FileFormat);
-% To routinely save images produced by this module, see the help in
-% the SaveImages module.
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
-%%% Determines the figure number.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-%%% The figure window is closed since there is nothing to display.
 if handles.Current.SetBeingAnalyzed == 1;
+    %%% Determines the figure number.
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    %%% The figure window is closed since there is nothing to display.
     try close(ThisModuleFigureNumber)
     end
 end
 drawnow
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% The module is only carried out if this is the appropriate set being
+%%% analyzed, or if the user wants it done every time.
+if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.Current.SetBeingAnalyzed == 1) | (strncmpi(SaveWhen,'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets)
 
-FileSavingParameters = [];
-if strcmpi(BitDepth,'8') ~=1
-    FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
-    %%% In jpeg format at 12 and 16 bits, the mode must be set to
-    %%% lossless to avoid failure of the imwrite function.
-    if strcmpi(FileFormat,'jpg') == 1 | strcmpi(FileFormat,'jpeg') == 1
-        FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
+    if strcmp(FileDirectory,'.') == 1
+        FileDirectory = handles.Current.DefaultOutputDirectory;
+        %%% Makes sure that the File Directory specified by the user exists.
+        if isdir(FileDirectory) ~= 1
+            error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+        end
+    elseif strcmpi(FileDirectory,'I') == 1
+        FileDirectory = handles.Current.DefaultImageDirectory;
+        %%% Makes sure that the File Directory specified by the user exists.
+        if isdir(FileDirectory) ~= 1
+            error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+        end
+    end
+
+    %%% Retrieves the image you want to analyze and assigns it to a variable,
+    %%% "Image".
+    %%% Checks whether image has been loaded.
+    if isfield(handles.Pipeline, ImageName) == 0,
+        %%% If the image is not there, the module tries in a field named
+        %%% 'Segmented' which would be produced by an Identify module.
+        if isfield(handles.Pipeline, ['Segmented',ImageName])==1,
+            ImageName = ['Segmented',ImageName];
+        else %%% If the image is not there, an error message is produced.  The error
+            %%% is not displayed: The error function halts the current function and
+            %%% returns control to the calling function (the analyze all images
+            %%% button callback.)  That callback recognizes that an error was
+            %%% produced because of its try/catch loop and breaks out of the image
+            %%% analysis loop without attempting further modules.
+            error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but neither that nor an image with the name ', ['Segmented',ImageName] , ' exists.  Perhaps there is a typo in the name.'])
+        end
+    end
+    Image = handles.Pipeline.(ImageName);
+
+    %%% Checks whether the file format the user entered is readable by Matlab.
+    IsFormat = imformats(FileFormat);
+    if isempty(IsFormat) == 1
+        if strcmpi(FileFormat,'mat') ~= 1
+            error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+        end
+    end
+
+    
+    
+    
+    
+    
+    
+    
+    %%% Creates the file name automatically, if the user requested.
+    if strcmpi(OverrideFileName,'A') == 1
+        %%% Checks whether the appendage is going to result in a name with
+        %%% spaces.
+        Spaces = isspace(Appendage);
+        if any(Spaces) == 1
+            error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the image name in the Save Images module.')
+        end
+        %%% Determines the file name.
+        if strcmp(upper(ImageFileName), 'N') == 1
+            %%% Sets the filename to be sequential numbers.
+            FileName = num2str(handles.Current.SetBeingAnalyzed);
+            CharFileName = char(FileName);
+            BareFileName = CharFileName;
+        else
+            %%% Determine the filename of the image to be analyzed.
+            fieldname = ['Filename', ImageFileName];
+            FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
+            %%% If subdirectories are being analyzed, the filename will
+            %%% include subdirectory pathnames.
+            [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
+            if strcmpi(FileDirectory,'S') == 1
+                FileDirectory = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
+            end
+        end
+        %%% Assembles the new image name.
+        if strcmp(upper(Appendage), 'N') == 1
+            Appendage = [];
+        end
+        NewImageName = [BareFileName,Appendage,'.',FileFormat];
+    else
+        %%% Otherwise, use the filename the user entered.
+        NewImageName = [OverrideFileName,'.',FileFormat];
+        Spaces = isspace(NewImageName);
+        if any(Spaces) == 1
+            error('Image processing was canceled because you have entered one or more spaces in the proposed filename in the Save Images module.')
+        end
+    end
+
+    %%% Makes sure that the File Directory specified by the user exists.
+    if isdir(FileDirectory) ~= 1
+        error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+    end
+
+    NewFileAndPathName = fullfile(FileDirectory, NewImageName);
+    if strcmpi(CheckOverwrite,'Y') == 1
+        %%% Checks whether the new image name is going to overwrite the
+        %%% original file.
+        if exist(NewFileAndPathName) == 2
+            Answer = questdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+            if strcmp(Answer,'Cancel') == 1
+                error('Image processing was canceled')
+            end
+        end
+    end
+
+    % PROGRAMMING NOTE
+    % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+    % figure, imshow(BlurredImage, []), title('BlurredImage')
+    % TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
+    % imwrite(BlurredImage, FileName, FileFormat);
+    % Note that you may have to alter the format of the image before
+    % saving.  If the image is not saved correctly, for example, try
+    % adding the uint8 command:
+    % imwrite(uint8(BlurredImage), FileName, FileFormat);
+    % To routinely save images produced by this module, see the help in
+    % the SaveImages module.
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% SAVE IMAGE TO HARD DRIVE %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    FileSavingParameters = [];
+    if strcmpi(BitDepth,'8') ~=1
+        FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
+        %%% In jpeg format at 12 and 16 bits, the mode must be set to
+        %%% lossless to avoid failure of the imwrite function.
+        if strcmpi(FileFormat,'jpg') == 1 | strcmpi(FileFormat,'jpeg') == 1
+            FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
+        end
+    end
+
+    if strcmpi(FileFormat,'mat') == 1
+        try eval(['save(''',NewFileAndPathName, ''',''Image'')']);
+        catch
+            error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+        end
+    else
+        try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
+        catch
+            error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+        end
     end
 end
-
-if strcmpi(FileFormat,'mat') == 1
-    try eval(['save(''',NewFileAndPathName, ''',''Image'')']);
-    catch
-        error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
-    end
-else
-    try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
-    catch
-        error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
-    end
-end
-
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
@@ -364,7 +390,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -392,7 +418,7 @@ end
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a

@@ -510,11 +510,10 @@ for AlgorithmNumber=1:handles.numAlgorithms,
     end
 end
 
-% FIXME: replace i with AlgorithmNumber
-for i=1:handles.numAlgorithms,
-  if isempty(Settings{i+handles.numAlgorithms*handles.numVariables}) == 0, 
-    handles.(['Valgorithmname',TwoDigitString(i)]) = Settings{i+handles.numAlgorithms*handles.numVariables};
-  set(handles.(['AlgorithmName', TwoDigitString(i)]),'string',handles.(['Valgorithmname',TwoDigitString(i)])), end
+for AlgorithmNumber=1:handles.numAlgorithms,
+  if isempty(Settings{AlgorithmNumber+handles.numAlgorithms*handles.numVariables}) == 0, 
+    handles.(['Valgorithmname',TwoDigitString(AlgorithmNumber)]) = Settings{i+handles.numAlgorithms*handles.numVariables};
+  set(handles.(['AlgorithmName', TwoDigitString(AlgorithmNumber)]),'string',handles.(['Valgorithmname',TwoDigitString(AlgorithmNumber)])), end
 end
 
 if isempty(Settings{handles.numAlgorithms*(1+handles.numVariables)+1}) == 0, handles.Vpixelsize = Settings{handles.numAlgorithms*(1+handles.numVariables)+1}; 
@@ -593,18 +592,16 @@ eval(['load ',OutputFileName])
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
-% FIXME: nested loops should use more descriptive names for i,j
-for i=1:handles.numAlgorithms,
-    for j=1:handles.numVariables,
-        if isfield(handles, strcat('Vvariable',TwoDigitString(i),'_',TwoDigitString(j))) ==1,
-            Settings{(i-1)*handles.numVariables+j} = handles.(['Vvariable',TwoDigitString(i),'_',TwoDigitString(j)]); end
+for AlgorithmNumber=1:handles.numAlgorithms,
+    for j=VariableNumber:handles.numVariables,
+        if isfield(handles, strcat('Vvariable',TwoDigitString(AlgorithmNumber),'_',TwoDigitString(VariableNumber))) ==1,
+            Settings{(AlgorithmNumber-1)*handles.numVariables+VariableNumber} = handles.(['Vvariable',TwoDigitString(AlgorithmNumber),'_',TwoDigitString(VariableNumber)]); end
     end
 end
 
-% FIXME: make similar to loop above
-for i=1:handles.numAlgorithms,
-    if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        Settings{i+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',num2str(i)]); end
+for AlgorithmNumber=1:handles.numAlgorithms,
+    if isfield(handles, strcat('Valgorithmname', TwoDigitString(AlgorithmNumber))),
+        Settings{AlgorithmNumber+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',TwoDigitString(AlgorithmNumber)]); end
 end
 
 if isfield(handles,'Vpixelsize') ==1, 
@@ -719,14 +716,14 @@ if exist('DefaultAlgDirectory.mat') ~= 0
     %%% that is stored in that .mat file.
     cd(DefAlgDir)
 end
-    %%% Now, when the dialog box is opened to retrieve an algorithm, the
-    %%% directory will be the default algorithm directory.
-    [AlgorithmNamedotm,PathName] = uigetfile('*.m',...
-        'Choose an image analysis module');
-    %%% Change back to the original directory.
-    cd(CurrentDir)
+%%% Now, when the dialog box is opened to retrieve an algorithm, the
+%%% directory will be the default algorithm directory.
+[AlgorithmNamedotm,PathName] = uigetfile('*.m',...
+    'Choose an image analysis module');
+%%% Change back to the original directory.
+cd(CurrentDir)
 
-%%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and 
+%%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and
 %%% everything should be left as it was.  If the algorithm is not on
 %%% Matlab's search path, the user is warned.
 if AlgorithmNamedotm == 0;
@@ -753,9 +750,9 @@ else
 
     %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
     %%% to be invisible.
-    for i = 1:handles.numVariables;
-        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off');
-        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off');
+    for VariableNumber = 1:handles.numVariables;
+        set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'visible','off');
+        set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]),'visible','off');
     end;
 
     %%% 5. Clears the variable values in the handles structure in case some are
@@ -765,81 +762,78 @@ else
 
     % FIXME: Why the call to str2num?  Is it necessary?  Will it go away
     % when variables are named with two digits?
-    for i=1:handles.numVariables
-        stringend = TwoDigitString(i);
-        ConstructedName = strcat('Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',stringend);
+    for VariableNumber=1:handles.numVariables
+        VarNumber = TwoDigitString(VariableNumber);
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VarNumber);
         if isfield(handles,ConstructedName) == 1;
             handles = rmfield(handles, ConstructedName);
         end;
     end;
 
-%%% 6. The last two characters (=.m) are removed from the
-%%% AlgorithmName.m and called AlgorithmName.
-AlgorithmName = AlgorithmNamedotm(4:end-2);
-%%% The name of the algorithm is shown in a text box in the GUI (the text
-%%% box is called AlgorithmName1.) and in a text box in the GUI which
-%%% displays the current algorithm (whose settings are shown).
-set(handles.(['AlgorithmName' TwoDigitString(str2num(AlgorithmNumber))]),'String',AlgorithmName);
+    %%% 6. The last two characters (=.m) are removed from the
+    %%% AlgorithmName.m and called AlgorithmName.
+    AlgorithmName = AlgorithmNamedotm(4:end-2);
+    %%% The name of the algorithm is shown in a text box in the GUI (the text
+    %%% box is called AlgorithmName1.) and in a text box in the GUI which
+    %%% displays the current algorithm (whose settings are shown).
+    set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
 
-%%% 7. Saves the AlgorithmName to the handles structure.
-handles.(['Valgorithmname' TwoDigitString(str2num(AlgorithmNumber))]) = AlgorithmName;
+    %%% 7. Saves the AlgorithmName to the handles structure.
+    handles.(['Valgorithmname' AlgorithmNumber]) = AlgorithmName;
 
-%%% 8. The text description for each variable for the chosen algorithm is 
-%%% extracted from the algorithm's .m file and displayed.  
-fid=fopen(AlgorithmNamedotm);
-% FIXME: The next two loops need some serious commenting.  
-%        I think the while loop should be "while not_done", 
-%        and 'j' should be replaced with a descriptive name.
+    %%% 8. The text description for each variable for the chosen algorithm is
+    %%% extracted from the algorithm's .m file and displayed.
+    fid=fopen(AlgorithmNamedotm);
+    % FIXME: The next two loops need some serious commenting.
+    %        I think the while loop should be "while not_done",
+    %        and 'j' should be replaced with a descriptive name.
 
-while 1;
-    output = fgetl(fid); if ~ischar(output); break; end;
-
-    j=0;
-    for i=1:handles.numVariables,
-        if j == 1;
-            break;
-        elseif i < 10;
-            if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
-                j=1;
+    while 1;
+        output = fgetl(fid); if ~ischar(output); break; end;
+        breakVariable=0;
+        for VariableNumber=1:handles.numVariables,
+            if breakVariable == 1;
+                break;
+            elseif VariableNumber < 10;
+                if (strncmp(output,['%textVAR',num2str(VariableNumber),' '],10) == 1);
+                    set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]), 'string', output(12:end),'visible', 'on');
+                    breakVariable=1;
+                end
+            else
+                if (strncmp(output,['%textVAR',num2str(VariableNumber)],10) == 1);
+                    set(handles.(['VariableDescription',TwoDigitString(VariableNumber)]), 'string', output(13:end),'visible', 'on');
+                    breakVariable=1;
+                end
             end
-        else
-            if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                j=1;
+        end
+        breakVariable=0;
+        for VariableNumber=1:handles.numVariables,
+            if breakVariable == 1;
+                break;
+            elseif VariableNumber < 10;
+                %%% FIXME: What is going on here?  Also, the string
+                %%% comparison count needs to be corrected for two digit
+                %%% appended numbers.  Also, get rid of the evals()
+                if (strncmp(output,['%defaultVAR',num2str(VariableNumber),' '],13) == 1); displayval = output(16:end);
+                    set(handles.(['VariableBox',TwoDigitString(VariableNumber)]), 'string', displayval,'visible', 'on');
+                    set(handles.(['VariableDescription',TwoDigitString(VariableNumber)]), 'visible', 'on');
+                    ConstructedName = strcat('handles.Vvariable'AlgorithmNumber,'_',TwoDigitString(VariableNumber));
+                    eval([ConstructedName, '= displayval;']);
+                    breakVariable=1;
+                end
+            else
+                % FIXME: shouldn't it be strncmp(..., 14)?
+                if (strncmp(output,['%defaultVAR',num2str(VariableNumber),' '],13) == 1); displayval = output(17:end);
+                    set(handles.(['VariableBox',num2str(VariableNumber)]), 'string', displayval,'visible', 'on');
+                    set(handles.(['VariableDescription',num2str(VariableNumber)]), 'visible', 'on');
+                    ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',TwoDigitString(VariableNumber));
+                    eval([ConstructedName, '= displayval;']);
+                    breakVariable=1;
+                end
             end
         end
     end
-
-    j=0;
-    for i=1:handles.numVariables,
-        if j == 1;
-            break;
-        elseif i < 10;
-            %%% FIXME: What is going on here?  Also, the string
-            %%% comparison count needs to be corrected for two digit
-            %%% appended numbers.  Also, get rid of the evals()
-            if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
-                set(handles.(['VariableBox',TwoDigitString(i)]), 'string', displayval,'visible', 'on');
-                set(handles.(['VariableDescription',TwoDigitString(i)]), 'visible', 'on');
-                ConstructedName = strcat('handles.Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
-                eval([ConstructedName, '= displayval;']);
-                j=1;
-            end
-        else
-          % FIXME: shouldn't it be strncmp(..., 14)?
-            if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
-                set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
-                set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
-                ConstructedName = strcat('handles.Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
-                eval([ConstructedName, '= displayval;']);
-                j=1;
-            end
-        end
-    end
-end
-      
-      fclose(fid);
+    fclose(fid);
 end
 
 %%% Updates the handles structure to incorporate all the changes.
@@ -3286,7 +3280,7 @@ function twodigit = TwoDigitString(val)
 if ((val > 99) | (val < 0)),
   error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
 end
-twodigitstring = sprintf('%02d', val);
+twodigit = sprintf('%02d', val);
 
 
 function y = trimstr( s, stripchars, leftorright )

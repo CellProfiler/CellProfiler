@@ -272,7 +272,7 @@ if handles.Current.SetBeingAnalyzed == 1
             
             %%% Calculates a coarse estimate of the background illumination by
             %%% determining the minimum of each block in the image.
-            MiniIlluminationImage = blkproc(padarray(im2double(imreadimagefile(char(FileList(1)),handles)),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
+            MiniIlluminationImage = blkproc(padarray(im2double(imcpreadfile(char(FileList(1)),handles)),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             for i=2:length(FileList)
                 MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(im2double(imreadimagefile(char(FileList(i)),handles)),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             end
@@ -530,40 +530,3 @@ FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% after the corrected image name.
 fieldname = ['Filename', CorrectedImageName];
 handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-
-
-%%%%%%%%%%%%%%%%%%%%%
-%%%% SUBFUNCTION %%%%
-%%%%%%%%%%%%%%%%%%%%%
-function LoadedImage = imreadimagefile(CurrentFileName, handles)
-%%% Handles a non-Matlab readable file format.
-if isfield(handles.Pipeline, 'DIBwidth') == 1
-    %%% Opens this non-Matlab readable file format.
-    Width = handles.Pipeline.DIBwidth;
-    Height = handles.Pipeline.DIBheight;
-    Channels = handles.Pipeline.DIBchannels;
-    BitDepth = handles.Pipeline.DIBbitdepth;
-    fid = fopen(char(CurrentFileName), 'r');
-    if (fid == -1),
-        error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
-    end
-    fread(fid, 52, 'uchar');
-    LoadedImage = zeros(Height,Width,Channels);
-    for c=1:Channels,
-        [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
-        if Count < (Width * Height),
-            fclose(fid);
-            error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
-        end
-        LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
-    end
-    fclose(fid);
-else
-    %%% Opens Matlab-readable file formats.
-    try
-        %%% Read (open) the image you want to analyze and assign it to a variable,
-        %%% "LoadedImage".
-        LoadedImage = im2double(imread(char(CurrentFileName)));
-    catch error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
-    end
-end

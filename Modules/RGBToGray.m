@@ -50,15 +50,15 @@ GrayscaleImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Enter the relative contribution of the red channel
 %defaultVAR03 = 1
-RedIntensity = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
+RedIntensity = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
 
 %textVAR04 = Enter the relative contribution of the green channel
 %defaultVAR04 = 1
-GreenIntensity = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+GreenIntensity = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR05 = Enter the relative contribution of the blue channel
 %defaultVAR05 = 1
-BlueIntensity = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+BlueIntensity = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

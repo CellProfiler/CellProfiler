@@ -193,7 +193,7 @@ IntegratedIntensity = full(AlmostIntegratedIntensity');
 
 %%% Saves Integrated Intensities to handles structure.
 fieldname = ['dMCIntegratedIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {[IntegratedIntensity]};
+handles.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
 fieldname = ['dMTMeanIntegratedIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
 fieldname = ['dMTStdevIntegratedIntensity', ObjectName];
@@ -243,7 +243,7 @@ MeanIntensity = MeanIntensity';
 StDevIntensity = StDevIntensity';
 %%% Saves data to handles structure.
 fieldname = ['dMCMeanIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {[MeanIntensity]};
+handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
 fieldname = ['dMTMeanMeanIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
 fieldname = ['dMTStdevMeanIntensity', ObjectName];
@@ -252,7 +252,7 @@ fieldname = ['dMTMedianMeanIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
 
 fieldname = ['dMCStDevIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {[StDevIntensity]};
+handles.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
 fieldname = ['dMTMeanStDevIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
 fieldname = ['dMTStdevStDevIntensity', ObjectName];

@@ -169,7 +169,7 @@ else
     Area = Area.*(PixelSize*PixelSize);
     %%% Saves the areas to the handles structure.
     fieldname = ['dMCArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[Area]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {Area};
     fieldname = ['dMTMeanArea', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(Area)};
     fieldname = ['dMTStdevArea', ObjectName];
@@ -191,7 +191,7 @@ else
     ConvexArea = ConvexArea.*(PixelSize*PixelSize);
     %%% Saves the areas to the handles structure.
     fieldname = ['dMCConvexArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[ConvexArea]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {ConvexArea};
     fieldname = ['dMTMeanConvexArea', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(ConvexArea)};
     fieldname = ['dMTStdevConvexArea', ObjectName];
@@ -210,7 +210,7 @@ else
     MajorAxis = MajorAxis*PixelSize;
     %%% Saves the major axis lengths to the handles structure.
     fieldname = ['dMCMajorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[MajorAxis]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {MajorAxis};
     fieldname = ['dMTMeanMajorAxis', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(MajorAxis)};
     fieldname = ['dMTStdevMajorAxis', ObjectName];
@@ -229,7 +229,7 @@ else
     MinorAxis = MinorAxis*PixelSize;
     %%% Saves the minor axis lengths to the handles structure.
     fieldname = ['dMCMinorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[MinorAxis]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {MinorAxis};
     fieldname = ['dMTMeanMinorAxis', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(MinorAxis)};
     fieldname = ['dMTStdevMinorAxis', ObjectName];
@@ -258,7 +258,7 @@ else
     %%% dimensionless.
     %%% Saves the Eccentricities to the handles structure.
     fieldname = ['dMCEccentricity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[Eccentricity]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {Eccentricity};
     fieldname = ['dMTMeanEccentricity', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(Eccentricity)};
     fieldname = ['dMTStdevEccentricity', ObjectName];
@@ -280,7 +280,7 @@ else
     %%% dimensionless.
     %%% Saves the Solidities to the handles structure.
     fieldname = ['dMCSolidity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[Solidity]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {Solidity};
     fieldname = ['dMTMeanSolidity', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(Solidity)};
     fieldname = ['dMTStdevSolidity', ObjectName];
@@ -302,7 +302,7 @@ else
     %%% dimensionless.
     %%% Saves the Extents to the handles structure.
     fieldname = ['dMCExtent', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[Extent]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {Extent};
     fieldname = ['dMTMeanExtent', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(Extent)};
     fieldname = ['dMTStdevExtent', ObjectName];
@@ -326,9 +326,9 @@ else
     CentersY = CentersXY(:,2);
     %%% Saves X and Y positions to handles structure.
     fieldname = ['dMCCenterX', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[CentersX]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {CentersX};
     fieldname = ['dMCCenterY', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[CentersY]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {CentersY};
 
     %%%
     %%% INTEGRATED INTENSITY (TOTAL INTENSITY PER OBJECT)
@@ -358,7 +358,7 @@ else
 
     %%% Saves Integrated Intensities to handles structure.
     fieldname = ['dMCIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[IntegratedIntensity]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
     fieldname = ['dMTMeanIntegratedIntensity', ImageName, 'within', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
     fieldname = ['dMTStdevIntegratedIntensity', ImageName, 'within', ObjectName];
@@ -405,7 +405,7 @@ else
     StDevIntensity = StDevIntensity';
     %%% Saves data to handles structure.
     fieldname = ['dMCMeanIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[MeanIntensity]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
     fieldname = ['dMTMeanMeanIntensity', ImageName, 'within', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
     fieldname = ['dMTStdevMeanIntensity', ImageName, 'within', ObjectName];
@@ -414,7 +414,7 @@ else
     handles.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
 
     fieldname = ['dMCStDevIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[StDevIntensity]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
     fieldname = ['dMTMeanStDevIntensity', ImageName, 'within', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
     fieldname = ['dMTStdevStDevIntensity', ImageName, 'within', ObjectName];
@@ -444,7 +444,7 @@ else
     Perimeter = Perimeter*PixelSize;
     %%% Saves Perimeters to handles structure.
     fieldname = ['dMCPerimeter', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[Perimeter]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {Perimeter};
     fieldname = ['dMTMeanPerimeter', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(Perimeter)};
     fieldname = ['dMTStdevPerimeter', ObjectName];
@@ -461,7 +461,7 @@ else
     %%% is dimensionless anyway.
     Circularity = (Perimeter.*Perimeter)./Area;
     fieldname = ['dMCCircularity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[Circularity]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {Circularity};
     fieldname = ['dMTMeanCircularity', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(Circularity)};
     fieldname = ['dMTStdevCircularity', ObjectName];
@@ -478,7 +478,7 @@ else
     %%% is dimensionless anyway.
     FormFactor = 4*pi.*Area./(Perimeter.*Perimeter);
     fieldname = ['dMCFormFactor', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[FormFactor]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {FormFactor};
     fieldname = ['dMTMeanFormFactor', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(FormFactor)};
     fieldname = ['dMTStdevFormFactor', ObjectName];
@@ -494,7 +494,7 @@ else
     AreaPerimRatio = Area./Perimeter;
 
     fieldname = ['dMCAreaPerimRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[AreaPerimRatio]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {AreaPerimRatio};
     fieldname = ['dMTMeanAreaPerimRatio', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(AreaPerimRatio)};
     fieldname = ['dMTStdevAreaPerimRatio', ObjectName];
@@ -514,7 +514,7 @@ else
     AspectRatio = MajorAxis./MinorAxis;
 
     fieldname = ['dMCAspectRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {[AspectRatio]};
+    handles.(fieldname)(handles.setbeinganalyzed) = {AspectRatio};
     fieldname = ['dMTMeanAspectRatio', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {mean(AspectRatio)};
     fieldname = ['dMTStdevAspectRatio', ObjectName];

@@ -126,10 +126,11 @@ BlueIntensity = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
+%%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
+fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, ImageName) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images

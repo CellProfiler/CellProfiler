@@ -865,6 +865,7 @@ if (length(AlgorithmHighlighted) > 0)
                 output = fgetl(fid); if ~ischar(output); break; end;
                 if (strncmp(output,'%textVAR',8) == 1);
                     set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end),'visible', 'on');
+                    lastVariableCheck = str2num(output(9:10));
                 end
             end
             fclose(fid);
@@ -874,7 +875,10 @@ if (length(AlgorithmHighlighted) > 0)
         
         numberExtraLinesOfDescription = 0;
         numberOfLongBoxes = 0;
-        for i=1:handles.numVariables(AlgorithmNumber),
+        if (lastVariableCheck < handles.numVariables(AlgorithmNumber))
+            lastVariableCheck = handles.numVariables(AlgorithmNumber);
+        end
+        for i=1:lastVariableCheck,
             if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
                 descriptionString = get(handles.(['VariableDescription' TwoDigitString(i)]), 'string');
                 flagExist = 0;

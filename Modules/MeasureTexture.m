@@ -292,11 +292,11 @@ for i = 1:3
     %%% OrigRed channel at the nuclei, the blue measurements will be called:
     %%% MeanAreaNuclei whereas the red measurements will be called:
     %%% MeanAreaOrigRedWithinNuclei.
-    
+
     %ObjectName = strcat(ImageName , '_', ObjectName);
 
     %%% Initilize measurement structure
-
+    Basic = [];
     BasicFeatures    = {'IntegratedIntensity',...
         'MeanIntensity',...
         'StdIntensity',...
@@ -309,6 +309,7 @@ for i = 1:3
         'MaxIntensityEdge',...
         'MassDisplacement'};
 
+    Haralick = [];
     HaralickFeatures = {'H1. AngularSecondMoment',...
         'H2. Contrast',...
         'H3. Correlation',...
@@ -323,81 +324,84 @@ for i = 1:3
         'H12. InformationMeasure1',...
         'H13. InformationMeasure2'};
 
+    Gabor = [];
     GaborFeatures    = {'Gabor1x',...
-                        'Gabor1y',...
-                        'Gabor2x',...
-                        'Gabor2y',...
-                        'Gabor3x',...
-                        'Gabor3y'};
-
-    %%% Count objects and get median size of objects (used for determining
-    %%% size of Gabor filters below).
+        'Gabor1y',...
+        'Gabor2x',...
+        'Gabor2y',...
+        'Gabor3x',...
+        'Gabor3y'};
+    %%% Count objects
     ObjectCount = max(LabelMatrixImage(:));
-    tmp = regionprops(LabelMatrixImage,'Area');
-    MedianArea = median(cat(1,tmp.Area));
-    
-    Basic = zeros(ObjectCount,4);
-    Gabor = zeros(ObjectCount,6);
-    Haralick = zeros(ObjectCount,13);
-    
-    [sr sc] = size(LabelMatrixImage);
-    for Object = 1:ObjectCount
 
-        %%% Locate object
-        [r,c] = find(LabelMatrixImage == Object);
-        index = sub2ind([sr sc],r,c);
+    if ObjectCount > 0
+        % Get median size of objects (used for determining size of Gabor
+        % filters below).
+        tmp = regionprops(LabelMatrixImage,'Area');
+        MedianArea = median(cat(1,tmp.Area));
 
-        %%% Measure basic set of texture features
-        Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
-        Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
-        Basic(Object,3) = std(OrigImageToBeAnalyzed(index));
-        Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
-        Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
+        Basic = zeros(ObjectCount,4);
+        Gabor = zeros(ObjectCount,6);
+        Haralick = zeros(ObjectCount,13);
 
-        %%% Cut patch so that we don't have to deal with entire image
-        rmax = min(sr,max(r));
-        rmin = max(1,min(r));
-        cmax = min(sc,max(c));
-        cmin = max(1,min(c));
-        BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-        Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
+        [sr sc] = size(LabelMatrixImage);
+        for Object = 1:ObjectCount
 
-        % Get perimeter in order to calculate edge features
-        perim = bwperim(BWim);
-        perim = Greyim(find(perim));
-        Basic(Object,6)  = sum(perim);
-        Basic(Object,7)  = mean(perim);
-        Basic(Object,8)  = std(perim);
-        Basic(Object,9)  = min(perim);
-        Basic(Object,10) = max(perim);
+            %%% Locate object
+            [r,c] = find(LabelMatrixImage == Object);
+            index = sub2ind([sr sc],r,c);
 
-        % Calculate the Mass displacment, which is the distance between
-        % the center of gravity in the gray level image and the binary
-        % image.
-        BWx = sum([1:size(BWim,2)].*sum(BWim,1))/sum([1:size(BWim,2)]);
-        BWy = sum([1:size(BWim,1)]'.*sum(BWim,2))/sum([1:size(BWim,1)]);
-        Greyx = sum([1:size(Greyim,2)].*sum(Greyim,1))/sum([1:size(Greyim,2)]);
-        Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
-        Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2);
+            %%% Measure basic set of texture features
+            Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
+            Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
+            Basic(Object,3) = std(OrigImageToBeAnalyzed(index));
+            Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
+            Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
 
-        
-        %%% Get Gabor features
-        % Set scale parameter to median radius
-        sigma = sqrt(MedianArea/pi);                            
-        Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
-        
-        %%% Get Haralick features
-        Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
+            %%% Cut patch so that we don't have to deal with entire image
+            rmax = min(sr,max(r));
+            rmin = max(1,min(r));
+            cmax = min(sc,max(c));
+            cmin = max(1,min(c));
+            BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+            Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
+
+            % Get perimeter in order to calculate edge features
+            perim = bwperim(BWim);
+            perim = Greyim(find(perim));
+            Basic(Object,6)  = sum(perim);
+            Basic(Object,7)  = mean(perim);
+            Basic(Object,8)  = std(perim);
+            Basic(Object,9)  = min(perim);
+            Basic(Object,10) = max(perim);
+
+            % Calculate the Mass displacment, which is the distance between
+            % the center of gravity in the gray level image and the binary
+            % image.
+            BWx = sum([1:size(BWim,2)].*sum(BWim,1))/sum([1:size(BWim,2)]);
+            BWy = sum([1:size(BWim,1)]'.*sum(BWim,2))/sum([1:size(BWim,1)]);
+            Greyx = sum([1:size(Greyim,2)].*sum(Greyim,1))/sum([1:size(Greyim,2)]);
+            Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
+            Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2);
+
+
+            %%% Get Gabor features
+            % Set scale parameter to median radius
+            sigma = sqrt(MedianArea/pi);
+            Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
+
+            %%% Get Haralick features
+            Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
+        end
     end
-
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,BasicFeatures,HaralickFeatures,GaborFeatures);
     handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Basic Haralick Gabor]};
-  
-   
+
+
     %%% Report measurements
     FontSize = get(0,'UserData');
-    
+
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
@@ -429,7 +433,7 @@ for i = 1:3
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',GaborFeatures{k});
         end
-        
+
         % Text for Haralick features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.26 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
@@ -450,28 +454,28 @@ for i = 1:3
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
+        if ObjectCount > 0
+            % Basic features
+            for k = 1:5
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
+            end
 
-        % Basic features
-        for k = 1:5
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
+            % Gabor features
+            for k = 1:4
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.51-0.04*k 0.2 0.03],...
+                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
+            end
+
+            % Haralick features
+            for k = 1:4
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.26-0.04*k 0.2 0.03],...
+                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
+            end
         end
-        
-        % Gabor features
-        for k = 1:4
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.51-0.04*k 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
-        end
-    
-        % Haralick features
-        for k = 1:4
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.26-0.04*k 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
-        end
-    
         % This variable is used to write results in the correct column
         % and to determine the correct window size
         columns = columns + 1;
@@ -512,7 +516,7 @@ for m = 1:length(f)
         tmpr = sum(sum(mask.*real(g).*im))/sum(sum(mask.*real(g)));
         tmpi = sum(sum(mask.*imag(g).*im))/sum(sum(mask.*imag(g)));
         G(n,m) = sqrt(tmpr.^2+tmpi.^2);
-     end
+    end
 end
 G = G(:)';
 

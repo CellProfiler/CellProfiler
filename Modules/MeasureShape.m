@@ -76,7 +76,7 @@ for i = 1:length(ObjectNameList)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
 
     %%% Retrieves the label matrix image that contains the segmented objects which
     %%% will be measured with this module.
@@ -90,8 +90,9 @@ for i = 1:length(ObjectNameList)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   
+
     %%% Initialize
+    Basic = [];
     BasicFeatures    = {'Area',...
         'Eccentricity',...
         'Solidity',...
@@ -104,108 +105,111 @@ for i = 1:length(ObjectNameList)
         'CenterX',...
         'CenterY'};
 
-    %%% Get the basic shape features
-    props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
-                                         'MajorAxisLength','MinorAxisLength','Centroid');
-
-    % Perimeter
-    perim = bwperim(LabelMatrixImage>0).*LabelMatrixImage;
-    perim = perim(:);
-    perim = perim(find(perim));
-    Perimeter = (hist(perim,[1:max(perim)])*PixelSize)';
-
-    % Form factor
-    FormFactor = 4*pi*cat(1,props.Area) ./ Perimeter.^2;
-
-    % Centroid
-    Centroid = cat(1,props.Centroid);
-    
-    Basic = [cat(1,props.Area)*PixelSize^2,...
-        cat(1,props.Eccentricity),...
-        cat(1,props.Solidity),...
-        cat(1,props.Extent),...
-        cat(1,props.EulerNumber),...
-        Perimeter,...
-        FormFactor,...
-        cat(1,props.MajorAxisLength),...
-        cat(1,props.MinorAxisLength),...
-        Centroid(:,1),...
-        Centroid(:,2)];
-
-
-    %%% Calculate Zernike shape features
-
     % Get index for Zernike functions
-    index = [];
+    Zernike = [];
+    Zernikeindex = [];
     ZernikeFeatures = {};
     for n = 0:9
         for m = 0:n
             if rem(n-m,2) == 0
-                index = [index;n m];
+                Zernikeindex = [Zernikeindex;n m];
                 ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike%d_%d',n,m)});
             end
         end
     end
 
-    % Use ConvexArea to automatically calculate the average equivalent diameter
-    % of the objects, and then use this diameter to determine the grid size
-    % of the Zernike functions
-    tmp = regionprops(LabelMatrixImage,'ConvexArea');
-    diameter = floor(sqrt(4/pi*mean(cat(1,tmp.ConvexArea)))+1);
-    if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 
-    % Calculate the Zernike basis functions
-    [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
-    r = sqrt(x.^2+y.^2);
-    phi = atan(y./(x+eps));
-    Zf = zeros(size(x,1),size(x,2),size(index,1));
+    if max(LabelMatrixImage(:)) > 0
+        %%% Get the basic shape features
+        props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
+            'MajorAxisLength','MinorAxisLength','Centroid');
 
-    for k = 1:size(index,1)
-        n = index(k,1);
-        m = index(k,2);
-        s = zeros(size(x));
-        for l = 0:(n-m)/2;
-            s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+        % Perimeter
+        perim = bwperim(LabelMatrixImage>0).*LabelMatrixImage;
+        perim = perim(:);
+        perim = perim(find(perim));
+        Perimeter = (hist(perim,[1:max(perim)])*PixelSize)';
+
+        % Form factor
+        FormFactor = 4*pi*cat(1,props.Area) ./ Perimeter.^2;
+
+        % Centroid
+        Centroid = cat(1,props.Centroid);
+
+        Basic = [cat(1,props.Area)*PixelSize^2,...
+            cat(1,props.Eccentricity),...
+            cat(1,props.Solidity),...
+            cat(1,props.Extent),...
+            cat(1,props.EulerNumber),...
+            Perimeter,...
+            FormFactor,...
+            cat(1,props.MajorAxisLength),...
+            cat(1,props.MinorAxisLength),...
+            Centroid(:,1),...
+            Centroid(:,2)];
+
+
+        %%% Calculate Zernike shape features
+        % Use ConvexArea to automatically calculate the average equivalent diameter
+        % of the objects, and then use this diameter to determine the grid size
+        % of the Zernike functions
+        tmp = regionprops(LabelMatrixImage,'ConvexArea');
+        diameter = floor(sqrt(4/pi*mean(cat(1,tmp.ConvexArea)))+1);
+        if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
+
+        % Calculate the Zernike basis functions
+        [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
+        r = sqrt(x.^2+y.^2);
+        phi = atan(y./(x+eps));
+        Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
+
+        for k = 1:size(Zernikeindex,1)
+            n = Zernikeindex(k,1);
+            m = Zernikeindex(k,2);
+            s = zeros(size(x));
+            for l = 0:(n-m)/2;
+                s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+            end
+            s(r>1) = 0;
+            Zf(:,:,k) = s;
         end
-        s(r>1) = 0;
-        Zf(:,:,k) = s;
-    end
 
-    % Pad the Label image with zeros so that the Zernike
-    % features can be calculated also for objects close to
-    % the border
-    [sr,sc] = size(LabelMatrixImage);
-    PaddedLabelMatrixImage = [zeros(diameter,2*diameter+sc);
-        zeros(sr,diameter) LabelMatrixImage zeros(sr,diameter)
-        zeros(diameter,2*diameter+sc)];
+        % Pad the Label image with zeros so that the Zernike
+        % features can be calculated also for objects close to
+        % the border
+        [sr,sc] = size(LabelMatrixImage);
+        PaddedLabelMatrixImage = [zeros(diameter,2*diameter+sc);
+            zeros(sr,diameter) LabelMatrixImage zeros(sr,diameter)
+            zeros(diameter,2*diameter+sc)];
 
-    % Loop over objects to calculate Zernike moments. Center the functions
-    % over the centroids of the objects.
-    tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
-    Centroids = cat(1,tmp.Centroid);
-    Zernike = zeros(size(Centroids,1),size(index,1));
-    for Object = 1:size(Centroids,1)
+        % Loop over objects to calculate Zernike moments. Center the functions
+        % over the centroids of the objects.
+        tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
+        Centroids = cat(1,tmp.Centroid);
+        Zernike = zeros(size(Centroids,1),size(Zernikeindex,1));
+        for Object = 1:size(Centroids,1)
 
-        % Get image patch
-        cx = round(Centroids(Object,1));
-        cy = round(Centroids(Object,2));
-        rmax = round(Centroids(Object,2)+(diameter-1)/2);
-        rmin = round(Centroids(Object,2)-(diameter-1)/2);
-        cmax = round(Centroids(Object,1)+(diameter-1)/2);
-        cmin = round(Centroids(Object,1)-(diameter-1)/2);
-        BWpatch   = PaddedLabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+            % Get image patch
+            cx = round(Centroids(Object,1));
+            cy = round(Centroids(Object,2));
+            rmax = round(Centroids(Object,2)+(diameter-1)/2);
+            rmin = round(Centroids(Object,2)-(diameter-1)/2);
+            cmax = round(Centroids(Object,1)+(diameter-1)/2);
+            cmin = round(Centroids(Object,1)-(diameter-1)/2);
+            BWpatch   = PaddedLabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
 
-        % Apply Zernike functions
-        Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(index,1)]).*Zf))))';
+            % Apply Zernike functions
+            Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
 
+        end
     end
 
     %%% Save measurements
     handles.Measurements.(ObjectName).ShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
     handles.Measurements.(ObjectName).Shape(handles.Current.SetBeingAnalyzed) = {[Basic Zernike]};
-  
-    
+
     %%% Report measurements
+    FontSize = get(0,'UserData');
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
@@ -216,53 +220,55 @@ for i = 1:length(ObjectNameList)
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
             'HorizontalAlignment','left','Backgroundcolor',[1 1 1],'fontname','times',...
-            'fontsize',8,'fontweight','bold','string','Number of objects:');
+            'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
         % Text for Basic features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'fontweight','bold','string','Basic features:');
-        for k = 1:length(BasicFeatures)
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+            'fontsize',FontSize,'fontweight','bold','string','Basic features:');
+        for k = 1:7
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'string',BasicFeatures{k});
+                'fontsize',FontSize,'string',BasicFeatures{k});
         end
 
         % Text for Zernike features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'fontweight','bold','string','5 first Zernike features:');
+            'fontsize',FontSize,'fontweight','bold','string','5 first Zernike features:');
         for k = 1:5
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.3 0.03],...
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'string',ZernikeFeatures{k});
+                'fontsize',FontSize,'string',ZernikeFeatures{k});
         end
 
 
         % The name of the object image
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.9 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'fontweight','bold','string',ObjectName);
+            'fontsize',FontSize,'fontweight','bold','string',ObjectName);
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.85 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',8,'string',num2str(max(LabelMatrixImage(:))));
-
-        % Basic shape features
-        for k = 1:length(BasicFeatures)
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'string',sprintf('%0.2f',mean(Basic(:,k))));
-        end
-
-        % Zernike shape features
-        for k = 1:5
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.45-0.04*k 0.2 0.03],...
-                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',8,'string',sprintf('%0.2f',mean(Zernike(:,k))));
-        end
+            'fontsize',FontSize,'string',num2str(max(LabelMatrixImage(:))));
         
+        % Report features, if there are any.    
+        if max(LabelMatrixImage(:)) > 0
+            % Basic shape features
+            for k = 1:7
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
+            end
+
+            % Zernike shape features
+            for k = 1:5
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.45-0.04*k 0.2 0.03],...
+                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))));
+            end
+        end
         % This variable is used to write results in the correct column
         % and to determine the correct window size
         columns = columns + 1;

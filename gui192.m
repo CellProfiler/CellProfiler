@@ -136,61 +136,22 @@ if isempty(FileNamesNoDir)
     errordlg('There are no files in the chosen directory')
     handles.Vfilenames = [];
 else
-%%% Makes a logical array that marks with a "1" all file names that start
-%%% with a period (hidden files):
-DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
-%%% Makes logical arrays that mark with a "1" all file names that have
-%%% particular suffixes (mat, m, m~, and frk). The dollar sign indicates
-%%% that the pattern must be at the end of the string in order to count as
-%%% matching.  The first line of each set finds the suffix and marks its
-%%% location in a cell array with the index of where that suffix begins;
-%%% the third line converts this cell array of numbers into a logical
-%%% array of 1's and 0's.   cellfun only works on arrays of class 'cell',
-%%% so there is a check to make sure the class is appropriate.  When there
-%%% are very few files in the directory (I think just one), the class is
-%%% not cell for some reason.
-DiscardLogical2Pre = regexpi(FileNamesNoDir, '.mat$','once');
-if strcmp(class(DiscardLogical2Pre), 'cell') == 1
-DiscardLogical2 = cellfun('prodofsize',DiscardLogical2Pre);
-else DiscardLogical2 = [];
-end
-DiscardLogical3Pre = regexpi(FileNamesNoDir, '.m$','once');
-if strcmp(class(DiscardLogical3Pre), 'cell') == 1
-DiscardLogical3 = cellfun('prodofsize',DiscardLogical3Pre);
-else DiscardLogical3 = [];
-end
-DiscardLogical4Pre = regexpi(FileNamesNoDir, '.m~$','once');
-if strcmp(class(DiscardLogical4Pre), 'cell') == 1
-DiscardLogical4 = cellfun('prodofsize',DiscardLogical4Pre);
-else DiscardLogical4 = [];
-end
-DiscardLogical5Pre = regexpi(FileNamesNoDir, '.frk$','once');
-if strcmp(class(DiscardLogical5Pre), 'cell') == 1
-DiscardLogical5 = cellfun('prodofsize',DiscardLogical5Pre);
-else DiscardLogical5 = [];
-end
-DiscardLogical6Pre = regexpi(FileNamesNoDir, '.xls$','once');
-if strcmp(class(DiscardLogical6Pre), 'cell') == 1
-DiscardLogical6 = cellfun('prodofsize',DiscardLogical6Pre);
-else DiscardLogical6 = [];
-end
-DiscardLogical7Pre = regexpi(FileNamesNoDir, '.doc$','once');
-if strcmp(class(DiscardLogical7Pre), 'cell') == 1
-DiscardLogical7 = cellfun('prodofsize',DiscardLogical7Pre);
-else DiscardLogical7 = [];
-end
-DiscardLogical8Pre = regexpi(FileNamesNoDir, '.txt$','once');
-if strcmp(class(DiscardLogical8Pre), 'cell') == 1
-DiscardLogical8 = cellfun('prodofsize',DiscardLogical8Pre);
-else DiscardLogical8 = [];
+
+DiscardsHidden = strncmp(FileNamesNoDir,'.',1);
+DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt)$', 'once');
+if strcmp(class(DiscardsByExtension), 'cell')
+  DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
+else 
+  DiscardsByExtension = []
 end
 
 %%% Combines all of the DiscardLogical arrays into one.
-DiscardLogical = DiscardLogical1 | DiscardLogical2 | DiscardLogical3 | DiscardLogical4 | DiscardLogical5 | DiscardLogical6 | DiscardLogical7 | DiscardLogical8;
+Discards = DiscardsHidden | DiscardsByExtension;
 %%% Eliminates filenames to be discarded.
-if isempty(DiscardLogical)
-    FileNames = FileNamesNoDir;
-else FileNames = FileNamesNoDir(~DiscardLogical);
+if isempty(Discards)
+  FileNames = FileNamesNoDir;
+else 
+  FileNames = FileNamesNoDir(~Discards);
 end
 %%% Checks whether any files are left.
 if isempty(FileNames)

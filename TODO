@@ -1,6 +1,9 @@
 Unclaimed projects/feature requests/bug fixes
 
 General:
+- When saving a settings file, it should record the versions of each
+  module it refers to.  These should be checked when the setting are
+  loaded (and warnings put up if the values have changed).
 - For Example Images that are just text, move it into the help for that file, because as it is these images are stretched a lot.
 - Remove TM from CellProfiler's name in the help/manual.
 - Can the manual compiler use the powerpoint file directly, or must it be saved as PNG or JPG first, for the cover pages?

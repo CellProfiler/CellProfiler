@@ -1515,11 +1515,12 @@ msgbox('The handles structure has been printed out at the command line of Matlab
 
 % --- Executes on button press in BrowseImageDirectoryButton.
 function BrowseImageDirectoryButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-cd(handles.Current.DefaultImageDirectory)
+try cd(handles.Current.DefaultImageDirectory)
+end
 %%% Opens a dialog box to allow the user to choose a directory and loads
 %%% that directory name into the edit box.  Also, changes the current
 %%% directory to the chosen directory.
-pathname = uigetdir('','Choose the directory of images to be analyzed');
+pathname = uigetdir('handles.Current.DefaultImageDirectory','Choose the directory of images to be analyzed');
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
 %%% happen.
 if pathname == 0

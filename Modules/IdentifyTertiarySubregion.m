@@ -71,7 +71,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', PrimaryObjectName];
+fieldname = ['dOTSegmented', PrimaryObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles, fieldname) == 0
     %%% If the image is not there, an error message is produced.  The error
@@ -105,13 +105,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Erodes the secondary object image and then subtracts it from the
-%%% primary object image.  This prevents the subregion from having zero
-%%% pixels (which cannot be measured in subsequent measuremodules) in the
+%%% Erodes the primary object image and then subtracts it from the
+%%% secondary object image.  This prevents the subregion from having zero
+%%% pixels (which cannot be measured in subsequent measure modules) in the
 %%% cases where the secondary object is exactly the same size as the
 %%% primary object.
-ErodedSecondaryObjectImage = imerode(SecondaryObjectImage, ones(3));
-SubregionObjectImage = PrimaryObjectImage - ErodedSecondaryObjectImage;
+ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
+SubregionObjectImage = SecondaryObjectImage - ErodedPrimaryObjectImage;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -195,3 +195,5 @@ FileName = handles.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image to be analyzed.
 fieldname = ['dOTFilename', SubregionObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+%%% Arbitrarily, I have chosen the primary object's filename to be saved
+%%% here rather than the secondary object's filename.  

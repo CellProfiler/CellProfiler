@@ -314,6 +314,13 @@ handles.(fieldname) = PrelimLabelMatrixImage2;
 fieldname = ['dOTSegmented',ObjectName];
 handles.(fieldname) = FinalLabelMatrixImage;
 
+%%% Determines the filename of the image to be analyzed.
+fieldname = ['dOTFilename', ImageName];
+FileName = handles.(fieldname)(handles.setbeinganalyzed);
+%%% Saves the filename of the image to be analyzed.
+fieldname = ['dOTFilename', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% ISODATA SUBFUNCTION %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%

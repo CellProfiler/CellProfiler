@@ -496,13 +496,13 @@ drawnow
 fieldname = ['dOTSegmented',SecondaryObjectName];
 handles.(fieldname) = FinalLabelMatrixImage;
 
-%%% Determines the filename of the image to be analyzed.
+%%%% Saves the Threshold value to the handles structure.
+fieldname = ['dMTThreshold', SecondaryObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};
+
+%% Determines the filename of the image to be analyzed.
 fieldname = ['dOTFilename', ImageName];
 FileName = handles.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image to be analyzed.
 fieldname = ['dOTFilename', SecondaryObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName;
-
-%%% Saves the Threshold value to the handles structure.
-fieldname = ['dMTThreshold', SecondaryObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};

@@ -310,3 +310,10 @@ handles.(fieldname) = FinalLabelMatrixImage;
 %%% Saves the Threshold value to the handles structure.
 fieldname = ['dMTThreshold', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};
+
+%%% Determines the filename of the image to be analyzed.
+fieldname = ['dOTFilename', ImageName];
+FileName = handles.(fieldname)(handles.setbeinganalyzed);
+%%% Saves the filename of the image to be analyzed.
+fieldname = ['dOTFilename', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = FileName;

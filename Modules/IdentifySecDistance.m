@@ -231,7 +231,9 @@ handles.(fieldname) = FinalSecObjectsLabelMatrixImage;
 
 %%% Determines the filename of the image that was analyzed.
 %%% This is not entirely necessary, because this image was not actually
-%%% used for analysis, it was only used for display.
+%%% used for analysis, it was only used for display, but it allows this
+%%% module to be consistent with the other secondary object-identifying
+%%% modules.
 fieldname = ['dOTFilename', OrigImageName];
 FileName = handles.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image that was analyzed.

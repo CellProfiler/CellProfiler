@@ -263,13 +263,7 @@ User-friendliness/interface/help:
 
      - Make the help/manual prettier: For each example image that is
        just text, move it into the help for that file, because as it
-       is these images are stretched a lot; Remove TM from
-       CellProfiler's name in the help/manual; Rename HelpHistogram
-       and HelpNormalization now that the buttons have different
-       names; Can the manual compiler use the powerpoint file
-       directly, or must it be saved as PNG or JPG first, for the
-       cover pages?; Make the Help1-4 and the HelpButtons pages look
-       nicer by giving each section a nicer heading. 
+       is these images are stretched a lot. 
 
      - 'Fetch new modules from website' button in CellProfiler's main
        GUI. 

@@ -8,6 +8,17 @@ Lines with --- are longer term, less critical
 Lines with NOW are more critical.
 
 Infrastructure improvements:
+     - Allow canceling from the first dialog box when using the Save Image As button.
+
+     - In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
+
+     - In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing (try to write in matlab root first, and if that fails, write in the current directory > Also, we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.)  That is where CellProfiler should look when trying to load the preferences upon launching, too.
+
+     - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
+
+     - Have LoadSettings button determine whether a file is a valid Settings file, in particular, if no algorithms were loaded at the time the settings file was saved, does it fail?
+
+     - Remove unnecessary cd's (Ask Ray).
 
      - When viewing algorithms in the main GUI, the down arrow should
        move from one highlighted algorithm to the next (right now, the
@@ -37,7 +48,7 @@ Infrastructure improvements:
 
      - Whenever anything is saved to the hard drive, add an error
        check to see whether the user has permission to write to that
-       location. From within the target directory, run:
+       location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
@@ -49,6 +60,12 @@ Infrastructure improvements:
        person-readable text file so they have a permanent record. 
 
      - All modules: look for speed improvements (esp. imresize?)
+
+     - In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction, and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
+
+     - When more than ~11 variables are displayed in the variable panel, the slider appears. When there are only a few extra variables in the panel than can be displayed at once, the slider does not make much impact in how far the panel moves.  The same is true for help windows that have more text than fits into the window.  It seems like clicking in the space below the slider indicator should move the panel all the way to reveal the last variables, but instead it just moves down a tiny bit, so you have to click several times to finally reveal the last variable.
+
+     - Throughout CellProfiler and its modules, remove unnecessary updating of the handles structure (guidata function).
 
      - Add error checking to data-related buttons to determine whether
        the .mat file the user selected is a valid CellProfiler output
@@ -118,6 +135,8 @@ Image analysis modules - New:
        1;32 Database issue:D319-22. PMID: 14681423  
 
 Image analysis modules - Improvements:
+
+     - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
      - The error checking for "there are no images in this folder"
        should be moved out of CellProfiler.m and into the two Load

@@ -4,7 +4,7 @@ function handles = MeasureTexture(handles)
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module extracts intensity and texture features of each
+% module extracts texture features of each
 % object based on a corresponding grayscale image. Measurements are
 % recorded for each object.
 %
@@ -63,7 +63,7 @@ function handles = MeasureTexture(handles)
 % be interacted with.  This does theoretically slow the computation
 % somewhat, so it might be reasonable to remove most of these lines
 % when running jobs on a cluster where speed is important.
-drawnow
+
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -136,8 +136,7 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-
+    
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImageToBeAnalyzed".
     fieldname = ['', ImageName];
@@ -166,7 +165,7 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
+    
 
     % PROGRAMMING NOTE
     % HANDLES STRUCTURE:
@@ -284,31 +283,8 @@ for i = 1:3
     % will just repeatedly use the processed image of nuclei leftover from
     % the last image set, which was left in handles.Pipeline.
 
-    %%% The ObjectName is changed to include the Object Name plus the name of
-    %%% the grayscale image used, so that the measurements do not overwrite any
-    %%% measurements made on the original objects.  For example, if
-    %%% measurements were made for the Nuclei using the original blue image and
-    %%% this module is being used to measure the intensities, etc. of the
-    %%% OrigRed channel at the nuclei, the blue measurements will be called:
-    %%% MeanAreaNuclei whereas the red measurements will be called:
-    %%% MeanAreaOrigRedWithinNuclei.
-
-    %ObjectName = strcat(ImageName , '_', ObjectName);
-
+  
     %%% Initilize measurement structure
-    Basic = [];
-    BasicFeatures    = {'IntegratedIntensity',...
-        'MeanIntensity',...
-        'StdIntensity',...
-        'MinIntensity',...
-        'MaxIntensity',...
-        'IntegratedIntensityEdge',...
-        'MeanIntensityEdge',...
-        'StdIntensityEdge',...
-        'MinIntensityEdge',...
-        'MaxIntensityEdge',...
-        'MassDisplacement'};
-
     Haralick = [];
     HaralickFeatures = {'H1. AngularSecondMoment',...
         'H2. Contrast',...
@@ -340,50 +316,20 @@ for i = 1:3
         tmp = regionprops(LabelMatrixImage,'Area');
         MedianArea = median(cat(1,tmp.Area));
 
-        Basic = zeros(ObjectCount,4);
         Gabor = zeros(ObjectCount,6);
         Haralick = zeros(ObjectCount,13);
 
         [sr sc] = size(LabelMatrixImage);
         for Object = 1:ObjectCount
 
-            %%% Locate object
-            [r,c] = find(LabelMatrixImage == Object);
-            index = sub2ind([sr sc],r,c);
-
-            %%% Measure basic set of texture features
-            Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
-            Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
-            Basic(Object,3) = std(OrigImageToBeAnalyzed(index));
-            Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
-            Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
-
             %%% Cut patch so that we don't have to deal with entire image
+            [r,c] = find(LabelMatrixImage == Object);
             rmax = min(sr,max(r));
             rmin = max(1,min(r));
             cmax = min(sc,max(c));
             cmin = max(1,min(c));
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
-
-            % Get perimeter in order to calculate edge features
-            perim = bwperim(BWim);
-            perim = Greyim(find(perim));
-            Basic(Object,6)  = sum(perim);
-            Basic(Object,7)  = mean(perim);
-            Basic(Object,8)  = std(perim);
-            Basic(Object,9)  = min(perim);
-            Basic(Object,10) = max(perim);
-
-            % Calculate the Mass displacment, which is the distance between
-            % the center of gravity in the gray level image and the binary
-            % image.
-            BWx = sum([1:size(BWim,2)].*sum(BWim,1))/sum([1:size(BWim,2)]);
-            BWy = sum([1:size(BWim,1)]'.*sum(BWim,2))/sum([1:size(BWim,1)]);
-            Greyx = sum([1:size(Greyim,2)].*sum(Greyim,1))/sum([1:size(Greyim,2)]);
-            Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
-            Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2);
-
 
             %%% Get Gabor features
             % Set scale parameter to median radius
@@ -395,8 +341,8 @@ for i = 1:3
         end
     end
     %%% Save measurements
-    handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,BasicFeatures,HaralickFeatures,GaborFeatures);
-    handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Basic Haralick Gabor]};
+    handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
+    handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
 
 
     %%% Report measurements
@@ -414,32 +360,22 @@ for i = 1:3
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
-        % Text for Basic features
+        % Text for Gabor features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string','Basic features:');
-        for k = 1:5
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
-                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',BasicFeatures{k});
-        end
-
-        % Text for Gabor features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.51 0.3 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Gabor features:');
-        for k = 1:4
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.51-0.04*k 0.3 0.03],...
+        for k = 1:6
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',GaborFeatures{k});
         end
 
         % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.26 0.3 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
-        for k = 1:4
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.26-0.04*k 0.3 0.03],...
+        for k = 1:10
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',HaralickFeatures{k});
         end
@@ -455,23 +391,16 @@ for i = 1:3
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
         if ObjectCount > 0
-            % Basic features
-            for k = 1:5
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
-            end
-
             % Gabor features
-            for k = 1:4
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.51-0.04*k 0.2 0.03],...
+            for k = 1:6
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
             end
 
             % Haralick features
-            for k = 1:4
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.26-0.04*k 0.2 0.03],...
+            for k = 1:10
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
             end
@@ -483,7 +412,7 @@ for i = 1:3
 end
 drawnow
 
-function G = CalculateGabor(im,mask,sigma)
+function G = CalculateGabor(im,mask,sigma,flag)
 %
 % This function calculates Gabor features, which measure
 % the energy in different frequency sub-bands. The Gabor
@@ -509,13 +438,26 @@ if rem(sc,2) == 0,tx = [-sc/2:sc/2-1];else tx = [-(sc-1)/2:(sc-1)/2];end
 G = zeros(length(theta),length(f));
 for m = 1:length(f)
     for n = 1:length(theta)
+        
         % Calculate Gabor filter kernel
         g = 1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
 
-        % Use weighted averaging to calculate the corresponding feature
-        tmpr = sum(sum(mask.*real(g).*im))/sum(sum(mask.*real(g)));
-        tmpi = sum(sum(mask.*imag(g).*im))/sum(sum(mask.*imag(g)));
-        G(n,m) = sqrt(tmpr.^2+tmpi.^2);
+        % Use Normalized Convolution to calculate filter responses. This
+        % method only include object pixels for calculating the filter
+        % response and excludes surrounding background pixels.
+        % See Farneback, 2002. "Polynomial Expansion for Orientation and
+        % Motion Estimation". PhD Thesis
+        gr = real(g);
+        gi = imag(g);
+        B = [gr(:) gi(:)];
+        Wc = diag(mask(:));
+        r = inv(B'*Wc*B)*B'*Wc*im(:); 
+        G(n,m) = sqrt(sum(r.^2));
+        
+        % Direct way of calculating filter responses
+        %tmpr = sum(sum(real(g).*im));
+        %tmpi = sum(sum(imag(g).*im));
+        %G(n,m) = sqrt(tmpr.^2+tmpi.^2);
     end
 end
 G = G(:)';
@@ -542,7 +484,6 @@ function H = CalculateHaralick(im,mask,area)
 % BEWARE: There are lots of erroneous formulas for the Haralick features in
 % the literature. There is also an error in the original paper.
 %
-
 
 % Number of greylevels to use
 Levels = 8;

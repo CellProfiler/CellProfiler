@@ -1,10 +1,10 @@
-function handles = MeasureTexture(handles)
+function handles = MeasureIntensity(handles)
 
-% Help for the Measure Texture module:
+% Help for the Measure Intensity module:
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module extracts texture features of each
+% module extracts intensity features of each
 % object based on a corresponding grayscale image. Measurements are
 % recorded for each object.
 %
@@ -18,10 +18,7 @@ function handles = MeasureTexture(handles)
 % image should be converted to binary and re-made into a label matrix
 % image before feeding into this module.
 %
-% See also MEASUREAREAOCCUPIED,
-% MEASUREAREASHAPECOUNTLOCATION,
-% MEASURECORRELATION,
-% MEASURETOTALINTENSITY.
+% See also MEASURETEXTURE, MEASURESHAPE, MEASURECORRELATION,
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -63,7 +60,7 @@ function handles = MeasureTexture(handles)
 % be interacted with.  This does theoretically slow the computation
 % somewhat, so it might be reasonable to remove most of these lines
 % when running jobs on a cluster where speed is important.
-
+drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -114,7 +111,7 @@ ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = /
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 01
 
 %%% Set up the window for displaying the results
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -124,7 +121,6 @@ if any(findobj == ThisModuleFigureNumber);
     set(ThisModuleFigureNumber,'color',[1 1 1])
     columns = 1;
 end
-
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:3
@@ -136,13 +132,13 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImageToBeAnalyzed".
     fieldname = ['', ImageName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing has been canceled. Prior to running the Measure Texture module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+        error(['Image processing has been canceled. Prior to running the Measure Intensity module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureIntensity module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
     end
     OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
 
@@ -150,7 +146,7 @@ for i = 1:3
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
     if ndims(OrigImageToBeAnalyzed) ~= 2
-        error('Image processing was canceled because the Measure Texture module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+        error('Image processing was canceled because the Measure Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
     end
 
     %%% Retrieves the label matrix image that contains the segmented objects which
@@ -165,7 +161,6 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
 
     % PROGRAMMING NOTE
     % HANDLES STRUCTURE:
@@ -283,47 +278,41 @@ for i = 1:3
     % will just repeatedly use the processed image of nuclei leftover from
     % the last image set, which was left in handles.Pipeline.
 
-  
-    %%% Initilize measurement structure
-    Haralick = [];
-    HaralickFeatures = {'H1. AngularSecondMoment',...
-        'H2. Contrast',...
-        'H3. Correlation',...
-        'H4. Variance',...
-        'H5. InverseDifferenceMoment',...
-        'H6. SumAverage',...
-        'H7. SumVariance',...
-        'H8. SumEntropy',...
-        'H9. Entropy',...
-        'H10. DifferenceVariance',...
-        'H11. DifferenceEntropy',...
-        'H12. InformationMeasure1',...
-        'H13. InformationMeasure2'};
 
-    Gabor = [];
-    GaborFeatures    = {'Gabor1x',...
-        'Gabor1y',...
-        'Gabor2x',...
-        'Gabor2y',...
-        'Gabor3x',...
-        'Gabor3y'};
+    %%% Initilize measurement structure
+    Basic = [];
+    BasicFeatures    = {'IntegratedIntensity',...
+        'MeanIntensity',...
+        'StdIntensity',...
+        'MinIntensity',...
+        'MaxIntensity',...
+        'IntegratedIntensityEdge',...
+        'MeanIntensityEdge',...
+        'StdIntensityEdge',...
+        'MinIntensityEdge',...
+        'MaxIntensityEdge',...
+        'MassDisplacement'};
+
+
     %%% Count objects
     ObjectCount = max(LabelMatrixImage(:));
 
     if ObjectCount > 0
-        % Get median size of objects (used for determining size of Gabor
-        % filters below).
-        tmp = regionprops(LabelMatrixImage,'Area');
-        MedianArea = median(cat(1,tmp.Area));
 
-        Gabor = zeros(ObjectCount,6);
-        Haralick = zeros(ObjectCount,13);
+        Basic = zeros(ObjectCount,4);
 
         [sr sc] = size(LabelMatrixImage);
         for Object = 1:ObjectCount
 
-            %%% Cut patch so that we don't have to deal with entire image
+            %%% Measure basic set of texture features
             [r,c] = find(LabelMatrixImage == Object);
+            Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
+            Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
+            Basic(Object,3) = std(OrigImageToBeAnalyzed(index));
+            Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
+            Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
+
+            %%% Cut patch so that we don't have to deal with entire image
             rmax = min(sr,max(r));
             rmin = max(1,min(r));
             cmax = min(sc,max(c));
@@ -331,18 +320,29 @@ for i = 1:3
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
 
-            %%% Get Gabor features
-            % Set scale parameter to median radius
-            sigma = sqrt(MedianArea/pi);
-            Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
+            % Get perimeter in order to calculate edge features
+            perim = bwperim(BWim);
+            perim = Greyim(find(perim));
+            Basic(Object,6)  = sum(perim);
+            Basic(Object,7)  = mean(perim);
+            Basic(Object,8)  = std(perim);
+            Basic(Object,9)  = min(perim);
+            Basic(Object,10) = max(perim);
 
-            %%% Get Haralick features
-            Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
+            % Calculate the Mass displacment (taking the pixelsize into account), which is the distance between
+            % the center of gravity in the gray level image and the binary
+            % image.
+            PixelSize = str2double(handles.Settings.PixelSize);
+            BWx = sum([1:size(BWim,2)].*sum(BWim,1))/sum([1:size(BWim,2)]);
+            BWy = sum([1:size(BWim,1)]'.*sum(BWim,2))/sum([1:size(BWim,1)]);
+            Greyx = sum([1:size(Greyim,2)].*sum(Greyim,1))/sum([1:size(Greyim,2)]);
+            Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
+            Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
     end
     %%% Save measurements
-    handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
-    handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
+    handles.Measurements.(ObjectName).(['Intensity_',ImageName,'Features']) = BasicFeatures;
+    handles.Measurements.(ObjectName).(['Intensity_',ImageName])(handles.Current.SetBeingAnalyzed) = {Basic};
 
 
     %%% Report measurements
@@ -353,31 +353,21 @@ for i = 1:3
         % Header
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average texture features for image set #%d',handles.Current.SetBeingAnalyzed));
+            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average intensity features for image set #%d',handles.Current.SetBeingAnalyzed));
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
-        % Text for Gabor features
+        % Text for Basic features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string','Gabor features:');
-        for k = 1:6
+            'fontsize',FontSize,'fontweight','bold','string','Intensity feature:');
+        for k = 1:11
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',GaborFeatures{k});
-        end
-
-        % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.3 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
-        for k = 1:10
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.3 0.03],...
-                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',HaralickFeatures{k});
+                'fontsize',FontSize,'string',BasicFeatures{k});
         end
 
         % The name of the object image
@@ -391,18 +381,11 @@ for i = 1:3
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
         if ObjectCount > 0
-            % Gabor features
-            for k = 1:6
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+            % Basic features
+            for k = 1:11
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
-            end
-
-            % Haralick features
-            for k = 1:10
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
             end
         end
         % This variable is used to write results in the correct column
@@ -411,196 +394,5 @@ for i = 1:3
     end
 end
 drawnow
-
-function G = CalculateGabor(im,mask,sigma,flag)
-%
-% This function calculates Gabor features, which measure
-% the energy in different frequency sub-bands. The Gabor
-% transform is essentially equivalent to a wavelet transform.
-%
-% im    - A grey level image
-% mask  - A binary mask
-% sigma - Scale parameter for the Gaussian weight function
-
-% Use Gabor filters with three different frequencies
-f = [0.06 0.12 0.24];
-
-% Filter along the x-axis and y-axis
-theta = [0 pi/2];
-
-% Match the filter kernel size to the input patch size
-[sr,sc] = size(mask);
-if rem(sr,2) == 0,ty = [-sr/2:sr/2-1];else ty = [-(sr-1)/2:(sr-1)/2];end
-if rem(sc,2) == 0,tx = [-sc/2:sc/2-1];else tx = [-(sc-1)/2:(sc-1)/2];end
-[x,y]=meshgrid(tx,ty);
-
-% Calculate the Gabor features
-G = zeros(length(theta),length(f));
-for m = 1:length(f)
-    for n = 1:length(theta)
-        
-        % Calculate Gabor filter kernel
-        g = 1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-
-        % Use Normalized Convolution to calculate filter responses. This
-        % method only include object pixels for calculating the filter
-        % response and excludes surrounding background pixels.
-        % See Farneback, 2002. "Polynomial Expansion for Orientation and
-        % Motion Estimation". PhD Thesis
-        gr = real(g);
-        gi = imag(g);
-        B = [gr(:) gi(:)];
-        Wc = diag(mask(:));
-        r = inv(B'*Wc*B)*B'*Wc*im(:); 
-        G(n,m) = sqrt(sum(r.^2));
-        
-        % Direct way of calculating filter responses
-        %tmpr = sum(sum(real(g).*im));
-        %tmpi = sum(sum(imag(g).*im));
-        %G(n,m) = sqrt(tmpr.^2+tmpi.^2);
-    end
-end
-G = G(:)';
-
-
-function H = CalculateHaralick(im,mask,area)
-%
-% This function calculates so-called Haralick features, which are
-% based on the co-occurence matrix. The function takes two inputs:
-%
-% im    - A grey level image
-% mask  - A binary mask
-%
-% Currently, the implementation uses 8 different grey levels
-% and calculates the co-occurence matrix for a horizontal shift
-% of 1 pixel.
-%
-% The original reference is:
-% Haralick et al. (1973)
-% Textural Features for Image Classification.
-% IEEE Transaction on Systems
-% Man, Cybernetics, SMC-3(6):610-621.
-%
-% BEWARE: There are lots of erroneous formulas for the Haralick features in
-% the literature. There is also an error in the original paper.
-%
-
-% Number of greylevels to use
-Levels = 8;
-
-% Quantize the image into a lower number
-% of grey levels (specified by Levels)
-BinEdges = linspace(0,1,Levels+1);
-im = im - min(im(:));
-im = im/max(im(:));
-qim = zeros(size(im));
-for k = 1:Levels
-    qim(find(im > BinEdges(k))) = k;
-end
-
-% Shift 1 step to the right
-im1 = qim(:,1:end-1); im1 = im1(:);
-im2 = qim(:,2:end);   im2 = im2(:);
-
-% Remove cases where at least one position is
-% outside the mask.
-m1 = mask(:,1:end-1); m1 = m1(:);
-m2 = mask(:,2:end);   m2 = m2(:);
-index = (sum([m1 m2],2) == 2);
-im1 = im1(index);
-im2 = im2(index);
-
-%%% Calculate co-occurence matrix
-P = zeros(Levels);
-for k = 1:Levels
-    index = find(im1==k);
-    if ~isempty(index)
-        P(k,:) = hist(im2(index),[1:Levels]);
-    else
-        P(k,:) = zeros(1,Levels);
-    end
-end
-P = P/length(im1);
-
-
-%%% Calculate features from the co-occurence matrix
-% First, pre-calculate a few quantities that are used in
-% several features.
-px = sum(P,2);
-py = sum(P,1);
-mux = sum([1:Levels]'.*px);
-muy = sum([1:Levels].*py);
-sigmax = sqrt(sum(([1:Levels]' - mux).^2.*px));
-sigmay = sqrt(sum(([1:Levels] - muy).^2.*py));
-HX = -sum(px.*log(px+eps));
-HY = -sum(py.*log(py+eps));
-HXY = -sum(P(:).*log(P(:)+eps));
-HXY1 = -sum(sum(P.*log(px*py+eps)));
-HXY2 = -sum(sum(px*py .* log(px*py+eps)));
-
-p_xplusy = zeros(2*Levels-1,1);      % Range 2:2*Levels
-p_xminusy = zeros(Levels,1);         % Range 0:Levels-1
-for x=1:Levels
-    for y = 1:Levels
-        p_xplusy(x+y-1) = p_xplusy(x+y-1) + P(x,y);
-        p_xminusy(abs(x-y)+1) = p_xminusy(abs(x-y)+1) + P(x,y);
-    end
-end
-
-% H1. Angular Second Moment
-H1 = sum(P(:).^2);
-
-% H2. Contrast
-H2 = sum([0:Levels-1]'.^2.*p_xminusy);
-
-% H3. Correlation
-H3 = (sum(sum([1:Levels]'*[1:Levels].*P)) - mux*muy)/(sigmax*sigmay);
-
-% H4. Sum of Squares: Variation
-H4 = sigmax^2;
-
-% H5. Inverse Difference Moment
-H5 = sum(sum(1./(1+toeplitz(0:Levels-1).^2).*P));
-
-% H6. Sum Average
-H6 = sum([2:2*Levels]'.*p_xplusy);
-
-% H7. Sum Variance (error in Haralick's original paper here)
-H7 = sum(([2:2*Levels]' - H6).^2 .* p_xplusy);
-
-% H8. Sum Entropy
-H8 = -sum(p_xplusy .* log(p_xplusy+eps));
-
-% H9. Entropy
-H9 = - sum(P(:).*log(P(:)+eps));
-
-% H10. Difference Variance
-H10 = sum(p_xminusy.*([0:Levels-1]' - sum([0:Levels-1]'.*p_xminusy)).^2);
-
-% H11. Difference Entropy
-H11 = - sum(p_xminusy.*log(p_xminusy+eps));
-
-% H12. Information Measure of Correlation 1
-H12 = (HXY-HXY1)/max(HX,HY);
-
-% H13. Information Measure of Correlation 2
-H13 = sqrt(1-exp(-2*(HXY2-HXY)));
-
-% H14. Max correlation coefficient (not currently used)
-% Q = zeros(Levels);
-% for i = 1:Levels
-%     for j = 1:Levels
-%         Q(i,j) = sum(P(i,:).*P(j,:)/(px(i)*py(j)));
-%     end
-% end
-% [V,lambda] = eig(Q);
-% lambda = sort(diag(lambda));
-% H14 = sqrt(max(0,lambda(end-1)));
-
-H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
-
-
-
-
 
 

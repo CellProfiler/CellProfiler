@@ -1,4 +1,4 @@
-function handles = PlotOrExportHistogrs(handles)
+function handles = PlotOrExportHistograms(handles)
 
 % Help for the Plot Or Export Histograms tool:
 % Category: Data Tools
@@ -87,9 +87,23 @@ function handles = PlotOrExportHistogrs(handles)
 %
 % $Revision$
 
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+CurrentDir = pwd;
+    cd(handles.Current.DefaultOutputDirectory)
+
+
+
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.
-[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+% [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+
 %%% Allows canceling.
 if RawFileName == 0
     return
@@ -412,8 +426,8 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
 
         AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
         try
-            save(AnswerFileName{1},'OutputMeasurements')
-        catch errordlg('oops')
+            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
+        catch errordlg('oops, saving did not work')
         end
 
     %%% Saves the data to an excel file if desired.
@@ -483,8 +497,8 @@ else
     FigureSettings{3} = FinalHistogramData;
         AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
         try
-            save(AnswerFileName{1},'OutputMeasurements')
-        catch errordlg('oops')
+            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
+        catch errordlg('oops, saving did not work.')
         end
 
 
@@ -874,3 +888,8 @@ function WriteHistToExcel(FileName, FirstImage, LastImage, XTickLabels,...
     h = helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
     waitfor(h)
 end
+
+cd(CurrentDir)
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne

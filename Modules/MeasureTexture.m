@@ -324,12 +324,23 @@ for i = 1:3
         'H12_InformationMeasure1',...
         'H13_InformationMeasure2'};
 
+    GaborFeatures    = {'Gabor1x',...
+                        'Gabor1y',...
+                        'Gabor2x',...
+                        'Gabor2y',...
+                        'Gabor3x',...
+                        'Gabor3y'};
 
-    %%% Count objects
+    %%% Count objects and get median size of objects (used for determining
+    %%% size of Gabor filters below).
     ObjectCount = max(LabelMatrixImage(:));
-
+    tmp = regionprops(LabelMatrixImage,'Area');
+    MedianArea = median(cat(1,tmp.Area));
+    
     Basic = zeros(ObjectCount,4);
+    Gabor = zeros(ObjectCount,6);
     Haralick = zeros(ObjectCount,13);
+    
     [sr sc] = size(LabelMatrixImage);
     for Object = 1:ObjectCount
 
@@ -344,7 +355,7 @@ for i = 1:3
         Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
         Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
 
-        %%% Cut patches so that we don't have to deal with entire images
+        %%% Cut patch so that we don't have to deal with entire image
         rmax = min(sr,max(r));
         rmin = max(1,min(r));
         cmax = min(sc,max(c));
@@ -355,10 +366,10 @@ for i = 1:3
         % Get perimeter in order to calculate edge features
         perim = bwperim(BWim);
         perim = perim(find(perim));
-        Basic(Object,6) = sum(perim);
-        Basic(Object,7) = mean(perim);
-        Basic(Object,8) = std(perim);
-        Basic(Object,9) = min(perim);
+        Basic(Object,6)  = sum(perim);
+        Basic(Object,7)  = mean(perim);
+        Basic(Object,8)  = std(perim);
+        Basic(Object,9)  = min(perim);
         Basic(Object,10) = max(perim);
 
         % Calculate the Mass displacment, which is the distance between
@@ -370,6 +381,12 @@ for i = 1:3
         Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
         Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2);
 
+        
+        %%% Get Gabor features
+        % Set scale parameter to median radius
+        sigma = sqrt(MedianArea/pi);                            
+        Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
+        
         %%% Get Haralick features
         Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
     end
@@ -379,6 +396,11 @@ for i = 1:3
         handles.Measurements.Texture.Basic.(BasicFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Basic(:,k)};
         handles.Measurements.Texture.Basic.(BasicFeatures{k}).(ObjectName).Image(handles.Current.SetBeingAnalyzed) = ...
             {[mean(Basic(:,k)) median(Basic(:,k)) std(Basic(:,k))]};
+    end
+    for  k = 1:length(GaborFeatures)
+        handles.Measurements.Texture.Gabor.(GaborFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Gabor(:,k)};
+        handles.Measurements.Texture.Gabor.(GaborFeatures{k}).(ObjectName).Image(handles.Current.SetBeingAnalyzed) = ...
+            {[mean(Gabor(:,k)) median(Gabor(:,k)) std(Gabor(:,k))]};
     end
     for  k = 1:length(HaralickFeatures)
         handles.Measurements.Texture.Haralick.(HaralickFeatures{k}).(ObjectName).Object(handles.Current.SetBeingAnalyzed) = {Haralick(:,k)};
@@ -405,18 +427,28 @@ for i = 1:3
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',8,'fontweight','bold','string','Basic features:');
-        for k = 1:4
+        for k = 1:5
             q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',8,'string',BasicFeatures{k});
         end
 
+        % Text for Gabor features
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.51 0.3 0.03],...
+            'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+            'fontsize',8,'fontweight','bold','string','Gabor features:');
+        for k = 1:4
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.51-0.04*k 0.3 0.03],...
+                'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',GaborFeatures{k});
+        end
+        
         % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.55 0.3 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.26 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',8,'fontweight','bold','string','Haralick features:');
-        for k = 1:13
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.55-0.04*k 0.3 0.03],...
+        for k = 1:4
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.26-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',8,'string',HaralickFeatures{k});
         end
@@ -433,15 +465,22 @@ for i = 1:3
 
 
         % Basic features
-        for k = 1:4
+        for k = 1:5
             q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
                 'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',8,'string',sprintf('%0.2f',mean(Basic(:,k))));
         end
-
+        
+        % Gabor features
+        for k = 1:4
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.51-0.04*k 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
+                'fontsize',8,'string',sprintf('%0.2f',mean(Gabor(:,k))));
+        end
+    
         % Haralick features
-        for k = 1:13
-            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.55-0.04*k 0.2 0.03],...
+        for k = 1:4
+            q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.26-0.04*k 0.2 0.03],...
                 'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',8,'string',sprintf('%0.2f',mean(Haralick(:,k))));
         end
@@ -453,8 +492,45 @@ for i = 1:3
 end
 drawnow
 
+function G = CalculateGabor(im,mask,sigma)
+%
+% This function calculates Gabor features, which measure
+% the energy in different frequency sub-bands. The Gabor
+% transform is essentially equivalent to a wavelet transform.
+%
+% im    - A grey level image
+% mask  - A binary mask
+% sigma - Scale parameter for the Gaussian weight function
 
-function H = CalculateHaralick(im,mask)
+% Use Gabor filters with three different frequencies
+f = [0.06 0.12 0.24];
+
+% Filter along the x-axis and y-axis
+theta = [0 pi/2];
+
+% Match the filter kernel size to the input patch size
+[sr,sc] = size(mask);
+if rem(sr,2) == 0,ty = [-sr/2:sr/2-1];else ty = [-(sr-1)/2:(sr-1)/2];end
+if rem(sc,2) == 0,tx = [-sc/2:sc/2-1];else tx = [-(sc-1)/2:(sc-1)/2];end
+[x,y]=meshgrid(tx,ty);
+
+% Calculate the Gabor features
+G = zeros(length(theta),length(f));
+for m = 1:length(f)
+    for n = 1:length(theta)
+        % Calculate Gabor filter kernel
+        g = 1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
+
+        % Use weighted averaging to calculate the corresponding feature
+        tmpr = sum(sum(mask.*real(g).*im))/sum(sum(mask.*real(g)));
+        tmpi = sum(sum(mask.*imag(g).*im))/sum(sum(mask.*imag(g)));
+        G(n,m) = sqrt(tmpr.^2+tmpi.^2);
+     end
+end
+G = G(:)';
+
+
+function H = CalculateHaralick(im,mask,area)
 %
 % This function calculates so-called Haralick features, which are
 % based on the co-occurence matrix. The function takes two inputs:
@@ -578,7 +654,7 @@ H12 = (HXY-HXY1)/max(HX,HY);
 % H13. Information Measure of Correlation 2
 H13 = sqrt(1-exp(-2*(HXY2-HXY)));
 
-% H14. Max correlation coefficient
+% H14. Max correlation coefficient (not currently used)
 % Q = zeros(Levels);
 % for i = 1:Levels
 %     for j = 1:Levels

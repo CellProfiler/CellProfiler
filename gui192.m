@@ -491,13 +491,12 @@ if isempty(InitialUserEntry)
 else
     if length(InitialUserEntry) >=4
         if strncmp(lower(InitialUserEntry(end-3:end)),'.mat',4) == 0
-            UserEntry = [InitialUserEntry,'.mat'];
-        else UserEntry = InitialUserEntry;
+            UserEntry = [InitialUserEntry,'OUT.mat'];
+        else UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
         end
-    else  UserEntry = [InitialUserEntry,'.mat'];
+    else  UserEntry = [InitialUserEntry,'OUT.mat'];
     end
 guidata(gcbo, handles);
-UserEntry = ['OUT',UserEntry];
 %%% Checks whether a file with that name already exists, to warn the user
 %%% that the file will be overwritten.
 CurrentDirectory = cd;
@@ -4322,7 +4321,7 @@ if strncmp(Error,'Error using ==> Alg', 19) == 1
 elseif isempty(strfind(Error,'bad magic')) == 0
     ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the image sets up to the one which generated this error are OK in the output file.';
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in algorithm', CurrentAlgorithmNumber];
 end
 errordlg(ErrorExplanation)
 

@@ -1,5 +1,30 @@
 function handles = AlgLoadImagesOrder(handles)
 
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the Load Images Order module.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
+
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
@@ -231,9 +256,7 @@ for n = 1:4
                     error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
                 end
                 Ignore = fread(fid, 52, 'uchar');
-
                 LoadedImage = zeros(Height,Width,Channels);
-
                 for c=1:Channels,
                     [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
                     if Count < (Width * Height),
@@ -369,29 +392,4 @@ end
 %%%%% format recognizable by CellProfiler.  The images are given a
 %%%%% meaningful name, which is then used by subsequent modules to retrieve
 %%%%% the proper image.  If more than five images per set must be loaded,
-%%%%% more than one Load Images Order module can be run sequentially. 
-
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the AlgLoadImagesOrder.m
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$
+%%%%% more than one Load Images Order module can be run sequentially.

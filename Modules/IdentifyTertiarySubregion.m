@@ -18,27 +18,21 @@ function handles = IdentifyTertiarySubregion(handles)
 % of the perimeter, aspect ratio, solidity, etc. cannot be made for
 % noncontiguous objects.
 %
-% SAVING IMAGES: The images of the objects produced by this module can
-% be easily saved using the Save Images module using the name:
-% Segmented + whatever you called the objects (e.g.
-% SegmentedCytoplasm. This will be a grayscale image where each object
-% is a different intensity.
-% 
-% An additional image is normally calculated for display only: the
-% colored label matrix image (the objects displayed as arbitrary
-% colors). This image, and any other intermediate images of interest,
-% can be saved by altering the code for this module to save those
-% images to the handles structure (see the SaveImages module help) and
-% then using the Save Images module.  Important note: The calculations
-% of display images are only performed if the figure window is open,
-% so the figure window must be left open or the Save Images module
-% will fail.  If you are running the job on a cluster, figure windows
-% are not open, so the Save Images module will also fail, unless you
-% go into the code for this module and remove the 'if/end' statement
-% surrounding the DISPLAY RESULTS section.
+% SAVING IMAGES: In addition to the object outlines and the
+% pseudo-colored object images that can be saved using the
+% instructions in the main CellProfiler window for this module, this
+% module produces a grayscale image where each object is a different
+% intensity, which you can save using the Save Images module using the
+% name: Segmented + whatever you called the objects (e.g.
+% Cytoplasm).
 %
+% Additional image(s) are normally calculated for display only,
+% including the object outlines alone. These images can be saved by
+% altering the code for this module to save those images to the
+% handles structure (see the SaveImages module help) and then using
+% the Save Images module.%
 % See also identify Primary and Identify Secondary modules.
-
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 % 
@@ -129,13 +123,20 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = Cytoplasm
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%textVAR04 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR04 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImage".
+%%% Reads (opens) the image you want to analyze and assigns it to a
+%%% variable.
 fieldname = ['Segmented', PrimaryObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
@@ -198,26 +199,20 @@ drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
-% Each module checks whether its figure is open before calculating
-% images that are for display only. This is done by examining all the
-% figure handles for one whose handle is equal to the assigned figure
-% number for this module. If the figure is not open, everything
-% between the "if" and "end" is ignored (to speed execution), so do
-% not do any important calculations here. Otherwise an error message
-% will be produced if the user has closed the window but you have
-% attempted to access data that was supposed to be produced by this
-% part of the code. If you plan to save images which are normally
-% produced for display only, the corresponding lines should be moved
-% outside this if statement.
+% Some calculations produce images that are used only for display or
+% for saving to the hard drive, and are not used by downstream
+% modules. To speed processing, these calculations are omitted if the
+% figure window is closed and the user does not want to save the
+% images.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SubregionObjectImage)) >= 1
-    ColoredSubregionObjectImage = label2rgb(SubregionObjectImage,'jet', 'k', 'shuffle');
-    else  ColoredSubregionObjectImage = SubregionObjectImage;
+    ColoredLabelMatrixImage = label2rgb(SubregionObjectImage,'jet', 'k', 'shuffle');
+    else  ColoredLabelMatrixImage = SubregionObjectImage;
     end
     %%% Converts the label matrix to a colored label matrix for display and saving
     %%% purposes.
@@ -254,7 +249,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title([SubregionObjectName, ' Image']);
     %%% A subplot of the figure window is set to display the resulting
     %%% subregion image in color.
-    subplot(2,2,4); imagesc(ColoredSubregionObjectImage);
+    subplot(2,2,4); imagesc(ColoredLabelMatrixImage);
     title([SubregionObjectName, ' Color Image']);
 end
 
@@ -392,3 +387,15 @@ fieldname = ['Filename', SubregionObjectName];
 handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
 %%% Arbitrarily, I have chosen the primary object's filename to be saved
 %%% here rather than the secondary object's filename.  
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+try
+    if strncmpi(SaveColored,'Y',1) == 1
+        fieldname = ['Colored',SubregionObjectName];
+        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+    end
+    %%% I am pretty sure this try/catch is no longer necessary, but will
+    %%% leave in just in case.
+catch errordlg('The colored objects were not calculated by an identify module (possibly because the window is closed) so these images could not be saved to the handles structure. The Save Images module will therefore not function on these images.')
+end

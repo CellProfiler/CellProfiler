@@ -67,26 +67,19 @@ function handles = IdentifySecWatershed(handles)
 % cell regions are used to define the cytoplasm objects, which are
 % tertiary objects).
 %
-% SAVING IMAGES: The images of the objects produced by this module can
-% be easily saved using the Save Images module using the name:
-% Segmented + whatever you called the objects (e.g. SegmentedCells).
-% This will be a grayscale image where each object is a different
-% intensity.
-% 
-% Several additional images are normally calculated for display only,
-% including the colored label matrix image (the objects displayed as
-% arbitrary colors), object outlines, and object outlines overlaid on
-% the original image, and object outlines plus primary object outlines
-% on the original image. These images can be saved by altering the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then using the Save Images
-% module.  Important note: The calculations of these display images
-% are only performed if the figure window is open, so the figure
-% window must be left open or the Save Images module will fail.  If
-% you are running the job on a cluster, figure windows are not open,
-% so the Save Images module will also fail, unless you go into the
-% code for this module and remove the 'if/end' statement surrounding
-% the DISPLAY RESULTS section.
+% SAVING IMAGES: In addition to the object outlines and the
+% pseudo-colored object images that can be saved using the
+% instructions in the main CellProfiler window for this module, this
+% module produces a grayscale image where each object is a different
+% intensity, which you can save using the Save Images module using the
+% name: Segmented + whatever you called the objects (e.g.
+% SegmentedCells).
+%
+% Additional image(s) are normally calculated for display only,
+% including the object outlines alone. These images can be saved by
+% altering the code for this module to save those images to the
+% handles structure (see the SaveImages module help) and then using
+% the Save Images module.
 %
 % See also IDENTIFYSECPROPAGATE, IDENTIFYSECDISTANCE.
 
@@ -188,7 +181,15 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = 0.75
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%%%VariableRevisionNumber = 01
+%textVAR06 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR06 = No
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+
+%textVAR07 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR07 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+
+%%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -196,8 +197,8 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImage".
+%%% Reads (opens) the image you want to analyze and assigns it to a
+%%% variable.
 fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
@@ -210,7 +211,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Identify Secondary Watershed module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
-
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -230,7 +230,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     end
 PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
-
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects which will be used to weed out which objects are
 %%% real - not on the edges and not below or above the specified size
@@ -241,7 +240,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Watershed module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Watershed module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Watershed module cannot locate this image.']);
     end
 EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
-
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -516,30 +514,24 @@ drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
-% Each module checks whether its figure is open before calculating
-% images that are for display only. This is done by examining all the
-% figure handles for one whose handle is equal to the assigned figure
-% number for this module. If the figure is not open, everything
-% between the "if" and "end" is ignored (to speed execution), so do
-% not do any important calculations here. Otherwise an error message
-% will be produced if the user has closed the window but you have
-% attempted to access data that was supposed to be produced by this
-% part of the code. If you plan to save images which are normally
-% produced for display only, the corresponding lines should be moved
-% outside this if statement.
+% Some calculations produce images that are used only for display or
+% for saving to the hard drive, and are not used by downstream
+% modules. To speed processing, these calculations are omitted if the
+% figure window is closed and the user does not want to save the
+% images.
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,2,2).
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(FinalLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage2 = label2rgb(FinalLabelMatrixImage,'jet', 'k', 'shuffle');
-    else  ColoredLabelMatrixImage2 = FinalLabelMatrixImage;
+        ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage,'jet', 'k', 'shuffle');
+    else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
-    %%% Calculates WatershedOnOriginalImage for displaying in the figure
+    %%% Calculates ObjectOutlinesOnOriginalImage for displaying in the figure
     %%% window in subplot(2,2,3).
     %%% Calculates the final watershed lines for the secondary objects.
     %%% Creates the structuring element that will be used for dilation.
@@ -549,14 +541,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Subtracts the FinalBinaryImage from the DilatedPrimaryBinaryImage,
     %%% which leaves the SecondaryObjectOutlines.
     SecondaryObjectOutlines = DilatedFinalSecondaryImage - FinalBinaryImage;
-    %%% Overlays the watershed lines on the original image.
-    WatershedOnOriginalImage = OrigImageToBeAnalyzed;
     %%% Determines the grayscale intensity to use for the cell outlines.
     LineIntensity = max(OrigImageToBeAnalyzed(:));
-    WatershedOnOriginalImage(SecondaryObjectOutlines == 1) = LineIntensity;
+    %%% Overlays the secondary object lines on the original image.
+    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOriginalImage(SecondaryObjectOutlines == 1) = LineIntensity;
     %%% Calculates BothOutlinesOnOriginalImage for displaying in the figure
     %%% window in subplot(2,2,4).
-    BothOutlinesOnOriginalImage = WatershedOnOriginalImage;
+    BothOutlinesOnOriginalImage = ObjectOutlinesOnOriginalImage;
     BothOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
@@ -582,10 +574,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage2); title(['Segmented ',SecondaryObjectName]);
+    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
     %%% A subplot of the figure window is set to display the original image
     %%% with watershed lines drawn on top.
-    subplot(2,2,3); imagesc(WatershedOnOriginalImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOriginalImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
     %%% A subplot of the figure window is set to display the original
     %%% image with watershed lines drawn for both the primary and secondary
     %%% objects.
@@ -728,3 +720,19 @@ FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% Saves the filename of the image to be analyzed.
 fieldname = ['Filename', SecondaryObjectName];
 handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+try
+    if strncmpi(SaveColored,'Y',1) == 1
+        fieldname = ['Colored',SecondaryObjectName];
+        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+    end
+    if strncmpi(SaveOutlined,'Y',1) == 1
+        fieldname = ['Outlined',SecondaryObjectName];
+        handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+    end
+%%% I am pretty sure this try/catch is no longer necessary, but will
+%%% leave in just in case.
+catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images could not be saved to the handles structure. The Save Images module will therefore not function on these images.')
+end

@@ -150,7 +150,9 @@ FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located
 %defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1#LongBox#
-Pathname = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+varWithLongBox = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+Pathname = varWithLongBox(1:(length(varWithLongBox)-9));
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

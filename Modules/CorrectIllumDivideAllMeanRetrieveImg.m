@@ -123,7 +123,8 @@ IllumCorrectFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = Type the pathname and filename of the file from which you wish
 %textVAR10 = to retrieve the pre-calculated illumination image:
 %defaultVAR11 = /#LongBox#
-IllumCorrectPathAndFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+varWithLongBox = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+IllumCorrectPathAndFileName = varWithLongBox(1:(length(varWithLongBox)-9));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

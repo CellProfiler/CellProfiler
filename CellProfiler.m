@@ -871,21 +871,26 @@ if (length(AlgorithmHighlighted) > 0)
         end
         %%% 4. The stored values for the variables are extracted from the handles
         %%% structure and displayed in the edit boxes.
+        numberExtraLinesOfDescription = 0;
         numberOfLongBoxes = 0;
         for i=1:handles.numVariables(AlgorithmNumber),
             if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
-                set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 291-25*(i+numberOfLongBoxes) 465 23]);
+                if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
+                    linesVarDes = length(textwrap(handles.(['VariableDescription' TwoDigitString(i)]),{get(handles.(['VariableDescription' TwoDigitString(i)]),'string')}));
+                    numberExtraLinesOfDescription = numberExtraLinesOfDescription + linesVarDes - 1;
+                    set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 291-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 465 23*(linesVarDes)]);
+                end
                 vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
                 varLength = length(vVariableString);
-                if( (varLength > 8) & (strcmp(vVariableString(varLength-8:varLength), '#LongBox#')) )
-                    vVariableString = vVariableString(1,varLength-9);
+                if( varCheckFlag(vVariableString) )
+                    vVariableString = varRemoveFlag(vVariableString);
                     numberOfLongBoxes = numberOfLongBoxes+1;
-                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes) 539 23]);
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
                 elseif ( varLength > 20)
                     numberOfLongBoxes = numberOfLongBoxes+1;
-                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes) 539 23]);
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
                 else
-                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes) 94 23]);
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 94 23]);
                 end
                 set(handles.(['VariableBox' TwoDigitString(i)]),'string',vVariableString,'visible','on');
             else set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
@@ -894,10 +899,10 @@ if (length(AlgorithmHighlighted) > 0)
 
         %%% 5.  Set the slider
 
-        if((handles.numVariables(AlgorithmNumber)+numberOfLongBoxes) > 12)
+        if((handles.numVariables(AlgorithmNumber)+numberOfLongBoxes+numberExtraLinesOfDescription) > 12)
             set(handles.slider1,'visible','on');
-            set(handles.slider1,'max',((handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes)*25));
-            set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12)*25);
+            set(handles.slider1,'max',((handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25));
+            set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25);
         end
 
     else
@@ -906,6 +911,31 @@ if (length(AlgorithmHighlighted) > 0)
 else
     helpdlg('No module highlighted.');
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Helper Functions For Adding/Removing #LongBox# Flag from Modules%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function varString = varRemoveFlag(varStringWithFlag)
+varStringLength = length(varStringWithFlag);
+varString = varStringWithFlag(1:varStringLength - 9);
+
+function varString = varAddFlag(varStringNoFlag)
+varString = [varStringNoFlag '#LongBox#']
+
+function varFlagExist = varCheckFlag(varString)
+varStringLength = length(varString);
+if ( varStringLength > 8)
+    if ( strcmp(varString(varStringLength-8:varStringLength), '#LongBox#') )
+        varFlagExist = 1;
+    else
+        varFlagExist = 0;
+    end
+else
+    varFlagExist = 0;
+end
+
+
 
 %%%%%%%%%%%%%%%%%%%%
 %%% REMOVE BUTTON %%%
@@ -1076,8 +1106,14 @@ function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles)
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
+
+if( varCheckFlag( char(handles.Settings.Vvariable{AlgorithmNumber, str2double(VariableNumber) } )))
+    handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber) ) = {varAddFlag(UserEntry)};
+else
 handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber)) = {UserEntry};
+end
 guidata(gcbo, handles);
+
 
 function [AlgorithmNumber] = whichactive(handles)
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
@@ -1089,7 +1125,7 @@ function VariableBox_CreateFcn(hObject, eventdata, handles) %#ok We want to igno
 
 
 function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% The following lines fetch the contents of the edit box,
+%%% The following lines fetch the contentvs of the edit box,
 %%% determine which algorithm we are dealing with at the moment (by
 %%% running the "whichactive" subfunction), and call the storevariable
 %%% function.
@@ -3664,9 +3700,3 @@ for i=1:99,
         'Visible','off',...
         'CreateFcn', '');
 end
-
-% --- Executes during object creation, after setting all properties.
-function topPanelFrame_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to topPanelFrame (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called

@@ -1,5 +1,3 @@
-   In addition to the automatic sizing of long edit boxes, allow us to add a flag to edit boxes to force them to be long.  Then, go through modules looking for variables using the 11th slot (which used to be long) and add the flag.
-
    Change CellProfiler.m code to preallocate if possible, relating to the following variables (line numbers are approximate).
 L 1391 (C 29-40): Array 'Measurements' is constructed using subscripting. Consider preallocating for speed
 L 1485 (C 9-28): Array 'EditedMeasFieldnames' is constructed using subscripting. Consider preallocating for speed

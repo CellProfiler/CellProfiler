@@ -1,4 +1,4 @@
-   Figure out how to make font sizes uniform on PC vs Unix vs Mac.
+   Figure out how to make font sizes uniform on PC vs Unix vs Mac. [BETA]
 
    Change CellProfiler.m code to preallocate if possible, relating to the following variables (line numbers are approximate).
 L 1391 (C 29-40): Array 'Measurements' is constructed using subscripting. Consider preallocating for speed

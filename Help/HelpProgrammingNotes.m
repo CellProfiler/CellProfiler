@@ -1,8 +1,6 @@
 function ProgrammingNotes
 helpdlg(help('ProgrammingNotes'))
 
-% Programming Notes:
-%
 % PROGRAMMING NOTE
 % HELP:
 % The first unbroken block of lines will be extracted as help by

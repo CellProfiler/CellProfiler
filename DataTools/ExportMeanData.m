@@ -190,7 +190,7 @@ else
                     close(WaitbarHandle) 
                     %%% Close the file
                     fclose(fid);
-                    helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
+                    helpdlg(['The file ', FileName, ' has been written to the default output directory.'])
                 end % This goes with the error catching at the beginning of the file.
             end % This goes with the error catching "No measurements found" at the beginning of the file.
         end % This goes with the "Cancel" button on the Number of Image Sets dialog.

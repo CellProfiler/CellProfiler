@@ -651,30 +651,20 @@ if ModuleNamedotm == 0,
 else
     %%% The folder containing the desired .m file is added to Matlab's search path.
     addpath(Pathname);
-    currentPath = path;
-    numberOfPaths = 0;
-    likelyPath = which(ModuleNamedotm);
-    isMatLabBuiltIn = 0;
     if(exist(ModuleNamedotm(1:end-2),'builtin') ~= 0)
         warningString = ['Your module has the same name as a builtin Matlab function.  Perhaps you should consider renaming your module.'];
         warndlg(warningString);
     end
-    while(exist(ModuleNamedotm, 'file') ~= 0)
-        numberOfPaths = numberOfPaths+1;
-        removepath{numberOfPaths} = fileparts(which(ModuleNamedotm));
-        rmpath(removepath{numberOfPaths});
-    end
-    if numberOfPaths == 0,
+    differentPaths = which(ModuleNamedotm, '-all');
+    if length(differentPaths) == 0,
         %%% If the module's .m file is not found on the search path, the result
         %%% of exist is zero, and the user is warned.
         errordlg('Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.');
         return
-    elseif numberOfPaths == 1,
-        addpath(Pathname);
-    elseif numberOfPaths > 1
-            path(currentPath);
-            warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' likelyPath ' will likely be used']);
+    elseif length(differentPaths) > 1,
+        warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' char(differentPaths{1}) ' will likely be used']);
     end
+
     %%% 3. The last two characters (=.m) are removed from the
     %%% ModuleName.m and called ModuleName.
     ModuleName = ModuleNamedotm(1:end-2);

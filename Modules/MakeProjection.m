@@ -252,8 +252,9 @@ if strcmp(ReadyFlag, 'ProjectedImageReady') == 1
     catch error('In the Make Projection module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
     end
     if  NumericalDilateObjects ~= 0
-        LogicalStructuringElement = getnhood(strel('disk',NumericalDilateObjects,0));
-        ProjectedImage = filter2(LogicalStructuringElement,ProjectedImage,'same');
+%        LogicalStructuringElement = getnhood(strel('disk',NumericalDilateObjects,0));
+        StructuringElement = fspecial('gaussian',3*NumericalDilateObjects,NumericalDilateObjects);
+        ProjectedImage = filter2(StructuringElement,ProjectedImage,'same');
     end
 end
 

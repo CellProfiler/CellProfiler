@@ -5,16 +5,16 @@ function handles = AlgIdentifyPrimShapeDist(handles)
 % 
 % This image analysis module identifies and separates clumps of
 % objects in a grayscale input image. The module works best for
-% objects that are very round-shaped. Separating objects that are
-% clumped is based entirely on shape (roundness) rather than intensity
-% gradients of the objects. Dividing lines between clumped objects are
-% halfway between the 'center' of each object (this is not precisely
-% true, it's actually Voronoi distance) and do not depend on the
-% intensity gradients in the image. The cells need not be brighter
-% towards the interior as is required for the intensity-based module,
-% nor do they need to be dimmer or brighter along the lines between
-% clumped objects, as is necessary for the Identify Primary Shape
-% Intensity module.
+% objects that are very round. Separating objects that are clumped is
+% based entirely on shape (roundness) rather than intensity gradients
+% of the objects. Dividing lines between clumped objects are halfway
+% between the 'center' of each object.  Centers are located as peaks
+% in the distance-transformed image calculated by thresholding.
+% Dividing lines do not depend on the intensity gradients in the
+% image. The cells need not be brighter towards the interior as is
+% required for the intensity-based module, nor do they need to be
+% dimmer or brighter along the lines between clumped objects, as is
+% necessary for the Identify Primary Shape Intensity module.
 %
 % Settings:
 %

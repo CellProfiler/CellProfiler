@@ -5,7 +5,7 @@ function handles = AlgIdentifyPrimShapeIntens(handles)
 %
 % This image analysis module identifies and separates clumps of
 % objects in a grayscale input image. The module works best for
-% objects that are round-shaped, and where the dividing lines between
+% objects that are round, and where the dividing lines between
 % clumped objects are dim.  The objects need not be brighter towards
 % the interior as is required for the intensity-based modules.
 %

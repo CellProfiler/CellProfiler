@@ -118,6 +118,11 @@ Fieldnames = fieldnames(handles.Measurements);
 FileList = dir([BatchPath '/' BatchFilePrefix '*_to_*_OUT.mat']);
 for i = 1:length(FileList),
     SubsetData = load(FileList(i).name);
+
+    if (isfield(SubsetData.handles, 'BatchError')),
+        error(['Error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);
+    end
+
     SubSetMeasurements = SubsetData.handles.Measurements;
 
     for j = 1:length(SubSetMeasurements),

@@ -34,4 +34,5 @@ helpdlg(help('HelpDefaultImageDirectory'))
 % The window to the right displays the files in the default image
 % directory.  This allows you to check file names or look at the
 % order of images from within CellProfiler.  Selecting file names in
-% this list does not do anything.
+% this list does not do anything. To refresh the contents of this
+% window, press enter in the default image directory edit box.

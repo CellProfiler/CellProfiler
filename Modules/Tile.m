@@ -202,21 +202,22 @@ if handles.setbeinganalyzed == 1
     else error('You must enter "R" or "C" to select whether the first two images are in a row or a column relative to each other')
     end
     NumberOfImages = NumberColumns*NumberRows;
-    global CancelButton_handle
-    CancelButtonFunction = 'global CancelButton_handle, set(CancelButton_handle, ''string'', ''Canceling''), clear CancelButton_handle';
     WaitbarHandle = waitbar(0,'Tiling images...');
     WaitbarPosition = get(WaitbarHandle,'position');
-    set(WaitbarHandle, 'CloseRequestFcn', 'global CancelButton_handle, set(CancelButton_handle, ''string'', ''Canceling''), clear CancelButton_handle')
     CancelButton_handle = uicontrol('Style', 'pushbutton', ...
-        'String', 'Cancel', 'Position', [10 WaitbarPosition(4)-22 100 20], ...
-        'Callback', CancelButtonFunction, 'parent',WaitbarHandle);
+        'String', 'Cancel', ...
+        'Position', [10 WaitbarPosition(4)-22 100 20], ...
+        'parent',WaitbarHandle);
+    set(CancelButton_handle, 'HandleVisibility','on')
+    CancelButtonFunction = ['set(',num2str(CancelButton_handle*8192), '/8192,''string'',''Canceling'')'];
+    set(CancelButton_handle,'Callback', CancelButtonFunction);
+    set(WaitbarHandle, 'CloseRequestFcn', CancelButtonFunction);
     ImageSize = size(imresize(im2double(imread(char(NewFileList(1,1)))),SizeChange));
     ImageHeight = ImageSize(1);
     ImageWidth = ImageSize(2);
     TotalWidth = NumberColumns*ImageWidth;
     TotalHeight = NumberRows*ImageHeight;
     TiledImage(TotalHeight,TotalWidth) = 0;
-
     for i = 1:NumberRows,
         for j = 1:NumberColumns,
             FileName = NewFileList(i,j);
@@ -237,7 +238,6 @@ if handles.setbeinganalyzed == 1
                 end
             end
             TiledImage((ImageHeight*(i-1))+(1:ImageHeight),(ImageWidth*(j-1))+(1:ImageWidth)) = CurrentImage;
-
             ImageNumber = (i-1)*NumberColumns + j;
             waitbar(ImageNumber/NumberOfImages, WaitbarHandle)
             CurrentText = get(CancelButton_handle, 'string');

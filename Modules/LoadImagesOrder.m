@@ -249,7 +249,7 @@ if SetBeingAnalyzed == 1
             FileNames = RetrieveImageFileNames(SpecifiedPathname,AnalyzeSubDir);
             %%% Checks whether any files have been specified.
             if isempty(FileNames) == 1
-                error(['Image processing was canceled because there are no image files of type "', ImageName{n}, '" in the chosen directory or subdirectories, according to the Load Images Order module.'])
+                error(['Image processing was canceled because there are no image files of type "', ImageName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
             end
             %%% Determines the number of image sets to be analyzed.
             NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);

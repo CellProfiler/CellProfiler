@@ -197,7 +197,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strncmpi(ShrinkOrExpand,'S',1) == 1
+if strncmpi(upper(ShrinkOrExpand),'S',1) == 1
     %%% Shrinks the three incoming images.  The "thin" option nicely removes
     %%% one pixel border from objects with each iteration.  When carried out
     %%% for an infinite number of iterations, however, it produces one-pixel
@@ -220,7 +220,7 @@ if strncmpi(ShrinkOrExpand,'S',1) == 1
         catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
         end
     end
-elseif strncmpi(ShrinkOrExpand,'E',1) == 1
+elseif strncmpi(upper(ShrinkOrExpand),'E',1) == 1
     try %%% Converts the ShrinkingNumber entry to a number if possible
         %%% (or leaves it as Inf otherwise).
         try ShrinkingNumber = str2double(ShrinkingNumber); end
@@ -240,9 +240,39 @@ end
 %%% so that if the user has made measurements on the non-shrunk objects,
 %%% the order of these objects will be exactly the same as the shrunk
 %%% objects, which may go on to be used to identify secondary objects.
-FinalShrunkenPrelimSegmentedImage = ShrunkenPrelimSegmentedImage.*PrelimSegmentedImage;
-FinalShrunkenPrelimSmallSegmentedImage = ShrunkenPrelimSmallSegmentedImage.*PrelimSmallSegmentedImage;
-FinalShrunkenSegmentedImage = ShrunkenSegmentedImage.*SegmentedImage;
+if strncmpi(upper(ShrinkOrExpand),'S',1)
+    FinalShrunkenPrelimSegmentedImage = ShrunkenPrelimSegmentedImage.*PrelimSegmentedImage;
+    FinalShrunkenPrelimSmallSegmentedImage = ShrunkenPrelimSmallSegmentedImage.*PrelimSmallSegmentedImage;
+    FinalShrunkenSegmentedImage = ShrunkenSegmentedImage.*SegmentedImage;
+elseif strncmpi(upper(ShrinkOrExpand),'E',1)
+    [L,num] = bwlabel(ShrunkenPrelimSegmentedImage);       % Generate new temporal labeling of the expanded objects
+    FinalShrunkenPrelimSegmentedImage = zeros(size(ShrunkenPrelimSegmentedImage));   
+    for k = 1:num                                          % Loop over the objects to give them a new label 
+        index = find(L==k);                                % Get index for expanded object temporarily numbered k
+        OriginalLabel = PrelimSegmentedImage(index);       % In the original labeled image, index indexes either zeros or the original label
+        fooindex = find(OriginalLabel);                    % Find index to a nonzero element, i.e. to the original label number
+        FinalShrunkenPrelimSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+    end
+   
+    [L,num] = bwlabel(ShrunkenPrelimSmallSegmentedImage);
+    FinalShrunkenPrelimSmallSegmentedImage = zeros(size(ShrunkenPrelimSmallSegmentedImage));   
+    for k = 1:num
+        index = find(L==k);                                 % Get index for expanded object temporarily numbered k
+        OriginalLabel = PrelimSmallSegmentedImage(index);   % In the original labeled image, index indexes either zeros or the original label
+        fooindex = find(OriginalLabel);                     % Find index to a nonzero element, i.e. to the original label number
+        FinalShrunkenPrelimSmallSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+    end
+    
+    [L,num] = bwlabel(ShrunkenSegmentedImage);
+    FinalShrunkenSegmentedImage = zeros(size(ShrunkenSegmentedImage));   
+    for k = 1:num
+        index = find(L==k);                             % Get index for expanded object temporarily numbered k
+        OriginalLabel = SegmentedImage(index);          % In the original labeled image, index indexes either zeros or the original label
+        fooindex = find(OriginalLabel);                 % Find index to a nonzero element, i.e. to the original label number
+        FinalShrunkenSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+    end
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

@@ -308,3 +308,7 @@ handles.(fieldname) = PrelimLabelMatrixImage2;
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['dOTSegmented',ObjectName];
 handles.(fieldname) = FinalLabelMatrixImage;
+
+%%% Saves the Threshold value to the handles structure.
+fieldname = ['dMTThreshold', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};

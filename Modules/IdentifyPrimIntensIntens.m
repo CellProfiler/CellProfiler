@@ -79,6 +79,12 @@ MaximaSuppressionNeighborhood = str2num(char(handles.Settings.Vvariable{CurrentA
 %defaultVAR07 = 3
 BlurRadius = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
 
+
+%%% Determines what the user entered for the size range.
+SizeRangeNumerical = str2num(SizeRange);
+MinSize = SizeRangeNumerical(1);
+MaxSize = SizeRangeNumerical(2);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,11 +120,6 @@ BlurRadius = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
 %%% later. So, for example, instead of creating a field of XY locations
 %%% stored in pairs, it is better to store a field of X locations and a
 %%% field of Y locations.
-
-%%% Determines what the user entered for the size range.
-SizeRangeNumerical = str2num(SizeRange);
-MinSize = SizeRangeNumerical(1);
-MaxSize = SizeRangeNumerical(2);
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
@@ -341,3 +342,7 @@ handles.(fieldname) = PrelimLabelMatrixImage2;
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['dOTSegmented',ObjectName];
 handles.(fieldname) = FinalLabelMatrixImage;
+
+%%% Saves the Threshold value to the handles structure.
+fieldname = ['dMTThreshold', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};

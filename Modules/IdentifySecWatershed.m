@@ -396,7 +396,6 @@ FinalLabelMatrixImagePre = LabelsUsed(ActualObjectsLabelMatrixImage3+1);
 %%% pixels of secondary object.
 FinalLabelMatrixImage = FinalLabelMatrixImagePre;
 FinalLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0) = EditedPrimaryLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0);
-drawnow
         
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

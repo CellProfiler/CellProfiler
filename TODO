@@ -8,23 +8,15 @@ WANT IT NOW:
 
 - Change File Renamer to work with a load images module rather than independently, so that we can rename every third file, for example, or rename based on existing text.
 
-- For the image and data tools help, doubleclicking in the listbox should call the okbuttoncallback function.
-
 - DONE, BUT DELIMITER IS NOT FUNCTIONING WELL ON ANNE"S COMPUTER. OTHERWISE IT IS ALMOST READY.- Allow the user to 'export' the current settings into some nice, person-readable text file so they have a permanent record. 
 
 KYLE IS WORKING ON THIS>>> - Load movies module, with ability to load each frame of a .mov or .avi file.  (Look at AvitoImageSlices.m)
   
 - Make measure windows expand to fit the number of lines of data that are produced. 
 
-- Help function does not work for ImageTools and DataTools; The menu often doesn't return to the default first position ('DataTools' or 'ImageTools') after running a tool.
+- The menu often doesn't return to the default first position ('DataTools' or 'ImageTools') after running a tool.
 
-STEVE IS WORKING ON THIS >>> 
-- Improve the Data tool "PlotOrExportHistograms":
-*Make the dialog box that asks for input from the user (~6 questions) wider.
-*When filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier. 
-*Flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images.
-*Not sure if I used the global function properly. The goal is to load the Answers the user chose the previous time through the tool.  
-* Update help for this tool and for PlotSingleMeasurement (they used to be the same tool).
+- Update help for PlotSingleMeasurement.
 
 - For the Export Mean Data DataTool, ask the user whether whether they want images or measurements as rows vs. columns (see ExportCellByCell for an example).
 
@@ -457,3 +449,24 @@ Done, I think - The error checking for "there are no images in this folder"
 Done - - The confirmation window upon "cancel after image set" button clicking ought to say "confirm cancel", not "confirm close". 
 
 Done (Anne) - Fix CreateBatchScripts, for the option of selecting the default module directory by entering "."  Things were changed recently to add CellProfiler and CellProfiler/Modules to the path, and I am not sure whether this option will still function.
+
+Steve Lowe fixed the following:
+2/25/05
+- Help function does not work for ImageTools and DataTools; The menu often doesn't return to the default first position ('DataTools' or 'ImageTools') after running a tool.
+First problem was a partially deleted string defining okcallback. Second problem may have been fixed by someone else, seems to work ok.
+
+3/08/05
+Fixed title bar label for Data Tools Help (previously said Image Tools Help).
+
+Changed Image and Data Tools Help windows so that double clicking in list box will display help for the tool, same as clicking OK button.
+
+In PlotOrExportHistograms, fixed problem that filenames containing underscores were not displayed properly as histogram titles (displayed succeeding character as subscript).
+
+3/15/05
+
+- Improve the Data tool "PlotOrExportHistograms":
+*Make the dialog box that asks for input from the user (~13 questions) wider.
+*When filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier. 
+*Flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images. Now have option to display in either orientation.
+* Update help for this tool.
+

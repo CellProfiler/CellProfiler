@@ -1669,7 +1669,7 @@ end
 function CloseWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Requests confirmation to really delete all the figure windows.
-Answer = questdlg('Are you sure you want to close all open figure windows and timers?','Confirm','Yes','No','Yes');
+Answer = questdlg('Are you sure you want to close all open figure windows, timers, and message boxes?','Confirm','Yes','No','Yes');
 if strcmp(Answer, 'Yes') == 1
     %%% Lists all of the figure/graphics handles.
     AllHandles = findobj;

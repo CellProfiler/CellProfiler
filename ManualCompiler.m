@@ -20,57 +20,93 @@ fwrite(fid,tex_page(tex_center(tex_image('CPCredits.png', '1.0\textwidth'))));
 % algorithms in each category following its heading.
 path(fullfile(pwd,'Modules'), path)
 filelist = dir('Modules/*.m');
-fwrite(fid,tex_twocolumn(tex_center(tex_huge('Modules\\[3em]'))));
-fwrite(fid,tex_bold(tex_large('Object Identification:\\')));
+fwrite(fid,tex_twocolumn(tex_center(tex_huge('Table of Contents\\[2em]'))));
+
+fwrite(fid,tex_bold(tex_large('Introduction:\\')));
+s = ['Introduction' '\dotfill \pageref{Introduction}\\'];
+fwrite(fid,s);
+s = ['Installation' '\dotfill \pageref{Installation}\\'];
+fwrite(fid,s);
+s = ['Help' '\dotfill \pageref{CellProfiler Help: An}\\'];
+fwrite(fid,s);
+
+fwrite(fid,tex_vertical_space('1em'));
+fwrite(fid,tex_bold(tex_large('File Handling modules:\\')));
+for i=1:length(filelist),
+  if file_in_category(['Modules/' filelist(i).name], 'File Handling'),
+    fwrite(fid,tex_toc_entry(filelist(i).name));
+  end
+end
+
+fwrite(fid,tex_vertical_space('1em'));
+fwrite(fid,tex_bold(tex_large('Pre-processing modules:\\')));
+for i=1:length(filelist),
+  if file_in_category(['Modules/' filelist(i).name], 'Pre-processing'),
+    fwrite(fid,tex_toc_entry(filelist(i).name));
+  end
+end
+
+fwrite(fid,tex_vertical_space('1em'));
+fwrite(fid,tex_bold(tex_large('Object Identification modules:\\')));
 for i=1:length(filelist),
   if file_in_category(['Modules/' filelist(i).name], 'Object Identification'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 fwrite(fid,tex_vertical_space('1em'));
-fwrite(fid,tex_bold(tex_large('Measurement:\\')));
+
+fwrite(fid,tex_bold(tex_large('Measurement modules:\\')));
 for i=1:length(filelist),
   if file_in_category(['Modules/' filelist(i).name], 'Measurement'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
-fwrite(fid,tex_pagebreak());
-fwrite(fid,tex_bold(tex_large('Pre-processing:\\')));
-for i=1:length(filelist),
-  if file_in_category(['Modules/' filelist(i).name], 'Pre-processing'),
-    fwrite(fid,tex_toc_entry(filelist(i).name));
-  end
-end
 fwrite(fid,tex_vertical_space('1em'));
-fwrite(fid,tex_bold(tex_large('File Handling:\\')));
-for i=1:length(filelist),
-  if file_in_category(['Modules/' filelist(i).name], 'File Handling'),
-    fwrite(fid,tex_toc_entry(filelist(i).name));
-  end
-end
-fwrite(fid,tex_vertical_space('1em'));
-fwrite(fid,tex_bold(tex_large('Other:\\')));
+
+fwrite(fid,tex_bold(tex_large('Other modules:\\')));
 for i=1:length(filelist),
   if file_in_category(['Modules/' filelist(i).name], 'Other'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
+fwrite(fid,tex_vertical_space('1em'));
+
+%%% Image tools.
+path(fullfile(pwd,'ImageTools'), path);
+ImageToolfilelist = dir('ImageTools/*.m');
+fwrite(fid,tex_bold(tex_large('Image tools:\\')));
+for i=1:length(ImageToolfilelist),
+    fwrite(fid,tex_toc_entryImageTools(ImageToolfilelist(i).name));
+end
+fwrite(fid,tex_vertical_space('1em'));
+
+%%% Data tools.
+path(fullfile(pwd,'DataTools'), path);
+DataToolfilelist = dir('DataTools/*.m');
+fwrite(fid,tex_bold(tex_large('Data tools:\\')));
+for i=1:length(DataToolfilelist),
+    fwrite(fid,tex_toc_entryDataTools(DataToolfilelist(i).name));
+end
 fwrite(fid, tex_onecolumn());
 
-% 3 Extract 'help' lines from CellProfiler.m where there is a
+% 3. Extract 'help' lines from CellProfiler.m where there is a
 % description of CellProfiler and the Example image analysis.
-fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
+% Screenshot of CellProfiler (within ExampleImages). Would be nice to
+% have this automatically generated.
+% fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
+heading = tex_center(tex_huge(['Introduction \\']));
+body = [tex_label(['Introduction']) tex_preformatted(help('CellProfiler.m'))];
+im = tex_center(tex_image('CPScreenshot.png', '1.0\textwidth'));
+fwrite(fid,tex_page([heading body im]));
 
 % 4. Extract 'help' lines from CPInstallGuide.m, have the title of the
 % page be "CPInstallGuide", or "CellProfiler Installation Guide", if
 % that's convenient.
-fwrite(fid, tex_page(tex_preformatted(help('HelpCPInstallGuide.m'))));
+body = [tex_label(['Installation']) tex_preformatted(help('HelpCPInstallGuide.m'))];
+heading = tex_center(tex_huge(['Installation \\']));
+fwrite(fid, tex_page([heading body]));
 
-% 5. Screenshot of CellProfiler (within ExampleImages), but maybe we
-% could have this automatically produced eventually?
-fwrite(fid, tex_page(tex_image('CPScreenshot.png', '1.0\textwidth')));
-
-% 6. Extract 'help' lines from anything in the help folder starting
+% 5. Extract 'help' lines from anything in the help folder starting
 % with 'Help' (the order is not critical here).
 path(fullfile(pwd,'Help'), path);
 filelist = dir('Help/Help*.m');
@@ -79,10 +115,10 @@ for i=1:length(filelist),
   if (strcmp(base, 'HelpCPInstallGuide') == 1),
       continue;
   end
-  fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
+  fwrite(fid,tex_page([tex_label(['CellProfiler Help']) tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
 end
 
-% 7. Open each module (alphabetically) and print its name in large
+% 6. Open each module (alphabetically) and print its name in large
 % bold font at the top of the page. Extract the lines after "Help for
 % ...." and before the license begins, using the Matlab 'help'
 % function. Print this below the module name. Open the corresponding
@@ -103,8 +139,22 @@ for i=1:length(filelist),
   end
   fwrite(fid,tex_page([heading body im]));
 end
+
+% 7. Extract 'help' lines from anything in the image tools folder.
+for i=1:length(ImageToolfilelist),
+  base = basename(ImageToolfilelist(i).name);
+  fwrite(fid,tex_page([tex_center(tex_huge(['Image Tool: ' base '\\'])) tex_preformatted(help(ImageToolfilelist(i).name))]));
+end
+
+% 8. Extract 'help' lines from anything in the data tools folder.
+for i=1:length(DataToolfilelist),
+  base = basename(DataToolfilelist(i).name);
+  fwrite(fid,tex_page([tex_center(tex_huge(['Data Tool: ' base '\\'])) tex_preformatted(help(DataToolfilelist(i).name))]));
+end
 fwrite(fid, tex_end());
 fclose(fid);
+
+Result = 'Compilation is complete'
 
 %%% SUBFUNCTIONS %%%
 function s = tex_start()
@@ -136,6 +186,13 @@ function s = tex_toc_entry(filename)
 b = basename(filename);
 s = [b '\dotfill \pageref{Module:' b '}\\'];
 
+function s = tex_toc_entryDataTools(filename)
+b = basename(filename)
+s = [b '\dotfill \pageref{Data Tool:' b '}\\'];
+
+function s = tex_toc_entryImageTools(filename)
+b = basename(filename)
+s = [b '\dotfill \pageref{Image Tool:' b '}\\'];
 
 function c = file_in_category(filename, category)
 h = help(filename);
@@ -170,5 +227,3 @@ end
 
 function sout = tex_label(sin)
 sout = ['\label{' sin '}'];
-
-Result = 'Compilation is complete'

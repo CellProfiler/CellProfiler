@@ -1,17 +1,18 @@
 function handles = AlgMeasureIntensityTexture(handles)
-%%% Retrieves a segmented image, in label matrix format, and a
-%%% corresponding original grayscale image and makes 
-%%% measurements of the objects that are segmented in the image.
-%%% This module differs from the AlgMeasure module because it lacks
-%%% measurements of shape and area and includes only intensity and
-%%% texture.
-%%% The label matrix image should be "compacted": I mean that each number
-%%% should correspond to an object, with no numbers skipped.  So, if some
-%%% objects were discarded from the label matrix image, the image should be
-%%% converted to binary and re-made into a label matrix image before
-%%% feeding into this module.
 
-
+% Help for the Measure Intensity Texture module: 
+% 
+% Retrieves a segmented image, in label matrix format, and a corresponding
+% original grayscale image and makes measurements of the objects that are
+% segmented in the image. This module differs from the AlgMeasure module
+% because it lacks measurements of shape and area and includes only
+% intensity and texture.
+%
+% The label matrix image should be "compacted": I mean that each number
+% should correspond to an object, with no numbers skipped.  So, if some
+% objects were discarded from the label matrix image, the image should be
+% converted to binary and re-made into a label matrix image before feeding
+% into this module.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -38,14 +39,15 @@ function handles = AlgMeasureIntensityTexture(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
+
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
-
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
@@ -60,8 +62,8 @@ ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %defaultVAR04 = N
 Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
-%textVAR09 = The measurements made by this module will be named based on
-%textVAR10 = your entries, e.g. "OrigRedwithinNuclei".
+%textVAR06 = The measurements made by this module will be named based on
+%textVAR07 = your entries, e.g. "OrigRedwithinNuclei".
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2num(handles.Vpixelsize{1});
@@ -69,6 +71,22 @@ PixelSize = str2num(handles.Vpixelsize{1});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Reads (opens) the image you want to analyze and assigns it to a variable,
+%%% "OrigImageToBeAnalyzed".
+fieldname = ['dOT',ImageName];
+%%% Checks whether the image exists in the handles structure.
+    if isfield(handles, fieldname) == 0
+    error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that loads a greyscale image.  You specified in the MeasureIntensityTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
+    end
+OrigImageToBeAnalyzed = handles.(fieldname);
+
+%%% Checks that the original image is two-dimensional (i.e. not a color
+%%% image), which would disrupt several of the image functions.
+if ndims(OrigImageToBeAnalyzed) ~= 2
+    error('Image processing was canceled because the Segment Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+end
 
 %%% Retrieves the label matrix image that contains the segmented objects which
 %%% will be measured with this algorithm.  
@@ -78,31 +96,19 @@ fieldname = ['dOTSegmented',ObjectName];
     error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the MeasureIntensityTexture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
     end
 LabelMatrixImage = handles.(fieldname);
-        % figure, imshow(LabelMatrixImage), title('LabelMatrixImage')
-        
-%%% Read (open) the image you want to analyze and assign it to a variable,
-%%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT',ImageName];
-%%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that loads a greyscale image.  You specified in the MeasureIntensityTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
-    end
-OrigImageToBeAnalyzed = handles.(fieldname);
-%%% Update the handles structure.
-%%% Removed for parallel: guidata(gcbo, handles);
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
-%%% Note to programmers on the format in which to acquire measurements: 
-%%% the measurements must be stored in double format, 
-%%% because the extraction part of the program is designed to deal with
-%%% that type of array only, not cell or structure arrays.
-%%% I also thought it wise to disallow more than one
-%%% "column" of data per object, to allow for uniform extraction of data
-%%% later.  So, for example, instead of storing the X and Y position
-%%% together, they are stored separately. 
+%%% Note to programmers on the format in which to acquire measurements: the
+%%% measurements must be stored in double format, because the extraction
+%%% part of the program is designed to deal with that type of array only,
+%%% not cell or structure arrays. I also thought it wise to disallow more
+%%% than one "column" of data per object, to allow for uniform extraction
+%%% of data later.  So, for example, instead of storing the X and Y
+%%% position together, they are stored separately. 
 
 %%% Note to programmers on how to extract measurements: 
 %%% Examples:
@@ -121,31 +127,37 @@ OrigImageToBeAnalyzed = handles.(fieldname);
 %%% cell).  Due to these prefixes, these fields will be deleted from the
 %%% handles structure at the end of the analysis batch.
 
-%%% None of the measurements are made if there are no objects in the label
-%%% matrix image.
+%%% The ObjectName is changed to include the Object Name plus the name of
+%%% the grayscale image used, so that the measurements do not overwrite any
+%%% measurements made on the original objects.  For example, if
+%%% measurements were made for the Nuclei using the original blue image and
+%%% this module is being used to measure the intensities, etc. of the
+%%% OrigRed channel at the nuclei, the blue measurements will be called:
+%%% MeanAreaNuclei whereas the red measurements will be called:
+%%% MeanAreaOrigRedWithinNuclei.
+ObjectName = strcat(ImageName , 'within', ObjectName);
+
+%%%
+%%% COUNT
+%%%
+
 if sum(sum(LabelMatrixImage)) == 0
-    %%% Save the count to the handles structure.  The field is named 
-    %%% appropriately based on the user's input, with the 'dMT' prefix added so
-    %%% that this field will be deleted at the end of the analysis batch.
+    %%% None of the measurements are made if there are no objects in the label
+    %%% matrix image.
+    %%% Saves the count to the handles structure.
     fieldname = ['dMTCount', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {0};
 else
 
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
-    error('Image processing was canceled because the Segment Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-end
+%%% The regionprops command extracts a lot of measurements.  It
+%%% is most efficient to call the regionprops command once for all the
+%%% properties rather than calling it for each property separately.
+Statistics = regionprops(LabelMatrixImage,'Area', 'ConvexArea', 'MajorAxisLength', 'MinorAxisLength', 'Eccentricity', 'Solidity', 'Extent', 'Centroid');
 
-%%% The ObjectName is changed to include the Object Name plus the name of
-%%% the grayscale image used, so that the measurements do not overwrite any
-%%% measurements made on the original objects.  For example, if
-%%% measurements were made for the Nuclei using the original
-%%% blue image and this module is being
-%%% used to measure the intensities, etc. of the OrigRed channel at the
-%%% nuclei, the blue measurements will be called: MeanAreaNuclei whereas
-%%% the red measurements will be called: MeanAreaOrigRedWithinNuclei.
-ObjectName = strcat(ImageName , 'within', ObjectName);
+%%% CATCH NAN's -->>
+if sum(isnan(cat(1,Statistics.Solidity))) ~= 0
+    error('Image processing was canceled because there was a problem in the Measure Intensity Texture module. Some of the measurements could not be made.  This might be because some objects had zero area or because some measurements were attempted that were divided by zero. If you want to make measurements despite this problem, remove the 3 lines in the .m file for this module following the line "%%% CATCH NAN''s". This will result in some non-numeric values in the output file, which will be represented as "NaN" (Not a Number).')
+end
 
 %%%
 %%% INTEGRATED INTENSITY (TOTAL INTENSITY PER OBJECT)
@@ -168,14 +180,12 @@ ForegroundPixels = find(LabelMatrixImage);
 % image.  The value of each cell in this matrix is the intensity value from
 % the original image at that position.
 AllObjectsPixelValues = sparse(ForegroundPixels, LabelValue, OrigImageToBeAnalyzed(ForegroundPixels));
-% The sum command sums all pixel intensity values in each column.
+% Sums all pixel intensity values in each column.
 AlmostIntegratedIntensity = sum(AllObjectsPixelValues(:,:));
-% Need to convert from sparse to full to end up with one column of numbers.
+% Converts from sparse to full to end up with one column of numbers.
 IntegratedIntensity = full(AlmostIntegratedIntensity');
 
-%%% Save Integrated Intensities to handles structure.  The fields are named 
-%%% appropriately based on the user's input, with the 'dMC' prefix added so
-%%% that these fields will be deleted at the end of the analysis batch.
+%%% Saves Integrated Intensities to handles structure.
 fieldname = ['dMCIntegratedIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {[IntegratedIntensity]};
 fieldname = ['dMTMeanIntegratedIntensity', ObjectName];
@@ -252,7 +262,7 @@ end % Goes with: if no objects are in the image.
 
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
-%%% Check whether that figure is open. This checks all the figure handles
+%%% Checks whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
 if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
@@ -288,10 +298,3 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     end % Goes with: if no objects were in the label matrix image.
     set(displaytexthandle,'string',displaytext)
 end
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for the MeasureIntensityTexture module: 
-%%%%% .

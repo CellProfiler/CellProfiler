@@ -2482,7 +2482,6 @@ else
 end
 errordlg(ErrorExplanation);
 
-
 %%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%
@@ -2490,7 +2489,7 @@ errordlg(ErrorExplanation);
 %%% --- Executes on button press in the Help buttons.
 function PipelineModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpPipelineOfModules.m');
-helpdlg(HelpText,'CellProfiler Help');
+CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% First, check to see whether there is a specific module loaded.
@@ -2501,7 +2500,7 @@ NoModuleSelectedHelpMsg = ['You do not have an analysis module loaded.' 10 10 ..
     GeneralIndividualModuleHelpText];
 ModuleNumber = whichactive(handles);
 if ModuleNumber == 0
-    helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
+    CPtextdisplaybox(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
 else
     try ModuleName = handles.Settings.ModuleNames(ModuleNumber);
         %%% This is the function that actually reads the module's help
@@ -2512,63 +2511,27 @@ else
             help(char(ModuleName))];
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
-            helpFig = figure;
-            set(helpFig,'NumberTitle','off');
-            set(helpFig,'name', 'CellProfiler image analysis module help');
-            set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
-            helpFigPos = get(helpFig,'position');
-            set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
-
-            helpUI = uicontrol(...
-                'Parent',helpFig,...
-                'Enable','inactive',...
-                'Units','characters',...
-                'HorizontalAlignment','left',...
-                'Max',2,...
-                'Min',0,...
-                'Position',[1 1 helpFigPos(3) helpFigPos(4)],...
-                'String',HelpText,...
-                'BackgroundColor',[0.7 0.7 0.9],...
-                'Style','text');
-            outstring = textwrap(helpUI,{HelpText});
-            set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.09]);
-            if(length(outstring) > 27),
-
-                helpUIPosition = get(helpUI,'position');
-                helpScrollCallback = ['set(',num2str(helpUI,'%.13f'),',''position'',[', ...
-                    num2str(helpUIPosition(1)),' ',num2str(helpUIPosition(2)),'+get(gcbo,''max'')-get(gcbo,''value'') ', num2str(helpUIPosition(3)), ...
-                    ' ', num2str(helpUIPosition(4)),'])'];
-
-                helpScrollUI = uicontrol(...
-                    'Parent',helpFig,...
-                    'Callback',helpScrollCallback,...
-                    'Units','characters',...
-                    'Visible', 'on',...
-                    'BackgroundColor',[0.7 0.7 0.9],...
-                    'Style', 'slider',...
-                    'Position',[81 1 4 30]);
-                set(helpScrollUI,'max',(length(outstring)-27)*1.09);
-                set(helpScrollUI,'value',(length(outstring)-27)*1.09);
-            end
-        else 
-            helpdlg(['Sorry, there is no help information for this image analysis module.',GeneralIndividualModuleHelpText],'Image analysis module help');
+            %%% Calls external subfunction: a nice text display box with a slider if the help is too long.
+            CPtextdisplaybox(HelpText,'CellProfiler image analysis module help');
+        else
+            CPtextdisplaybox(['Sorry, there is no help information for this image analysis module.',GeneralIndividualModuleHelpText],'Image analysis module help');
         end
-    catch 
-        helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
+    catch
+        CPtextdisplaybox(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
     end
 end
 
 function PixelPreferencesTechHelp_Callback(hObject, eventdata, handles)
 HelpText = help('HelpPixelPreferencesTech.m');
-helpdlg(HelpText,'CellProfiler Help');
+CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 function DefaultImageDirectoryHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpDefaultImageDirectory.m');
-helpdlg(HelpText,'CellProfiler Help');
+CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 function DefaultOutputDirectoryHelp_Callback(hObject, eventdata, handles)
 HelpText = help('HelpDefaultOutputDirectory.m');
-helpdlg(HelpText,'CellProfiler Help');
+CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ListOfTools = get(handles.ImageToolsPopUpMenu, 'string');
@@ -2642,46 +2605,12 @@ uiwait(ToolsHelpWindowHandle);
 
 if(toolsChoice ~= 0)
     HelpText = handles.Current.([ImageOrData 'ToolHelp']){toolsChoice};
-    helpFig = figure;
-    set(helpFig,'NumberTitle','off');
-    set(helpFig,'name', (['CellProfiler ' ImageOrData ' Tools Help']));
-    set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
-    helpFigPos = get(helpFig,'position');
-    set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
-    helpUI = uicontrol(...
-        'Parent',helpFig,...
-        'Enable','inactive',...
-        'Units','characters',...
-        'HorizontalAlignment','left',...
-        'Max',2,...
-        'Min',0,...
-        'Position',[1 1 helpFigPos(3) helpFigPos(4)],...
-        'String',HelpText,...
-        'BackgroundColor',[0.7 0.7 0.9],...
-        'Style','text');
-    outstring = textwrap(helpUI,{HelpText}); 
-    set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.09]);
-    if(length(outstring) > 27),
-        helpUIPosition = get(helpUI,'position');
-        helpScrollCallback = ['set(',num2str(helpUI,'%.13f'),',''position'',[', ...
-            num2str(helpUIPosition(1)),' ',num2str(helpUIPosition(2)),'+get(gcbo,''max'')-get(gcbo,''value'') ', num2str(helpUIPosition(3)), ...
-            ' ', num2str(helpUIPosition(4)),'])'];
-        helpScrollUI = uicontrol(...
-            'Parent',helpFig,...
-            'Callback',helpScrollCallback,...
-            'Units','characters',...
-            'Visible', 'on',...
-            'BackgroundColor',[0.7 0.7 0.9],...
-            'Style', 'slider',...
-            'Position',[81 1 4 30]);
-        set(helpScrollUI,'max',(length(outstring)-27)*1.09);
-        set(helpScrollUI,'value',(length(outstring)-27)*1.09);
-    end
+    CPtextdisplaybox(HelpText,['CellProfiler ' ImageOrData ' Tools Help'])
 end
 clear toolsChoice;
 
 function AnalyzeImagesHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpAnalyzeImages.m');
-helpdlg(HelpText,'CellProfiler Help');
+CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%

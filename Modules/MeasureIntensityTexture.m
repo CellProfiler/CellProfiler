@@ -262,8 +262,7 @@ for i = 1:5
     %%% objects in this image, no measurements are made by this module.
     fieldname = ['ImageCount', OriginalObjectName];
     if isfield(handles.Measurements,fieldname) == 1
-        Diagnostic=1
-        ObjectCount = handles.Measurements.(fieldname)(handles.setbeinganalyzed)
+        ObjectCount = handles.Measurements.(fieldname)(handles.setbeinganalyzed);
         ObjectCount = ObjectCount{1};
     else
         %%% Counts the number of objects in the label matrix image. This
@@ -271,8 +270,7 @@ for i = 1:5
         %%% results may ensue with non-contiguous objects. Subtracting the
         %%% 1 is necessary because zero (the background) would otherwise
         %%% be counted as an object.
-        Diagnostic=2
-        ObjectCount = length(unique(LabelMatrixImage(:))) - 1
+        ObjectCount = length(unique(LabelMatrixImage(:))) - 1;
     end
     if ObjectCount ~= 0
         %%% None of the measurements are made if there are no objects.

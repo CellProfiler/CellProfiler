@@ -142,13 +142,17 @@ BatchOutputPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = .
 BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What prefix should be added to the batch file names? #LongBox#
-%defaultVAR06 = Batch_
-BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = What is the path to the directory where the batch files will be saved on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
+%defaultVAR06 = .
+BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
+%textVAR07 = What prefix should be added to the batch file names? #LongBox#
+%defaultVAR07 = Batch_
+BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR07 = WARNING: This module should be the last one in the analysis pipeline.
 
-%%%VariableRevisionNumber = 03
+%%%VariableRevisionNumber = 04
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -156,6 +160,10 @@ BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 if strcmp(BatchSavePath, '.') == 1
     BatchSavePath = handles.Current.DefaultOutputDirectory;
+end
+
+if strcmp(BatchRemotePath, '.') == 1
+    BatchRemotePath = handles.Current.DefaultOutputDirectory;
 end
 
 if strcmp(BatchImagePath, '.') == 1
@@ -214,7 +222,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);
     fprintf(BatchFile, 'EndImage = %d;\n', EndImage);
     fprintf(BatchFile, 'tic;\n');
-    fprintf(BatchFile, 'load([BatchFilePrefix ''data.mat'']);\n');
+    fprintf(BatchFile, 'load([BatchRemotePath ''/'' BatchFilePrefix ''data.mat'']);\n');
     fprintf(BatchFile, 'for BatchSetBeingAnalyzed = StartImage:EndImage,\n');
     fprintf(BatchFile, '    disp(sprintf(''Analyzing set %%d'', BatchSetBeingAnalyzed));\n');
     fprintf(BatchFile, '    toc;\n');

@@ -6,7 +6,7 @@ function handles = ExportData(handles)
 % Once image analysis is complete, use this tool to select the
 % output file to extract the measurements and other information about
 % the analysis.  The data will be converted to a comma-delimited text file
-% which can be read by most programs.
+% which can be read by for example Excel.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -34,7 +34,7 @@ if RawFileName == 0
     return
 end
 
-LoadedHandles = load(fullfile(RawPathname, RawFileName));
+load(fullfile(RawPathname, RawFileName));
 
 %%% Opens a window that lets the user chose what to export and if
 %%% only a summary (mean and std) should be exported
@@ -178,7 +178,6 @@ fields = fieldnames(handles.Measurements);
 index = setdiff(1:length(fields),strmatch('GeneralInfo',fields));
 fields = fields(index);
 
-
 % Create Export window
 ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
@@ -186,6 +185,7 @@ pos = get(ETh,'position');
 Height = 1.5+length(fields)*0.25;                       % Window height in inches, depends on the number of objects
 set(ETh,'position',[pos(1) pos(2) 4 Height]);
 
+if ~isempty(fields)
 % Top text
 uicontrol(ETh,'style','text','String','The following measurements were found:','FontName','Times','FontSize',FontSize,...
     'units','inches','position',[0 Height-0.2 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
@@ -199,30 +199,38 @@ for k = 1:length(fields)
         'BackgroundColor',get(ETh,'color'),'Value',1);
 end
 
-% Summary? button
-uicontrol(ETh,'style','text','String','Only export summary data','FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-    'units','inches','position',[0.6 0.7 2 0.15],'BackgroundColor',get(ETh,'color'))
-summarybutton = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 0.7 0.2 0.2],...
-    'BackgroundColor',get(ETh,'color'),'Value',0);
+% Full report or Summary report
+reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 0.7 1.5 0.2],...
+    'backgroundcolor',[1 1 1],'String','Full report|Summary report');
+else  % No measurements found
+uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
+    'units','inches','position',[0 Height-0.5 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+end
 
 % Export and Cancel pushbuttons
-uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[1.15 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)')
-uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[2.1 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)')
+exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
+    'position',[1.15 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)');
+cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
+    'position',[2.1 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)');
+
+% Disable export button if there are no measurements
+if isempty(fields)
+    set(exportbutton,'enable','off')
+end
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
 
-if get(summarybutton,'value') == 0
-    Summary = 'no';
-else
-    Summary = 'yes';
-end
-
 if get(ETh,'Userdata') == 0
     ObjectNames = [];                                   % The user pressed the Cancel button
+    Summary = [];
     close(ETh)
 elseif get(ETh,'Userdata') == 1
+    if strcmp(get(reportbutton,'string'),'Full report')
+        Summary = 'no';
+    else
+        Summary = 'yes';
+    end
+
     buttonchoice = get(h,'Value');
     if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects
         buttonchoice = cat(1,buttonchoice{:});

@@ -133,7 +133,7 @@ CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = .
 IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
+%textVAR04 = To save the illumination correction function to use later, type a file name + .mat. Else, 'N'
 %defaultVAR04 = N
 IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -141,7 +141,15 @@ IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = .
 IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%%%VariableRevisionNumber = 02
+%textVAR06 = To save the projection (mean) image to use later, type a file name + .mat. Else, 'N'
+%defaultVAR06 = N
+ProjectionFileName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
+%textVAR07 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
+%defaultVAR07 = .
+ProjectionPathName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+
+%%%VariableRevisionNumber = 03
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -296,6 +304,17 @@ if handles.Current.SetBeingAnalyzed == 1
                 catch error(['There was a problem saving the illumination correction image to the hard drive. The attempted filename was ', IllumCorrectFileName, '.'])
                 end
             end
+            %%% Saves the projection image to the hard
+            %%% drive if requested.
+            if strcmp(upper(ProjectionFileName), 'N') == 0
+                try if strcmp(ProjectionPathName,'.') == 1
+                    ProjectionPathName = handles.Current.DefaultOutputDirectory;
+                    end
+                    PathAndFileName = fullfile(ProjectionPathName,ProjectionFileName);
+                    save(PathAndFileName, 'MeanImage')
+                catch error(['There was a problem saving the projection (mean) image to the hard drive. The attempted filename was ', ProjectionFileName, '.'])
+                end
+            end
         catch [ErrorMessage, ErrorMessage2] = lasterr;
             error(['An error occurred in the Correct Illumination module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
         end
@@ -348,7 +367,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % commands.  In general, Matlab does not update figure windows until
 % breaks between image analysis modules, or when a few select commands
 % are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
+% Matlab to psause and carry out any pending figure window- related
 % commands (like zooming, or pressing timer pause or cancel buttons or
 % pressing a help button.)  If the drawnow command is not used
 % immediately prior to the figure(ThisModuleFigureNumber) line, then

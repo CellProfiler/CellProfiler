@@ -148,6 +148,9 @@ function [ObjectNames,Summary] = ObjectsToExport(handles)
 % the Cancel button (or the window was closed). 'Summary' takes on the values'yes'
 % or 'no', depending if the user only wants a summary report (mean and std)
 % or a full report.
+try FontSize = str2num(handles.Preferences.FontSize);
+catch FontSize = 10;
+end
 
 fields = fieldnames(handles.Measurements);
 
@@ -167,34 +170,34 @@ fields = tmp;
 
 % Create Export window
 ETh = figure;
-set(ETh,'units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
+set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
 pos = get(ETh,'position');
 Height = 1.5+length(fields)*0.25;                       % Window height in inches
-set(ETh,'position',[pos(1) pos(2) 3 Height]);
+set(ETh,'position',[pos(1) pos(2) 5 Height]);
 
 % Top text
-uicontrol(ETh,'style','text','String','The following measurements were found:','FontName','Times','FontSize',8,...
-    'units','inches','position',[0 Height-0.2 3 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+uicontrol(ETh,'style','text','String','The following measurements were found:','FontName','Times','FontSize',FontSize,...
+    'units','inches','position',[0 Height-0.2 5 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 
 % Radio buttons for extracted measurements
 h = [];
 for k = 1:length(fields)
-    uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',8,'HorizontalAlignment','left',...
+    uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
         'units','inches','position',[0.6 Height-0.35-0.2*k 3 0.15],'BackgroundColor',get(ETh,'color'))
     h(k) = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 Height-0.35-0.2*k 0.2 0.2],...
         'BackgroundColor',get(ETh,'color'),'Value',1);
 end
 
 % Summary? button
-uicontrol(ETh,'style','text','String','Only export summary data','FontName','Times','FontSize',8,'HorizontalAlignment','left',...
+uicontrol(ETh,'style','text','String','Only export summary data','FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
     'units','inches','position',[0.6 0.7 2 0.15],'BackgroundColor',get(ETh,'color'))
 summarybutton = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 0.7 0.2 0.2],...
     'BackgroundColor',get(ETh,'color'),'Value',0);
 
 % Export and Cancel pushbuttons
-uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',8,'units','inches',...
+uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
     'position',[0.65 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)')
-uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',8,'units','inches',...
+uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
     'position',[1.6 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)')
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called

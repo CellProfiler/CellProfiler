@@ -22,13 +22,13 @@ function handles = CreateBatchScripts(handles)
 % that each script needs access to in order to initialize the processing.
 %
 % After the batch files are created, they can be submitted
-% individually to the remote machines.  Note that the batch files and
+% individually to the remote machines. Note that the batch files and
 % Batch_data.mat file might have to be copied to the remote machines
-% in order for them to have access to the data. Details of how remote
-% jobs will be started vary from location to location.  The output
-% files will be written in the directory where the batch files are
-% running, which may or may not be the directory where the batch
-% scripts are located.  Please consult your local cluster experts.
+% in order for them to have access to the data. The output files will
+% be written in the directory where the batch files are running, which
+% may or may not be the directory where the batch scripts are located.
+% Details of how remote jobs will be started vary from location to
+% location. Please consult your local cluster experts.
 %
 % After batch processing is complete, the output files can be merged
 % by the MergeBatchOutput module.  For the simplest behavior in
@@ -70,6 +70,138 @@ function handles = CreateBatchScripts(handles)
 %     bsub -o $BATCHOUTPUTDIR/$BATCHFILENAME.txt -u carpenter@wi.mit.edu -R 'rusage[img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm < $BATCHDIR/$BATCHFILENAME"
 % done
 % ------------------
+%
+% Here are instructions for running jobs on the cluster at the
+% Whitehead Institute:
+%
+% These instructions are for writing the batch files straight to the
+% remote location. You can also write the batch files to the local
+% computer and copy them over (see LOCAL ONLY steps).
+% 
+% 1. Put your images on gobo somewhere. Currently, /gobo/imaging,
+% /gobo/sabatini1_ata and /gobo/sabatini2_ata are all nfs mounted and
+% accessible to the cluster.
+% 
+% 2. Connect to that location from the CP G5, using Go > Connect to
+% server.  Be sure to use nfs rather than cifs because the connection
+% is much faster.
+% 
+% 3. Log into barra (a server and a front end to submit jobs to the
+% cluster) as user=carpente, using Terminal or X Windows: ssh -X
+% carpente@barra.wi.mit.edu
+% 
+% 4. As carpente, logged into barra, make a directory for the project
+% somewhere on gobo that is accessible to the cluster, and give write
+% permission to the new directory: mkdir DIRNAME chmod a+w DIRNAME. (I
+% think it is necessary to use the command line as carpente rather
+% than just making a folder using the Mac, because the
+% CellProfilerUser does not have write permission on sabatini_ata's, I
+% think.)
+% 
+% 5. (LOCAL ONLY) Make a folder on the local computer.
+% 
+% 6. In CellProfiler, add the module CreateBatchScripts to the end of
+% the pipeline, and enter the settings (see Notes below for server
+% naming issues): 
+% CreateBatchScripts module: 
+% What prefix ahould be added to the batch file names? 
+% Batch_ 
+% What is the path to the CellProfiler folder on the cluster machines?
+% /home/carpente/CellProfiler 
+% What is the path to the image directory on the cluster machines? 
+% . 
+% What is the path to the directory where batch output should be
+% written on the cluster machines? 
+% . 
+% What is the path to the directory where you want to save the batch
+% files? 
+% .
+% What is the path to the directory where the batch data file will be
+% saved on the cluster machines? 
+% . 
+% If pathnames are specified differently between the local and cluster
+% machines, enter that part of the pathname from the local machine's
+% perspective 
+% Volumes/tap6 
+% If pathnames are specified differently between the local and cluster
+% machines, enter that part of the pathname from the cluster machines'
+% perspective 
+% nfs/sabatini2_ata 
+% SaveImages module: 
+% Enter the pathname to the directory where you want to save the
+% images: (note: I am not sure if we can currently save images on each
+% cycle through the pipeline)
+%  /nfs/sabatini2_ata/PROJECTNAME
+% Default image directory: /Volumes/tap6/IMAGEDIRECTORY 
+% Default output directory: /Volumes/tap6/PROJECTNAME (or LOCAL
+% folder)
+% 
+% 7. Run the pipeline through CellProfiler, which will analyze the
+% first set and create batch files on the local computer.
+% 
+% 8. (LOCAL ONLY) Drag the BatchFiles folder (which now contains the
+% Batch  .m files and .mat file) and BatchOutputFiles folder (empty)
+% from the local computer into the project folder at the remote
+% location. 
+% 
+% 9. From the command line, logged into barra, make sure the
+% CellProfiler code at  /home/carpente/CellProfiler is up to date by
+% changing to /home/carpente/CellProfiler and type: cvs update.  Any
+% compiled functions in the code must be compiled for every type of
+% architecture present in the cluster using the matlab command mex
+% (PC, Mac, Unix, 64-bit, etc).
+% 
+% 10. From the command line, logged into barra, submit the jobs using
+% the script runallbatchjobs.sh as follows: ./runallbatchjobs.sh
+% /BATCHFILESFOLDER /FOLDERWHERETEXTLOGSSHOULDGO BATCHPREFIXNAME For
+% example: ./runallbatchjobs.sh /nfs/sabatini2_ata/PROJECTFOLDER
+% /nfs/sabatini2_ata/PROJECTFOLDER Batch_ (currently, there is a copy
+% of this script at /home/carpente so that is the directory from which
+% the script should be run. The first time I ran it, I had to change
+% the permissions by doing this: chmod a+w runallbatchjobs.sh)
+% --------------------------------------------------------------------
+% 
+% Bsub Functions: 
+% List all jobs: bjobs 
+% Count all jobs: bjobs | wc -l
+% Count running jobs: bjobs | grep RUN | wc -l 
+% Kill all jobs bkill 0
+% Submit an individual job: copy a bsub line out of batAll.sh, like
+% this: 
+% bsub -B -N -u carpenter@wi.mit.edu matlab -nodisplay -r Batch_2_to_2 
+% -B sends email at beginning of job, -N at the end. 
+% To see what is in batAll.sh: less batAll.sh 
+% To edit batAll.sh: pico batAll.sh (Works only in Terminal, not in X
+% Windows). 
+% To show the number of lines in an output file: wc -l *_OUT.txt
+% 
+% Other notes: 
+% 1. COPY OPTIONS:
+% 	Example 1: drag and drop to /gobo/carpente or gobo/sabatini1_ata
+% For some locations, it may not be permitted to create a folder using
+% Mac's functions. In these cases, it should be possible to mkdir from
+% the command line when logged into barra, or chmod a+w DIRNAME when
+% logged into barra as carpente.
+% 	Example 2: In Terminal, from within the folder on local computer
+% 	containing the batch files:
+% scp Batch*
+% carpente@barra.wi.mit.edu:/home/carpente/2005_02_07BatchFiles
+% 	Example 3: (similar, to retrieve output files):  From within the
+% 	destination folder in Terminal on the local computer:
+% scp
+% carpente@barra.wi.mit.edu:/home/carpente/CellProfiler/ExampleFlyImag
+% es/Test3Batch_2_to_2_OUT.mat . 
+% 2. SERVER NAMING: 
+% - The cluster calls gobo "nfs", so all instances where you might
+% normally use gobo should be replaced with nfs.   e.g. gobo/imaging
+% becomes /nfs/imaging from the cluster's perspective. 
+% - The local computer uses the actual address of servers to use in
+% place of "gobo". Connect to the server using cifs://gobo/DIRNAME,
+% then in Terminal ssh to barra, then df /nfs/DIRNAME, where DIRNAME
+% is something like imaging or sabatini1_ata. This will list the
+% actual address, something like: tap2.wi.mit.edu:/imaging   The name
+% tap2 is then used in CellProfiler.    e.g. gobo/imaging becomes
+% /Volumes/tap2 from the local computer's perspective.
 %
 % See also MERGEBATCHOUTPUT.
 

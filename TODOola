@@ -33,3 +33,6 @@
        AlgIdentifyPrimAdaptThresholdC (see %MT lines in
        AlgTempMattTudor.m) 
 
+
+    - Look into font sizes.  What In Han has tried so far is changing the font/handle object units
+to characters; as recommended on the Mathworks website.  However, this still made the figures look different on different platforms.

@@ -15,8 +15,6 @@ L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider pr
 
    Make closefigures and openfigures not global if possible.
 
-Look into font sizes.
-
 Analyze subdirectories module.
 
 Check version numbers.

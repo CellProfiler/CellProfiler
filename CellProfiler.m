@@ -1687,6 +1687,9 @@ if strcmp(Answer, 'Yes') == 1
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
     delete(TimerHandles)
+    try
+    delete(handles.Figures.timebox)
+    end
     %%% Finds and closes the remaining windows.
     totalmodules=handles.Current.NumberOfModules;
     for i=1:totalmodules;
@@ -1828,7 +1831,7 @@ else
                 %%% called by imshow.
                 try
                     iptsetpref('TruesizeWarning','off')
-                catch error('Apparently, you do not have the Image Processing Toolbox installed or licensed on this computer. This is likely to be necessary for running most of the modules. If you know you do not need the image processing toolbox for the modules you want to run, you might want to try removing the "iptsetpref" lines in the main CellProfiler program and trying again.')
+                catch error('You do not have the Image Processing Toolbox installed or licensed on this computer. It may be necessary for running most of the modules. If you know you do not need the image processing toolbox for the modules you want to run, you may want to try removing the "iptsetpref" lines in the main CellProfiler program and try again.')
                 end
                 %%% In the following code, the Timer window and
                 %%% timer_text is created.  Each time around the loop,
@@ -1871,6 +1874,7 @@ else
                 CancelNowCloseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel & close CellProfiler', 'Position', [295 10 160 30], ...
                     'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
+
                 %%% Sets the functions to be called when the Cancel and Pause buttons
                 %%% within the Timer window are pressed.
                 PauseButtonFunction = 'h = msgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
@@ -1886,6 +1890,7 @@ else
                 uicontrol('Style', 'pushbutton', ...
                     'String', '?', 'Position', [460 10 15 30], 'FontName','Times','FontSize', handles.Current.FontSize,...
                     'Callback', HelpButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                
                 %%% The timertext string is read by the analyze all images button's callback
                 %%% at the end of each time around the loop (i.e. at the end of each image
                 %%% set).  If it notices that the string says "Cancel...", it breaks out of
@@ -1949,6 +1954,9 @@ else
                     setbeinganalyzed = handles.Current.SetBeingAnalyzed;
 
                     for SlotNumber = 1:handles.Current.NumberOfModules,
+                        %%% Variables for timer, time per module.
+                        a=clock;
+                        begin=a(5:6);
                         %%% If a module is not chosen in this slot, continue on to the next.
                         ModuleNumberAsString = TwoDigitString(SlotNumber);
                         ModuleName = char(handles.Settings.ModuleNames(SlotNumber));
@@ -2001,6 +2009,12 @@ else
                             catch
                             end
                         end
+                        %%% Finds and records total time to run module.
+                        a=clock;
+                        finish=a(5:6);
+                        TotalModuleTime=60*(finish(1)-begin(1))+(finish(2)-begin(2));
+                        handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber), handles.Current.SetBeingAnalyzed)= {['Set ' num2str(handles.Current.SetBeingAnalyzed) ', Module ' num2str(handles.Current.CurrentModuleNumber) ' : ' num2str(TotalModuleTime)]};
+
                     end %%% ends loop over slot number
 
                     closeFig = closeFigures;
@@ -2037,9 +2051,13 @@ else
 
                     CancelWaiting = get(handles.timertexthandle,'string');
 
+
                     %%% Make calculations for the Timer window. Round to
                     %%% 1/10:th of seconds
                     time_elapsed = num2str(round(toc*10)/10);
+                    %% Add variable to hold time elapsed for each image
+                    %% set. 
+                    set_time_elapsed(handles.Current.SetBeingAnalyzed) = str2num(time_elapsed);
                     timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
                     number_analyzed = ['Number of image sets analyzed = ',...
                             num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
@@ -2149,18 +2167,38 @@ else
                 total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(round(10*toc)/10)];
                 number_analyzed = ['Number of image sets analyzed = ',...
                         num2str(setbeinganalyzed - 1)];
-                if setbeinganalyzed ~=1
+                if setbeinganalyzed ~=1 
                     time_per_set = ['Time per image set (seconds) = ', ...
                             num2str(round(10*toc/(setbeinganalyzed - 1))/10)];
                 else time_per_set = 'Time per image set (seconds) = none completed'; 
                 end
+                
+
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
                     'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',... 
                     'FontSize',handles.Current.FontSize,'FontWeight','bold','backgroundcolor',[0.7,0.7,0.9]);
                 timertext = {'IMAGE PROCESSING IS COMPLETE!';total_time_elapsed; number_analyzed; time_per_set};
+
                 set(text_handle,'string',timertext)
                 set(timer_handle,'CloseRequestFcn','closereq')
                 
+                %%% Show seperate calcualtion times for each image set.
+                
+                for i=1:handles.Current.NumberOfImageSets;
+                    if i==1
+                        show_time_elapsed_text = ['Time elapsed for image set ' num2str(i) ' = ' num2str(set_time_elapsed(i)) '          .'];                    
+                    else
+                        calc_time_elapsed= set_time_elapsed(i)-set_time_elapsed(i-1);
+                        show_time_elapsed_text = ['Time elapsed for image set ' num2str(i) ' = ' num2str(calc_time_elapsed) '          .'];
+                    end
+                    show_time_elapsed(i)={show_time_elapsed_text};
+                end
+                show_time_elapsed=char(show_time_elapsed);
+                module_times=char(handles.Current.ModuleTime);
+                split_time_elapsed=strvcat(show_time_elapsed, module_times);
+                handles.Figures.timebox=msgbox(split_time_elapsed);
+                
+
                 %%% Re-enable/disable appropriate buttons.
                 set(handles.PipelineOfModulesText,'visible','on')
                 set(handles.LoadPipelineButton,'visible','on')

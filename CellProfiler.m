@@ -878,7 +878,7 @@ if (length(AlgorithmHighlighted) > 0)
                 if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
                     descriptionString = get(handles.(['VariableDescription' TwoDigitString(i)]), 'string');
                     flagExist = 0;
-                    if(length(descriptionString > 8))
+                    if(length(descriptionString) > 8)
                         if(strcmp(descriptionString(end-8:end),'#LongBox#'))
                             flagExist = 1;
                             set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', descriptionString(1:end-9))

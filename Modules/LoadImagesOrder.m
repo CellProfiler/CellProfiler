@@ -163,6 +163,9 @@ AnalyzeSubDir = char(handles.Settings.Vvariable{CurrentAlgorithmNum,12});
 %%% Determines which set is being analyzed.
 SetBeingAnalyzed = handles.setbeinganalyzed;
 ImagesPerSet = str2double(ImagesPerSet);
+if strncmp(Pathname, 'Default', 7) == 1
+    Pathname = handles.Vpathname;
+end
 SpecifiedPathname = Pathname;
 %%% If the user left boxes blank, sets the values to 0.
 if isempty(NumberInSet1) == 1
@@ -230,45 +233,23 @@ if SetBeingAnalyzed == 1
             error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
         end
     end
-    %%% For all 4 image slots, exracts the file names.
+    %%% For all 4 image slots, extracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
         %%% the user.
         if NumberInSet{n} ~= 0 && isempty(ImageName{n}) == 0
-            if strncmp(SpecifiedPathname, 'Default', 7) == 1
-                Pathname = handles.Vpathname;
-                FileNames = handles.Vfilenames;
+            %%% If a directory was typed in, retrieves the filenames
+            %%% from the chosen directory.
+            if exist(SpecifiedPathname) ~= 7
+                error('Image processing was canceled because the directory typed into the Load Images Order module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
+            else
+                [handles, FileNames] = RetrieveImageFileNames(handles, SpecifiedPathname,AnalyzeSubDir);
                 if SetBeingAnalyzed == 1
-                    if length(handles.Vfilenames) < ImagesPerSet
-                        error(['In the Load Images Order module, you specified that there are ', num2str(ImagesPerSet),' images per set, but only ', num2str(length(handles.Vfilenames)), ' were found in the chosen directory. Please check the settings.'])    
-                    end
                     %%% Determines the number of image sets to be analyzed.
-                    NumberOfImageSets = fix(length(handles.Vfilenames)/ImagesPerSet);
-                    %%% Checks whether another load images module has
-                    %%% already recorded a number of image sets.  If it
-                    %%% has, it will not be set at the default of 1.  Then,
-                    %%% it checks whether the number already stored as the
-                    %%% number of image sets is equal to the number of
-                    %%% image sets that this module has found.  If not, an
-                    %%% error message is generated. Note: this will not
-                    %%% catch the case where the number of image sets
-                    %%% detected by this module is more than 1 and another
-                    %%% module has detected only one image set, since there
-                    %%% is no way to tell whether the 1 stored in
-                    %%% handles.Vnumberimagesets is the default value or a
-                    %%% value determined by another image-loading module.
-                    if handles.Vnumberimagesets ~= 1;
-                        if handles.Vnumberimagesets ~= NumberOfImageSets
-                        error(['The number of image sets loaded by the Load Images Order module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Vnumberimagesets), '). Please check the settings.'])    
-                        end
-                    end
-                    %%% Stores the number of image sets in the
-                    %%% handles structure.
+                    NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
                     handles.Vnumberimagesets = NumberOfImageSets;
                 else NumberOfImageSets = handles.Vnumberimagesets;
                 end
-                %%% Preallocates the variable FileList.
-                FileList(NumberOfImageSets) = {''};
                 %%% Loops through the names in the FileNames listing,
                 %%% creating a new list of files.
                 for i = 1:NumberOfImageSets
@@ -279,40 +260,14 @@ if SetBeingAnalyzed == 1
                 fieldname = ['FileList', ImageName{n}];
                 handles.Pipeline.(fieldname) = FileList;
                 fieldname = ['Pathname', ImageName{n}];
-                handles.Pipeline.(fieldname) = Pathname;
-                %% for reference in saved files
-                handles.Measurements.(fieldname) = Pathname;
+                handles.Pipeline.(fieldname) = SpecifiedPathname;
                 clear FileList
-            else
-                %%% If a directory was typed in, retrieves the filenames
-                %%% from the chosen directory.
-                if exist(SpecifiedPathname,'var') ~= 7
-                    error('Image processing was canceled because the directory typed into the Load Images Order module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
-                else [handles, FileNames] = RetrieveImageFileNames(handles, SpecifiedPathname);
-                    if SetBeingAnalyzed == 1
-                        %%% Determines the number of image sets to be analyzed.
-                        NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
-                        handles.Vnumberimagesets = NumberOfImageSets;
-                    else NumberOfImageSets = handles.Vnumberimagesets;
-                    end
-                    %%% Loops through the names in the FileNames listing,
-                    %%% creating a new list of files.
-                    for i = 1:NumberOfImageSets
-                        Number = (i - 1) .* ImagesPerSet + NumberInSet{n};
-                        FileList(i) = FileNames(Number);
-                    end
-                    %%% Saves the File Lists and Path Names to the handles structure.
-                    fieldname = ['FileList', ImageName{n}];
-                    handles.Pipeline.(fieldname) = FileList;
-                    fieldname = ['Pathname', ImageName{n}];
-                    handles.Pipeline.(fieldname) = Pathname;
-                    clear FileList
-                end
+
             end
         end
     end  % Goes with: for n = 1:4
 end
-            
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -365,7 +320,7 @@ for n = 1:4
                 catch error(['Image processing was canceled because the Load Images Order module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
                 end
             end
-            %%% Saves the original image file name to the handles.Pipeline structure.  
+            %%% Saves the original image file name to the handles.Pipeline structure.
             %%% The field is named appropriately based on the user's input, and will
             %%% be deleted at the end of the analysis batch.
             fieldname = ['Filename', ImageName{n}];
@@ -373,7 +328,7 @@ for n = 1:4
             %%% Also saved to the handles.Measurements structure for reference in output files.
             handles.Measurements.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Saves the loaded image to the handles structure.  The field is named
-            %%% appropriately based on the user's input.  
+            %%% appropriately based on the user's input.
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         end
     catch ErrorMessage = lasterr;
@@ -474,7 +429,7 @@ end
 %%% SUBFUNCTION TO RETRIEVE FILE NAMES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [handles, FileNames] = RetrieveImageFileNames(handles, Pathname)
+function [handles, FileNames] = RetrieveImageFileNames(handles, Pathname,recurse)
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
@@ -529,6 +484,23 @@ else
         FileNames = FileNamesNoDir;
     else FileNames = FileNamesNoDir(~DiscardLogical);
     end
+
+    if(strcmp(upper(recurse),'Y'))
+        DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
+        DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
+        DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
+        if (length(DirNames) > 0)
+            for i=1:length(DirNames),
+                [handles, MoreFileNames] = RetrieveImageFileNames(handles, [Pathname '\' char(DirNames(i))], recurse);
+                for j = 1:length(MoreFileNames)
+                    MoreFileNames{j} = [char(DirNames(i)) '\' char(MoreFileNames(j))];
+                end
+                FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
+            end
+        end
+    end
+
+        
     %%% Checks whether any files are left.
     if isempty(FileNames) == 1
         errordlg('There are no image files in the chosen directory')

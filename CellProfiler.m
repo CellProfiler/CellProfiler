@@ -1,24 +1,16 @@
 function varargout = CellProfiler(varargin)
-% CellProfiler M-file for CellProfiler.fig
+
+% CellProfiler cell image analysis software
+%
+% CellProfiler.m and CellProfiler.fig work together to create a user
+% interface which allows the analysis of large numbers of images.  New
+% modules can be written for the software.
+%
 %      CellProfiler, by itself, creates a new CellProfiler or raises the existing
 %      singleton*.
 %
 %      H = CellProfiler returns the handle to a new CellProfiler or the handle to
 %      the existing singleton*.
-%
-%      CellProfiler('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in CellProfiler.M with the given input arguments.
-%
-%      CellProfiler('Property','Value',...) creates a new CellProfiler or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before CellProfiler_OpeningFunction gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to CellProfiler_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -31,7 +23,7 @@ function varargout = CellProfiler(varargin)
 % License.
 % 
 % 
-% The Original Code is the CellProfiler Main Function.
+% The Original Code is the CellProfiler.m and CellProfiler.fig files.
 % 
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research
@@ -45,11 +37,6 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% HINTS:
-% hObject    handle to the object of the function (see GCBO)
-% handles    structure with handles and user data (see GUIDATA)
-
-% Edit the above text to modify the response to help CellProfiler
 % Last Modified by GUIDE v2.5 15-Oct-2004 08:34:12
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;

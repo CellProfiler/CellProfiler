@@ -524,27 +524,32 @@ cd(handles.Vworkingdirectory)
 %%% nothing will happen.
 if SettingsFileName == 0
 else
-  %%% Loads the Settings file, which means that the handles structure is
-  %%% loaded into the workspace.
+  %%% Loads the Settings file.
   LoadedSettings = load([SettingsPathName SettingsFileName]);
 
-  if ~ isfield(LoadedSettings, 'Settings'),
-    errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings file (does not contain a variable named ''Settings'').']);
+  if ~ (isfield(LoadedSettings, 'Settings') | isfield(LoadedSettings, 'handles')),
+    errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings or output file (does not contain a variable named ''Settings'' or ''handles'').']);
     cd(CurrentDirectory);
     return;
   end
 
-  Settings = LoadedSettings.Settings;
+  if (isfield(LoadedSettings, 'Settings')),
+    Settings = LoadedSettings.Settings;
+  else 
+    Settings = LoadedSettings.handles;
+  end;
   
-  %%% Clears the current settings, using the clearalgorithm function.
-  for i=1:handles.numAlgorithms,
-    handles = ClearAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
+  if handles.numAlgorithms > 0,
+    %%% Clears the current settings, using the clearalgorithm function.
+    for i=1:handles.numAlgorithms,
+      handles = ClearAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
+    end
+    guidata(gcbo, handles);
+    
+    %%% The last clearalgorithm function leaves the indicator bar set at
+    %%% the last algorithm, so the following makes it invisible.
+    set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
   end
-  guidata(gcbo, handles);
-
-  %%% The last clearalgorithm function leaves the indicator bar set at
-  %%% the last algorithm, so the following makes it invisible.
-  set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
 
   %%% Splice the subset of variables from the "settings" structure into the
   %%% handles structure.  For each one, it checks whether the value is empty
@@ -613,62 +618,6 @@ if FileName ~= 0
 
   save([PathName FileName],'Settings')
   helpdlg('The settings file has been written.')
-end
-cd(CurrentDirectory)
-
-%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in ExtractSettings.
-function ExtractSettings_Callback(hObject, eventdata, handles)
-%%% Runs a separate function that extracts settings.  I have made this a
-%%% separate function, because I don't want the handles structure of the
-%%% Main GUI to get mixed up with the handles structure loaded from the
-%%% output file.
-extractsettings(handles.Vworkingdirectory) %%% Note that the handles structure itself is not an argument.
-
-function extractsettings(WorkingDirectory)
-%%% Determines the current directory so it can switch back when done.
-CurrentDirectory = pwd;
-cd(WorkingDirectory)
-%%% Opens a dialog for the user to select the file from which to extract
-%%% settings.
-[OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
-%%% If the user presses "Cancel", the OutputFileName will = 0 and nothing will
-%%% happen.
-if OutputFileName == 0
-else
-%%% Loads the Output file, which means that the handles structure is
-%%% loaded into the workspace of this function.
-cd(PathName)
-eval(['load ',OutputFileName])
-%%% The following is the same code found in the "Save Settings" button.
-%%% Checks if a field is present, and if it is, the value is stored in the 
-%%% cell array called "Settings". 
-
-for AlgorithmNumber=1:handles.numAlgorithms,
-    for j=VariableNumber:handles.numVariables,
-        if isfield(handles, strcat('Vvariable',TwoDigitString(AlgorithmNumber),'_',TwoDigitString(VariableNumber))) ==1,
-            Settings{(AlgorithmNumber-1)*handles.numVariables+VariableNumber} = handles.(['Vvariable',TwoDigitString(AlgorithmNumber),'_',TwoDigitString(VariableNumber)]); end
-    end
-end
-
-for AlgorithmNumber=1:handles.numAlgorithms,
-    if isfield(handles, strcat('Valgorithmname', TwoDigitString(AlgorithmNumber))),
-        Settings{AlgorithmNumber+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',TwoDigitString(AlgorithmNumber)]); end
-end
-
-if isfield(handles,'Vpixelsize') ==1, 
-    Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; 
-end
-
-%%% The "Settings" variable is saved to the file name the user chooses.
-    [FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
-    %%% Allows canceling.
-    if FileName ~= 0
-        save([PathName,FileName],'Settings')
-helpdlg('The settings file has been written.')
-    end
-
 end
 cd(CurrentDirectory)
 
@@ -2904,10 +2853,6 @@ else
                               try
                                   %%% Runs the appropriate algorithm, with the handles structure as an
                                   %%% input argument and as the output argument.
-                                  if handles.Debug,
-                                    global handles_debugging_snapshot
-                                    handles_debugging_snapshot = handles;
-                                  end
                                   eval(['handles = Alg',handles.(AlgName),'(handles);'])
                               catch
                                   if exist(['Alg',handles.(AlgName),'.m']) ~= 2,

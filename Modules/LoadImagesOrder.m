@@ -201,7 +201,7 @@ for n = 1:4
             %%% Determine the file name of the image you want to analyze.
             CurrentFileName = FileList(SetBeingAnalyzed);
             %%% Determine the directory to switch to.
-            if (~ isfield(handles, 'parallel_machines')),
+            if (isfield(handles, 'parallel_machines')),
               fieldname = ['dOTPathName', ImageName{n}];
               PathName = handles.(fieldname);
             else

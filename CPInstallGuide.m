@@ -25,7 +25,7 @@ function CPInstallGuide
 % 		CellProfiler
 % 	CellProfilerTM should then launch. 
 % 
-% 5. (Optional) Click on the “Set preferences” button. This is just for
+% 5. (Optional) Click on the "Set preferences" button. This is just for
 % convenience, and can be reset later, if you would like.  This step
 % creates a file called CellProfilerPreferences.mat in the root directory
 % of Matlab.

@@ -313,7 +313,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
         Threshold = handles.Pipeline.(fieldname);
     end
 elseif strcmp(upper(Threshold), 'EACH') == 1
-    Threshold = ThresholdAdjustmentFactor*graythresh(OrigImageToBeAnalyzed);
+    Threshold = ThresholdAdjustmentFactor*CPgraythresh(OrigImageToBeAnalyzed);
 else Threshold = str2double(Threshold);
 end
 MinimumThreshold = str2num(MinimumThreshold);

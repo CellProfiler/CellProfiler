@@ -275,7 +275,7 @@ drawnow
 %%% using the user-specified threshold.
 %%% Determines the threshold to use. 
 if Threshold == 0
-    Threshold = graythresh(OrigImageToBeAnalyzed);
+    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
     %%% Adjusts the threshold by a correction factor.  
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end

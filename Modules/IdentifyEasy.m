@@ -107,7 +107,7 @@ MaximaMask = getnhood(strel('disk', max(1,floor(Diameter/2/1.5))));
 MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
 
 %%% Thresholds the image to eliminate dim maxima.
-if Threshold == '-', Threshold = graythresh(OriginalImage); end
+if Threshold == '-', Threshold = CPgraythresh(OriginalImage); end
 MaximaImage = MaximaImage > Threshold;
 
 

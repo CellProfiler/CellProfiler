@@ -258,7 +258,7 @@ drawnow
 
 %%% Calculates the MinimumThreshold automatically, if requested.
 if strncmp(upper(MinimumThreshold),'A',1) == 1
-    GlobalThreshold = graythresh(OrigImageToBeAnalyzed);
+    GlobalThreshold = CPgraythresh(OrigImageToBeAnalyzed);
     %%% 0.7 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.7;
@@ -289,7 +289,7 @@ ColumnsToAdd = BestColumns - n;
 PaddedImage = padarray(OrigImageToBeAnalyzed,[RowsToAdd ColumnsToAdd],'replicate','post');
 %%% Calculates the threshold for each block in the image.
 drawnow
-SmallImageOfThresholds = blkproc(PaddedImage,[BestBlockSize(1) BestBlockSize(2)],'graythresh(x)');
+SmallImageOfThresholds = blkproc(PaddedImage,[BestBlockSize(1) BestBlockSize(2)],'CPgraythresh(x)');
 %%% Resizes the block-produced image to be the size of the padded image.
 %%% Bilinear prevents dipping below zero.
 PaddedImageOfThresholds = imresize(SmallImageOfThresholds, size(PaddedImage), 'bilinear');

@@ -305,7 +305,7 @@ MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(sum(getnhood(MaximaMask))),
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if Threshold == 0
-    Threshold = graythresh(OrigImageToBeAnalyzed);
+    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
 MinimumThreshold = str2num(MinimumThreshold);
@@ -324,10 +324,12 @@ InvertedOriginal = imcomplement(OrigImageToBeAnalyzed);
 Overlaid = imimposemin(InvertedOriginal,MaximaImage);
 %%% Identifies watershed lines.
 BlackWatershedLinesPre = watershed(Overlaid);
+%figure, imagesc(BlackWatershedLinesPre)
 %%% Superimposes watershed lines as white (255) onto the inverted original
 %%% image.
 WhiteWatershedOnInvertedOrig = InvertedOriginal;
 WhiteWatershedOnInvertedOrig(BlackWatershedLinesPre == 0) = 255;
+%figure, imagesc(WhiteWatershedOnInvertedOrig)
 
 %%% STEP 3: Identifies and extracts the objects, using the watershed lines.
 drawnow

@@ -258,7 +258,7 @@ drawnow
 
 %%% Calculates the MinimumThreshold automatically, if requested.
 if strncmp(upper(MinimumThreshold),'A',1) == 1
-    GlobalThreshold = graythresh(OrigImageToBeAnalyzed);
+    GlobalThreshold = CPgraythresh(OrigImageToBeAnalyzed);
     %%% 0.2 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.2;

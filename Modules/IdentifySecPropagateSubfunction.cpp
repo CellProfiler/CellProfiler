@@ -169,8 +169,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
         mexErrMsgTxt("Too many output arguments."); 
     } 
 
-    cout <<"here\n";
-    
     m = mxGetM(IM_IN); 
     n = mxGetN(IM_IN);
 

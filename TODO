@@ -1,97 +1,27 @@
 CellProfiler cell image analysis software development 
-December 8, 2004
+REARRANGED JANUARY 27th, 2005  IN ORDER OF PRIORITY
 
-Lines with +++ indicate larger projects.
+(+ sign indicates more challenging projects)
+---------------------------------------------------
 
-Lines with --- are longer term, less critical
+WANT IT NOW:
 
-Lines with NOW are more critical.
+- For the image and data tools help, doubleclicking in the listbox should call the okbuttoncallback function.
 
-Infrastructure improvements:
+- DONE, BUT DELIMITER IS NOT FUNCTIONING WELL ON ANNE"S COMPUTER. OTHERWISE IT IS ALMOST READY.- Allow the user to 'export' the current settings into some nice, person-readable text file so they have a permanent record. 
 
-     - Use the User's preference for font size for all figure displays and dialog boxes.
+- Load movies module, with ability to load each frame of a .mov or .avi file.  (Look at AvitoImageSlices.m)
+  
+- Make measure windows expand to fit the number of lines of data that are produced. 
 
-     - For the Data tool "Plot Data", when choosing histograms, the dialog box that asks for input from the user (~6 questions) has text that does not fit in the window.  Also, add a checkbox specifying whether to display the results or not (in case the user only wanted to export the raw histogram data). Also, when filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier. Also, flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images.
+- For the Data tool "Plot Data", when choosing histograms, the dialog box that asks for input from the user (~6 questions) has text that does not fit in the window.  Also, add a checkbox specifying whether to display the results or not (in case the user only wanted to export the raw histogram data). Also, when filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier. Also, flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images.
 
-     - For the Export Mean Data DataTool, ask the user whether whether they want images or measurements as rows vs. columns (see ExportCellByCell for an example).
+- For the Export Mean Data DataTool, ask the user whether whether they want images or measurements as rows vs. columns (see ExportCellByCell for an example).
 
-     - (low priority) For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
-
-     - For the image and data tools help, doubleclicking in the listbox should call the okbuttoncallback function.
-
-     - Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if ModuleNames was a 6 x 1 cell rather than 1 x 6. 
-Settings =      ModuleNames: {1x6 cell}
-             VariableValues: {6x13 cell}
-         NumbersOfVariables: [13 6 5 6 4 8]
-    VariableRevisionNumbers: [2 0 1 0 1 1]
-
-     -almost- Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
-
-     - Allow canceling from the first dialog box when using the Save Image As button.
-
-     - In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
-
-     - In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing: try to write in matlab root first, and if that fails, write in the handles.Current.StartupDirectory) > Also, maybe we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.  That is where CellProfiler should look when trying to load the preferences upon launching, too, if we add this feature.
-
-     - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
-
-     - If there are no modules loaded in the main CellProfiler window, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
-
-     - Remove unnecessary cd's and use full pathnames instead (Ask Ray).
-
-     -?- When viewing algorithms in the main GUI, the down arrow should
-       move from one highlighted algorithm to the next (right now, the
-       dotted line highlighting moves but nothing happens). 
-
-     - 'Start job midway' module, run image set #XXXX (allow putting
-       in a bunch of comma-delimited numbers to allow random), every
-       50th. 
-
-     - Have the save settings function automatically add SET to the
-       name > can't currently do it with uisave. 
-
-     - When there are large numbers of images in a folder, the
++++ When there are large numbers of images in a folder, the
        response of uigetfile is really slow.  Can fix? 
 
-     - Prevent clicking pause/cancel buttons twice.
-
-     +++ To aid in interactive selection of settings, allow user to
-       create a figure window where images can be dragged and overlaid
-       and toggled back and forth. See Inca and dragndrop in Matlab
-       Central.
-
-     - Have image windows pay attention to aspect ratio of images.
-
-     - Whenever anything is saved to the hard drive, add an error
-       check to see whether the user has permission to write to that
-       location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
-       [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
-       then error(INSERT PROPER ERROR STUFF HERE), end 
-
-    - it is a bit annoying to have to type in the name of an output file each time you are testing parameters. Have the output file be automatically named (e.g. by incrementing numbers) when you have not typed a name into the box.
-
-     - When attempting to Export data using any of the various
-       buttons, add an error check in case the mat file does not
-       contain the field "Measurements". 
-
-     -Done- Allow the user to 'export' the current settings into some nice,
-       person-readable text file so they have a permanent record. DELIMITER IS NOT FUNCTIONING WELL ON ANNE"S COMPUTER. OTHERWISE IT IS ALMOST READY.
-
-     - All modules: look for speed improvements (esp. imresize?)
-
-     - In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction, and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
-
-     - When more than ~11 variables are displayed in the variable panel, the slider appears. When there are only a few extra variables in the panel than can be displayed at once, the slider does not make much impact in how far the panel moves.  The same is true for help windows that have more text than fits into the window.  It seems like clicking in the space below the slider indicator should move the panel all the way to reveal the last variables, but instead it just moves down a tiny bit, so you have to click several times to finally reveal the last variable.
-
-     - Throughout CellProfiler and its modules, remove unnecessary updating of the handles structure (guidata function).
-
-     - Add error checking to data-related buttons to determine whether
-       the .mat file the user selected is a valid CellProfiler output
-       file.
-
-Image analysis modules - New:
-
-     NOW/+++ Make a shape-based IdentifyPrim module which recognizes
++++ Make a shape-based IdentifyPrim module which recognizes
        oblong/elliptical objects rather than perfectly round
        objects. Actually, adopt the current IdentifyPrimShapeIntens to
        take in an ellipticity factor which can be set to 1 for perfect
@@ -99,139 +29,74 @@ Image analysis modules - New:
        paper somewhere detailing an ellipse-based shape transform
        (maybe Ray has it?). 
 
-     NOW - Load movies module, with ability to load each frame of a .mov
-       or .avi file.  (Look at AvitoImageSlices.m)
+---------------------------------------------------
 
-     NOW/+++ Download code relating to Perlman, Mitchison, et al. Science
-       2004 and make modules accordingly (Laplacian of Gaussian to
-       identify nuclei) 
+WANT IT SOON (~ for next beta release, late February 2005):
 
-     NOW/+++ Make a module to identify and count and measure objects
+- When viewing algorithms in the main GUI on the Mac platform, the down arrow should
+       move from one highlighted algorithm to the next (right now, the
+       dotted line highlighting moves but nothing happens).
+
+- Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
+Settings =      ModuleNames: {1x6 cell}
+             VariableValues: {6x13 cell}
+         NumbersOfVariables: [13 6 5 6 4 8]
+    VariableRevisionNumbers: [2 0 1 0 1 1]
+
+- Remove all 'cd' commands from modules and use full pathnames instead.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
+
+- it is a bit annoying to have to type in the name of an output file each time you are testing parameters. Have the output file be automatically named (e.g. incrementing numbers (TempCPOUT1.mat, TempCPOUT2.mat) that are not already existing in the output directory) when you press Analyze Images but have not typed a name into the box.
+
+- Display data on image button: it currently is using global
+       variables to store the numerical data, rather than using
+       UserData.  Thus, the figure cannot be saved with the numerical
+       data still accessible.  See histograms for how to use UserData
+       to store the numbers with the figure. 
+
+- Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
+
++++ Make a module to identify and count and measure objects
        within previously identified objects (e.g. nucleoli or
        organelles or speckles within nuclei or cells).  Not sure how
        to save the individual measurements for each sub-object.
 
-     - Make an image sorter to take an incoming image and break the
-       loop if the image does not meet particular conditions
-       (e.g. maximum pixel intensity is below a certain
-       brightness).  This might also mark the images somehow in the
-       Measurements.
+++ Histograms: allow fewer labels, plus fewer decimals (right now, it's either-or). 
 
-     - Make a module to expand or shrink secondary objects. (e.g. to
-       define membrane compartment) 
-
-      - Make a module using code from ImageJ
-       http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
-       k-means clustering. 
-
-     --- Make modules to identify objects in transmitted light/DIC images.
-
-     --- Neurite outgrowth module
-
-     --- Particle tracking over time module
-
-     ---/+++ Make a user-scoring module that allows the user to view and
-       annotate each image manually. Show control side by side (1-4 at
-       a time) and add that assessment to the data structure. Maybe
-       allow randomizing (to do blind tests). Allow clicking
-       through. Could also be used just for viewing images (e.g. every
-       third image in a gigantic image set).  Whether the file name
-       and/or sample info is shown should be optional. 
-
-     ---/+++ Binucleate cells: figure out how to identify and count them
-
-     ---/+++ Align/resize stack of images (like yeast plates). See Matlab
-       demo on image registration. Did Chris already do this? 
-
-     ---/+++ Try to get code for yeast segmentation from this paper, and
-       incorporate it into CellProfiler: SCMD: Saccharomyces
-       cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
-       1;32 Database issue:D319-22. PMID: 14681423  
-
-Image analysis modules - Improvements:
-
-     - In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured.
-
-     - Remove all 'cd' commands from modules.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
-
-     - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
-
-     - The error checking for "there are no images in this folder"
-       should be moved out of CellProfiler.m and into the two Load
-       Images modules, since some pipelines may not require images in
-       order to run properly. 
-
-     - Save Image As module: does not work well for all kinds of
-       displayed images (e.g. The mean image produced by correct illum
-       divide all mean comes out weird). 
-
-     - Make measure windows expand to fit the number of lines of data
-       that are produced. 
-
-     - Add background subtraction to the identify sec distance module
+- Add background subtraction to the identify sec distance module
        (make it optional in case a cell stain image is not
        available). 
 
-     - Make another primary object identification module based on
-       Intensity then distance. 
-
-     - Improve cell segmentation (though already it's quite good)
-
-     - Annotate which modules work for grayscale vs color.
-
-     - Combine CorrIllumDivideAll with RetrieveImg version.
-
-Data exporting
-
-     - Allow data to be exported to bioinformatics programs like
-       Spotfire (? can't decide how useful this will be) or
-       GenePattern. 
-
-     - Allow data to be exported in MAGE format to go into databases.
-
-     - Allow data to be exported to Open Microscopy Environment
-       databases.  (Being worked on by Tony Scelfo, we believe.)
-
-     - Be sure that all exporting tools will function properly if some
+- Be sure that all exporting tools will function properly if some
        measurement fields are left blank, which is the case when there
        are no objects in a particular image, for example.  I am pretty
        sure that export mean data and export cell by cell data will
        result in an error. 
 
-     - For the ExportDataButton in CellProfiler.m, warn the user if
+- For the ExportDataButton in CellProfiler.m, warn the user if
        'Image' and 'Imported' fields have different numbers of
        measurements - I am not sure how the exporting would work in
        this case.
 
-     - For the ExportDataButton in CellProfiler.m, see the line marked
-       TODO, where the three separate Fieldnames variables should be
-       combined into one prior to running the for loops that follow,
-       for the sake of simplicity and speed.
+- If there are no modules loaded in the main CellProfiler window, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
 
-     - For the ExportCellByCell button in CellProfiler.m, add an error
-       check when exporting "All measurements" to notify the user when
-       that image had no objects.  If there are no objects, the export
-       should be canceled.
+- The error checking for "there are no images in this folder"
+       should be moved out of CellProfiler.m and into the two Load
+       Images modules, since some pipelines may not require images in
+       order to run properly. (Note: I am not sure if someone did this already).
 
-     - For LoadImagesText module, make the error catching more descriptive.
+- For LoadImagesText module, make the error catching more descriptive.
        If there are no image files matching the specified text, right
        now it just says "there are no image files in the directory." when
        it ought to say "there are no image files in the directory that
        contain the text XXX."
 
-Increasing platform usability:
+- In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
 
-     +++++ Port to python so we don't need to use Matlab anymore
+- Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
+- The confirmation window upon "cancel after image set" button clicking ought to say "confirm cancel", not "confirm close". 
 
-Debugging:
-
-     - The confirmation window upon "cancel after image set" button
-       clicking ought to say "confirm cancel", not "confirm close". 
-
-User-friendliness/interface/help:
-
-     - Add this to the Show Image help: The Show Image button shows
+- Add this to the Show Image help: The Show Image button shows
        pixel values in the range 0 to 1.  Images are loaded into
        CellProfiler in this range so that modules behave consistently.
        The display is set to the same range so that, for example, if a
@@ -239,93 +104,129 @@ User-friendliness/interface/help:
        threshold to use within a module, the pixel values are directly
        applicable. 
 
-     - The Histograms tab at the lower part of the image is called
-       Plot data, but seems to work as described in the manual. 
+- The Histograms tab at the lower part of the image is called Plot data, but seems to work as described in the manual. Change the manual to match.
 
-     - The Normalization tab at the bottom of the window is called
-       Data Layout and works differently from the Normalization
-       described in the manual at page 17. 
+- The Normalization tab at the bottom of the window is called Data Layout and works differently from the Normalization described in the manual at page 17. Change the manual to match.
 
-     - Make the help/manual prettier: For each example image that is
-       just text, move it into the help for that file, because as it
-       is these images are stretched a lot. 
+- Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot. 
 
-     - 'Fetch new modules from website' button in CellProfiler's main
-       GUI. 
+[Do the following prior to releasing the new beta version:
+- Smart Indent
+- M Lint error checking
+- Check for TODO's
+- Test every module & button
+- Especially, try canceling and closing & opening figure windows
+- Prepare updated manual]
 
-     - 'Report bug' button in CellProfiler's main GUI.
+---------------------------------------------------
 
-     - Make all pop-up windows use the proper background color and
+WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
+
++++ Download code relating to Perlman, Mitchison, et al. Science
+       2004 and make modules accordingly (Laplacian of Gaussian to
+       identify nuclei) 
+
+- When attempting to Export data using any of the various
+       buttons, add an error check in case the mat file does not
+       contain the field "Measurements". 
+
+- In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing: try to write in matlab root first, and if that fails, write in the handles.Current.StartupDirectory) > Also, maybe we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.  That is where CellProfiler should look when trying to load the preferences upon launching, too, if we add this feature.
+
+- In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
+
+- Whenever anything is saved to the hard drive, add an error
+       check to see whether the user has permission to write to that
+       location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
+       [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
+       then error(INSERT PROPER ERROR STUFF HERE), end 
+
+- Add error checking to data-related buttons to determine whether
+       the .mat file the user selected is a valid CellProfiler output
+       file.
+
+- For the ExportCellByCell button in CellProfiler.m, add an error
+       check when exporting "All measurements" to notify the user when
+       that image had no objects.  If there are no objects, the export
+       should be canceled.
+
+- In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction, and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
+
+- In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
+
+- For the ExportDataButton in CellProfiler.m, see the line marked
+       TODO, where the three separate Fieldnames variables should be
+       combined into one prior to running the for loops that follow,
+       for the sake of simplicity and speed.
+
+- Use the User's preference for font size for all figure displays and dialog boxes.
+
+-almost- Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
+
+- Allow canceling from the first dialog box when using the Save Image As button.
+
+++ Prevent clicking pause/cancel buttons twice in the timer window.
+
+- Have image windows pay attention to aspect ratio of images.
+
+- Save Image As tool: does not work well for all kinds of
+       displayed images (e.g. The mean image produced by correct illum
+       divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
+
+- Make all pop-up windows use the proper background color and
        come to the center of the CP window (helpdlg, warndlg, msgbox):
        requires getting the handle then setting the color and
        position. 
 
-Post-release support:
+- Export mean data button: currently, if you enter a filename
+         in use, it warns you and then cancels the export. Instead,
+         the user should be warned and given two options: overwrite,
+         or enter a different name.  For an example of this, see the
+         use of "while" in the PreviewAndSaveColumnOfSampleInfo
+         subfunction in CellProfiler.m
 
-     - Monitor imaging newsgroups and inform people about the software
+- Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
 
-     - Provide technical support/help desk
-
-     - Fix bugs
-
-     - Maintain for new releases of OS's and Matlab
-
-     - Check Matlab Central for useful code to incorporate into
-       CellProfiler or its modules (last checked on 9-16-04:
-       Biotech/medical, Graphics (all 3 categories), Image Processing,
-       Utilities - GUI Tools & examples, and Misc.) 
-
-
-Things needing documentation:
-
-     - Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
-
-     - There is no way to save images which are normally calculated
-       for display only when running on the cluster, because the
-       figure windows are not open so the calculations are skipped. 
-
-
-
-Data visualization/analysis:
-[[[ Note: We are not sure whether we want to focus on data
-visualization or leave this to other programs like Spotfire or
-GenePattern or Open Microscopy Environment.]]] 
-
-     - Would like to be able to nicely graph data (Matlab is a bit
-       limiting at this point in time) and click on data points to
-       retrieve the high resolution image. 
-
-     - Would like to be able to sort images and data points to
-       generate hit lists meeting certain criteria. - showregions at
-       Matlab Central might be useful for interactivity 
-
-     - Would like to be able to transform data; e.g. normalize for
-       slide-scale variation, calculate the percent of cells in each
-       image meeting certain criteria. 
-
-     - Display data on image button: it currently is using global
-       variables to store the numerical data, rather than using
-       UserData.  Thus, the figure cannot be saved with the numerical
-       data still accessible.  See histograms for how to use UserData
-       to store the numbers with the figure. 
-
-     - Histograms: allow fewer labels, plus fewer decimals (right now,
-       it's either-or). 
-
-     - Plot data button: allow adding error bars reflecting stdev or
+- Plot data button: allow adding error bars reflecting stdev or
        sem to the single parameter, multiple images bar plot (matlab
        central has error bar code). 
 
-     - Plot data button: allow displaying two parameters vs. each
+- Plot data button: allow displaying two parameters vs. each
        other in a scatter plot. 
 
-     - Compressed histograms: Add Y sample labels, allow to show
+- Combine CorrIllumDivideAll with RetrieveImg version.
+
+- Compressed histograms: Add Y sample labels, allow to show
        relative brightness, allow to put in order by mean, change # of
        sig figs.  See hist2 at MC to smooth histograms.  Eventually
        allow histograms to be interactively updated? See automatic
        updated plot at MC, and also fancyplot.  
 
-     - Fix interactive zoom button (within Show Image button):
+- Spot Identifier: Figure out Excel mac vs Pc problems (Anne has
+       an email from Mathworks describing the issue, thread QW38).
+       Allow asking if numbers are in rows or columns.  Check offsets,
+       flipping. Display value only when clicking (see email that Anne
+       has: Mathworks tricks for interactive figures). Make manual
+       page. Toggle several images. 
+
+- Image Tiler: Main GUI's error catching is causing problems when
+       sample info is loaded.  Allow zoom in on thumbnail: get
+       filename (GET COORDINATES) and display high res image.  Needs
+       error catching for images to be the same size.  Display window
+       stays open. See tooltips code. Make manual page.  Fails if
+       there are fewer images than the total grid. 
+
+- For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
+
+- Make a quality-control button that checks results from an output file for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation. (Based on whatever Ray decides is useful).
+
+- Make another primary object identification module based on
+       Intensity then distance. 
+
+- There is no way to save images which are normally calculated
+       for display only when running on the cluster, because the
+       figure windows are not open so the calculations are skipped. 
+
+- Fix interactive zoom button (within Show Image button):
          (1) It seems to always work OK the first time you click on
      Interactive Zoom.  The subsequent times you click on it though:
      sometimes it works just fine and other times there is no change
@@ -349,61 +250,112 @@ GenePattern or Open Microscopy Environment.]]]
      is: "If figure window is open OR saveimage = Yes, then do these
      calculations." 
 
-     - Make a quality-control module that checks for evenness of
-       illumination, linearity of exposure time, lamp flickering, and
-       slide-scale variation. 
+- Test and annotate in each module's help which modules work for grayscale vs color images.
 
-     - Spot Identifier: Figure out Excel mac vs Pc problems (Anne has
-       an email from Mathworks describing the issue, thread QW38).
-       Allow asking if numbers are in rows or columns.  Check offsets,
-       flipping. Display value only when clicking (see email that Anne
-       has: Mathworks tricks for interactive figures). Make manual
-       page. Toggle several images. 
+- 'Fetch new modules from website' button in CellProfiler's main GUI. 
 
-     - Image Tiler: Main GUI's error catching is causing problems when
-       sample info is loaded.  Allow zoom in on thumbnail: get
-       filename (GET COORDINATES) and display high res image.  Needs
-       error catching for images to be the same size.  Display window
-       stays open. See tooltips code. Make manual page.  Fails if
-       there are fewer images than the total grid. 
+- 'Report bug' button in CellProfiler's main GUI.
 
-       - Export mean data button: currently, if you enter a filename
-         in use, it warns you and then cancels the export. Instead,
-         the user should be warned and given two options: overwrite,
-         or enter a different name.  For an example of this, see the
-         use of "while" in the PreviewAndSaveColumnOfSampleInfo
-         subfunction in CellProfiler.m
+- Have the save settings function automatically add SET to the
+       name > can't currently do it with uisave. 
 
+- Would like to be able to sort images and data points to
+       generate hit lists meeting certain criteria. - showregions at
+       Matlab Central might be useful for interactivity 
 
+- Would like to be able to transform data; e.g. normalize for
+       slide-scale variation, calculate the percent of cells in each
+       image meeting certain criteria. 
 
-Very Long Term (i.e., sometime near publication)
-     - Make reference sheet with short descriptions of the modules.
+- Make an image sorter to take an incoming image and break the
+       loop if the image does not meet particular conditions
+       (e.g. maximum pixel intensity is below a certain
+       brightness).  This might also mark the images somehow in the
+       Measurements.
 
-     - Make "applications" technical notes and automatic settings
+- Make a module using code from ImageJ
+       http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
+       k-means clustering. 
+
+[Do the following prior to releasing the public version:
+- Make reference sheet with short descriptions of the modules.
+- Make "applications" technical notes and automatic settings
        files to give a good starting place for common applications
        (e.g. cell count, yeast colony count, staining intensity, cell
        cycle, nuclear/cytoplasmic translocation) and for common cell
        types. 
+- Design an informational brochure
+- Make a tutorial to demonstrate how CP is used.]
 
-     - Design an informational brochure
+---------------------------------------------------
 
-     - Make a tutorial to demonstrate how CP is used.
+POST-PUBLIC RELEASE SUPPORT:
 
-     - Make Images and Data buttons into icons in a toolbar in
-       CellProfiler's main GUI. 
-
+     - Monitor imaging newsgroups and inform people about the software
+     - Provide technical support/help desk
+     - Fix bugs
+     - Maintain for new releases of OS's and Matlab
+     - Check Matlab Central for useful code to incorporate into
+       CellProfiler or its modules (last checked on 9-16-04:
+       Biotech/medical, Graphics (all 3 categories), Image Processing,
+       Utilities - GUI Tools & examples, and Misc.) 
      - Organize training workshops
-
      - Present at conferences
 
-After IAP is completed, do the following prior to releasing the new version:
+---------------------------------------------------
 
-- Smart Indent
-- M Lint error checking
-- Check for TODO's
-- Test every module & button
-- Especially, try canceling and closing & opening figure windows
-- Prepare updated manual
+WANT IT SOMEDAY:
+
+- All modules: look for speed improvements (esp. imresize?)
+
++++ To aid in interactive selection of settings, allow user to
+       create a figure window where images can be dragged and overlaid
+       and toggled back and forth. See Inca and dragndrop in Matlab
+       Central.
+
++++ Allow data to be exported to bioinformatics programs like GGOBI,
+       Spotfire, or GenePattern. (Still trying to decide the best format).
+
++++ Allow data to be exported in MAGE format to go into databases.
+
++++ Allow data to be exported to Open Microscopy Environment
+       databases.  (Being worked on by Tony Scelfo in Peter Sorger's lab).
+
++++ Port to python so we don't need to use Matlab anymore
+
++++ Try to get code for yeast segmentation from this paper, and
+       incorporate it into CellProfiler: SCMD: Saccharomyces
+       cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
+       1;32 Database issue:D319-22. PMID: 14681423  
+
++++ Would like to be able to nicely graph data (Matlab is a bit
+       limiting at this point in time) and click on data points to
+       retrieve the high resolution image. 
+
++++ Make a user-scoring module that allows the user to view and
+       annotate each image manually. Show control side by side (1-4 at
+       a time) and add that assessment to the data structure. Maybe
+       allow randomizing (to do blind tests). Allow clicking
+       through. Could also be used just for viewing images (e.g. every
+       third image in a gigantic image set).  Whether the file name
+       and/or sample info is shown should be optional. 
+
+- 'Start job midway' module, run image set #XXXX (allow putting
+       in a bunch of comma-delimited numbers to allow random), every
+       50th. 
+
++++ Binucleate cells: figure out how to identify and count them
+
++++ Make modules to identify objects in transmitted light/DIC images.
+
++++ Align/resize stack of images (like yeast plates). See Matlab
+       demo on image registration. Did Chris already do this? 
+
++++ Neurite outgrowth module
+
++++ Particle tracking over time module
+
+---------------------------------------------------
 
 DONE DURING IAP>>>>>>>
 
@@ -422,17 +374,16 @@ DONE DURING IAP>>>>>>>
 
      -Done- Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).
 
-     - done Have LoadSettings button determine whether a file is a valid Settings file.]
+     - done Have LoadSettings button determine whether a file is a valid Settings file.
 
-    - Done "Make projection" module (= average, get code from
-       DivideAllMean). 
+    - Done "Make projection" module (= average, get code from DivideAllMean). 
 
-     -Done- DOES NOT WORK FOR ANNE; YIELDS ERROR USING IMREAD FUNCTION. We adapted the LoadImagesOrder and LoadImagesText modules to
-       allow loading of DIB format images, but we have so far not
-       adjusted the Show data on image button or the Show image button
-       to load this type of image. Also need to adjust any other modules
+     -Done-   adjusted the Show data on image button or the Show image button
+       to load DIB images. Also need to adjust any other modules
        that use imread, including those which open all the images to
        calculate something, like CorrectIllum All modules and probably
        IdentifyPrimThreshold and ApplyThreshold (when the threshold is 
        automatically calculated).  Also, DIB's are currently being read
        upside down - need to flip them (flipud).
+
+Done     - Throughout CellProfiler and its modules, remove unnecessary updating of the handles structure (guidata function).

@@ -427,12 +427,7 @@ function OutputFileName_CreateFcn(hObject, eventdata, handles)
 
 function OutputFileName_Callback(hObject, eventdata, handles)
 CurrentDirectory = cd;
-%%% Change to the directory that was specified in Step 1 (Path to load edit
-%%% box), if possible.
-try pathname = get(handles.PathToLoadEditBox,'string');
-    cd (pathname);
-catch 
-end
+PathName = get(handles.PathToLoadEditBox,'string');
 %%% Gets the user entry and stores it in the handles structure using the
 %%% store1variable function.
 InitialUserEntry = get(handles.OutputFileName,'string');
@@ -452,9 +447,9 @@ else
     %%% Checks whether a file with that name already exists, to warn the user
     %%% that the file will be overwritten.
     CurrentDirectory = cd;
-    if exist([CurrentDirectory,'/',UserEntry]) ~= 0
-        errordlg(['A file with the name ',UserEntry,...
-            ' exists.  Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
+    if exist([PathName,'/',UserEntry]) ~= 0
+        errordlg(['A file already exists at ', [PathName,'/',UserEntry],...
+            '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
         set(handles.OutputFileName,'string',[])
     else guidata(gcbo, handles);
         handles = store1variable('Voutputfilename',UserEntry, handles);

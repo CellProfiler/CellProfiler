@@ -12,6 +12,35 @@ function handles = AlgIdentifyPrimThreshold(handles)
 % are ignored, and the user can select a size range, outside which
 % objects will be ignored.
 %
+% Variables:
+%
+% Size range: You may exclude objects that are smaller or bigger than
+% the size range you specify. A comma should be placed between the
+% lower size limit and the upper size limit. The units here are pixels
+% so that it is easy to zoom in on found objects and determine the
+% size of what you think should be excluded.
+%
+% Threshold: The threshold affects the stringency of the lines between
+% the objects and the background. You may enter an absolute number
+% between 0 and 1 for the threshold (use 'Show pixel data' to see the
+% pixel intensities for your images in the appropriate range of 0 to
+% 1), or you may have it calculated for each image individually. There
+% are advantages either way.  An absolute number treats every image
+% identically, but an automatically calculated threshold is more
+% realistic/accurate, though occasionally subject to artifacts.  The
+% threshold which is used for each image is recorded as a measurement
+% in the output file, so if you find unusual measurements from one of
+% your images, you might check whether the automatically calculated
+% threshold was unusually high or low compared to the remaining
+% images.  When an automatic threshold is selected, it may
+% consistently be too stringent or too lenient, so an adjustment
+% factor can be entered as well. The number 1 means no adjustment, 0
+% to 1 makes the threshold more lenient and greater than 1 (e.g. 1.3)
+% makes the threshold more stringent. The automatic threshold has two
+% options: All or Each, depending on whether you want a different
+% threshold for each image or one threshold for all images, based on
+% all images.
+%
 % What does Primary mean?
 % Identify Primary modules identify objects without relying on any
 % information other than a single grayscale input image (e.g. nuclei

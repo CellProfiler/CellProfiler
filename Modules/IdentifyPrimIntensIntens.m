@@ -6,23 +6,63 @@ function handles = AlgIdentifyPrimIntensIntens(handles)
 % This image analysis module works best for objects that are brighter
 % towards the interior; the objects can be any shape, so they need not
 % be round and uniform in size as would be required for a
-% distance-based module.  The dividing lines between clumped
-% objects should be dim. The module is more successful when then
-% objects have a smooth texture, although increasing the blur radius
-% can improve the outcome on lumpy-textured objects.
+% distance-based module.  The dividing lines between clumped objects
+% should be dim. The module is more successful when then objects have
+% a smooth texture, although increasing the blur radius can improve
+% the outcome on lumpy-textured objects.
+%
+% Variables:
+%
+% Size range: You may exclude objects that are smaller or bigger than
+% the size range you specify. A comma should be placed between the
+% lower size limit and the upper size limit. The units here are pixels
+% so that it is easy to zoom in on found objects and determine the
+% size of what you think should be excluded.
+%
+% Threshold: The threshold affects the stringency of the lines between
+% the objects and the background. You may enter an absolute number
+% between 0 and 1 for the threshold (use 'Show pixel data' to see the
+% pixel intensities for your images in the appropriate range of 0 to
+% 1), or you may have it calculated for each image individually by
+% typing 0.  There are advantages either way.  An absolute number
+% treats every image identically, but an automatically calculated
+% threshold is more realistic/accurate, though occasionally subject to
+% artifacts.  The threshold which is used for each image is recorded
+% as a measurement in the output file, so if you find unusual
+% measurements from one of your images, you might check whether the
+% automatically calculated threshold was unusually high or low
+% compared to the remaining images.  When an automatic threshold is
+% selected, it may consistently be too stringent or too lenient, so an
+% adjustment factor can be entered as well. The number 1 means no
+% adjustment, 0 to 1 makes the threshold more lenient and greater than
+% 1 (e.g. 1.3) makes the threshold more stringent.
+%
+% Maxima suppression neighborhood & blur radius: These variables
+% affect whether objects close by each other are considered a single
+% object or multiple objects. They do not affect the dividing lines
+% between an object and the background.  If you see too many objects
+% merged that ought to be separate, the values should be lower. If you
+% see too many objects split up that ought to be merged, the values
+% should be higher. The blur radius tries to reduce the texture of
+% objects so that each real, distinct object has only one peak of
+% intensity. The maxima suppression neighborhood should be set to be
+% roughly equivalent to the minimum radius of a real object of
+% interest. Basically, any distinct 'objects' which are found but are
+% within two times this distance from each other will be assumed to be
+% actually two lumpy parts of the same object, and they will be
+% merged. Note that increasing the blur radius increases
+% the processing time exponentially.
 %
 % How it works: 
 % This image analysis module identifies objects by finding peaks in
-% intensity, after the image has been blurred to remove texture.  Once
-% a marker for each object has been identified in this way, a
-% watershed function identifies the lines between objects that are
-% touching each other by looking for the dimmest points between them.
-% To identify the edges of non-clumped objects, a simple threshold is
-% applied. Objects on the border of the image are ignored, and the
-% user can select a size range, outside which objects will be ignored.
-%
-% SPEED OPTIMIZATION: Note that increasing the blur radius increases
-% the processing time exponentially.
+% intensity, after the image has been blurred to remove texture (based
+% on blur radius).  Once a marker for each object has been identified
+% in this way, a watershed function identifies the lines between
+% objects that are touching each other by looking for the dimmest
+% points between them. To identify the edges of non-clumped objects, a
+% simple threshold is applied. Objects on the border of the image are
+% ignored, and the user can select a size range, outside which objects
+% will be ignored.
 %
 % What does Primary mean?
 % Identify Primary modules identify objects without relying on any
@@ -181,7 +221,7 @@ Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
-%textVAR06 = Set the Maxima Suppression Neighborhood (Non-negative integer, Default = 6):
+%textVAR06 = Set the maxima suppression neighborhood (Non-negative integer, Default = 6):
 %defaultVAR06 = 6
 MaximaSuppressionNeighborhood = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 

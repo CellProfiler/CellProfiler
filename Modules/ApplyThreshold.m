@@ -6,6 +6,13 @@ function handles = AlgApplyThreshold(handles)
 % Pixels below (or above) a certain threshold are set to zero. The
 % remaining pixels retain their original value.
 %
+% 'Bright pixel areas should be expanded by this many pixels' is
+% useful to adjust when you are attempting to exclude bright
+% artifactual objects: you can first set the threshold to exclude
+% these bright objects, but it may also be desirable to expand the
+% identified region by a certain distance so as to avoid a 'halo'
+% effect.
+%
 % SAVING IMAGES: The thresholded images produced by this module can be
 % easily saved using the Save Images module, using the name you
 % assign. If you want to save other intermediate images, alter the

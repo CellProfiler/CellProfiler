@@ -16,7 +16,36 @@ function handles = AlgIdentifyPrimAdaptThresholdB(handles)
 % intensities and multiplying by an offset, within the neighborhood of
 % every pixel.
 %
-% NEIGHBORHOOD SIZE: should be set large enough that every square
+% Variables:
+%
+% Size range: You may exclude objects that are smaller or bigger than
+% the size range you specify. A comma should be placed between the
+% lower size limit and the upper size limit. The units here are pixels
+% so that it is easy to zoom in on found objects and determine the
+% size of what you think should be excluded.
+%
+% Threshold: The adaptive threshold is calculated automatically and
+% varies across the image. However, you can still specify a minimum
+% threshold which will be used if the automatic threshold is quite
+% low. The threshold affects the stringency of the lines between the
+% objects and the background. You may enter an absolute number between
+% 0 and 1 for the threshold (use 'Show pixel data' to see the pixel
+% intensities for your images in the appropriate range of 0 to 1), or
+% you may have it calculated for each image individually by typing 0.
+% There are advantages either way.  An absolute number treats every
+% image identically, but an automatically calculated threshold is more
+% realistic/accurate, though occasionally subject to artifacts.  The
+% threshold which is used for each image is recorded as a measurement
+% in the output file, so if you find unusual measurements from one of
+% your images, you might check whether the automatically calculated
+% threshold was unusually high or low compared to the remaining
+% images.  When an automatic threshold is selected, it may
+% consistently be too stringent or too lenient, so an adjustment
+% factor can be entered as well. The number 1 means no adjustment, 0
+% to 1 makes the threshold more lenient and greater than 1 (e.g. 1.3)
+% makes the threshold more stringent.
+%
+% Neighborhood size: should be set large enough that every square
 % block of pixels is likely to contain some background and some
 % foreground. Smaller neighborhood sizes take less processing time.
 %
@@ -34,12 +63,12 @@ function handles = AlgIdentifyPrimAdaptThresholdB(handles)
 % SAVING IMAGES: This module produces several images which can be
 % easily saved using the Save Images module. These will be grayscale
 % images where each object is a different intensity. (1) The
-% preliminary segmented image, which includes objects on the edge of the image and
-% objects that are outside the size range can be saved using the name:
-% PrelimSegmented + whatever you called the objects (e.g.
-% PrelimSegmentedNuclei). (2) The preliminary segmented image which
-% excludes objects smaller than your selected size range can be saved
-% using the name: PrelimSmallSegmented + whatever you called the
+% preliminary segmented image, which includes objects on the edge of
+% the image and objects that are outside the size range can be saved
+% using the name: PrelimSegmented + whatever you called the objects
+% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% which excludes objects smaller than your selected size range can be
+% saved using the name: PrelimSmallSegmented + whatever you called the
 % objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:

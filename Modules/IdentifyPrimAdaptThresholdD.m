@@ -17,7 +17,28 @@ function handles = AlgIdentifyPrimAdaptThresholdD(handles)
 % offset, within the neighborhood of every pixel. Possibly comparable
 % to the method used by Zeiss KS software.
 % 
-% SETTINGS:
+% Variables:
+%
+% Size range: You may exclude objects that are smaller or bigger than
+% the size range you specify. A comma should be placed between the
+% lower size limit and the upper size limit. The units here are pixels
+% so that it is easy to zoom in on found objects and determine the
+% size of what you think should be excluded.
+%
+% Threshold (0 to 1, higher = more stringent): In the intermediate
+% image titled "Before thresholding" in this module's image display
+% window, pixels above the threshold will be counted as part of
+% objects and pixels below the threshold will be counted as
+% background. A lower threshold will be less stringent, although if
+% the value is set too low, the objects become so large they run into
+% each other and are counted as a giant object which might be thrown
+% out because it is touching the border of the image.  You can see if
+% this is happening by displaying the image called ThresholdedImage.
+%
+% NOTE: THIS MODULE DOES NOT YET ALLOW AUTOMATIC CALCULATION OF
+% THRESHOLDS. I am not sure whether it is a good idea to allow one
+% anyway.
+%
 % Neighborhood size (odd number, higher = less stringent): Smaller
 % neighborhood sizes will be more prone to producing objects with
 % small holes and uneven edges (i.e. it is more prone to noise),
@@ -30,20 +51,6 @@ function handles = AlgIdentifyPrimAdaptThresholdD(handles)
 % neighborhood above.  Neighborhood describes how many nearby pixels
 % are used for blurring, and sigma determines how much far away pixels
 % should affect the blurring.
-%
-% Threshold (0 to 1, higher = more stringent): In the intermediate
-% image titled "Before thresholding" in this module's image display
-% window, pixels above the threshold will be counted as part of
-% objects and pixels below the threshold will be counted as
-% background. A lower threshold will be less stringent, although if
-% the value is set too low, the objects become so large they run into
-% each other and are counted as a giant object which might be thrown
-% out because it is touching the border of the image.  You can see if
-% this is happening by displaying the image called ThresholdedImage.
-%
-% NOTE: I DID NOT YET ADJUST THIS MODULE TO USE THRESHOLDS
-% INTELLIGENTLY. There is no adjustment factor, and I am not sure
-% whether it is a good idea to allow one anyway.
 %
 % What does Primary mean? 
 % Identify Primary modules identify objects without relying on any
@@ -196,17 +203,17 @@ ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %defaultVAR03 = 1,99999
 SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
-%textVAR05 = Enter the threshold (0 to 1, higher = more stringent)
-%defaultVAR05 = .13
-Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+%textVAR04 = Enter the threshold (0 to 1, higher = more stringent)
+%defaultVAR04 = .13
+Threshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
-%textVAR06 = Neighborhood size, in pixels (odd number, higher = less stringent)
-%defaultVAR06 = 31
-NeighborhoodSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+%textVAR05 = Neighborhood size, in pixels (odd number, higher = less stringent)
+%defaultVAR05 = 31
+NeighborhoodSize = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
-%textVAR07 = Enter sigma (positive number, higher = less stringent)
-%defaultVAR07 = 20
-Sigma = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
+%textVAR06 = Enter sigma (positive number, higher = less stringent)
+%defaultVAR06 = 20
+Sigma = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

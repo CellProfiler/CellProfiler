@@ -9,6 +9,48 @@ function handles = AlgIdentifyPrimDistIntens(handles)
 % clumped objects are dim.  The objects need not be brighter towards
 % the interior as is required for the intensity-based modules.
 %
+% Variables:
+%
+% Size range: You may exclude objects that are smaller or bigger than
+% the size range you specify. A comma should be placed between the
+% lower size limit and the upper size limit. The units here are pixels
+% so that it is easy to zoom in on found objects and determine the
+% size of what you think should be excluded.
+%
+% Threshold: The threshold affects the stringency of the lines between
+% the objects and the background. It also affects a preliminary
+% calculation which is used to determine whether whether objects close
+% by each other are considered a single object or multiple objects.
+% You may enter an absolute number between 0 and 1 for the threshold
+% (use 'Show pixel data' to see the pixel intensities for your images
+% in the appropriate range of 0 to 1), or you may have it calculated
+% for each image individually by typing 0.  There are advantages
+% either way.  An absolute number treats every image identically, but
+% an automatically calculated threshold is more realistic/accurate,
+% though occasionally subject to artifacts.  The threshold which is
+% used for each image is recorded as a measurement in the output file,
+% so if you find unusual measurements from one of your images, you
+% might check whether the automatically calculated threshold was
+% unusually high or low compared to the remaining images.  When an
+% automatic threshold is selected, it may consistently be too
+% stringent or too lenient, so an adjustment factor can be entered as
+% well. The number 1 means no adjustment, 0 to 1 makes the threshold
+% more lenient and greater than 1 (e.g. 1.3) makes the threshold more
+% stringent.
+%
+% Maxima suppression neighborhood: This variable (together with the
+% threshold) affects whether objects close by each other are
+% considered a single object or multiple objects. It does not affect
+% the dividing lines between an object and the background.  If you see
+% too many objects merged that ought to be separate, the value should
+% be lower. If you see too many objects split up that ought to be
+% merged, the value should be higher. The value should be set to be
+% roughly equivalent to the minimum radius of a real object of
+% interest. Basically, any distinct 'objects' which are found but are
+% within two times this distance from each other will be assumed to be
+% actually two lumpy parts of the same object, and they will be
+% merged.
+%
 % How it works: 
 % This module identifies objects by finding peaks in the distance
 % transform of a thresholded image.  Once a marker for each object has

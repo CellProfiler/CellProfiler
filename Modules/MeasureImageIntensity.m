@@ -7,6 +7,14 @@ function handles = AlgMeasureTotalIntensity(handles)
 % every pixel's intensity. The user can choose to ignore pixels below
 % or above a particular intensity level.
 %
+% Variables:
+%
+% You may tell the module to ignore pixels above or below a pixel
+% intensity value that you specify, in the range 0 to 1 (use 'Show
+% pixel data' to see the pixel intensities for your images in the
+% appropriate range of 0 to 1). Leaving these values at 0 and 1 means
+% that every pixel intensity will be included in the measurement.
+% 
 % SAVING IMAGES: If you want to save images produced by this module,
 % alter the code for this module to save those images to the handles
 % structure (see the SaveImages module help) and then use the Save
@@ -114,14 +122,13 @@ ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %defaultVAR02 = Sytox
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
-%textVAR03 = Set the threshold above which intensity should be measured (Range = 0-1)
+%textVAR03 = Ignore pixels below this intensity level (Range = 0-1)
 %defaultVAR03 = 0
 LowThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
 
-%textVAR04 = The threshold should be a bit higher than the typical background pixel value. 
-%textVAR05 = Set the threshold below which intensity should be measured (Range = 0-1)
-%defaultVAR05 = 1
-HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+%textVAR04 = Ignore pixels above this intensity level (Range = 0-1)
+%defaultVAR04 = 1
+HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Vpixelsize{1});

@@ -12,7 +12,8 @@ function handles = AlgIdentifySecPropagate(handles)
 % of the distance to the nearest primary object and intensity
 % gradients (dividing lines can be either dim or bright). 
 %
-% SETTINGS:
+% Variables:
+%
 % Threshold: this setting affects the stringency of object outlines
 % that border the background.  It does not affect the dividing lines
 % between clumped objects. A higher number will result in smaller

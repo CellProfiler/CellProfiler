@@ -3,15 +3,18 @@ function handles = CreateBatchScripts(handles)
 % Help for the Create Batch Scripts module:
 % Category: Other
 %
-% This module writes a set of Matlab scripts that can be submitted in
-% parallel to a cluster for faster processing.
+% This module writes a batch (set) of Matlab scripts that can be submitted
+% in parallel to a cluster for faster processing.
 %
-% This module should be placed at the end of an image processing
-% pipeline.  It takes five values as input: the size of each batch
-% that the full set of images should be split into, the path to the
-% CellProfiler modules on the cluster machines, the path to the images
-% on the remote machine, where in the local system to save the batch
-% files, and finally, a prefix to put on the batch files.
+% This module should be placed at the end of an image processing pipeline.
+% It takes five values as input: the size of each batch that the full set
+% of images should be split into, the path to the CellProfiler modules on
+% the cluster machines, the path to the images on the remote machine, where
+% in the local system to save the batch files, and finally, a prefix to put
+% on the batch files. For jobs that you do not want to split into batches
+% but simply want to run on a separate computer, set the batch size to a
+% very large number (more than the number of image sets), which will create
+% one large job.
 %
 % After the first image set is processed, batch files are created and
 % saved on the local machine, by default in the

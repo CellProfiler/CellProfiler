@@ -29,8 +29,6 @@ Settings =      ModuleNames: {1x6 cell}
 
      - Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
 
-     -Done- Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).
-
      - Allow canceling from the first dialog box when using the Save Image As button.
 
      - In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
@@ -155,6 +153,8 @@ Image analysis modules - New:
        1;32 Database issue:D319-22. PMID: 14681423  
 
 Image analysis modules - Improvements:
+
+     - In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured.
 
      - Remove all 'cd' commands from modules.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
 
@@ -435,3 +435,4 @@ DONE DURING IAP>>>>>>>
      -Almost done- Timer: Have the time for first set separate from the time for
        subsequent sets. 
 
+     -Done- Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).

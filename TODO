@@ -12,7 +12,7 @@ WANT IT NOW:
 
 - DONE, BUT DELIMITER IS NOT FUNCTIONING WELL ON ANNE"S COMPUTER. OTHERWISE IT IS ALMOST READY.- Allow the user to 'export' the current settings into some nice, person-readable text file so they have a permanent record. 
 
-- Load movies module, with ability to load each frame of a .mov or .avi file.  (Look at AvitoImageSlices.m)
+KYLE IS WORKING ON THIS>>> - Load movies module, with ability to load each frame of a .mov or .avi file.  (Look at AvitoImageSlices.m)
   
 - Make measure windows expand to fit the number of lines of data that are produced. 
 
@@ -49,7 +49,7 @@ WANT IT NOW:
 WANT IT SOON (~ for next beta release, late February 2005):
 
 
-- Fix CreateBatchScripts, for the option of selecting the default module directory by entering "."  Things were changed recently to add CellProfiler and CellProfiler/Modules to the path, and I am not sure whether this option will still function.
+ANNE WILL DO THIS>>> - Fix CreateBatchScripts, for the option of selecting the default module directory by entering "."  Things were changed recently to add CellProfiler and CellProfiler/Modules to the path, and I am not sure whether this option will still function.
 
 - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
        move from one highlighted algorithm to the next (right now, the

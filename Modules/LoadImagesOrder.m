@@ -213,7 +213,7 @@ for n = 1:4
                 %%% Read (open) the image you want to analyze and assign it to a variable,
                 %%% "LoadedImage".
                 LoadedImage = im2double(imread(char(CurrentFileName),FileFormat));
-            catch error(['Image processing was canceled because the Load Images Order module could not load the image "', char(CurrentFileName), '" which you specified is in "', FileFormat, '" file format.  The error message was ' lasterr])
+            catch error(['Image processing was canceled because the Load Images Order module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
             end
             %%% Saves the original image file name to the handles structure.  The field
             %%% is named 

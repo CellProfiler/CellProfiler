@@ -27,7 +27,7 @@ s = ['Introduction' '\dotfill \pageref{Introduction}\\'];
 fwrite(fid,s);
 s = ['Installation' '\dotfill \pageref{Installation}\\'];
 fwrite(fid,s);
-s = ['Help' '\dotfill \pageref{CellProfiler Help: An}\\'];
+s = ['Help' '\dotfill \pageref{Help}\\'];
 fwrite(fid,s);
 
 fwrite(fid,tex_vertical_space('1em'));
@@ -111,11 +111,15 @@ fwrite(fid, tex_page([heading body]));
 path(fullfile(pwd,'Help'), path);
 filelist = dir('Help/Help*.m');
 for i=1:length(filelist),
-  base = basename(filelist(i).name);
-  if (strcmp(base, 'HelpCPInstallGuide') == 1),
-      continue;
-  end
-  fwrite(fid,tex_page([tex_label(['CellProfiler Help']) tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
+    base = basename(filelist(i).name);
+    if (strcmp(base, 'HelpCPInstallGuide') == 1),
+        continue;
+    end
+    if i == 1
+        fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));    
+    else
+        fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
+    end
 end
 
 % 6. Open each module (alphabetically) and print its name in large
@@ -143,13 +147,17 @@ end
 % 7. Extract 'help' lines from anything in the image tools folder.
 for i=1:length(ImageToolfilelist),
   base = basename(ImageToolfilelist(i).name);
-  fwrite(fid,tex_page([tex_center(tex_huge(['Image Tool: ' base '\\'])) tex_preformatted(help(ImageToolfilelist(i).name))]));
+  heading = tex_center(tex_huge(['ImageTool: ' base '\\']));
+  body = [tex_label(['ImageTool:' base]) tex_preformatted(help(ImageToolfilelist(i).name))];
+  fwrite(fid,tex_page([heading body]));
 end
 
 % 8. Extract 'help' lines from anything in the data tools folder.
 for i=1:length(DataToolfilelist),
   base = basename(DataToolfilelist(i).name);
-  fwrite(fid,tex_page([tex_center(tex_huge(['Data Tool: ' base '\\'])) tex_preformatted(help(DataToolfilelist(i).name))]));
+  heading = tex_center(tex_huge(['DataTool: ' base '\\']));
+  body = [tex_label(['DataTool:' base]) tex_preformatted(help(DataToolfilelist(i).name))];
+  fwrite(fid,tex_page([heading body]));
 end
 fwrite(fid, tex_end());
 fclose(fid);
@@ -187,12 +195,12 @@ b = basename(filename);
 s = [b '\dotfill \pageref{Module:' b '}\\'];
 
 function s = tex_toc_entryDataTools(filename)
-b = basename(filename)
-s = [b '\dotfill \pageref{Data Tool:' b '}\\'];
+b = basename(filename);
+s = [b '\dotfill \pageref{DataTool:' b '}\\'];
 
 function s = tex_toc_entryImageTools(filename)
-b = basename(filename)
-s = [b '\dotfill \pageref{Image Tool:' b '}\\'];
+b = basename(filename);
+s = [b '\dotfill \pageref{ImageTool:' b '}\\'];
 
 function c = file_in_category(filename, category)
 h = help(filename);

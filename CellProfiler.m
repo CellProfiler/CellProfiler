@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 06-Oct-2004 11:14:09
+% Last Modified by GUIDE v2.5 07-Oct-2004 11:00:06
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -589,7 +589,7 @@ guidata(hObject,handles);
 %%% save it as a separate Settings file for future use.
 if isfield(LoadedSettings, 'handles'),
     Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
-    if  == 'Yes',
+    if Answer == 'Yes',
         SaveCurrentSettingsButton_Callback(hObject, eventdata, handles);
     end
 end
@@ -874,15 +874,12 @@ else
     
   %%% Updates the handles structure to incorporate all the changes.
   guidata(gcbo, handles);
-  ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
+  ViewAlgorithm(handles);
 end
 
 %%%%%%%%%%%%%%%%%
 
-function ViewAlgorithm_Callback(hObject,eventdata,handles)
-ButtonTag = get(hObject,'tag');
-%AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
-
+function ViewAlgorithm(handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
 if( (handles.numAlgorithms > 1) | ((handles.numAlgorithms == 1) & (str2num(AlgorithmNumber) == 1)))
 
@@ -927,11 +924,11 @@ if( (handles.numAlgorithms > 1) | ((handles.numAlgorithms == 1) & (str2num(Algor
                 'string',handles.(['Vvariable' AlgorithmNumber '_' VariableNumber]),...
                 'visible','on');
         else set(handles.(['VariableBox' VariableNumber]),'string','n/a','visible','off');
-        end;
-    end;
+        end
+    end
 else
     helpdlg('Algorithm Not Loaded');
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%
 %%% CLEAR BUTTONS %%%
@@ -1012,6 +1009,7 @@ guidata(gcbo, handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function MoveUpButton_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
 handles = MoveUp_Helper(AlgorithmNumber, hObject, eventdata, handles);
@@ -1073,8 +1071,7 @@ else
     handles.AlgorithmHighlighted = AlgorithmUp;
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
-    ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
-
+    ViewAlgorithm(handles)
 end
 
 %%%%%%%
@@ -1136,10 +1133,8 @@ else
     handles.AlgorithmHighlighted = AlgorithmDown;
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
-    ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
+ViewAlgorithm(handles)
 end
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE DISPLAY BUTTONS %%%
@@ -1169,9 +1164,6 @@ elseif strcmp(ButtonStatus, 'Open Figure') == 1
     %%% Refreshes the Main GUI window.
     drawnow
 end
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
@@ -1230,7 +1222,7 @@ guidata(hObject, handles);
 
 % Update handles structure
 guidata(hObject, handles);
-ViewAlgorithm_Callback(hObject, eventdata, handles);
+ViewAlgorithm(handles)
 
 % --- Executes during object creation, after setting all properties.
 function AlgorithmBox_CreateFcn(hObject, eventdata, handles)
@@ -2991,7 +2983,7 @@ else
 
                 
                 set(handles.(['FigureDisplay']),'visible','on')
-                set(handles.(['ViewAlgorithm']),'visible','on')
+               % set(handles.(['ViewAlgorithm']),'visible','on')
                
                 %listbox changes 
                
@@ -3346,7 +3338,7 @@ else
                 set(handles.MoveDownButton,'visible','on');
                 set(handles.FigureDisplay,'visible','off');
                 set(handles.FigureDisplay,'string', 'Close Figure');
-                set(handles.ViewAlgorithm,'visible','on');
+            %    set(handles.ViewAlgorithm,'visible','on');
 
                 for AlgorithmNumber=1:handles.numAlgorithms;
                     for VariableNumber = 1:handles.numVariables(AlgorithmNumber);
@@ -3696,3 +3688,12 @@ else
         set(handles.CoverDataAnalysisFrame,'visible','off')
             set(hObject,'String','Hide')
 end
+
+%
+% --- Executes on button press in pushbutton101.
+function pushbutton101_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton101 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+

@@ -1,4 +1,4 @@
-function handles = AlgAlign2(handles)
+function handles = AlgAlign(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
@@ -44,7 +44,10 @@ AlignedImage3Name = handles.(fieldname);
 %defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveImage3 = handles.(fieldname);
-%textVAR10 =  Otherwise, leave as "N". To save or display other images, press Help button
+%textVAR10 = This module calculates the alignment shift. Do you want to actually adjust the images?
+%defaultVAR10 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
+AdjustImage = upper(handles.(fieldname));
 %textVAR11 = In what file format do you want to save images? Do not include a period
 %defaultVAR11 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
@@ -54,6 +57,20 @@ FileFormat = handles.(fieldname);
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+%%% The first time through, checks whether the user is trying to save images that haven't been
+%%% altered.
+if handles.setbeinganalyzed == 1
+    if strcmp(AdjustImage,'N') == 1
+        if strcmp(upper(SaveImage1), 'N') ~= 1
+            error('Image processing was canceled because you have attempted to save an image, ', SaveImage1, ', in the Align module but you chose not to adjust the images. You need to answer the question "Do you want to actually adjust the images?" with "Y" if you want to save any images in this module.');
+        elseif strcmp(upper(SaveImage2), 'N') ~= 1
+            error('Image processing was canceled because you have attempted to save an image, ', SaveImage2, ', in the Align module but you chose not to adjust the images. You need to answer the question "Do you want to actually adjust the images?" with "Y" if you want to save any images in this module.');
+        elseif strcmp(upper(SaveImage3), 'N') ~= 1
+            error('Image processing was canceled because you have attempted to save an image, ', SaveImage3, ', in the Align module but you chose not to adjust the images. You need to answer the question "Do you want to actually adjust the images?" with "Y" if you want to save any images in this module.');
+        end
+    end
+end
 
 if strcmp(Image1Name,'/') == 1
     error('Image processing was canceled because no image was loaded in the Align module''s first image slot')
@@ -197,22 +214,26 @@ if strcmp(Image3Name,'/') ~= 1
     Temp3 = subim(Image3, -sx, -sy);
     %%% Aligns 2 and 3.
     [sx2, sy2] = autoalign(Temp2, Temp3);
-    AlignedImage2 = subim(Temp2, sx2, sy2);
-    AlignedImage3 = subim(Temp3, -sx2, -sy2);
-    %%% 1 was already aligned with 2.
-    AlignedImage1 = subim(Temp1, sx2, sy2);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy), ...
-            ') (2 vs 3: X ', num2str(sx2), ', Y ', num2str(sy2),')'];
+        ') (2 vs 3: X ', num2str(sx2), ', Y ', num2str(sy2),')'];
+    if strcmp(AdjustImage,'Y') == 1
+        AlignedImage2 = subim(Temp2, sx2, sy2);
+        AlignedImage3 = subim(Temp3, -sx2, -sy2);
+        %%% 1 was already aligned with 2.
+        AlignedImage1 = subim(Temp1, sx2, sy2);
+    end
 else %%% Aligns two input images.
     %%% Aligns 1 and 2.
     [sx, sy] = autoalign(Image1, Image2);
-    AlignedImage1 = subim(Image1, sx, sy);
-    AlignedImage2 = subim(Image2, -sx, -sy);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy),')'];
+    if strcmp(AdjustImage,'Y') == 1
+        AlignedImage1 = subim(Image1, sx, sy);
+        AlignedImage2 = subim(Image2, -sx, -sy);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
+%%% DISPaLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
@@ -230,28 +251,28 @@ ThisAlgFigureNumber = handles.(fieldname);
 %%% for one whose handle is equal to the figure number for this algorithm.
 %%% Also, check whether any of these images 
 if any(findobj == ThisAlgFigureNumber) == 1;
-    
+
     %%% START CALCULATE IMAGES FOR DISPLAY ONLY %%%
-    
-    %%% For three input images.
-    if strcmp(Image3Name,'/') ~= 1
-        OriginalRGB(:,:,1) = Image3;
-        OriginalRGB(:,:,2) = Image2;
-        OriginalRGB(:,:,3) = Image1;
-        AlignedRGB(:,:,1) = AlignedImage3;
-        AlignedRGB(:,:,2) = AlignedImage2;
-        AlignedRGB(:,:,3) = AlignedImage1;
-    else %%% For two input images.
-        OriginalRGB(:,:,1) = zeros(size(Image1));
-        OriginalRGB(:,:,2) = Image2;
-        OriginalRGB(:,:,3) = Image1;
-        AlignedRGB(:,:,1) = zeros(size(AlignedImage1));
-        AlignedRGB(:,:,2) = AlignedImage2;
-        AlignedRGB(:,:,3) = AlignedImage1;
+    if strcmp(AdjustImage,'Y') == 1
+        %%% For three input images.
+        if strcmp(Image3Name,'/') ~= 1
+            OriginalRGB(:,:,1) = Image3;
+            OriginalRGB(:,:,2) = Image2;
+            OriginalRGB(:,:,3) = Image1;
+            AlignedRGB(:,:,1) = AlignedImage3;
+            AlignedRGB(:,:,2) = AlignedImage2;
+            AlignedRGB(:,:,3) = AlignedImage1;
+        else %%% For two input images.
+            OriginalRGB(:,:,1) = zeros(size(Image1));
+            OriginalRGB(:,:,2) = Image2;
+            OriginalRGB(:,:,3) = Image1;
+            AlignedRGB(:,:,1) = zeros(size(AlignedImage1));
+            AlignedRGB(:,:,2) = AlignedImage2;
+            AlignedRGB(:,:,3) = AlignedImage1;
+        end
     end
-    
     %%% END CALCULATE IMAGES FOR DISPLAY ONLY %%%
-    
+
     if handles.setbeinganalyzed == 1
         %%% Sets the window to be only 250 pixels wide.
         originalsize = get(ThisAlgFigureNumber, 'position');
@@ -276,12 +297,14 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     figure(ThisAlgFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OriginalRGB);
-    title(['Input Images, Image Set # ',num2str(handles.setbeinganalyzed)]);
-    %%% A subplot of the figure window is set to display the adjusted
-    %%%  image.
-    subplot(2,1,2); imagesc(AlignedRGB); title('Aligned Images');
+    if strcmp(AdjustImage,'Y') == 1
+        %%% A subplot of the figure window is set to display the original image.
+        subplot(2,1,1); imagesc(OriginalRGB);
+        title(['Input Images, Image Set # ',num2str(handles.setbeinganalyzed)]);
+        %%% A subplot of the figure window is set to display the adjusted
+        %%%  image.
+        subplot(2,1,2); imagesc(AlignedRGB); title('Aligned Images');
+    end
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
     set(displaytexthandle,'string',Results)
     set(ThisAlgFigureNumber,'toolbar','figure')
@@ -313,17 +336,18 @@ drawnow
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% The adjusted image is saved to the
-%%% handles structure so it can be used by subsequent algorithms.
-fieldname = ['dOT', AlignedImage1Name];
-handles.(fieldname) = AlignedImage1;
-fieldname = ['dOT', AlignedImage2Name];
-handles.(fieldname) = AlignedImage2;
-if strcmp(Image3Name,'/') ~= 1
-fieldname = ['dOT', AlignedImage3Name];
-handles.(fieldname) = AlignedImage3;
+if strcmp(AdjustImage,'Y') == 1
+    %%% The adjusted image is saved to the
+    %%% handles structure so it can be used by subsequent algorithms.
+    fieldname = ['dOT', AlignedImage1Name];
+    handles.(fieldname) = AlignedImage1;
+    fieldname = ['dOT', AlignedImage2Name];
+    handles.(fieldname) = AlignedImage2;
+    if strcmp(Image3Name,'/') ~= 1
+        fieldname = ['dOT', AlignedImage3Name];
+        handles.(fieldname) = AlignedImage3;
+    end
 end
-
 %%% The original file name is saved to the handles structure in a
 %%% field named after the adjusted image name.
 fieldname = ['dOTFilename', AlignedImage1Name];
@@ -334,7 +358,22 @@ if strcmp(Image3Name,'/') ~= 1
 fieldname = ['dOTFilename', AlignedImage3Name];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName3;
 end
-%%% Removed for parallel: guidata(gcbo, handles);
+
+%%% The shift in alignment is stored as a measurement for quality control
+%%% purposes.
+fieldname = ['dMTXAlign', AlignedImage1Name,AlignedImage2Name];
+handles.(fieldname)(handles.setbeinganalyzed) = {sx};
+fieldname = ['dMTYAlign', AlignedImage1Name,AlignedImage2Name];
+handles.(fieldname)(handles.setbeinganalyzed) = {sy};
+
+%%% If three images were aligned:
+if strcmp(Image3Name,'/') ~= 1
+fieldname = ['dMTXAlignFirstTwoImages',AlignedImage3Name];
+handles.(fieldname)(handles.setbeinganalyzed) = {sx2};
+fieldname = ['dMTYAlignFirstTwoImages',AlignedImage3Name];
+handles.(fieldname)(handles.setbeinganalyzed) = {sy2};
+end
+
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

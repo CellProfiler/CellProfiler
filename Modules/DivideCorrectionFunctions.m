@@ -161,23 +161,17 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     % To routinely save images produced by this module, see the help in
     % the SaveImages module.
 
-    %%% Checks that the original image is two-dimensional (i.e. not a color
-    %%% image), which would disrupt several of the image functions.
-    if ndims(OrigImage) ~= 2
-        error('Image processing was canceled because the Divide Correction Functions module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-    end
-
     %%% Checks to be sure the two images are the same size.
     if size(IntensityProjectionImage) ~= size(MaskedProjectionImage)
         error('Image processing was canceled because the two input images into the Divide Correction Functions module are not the same size')
     end
 
     %%% Divides the Intensity projection image by the masked projection image.
-    IlluminationFunctionImage = IntensityProjectionImage/MaskedProjectionImage;
+    IlluminationFunctionImage = IntensityProjectionImage./MaskedProjectionImage;
     size(IlluminationFunctionImage)
-    ReadyFlag == 1;
+    ReadyFlag = 1;
 else
-    ReadyFlag == 0;
+    ReadyFlag = 0;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -218,9 +212,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         figure(ThisModuleFigureNumber);
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1); imagesc(IntensityProjectionImage);colormap(gray);
-        title(['Input Intensity Projection Image');
+        title('Input Intensity Projection Image');
         subplot(2,2,2); imagesc(MaskedProjectionImage);
-        title(['Input Identified Object Projection Image');
+        title('Input Identified Object Projection Image');
         subplot(2,2,3); imagesc(IlluminationFunctionImage);
         title('Resulting Illumination Function Image');
     elseif handles.Current.SetBeingAnalyzed == 1

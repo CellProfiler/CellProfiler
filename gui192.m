@@ -1389,7 +1389,11 @@ end;
 %%% variable exists or else the 'rmfield' function gives an error.
     
     for i=1:11,
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',num2str(i));
+        if (i<10);
+            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_0',num2str(i));
+        else
+            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',num2str(i));
+        end
         if isfield(handles,ConstructedName) == 1;
             handles = rmfield(handles, ConstructedName);
         end;
@@ -1464,10 +1468,34 @@ fid=fopen(AlgorithmNamedotm);
             else
                 if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
                     set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(13:end),'visible', 'on');
-                    j=1
+                    j=1;
                 end
             end
         end
+        j=0;
+        for i=1:11,
+            if j == 1;
+                break;
+            elseif i < 10;
+                if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
+                    set(eval(strcat('handles.VariableBox',num2str(i))), 'string', displayval,'visible', 'on');
+                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'visible', 'on');
+                    ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','0',num2str(i));
+                    eval([ConstructedName, '= displayval;']);
+                    j=1;
+                end
+            else
+                if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
+                    set(eval(strcat('handles.VariableBox',num2str(i))), 'string', displayval,'visible', 'on');
+                    set(eval(strcat('handles.VariableDescription',num2str(i))), 'visible', 'on');
+                    ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',num2str(i));
+                    eval([ConstructedName, '= displayval;']);
+                    j=1;
+                end
+            end
+      end
+
+        
         
 %{
         if strncmp(output,'%textVAR1 ',10) == 1;
@@ -1622,40 +1650,55 @@ for i = 1:11
 end
 
 %%% 5. Clears the variable values in the handles structure.
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-              ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
-              guidata(gcbo, handles);
+
+for i=1:11,
+    if(i<10);
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_0',num2str(i));
+    else
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',num2str(i));
+    end
+    if isfield(handles,ConstructedName) == 1;
+        handles = rmfield(handles, ConstructedName);
+    end;
+end;
+
+%{
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+%}
+    
+guidata(gcbo, handles);
 
 %%%%%%%%%%%%%%%%%%%
 %%% VIEW BUTTONS %%%
@@ -1713,100 +1756,137 @@ else
         fid=fopen(AlgorithmNamedotm);
         while 1;
             output = fgetl(fid); if ~ischar(output); break; end;
-            if     strncmp(output,'%textVAR1 ',10) == 1; 
+            
+            j=0;
+            for i=1:11,
+                if j == 1;
+                    break;
+                elseif i < 10;
+                    if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
+                        set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(12:end),'visible', 'on');
+                        j=1;
+                    end
+                else
+                    if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
+                        set(eval(strcat('handles.VariableDescription',num2str(i))), 'string', output(13:end),'visible', 'on');
+                        j=1;
+                    end
+                end
+            end
+            
+            %{
+            if     strncmp(output,'%textVAR1 ',10) == 1;
                 set(handles.VariableDescription1,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR2 ',10) == 1; 
+            elseif strncmp(output,'%textVAR2 ',10) == 1;
                 set(handles.VariableDescription2,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR3 ',10) == 1; 
+            elseif strncmp(output,'%textVAR3 ',10) == 1;
                 set(handles.VariableDescription3,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR4 ',10) == 1; 
+            elseif strncmp(output,'%textVAR4 ',10) == 1;
                 set(handles.VariableDescription4,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR5 ',10) == 1; 
+            elseif strncmp(output,'%textVAR5 ',10) == 1;
                 set(handles.VariableDescription5,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR6 ',10) == 1; 
+            elseif strncmp(output,'%textVAR6 ',10) == 1;
                 set(handles.VariableDescription6,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR7 ',10) == 1; 
+            elseif strncmp(output,'%textVAR7 ',10) == 1;
                 set(handles.VariableDescription7,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR8 ',10) == 1; 
+            elseif strncmp(output,'%textVAR8 ',10) == 1;
                 set(handles.VariableDescription8,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR9 ',10) == 1; 
+            elseif strncmp(output,'%textVAR9 ',10) == 1;
                 set(handles.VariableDescription9,'string',output(12:end),'visible','on');
-            elseif strncmp(output,'%textVAR10',10) == 1; 
+            elseif strncmp(output,'%textVAR10',10) == 1;
                 set(handles.VariableDescription10,'string',output(13:end),'visible','on');
-            elseif strncmp(output,'%textVAR11',10) == 1; 
+            elseif strncmp(output,'%textVAR11',10) == 1;
                 set(handles.VariableDescription11,'string',output(13:end),'visible','on');
             end
+            %}
         end
         fclose(fid);
     end    
     %%% 4. The stored values for the variables are extracted from the handles
     %%% structure and displayed in the edit boxes.
+    %(
+    for i=1:11,
+        if(i<10);
+            numstring = strcat('0',num2str(i));
+        else
+            numstring = num2str(i);
+        end
+            ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',numstring);
+        if isfield(handles,ConstructedName) == 1;
+            set(eval(strcat('handles.VariableBox',num2str(i))),'string',...
+                eval(['handles.Vvariable',AlgorithmNumber,strcat('_',numstring)]),'visible','on');
+        else set(eval(strcat('handles.VariableBox',num2str(i))),'string','n/a','visible','off');
+        end;
+    end;
+%}
+%{    
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox1,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_01']),'visible','on'); 
-    else set(handles.VariableBox1,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_01']),'visible','on');
+    else set(handles.VariableBox1,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox2,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_02']),'visible','on'); 
-    else set(handles.VariableBox2,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_02']),'visible','on');
+    else set(handles.VariableBox2,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox3,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_03']),'visible','on'); 
-    else set(handles.VariableBox3,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_03']),'visible','on');
+    else set(handles.VariableBox3,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox4,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_04']),'visible','on'); 
-    else set(handles.VariableBox4,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_04']),'visible','on');
+    else set(handles.VariableBox4,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox5,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_05']),'visible','on'); 
-    else set(handles.VariableBox5,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_05']),'visible','on');
+    else set(handles.VariableBox5,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox6,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_06']),'visible','on'); 
-    else set(handles.VariableBox6,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_06']),'visible','on');
+    else set(handles.VariableBox6,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox7,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_07']),'visible','on'); 
-    else set(handles.VariableBox7,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_07']),'visible','on');
+    else set(handles.VariableBox7,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox8,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_08']),'visible','on'); 
-    else set(handles.VariableBox8,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_08']),'visible','on');
+    else set(handles.VariableBox8,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox9,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_09']),'visible','on'); 
-    else set(handles.VariableBox9,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_09']),'visible','on');
+    else set(handles.VariableBox9,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox10,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_10']),'visible','on'); 
-    else set(handles.VariableBox10,'string','n/a','visible','off'); 
+            eval(['handles.Vvariable',AlgorithmNumber,'_10']),'visible','on');
+    else set(handles.VariableBox10,'string','n/a','visible','off');
     end
     ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
     if isfield(handles,ConstructedName) == 1
         set(handles.VariableBox11,'string',...
-            eval(['handles.Vvariable',AlgorithmNumber,'_11']),'visible','on'); 
-    else set(handles.VariableBox11,'string','n/a','visible','off'); 
-    end
+            eval(['handles.Vvariable',AlgorithmNumber,'_11']),'visible','on');
+    else set(handles.VariableBox11,'string','n/a','visible','off');
+end
+%}
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1890,6 +1970,18 @@ eval([ConstructedName, '= UserEntry;']);
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles);
+tempJ = 0;
+for i=1:8;
+    if strncmp(get(eval(strcat('handles.Indicator',num2str(i))),'visible'),'on',2) == 1
+        AlgorithmNumber = i;
+        tempJ = 1;
+    end
+    if tempJ == 0;
+        AlgorithmNumber = 0;
+    end
+end
+    
+%{
 if     strncmp(get(handles.Indicator1,'visible'),'on',2) == 1, 
     AlgorithmNumber = '1';
 elseif strncmp(get(handles.Indicator2,'visible'),'on',2) == 1, 
@@ -1908,6 +2000,7 @@ elseif strncmp(get(handles.Indicator8,'visible'),'on',2) == 1,
     AlgorithmNumber = '8';
 else AlgorithmNumber = 0;
 end
+%}
 
 % --- Executes during object creation, after setting all properties.
 function VariableBox1_CreateFcn(hObject, eventdata, handles);
@@ -3652,6 +3745,15 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','off')
                 set(handles.SaveCurrentSettingsButton,'enable','off')
                 set(handles.ExtractSettings,'enable','off')
+                for i=1:8;
+                    set(eval(strcat('handles.LoadAlgorithm',num2str(i))),'visible','off');
+                    set(eval(strcat('handles.ClearAlgorithm',num2str(i))),'visible','off');
+                    set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','off');
+                end
+                for i=1:11;
+                    set(eval(strcat('handles.VariableBox',num2str(i))),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
+                end
+                %{
                 set(handles.LoadAlgorithm1,'visible','off')
                 set(handles.LoadAlgorithm2,'visible','off')
                 set(handles.LoadAlgorithm3,'visible','off')
@@ -3679,6 +3781,7 @@ else
                 set(handles.VariableBox9,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.VariableBox10,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.VariableBox11,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
+                %}
                 set(handles.SelectTestImageBrowseButton,'enable','off')
                 set(handles.ListBox,'enable','off')
                 set(handles.TestImageName,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
@@ -3695,6 +3798,7 @@ else
                 set(handles.HistogramButton,'enable','off')
                 set(handles.NormalizationButton,'enable','off')
                 set(handles.DisplayDataOnImageButton,'enable','off')
+                %{
                 set(handles.ViewAlgorithm1,'visible','off')
                 set(handles.ViewAlgorithm2,'visible','off')
                 set(handles.ViewAlgorithm3,'visible','off')
@@ -3703,6 +3807,7 @@ else
                 set(handles.ViewAlgorithm6,'visible','off')
                 set(handles.ViewAlgorithm7,'visible','off')
                 set(handles.ViewAlgorithm8,'visible','off')
+                %}
                 
                 %%% The following code prevents the warning message in the Matlab
                 %%% main window: "Warning: Image is too big to fit on screen":
@@ -3802,6 +3907,18 @@ else
                 %%% before closing the window, to avoid unexpected results.  The handles
                 %%% for each algorithm's figure must be made global so the closing function
                 %%% can find the handles.
+
+                %{
+                for i=1:8;
+                    if isfield(handles,strcat('Valgorithmname',num2str(i))) == 1
+                        set(eval(strcat('handles.FigureDisplay',num2str(i))),'visible','on')
+                        set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','on')
+                        eval(strcat('handles.figurealgorithm',num2str(i))) = ...
+                            figure('name',[eval(strcat('handles.Valgorithmname',num2str(i))), ' Display'], 'Position',[0 (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
+                        global eval(strcat('HandleFigureDisplay',num2str(i)))
+                        eval(strcat('HandleFigureDisplay',num2str(i))) = eval(strcat('handles.FigureDisplay',num2str(i)));
+                        eval(strcat('ClosingFunction'num2str(i))) = 
+                        %}
                 
                 if isfield(handles,'Valgorithmname1') == 1
                     set(handles.FigureDisplay1,'visible','on')
@@ -3891,6 +4008,7 @@ else
                     ClosingFunction8 = 'global HandleFigureDisplay8; set(HandleFigureDisplay8, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay8';
                     set(handles.figurealgorithm8,'CloseRequestFcn',ClosingFunction8);
                 end
+                
                 
                 %%% For the first time through, the number of image sets
                 %%% will not yet have been determined.  So, the Number of
@@ -4217,6 +4335,17 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
                 set(handles.ExtractSettings,'enable','on')
+                for i=1:8;
+                    set(eval(strcat('handles.LoadAlgorithm',num2str(i))),'visible','on');
+                    set(eval(strcat('handles.ClearAlgorithm',num2str(i))),'visible','on');
+                    set(eval(strcat('handles.FigureDisplay',num2str(i))),'visible','off');
+                    set(eval(strcat('handles.FigureDisplay',num2str(i))),'string', 'Close Figure');
+                    set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','on');
+                end
+                for i=1:11;
+                    set(eval(strcat('handles.VariableBox',num2str(i))),'enable','on','foregroundcolor','black');
+                end
+                %{
                 set(handles.LoadAlgorithm1,'visible','on')
                 set(handles.LoadAlgorithm2,'visible','on')
                 set(handles.LoadAlgorithm3,'visible','on')
@@ -4244,6 +4373,7 @@ else
                 set(handles.VariableBox9,'enable','on','foregroundcolor','black')
                 set(handles.VariableBox10,'enable','on','foregroundcolor','black')
                 set(handles.VariableBox11,'enable','on','foregroundcolor','black')
+                %}
                 set(handles.SelectTestImageBrowseButton,'enable','on')
                 set(handles.ListBox,'enable','on')
                 set(handles.TestImageName,'enable','on','foregroundcolor','black')
@@ -4260,12 +4390,11 @@ else
                 set(handles.HistogramButton,'enable','on')
                 set(handles.NormalizationButton,'enable','on')
                 set(handles.DisplayDataOnImageButton,'enable','on')
-                
                 set(CancelAfterModuleButton_handle,'enable','off')
                 set(CancelAfterImageSetButton_handle,'enable','off')
                 set(PauseButton_handle,'enable','off')
                 set(CancelNowCloseButton_handle,'enable','off')
-                
+                %{
                 set(handles.FigureDisplay1,'visible','off')
                 set(handles.FigureDisplay2,'visible','off')
                 set(handles.FigureDisplay3,'visible','off')
@@ -4290,7 +4419,7 @@ else
                 set(handles.ViewAlgorithm6,'visible','on')
                 set(handles.ViewAlgorithm7,'visible','on')
                 set(handles.ViewAlgorithm8,'visible','on')
-                
+                %}
                 
                 %%% The following code turns the warning message back on that 
                 %%% I turned off when the GUI was launched. 

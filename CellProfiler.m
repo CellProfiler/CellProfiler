@@ -337,6 +337,11 @@ else
     %%% found, so ask the user where the modules are.
     Pathname = uigetdir('','Please select directory where modules are located');
 end
+
+%%defaultVariableRevisionNumbers and revisionConfirm are both variables
+%%used when asking user which variable revision number to save in settings
+%%file
+revisionConfirm = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames),
     [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
     if (isfield(Settings,'VariableRevisionNumbers')),
@@ -348,10 +353,10 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
         if(handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum))
             handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
             handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
+            defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
             varChoice = 3;
         else
             errorString = 'Variable Revision Number same, but number of variables different for some reason';
-            %cd(Pathname);
             savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
             for i=1:(length(savedVariableValues)),
                 if (iscellstr(savedVariableValues(i)) == 0)
@@ -359,11 +364,10 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
                 end
             end
             varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues, defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
-            %cd(handles.Current.StartupDirectory);
+            revisionConfirm = 1;
         end
     else
         errorString = 'Variable Revision Numbers are not the same';
-        %cd(Pathname);
         savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
         for i=1:(length(savedVariableValues)),
             if (iscellstr(savedVariableValues(i)) == 0)
@@ -371,15 +375,17 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
             end
         end
         varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues,  defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
-        %cd(handles.Current.StartupDirectory);
+        revisionConfirm = 1;
     end
     if (varChoice == 1),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
+        defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
     elseif (varChoice == 2),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+        defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
     elseif (varChoice == 0),
         break;
     end
@@ -398,10 +404,10 @@ else
     handles.Current.NumberOfModules = 0;
     handles.Current.NumberOfModules = length(handles.Settings.ModuleNames);
 
-    if (isfield(Settings,'NumbersOfVariables')),
-        handles.Settings.NumbersOfVariables = max(handles.Settings.NumbersOfVariables,Settings.NumbersOfVariables);
-    end
-
+    %if (isfield(Settings,'NumbersOfVariables')),
+        %handles.Settings.NumbersOfVariables = max(handles.Settings.NumbersOfVariables,Settings.NumbersOfVariables);
+    %end
+        
     contents = handles.Settings.ModuleNames;
     set(handles.ModulePipelineListBox,'String',contents);
     set(handles.ModulePipelineListBox,'Value',1);
@@ -416,7 +422,17 @@ else
     if isfield(LoadedSettings, 'handles'),
         Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
         if strcmp(Answer, 'Yes') == 1
+            tempSettings = handles.Settings;
+            if(revisionConfirm == 1)
+                VersionAnswer = questdlg('How should the settings file be saved?', 'Save Settings File', 'Exactly as found in output', 'As Loaded into CellProfiler window', 'Exactly as found in output');
+                if strcmp(VersionAnswer, 'As Loaded into CellProfiler window')
+                    handles.Settings.VariableRevisionNumbers = defaultVariableRevisionNumbers;
+                else
+                    handles.Settings = Settings;
+                end
+            end
             SavePipelineButton_Callback(hObject, eventdata, handles);
+            handles.Settings = tempSettings;
         end
     end
 end

@@ -1,4 +1,8 @@
 function ManualCompiler %#ok We want to ignore MLint error checking for this line.
+
+% This Matlab program allows a CellProfiler help manual to be compiled
+% from the help contained within individual modules and tools.
+
 %%% The Manual Compiler must be run from the main CellProfiler
 %%% directory.
 

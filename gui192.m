@@ -98,24 +98,6 @@ set(MainGUIhandle,'Position',[Left Bottom GUIwidth GUIheight]);
 %%% opening the GUI.
 set(handles.PathToLoadEditBox,'String',pwd);
 
-%%% Sets all of the text edit boxes to have a white background.
-% set(handles.PathToLoadEditBox,'BackgroundColor',[1 1 1]);
-% set(handles.OutputFileName,'BackgroundColor',[1 1 1]);
-% set(handles.PixelSizeEditBox,'BackgroundColor',[1 1 1]);
-% set(handles.ListBox,'BackgroundColor',[1 1 1]);
-% set(handles.TestImageName,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox1,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox2,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox3,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox4,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox5,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox6,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox7,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox8,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox9,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox10,'BackgroundColor',[1 1 1]);
-% set(handles.VariableBox11,'BackgroundColor',[1 1 1]);
-
 %%% Stores some initial values in the handles structure.
 handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
 handles.Vpathname = pwd;
@@ -462,7 +444,7 @@ SelectedFieldName = Headings(Selected);
 % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
 % the cancel button or closed the window Action == 0.
 if Action == 1
-    ListToShow = eval(['handles.',char(SelectedFieldName)]);
+    ListToShow = handles.(char(SelectedFieldName));
     listdlg('ListString',ListToShow, 'ListSize', [300 600],...
         'Name','Preview your sample data','PromptString',...
         'Press any button to continue','CancelString','Ok','SelectionMode','single');
@@ -521,7 +503,7 @@ function handles = store1variable(VariableName,UserEntry, handles);
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-eval(['handles.', VariableName, '= UserEntry;']);
+handles.(VariableName) = UserEntry;
 guidata(gcbo, handles);
 
 %%%%%%%%%%%%%%%%%
@@ -540,35 +522,16 @@ cd(SettingsPathName)
 eval(['load ',SettingsFileName])
     
 %%% Clears the current settings, using the clearalgorithm function.
-%{
-handles = clearalgorithm('1', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('2', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('3', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('4', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('5', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('6', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('7', handles, 'NoConfirm');
-guidata(gcbo, handles);
-handles = clearalgorithm('8', handles, 'NoConfirm');
-guidata(gcbo, handles);
-%}
-
 %%%Hardcoded num of variables here!
 for i=1:handles.numAlgorithms,
-    handles = clearalgorithm(num2str(i), handles, 'NoConfirm');
+    handles = ClearAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
     guidata(gcbo, handles);
 end
 
 %%% The last clearalgorithm function leaves the indicator bar set at
 %%% algorithm 8, so the following makes it invisible.
 %%%set(handles.Indicator8,'Visible','off');
-set(handles.(['Indicator',num2str(i)]),'Visible','off');
+set(handles.(['Indicator',TwoDigitString(i)]),'Visible','off');
 
 %%% Splice the subset of variables from the "settings" structure into the
 %%% handles structure.  For each one, it checks whether the value is empty
@@ -578,118 +541,20 @@ set(handles.(['Indicator',num2str(i)]),'Visible','off');
 
 
 
-for i=1:handles.numAlgorithms,
-    for j=1:handles.numVariables,
-        if (j < 10)
-            stringend = strcat('0',num2str(j));
-        else
-            stringend = num2str(j);
-        end
-        if isempty(Settings{(i-1)*11 + j}) == 0, handles.(['Vvariable',num2str(i),'_',stringend])=Settings{(i-1)*11 + j}; end
+for AlgorithmNumber=1:handles.numAlgorithms,
+    for VariableNumber=1:handles.numVariables,
+      VariableName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+      if isempty(Settings{(AlgorithmNumber-1)*handles.numVariables+VariableNumber}) == 0,
+        handles.([VariableName])=Settings{(AlgorithmNumber-1)*handles.numVariables + VariableNumber}; 
+      end
     end
 end
 
-%{
-if isempty(Settings{1}) == 0, handles.Vvariable1_01 = Settings{1}; end
-if isempty(Settings{2}) == 0, handles.Vvariable1_02 = Settings{2}; end
-if isempty(Settings{3}) == 0, handles.Vvariable1_03 = Settings{3}; end
-if isempty(Settings{4}) == 0, handles.Vvariable1_04 = Settings{4}; end
-if isempty(Settings{5}) == 0, handles.Vvariable1_05 = Settings{5}; end
-if isempty(Settings{6}) == 0, handles.Vvariable1_06 = Settings{6}; end
-if isempty(Settings{7}) == 0, handles.Vvariable1_07 = Settings{7}; end
-if isempty(Settings{8}) == 0, handles.Vvariable1_08 = Settings{8}; end
-if isempty(Settings{9}) == 0, handles.Vvariable1_09 = Settings{9}; end
-if isempty(Settings{10}) == 0, handles.Vvariable1_10 = Settings{10}; end
-if isempty(Settings{11}) == 0, handles.Vvariable1_11 = Settings{11}; end
-
-if isempty(Settings{12}) == 0, handles.Vvariable2_01 = Settings{12}; end
-if isempty(Settings{13}) == 0, handles.Vvariable2_02 = Settings{13}; end
-if isempty(Settings{14}) == 0, handles.Vvariable2_03 = Settings{14}; end
-if isempty(Settings{15}) == 0, handles.Vvariable2_04 = Settings{15}; end
-if isempty(Settings{16}) == 0, handles.Vvariable2_05 = Settings{16}; end
-if isempty(Settings{17}) == 0, handles.Vvariable2_06 = Settings{17}; end
-if isempty(Settings{18}) == 0, handles.Vvariable2_07 = Settings{18}; end
-if isempty(Settings{19}) == 0, handles.Vvariable2_08 = Settings{19}; end
-if isempty(Settings{20}) == 0, handles.Vvariable2_09 = Settings{20}; end
-if isempty(Settings{21}) == 0, handles.Vvariable2_10 = Settings{21}; end
-if isempty(Settings{22}) == 0, handles.Vvariable2_11 = Settings{22}; end
-
-if isempty(Settings{23}) == 0, handles.Vvariable3_01 = Settings{23}; end
-if isempty(Settings{24}) == 0, handles.Vvariable3_02 = Settings{24}; end
-if isempty(Settings{25}) == 0, handles.Vvariable3_03 = Settings{25}; end
-if isempty(Settings{26}) == 0, handles.Vvariable3_04 = Settings{26}; end
-if isempty(Settings{27}) == 0, handles.Vvariable3_05 = Settings{27}; end
-if isempty(Settings{28}) == 0, handles.Vvariable3_06 = Settings{28}; end
-if isempty(Settings{29}) == 0, handles.Vvariable3_07 = Settings{29}; end
-if isempty(Settings{30}) == 0, handles.Vvariable3_08 = Settings{30}; end
-if isempty(Settings{31}) == 0, handles.Vvariable3_09 = Settings{31}; end
-if isempty(Settings{32}) == 0, handles.Vvariable3_10 = Settings{32}; end
-if isempty(Settings{33}) == 0, handles.Vvariable3_11 = Settings{33}; end
-
-if isempty(Settings{34}) == 0, handles.Vvariable4_01 = Settings{34}; end
-if isempty(Settings{35}) == 0, handles.Vvariable4_02 = Settings{35}; end
-if isempty(Settings{36}) == 0, handles.Vvariable4_03 = Settings{36}; end
-if isempty(Settings{37}) == 0, handles.Vvariable4_04 = Settings{37}; end
-if isempty(Settings{38}) == 0, handles.Vvariable4_05 = Settings{38}; end
-if isempty(Settings{39}) == 0, handles.Vvariable4_06 = Settings{39}; end
-if isempty(Settings{40}) == 0, handles.Vvariable4_07 = Settings{40}; end
-if isempty(Settings{41}) == 0, handles.Vvariable4_08 = Settings{41}; end
-if isempty(Settings{42}) == 0, handles.Vvariable4_09 = Settings{42}; end
-if isempty(Settings{43}) == 0, handles.Vvariable4_10 = Settings{43}; end
-if isempty(Settings{44}) == 0, handles.Vvariable4_11 = Settings{44}; end
-
-if isempty(Settings{45}) == 0, handles.Vvariable5_01 = Settings{45}; end
-if isempty(Settings{46}) == 0, handles.Vvariable5_02 = Settings{46}; end
-if isempty(Settings{47}) == 0, handles.Vvariable5_03 = Settings{47}; end
-if isempty(Settings{48}) == 0, handles.Vvariable5_04 = Settings{48}; end
-if isempty(Settings{49}) == 0, handles.Vvariable5_05 = Settings{49}; end
-if isempty(Settings{50}) == 0, handles.Vvariable5_06 = Settings{50}; end
-if isempty(Settings{51}) == 0, handles.Vvariable5_07 = Settings{51}; end
-if isempty(Settings{52}) == 0, handles.Vvariable5_08 = Settings{52}; end
-if isempty(Settings{53}) == 0, handles.Vvariable5_09 = Settings{53}; end
-if isempty(Settings{54}) == 0, handles.Vvariable5_10 = Settings{54}; end
-if isempty(Settings{55}) == 0, handles.Vvariable5_11 = Settings{55}; end
-
-if isempty(Settings{56}) == 0, handles.Vvariable6_01 = Settings{56}; end
-if isempty(Settings{57}) == 0, handles.Vvariable6_02 = Settings{57}; end
-if isempty(Settings{58}) == 0, handles.Vvariable6_03 = Settings{58}; end
-if isempty(Settings{59}) == 0, handles.Vvariable6_04 = Settings{59}; end
-if isempty(Settings{60}) == 0, handles.Vvariable6_05 = Settings{60}; end
-if isempty(Settings{61}) == 0, handles.Vvariable6_06 = Settings{61}; end
-if isempty(Settings{62}) == 0, handles.Vvariable6_07 = Settings{62}; end
-if isempty(Settings{63}) == 0, handles.Vvariable6_08 = Settings{63}; end
-if isempty(Settings{64}) == 0, handles.Vvariable6_09 = Settings{64}; end
-if isempty(Settings{65}) == 0, handles.Vvariable6_10 = Settings{65}; end
-if isempty(Settings{66}) == 0, handles.Vvariable6_11 = Settings{66}; end
-
-if isempty(Settings{67}) == 0, handles.Vvariable7_01 = Settings{67}; end
-if isempty(Settings{68}) == 0, handles.Vvariable7_02 = Settings{68}; end
-if isempty(Settings{69}) == 0, handles.Vvariable7_03 = Settings{69}; end
-if isempty(Settings{70}) == 0, handles.Vvariable7_04 = Settings{70}; end
-if isempty(Settings{71}) == 0, handles.Vvariable7_05 = Settings{71}; end
-if isempty(Settings{72}) == 0, handles.Vvariable7_06 = Settings{72}; end
-if isempty(Settings{73}) == 0, handles.Vvariable7_07 = Settings{73}; end
-if isempty(Settings{74}) == 0, handles.Vvariable7_08 = Settings{74}; end
-if isempty(Settings{75}) == 0, handles.Vvariable7_09 = Settings{75}; end
-if isempty(Settings{76}) == 0, handles.Vvariable7_10 = Settings{76}; end
-if isempty(Settings{77}) == 0, handles.Vvariable7_11 = Settings{77}; end
-
-if isempty(Settings{78}) == 0, handles.Vvariable8_01 = Settings{78}; end
-if isempty(Settings{79}) == 0, handles.Vvariable8_02 = Settings{79}; end
-if isempty(Settings{80}) == 0, handles.Vvariable8_03 = Settings{80}; end
-if isempty(Settings{81}) == 0, handles.Vvariable8_04 = Settings{81}; end
-if isempty(Settings{82}) == 0, handles.Vvariable8_05 = Settings{82}; end
-if isempty(Settings{83}) == 0, handles.Vvariable8_06 = Settings{83}; end
-if isempty(Settings{84}) == 0, handles.Vvariable8_07 = Settings{84}; end
-if isempty(Settings{85}) == 0, handles.Vvariable8_08 = Settings{85}; end
-if isempty(Settings{86}) == 0, handles.Vvariable8_09 = Settings{86}; end
-if isempty(Settings{87}) == 0, handles.Vvariable8_10 = Settings{87}; end
-if isempty(Settings{88}) == 0, handles.Vvariable8_11 = Settings{88}; end
-%}
-
+% FIXME: This should look more like the loop above.
 for i=1:handles.numAlgorithms,
-    if isempty(Settings{i+handles.numAlgorithms*handles.numVariables}) == 0, handles.(['Valgorithmname',num2str(i)]) = Settings{i+handles.numAlgorithms*handles.numVariables};
-        set(handles.(['AlgorithmName', num2str(i)]),'string',handles.(['Valgorithmname',num2str(i)])), end
+  if isempty(Settings{i+handles.numAlgorithms*handles.numVariables}) == 0, 
+    handles.(['Valgorithmname',TwoDigitString(i)]) = Settings{i+handles.numAlgorithms*handles.numVariables};
+  set(handles.(['AlgorithmName', TwoDigitString(i)]),'string',handles.(['Valgorithmname',TwoDigitString(i)])), end
 end
 
 %{
@@ -727,227 +592,21 @@ CurrentDirectory = pwd;
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
-for i=1:handles.numAlgorithms,
-    for j=1:handles.numVariables,
-        if (j < 10)
-            stringend = strcat('0',num2str(j));
-        else
-            stringend = num2str(j);
-        end
-        if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-            Settings{(i-1)*handles.numVariables + j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
+for AlgorithmNumber=1:handles.numAlgorithms,
+    for VariableNumber=1:handles.numVariables,
+      VariableName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+        if isfield(handles, VariableName) ==1,
+            Settings{(AlgorithmNumber-1)*handles.numVariables + VariableNumber} = ...
+              handles.(VariableName); end
     end
 end
 
-%{
-if isfield(handles,'Vvariable1_01') ==1, 
-    Settings{1} = handles.Vvariable1_01; end
-if isfield(handles,'Vvariable1_02') ==1, 
-    Settings{2} = handles.Vvariable1_02; end
-if isfield(handles,'Vvariable1_03') ==1, 
-    Settings{3} = handles.Vvariable1_03; end
-if isfield(handles,'Vvariable1_04') ==1, 
-    Settings{4} = handles.Vvariable1_04; end
-if isfield(handles,'Vvariable1_05') ==1, 
-    Settings{5} = handles.Vvariable1_05; end
-if isfield(handles,'Vvariable1_06') ==1, 
-    Settings{6} = handles.Vvariable1_06; end
-if isfield(handles,'Vvariable1_07') ==1, 
-    Settings{7} = handles.Vvariable1_07; end
-if isfield(handles,'Vvariable1_08') ==1, 
-    Settings{8} = handles.Vvariable1_08; end
-if isfield(handles,'Vvariable1_09') ==1, 
-    Settings{9} = handles.Vvariable1_09; end
-if isfield(handles,'Vvariable1_10') ==1, 
-    Settings{10} = handles.Vvariable1_10; end
-if isfield(handles,'Vvariable1_11') ==1, 
-    Settings{11} = handles.Vvariable1_11; end
-
-if isfield(handles,'Vvariable2_01') ==1, 
-    Settings{12} = handles.Vvariable2_01; end
-if isfield(handles,'Vvariable2_02') ==1, 
-    Settings{13} = handles.Vvariable2_02; end
-if isfield(handles,'Vvariable2_03') ==1, 
-    Settings{14} = handles.Vvariable2_03; end
-if isfield(handles,'Vvariable2_04') ==1, 
-    Settings{15} = handles.Vvariable2_04; end
-if isfield(handles,'Vvariable2_05') ==1, 
-    Settings{16} = handles.Vvariable2_05; end
-if isfield(handles,'Vvariable2_06') ==1, 
-    Settings{17} = handles.Vvariable2_06; end
-if isfield(handles,'Vvariable2_07') ==1, 
-    Settings{18} = handles.Vvariable2_07; end
-if isfield(handles,'Vvariable2_08') ==1, 
-    Settings{19} = handles.Vvariable2_08; end
-if isfield(handles,'Vvariable2_09') ==1, 
-    Settings{20} = handles.Vvariable2_09; end
-if isfield(handles,'Vvariable2_10') ==1, 
-    Settings{21} = handles.Vvariable2_10; end
-if isfield(handles,'Vvariable2_11') ==1, 
-    Settings{22} = handles.Vvariable2_11; end
-
-if isfield(handles,'Vvariable3_01') ==1, 
-    Settings{23} = handles.Vvariable3_01; end
-if isfield(handles,'Vvariable3_02') ==1, 
-    Settings{24} = handles.Vvariable3_02; end
-if isfield(handles,'Vvariable3_03') ==1, 
-    Settings{25} = handles.Vvariable3_03; end
-if isfield(handles,'Vvariable3_04') ==1, 
-    Settings{26} = handles.Vvariable3_04; end
-if isfield(handles,'Vvariable3_05') ==1, 
-    Settings{27} = handles.Vvariable3_05; end
-if isfield(handles,'Vvariable3_06') ==1, 
-    Settings{28} = handles.Vvariable3_06; end
-if isfield(handles,'Vvariable3_07') ==1, 
-    Settings{29} = handles.Vvariable3_07; end
-if isfield(handles,'Vvariable3_08') ==1, 
-    Settings{30} = handles.Vvariable3_08; end
-if isfield(handles,'Vvariable3_09') ==1, 
-    Settings{31} = handles.Vvariable3_09; end
-if isfield(handles,'Vvariable3_10') ==1, 
-    Settings{32} = handles.Vvariable3_10; end
-if isfield(handles,'Vvariable3_11') ==1, 
-    Settings{33} = handles.Vvariable3_11; end
-
-if isfield(handles,'Vvariable4_01') ==1, 
-    Settings{34} = handles.Vvariable4_01; end
-if isfield(handles,'Vvariable4_02') ==1, 
-    Settings{35} = handles.Vvariable4_02; end
-if isfield(handles,'Vvariable4_03') ==1, 
-    Settings{36} = handles.Vvariable4_03; end
-if isfield(handles,'Vvariable4_04') ==1, 
-    Settings{37} = handles.Vvariable4_04; end
-if isfield(handles,'Vvariable4_05') ==1, 
-    Settings{38} = handles.Vvariable4_05; end
-if isfield(handles,'Vvariable4_06') ==1, 
-    Settings{39} = handles.Vvariable4_06; end
-if isfield(handles,'Vvariable4_07') ==1, 
-    Settings{40} = handles.Vvariable4_07; end
-if isfield(handles,'Vvariable4_08') ==1, 
-    Settings{41} = handles.Vvariable4_08; end
-if isfield(handles,'Vvariable4_09') ==1, 
-    Settings{42} = handles.Vvariable4_09; end
-if isfield(handles,'Vvariable4_10') ==1, 
-    Settings{43} = handles.Vvariable4_10; end
-if isfield(handles,'Vvariable4_11') ==1, 
-    Settings{44} = handles.Vvariable4_11; end
-
-if isfield(handles,'Vvariable5_01') ==1, 
-    Settings{45} = handles.Vvariable5_01; end
-if isfield(handles,'Vvariable5_02') ==1, 
-    Settings{46} = handles.Vvariable5_02; end
-if isfield(handles,'Vvariable5_03') ==1, 
-    Settings{47} = handles.Vvariable5_03; end
-if isfield(handles,'Vvariable5_04') ==1, 
-    Settings{48} = handles.Vvariable5_04; end
-if isfield(handles,'Vvariable5_05') ==1, 
-    Settings{49} = handles.Vvariable5_05; end
-if isfield(handles,'Vvariable5_06') ==1, 
-    Settings{50} = handles.Vvariable5_06; end
-if isfield(handles,'Vvariable5_07') ==1, 
-    Settings{51} = handles.Vvariable5_07; end
-if isfield(handles,'Vvariable5_08') ==1, 
-    Settings{52} = handles.Vvariable5_08; end
-if isfield(handles,'Vvariable5_09') ==1, 
-    Settings{53} = handles.Vvariable5_09; end
-if isfield(handles,'Vvariable5_10') ==1, 
-    Settings{54} = handles.Vvariable5_10; end
-if isfield(handles,'Vvariable5_11') ==1, 
-    Settings{55} = handles.Vvariable5_11; end
-
-if isfield(handles,'Vvariable6_01') ==1, 
-    Settings{56} = handles.Vvariable6_01; end
-if isfield(handles,'Vvariable6_02') ==1, 
-    Settings{57} = handles.Vvariable6_02; end
-if isfield(handles,'Vvariable6_03') ==1, 
-    Settings{58} = handles.Vvariable6_03; end
-if isfield(handles,'Vvariable6_04') ==1, 
-    Settings{59} = handles.Vvariable6_04; end
-if isfield(handles,'Vvariable6_05') ==1, 
-    Settings{60} = handles.Vvariable6_05; end
-if isfield(handles,'Vvariable6_06') ==1, 
-    Settings{61} = handles.Vvariable6_06; end
-if isfield(handles,'Vvariable6_07') ==1, 
-    Settings{62} = handles.Vvariable6_07; end
-if isfield(handles,'Vvariable6_08') ==1, 
-    Settings{63} = handles.Vvariable6_08; end
-if isfield(handles,'Vvariable6_09') ==1, 
-    Settings{64} = handles.Vvariable6_09; end
-if isfield(handles,'Vvariable6_10') ==1, 
-    Settings{65} = handles.Vvariable6_10; end
-if isfield(handles,'Vvariable6_11') ==1, 
-    Settings{66} = handles.Vvariable6_11; end
-
-if isfield(handles,'Vvariable7_01') ==1, 
-    Settings{67} = handles.Vvariable7_01; end
-if isfield(handles,'Vvariable7_02') ==1, 
-    Settings{68} = handles.Vvariable7_02; end
-if isfield(handles,'Vvariable7_03') ==1, 
-    Settings{69} = handles.Vvariable7_03; end
-if isfield(handles,'Vvariable7_04') ==1, 
-    Settings{70} = handles.Vvariable7_04; end
-if isfield(handles,'Vvariable7_05') ==1, 
-    Settings{71} = handles.Vvariable7_05; end
-if isfield(handles,'Vvariable7_06') ==1, 
-    Settings{72} = handles.Vvariable7_06; end
-if isfield(handles,'Vvariable7_07') ==1, 
-    Settings{73} = handles.Vvariable7_07; end
-if isfield(handles,'Vvariable7_08') ==1, 
-    Settings{74} = handles.Vvariable7_08; end
-if isfield(handles,'Vvariable7_09') ==1, 
-    Settings{75} = handles.Vvariable7_09; end
-if isfield(handles,'Vvariable7_10') ==1, 
-    Settings{76} = handles.Vvariable7_10; end
-if isfield(handles,'Vvariable7_11') ==1, 
-    Settings{77} = handles.Vvariable7_11; end
-
-if isfield(handles,'Vvariable8_01') ==1, 
-    Settings{78} = handles.Vvariable8_01; end
-if isfield(handles,'Vvariable8_02') ==1, 
-    Settings{79} = handles.Vvariable8_02; end
-if isfield(handles,'Vvariable8_03') ==1, 
-    Settings{80} = handles.Vvariable8_03; end
-if isfield(handles,'Vvariable8_04') ==1, 
-    Settings{81} = handles.Vvariable8_04; end
-if isfield(handles,'Vvariable8_05') ==1, 
-    Settings{82} = handles.Vvariable8_05; end
-if isfield(handles,'Vvariable8_06') ==1, 
-    Settings{83} = handles.Vvariable8_06; end
-if isfield(handles,'Vvariable8_07') ==1, 
-    Settings{84} = handles.Vvariable8_07; end
-if isfield(handles,'Vvariable8_08') ==1, 
-    Settings{85} = handles.Vvariable8_08; end
-if isfield(handles,'Vvariable8_09') ==1, 
-    Settings{86} = handles.Vvariable8_09; end
-if isfield(handles,'Vvariable8_10') ==1, 
-    Settings{87} = handles.Vvariable8_10; end
-if isfield(handles,'Vvariable8_11') ==1, 
-    Settings{88} = handles.Vvariable8_11; end
-%}
-
-for i=1:handles.numAlgorithms,
-    if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        Settings{i+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',num2str(i)]); end
+for AlgorithmNumber=1:handles.numAlgorithms,
+  if isfield(handles, ['Valgorithmname' TwoDigitString(AlgorithmNumber)]),
+    Settings{AlgorithmNumber+handles.numAlgorithms*handles.numVariables} = ...
+        handles.(['Valgorithmname' TwoDigitString(AlgorithmNumber)]);
+  end
 end
-
-%{
-if isfield(handles,'Valgorithmname1') ==1, 
-    Settings{89} = handles.Valgorithmname1; end
-if isfield(handles,'Valgorithmname2') ==1, 
-    Settings{90} = handles.Valgorithmname2; end
-if isfield(handles,'Valgorithmname3') ==1, 
-    Settings{91} = handles.Valgorithmname3; end
-if isfield(handles,'Valgorithmname4') ==1, 
-    Settings{92} = handles.Valgorithmname4; end
-if isfield(handles,'Valgorithmname5') ==1, 
-    Settings{93} = handles.Valgorithmname5; end
-if isfield(handles,'Valgorithmname6') ==1,
-     Settings{94} = handles.Valgorithmname6; end
-if isfield(handles,'Valgorithmname7') ==1, 
-    Settings{95} = handles.Valgorithmname7; end
-if isfield(handles,'Valgorithmname8') ==1, 
-    Settings{96} = handles.Valgorithmname8; end
-%}
 
 if isfield(handles,'Vpixelsize') ==1, 
     Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; end
@@ -992,230 +651,23 @@ eval(['load ',OutputFileName])
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
+% FIXME:
 for i=1:handles.numAlgorithms,
     for j=1:handles.numVariables,
-        if (j < 10)
-            stringend = strcat('0',num2str(j));
-        else
-            stringend = num2str(j);
-        end
-        if isfield(handles, strcat('Vvariable',num2str(i),'_',stringend)) ==1,
-            Settings{(i-1)*handles.numVariables+j} = handles.(['Vvariable',num2str(i),'_',stringend]); end
+        if isfield(handles, strcat('Vvariable',TwoDigitString(i),'_',TwoDigitString(j))) ==1,
+            Settings{(i-1)*handles.numVariables+j} = handles.(['Vvariable',TwoDigitString(i),'_',TwoDigitString(j)]); end
     end
 end
 
-%{
-if isfield(handles,'Vvariable1_01') ==1, 
-    Settings{1} = handles.Vvariable1_01; end
-if isfield(handles,'Vvariable1_02') ==1, 
-    Settings{2} = handles.Vvariable1_02; end
-if isfield(handles,'Vvariable1_03') ==1, 
-    Settings{3} = handles.Vvariable1_03; end
-if isfield(handles,'Vvariable1_04') ==1, 
-    Settings{4} = handles.Vvariable1_04; end
-if isfield(handles,'Vvariable1_05') ==1, 
-    Settings{5} = handles.Vvariable1_05; end
-if isfield(handles,'Vvariable1_06') ==1, 
-    Settings{6} = handles.Vvariable1_06; end
-if isfield(handles,'Vvariable1_07') ==1, 
-    Settings{7} = handles.Vvariable1_07; end
-if isfield(handles,'Vvariable1_08') ==1, 
-    Settings{8} = handles.Vvariable1_08; end
-if isfield(handles,'Vvariable1_09') ==1, 
-    Settings{9} = handles.Vvariable1_09; end
-if isfield(handles,'Vvariable1_10') ==1, 
-    Settings{10} = handles.Vvariable1_10; end
-if isfield(handles,'Vvariable1_11') ==1, 
-    Settings{11} = handles.Vvariable1_11; end
-
-if isfield(handles,'Vvariable2_01') ==1, 
-    Settings{12} = handles.Vvariable2_01; end
-if isfield(handles,'Vvariable2_02') ==1, 
-    Settings{13} = handles.Vvariable2_02; end
-if isfield(handles,'Vvariable2_03') ==1, 
-    Settings{14} = handles.Vvariable2_03; end
-if isfield(handles,'Vvariable2_04') ==1, 
-    Settings{15} = handles.Vvariable2_04; end
-if isfield(handles,'Vvariable2_05') ==1, 
-    Settings{16} = handles.Vvariable2_05; end
-if isfield(handles,'Vvariable2_06') ==1, 
-    Settings{17} = handles.Vvariable2_06; end
-if isfield(handles,'Vvariable2_07') ==1, 
-    Settings{18} = handles.Vvariable2_07; end
-if isfield(handles,'Vvariable2_08') ==1, 
-    Settings{19} = handles.Vvariable2_08; end
-if isfield(handles,'Vvariable2_09') ==1, 
-    Settings{20} = handles.Vvariable2_09; end
-if isfield(handles,'Vvariable2_10') ==1, 
-    Settings{21} = handles.Vvariable2_10; end
-if isfield(handles,'Vvariable2_11') ==1, 
-    Settings{22} = handles.Vvariable2_11; end
-
-if isfield(handles,'Vvariable3_01') ==1, 
-    Settings{23} = handles.Vvariable3_01; end
-if isfield(handles,'Vvariable3_02') ==1, 
-    Settings{24} = handles.Vvariable3_02; end
-if isfield(handles,'Vvariable3_03') ==1, 
-    Settings{25} = handles.Vvariable3_03; end
-if isfield(handles,'Vvariable3_04') ==1, 
-    Settings{26} = handles.Vvariable3_04; end
-if isfield(handles,'Vvariable3_05') ==1, 
-    Settings{27} = handles.Vvariable3_05; end
-if isfield(handles,'Vvariable3_06') ==1, 
-    Settings{28} = handles.Vvariable3_06; end
-if isfield(handles,'Vvariable3_07') ==1, 
-    Settings{29} = handles.Vvariable3_07; end
-if isfield(handles,'Vvariable3_08') ==1, 
-    Settings{30} = handles.Vvariable3_08; end
-if isfield(handles,'Vvariable3_09') ==1, 
-    Settings{31} = handles.Vvariable3_09; end
-if isfield(handles,'Vvariable3_10') ==1, 
-    Settings{32} = handles.Vvariable3_10; end
-if isfield(handles,'Vvariable3_11') ==1, 
-    Settings{33} = handles.Vvariable3_11; end
-
-if isfield(handles,'Vvariable4_01') ==1, 
-    Settings{34} = handles.Vvariable4_01; end
-if isfield(handles,'Vvariable4_02') ==1, 
-    Settings{35} = handles.Vvariable4_02; end
-if isfield(handles,'Vvariable4_03') ==1, 
-    Settings{36} = handles.Vvariable4_03; end
-if isfield(handles,'Vvariable4_04') ==1, 
-    Settings{37} = handles.Vvariable4_04; end
-if isfield(handles,'Vvariable4_05') ==1, 
-    Settings{38} = handles.Vvariable4_05; end
-if isfield(handles,'Vvariable4_06') ==1, 
-    Settings{39} = handles.Vvariable4_06; end
-if isfield(handles,'Vvariable4_07') ==1, 
-    Settings{40} = handles.Vvariable4_07; end
-if isfield(handles,'Vvariable4_08') ==1, 
-    Settings{41} = handles.Vvariable4_08; end
-if isfield(handles,'Vvariable4_09') ==1, 
-    Settings{42} = handles.Vvariable4_09; end
-if isfield(handles,'Vvariable4_10') ==1, 
-    Settings{43} = handles.Vvariable4_10; end
-if isfield(handles,'Vvariable4_11') ==1, 
-    Settings{44} = handles.Vvariable4_11; end
-
-if isfield(handles,'Vvariable5_01') ==1, 
-    Settings{45} = handles.Vvariable5_01; end
-if isfield(handles,'Vvariable5_02') ==1, 
-    Settings{46} = handles.Vvariable5_02; end
-if isfield(handles,'Vvariable5_03') ==1, 
-    Settings{47} = handles.Vvariable5_03; end
-if isfield(handles,'Vvariable5_04') ==1, 
-    Settings{48} = handles.Vvariable5_04; end
-if isfield(handles,'Vvariable5_05') ==1, 
-    Settings{49} = handles.Vvariable5_05; end
-if isfield(handles,'Vvariable5_06') ==1, 
-    Settings{50} = handles.Vvariable5_06; end
-if isfield(handles,'Vvariable5_07') ==1, 
-    Settings{51} = handles.Vvariable5_07; end
-if isfield(handles,'Vvariable5_08') ==1, 
-    Settings{52} = handles.Vvariable5_08; end
-if isfield(handles,'Vvariable5_09') ==1, 
-    Settings{53} = handles.Vvariable5_09; end
-if isfield(handles,'Vvariable5_10') ==1, 
-    Settings{54} = handles.Vvariable5_10; end
-if isfield(handles,'Vvariable5_11') ==1, 
-    Settings{55} = handles.Vvariable5_11; end
-
-if isfield(handles,'Vvariable6_01') ==1, 
-    Settings{56} = handles.Vvariable6_01; end
-if isfield(handles,'Vvariable6_02') ==1, 
-    Settings{57} = handles.Vvariable6_02; end
-if isfield(handles,'Vvariable6_03') ==1, 
-    Settings{58} = handles.Vvariable6_03; end
-if isfield(handles,'Vvariable6_04') ==1, 
-    Settings{59} = handles.Vvariable6_04; end
-if isfield(handles,'Vvariable6_05') ==1, 
-    Settings{60} = handles.Vvariable6_05; end
-if isfield(handles,'Vvariable6_06') ==1, 
-    Settings{61} = handles.Vvariable6_06; end
-if isfield(handles,'Vvariable6_07') ==1, 
-    Settings{62} = handles.Vvariable6_07; end
-if isfield(handles,'Vvariable6_08') ==1, 
-    Settings{63} = handles.Vvariable6_08; end
-if isfield(handles,'Vvariable6_09') ==1, 
-    Settings{64} = handles.Vvariable6_09; end
-if isfield(handles,'Vvariable6_10') ==1, 
-    Settings{65} = handles.Vvariable6_10; end
-if isfield(handles,'Vvariable6_11') ==1, 
-    Settings{66} = handles.Vvariable6_11; end
-
-if isfield(handles,'Vvariable7_01') ==1, 
-    Settings{67} = handles.Vvariable7_01; end
-if isfield(handles,'Vvariable7_02') ==1, 
-    Settings{68} = handles.Vvariable7_02; end
-if isfield(handles,'Vvariable7_03') ==1, 
-    Settings{69} = handles.Vvariable7_03; end
-if isfield(handles,'Vvariable7_04') ==1, 
-    Settings{70} = handles.Vvariable7_04; end
-if isfield(handles,'Vvariable7_05') ==1, 
-    Settings{71} = handles.Vvariable7_05; end
-if isfield(handles,'Vvariable7_06') ==1, 
-    Settings{72} = handles.Vvariable7_06; end
-if isfield(handles,'Vvariable7_07') ==1, 
-    Settings{73} = handles.Vvariable7_07; end
-if isfield(handles,'Vvariable7_08') ==1, 
-    Settings{74} = handles.Vvariable7_08; end
-if isfield(handles,'Vvariable7_09') ==1, 
-    Settings{75} = handles.Vvariable7_09; end
-if isfield(handles,'Vvariable7_10') ==1, 
-    Settings{76} = handles.Vvariable7_10; end
-if isfield(handles,'Vvariable7_11') ==1, 
-    Settings{77} = handles.Vvariable7_11; end
-
-if isfield(handles,'Vvariable8_01') ==1, 
-    Settings{78} = handles.Vvariable8_01; end
-if isfield(handles,'Vvariable8_02') ==1, 
-    Settings{79} = handles.Vvariable8_02; end
-if isfield(handles,'Vvariable8_03') ==1, 
-    Settings{80} = handles.Vvariable8_03; end
-if isfield(handles,'Vvariable8_04') ==1, 
-    Settings{81} = handles.Vvariable8_04; end
-if isfield(handles,'Vvariable8_05') ==1, 
-    Settings{82} = handles.Vvariable8_05; end
-if isfield(handles,'Vvariable8_06') ==1, 
-    Settings{83} = handles.Vvariable8_06; end
-if isfield(handles,'Vvariable8_07') ==1, 
-    Settings{84} = handles.Vvariable8_07; end
-if isfield(handles,'Vvariable8_08') ==1, 
-    Settings{85} = handles.Vvariable8_08; end
-if isfield(handles,'Vvariable8_09') ==1, 
-    Settings{86} = handles.Vvariable8_09; end
-if isfield(handles,'Vvariable8_10') ==1, 
-    Settings{87} = handles.Vvariable8_10; end
-if isfield(handles,'Vvariable8_11') ==1, 
-    Settings{88} = handles.Vvariable8_11; end
-%}
-
+% FIXME:
 for i=1:handles.numAlgorithms,
     if isfield(handles, strcat('Valgorithmname', num2str(i))),
         Settings{i+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',num2str(i)]); end
 end
 
-%{
-if isfield(handles,'Valgorithmname1') ==1, 
-    Settings{89} = handles.Valgorithmname1; end
-if isfield(handles,'Valgorithmname2') ==1, 
-    Settings{90} = handles.Valgorithmname2; end
-if isfield(handles,'Valgorithmname3') ==1, 
-    Settings{91} = handles.Valgorithmname3; end
-if isfield(handles,'Valgorithmname4') ==1, 
-    Settings{92} = handles.Valgorithmname4; end
-if isfield(handles,'Valgorithmname5') ==1, 
-    Settings{93} = handles.Valgorithmname5; end
-if isfield(handles,'Valgorithmname6') ==1, 
-    Settings{94} = handles.Valgorithmname6; end
-if isfield(handles,'Valgorithmname7') ==1, 
-    Settings{95} = handles.Valgorithmname7; end
-if isfield(handles,'Valgorithmname8') ==1, 
-    Settings{96} = handles.Valgorithmname8; end
-%}
-
 if isfield(handles,'Vpixelsize') ==1, 
-    Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; end
+    Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; 
+end
 
 h = msgbox('In the next window, select the directory location where you would like to save the new file containing the extracted settings. Do not forget to type in the desired filename.');
 uiwait(h) 
@@ -1298,39 +750,9 @@ end
 
 % --- Executes on button press in LoadAlgorithm.
 function LoadAlgorithm_Callback(hObject,eventdata,handles)
-algName = get(hObject,'tag');
-numAlg = trimstr(algName,'LoadAlgorithm','left');
-loadalgorithm(num2str(numAlg),handles);
-
-%{
-% --- Executes on button press in LoadAlgorithm1.
-function LoadAlgorithm1_Callback(hObject, eventdata, handles)
-loadalgorithm('1', handles);
-% --- Executes on button press in LoadAlgorithm2.
-function LoadAlgorithm2_Callback(hObject, eventdata, handles)
-loadalgorithm('2', handles);
-% --- Executes on button press in LoadAlgorithm3.
-function LoadAlgorithm3_Callback(hObject, eventdata, handles)
-loadalgorithm('3', handles);
-% --- Executes on button press in LoadAlgorithm4.
-function LoadAlgorithm4_Callback(hObject, eventdata, handles)
-loadalgorithm('4', handles);
-% --- Executes on button press in LoadAlgorithm5.
-function LoadAlgorithm5_Callback(hObject, eventdata, handles)
-loadalgorithm('5', handles);
-% --- Executes on button press in LoadAlgorithm6.
-function LoadAlgorithm6_Callback(hObject, eventdata, handles)
-loadalgorithm('6', handles);
-% --- Executes on button press in LoadAlgorithm7.
-function LoadAlgorithm7_Callback(hObject, eventdata, handles)
-loadalgorithm('7', handles);
-% --- Executes on button press in LoadAlgorithm8.
-function LoadAlgorithm8_Callback(hObject, eventdata, handles)
-loadalgorithm('8', handles);
-%}
-%%%%%%%
-
-function loadalgorithm(AlgorithmNumber, handles)
+% Find which algorithm slot number this callback was called for.
+LoadAlgorithmButtonTag = get(hObject,'tag');
+AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
 
 %%% 1. Opens a user interface to retrieve the .m file you want to use.  The
 %%% name of that .m file is stored as the variablebox2_1
@@ -1383,15 +805,15 @@ else
     %%% you are editing settings for) to be invisible and then set
     %%% the one you are working on to be visible.
     for i=1:handles.numAlgorithms;
-        set(handles.(['Indicator',num2str(i)]),'Visible','off');
+        set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
     end;
-    set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
+    set(handles.(['Indicator' TwoDigitString(str2num(AlgorithmNumber))]),'Visible','on');
 
     %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
     %%% to be invisible.
     for i = 1:handles.numVariables;
-        set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off');
-        set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off');
+        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off');
+        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off');
     end;
 
     %%% 5. Clears the variable values in the handles structure in case some are
@@ -1399,51 +821,14 @@ else
     %%% overwritten). Before removing a variable, you have to check that the
     %%% variable exists or else the 'rmfield' function gives an error.
 
-    for i=1:handles.numVariables,
-        if (i<10);
-            stringend = ['0',num2str(i)];
-        end
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',stringend);
+% FIXME:
+    for i=1:handles.numVariables
+        stringend = TwoDigitString(i);
+        ConstructedName = strcat('Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',stringend);
         if isfield(handles,ConstructedName) == 1;
             handles = rmfield(handles, ConstructedName);
         end;
     end;
-
-    %{
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
-    if isfield(handles,ConstructedName) == 1;
-    handles = rmfield(handles,ConstructedName); end;
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
-    if isfield(handles,ConstructedName) == 1;
-    handles = rmfield(handles,ConstructedName); end;
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
-    if isfield(handles,ConstructedName) == 1;
-    handles = rmfield(handles,ConstructedName); end;
-    ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
-            if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-             ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
-             if isfield(handles,ConstructedName) == 1;
-             handles = rmfield(handles,ConstructedName); end;
-%}
 
 %%% 6. The last two characters (=.m) are removed from the
 %%% AlgorithmName.m and called AlgorithmName.
@@ -1451,13 +836,10 @@ AlgorithmName = AlgorithmNamedotm(4:end-2);
 %%% The name of the algorithm is shown in a text box in the GUI (the text
 %%% box is called AlgorithmName1.) and in a text box in the GUI which
 %%% displays the current algorithm (whose settings are shown).
-set(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
-    'String',AlgorithmName);
+set(handles.(['AlgorithmName' TwoDigitString(str2num(AlgorithmNumber))]),'String',AlgorithmName);
 
 %%% 7. Saves the AlgorithmName to the handles structure.
-              ConstructedName = strcat('handles.Valgorithmname',...
-                  AlgorithmNumber);
-              eval([ConstructedName, '= AlgorithmName;']);
+handles.(['Valgorithmname' TwoDigitString(str2num(AlgorithmNumber))]) = AlgorithmName;
 
 %%% 8. The text description for each variable for the chosen algorithm is 
 %%% extracted from the algorithm's .m file and displayed.  
@@ -1466,17 +848,18 @@ while 1;
     output = fgetl(fid); if ~ischar(output); break; end;
 
     j=0;
+% FIXME:
     for i=1:handles.numVariables,
         if j == 1;
             break;
         elseif i < 10;
             if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
+                set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
                 j=1;
             end
         else
             if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                set(handles.(['VariableDescription',num2str(i)]), 'string', output(13:end),'visible', 'on');
+                set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
                 j=1;
             end
         end
@@ -1486,10 +869,13 @@ while 1;
         if j == 1;
             break;
         elseif i < 10;
+            %%% FIXME: What is going on here?  Also, the string
+            %%% comparison count needs to be corrected for two digit
+            %%% appended numbers.  Also, get rid of the evals()
             if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
-                set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
-                set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
-                ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','0',num2str(i));
+                set(handles.(['VariableBox',TwoDigitString(i)]), 'string', displayval,'visible', 'on');
+                set(handles.(['VariableDescription',TwoDigitString(i)]), 'visible', 'on');
+                ConstructedName = strcat('handles.Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
                 eval([ConstructedName, '= displayval;']);
                 j=1;
             end
@@ -1497,7 +883,7 @@ while 1;
             if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
                 set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
                 set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
-                ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',num2str(i));
+                ConstructedName = strcat('handles.Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
                 eval([ConstructedName, '= displayval;']);
                 j=1;
             end
@@ -1505,94 +891,6 @@ while 1;
     end
 end
       
-%{
-        if strncmp(output,'%textVAR1 ',10) == 1;
-            set(handles.VariableDescription1,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR2 ',10) == 1;
-            set(handles.VariableDescription2,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR3 ',10) == 1;
-            set(handles.VariableDescription3,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR4 ',10) == 1;
-            set(handles.VariableDescription4,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR5 ',10) == 1;
-            set(handles.VariableDescription5,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR6 ',10) == 1;
-            set(handles.VariableDescription6,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR7 ',10) == 1;
-            set(handles.VariableDescription7,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR8 ',10) == 1;
-            set(handles.VariableDescription8,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR9 ',10) == 1;
-            set(handles.VariableDescription9,'string',output(12:end),'visible','on');
-        elseif strncmp(output,'%textVAR10',10) == 1;
-            set(handles.VariableDescription10,'string',output(13:end),'visible','on');
-        elseif strncmp(output,'%textVAR11',10) == 1;
-            set(handles.VariableDescription11,'string',output(13:end),'visible','on');
-
-
-            %%% 9. The default value for each variable is extracted from the algorithm's
-            %%% .m file and displayed. The variables' values are stored in the handles structure.
-
-        elseif strncmp(output,'%defaultVAR1 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox1,'string',displayval,'visible','on');
-            set(handles.VariableDescription1,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','01');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR2 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox2,'string',displayval,'visible','on');
-            set(handles.VariableDescription2,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','02');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR3 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox3,'string',displayval,'visible','on');
-            set(handles.VariableDescription3,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','03');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR4 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox4,'string',displayval,'visible','on');
-            set(handles.VariableDescription4,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','04');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR5 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox5,'string',displayval,'visible','on');
-            set(handles.VariableDescription5,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','05');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR6 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox6,'string',displayval,'visible','on');
-            set(handles.VariableDescription6,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','06');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR7 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox7,'string',displayval,'visible','on');
-            set(handles.VariableDescription7,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','07');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR8 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox8,'string',displayval,'visible','on');
-            set(handles.VariableDescription8,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','08');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR9 ',13) == 1; displayval = output(16:end);
-            set(handles.VariableBox9,'string',displayval,'visible','on');
-            set(handles.VariableDescription9,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','09');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR10 ',13) == 1; displayval = output(17:end);
-            set(handles.VariableBox10,'string',displayval,'visible','on');
-            set(handles.VariableDescription10,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','10');
-            eval([ConstructedName, '= displayval;']);
-        elseif strncmp(output,'%defaultVAR11 ',13) == 1; displayval = output(17:end);
-            set(handles.VariableBox11,'string',displayval,'visible','on');
-            set(handles.VariableDescription11,'visible','on');
-            ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_','11');
-            eval([ConstructedName, '= displayval;']);
-
-        end
-
-%}
-
       fclose(fid);
 end
 
@@ -1606,33 +904,12 @@ guidata(gcbo, handles);
 
 % --- Executes on button press for all ClearAlgorithm buttons.
 function ClearAlgorithm_Callback(hObject, eventdata, handles)
-algName = get(hObject,'tag');
-numAlg = trimstr(algName,'ClearAlgorithm','left');
-handles = clearalgorithm(num2str(numAlg),handles, 'Confirm');
+AlgorithmName = get(hObject,'tag');
+AlgorithmNumber = trimstr(algName,'ClearAlgorithm','left');
+handles = ClearAlgorithm_Helper(AlgorithmNumber, handles, 'Confirm');
 
-%{
-% --- Executes on button press in ClearAlgorithm1.
-function ClearAlgorithm1_Callback(hObject, eventdata, handles)
-%%% Runs the function "clearalgorithm" with input argument AlgorithmNumber
-%%% = 1. 
-handles = clearalgorithm('1', handles, 'Confirm');
-function ClearAlgorithm2_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('2', handles, 'Confirm');
-function ClearAlgorithm3_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('3', handles, 'Confirm');
-function ClearAlgorithm4_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('4', handles, 'Confirm');
-function ClearAlgorithm5_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('5', handles, 'Confirm');
-function ClearAlgorithm6_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('6', handles, 'Confirm');
-function ClearAlgorithm7_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('7', handles, 'Confirm');
-function ClearAlgorithm8_Callback(hObject, eventdata, handles)
-handles = clearalgorithm('8', handles, 'Confirm');
-%}
-
-function handles = clearalgorithm(AlgorithmNumber, handles, ConfirmOrNot)
+% separated because it's called elsewhere
+function handles = ClearAlgorithm_Helper(AlgorithmNumber, handles, ConfirmOrNot)
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the algorithm.
@@ -1642,8 +919,7 @@ if strcmp(ConfirmOrNot, 'Confirm') == 1
     end
 end
 %%% 1. Sets the proper algorithm name to "No analysis module loaded" 
-set(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
-    'String','No analysis module loaded');
+set(handles.(['AlgorithmName' AlgorithmNumber]),'String','No analysis module loaded');
 
 %%% 2. Removes the AlgorithmName from the handles structure.
              ConstructedName = strcat('Valgorithmname',AlgorithmNumber);
@@ -1654,25 +930,22 @@ set(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
 %%% you are editing settings for) to be invisible and then set 
 %%% the one you are working on to be visible.
 for i=1:handles.numAlgorithms
-   set(handles.(['Indicator',num2str(i)]),'Visible','off');
+   set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
 end
-set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
+set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
 
 %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
 %%% to be invisible.
 for i = 1:handles.numVariables
-   set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off')
-   set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off')
+   set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
+   set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
 
 %%% 5. Clears the variable values in the handles structure.
 
+% FIXME:
 for i=1:handles.numVariables,
-    if(i<10);
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_0',num2str(i));
-    else
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',num2str(i));
-    end
+    ConstructedName = strcat('Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
     if isfield(handles,ConstructedName) == 1;
         handles = rmfield(handles, ConstructedName);
     end;
@@ -1722,57 +995,34 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in ViewAlgorithm.
 function ViewAlgorithm_Callback(hObject,eventdata,handles)
-algName = get(hObject,'tag');
-numAlg = trimstr(algName,'ViewAlgorithm','left');
-viewalgorithm(num2str(numAlg),handles)
+ButtonTag = get(hObject,'tag');
+AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
 
-%{
-% --- Executes on button press in ViewAlgorithm1.
-function ViewAlgorithm1_Callback(hObject, eventdata, handles)
-viewalgorithm('1',handles)
-function ViewAlgorithm2_Callback(hObject, eventdata, handles)
-viewalgorithm('2',handles)
-function ViewAlgorithm3_Callback(hObject, eventdata, handles)
-viewalgorithm('3',handles)
-function ViewAlgorithm4_Callback(hObject, eventdata, handles)
-viewalgorithm('4',handles)
-function ViewAlgorithm5_Callback(hObject, eventdata, handles)
-viewalgorithm('5',handles)
-function ViewAlgorithm6_Callback(hObject, eventdata, handles)
-viewalgorithm('6',handles)
-function ViewAlgorithm7_Callback(hObject, eventdata, handles)
-viewalgorithm('7',handles)
-function ViewAlgorithm8_Callback(hObject, eventdata, handles)
-viewalgorithm('8',handles)
-%}
-
-function viewalgorithm(AlgorithmNumber, handles)
 %%% 1. Set all the indicator bars (which tell you which algorithm 
 %%% you are editing settings for) to be invisible and then set 
 %%% the one you are working on to be visible.
 for i=1:handles.numAlgorithms
-    set(eval(strcat('handles.Indicator',num2str(i))),'Visible','off');
+    set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
 end
-set(eval(strcat('handles.Indicator',AlgorithmNumber)),'Visible','on');
+set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
 
 
 %%% 2. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
 for i = 1:handles.numVariables
-    set(eval(strcat('handles.VariableBox',num2str(i))),'visible','off','String','n/a')
-    set(eval(strcat('handles.VariableDescription',num2str(i))),'visible','off')
+    set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
+    set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
 
 %%% 2.5 Checks whether an algorithm is loaded in this slot.
-AlgorithmName = get(eval(['handles.AlgorithmName',AlgorithmNumber]),'String');
+AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]),'String');
 IsItNotChosen = strncmp(AlgorithmName,'No a',4);
 if IsItNotChosen == 1
     helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
 else
     
     %%% 3. Extracts and displays the variable descriptors from the .m file.
-    AlgorithmName = get(eval(strcat('handles.AlgorithmName',AlgorithmNumber)),...
-        'string');
+    AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]), 'string');
     AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
     if exist(AlgorithmNamedotm) ~= 2
         errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']); 
@@ -1785,6 +1035,7 @@ else
             for i=1:handles.numVariables,
                 if j == 1;
                     break;
+% FIXME:
                 elseif i < 10;
                     if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
                         set(handles.(['VariableDescription',num2str(i)]), 'string', output(12:end),'visible', 'on');
@@ -1830,88 +1081,16 @@ else
     %%% structure and displayed in the edit boxes.
 
     for i=1:handles.numVariables,
-        if(i<10);
-            numstring = strcat('0',num2str(i));
-        else
-            numstring = num2str(i);
-        end
-        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',numstring);
+        VariableNumber = TwoDigitString(i);
+        ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VariableNumber);
         if isfield(handles,ConstructedName) == 1;
-            set(handles.(['VariableBox',num2str(i)]),'string',...
-                eval(['handles.Vvariable',AlgorithmNumber,strcat('_',numstring)]),'visible','on');
-        else set(handles.(['VariableBox',num2str(i)]),'string','n/a','visible','off');
+            set(handles.(['VariableBox' VariableNumber]),...
+                'string',handles.(['Vvariable' AlgorithmNumber '_' VariableBox]),...
+                'visible','on');
+        else set(handles.(['VariableBox' VariableNumber]),'string','n/a','visible','off');
         end;
     end;
 end
-%{
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','01');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox1,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_01']),'visible','on');
-else set(handles.VariableBox1,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','02');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox2,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_02']),'visible','on');
-else set(handles.VariableBox2,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','03');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox3,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_03']),'visible','on');
-else set(handles.VariableBox3,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','04');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox4,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_04']),'visible','on');
-else set(handles.VariableBox4,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','05');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox5,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_05']),'visible','on');
-else set(handles.VariableBox5,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','06');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox6,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_06']),'visible','on');
-else set(handles.VariableBox6,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','07');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox7,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_07']),'visible','on');
-else set(handles.VariableBox7,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','08');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox8,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_08']),'visible','on');
-else set(handles.VariableBox8,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','09');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox9,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_09']),'visible','on');
-else set(handles.VariableBox9,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','10');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox10,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_10']),'visible','on');
-else set(handles.VariableBox10,'string','n/a','visible','off');
-end
-ConstructedName = strcat('Vvariable',AlgorithmNumber,'_','11');
-if isfield(handles,ConstructedName) == 1
-set(handles.VariableBox11,'string',...
-eval(['handles.Vvariable',AlgorithmNumber,'_11']),'visible','on');
-else set(handles.VariableBox11,'string','n/a','visible','off');
-end
-%}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE DISPLAY BUTTONS %%%
@@ -1920,56 +1099,9 @@ end
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
 function FigureDisplay_Callback(hObject, eventdata, handles)
-algName = get(hObject,'tag');
-numAlg = trimstr(algName,'FigureDisplay','left');
-CurrentHandle = handles.(['FigureDisplay',num2str(numAlg)]);
-alterfigurewindow(CurrentHandle)
-
-
-%{
-% --- Executes on button press in FigureDisplay1.
-function FigureDisplay1_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay1;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay2.
-function FigureDisplay2_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay2;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay3.
-function FigureDisplay3_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay3;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay4.
-function FigureDisplay4_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay4;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay5.
-function FigureDisplay5_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay5;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay6.
-function FigureDisplay6_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay6;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay7.
-function FigureDisplay7_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay7;
-alterfigurewindow(CurrentHandle)
-
-% --- Executes on button press in FigureDisplay8.
-function FigureDisplay8_Callback(hObject, eventdata, handles)
-CurrentHandle = handles.FigureDisplay8;
-alterfigurewindow(CurrentHandle)
-%}
-
-
-function alterfigurewindow(CurrentHandle)
+AlgorithmName = get(hObject,'tag');
+AlgorithmNumber = trimstr(AlgorithmName,'FigureDisplay','left');
+CurrentHandle = handles.(['FigureDisplay' AlgorithmNumber]);
 ButtonStatus = get(CurrentHandle, 'string');
 %%% First case: closing or opening is already in progress; Don't do
 %%% anything.
@@ -1998,14 +1130,13 @@ function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles);
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-ConstructedName = strcat('handles.Vvariable',AlgorithmNumber,'_',VariableNumber);
-eval([ConstructedName, '= UserEntry;']);
+handles.(['Vvariable' AlgorithmNumber '_' VariableNumber]) = UserEntry;
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles);
 tempJ = 0;
 for i=1:handles.numAlgorithms;
-    if strncmp(get(handles.(['Indicator',num2str(i)]),'visible'),'on',2) == 1
+    if strncmp(get(handles.(['Indicator' TwoDigitString(i)]),'visible'),'on',2) == 1
         AlgorithmNumber = i;
         tempJ = 1;
     end
@@ -2013,38 +1144,47 @@ end
 if tempJ == 0;
     AlgorithmNumber = 0
 end
-
     
-%{
-if     strncmp(get(handles.Indicator1,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '1';
-elseif strncmp(get(handles.Indicator2,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '2';
-elseif strncmp(get(handles.Indicator3,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '3';
-elseif strncmp(get(handles.Indicator4,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '4';
-elseif strncmp(get(handles.Indicator5,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '5';
-elseif strncmp(get(handles.Indicator6,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '6';
-elseif strncmp(get(handles.Indicator7,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '7';
-elseif strncmp(get(handles.Indicator8,'visible'),'on',2) == 1, 
-    AlgorithmNumber = '8';
-else AlgorithmNumber = 0;
-end
-%}
-
 % --- Executes during object creation, after setting all properties.
-function VariableBox1_CreateFcn(hObject, eventdata, handles);
+function VariableBox_CreateFcn(hObject, eventdata, handles);
     set(hObject,'BackgroundColor',[1 1 1]);
 
-function VariableBox1_Callback(hObject, eventdata, handles);
+
+function VariableBox_Callback(hObject, eventdata, handles);
 %%% The following lines fetch the contents of the edit box,
 %%% determine which algorithm we are dealing with at the moment (by
 %%% running the "whichactive" subfunction), and call the storevariable
 %%% function.
+algName = get(hObject,'tag');
+numVariable = trimstr(algName,'VariableBox','left');
+if (str2num(numVariable)<10)
+    numVarTwoDig = ['0',numVariable];
+else
+    numVarTwoDig = numVariable;
+end
+
+UserEntry = get(handles.(['VariableBox',numVariable]),'string');
+AlgorithmNumber = whichactive(handles);
+if isempty(UserEntry)
+    errordlg('Variable boxes must not be left blank')
+    set(handles.(['VariableBox',numVariable]),'string', 'Fill in');
+    storevariable(AlgorithmNumber,numVarTwoDig, 'Fill in', handles);
+else
+    AlgorithmNumber = whichactive(handles);
+    if AlgorithmNumber == 0,     
+        errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred')
+    else
+        storevariable(AlgorithmNumber,numVarTwoDig,UserEntry, handles);
+    end
+end
+
+
+
+
+function VariableBox1_CreateFcn(hObject, eventdata, handles);
+    set(hObject,'BackgroundColor',[1 1 1]);
+
+function VariableBox1_Callback(hObject, eventdata, handles);
 UserEntry = get(handles.VariableBox1,'string');
 AlgorithmNumber = whichactive(handles);
 if isempty(UserEntry)
@@ -3719,8 +2859,9 @@ function AnalyzeAllImagesButton_Callback(hObject, eventdata, handles)
 
 %%% Checks whether any algorithms are loaded.
 sum = 0;
-for i = 1:8
-    sum = sum + isfield(handles,['Valgorithmname',num2str(i)]);
+%FIXME
+for i = 1:handles.numAlgorithms;
+    sum = sum + isfield(handles,['Valgorithmname' TwoDigitString(i)]);
 end
 if sum == 0, errordlg('You do not have any analysis modules loaded')
 else 
@@ -3780,42 +2921,14 @@ else
                 set(handles.SaveCurrentSettingsButton,'enable','off')
                 set(handles.ExtractSettings,'enable','off')
                 for i=1:handles.numAlgorithms;
-                    set(handles.(['LoadAlgorithm',num2str(i)]),'visible','off');
-                    set(handles.(['ClearAlgorithm',num2str(i)]),'visible','off');
-                    set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','off');
+                    set(handles.(['LoadAlgorithm' TwoDigitString(i)]),'visible','off');
+                    set(handles.(['ClearAlgorithm' TwoDigitString(i)]),'visible','off');
+                    set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','off');
                 end
+                % FIXME:
                 for i=1:11;
-                    set(eval(strcat('handles.VariableBox',num2str(i))),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
+                    set(handles.(['VariableBox' TwoDigitString(i)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
-                %{
-                set(handles.LoadAlgorithm1,'visible','off')
-                set(handles.LoadAlgorithm2,'visible','off')
-                set(handles.LoadAlgorithm3,'visible','off')
-                set(handles.LoadAlgorithm4,'visible','off')
-                set(handles.LoadAlgorithm5,'visible','off')
-                set(handles.LoadAlgorithm6,'visible','off')
-                set(handles.LoadAlgorithm7,'visible','off')
-                set(handles.LoadAlgorithm8,'visible','off')
-                set(handles.ClearAlgorithm1,'visible','off')
-                set(handles.ClearAlgorithm2,'visible','off')
-                set(handles.ClearAlgorithm3,'visible','off')
-                set(handles.ClearAlgorithm4,'visible','off')
-                set(handles.ClearAlgorithm5,'visible','off')
-                set(handles.ClearAlgorithm6,'visible','off')
-                set(handles.ClearAlgorithm7,'visible','off')
-                set(handles.ClearAlgorithm8,'visible','off')
-                set(handles.VariableBox1,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox2,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox3,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox4,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox5,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox6,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox7,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox8,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox9,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox10,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                set(handles.VariableBox11,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
-                %}
                 set(handles.SelectTestImageBrowseButton,'enable','off')
                 set(handles.ListBox,'enable','off')
                 set(handles.TestImageName,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
@@ -3942,39 +3055,45 @@ else
                 %%% for each algorithm's figure must be made global so the closing function
                 %%% can find the handles.
 
-                %{
-                for i=1:8;
-                    if isfield(handles,strcat('Valgorithmname',num2str(i))) == 1
-                        set(eval(strcat('handles.FigureDisplay',num2str(i))),'visible','on')
-                        set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','on')
-                        eval(strcat('handles.figurealgorithm',num2str(i))) = ...
-                            figure('name',[eval(strcat('handles.Valgorithmname',num2str(i))), ' Display'], 'Position',[0 (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
-                        global eval(strcat('HandleFigureDisplay',num2str(i)))
-                        eval(strcat('HandleFigureDisplay',num2str(i))) = eval(strcat('handles.FigureDisplay',num2str(i)));
-                        eval(strcat('ClosingFunction'num2str(i))) = 
-                        %}
                 
-                if isfield(handles,'Valgorithmname1') == 1
-                    set(handles.FigureDisplay1,'visible','on')
-                    set(handles.ViewAlgorithm1,'visible','on')
-                    handles.figurealgorithm1 = ...
-                        figure('name',[handles.Valgorithmname1, ' Display'], 'Position', [0 (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]); 
-                    global HandleFigureDisplay1
-                    HandleFigureDisplay1 = handles.FigureDisplay1;
-                    ClosingFunction1 = 'global HandleFigureDisplay1; set(HandleFigureDisplay1, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay1';
-                    %%% Sets the closing function of the figure window to be the line above.
-                    set(handles.figurealgorithm1,'CloseRequestFcn',ClosingFunction1);
+                % FIXME: why all the evals?
+                
+                for i=1:8;
+                    if isfield(handles,strcat('Valgorithmname',TwoDigitString(i))) == 1
+                        set(handles.(['FigureDisplay',TwoDigitString(i)]),'visible','on')
+                        set(handles.(['ViewAlgorithm',TwoDigitString(i)]),'visible','on')
+                        handles.(['figurealgorithm',TwoDigitString(i)]) = ...
+                            figure('name',[handles.(['Valgorithmname',TwoDigitString(i)]), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
+                        global HandleFigureDisplay
+                        HandleFigureDisplay(i) = handles.(['FigureDisplay' TwoDigitString(i)]);
+                        ClosingFunction(i) = 'global HandleFigureDisplay; set(HandleFigureDisplay(i), ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay';
+                        %%% Sets the closing function of the figure window to be the line above.
+                        set(handles.(['figurealgorithm' TwoDigitString(i)]),'CloseRequestFcn',ClosingFunction(i));
+                    end
                 end
                 
-                if isfield(handles,'Valgorithmname2') == 1
-                    set(handles.FigureDisplay2,'visible','on')
-                    set(handles.ViewAlgorithm2,'visible','on')
-                    handles.figurealgorithm2 = figure...
-                        ('name',[handles.Valgorithmname2, ' Display'], 'Position', [(ScreenWidth*(1/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]); 
-                    global HandleFigureDisplay2
-                    HandleFigureDisplay2 = handles.FigureDisplay2;
-                    ClosingFunction2 = 'global HandleFigureDisplay2; set(HandleFigureDisplay2, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay2';
-                    set(handles.figurealgorithm2,'CloseRequestFcn',ClosingFunction2);
+                %{
+                if isfield(handles,'Valgorithmname01') == 1
+                    set(handles.FigureDisplay01,'visible','on')
+                    set(handles.ViewAlgorithm01,'visible','on')
+                    handles.figurealgorithm01 = ...
+                        figure('name',[handles.Valgorithmname01, ' Display'], 'Position', [0 (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]); 
+                    global HandleFigureDisplay01
+                    HandleFigureDisplay01 = handles.FigureDisplay01;
+                    ClosingFunction01 = 'global HandleFigureDisplay01; set(HandleFigureDisplay01, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay01';
+                    %%% Sets the closing function of the figure window to be the line above.
+                    set(handles.figurealgorithm01,'CloseRequestFcn',ClosingFunction01);
+                end
+                
+                if isfield(handles,'Valgorithmname02') == 1
+                    set(handles.FigureDisplay02,'visible','on')
+                    set(handles.ViewAlgorithm02,'visible','on')
+                    handles.figurealgorithm02 = figure...
+                        ('name',[handles.Valgorithmname02, ' Display'], 'Position', [(ScreenWidth*(1/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]); 
+                    global HandleFigureDisplay02
+                    HandleFigureDisplay02 = handles.FigureDisplay02;
+                    ClosingFunction02 = 'global HandleFigureDisplay02; set(HandleFigureDisplay02, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay02';
+                    set(handles.figurealgorithm02,'CloseRequestFcn',ClosingFunction02);
                 end
                 
                 if isfield(handles,'Valgorithmname3') == 1
@@ -4042,7 +3161,7 @@ else
                     ClosingFunction8 = 'global HandleFigureDisplay8; set(HandleFigureDisplay8, ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay8';
                     set(handles.figurealgorithm8,'CloseRequestFcn',ClosingFunction8);
                 end
-                
+                %}
                 
                 %%% For the first time through, the number of image sets
                 %%% will not yet have been determined.  So, the Number of
@@ -4077,7 +3196,7 @@ else
 
                       for SlotNumber = 1:8,
                           %%% If an algorithm is not chosen in this slot, continue on to the next.
-                          AlgNumberAsString = sprintf('%d', SlotNumber);
+                          AlgNumberAsString = TwoDigitString(SlotNumber);
                           AlgName = ['Valgorithmname' AlgNumberAsString];
                           if isfield(handles,AlgName) == 0
                           else 
@@ -4369,45 +3488,18 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
                 set(handles.ExtractSettings,'enable','on')
+                % FIXME: hardcoded nubmer of algorithms
                 for i=1:8;
-                    set(eval(strcat('handles.LoadAlgorithm',num2str(i))),'visible','on');
-                    set(eval(strcat('handles.ClearAlgorithm',num2str(i))),'visible','on');
-                    set(eval(strcat('handles.FigureDisplay',num2str(i))),'visible','off');
-                    set(eval(strcat('handles.FigureDisplay',num2str(i))),'string', 'Close Figure');
-                    set(eval(strcat('handles.ViewAlgorithm',num2str(i))),'visible','on');
+                    set(handles.(['LoadAlgorithm' TwoDigitString(i)]),'visible','on');
+                    set(handles.(['ClearAlgorithm' TwoDigitString(i)]),'visible','on');
+                    set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','off');
+                    set(handles.(['FigureDisplay' TwoDigitString(i)]),'string', 'Close Figure');
+                    set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','on');
                 end
+                % FIXME: hardcoded number of variables
                 for i=1:11;
-                    set(eval(strcat('handles.VariableBox',num2str(i))),'enable','on','foregroundcolor','black');
+                    set(handles.(['VariableBox' TwoDigitString(i)]),'enable','on','foregroundcolor','black');
                 end
-                %{
-                set(handles.LoadAlgorithm1,'visible','on')
-                set(handles.LoadAlgorithm2,'visible','on')
-                set(handles.LoadAlgorithm3,'visible','on')
-                set(handles.LoadAlgorithm4,'visible','on')
-                set(handles.LoadAlgorithm5,'visible','on')
-                set(handles.LoadAlgorithm6,'visible','on')
-                set(handles.LoadAlgorithm7,'visible','on')
-                set(handles.LoadAlgorithm8,'visible','on')
-                set(handles.ClearAlgorithm1,'visible','on')
-                set(handles.ClearAlgorithm2,'visible','on')
-                set(handles.ClearAlgorithm3,'visible','on')
-                set(handles.ClearAlgorithm4,'visible','on')
-                set(handles.ClearAlgorithm5,'visible','on')
-                set(handles.ClearAlgorithm6,'visible','on')
-                set(handles.ClearAlgorithm7,'visible','on')
-                set(handles.ClearAlgorithm8,'visible','on')
-                set(handles.VariableBox1,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox2,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox3,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox4,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox5,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox6,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox7,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox8,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox9,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox10,'enable','on','foregroundcolor','black')
-                set(handles.VariableBox11,'enable','on','foregroundcolor','black')
-                %}
                 set(handles.SelectTestImageBrowseButton,'enable','on')
                 set(handles.ListBox,'enable','on')
                 set(handles.TestImageName,'enable','on','foregroundcolor','black')
@@ -4428,33 +3520,7 @@ else
                 set(CancelAfterImageSetButton_handle,'enable','off')
                 set(PauseButton_handle,'enable','off')
                 set(CancelNowCloseButton_handle,'enable','off')
-                %{
-                set(handles.FigureDisplay1,'visible','off')
-                set(handles.FigureDisplay2,'visible','off')
-                set(handles.FigureDisplay3,'visible','off')
-                set(handles.FigureDisplay4,'visible','off')
-                set(handles.FigureDisplay5,'visible','off')
-                set(handles.FigureDisplay6,'visible','off')
-                set(handles.FigureDisplay7,'visible','off')
-                set(handles.FigureDisplay8,'visible','off')
-                set(handles.FigureDisplay1, 'string', 'Close Figure')
-                set(handles.FigureDisplay2, 'string', 'Close Figure')
-                set(handles.FigureDisplay3, 'string', 'Close Figure')
-                set(handles.FigureDisplay4, 'string', 'Close Figure')
-                set(handles.FigureDisplay5, 'string', 'Close Figure')
-                set(handles.FigureDisplay6, 'string', 'Close Figure')
-                set(handles.FigureDisplay7, 'string', 'Close Figure')
-                set(handles.FigureDisplay8, 'string', 'Close Figure')
-                set(handles.ViewAlgorithm1,'visible','on')
-                set(handles.ViewAlgorithm2,'visible','on')
-                set(handles.ViewAlgorithm3,'visible','on')
-                set(handles.ViewAlgorithm4,'visible','on')
-                set(handles.ViewAlgorithm5,'visible','on')
-                set(handles.ViewAlgorithm6,'visible','on')
-                set(handles.ViewAlgorithm7,'visible','on')
-                set(handles.ViewAlgorithm8,'visible','on')
-                %}
-                
+
                 %%% The following code turns the warning message back on that 
                 %%% I turned off when the GUI was launched. 
                 %%% "Warning: Image is too big to fit on screen":
@@ -4676,6 +3742,16 @@ guidata(hObject, handles);
 %%% Aux Functions %%%
 %%%%%%%%%%%%%%%%%%%%%
 
+function twodigit = TwoDigitString(int)
+%TwoDigitString is a function like num2str(int) but it returns a two digit
+%representation of a string for our purposes.
+if(int<10)
+    twodigit = sprintf('0%d', int);
+else
+    twodigit = sprintf('%d', int);
+end
+
+
 function y = trimstr( s, stripchars, leftorright )
 %TRIMSTR  Strip the whitespace and the defined characters from string.
 %   TRIMSTR( S, CHARS, LEFTORRIGHT ) strips the whitespace and the
@@ -4770,8 +3846,7 @@ AlgorithmNumber = whichactive(handles);
 if AlgorithmNumber == 0
     helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
 else
-    AlgorithmName = ...
-        get(eval(['handles.AlgorithmName',AlgorithmNumber]),'String');
+    AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]),'String');
     IsItNotChosen = strncmp(AlgorithmName,'No a',4);
     if IsItNotChosen == 1
         helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')

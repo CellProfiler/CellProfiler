@@ -114,7 +114,7 @@ else
                         for FileNameFieldNumber = 1:NumberOfFileFieldNames
                             Fieldname = cell2mat(FileFieldNames(FileNameFieldNumber));
                             FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber,FieldNumber) = {LoadedHandles.handles.Pipeline.(Fieldname){imagenumber}};
+                            Measurements(imagenumber,FieldNumber) = {LoadedHandles.handles.Measurements.(Fieldname){imagenumber}};
                         end
                         for ImportedFieldNumber = 1:NumberOfImportedFieldnames
                             Fieldname = cell2mat(ImportedFieldnames(ImportedFieldNumber));
@@ -129,7 +129,10 @@ else
                         for TimeElapsedFieldNumber = 1:NumberOfTimeElapsedFieldNames
                             Fieldname = cell2mat(TimeElapsedFieldNames(TimeElapsedFieldNumber));
                             FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber, FieldNumber) = {LoadedHandles.handles.Measurements.(Fieldname){imagenumber}};
+                            %%% Merged batch files don't include timing information
+                            if (length(LoadedHandles.handles.Measurements.(Fieldname)) >= imagenumber),
+                                Measurements(imagenumber, FieldNumber) = {LoadedHandles.handles.Measurements.(Fieldname){imagenumber}};
+                            end
                         end
                         CurrentTime = clock;
                         TimeSoFar = etime(CurrentTime,TimeStart);

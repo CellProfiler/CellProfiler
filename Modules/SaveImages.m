@@ -120,11 +120,25 @@ Appendage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %defaultVAR06 = tif
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 
+%textVAR07 = What directory do you want to save the images?  Leave 'current' if you want to save it in the current directory.
+%defaultVAR07 = current
+FileDirectory = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+
+%%% Makes sure that the File Directory specified by the user 
+if(strcmp(FileDirectory,'current'))
+else
+    if(strcmp(FileDirectory(end),'\'))
+    else
+        FileDirectory = [FileDirectory '\'];
+    end
+end
+        
 %%% Retrieves the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
 fieldname = ['', ImageName];
@@ -184,10 +198,15 @@ if any(A) == 1
 end
 %%% Checks whether the new image name is going to result in overwriting the
 %%% original file.
-B = strcmp(upper(CharFileName), upper(NewImageName));
+if (strcmp(FileDirectory,'current'))
+    B = strcmp(upper(CharFileName), upper(NewImageName));
+else
+    B = strcmp(upper([handles.Pipeline.(['Pathname' ImageFileName]) '\' CharFileName]),upper([FileDirectory NewImageName]));
+end
 if B == 1
     error('Image processing was canceled because the specifications in the Save Images module will result in image files being overwritten.')
 end
+
 
 % PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
@@ -218,9 +237,13 @@ drawnow
 %%% SAVE IMAGE TO HARD DRIVE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-try 
-%%% Saves the image to the hard drive.    
-imwrite(OrigImageToBeAnalyzed, NewImageName, FileFormat);
+try
+    %%% Saves the image to the hard drive.
+    if(strcmp(FileDirectory,'current'))
+        imwrite(OrigImageToBeAnalyzed, NewImageName, FileFormat);
+    else
+        imwrite(OrigImageToBeAnalyzed, [FileDirectory NewImageName], FileFormat);
+    end
 catch error('The image could not be saved to the hard drive for some reason.')
 end
 

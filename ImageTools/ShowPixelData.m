@@ -1,9 +1,11 @@
 function handles = ShowPixelData(handles)
 
-% Help for the SShow Pixel Data tool:
+% Help for the Show Pixel Data tool:
 % Category: Image Tools
 %
-% This module has not yet been documented.
+% Use this tool if you have an image already displayed in a figure
+% window and would like to determine the X, Y position or the
+% intensity at a particular pixel.
 %
 % See also SHOWIMAGE, SHOWDATAONIMAGE (a Data tool).
 

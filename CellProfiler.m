@@ -2076,9 +2076,7 @@ errordlg(ErrorExplanation)
 %%% HELP BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%
 
-%%% --- Executes on button press in the permanent Help buttons.
-%%% (The permanent Help buttons are the ones that don't change 
-%%% depending on the module loaded.) 
+%%% --- Executes on button press in the Help buttons.
 function PipelineModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help3.m');
 helpdlg(HelpText,'CellProfiler Help #3')

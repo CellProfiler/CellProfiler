@@ -3,7 +3,9 @@ function handles = ShowImage(handles)
 % Help for the Show Image tool:
 % Category: Image Tools
 %
-% This module has not yet been documented.
+% Use this tool to open an image and display it (for example, in order
+% to check the background pixel intensity or to determine pixel
+% coordinates, or to check which wavelength it is).
 %
 % See also SHOWPIXELDATA, SHOWDATAONIMAGE (a Data tool).
 

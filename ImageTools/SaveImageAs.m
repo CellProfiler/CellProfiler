@@ -3,7 +3,9 @@ function handles = SaveImageAs(handles)
 % Help for the Save Image As tool:
 % Category: Image Tools
 %
-% This module has not yet been documented.
+% Any image that is displayed can be saved to the hard drive in any
+% standard image file format using this tool.  Type 'imformats' in the
+% command window to see a list of acceptable file formats.
 %
 % See also <nothing relevant>.
 

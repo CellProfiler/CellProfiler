@@ -9,6 +9,8 @@ Lines with NOW are more critical.
 
 Infrastructure improvements:
 
+     - Make the help button next to the image/data tools work.  It should pop open a listbox asking you to choose which tool's help you would like to see, and then it should extract the help from the tool's m-file.  The listbox should also give general help, i.e. "You can add your own tools by writing Matlab m-files, placing them in the ImageTools or DataTools folder, and restarting CellProfiler."
+
      - When adding a module to the pipeline, check to see whether more than one function with that name exists on the Matlab search path. If so, warn the user, tell the user which pathname to the function will most likely be used, but warn them that this may change if the path is changed by adding modules from another directory.  Suggest that if the module has the same name as a Matlab function, they should consider renaming the module to prevent confusion.
 
      - In CellProfiler.m, check whether the guidata lines are necessary (marked with a TODO).
@@ -29,7 +31,7 @@ Settings =      ModuleNames: {1x6 cell}
 
      - In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing (try to write in matlab root first, and if that fails, write in the current directory > Also, we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.)  That is where CellProfiler should look when trying to load the preferences upon launching, too.
 
-     - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
+     - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
 
      - Have LoadSettings button determine whether a file is a valid Settings file, in particular, if no algorithms were loaded at the time the settings file was saved, does it fail?
 

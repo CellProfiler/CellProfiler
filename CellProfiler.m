@@ -369,6 +369,7 @@ else
         %%% A is equal to '' (two quote marks).  In either case, skip to the end; 
         %%% don't save anything. 
         if (isempty(A)) 
+          ;
         elseif strcmp(A,'') == 1, 
             errordlg('Sample info was not saved, because no heading was entered.');
         elseif isfield(handles, A) == 1
@@ -1505,6 +1506,9 @@ if strcmp(Answer, 'All images') == 1
         return
     end
     HeadingToDisplay = char(HeadingFieldnames(Selection));
+
+    %%% Have the user choose which of image/cells should be rows/columns
+    RowColAnswer = questdlg('Which layout do you want images and cells to follow in the exported data?  WARNING: Excel spreadsheets can only have 256 columns.','','Rows = Cells, Columns = Images','Rows = Images, Columns = Cells','Rows = Cells, Columns = Images');
     %%% Extracts the headings.
     ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
     
@@ -1545,20 +1549,66 @@ if strcmp(Answer, 'All images') == 1
     fwrite(fid, char(MeasurementToExtract), 'char');
     fwrite(fid, sprintf('\n'), 'char');
     
-    %%% Writes the data, row by row: one row for each image.
-    for ImageNumber = 1:TotalNumberImageSets
+    TooWideForXLS = 0;
+    if (strcmp(RowColAnswer, 'Rows = Images, Columns = Cells')),
+      %%% Writes the data, row by row: one row for each image.
+      for ImageNumber = 1:TotalNumberImageSets
         %%% Writes the heading in the first column.
         fwrite(fid, char(ListOfHeadings(ImageNumber)), 'char');
         %%% Tabs to the next column.
         fwrite(fid, sprintf('\t'), 'char');
         %%% Writes the measurements for that image in successive columns.
+        if (length(Measurements{ImageNumber}) > 256),
+          TooWideForXLS = 1;
+        end
         fprintf(fid,'%d\t',Measurements{ImageNumber});
         %%% Returns to the next row.
         fwrite(fid, sprintf('\n'), 'char');
+      end
+    else
+      %%% Writes the data, row by row: one column for each image.
+
+      % Check for truncation
+      if (TotalNumberImageSets > 255),
+        TooWideForXLS = 1;
+      end
+      
+      %%% Writes the heading in the first row.
+      for ImageNumber = 1:TotalNumberImageSets
+        fwrite(fid, char(ListOfHeadings(ImageNumber)), 'char');
+        %%% Tabs to the next column.
+        fwrite(fid, sprintf('\t'), 'char');
+      end
+      %%% Returns to the next row.
+      fwrite(fid, sprintf('\n'), 'char');
+
+      %%% find the number of cells in the largest set
+      maxlength = 0;
+      for ImageNumber = 1:TotalNumberImageSets
+        maxlength = max(maxlength, length(Measurements{ImageNumber}));
+      end
+      
+      for CellNumber = 1:maxlength,
+        for ImageNumber = 1:TotalNumberImageSets
+          if (length(Measurements{ImageNumber}) >= CellNumber),
+            fprintf(fid, '%d\t', Measurements{ImageNumber}(CellNumber));
+          else
+            fprintf(fid, '\t');
+          end
+        end
+        %%% Returns to the next row.
+        fwrite(fid, sprintf('\n'), 'char');
+      end
+      %%% Closes the file
     end
-    %%% Closes the file
     fclose(fid);
-    helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
+    
+    if TooWideForXLS,
+      helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.  WARNING: This file contains more than 256 columns, and will not be readable in Excel.'])
+    else 
+      helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
+    end
+
     
 elseif strcmp(Answer, 'All measurements') == 1
     TotalNumberImageSets = handles.setbeinganalyzed;

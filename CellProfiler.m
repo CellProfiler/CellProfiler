@@ -760,9 +760,9 @@ catch
 end % Goes with try/catch.
 cd(CurrentDirectory);
 
-%%%%%%%%%%%%%%%%%%%
-%%% LOAD BUTTONS %%%
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
+%%% ADD BUTTON %%%
+%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AddAlgorithm.
 function AddAlgorithm_Callback(hObject,eventdata,handles)
@@ -900,7 +900,7 @@ if (length(handles.AlgorithmHighlighted) > 0)
     %%% 3. Extracts and displays the variable descriptors from the .m file.
     AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
     if exist(AlgorithmNamedotm) ~= 2
-        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']);
+        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this module will be displayed, but this module will not run properly.']);
     else
         fid=fopen(AlgorithmNamedotm);
 
@@ -926,16 +926,17 @@ if (length(handles.AlgorithmHighlighted) > 0)
         end
     end
     else
-    helpdlg('Algorithm Not Loaded');
+    helpdlg('Module not loaded.');
     end
 else
-    helpdlg('No Algorithm Highlighted');
+    helpdlg('No module highlighted.');
 end
+
 %%%%%%%%%%%%%%%%%%%%
-%%% CLEAR BUTTONS %%%
+%%% REMOVE BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%
 
-% --- Executes on button press for all RemoveAlgorithm buttons.
+% --- Executes on button press for RemoveAlgorithm button.
 function RemoveAlgorithm_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
 handles = RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, 'Confirm');
@@ -958,18 +959,11 @@ for AlgDelete = 1:length(AlgorithmNumber);
         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
         set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
     end
-
-
     %%% 2. Removes the AlgorithmName from the handles structure.
     handles.Settings.Valgorithmname(AlgorithmNumber(AlgDelete)-AlgDelete+1) = [];
-
-
-
     %%% 3. Clears the variable values in the handles structure.
-
     handles.Settings.Vvariable(AlgorithmNumber(AlgDelete)-AlgDelete+1,:) = [];
 end
-
 
 %%% 4. Update the number of algorithms loaded
 handles.numAlgorithms = 0;
@@ -992,50 +986,41 @@ end
 
 set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
 
-
 guidata(gcbo, handles);
 ViewAlgorithm(handles);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function MoveUpButton_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
 
 if(AlgorithmNumber(1) == 1)
-    helpdlg('You cannot move an Algorithm higher than the highest slot');
+    helpdlg('This module is already in the first position. It cannot be moved up.');
 else
     for AlgUp = 1:length(AlgorithmNumber);
         AlgorithmUp = AlgorithmNumber(AlgUp)-1;
         AlgorithmNow = AlgorithmNumber(AlgUp);
-    %%% 1. Switches AlgorithmNames
-    
+        %%% 1. Switches AlgorithmNames
         AlgorithmUpName = char(handles.Settings.Valgorithmname(AlgorithmUp));
         AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
         handles.Settings.Valgorithmname{AlgorithmUp} = AlgorithmName;
         handles.Settings.Valgorithmname{AlgorithmNow} = AlgorithmUpName;
-      
-    
-    %%% 2. Copy then clear the variable values in the handles structure.
-
-    
+        %%% 2. Copy then clear the variable values in the handles structure.
         copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
         handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmUp,:);
         handles.Settings.Vvariable(AlgorithmUp,:) = copyVariables;
     end
-    
     %%% 3. Changes the Listbox to show the changes
     contents = handles.Settings.Valgorithmname;
     set(handles.AlgorithmBox,'String',contents);
     set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted-1);
     handles.AlgorithmHighlighted = handles.AlgorithmHighlighted-1;
-    
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)
 end
-
 
 %%%%%%%
 
@@ -1044,32 +1029,26 @@ ButtonTag = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
 
 if(AlgorithmNumber(length(AlgorithmNumber)) >= handles.numAlgorithms)
-    helpdlg('You cannot move an Algorithm lower than the lowest slot');
+    helpdlg('This module is already in the last position. It cannot be moved down.');
 else
     for AlgDown = 1:length(AlgorithmNumber);
         AlgorithmDown = AlgorithmNumber(AlgDown) + 1;
         AlgorithmNow = AlgorithmNumber(AlgDown);
-    %%% 1. Saves the AlgorithmName
-    
+        %%% 1. Saves the AlgorithmName
         AlgorithmDownName = char(handles.Settings.Valgorithmname(AlgorithmDown));
         AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
         handles.Settings.Valgorithmname{AlgorithmDown} = AlgorithmName;
         handles.Settings.Valgorithmname{AlgorithmNow} = AlgorithmDownName;
-    
-
-    %%% 2. Copy then clear the variable values in the handles structure.
-  
+        %%% 2. Copy then clear the variable values in the handles structure.
         copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
         handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmDown,:);
         handles.Settings.Vvariable(AlgorithmDown,:) = copyVariables;
     end
-
     %%% 3. Changes the Listbox to show the changes
     contents = handles.Settings.Valgorithmname;
     set(handles.AlgorithmBox,'String',contents);
     set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted+1);
     handles.AlgorithmHighlighted = handles.AlgorithmHighlighted+1;
-    
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)
@@ -3404,7 +3383,7 @@ if strncmp(Error,'Error using ==> Alg', 19) == 1
 elseif isempty(strfind(Error,'bad magic')) == 0
     ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the image sets up to the one which generated this error are OK in the output file.';
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in Algorithm', CurrentAlgorithmNumber];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in module ', CurrentAlgorithmNumber];
 end
 errordlg(ErrorExplanation)
 

@@ -343,15 +343,15 @@ IntegratedIntensity = full(AlmostIntegratedIntensity');
 %%% Save Integrated Intensities to handles structure.  The fields are named 
 %%% appropriately based on the user's input, with the 'dMC' prefix added so
 %%% that these fields will be deleted at the end of the analysis batch.
-fieldname = ['dMCIntegratedIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMCIntegratedIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {[IntegratedIntensity]};
-fieldname = ['dMTMeanIntegratedIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTMeanIntegratedIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
-fieldname = ['dMTStdevIntegratedIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTStdevIntegratedIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {std(IntegratedIntensity)};
-fieldname = ['dMTMedianIntegratedIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTMedianIntegratedIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
-fieldname = ['dMTSumIntegratedIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTSumIntegratedIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 
 %%%
@@ -380,22 +380,22 @@ StDevIntensity = sqrt(full(sum(Temp2.^2)) ./ (NonZeroArea - 1));
 MeanIntensity = MeanIntensity';
 StDevIntensity = StDevIntensity';
 %%% Saves data to handles structure.
-fieldname = ['dMCMeanIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMCMeanIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {[MeanIntensity]};
-fieldname = ['dMTMeanMeanIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTMeanMeanIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
-fieldname = ['dMTStdevMeanIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTStdevMeanIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {std(MeanIntensity)};
-fieldname = ['dMTMedianMeanIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTMedianMeanIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
 
-fieldname = ['dMCStDevIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMCStDevIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {[StDevIntensity]};
-fieldname = ['dMTMeanStDevIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTMeanStDevIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
-fieldname = ['dMTStdevStDevIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTStdevStDevIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {std(StDevIntensity)};
-fieldname = ['dMTMedianStDevIntensity', ImageName, 'in', ObjectName];
+fieldname = ['dMTMedianStDevIntensity', ImageName, 'within', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {median(StDevIntensity)};
 
 %%%

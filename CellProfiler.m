@@ -60,9 +60,6 @@ handles.MaxVariables = 11;
 handles.AlgorithmHighlighted = '01';
 handles.FigureDisplayString = cell(1,99);
 
-% Turn on debugging
-handles.Debug = 1;
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -550,7 +547,7 @@ else
   if handles.numAlgorithms > 0,
     %%% Clears the current settings, using the removealgorithm function.
     for i=1:handles.numAlgorithms,
-      handles = RemoveAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
+      handles = RemoveAlgorithm_Helper(TwoDigitString(i), hObject, eventdata, handles, 'NoConfirm');
     end
     guidata(gcbo, handles);
     
@@ -889,9 +886,10 @@ else
   if str2num(AlgorithmNumber) > handles.numAlgorithms,
     handles.numAlgorithms = str2num(AlgorithmNumber);
   end
-
+    
   %%% Updates the handles structure to incorporate all the changes.
   guidata(gcbo, handles);
+  ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
 end
 
 %%%%%%%%%%%%%%%%%%%%
@@ -901,12 +899,11 @@ end
 
 % --- Executes on button press for all RemoveAlgorithm buttons.
 function RemoveAlgorithm_Callback(hObject, eventdata, handles)
-AlgorithmName = get(hObject,'tag');
 AlgorithmNumber = handles.AlgorithmHighlighted;
-handles = RemoveAlgorithm_Helper(AlgorithmNumber, handles, 'Confirm');
+handles = RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, 'Confirm');
 
 % separated because it's called elsewhere
-function handles = RemoveAlgorithm_Helper(AlgorithmNumber, handles, ConfirmOrNot)
+function handles = RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, ConfirmOrNot)
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the algorithm.
@@ -915,31 +912,27 @@ if strcmp(ConfirmOrNot, 'Confirm') == 1
         return
     end
 end
-%%% 1. Sets the proper algorithm name to "No analysis module loaded" 
-% set(handles.(['AlgorithmName' AlgorithmNumber]),'String','No analysis module loaded');
-contents = get(handles.AlgorithmBox,'String');
-if(str2num(AlgorithmNumber)==1)
-    contents{str2num(AlgorithmNumber)} = ['No Algorithms Loaded'];
-elseif (get(handles.AlgorithmBox,'Value')==2)
-    contents{str2num(AlgorithmNumber)} = ['Please Load Algorithms'];
-else
-    contents{str2num(AlgorithmNumber)} = [];
-end
-set(handles.AlgorithmBox,'String',contents);
 
-
-%%% 2. Removes the AlgorithmName from the handles structure.
-ConstructedName = strcat('Valgorithmname',AlgorithmNumber);
-if isfield(handles,ConstructedName) == 1,
-  handles = rmfield(handles,ConstructedName); 
-end
-
-%%% 3. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
+%%% 1. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
 %%% to be invisible.
 for i = 1:handles.numVariables(str2num(AlgorithmNumber));
-   set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
-   set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+    set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
+    set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
+
+%%% 2. Moves All the Other Algorithms Up
+for i=(str2num(AlgorithmNumber)+1):handles.numAlgorithms;
+    handles = MoveUp_Helper(TwoDigitString(i), hObject, eventdata, handles);
+end
+
+AlgorithmNumber = TwoDigitString(handles.numAlgorithms);
+
+%%% 4. Removes the AlgorithmName from the handles structure.
+ConstructedName = strcat('Valgorithmname',AlgorithmNumber);
+if isfield(handles,ConstructedName) == 1
+    handles = rmfield(handles,ConstructedName); end
+
+
 
 %%% 4. Clears the variable values in the handles structure.
 
@@ -950,15 +943,31 @@ for i=1:handles.numVariables(str2num(AlgorithmNumber));
     end;
 end;
 
-%%% 5. Update the number of algorithms loaded
+
+
+%%% 6. Update the number of algorithms loaded
 handles.numAlgorithms = 0;
 for i=1:handles.MaxAlgorithms,
-  if isfield(handles, ['Valgorithmname' TwoDigitString(i)]),
-    handles.numAlgorithms = i;
-  end;
+    if isfield(handles, ['Valgorithmname' TwoDigitString(i)]),
+        handles.numAlgorithms = i;
+    end;
 end;
 
+%%% 3. Sets the proper algorithm name to "No analysis module loaded"
+% set(handles.(['AlgorithmName' AlgorithmNumber]),'String','No analysis module loaded');
+contents = get(handles.AlgorithmBox,'String');
+if(str2num(AlgorithmNumber)==1)
+    contents{str2num(AlgorithmNumber)} = ['No Algorithms Loaded'];
+elseif (str2num(AlgorithmNumber)==2)
+    contents{str2num(AlgorithmNumber)} = ['Please Load Algorithms'];
+else
+    contents{str2num(AlgorithmNumber)} = [];
+end
+set(handles.AlgorithmBox,'String',contents);
+
+
 guidata(gcbo, handles);
+
 
 %%%%%%%%%%%%%%%%%%%
 %%% VIEW BUTTONS %%%
@@ -1022,10 +1031,13 @@ end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function MoveUpButton_Callback(hObject,eventdata,handles)
-ButtonTag = get(hObject,'tag');
-%AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
+function MoveUpButton_Callback(hObject, eventdata, handles)
 AlgorithmNumber = handles.AlgorithmHighlighted;
+handles = MoveUp_Helper(AlgorithmNumber, hObject, eventdata, handles);
+
+
+function handles = MoveUp_Helper(AlgorithmNumber, hObject, eventdata, handles)
+
 if(str2num(AlgorithmNumber) == 1)
     helpdlg('You cannot move an Algorithm higher than the highest slot');
 else
@@ -1076,11 +1088,15 @@ else
     contents{str2num(AlgorithmNumber)} = [AlgorithmName];
     contents{str2num(AlgorithmUp)} = [AlgorithmUpName];
     set(handles.AlgorithmBox,'String',contents);
-
+    set(handles.AlgorithmBox,'Value',(str2num(AlgorithmUp)));
+    handles.AlgorithmHighlighted = AlgorithmUp;
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
+
 end
+
+%%%%%%%
 
 function MoveDownButton_Callback(hObject,eventdata,handles)
 ButtonTag = get(hObject,'tag');
@@ -1135,7 +1151,8 @@ else
     contents{str2num(AlgorithmNumber)} = [AlgorithmName];
     contents{str2num(AlgorithmDown)} = [AlgorithmDownName];
     set(handles.AlgorithmBox,'String',contents);
-
+    set(handles.AlgorithmBox,'Value',(str2num(AlgorithmDown)));
+    handles.AlgorithmHighlighted = AlgorithmDown;
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
@@ -1232,6 +1249,7 @@ guidata(hObject, handles);
 
 % Update handles structure
 guidata(hObject, handles);
+ViewAlgorithm_Callback(hObject, eventdata, handles);
 
 % --- Executes during object creation, after setting all properties.
 function AlgorithmBox_CreateFcn(hObject, eventdata, handles)

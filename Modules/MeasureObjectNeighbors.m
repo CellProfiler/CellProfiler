@@ -15,7 +15,11 @@ function handles = MeasureNeighbors(handles)
 % is overlapping. Alternately, the module can measure the number of
 % neighbors each object has if every object were expanded up until the
 % point where it hits another object.  To use this option, enter 0
-% (the number zero) for the pixel distance.
+% (the number zero) for the pixel distance.  Please note that
+% currently the image of the objects, colored by how many neighbors
+% each has, cannot be saved using the SaveImages module, because it is
+% actually a black and white image displayed using a particular
+% colormap
 %
 % See also <nothing relevant>.
 
@@ -42,7 +46,7 @@ function handles = MeasureNeighbors(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -66,7 +70,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -77,7 +81,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -92,7 +96,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -106,7 +110,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
 %defaultVAR03 = ExpandedCells
-ColoredObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+ExpandedObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = What do you want to call the image of the objects, colored by the number of neighbors?
 %defaultVAR04 = ColoredNeighbors
 ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -132,9 +136,9 @@ IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -171,11 +175,11 @@ end
 
 %%% Determines the neighbors for each object.
 d = max(2,NeighborDistance+1);
-[sr,sc] = size(IncomingLabelMatrixImage)
+[sr,sc] = size(IncomingLabelMatrixImage);
 ImageOfNeighbors = -ones(sr,sc);
 NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
 IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
-se = strel('disk',d,0);                   
+se = strel('disk',d,0);
 for k = 1:max(IncomingLabelMatrixImage(:))
     % Cut patch
     [r,c] = find(IncomingLabelMatrixImage == k);
@@ -189,17 +193,27 @@ for k = 1:max(IncomingLabelMatrixImage(:))
     overlap = p.*pextended;
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
     NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
-    ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k); 
+    ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
 end
 
 %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
 %%% window and saving to the handles structure.
 %%% Note that the label2rgb function doesn't work when there are no objects
 %%% in the label matrix image, so there is an "if".
+%%% Note: this is the expanded version of the objects, if the user
+%%% requested expansion.
 
 if sum(sum(IncomingLabelMatrixImage)) >= 1
     ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
 else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+end
+
+%%% Does the same for the ImageOfNeighbors.  For some reason, this
+%%% does not exactly match the results of the display window. Not sure
+%%% why.
+if sum(sum(ImageOfNeighbors)) >= 1
+    ColoredImageOfNeighbors = ind2rgb(ImageOfNeighbors,[0 0 0;jet(max(ImageOfNeighbors(:)))]);
+else  ColoredImageOfNeighbors = ImageOfNeighbors;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -259,7 +273,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -287,7 +301,7 @@ drawnow
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
@@ -356,22 +370,22 @@ if any(findobj == ThisModuleFigureNumber) == 1
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     drawnow
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.    figure(ThisModuleFigureNumber);
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to pause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
     figure(ThisModuleFigureNumber)
     subplot(2,1,1)
     imagesc(ColoredLabelMatrixImage)
@@ -389,7 +403,36 @@ end
 %%% SAVE IMAGES TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        fieldname = ColoredObjectName;
-        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
-        fieldname = ColoredNeighborsName;
-        handles.Pipeline.(fieldname) = ImageOfNeighbors;
+%%% To make this module produce results similar to an IdentifyPrim
+%%% module, we will save the image IncomingLabelMatrixImage (which may
+%%% have been expanded until objects touch) to the handles
+%%% structure, even though the editing for size and for edge-touching
+%%% has not been performed in this module's case.
+
+%%% Saves the segmented image, not edited for objects along the edges or
+%%% for size, to the handles structure.
+fieldname = ['PrelimSegmented',ExpandedObjectName];
+handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
+
+%%% Saves the segmented image, only edited for small objects, to the
+%%% handles structure.
+fieldname = ['PrelimSmallSegmented',ExpandedObjectName];
+handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
+
+%%% Saves the final segmented label matrix image to the handles structure.
+fieldname = ['Segmented',ExpandedObjectName];
+handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
+
+%%% Determines the filename of the objects analyzed.
+fieldname = ['Filename', ObjectName];
+FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
+%%% Saves the filename of the image to be analyzed.
+fieldname = ['Filename', ExpandedObjectName];
+handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+
+%%% Saves the colored version of images to the handles structure so
+%%% they can be saved to the hard drive, if the user requests.
+fieldname = ['Colored',ExpandedObjectName];
+handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+fieldname = ['Colored',ColoredNeighborsName];
+handles.Pipeline.(fieldname) = ColoredImageOfNeighbors;

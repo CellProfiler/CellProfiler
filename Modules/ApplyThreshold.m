@@ -108,17 +108,16 @@ ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Note: Everything between the "if" and "end" is not carried out if the 
-%%% user has closed the figure window, so do not do any important
-%%% calculations here. Otherwise an error message will be produced if the
-%%% user has closed the window but you have attempted to access data that
-%%% was supposed to be produced by this part of the code.
-
 %%% Determines the figure number to display in.
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
+%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% user has closed the figure window, so do not do any important
+%%% calculations here. Otherwise an error message will be produced if the
+%%% user has closed the window but you have attempted to access data that
+%%% was supposed to be produced by this part of the code.
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows

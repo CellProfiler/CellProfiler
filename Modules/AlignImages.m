@@ -242,7 +242,7 @@ end
 drawnow
 
 if strcmp(AdjustImage,'Y') == 1
-    %%% The adjusted image is saved to the
+    %%% Saves the adjusted image to the
     %%% handles structure so it can be used by subsequent algorithms.
     fieldname = ['dOT', AlignedImage1Name];
     handles.(fieldname) = AlignedImage1;
@@ -253,7 +253,7 @@ if strcmp(AdjustImage,'Y') == 1
         handles.(fieldname) = AlignedImage3;
     end
 end
-%%% The original file name is saved to the handles structure in a
+%%% Saves the original file name ito the handles structure in a
 %%% field named after the adjusted image name.
 fieldname = ['dOTFilename', AlignedImage1Name];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName1;
@@ -264,7 +264,7 @@ fieldname = ['dOTFilename', AlignedImage3Name];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName3;
 end
 
-%%% The shift in alignment is stored as a measurement for quality control
+%%% Stores the shift in alignment as a measurement for quality control
 %%% purposes.
 fieldname = ['dMTXAlign', AlignedImage1Name,AlignedImage2Name];
 handles.(fieldname)(handles.setbeinganalyzed) = {sx};

@@ -1,4 +1,4 @@
-function handles = AlgCorrectIlluminationDivideAllMean(handles)
+function handles = AlgCorrectIllumDivideAllMean(handles)
 
 % Help for the Correct Illumination Divide All Mean module: 
 %

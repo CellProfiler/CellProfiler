@@ -1686,8 +1686,10 @@ if strcmp(Answer, 'Yes') == 1
             eval(['OtherFigures(i)=handles.Figures.window' num2str(i) ';'])
         end
     end
+    try
     OtherFigures=OtherFigures(OtherFigures ~= 0);
     delete(OtherFigures)
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -314,10 +314,9 @@ for i = 1:5
     %%% If the objects have already been counted and there are zero
     %%% objects in this image, no measurements are made by this module.
     fieldname = ['ImageCount', OriginalObjectName];
-    if isfield(handles.Measurements,fieldname) == 1
-        ObjectCount = handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed);
+    try ObjectCount = handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed);
         ObjectCount = ObjectCount{1};
-    else
+    catch
         %%% Counts the number of objects in the label matrix image. This
         %%% does not require that the objects be contiguous. Strange
         %%% results may ensue with non-contiguous objects. Subtracting the

@@ -127,9 +127,13 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = .
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Warning! It is possible to overwrite existing files using this module! 
+%textVAR06 = Enter the bit depth at which to save the images (8, 12, or 16: some image formats do not support saving at a bit depth of 12 or 16; see Matlab's imwrite function for more details.)
+%defaultVAR06 = 8
+BitDepth = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%%%VariableRevisionNumber = 02
+%textVAR07 = Warning! It is possible to overwrite existing files using this module! 
+
+%%%VariableRevisionNumber = 03
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -242,24 +246,29 @@ drawnow
 %%% SAVE IMAGE TO HARD DRIVE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-try imwrite(OrigImageToBeAnalyzed, NewFileAndPathName, FileFormat);
-catch error('The image could not be saved to the hard drive for some reason.')
+FileSavingParameters = [];
+if strcmpi(BitDepth,'8') ~=1
+    FileSavingParameters = [',''bitdepth'', ', BitDepth,'']
+    %%% In jpeg format at 12 and 16 bits, the mode must be set to
+    %%% lossless to avoid failure of the imwrite function.
+    if strcmpi(FileFormat,'jpg') == 1 | strcmpi(FileFormat,'jpeg') == 1
+        FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless''']
+    end
+end
+
+try eval(['imwrite(OrigImageToBeAnalyzed, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
+catch 
+    error('In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.')
 end
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
-% Each module checks whether its figure is open before calculating
-% images that are for display only. This is done by examining all the
-% figure handles for one whose handle is equal to the assigned figure
-% number for this module. If the figure is not open, everything
-% between the "if" and "end" is ignored (to speed execution), so do
-% not do any important calculations here. Otherwise an error message
-% will be produced if the user has closed the window but you have
-% attempted to access data that was supposed to be produced by this
-% part of the code. If you plan to save images which are normally
-% produced for display only, the corresponding lines should be moved
-% outside this if statement.
+% Some calculations produce images that are used only for display or
+% for saving to the hard drive, and are not used by downstream
+% modules. To speed processing, these calculations are omitted if the
+% figure window is closed and the user does not want to save the
+% images.
 
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:

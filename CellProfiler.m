@@ -805,8 +805,12 @@ AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
 %%% the end of this step:
 CurrentDir = cd;
 %%% Change to the default algorithm directory, whose name is a variable
-%%% that is stored in that .mat file.
-cd(handles.Vdefaultalgorithmdirectory)
+%%% that is stored in that .mat file. It is within a try-end pair because
+%%% the user may have changed the folder names leading up to this directory
+%%% sometime after saving the Preferences.
+try
+    cd(handles.Vdefaultalgorithmdirectory)
+end 
 %%% Now, when the dialog box is opened to retrieve an algorithm, the
 %%% directory will be the default algorithm directory.
 [AlgorithmNamedotm,PathName] = uigetfile('*.m',...
@@ -1438,7 +1442,7 @@ cd(CurrentDirectory);
 % --- Executes on button press in ExportCellByCellButton.
 function ExportCellByCellButton_Callback(hObject, eventdata, handles)
 %%% Determines the current directory so it can switch back when done.
-CurrentDirectory = pwd
+CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
@@ -1674,7 +1678,6 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
 end
-CurrentDirectory
 cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
@@ -2514,30 +2517,30 @@ if RawFileName ~= 0
         for Number = 1:length(MeasFieldnames)
             EditedMeasFieldnames{Number} = MeasFieldnames{Number}(4:end);
         end
-        %%% Allows the user to select the X Locations from the list.
+        %%% Allows the user to select a measurement from the list.
         [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
-            'Name','Select the X locations to be used',...
-            'PromptString','Select the X locations to be used','CancelString','Cancel',...
+            'Name','Select measurement',...
+            'PromptString','Choose a measurement to display on the image','CancelString','Cancel',...
             'SelectionMode','single');
         if ok ~= 0
-            EditedXLocationMeasurementName = char(EditedMeasFieldnames(Selection));
-            XLocationMeasurementName = ['dMC', EditedXLocationMeasurementName];
-            %%% Allows the user to select the Y Locations from the list.
+            EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
+            MeasurementToExtract = ['dMC', EditedMeasurementToExtract];
+            %%% Allows the user to select the X Locations from the list.
             [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
-                'Name','Select the Y locations to be used',...
-                'PromptString','Select the Y locations to be used','CancelString','Cancel',...
+                'Name','Select the X locations to be used',...
+                'PromptString','Select the X locations to be used','CancelString','Cancel',...
                 'SelectionMode','single');
             if ok ~= 0
-                EditedYLocationMeasurementName = char(EditedMeasFieldnames(Selection));
-                YLocationMeasurementName = ['dMC', EditedYLocationMeasurementName];
-                %%% Allows the user to select a measurement from the list.
+                EditedXLocationMeasurementName = char(EditedMeasFieldnames(Selection));
+                XLocationMeasurementName = ['dMC', EditedXLocationMeasurementName];
+                %%% Allows the user to select the Y Locations from the list.
                 [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
-                    'Name','Select measurement',...
-                    'PromptString','Choose a measurement to display on the image','CancelString','Cancel',...
+                    'Name','Select the Y locations to be used',...
+                    'PromptString','Select the Y locations to be used','CancelString','Cancel',...
                     'SelectionMode','single');
                 if ok ~= 0
-                    EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
-                    MeasurementToExtract = ['dMC', EditedMeasurementToExtract];
+                    EditedYLocationMeasurementName = char(EditedMeasFieldnames(Selection));
+                    YLocationMeasurementName = ['dMC', EditedYLocationMeasurementName];
                     %%% Prompts the user to choose a sample number to be displayed.
                     Answer = inputdlg({'Which sample number do you want to display?'},'Choose sample number',1,{'1'});
                     if isempty(Answer)

@@ -153,8 +153,8 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
     
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
-    displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
-        ['Area occupied by ', ObjectName ,':      ', num2str(AreaOccupied, '%2.1E')]);
+    displaytext = {['      Image Set # ',num2str(handles.setbeinganalyzed)];...
+        ['Area occupied by ', ObjectName ,':      ', num2str(AreaOccupied, '%2.1E')]};
     set(displaytexthandle,'string',displaytext)
     set(ThisAlgFigureNumber,'toolbar','figure')
    end

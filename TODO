@@ -14,6 +14,8 @@ Infrastructure improvements:
 
      - When adding a module to the pipeline, check to see whether more than one function with that name exists on the Matlab search path. If so, warn the user, tell the user which pathname to the function will most likely be used, but warn them that this may change if the path is changed by adding modules from another directory.  Suggest that if the module has the same name as a Matlab function, they should consider renaming the module to prevent confusion.
 
+     _ When adding a module to the pipeline, CellProfiler checks in a fairly rudimentary way whether it is a valid CellProfiler module and warns the user. However, the module is then half-loaded so nothing works properly and you have to restart CellProfiler. This checking should be more sophisticated, and should recover by not loading the module at all.
+
      - In CellProfiler.m, check whether the guidata lines are necessary (marked with a TODO).
 
      - Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if ModuleNames was a 6 x 1 cell rather than 1 x 6. 

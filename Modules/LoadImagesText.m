@@ -86,10 +86,10 @@ drawnow
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
 % The '%defaultVAR' lines contain the default values which are
-% displayed in the variable boxes when the user loads the algorithm.
+% displayed in the variable boxes when the user loads the module.
 % The line of code after the textVAR and defaultVAR extracts the value
 % that the user has entered from the handles structure and saves it as
-% a variable in the workspace of this algorithm with a descriptive
+% a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
 % also that the capitalization is as shown. 

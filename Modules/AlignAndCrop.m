@@ -1,4 +1,4 @@
-function handles = AlgAlignAndCrop(handles)
+function handles = AlignAndCrop(handles)
 
 % Help for the Align and Crop module:
 % Category: Pre-processing
@@ -35,7 +35,7 @@ function handles = AlgAlignAndCrop(handles)
 % module to save those images to the handles structure (see the
 % SaveImages module help) and then use the Save Images module.
 %
-% See also ALGALIGN.
+% See also ALIGN.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -90,10 +90,10 @@ drawnow
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
 % The '%defaultVAR' lines contain the default values which are
-% displayed in the variable boxes when the user loads the algorithm.
+% displayed in the variable boxes when the user loads the module.
 % The line of code after the textVAR and defaultVAR extracts the value
 % that the user has entered from the handles structure and saves it as
-% a variable in the workspace of this algorithm with a descriptive
+% a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
 % also that the capitalization is as shown. 
@@ -153,7 +153,7 @@ PrintedWidth = PrintedImageSizeNumerical(2);
 %%% Checks that the page orientation is a valid entry
 if strcmp(upper(Orientation),'PORTRAIT') ~= 1
     if strcmp(upper(Orientation),'LANDSCAPE') ~= 1
-        error('Image processing was canceled because you have not entered a valid response for the page orientaion in the AlgAlignAndCrop module.  Type either landscape or portrait and try again.')
+        error('Image processing was canceled because you have not entered a valid response for the page orientaion in the AlignAndCrop module.  Type either landscape or portrait and try again.')
     end
 end
 

@@ -11,7 +11,7 @@ function handles = AlgIdentifyPrimIntensIntens(handles)
 % a smooth texture, although increasing the blur radius can improve
 % the outcome on lumpy-textured objects.
 %
-% Variables:
+% Settings:
 %
 % Size range: You may exclude objects that are smaller or bigger than
 % the size range you specify. A comma should be placed between the

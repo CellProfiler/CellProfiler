@@ -1,4 +1,7 @@
-function ReplaceTextInModules(Multiple)
+function ReplaceTextInModules(TestMode)
+%%% Type any text as an argument in order to run this function in test
+%%% mode, where the files will not be altered but you can see which
+%%% replacements will be made.
 
 [FileName,PathName] = uigetfile('*.m', 'Choose the M-file with the old text');
 if FileName == 0
@@ -25,10 +28,10 @@ AlgorithmFileNames = FileNamesNoDir(strncmp(FileNamesNoDir,'Alg',3));
 NumberOfAlgorithmFiles = size(AlgorithmFileNames,1)
 Answer = questdlg('Do you want to replace all instances of the text or just the first?','','All','First','Cancel','All');
 if strcmp(Answer,'All') == 1
-Multiple = 1;
+    Multiple = 1;
 elseif strcmp(Answer,'First') == 1
     Multiple = 0;
-else return   
+else return
 end
 %%% Loops through each Algorithm.
 for i = 1:NumberOfAlgorithmFiles
@@ -52,6 +55,10 @@ for i = 1:NumberOfAlgorithmFiles
             PreReplacementText = NewAlgorithmContents(1:PositionToReplace-1);
             PostReplacementText = NewAlgorithmContents(PositionToReplace + length(TextToRemove):end);
             NewAlgorithmContents = [PreReplacementText,TextToAddInItsPlace,PostReplacementText];
+        end
+        if exist('TestMode') == 1
+            Result(NumberOfAlgorithmFiles+1,:) = {'This is test mode only. None of the replacements were actually made'};
+        else
             fid=fopen(cell2mat([AlgorithmFileNames(i,:)]),'w');
             fwrite(fid,NewAlgorithmContents,'char');
             fclose(fid);

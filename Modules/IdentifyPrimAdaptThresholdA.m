@@ -16,7 +16,7 @@ function handles = AlgIdentifyPrimAdaptThresholdA(handles)
 % algorithm, for distinct blocks across the image.  The resulting
 % thresholds are blurred.
 %
-% Variables:
+% Settings:
 %
 % Size range: You may exclude objects that are smaller or bigger than
 % the size range you specify. A comma should be placed between the

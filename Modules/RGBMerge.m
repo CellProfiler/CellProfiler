@@ -6,6 +6,16 @@ function handles = AlgRGBMerge(handles)
 % Takes 1 to 3 images and assigns them to colors in a final, RGB
 % image.  Each color's brightness can be adjusted independently.
 %
+% Settings:
+%
+% Adjustment factors: Leaving the adjustment factors set to 1 will
+% balance all three colors equally in the final image, and they will
+% use the same range of intensities as each individual incoming image.
+% Using factors less than 1 will decrease the intensity of that
+% color in the final image, and values greater than 1 will increase
+% it.  Setting the adjustment factor to zero will cause that color to
+% be entirely blank.
+%
 % SAVING IMAGES: The RGB image produced by this module can be easily
 % saved using the Save Images module, using the name you assign. If
 % you want to save other intermediate images, alter the code for this

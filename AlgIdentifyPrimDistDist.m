@@ -13,7 +13,7 @@ function handles = AlgIdentifyPrimDistDist(handles)
 % dimmer or brighter along the lines between clumped objects, as is
 % necessary for the Identify Primary Distance Intensity module.
 %
-% Variables:
+% Settings:
 %
 % Size range: You may exclude objects that are smaller or bigger than
 % the size range you specify. A comma should be placed between the

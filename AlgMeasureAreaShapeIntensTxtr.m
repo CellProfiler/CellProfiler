@@ -119,7 +119,7 @@ ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %defaultVAR02 = OrigBlue
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
-%textVAR03 = Measure the percent of cells with a total intensity greater
+%textVAR03 = Measure the fraction of cells with a total intensity greater
 %textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
 %defaultVAR04 = N
 Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
@@ -458,14 +458,14 @@ else
     fieldname = ['dMTSumIntegratedIntensity', ImageName, 'within', ObjectName];
     handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 
-    %%% Calculates the percent of cells whose integrated intensity is above the
+    %%% Calculates the fraction of cells whose integrated intensity is above the
     %%% user's threshold.
     if strcmp(upper(Threshold),'N') ~= 1
         NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
         TotalNumberObjects = length(IntegratedIntensity);
-        PercentObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
-        fieldname = ['dMTPercentAboveThreshold', ImageName, 'within', ObjectName];
-        handles.(fieldname)(handles.setbeinganalyzed) = {PercentObjectsAboveThreshold};
+        FractionObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
+        fieldname = ['dMTFractionAboveThreshold', ImageName, 'within', ObjectName];
+        handles.(fieldname)(handles.setbeinganalyzed) = {FractionObjectsAboveThreshold};
     end
 
     %%%
@@ -690,7 +690,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
             ['SumArea:                  ', num2str(sum(Area))]);
         if strcmp(upper(Threshold),'N') ~= 1
             displaytext = strvcat(displaytext,... %#ok We want to ignore MLint error checking for this line.
-                ['Percent above intensity threshold:', num2str(PercentObjectsAboveThreshold)]);
+                ['Fraction above intensity threshold:', num2str(FractionObjectsAboveThreshold)]);
         end
     end % Goes with: if no objects were in the label matrix image.
     set(displaytexthandle,'string',displaytext)

@@ -7,7 +7,7 @@ function handles = AlgMeasureTotalIntensity(handles)
 % every pixel's intensity. The user can choose to ignore pixels below
 % or above a particular intensity level.
 %
-% Variables:
+% Settings:
 %
 % You may tell the module to ignore pixels above or below a pixel
 % intensity value that you specify, in the range 0 to 1 (use 'Show

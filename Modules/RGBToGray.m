@@ -6,6 +6,15 @@ function handles = AlgRGBToGray(handles)
 % Takes an RGB image and converts it to grayscale.  Each color's
 % contribution to the final image can be adjusted independently.
 %
+% Settings:
+%
+% Adjustment factors: Leaving the adjustment factors set to 1 will
+% balance all three colors equally in the final image, which will
+% use the same range of intensities as the incoming image.  To weight
+% colors relative to each other, the adjustment factor can be
+% increased (to increase the weighting) or decreased (to decrease the
+% weighting).
+%
 % SAVING IMAGES: The grayscale image produced by this module can be
 % easily saved using the Save Images module, using the names you
 % assign. If you want to save other intermediate images, alter the

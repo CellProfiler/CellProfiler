@@ -6,7 +6,7 @@ function handles = AlgMeasureAreaOccupied(handles)
 % This module simply measures the total area covered by stain in an
 % image. 
 %
-% Variables:
+% Settings:
 %
 % Threshold: The threshold affects the stringency of the lines between
 % the objects and the background. You may enter an absolute number

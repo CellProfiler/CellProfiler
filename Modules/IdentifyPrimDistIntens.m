@@ -9,7 +9,7 @@ function handles = AlgIdentifyPrimDistIntens(handles)
 % clumped objects are dim.  The objects need not be brighter towards
 % the interior as is required for the intensity-based modules.
 %
-% Variables:
+% Settings:
 %
 % Size range: You may exclude objects that are smaller or bigger than
 % the size range you specify. A comma should be placed between the

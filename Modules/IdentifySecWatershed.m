@@ -11,7 +11,7 @@ function handles = AlgIdentifySecWatershed(handles)
 % not be difficult to write a module that looks for bright lines
 % between objects, based on this one.
 %
-% Variables:
+% Settings:
 %
 % Threshold: The threshold affects the stringency of the lines between
 % the objects and the background. You may enter an absolute number

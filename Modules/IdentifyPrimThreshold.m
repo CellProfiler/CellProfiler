@@ -12,7 +12,7 @@ function handles = AlgIdentifyPrimThreshold(handles)
 % are ignored, and the user can select a size range, outside which
 % objects will be ignored.
 %
-% Variables:
+% Settings:
 %
 % Size range: You may exclude objects that are smaller or bigger than
 % the size range you specify. A comma should be placed between the

@@ -1087,7 +1087,7 @@ if (length(ModuleHighlighted) > 0)
         if((handles.Settings.NumbersOfVariables(ModuleNumber)+numberOfLongBoxes+numberExtraLinesOfDescription) > 14)
             set(handles.slider1,'visible','on');
             set(handles.slider1,'max',((handles.Settings.NumbersOfVariables(ModuleNumber)-14+numberOfLongBoxes+numberExtraLinesOfDescription)*25));
-            set(handles.slider1,'value',get(handles.slider1,'max'));
+            set(handles.slider1,'value',get(handles.slider1,'min'));
         end
     else 
         helpdlg('No modules are loaded.');
@@ -1144,7 +1144,7 @@ function slider1_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range
 %        of slider
-scrollPos = get(hObject,'max') - get(hObject, 'Value');
+scrollPos = get(hObject, 'Value');
 variablepanelPos = get(handles.variablepanel, 'position');
 % Note:  The yPosition is 0 + scrollPos because 0 is the original Y
 % Position of the variablePanel.  If the original location of the

@@ -3108,7 +3108,6 @@ else
                                 break_outer_loop = 1;
                                 break;
                             end;
-
                         end
                                             
                         openFig = openFigures;

@@ -61,7 +61,7 @@ ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
 %defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-Threshold = handles.(fieldname);
+Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
 %textVAR09 = The measurements made by this module will be named based on
 %textVAR10 = your entries, e.g. "OrigRedwithinNuclei".

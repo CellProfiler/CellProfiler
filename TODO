@@ -130,6 +130,8 @@ Settings =      ModuleNames: {1x6 cell}
 
 WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 
++++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
+
 +++ Download code relating to Perlman, Mitchison, et al. Science
        2004 and make modules accordingly (Laplacian of Gaussian to
        identify nuclei) 
@@ -236,6 +238,8 @@ For each title, add properties at the end:
        there are fewer images than the total grid. 
 
 - For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
+
+- Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev, cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.
 
 - Make a quality-control button that checks results from an output file for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation. (Based on whatever Ray decides is useful).
 

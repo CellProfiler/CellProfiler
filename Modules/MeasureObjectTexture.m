@@ -396,9 +396,7 @@ for i = 1:3
   
    
     %%% Report measurements
-try FontSize = handles.Preferences.FontSize;
-catch FontSize = 10;
-end
+    FontSize = get(0,'UserData');
     
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times

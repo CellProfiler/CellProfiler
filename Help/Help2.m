@@ -29,15 +29,6 @@ function Help2
 % can be remembered by CellProfiler by clicking on the 'Set
 % preferences' button (see below).
 %
-% SAMPLE INFO: 
-% If you would like text information about each image to be recorded
-% in the output file along with measurements (e.g. Gene names,
-% accession numbers, or sample numbers), click the Load button. You
-% will then be guided through the process of choosing a text file that
-% contains the text data for each image. More than one set of text
-% information can be entered for each image; each set of text will be
-% a separate column in the output file.        
-%
 % SET PREFERENCES: 
 % This allows you to set the default pixel size, the folder to go to
 % when you load analysis modules, and the folder to go to for all

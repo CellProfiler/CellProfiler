@@ -37,32 +37,25 @@ drawnow
 
 %textVAR01 = What did you call the image you want to check for saturation and blur?
 %defaultVAR01 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 NameImageToCheck{1} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What did you call the image you want to check for saturation and blur?
 %defaultVAR02 = OrigGreen
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 NameImageToCheck{2} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What did you call the image you want to check for saturation and blur?
 %defaultVAR03 = OrigRed
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 NameImageToCheck{3} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = What did you call the image you want to check for saturation and blur?
 %defaultVAR04 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 NameImageToCheck{4} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = What did you call the image you want to check for saturation and blur?
 %defaultVAR05 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 NameImageToCheck{5} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = What did you call the image you want to check for saturation and blur?
 %defaultVAR06 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 NameImageToCheck{6} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 =  For unused colors, leave "N" in the boxes above.
 %textVAR09 = Do you want to check for blur?
 %defaultVAR09 = Y
-fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 BlurCheck = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

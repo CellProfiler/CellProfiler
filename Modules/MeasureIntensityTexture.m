@@ -1,4 +1,16 @@
 function handles = AlgMeasureIntensityTexture(handles)
+%%% Retrieves a segmented image, in label matrix format, and a
+%%% corresponding original grayscale image and makes 
+%%% measurements of the objects that are segmented in the image.
+%%% This module differs from the AlgMeasure module because it lacks
+%%% measurements of shape and area and includes only intensity and
+%%% texture.
+%%% The label matrix image should be "compacted": I mean that each number
+%%% should correspond to an object, with no numbers skipped.  So, if some
+%%% objects were discarded from the label matrix image, the image should be
+%%% converted to binary and re-made into a label matrix image before
+%%% feeding into this module.
+
 
 
 % The contents of this file are subject to the Mozilla Public License Version 
@@ -26,18 +38,6 @@ function handles = AlgMeasureIntensityTexture(handles)
 %
 % $Revision$
 
-%%% Retrieves a segmented image, in label matrix format, and a
-%%% corresponding original grayscale image and makes 
-%%% measurements of the objects that are segmented in the image.
-%%% This module differs from the AlgMeasure module because it lacks
-%%% measurements of shape and area and includes only intensity and
-%%% texture.
-%%% The label matrix image should be "compacted": I mean that each number
-%%% should correspond to an object, with no numbers skipped.  So, if some
-%%% objects were discarded from the label matrix image, the image should be
-%%% converted to binary and re-made into a label matrix image before
-%%% feeding into this module.
-
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
@@ -49,18 +49,15 @@ CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 
 %textVAR02 = What did you call the greyscale images you want to measure? 
 %defaultVAR02 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Measure the percent of cells with a total intensity greater
 %textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
 %defaultVAR04 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
 %textVAR09 = The measurements made by this module will be named based on

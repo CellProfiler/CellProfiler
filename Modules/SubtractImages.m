@@ -70,37 +70,29 @@ drawnow
 
 %textVAR01 = Subtract this image (enter the name here)
 %defaultVAR01 = tubulinw3
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 SubtractImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = From this image (enter the name here)
 %defaultVAR02 = NHSw1
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 BasicImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What do you want to call the resulting image?
 %defaultVAR03 = SubtractedCellStain
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 ResultingImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Enter the factor to multiply the subtracted image by:
 %defaultVAR04 = 1
-fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 MultiplyFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %textVAR05 = Contrast stretch the resulting image?
 %defaultVAR05 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 Stretch = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = Blur radius for the basic image
 %defaultVAR06 = 3
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 BlurRadius = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %textVAR08 = To save the resulting image, enter text to append to the name 
 %defaultVAR08 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = If saving images, what file format do you want to use? Do not include a period.
 %defaultVAR11 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

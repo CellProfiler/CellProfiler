@@ -12,29 +12,23 @@ drawnow
 
 %textVAR01 = What did you call the image to be thresholded?
 %defaultVAR01 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the thresholded image?
 %defaultVAR02 = ThreshBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ThresholdedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR04 = Pixels above this value (Range = 0-1) will be set to zero
 %defaultVAR04 = 1
-fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %textVAR05 = This value will be subtracted from the entire image (Range = 0-1)
 %defaultVAR05 = 0
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR08 = To save the thresholded image, enter text to append to the image name 
 %defaultVAR08 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR10 = In what file format do you want to save images? Do not include a period
 %defaultVAR10 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

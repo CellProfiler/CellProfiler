@@ -12,35 +12,28 @@ drawnow
 
 %textVAR01 = What did you call the image to be corrected?
 %defaultVAR01 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the corrected image?
 %defaultVAR02 = CorrBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 CorrectedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = To save each corrected image, enter text to append to the image name 
 %defaultVAR03 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR05 = In what file format do you want to save images? Do not include a period
 %defaultVAR05 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = Block size. This should be set large enough that every square block 
 %defaultVAR06 = 60
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 %textVAR07 = of pixels is likely to contain some background. Default = 60 pixels
 %textVAR08 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
 %defaultVAR08 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 IllumCorrectFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = If you have already created an illumination corrrection image to be used, enter the 
 %textVAR10 = path & file name of the image below. To calculate the illumination correction image 
 %textVAR11 = from all the images of this color that will be processed, leave a slash in the box below.
 %defaultVAR11 = /
-fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 IllumCorrectPathAndFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

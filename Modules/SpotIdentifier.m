@@ -37,18 +37,15 @@ drawnow
 
 %textVAR01 = Do you want to load spot information from a file (e.g. gene names)?
 %defaultVAR01 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 LoadSpotIdentifiers = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = You will be able to select any image from any folder once analysis has begun.
 
 %textVAR09 = To save the resulting rotated image, enter a filename (no extension)
 %defaultVAR09 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = In what file format do you want to save the image? Do not include a period
 %defaultVAR11 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -12,40 +12,32 @@ drawnow
 
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigGreen
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What did you call the objects that will be used to mark the centers of these objects?
 %defaultVAR02 = Nuclei
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 PrimaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What do you want to call the objects identified by this algorithm?
 %defaultVAR03 = Cells
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SecondaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %%% The following is just an extra line of text describing variable 3.
 %textVAR04 = (Note: Data will be produced based on this name, e.g. dMCTotalAreaCells)
 
 %textVAR05 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR05 = 0
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 %textVAR06 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR06 = 0.75
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %textVAR08 = To save object outlines as an image, enter text to append to the name 
 %defaultVAR08 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveObjectOutlines = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = To save colored object blocks as an image, enter text to append to the name 
 %defaultVAR09 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveColoredObjects = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = If saving images, what file format do you want to use? Do not include a period.
 %defaultVAR11 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function handles = AlgMeasureAreaShapeIntensityTexture13(handles)
+function handles = AlgMeasureAreaShapeIntensTxtr(handles)
 %%% Retrieves a segmented image, in label matrix format, and its
 %%% corresponding original grayscale image and makes 
 %%% lots of measurements of the objects that are segmented in the image.
@@ -7,6 +7,32 @@ function handles = AlgMeasureAreaShapeIntensityTexture13(handles)
 %%% objects were discarded from the label matrix image, the image should be
 %%% converted to binary and re-made into a label matrix image before
 %%% feeding into this module.
+
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the Measure Area, Shape, Intensity, and Texture module.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
+
 
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
@@ -19,18 +45,15 @@ CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 
 %textVAR02 = What did you call the greyscale images you want to measure? 
 %defaultVAR02 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Measure the percent of cells with a total intensity greater
 %textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
 %defaultVAR04 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
 %textVAR09 = The measurements made by this module will be named based on
@@ -599,27 +622,3 @@ end
 %%%%% .
 
 
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the ______________________.
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$

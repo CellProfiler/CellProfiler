@@ -11,38 +11,30 @@ drawnow
 
 %textVAR01 = What did you call the image to be cropped?
 %defaultVAR01 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the cropped image?
 %defaultVAR02 = CropBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 CroppedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = To save the adjusted image, enter text to append to the image name 
 %defaultVAR03 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR05 = In what file format do you want to save images? Do not include a period
 %defaultVAR05 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = For rectangular cropping, type R. For a shape from a file, type F
 %defaultVAR06 = R
 %textVAR07 = To draw an ellipse on each image, type EE; draw one ellipse for all images: EA
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 Shape = upper(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 %textVAR08 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma between)
 %defaultVAR08 = 1,1
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 LeftTop = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma)
 %defaultVAR09 = 100,100
-fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 RightBottom = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 = Other shape cropping: To crop to another shape, type the location and file name of 
 %textVAR11 = the binary image to guide the cropping (Zero values will be removed).  Type carefully!  
 %defaultVAR11 = /
-fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 BinaryCropImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

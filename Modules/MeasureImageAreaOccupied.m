@@ -12,30 +12,24 @@ drawnow
 
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigGreen
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the objects measured by this algorithm?
 %defaultVAR02 = Cells
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR04 = 0
-fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
 Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR05 = 0.75
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR07 = To save the adjusted image, enter text to append to the image name 
 %defaultVAR07 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
 SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %textVAR08 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR09 = In what file format do you want to save images? Do not include a period
 %defaultVAR09 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -20,15 +20,12 @@ drawnow
 
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigBlue
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the objects identified by this algorithm?
 %defaultVAR02 = Nuclei
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
 %defaultVAR03 = 1,99999
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %%% NOTE: I DID NOT YET ADJUST THIS MODULE TO USE THRESHOLDS INTELLIGENTLY.
@@ -37,29 +34,23 @@ SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR05 = Enter the threshold (0 to 1, higher = more stringent)
 %defaultVAR05 = .13
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 %textVAR06 = Neighborhood size, in pixels (odd number, higher = less stringent)
 %defaultVAR06 = 31
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 NeighborhoodSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 %textVAR07 = Enter sigma (positive number, higher = less stringent)
 %defaultVAR07 = 20
-fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
 Sigma = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,7}));
 
 %textVAR08 = To save object outlines as an image, enter text to append to the name 
 %defaultVAR08 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 SaveObjectOutlines = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = To save colored object blocks as an image, enter text to append to the name 
 %defaultVAR09 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
 SaveColoredObjects = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = If saving images, what file format do you want to use? Do not include a period.
 %defaultVAR11 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

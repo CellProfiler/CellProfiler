@@ -11,17 +11,14 @@ CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %textVAR01 = How many characters precede the image number?
 %defaultVAR01 = 6
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 NumberCharactersPrefix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
 
 %textVAR02 = How many characters follow the image number, including file extension?
 %defaultVAR02 = 8
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 NumberCharactersSuffix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
 
 %textVAR03 = How many total digits do you want to use for the image number?
 %defaultVAR03 = 3
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 NumberDigits = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
 
 %textVAR05 = Be very careful since you will be renaming (=overwriting) your files!!

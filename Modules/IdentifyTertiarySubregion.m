@@ -12,28 +12,22 @@ drawnow
 
 %textVAR01 = What did you call the larger identified objects?
 %defaultVAR01 = Cells
-fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
 PrimaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What did you call the smaller identified objects?
 %defaultVAR02 = Nuclei
-fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 SecondaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What do you want to call the new subregions?
 %defaultVAR03 = Cytoplasm
-fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 SubregionObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR05 = To save grayscale objects as an image, enter text to append to the image name 
 %defaultVAR05 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
 SaveGrayObjects = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = To save colored object blocks as an image, enter text to append to the name 
 %defaultVAR06 = N
-fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
 SaveColoredObjects = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR08 = In what file format do you want to save images? Do not include a period
 %defaultVAR08 = tif
-fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -146,7 +146,7 @@ BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = .
 BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What prefix should be added to the batch file names? #LongBox#
+%textVAR07 = What prefix should be added to the batch file names?
 %defaultVAR07 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 

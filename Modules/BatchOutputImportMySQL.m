@@ -130,12 +130,17 @@ if SQLMainFile == -1,
 end
 fprintf(SQLMainFile, 'USE %s;\n', DatabaseName);
 
+% temp fix
+BatchData.handles.Measurements.ImageThresholdNuclei = BatchData.handles.Measurements.GeneralInfo.ImageThresholdNuclei;
+BatchData.handles.Measurements.ImageThresholdCells = BatchData.handles.Measurements.GeneralInfo.ImageThresholdCells;
+BatchData.handles.Measurements = rmfield(BatchData.handles.Measurements, 'GeneralInfo');
+
 %%% get the list of measurements
 Fieldnames = fieldnames(BatchData.handles.Measurements);
 
 %%% create tables
 ImageFieldNames = Fieldnames(strncmp(Fieldnames, 'Image', 5));
-fprintf(SQLMainFile, 'DROP TABLE IF EXISTS spots;\n')
+fprintf(SQLMainFile, 'DROP TABLE IF EXISTS spots;\n');
 fprintf(SQLMainFile, 'CREATE TABLE spots (spotnumber INTEGER PRIMARY KEY');
 for i = 1:length(ImageFieldNames),
     fprintf(SQLMainFile, ', %s FLOAT', char(ImageFieldNames{i}));
@@ -204,6 +209,11 @@ FileList = FileList(Matches);
 WaitbarHandle = waitbar(0,'Writing SQL files');
 for filenum = 1:length(FileList),
     SubsetData = load(fullfile(BatchPath,FileList(filenum).name));
+
+    SubsetData.handles.Measurements.ImageThresholdNuclei = SubsetData.handles.Measurements.GeneralInfo.ImageThresholdNuclei;
+    SubsetData.handles.Measurements.ImageThresholdCells = SubsetData.handles.Measurements.GeneralInfo.ImageThresholdCells;
+    SubsetData.handles.Measurements = rmfield(SubsetData.handles.Measurements, 'GeneralInfo');
+
     if (isfield(SubsetData.handles, 'BatchError')),
         fclose(SQLMainFile);
         error(['Error writing SQL data from batch file output.  File ' BatchPath '/' FileList(i).name ' encountered an error during batch processing.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);

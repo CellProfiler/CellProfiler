@@ -154,6 +154,8 @@ Image analysis modules - New:
 
 Image analysis modules - Improvements:
 
+     - Allow the Save Images module to deal with different bit depths, in case the user wants to save images in 16-bit (e.g. with PNG or JPG). Also allow the user to save an image as a binary (black/white rather than grayscale, so that any nonzero pixels = 1, most useful for viewing a label matrix).
+
      - Remove all 'cd' commands from modules.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
 
      - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).

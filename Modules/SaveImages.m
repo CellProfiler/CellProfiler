@@ -213,7 +213,7 @@ end
 %%% original file.
 NewFileAndPathName = fullfile(FileDirectory, NewImageName);
 OldFileAndPathName = fullfile(FileDirectory, CharFileName);
-if strcmp(OldFileAndPathName, NewFileAndPathName) == 1
+if strcmpi(OldFileAndPathName, NewFileAndPathName) == 1
     error('Image processing was canceled because the specifications in the Save Images module will result in image files being overwritten.')
 end
 
@@ -248,17 +248,17 @@ drawnow
 
 FileSavingParameters = [];
 if strcmpi(BitDepth,'8') ~=1
-    FileSavingParameters = [',''bitdepth'', ', BitDepth,'']
+    FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
     %%% In jpeg format at 12 and 16 bits, the mode must be set to
     %%% lossless to avoid failure of the imwrite function.
     if strcmpi(FileFormat,'jpg') == 1 | strcmpi(FileFormat,'jpeg') == 1
-        FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless''']
+        FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
     end
 end
 
 try eval(['imwrite(OrigImageToBeAnalyzed, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
 catch 
-    error('In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.')
+    error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
 end
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:

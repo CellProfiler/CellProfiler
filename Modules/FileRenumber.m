@@ -170,7 +170,8 @@ fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% If the window is open, it is closed.
 if any(findobj == ThisModuleFigureNumber) == 1;
-    delete(ThisModuleFigureNumber)
+    close(ThisModuleFigureNumber)
+    drawnow
 end
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:

@@ -380,10 +380,12 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     LastImage = 1;
     NumberOfImages = 1;
 
-    AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
-    try
-        save(AnswerFileName{1},'OutputMeasurements')
-    catch errordlg('oops')
+   if strcmpi(GreaterOrLessThan,'A') ~= 1
+        try
+            AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
+            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
+        catch errordlg('oops, saving did not work')
+        end
     end
 
     %%% Saves the data to an excel file if desired.
@@ -451,13 +453,14 @@ else
     %%% Saves this info in a variable, FigureSettings, which
     %%% will be stored later with the figure.
     FigureSettings{3} = FinalHistogramData;
-    AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
-    try
-        save(AnswerFileName{1},'OutputMeasurements')
-    catch errordlg('oops')
+    if strcmpi(GreaterOrLessThan,'A') ~= 1
+        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
+        try
+            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
+        catch errordlg('oops, saving did not work.')
+        end
     end
-
-
+    
     %%% Saves the data to an excel file if desired.
     if strcmpi(SaveData,'No') ~= 1
         WriteHistToExcel(SaveData, FirstImage, LastImage, XTickLabels,...
@@ -835,17 +838,13 @@ end
 %%% Close the file
 try
     fclose(fid);
+    h = helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
+    waitfor(h)
 catch
     h = errordlg(['Unable to close file ',FileName,'.']);
     waitfor(h);
     return;
 end
-h = helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
-waitfor(h)
-
-
-
-
 
 function [ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles)
 %

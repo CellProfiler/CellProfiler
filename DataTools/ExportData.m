@@ -33,22 +33,19 @@ LoadedHandles = load(fullfile(RawPathname, RawFileName));
 [ObjectNames,Summary] = ObjectsToExport(handles);
 
 for Object = 1:length(ObjectNames)
-    1
     ObjectName = ObjectNames{Object};
-    2
+    
     % Open a file for exporting the measurements
     if strcmp(Summary,'no')
         ExportFileName = [RawFileName(1:end-4),'_',ObjectName,'.xls'];
-        3
     else
         ExportFileName = [RawFileName(1:end-4),'_',ObjectName,'_Summary.xls'];
     end
     fid = fopen(fullfile(RawPathname,ExportFileName),'w');
    
-    
+    %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
     
-   
     %%% Write comma-separated file that can be imported into Excel
     %%%% Header part, general information goes here. Different for
     % summary vs full report.
@@ -66,7 +63,7 @@ for Object = 1:length(ObjectNames)
     % with each column corresponding to a separate feature
     FeatureNames = {};
     Measurements = {};
-    4
+    
     for k = 1:length(fields)
         if ~isempty(strfind(fields{k},'Features'))
             % Concatenate measurement and feature name matrices
@@ -200,7 +197,7 @@ if get(ETh,'Userdata') == 0
     ObjectNames = [];                                   % The user pressed the Cancel button
     close(ETh)
 elseif get(ETh,'Userdata') == 1
-    buttonchoice = get(h,'Value')
+    buttonchoice = get(h,'Value');
     if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects
         buttonchoice = cat(1,buttonchoice{:});
     end

@@ -46,7 +46,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 01-Nov-2004 12:31:46
+% Last Modified by GUIDE v2.5 01-Nov-2004 14:17:07
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...

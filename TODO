@@ -239,7 +239,7 @@ For each title, add properties at the end:
 
 - For the ExportMeanData datatool, display a window with every value that is going to be exported, each one next to a checkbox.  As default, have all checkboxes checked and allow the user to deselect measurements they do *not* want to export.  Might be nice to have a couple of buttons: 'select all' 'deselect all'.
 
-- Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev, cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.
+- Develop a good graphical interface for exporting data (using the GUI builder in Matlab) for the exportation of data and measurements to different formats.  Allow to choose whether to export Mean, median, stdev cellbycell, row vs. column, tab delimited vs. csv vs. Excel format.  Note: for exporting mean, median, and stdev, these values should be calculated on the fly rather than extracted from existing measures in handles.Measurements, so that we can eliminate storing these values in output files.
 
 - Make a quality-control button that checks results from an output file for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation. (Based on whatever Ray decides is useful).
 

@@ -968,12 +968,12 @@ for AlgDelete = 1:length(AlgorithmNumber);
     %%% 3. Clears the variable values in the handles structure.
 
     handles.Settings.Vvariable(AlgorithmNumber(AlgDelete)-AlgDelete+1,:) = [];
-
-    %%% 4. Update the number of algorithms loaded
-    handles.numAlgorithms = 0;
-    handles.numAlgorithms = length(handles.Settings.Valgorithmname);
-
 end
+
+
+%%% 4. Update the number of algorithms loaded
+handles.numAlgorithms = 0;
+handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 
 %%% 5. Sets the proper algorithm name to "No analysis module loaded"
 contents = get(handles.AlgorithmBox,'String');
@@ -986,10 +986,12 @@ end
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 
-if(handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) > handles.numAlgorithms)
-    handles.AlgorithmHighlighted = handles.numAlgorithms;
-    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
+while(handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) > handles.numAlgorithms)
+    handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) = [];
 end
+
+set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
+
 
 guidata(gcbo, handles);
 ViewAlgorithm(handles);

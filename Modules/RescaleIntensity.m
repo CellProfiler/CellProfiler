@@ -207,8 +207,8 @@ if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')
         catch [ErrorMessage, ErrorMessage2] = lasterr;
             error(['An error occurred in the Rescale Intensity module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
         end
-        HighestPixelOrig = double(maxPixelValue)/255
-        LowestPixelOrig = double(minPixelValue)/255
+        HighestPixelOrig = double(maxPixelValue)/255;
+        LowestPixelOrig = double(minPixelValue)/255;
         fieldname = ['MaxPixelValue', ImageName];
         handles.Pipeline.(fieldname) = HighestPixelOrig;
         fieldname = ['MinPixelValue', ImageName];

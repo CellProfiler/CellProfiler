@@ -1843,28 +1843,24 @@ Pathname = handles.Current.DefaultOutputDirectory;
 UserEntry = strtrim(get(handles.OutputFileNameEditBox,'string'));
 
 if ~isempty(UserEntry)
-    
     % Drop '.mat' if the user entered it
     if strfind(UserEntry,'.mat')
         UserEntry = UserEntry(1:end-4);
     end
-   
-    % Find base name
-    index = findstr(UserEntry,'__');
-    if ~isempty(index)
-        UserEntry = UserEntry(1:index(end)-1);
-    end
-    
     % If there is no 'OUT' in the filename, add it.
     if isempty(findstr(lower(UserEntry),'out'))
         UserEntry = [UserEntry 'OUT'];
     end
-    
     % Find the files with the same base name and extract highest number
     % If the dir-command takes a long time when there are a lot of files
     % in a directory, another solution might be to try different numberings
     % until an unused number is encountered.
     if exist(fullfile(Pathname,[UserEntry '.mat']),'file')
+        % Find base name
+        index = findstr(UserEntry,'__');
+        if ~isempty(index)
+            UserEntry = UserEntry(1:index(end)-1);
+        end
         d = dir(Pathname);
         numbers = [];
         for k = 1:length(d);
@@ -1879,6 +1875,7 @@ if ~isempty(UserEntry)
             outputnumber = max(numbers) + 1;
         end
         set(handles.OutputFileNameEditBox,'string',sprintf('%s__%d.mat',UserEntry,outputnumber))
+        Handle = msgbox('The output file already exists. A new file name has been generated.','Output file name has changed');
     else
         set(handles.OutputFileNameEditBox,'string',[UserEntry '.mat'])
     end
@@ -1906,6 +1903,11 @@ else
     tmp = get(handles.OutputFileNameEditBox,'string');
     OutputFileNameEditBox_Callback(hObject, eventdata, handles)
     if ~strcmp(tmp,get(handles.OutputFileNameEditBox,'string'))
+        %%% Finds and closes the message box produced by the
+        %%% OutputFileNameEditBox_Callback so that an alternate
+        %%% warning can appear.
+        HandleOfMsgBoxToDelete = findobj('name','Output file name has changed');
+        close(HandleOfMsgBoxToDelete)
         Answer = questdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes');
         if strcmp(Answer,'Cancel')
             return

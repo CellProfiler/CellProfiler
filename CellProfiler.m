@@ -294,6 +294,10 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 % --- Executes on button press in LoadPipelineButton.
 function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
+clear('handles.Settings.NumbersOfVariables');
+clear('handles.Settings.VariableValues');
+clear('handles.Current.NumberOfModules');
+
 cd(handles.Current.DefaultOutputDirectory)
 [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
@@ -339,10 +343,10 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
     else
         SavedVarRevNum = 0;
     end
-    if( (SavedVarRevNum ~= 0) & (SavedVarRevNum == CurrentVarRevNum))
+    if(SavedVarRevNum == CurrentVarRevNum)
         if(handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum))
-            handles.Settings.VariableValues = Settings.VariableValues;
-            varChoice = 0;
+            handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+            varChoice = 3;
         else
             errorString = 'Variable Revision Number same, but number of variables different for some reason';
             cd(Pathname);
@@ -372,35 +376,44 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
         handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
     elseif (varChoice == 2),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
+    elseif (varChoice == 0),
+        break;
     end
 end
 
-try 
-    handles.Settings.PixelSize = Settings.PixelSize;
-end
+if(varChoice == 0),
+    clear handles.Settings.ModuleNames;
+    %%% Update handles structure.
+    guidata(hObject,handles);
+    ModulePipelineListBox_Callback(hObject, eventdata, handles);
+else
+    try
+        handles.Settings.PixelSize = Settings.PixelSize;
+    end
 
-handles.Current.NumberOfModules = 0;
-handles.Current.NumberOfModules = length(handles.Settings.ModuleNames);
+    handles.Current.NumberOfModules = 0;
+    handles.Current.NumberOfModules = length(handles.Settings.ModuleNames);
 
-if (isfield(Settings,'NumbersOfVariables')),
-    handles.Settings.NumbersOfVariables = max(handles.Settings.NumbersOfVariables,Settings.NumbersOfVariables);
-end
+    if (isfield(Settings,'NumbersOfVariables')),
+        handles.Settings.NumbersOfVariables = max(handles.Settings.NumbersOfVariables,Settings.NumbersOfVariables);
+    end
 
-contents = handles.Settings.ModuleNames;
-set(handles.ModulePipelineListBox,'String',contents);
-set(handles.ModulePipelineListBox,'Value',1);
-set(handles.PixelSizeEditBox,'string',handles.Settings.PixelSize);
+    contents = handles.Settings.ModuleNames;
+    set(handles.ModulePipelineListBox,'String',contents);
+    set(handles.ModulePipelineListBox,'Value',1);
+    set(handles.PixelSizeEditBox,'string',handles.Settings.PixelSize);
 
-%%% Update handles structure.
-guidata(hObject,handles);
-ModulePipelineListBox_Callback(hObject, eventdata, handles);
+    %%% Update handles structure.
+    guidata(hObject,handles);
+    ModulePipelineListBox_Callback(hObject, eventdata, handles);
 
-%%% If the user loaded settings from an output file, prompt them to
-%%% save it as a separate Settings file for future use.
-if isfield(LoadedSettings, 'handles'),
-    Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
-    if strcmp(Answer, 'Yes') == 1
-        SavePipelineButton_Callback(hObject, eventdata, handles);
+    %%% If the user loaded settings from an output file, prompt them to
+    %%% save it as a separate Settings file for future use.
+    if isfield(LoadedSettings, 'handles'),
+        Answer = questdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
+        if strcmp(Answer, 'Yes') == 1
+            SavePipelineButton_Callback(hObject, eventdata, handles);
+        end
     end
 end
 cd(handles.Current.StartupDirectory)
@@ -423,7 +436,11 @@ try
             VariableValues(i) = {displayval};
             NumbersOfVariables = i;
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
-            VarRevNum = str2num(output(29:30));
+            try
+                VarRevNum = str2num(output(29:30));
+            catch
+                VarRevNum = str2num(output(29:29));
+            end
         end
     end
     fclose(fid);
@@ -559,7 +576,11 @@ else
             handles.Settings.VariableValues(ModuleNums, i) = {displayval};
             handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = i;
         elseif strncmp(output,'%%%VariableRevisionNumber',25) == 1
+            try
             handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = str2num(output(29:30));
+            catch
+            handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = str2num(output(29:29));
+            end
         end
     end
     fclose(fid);
@@ -800,12 +821,9 @@ if (length(ModuleHighlighted) > 0)
         numberExtraLinesOfDescription = 0;
         numberOfLongBoxes = 0;
         varSpacing = 25;
-        firstBoxLoc = 345;
-        firstDesLoc = 342;
+        firstBoxLoc = 345; firstDesLoc = 343; normBoxHeight = 23; normDesHeight = 20;
+        longBoxLength = 539; normBoxLength = 94;
         pixelSpacing = 2;
-        longBoxLength = 539;
-        normBoxLength = 94;
-        normBoxHeight = 23;
         if (lastVariableCheck < handles.Settings.NumbersOfVariables(ModuleNumber))
             lastVariableCheck = handles.Settings.NumbersOfVariables(ModuleNumber);
         end
@@ -825,7 +843,7 @@ if (length(ModuleHighlighted) > 0)
                 varXPos = VarDesPosition(1);
                 varYPos = firstDesLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(i+numberOfLongBoxes+numberExtraLinesOfDescription);
                 varXSize = VarDesPosition(3);
-                varYSize = (normBoxHeight-pixelSpacing)*linesVarDes;
+                varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
                 set(handles.(['VariableDescription' TwoDigitString(i)]),'Position', [varXPos varYPos varXSize varYSize]);
             end
 

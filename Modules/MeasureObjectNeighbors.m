@@ -104,15 +104,12 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
 %defaultVAR02 = 0
 NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
-%textVAR03 = If you are expanding objects until touching, enter the name of these new objects
+%textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
 %defaultVAR03 = ExpandedCells
-
-
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%textVAR04 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
-%defaultVAR04 = 0
-SaveColoredNeighbors = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
+ColoredObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR04 = What do you want to call the image of the objects, colored by the number of neighbors?
+%defaultVAR04 = ColoredNeighbors
+ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
@@ -199,6 +196,16 @@ for k = 1:max(IncomingLabelMatrixImage(:))
 
     ImOfNeighbors(sub2ind([sr sc],r,c)) = NrOfNeighbors; 
 end
+
+    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
+    %%% window and saving to the handles structure.
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+
+    if sum(sum(IncomingLabelMatrixImage)) >= 1
+        ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
+    else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+    end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -322,6 +329,10 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
+%%% TODO: ACTUALLY MAKE THE MEASUREMENTS AND STORE THEM IN HANDLES.
+%%% WAITING TO DECIDE EXACTLY WHAT OUTPUT MEASUREMENTS SHOULD BE IN
+%%% THE FORM OF.
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -370,15 +381,12 @@ if any(findobj == ThisModuleFigureNumber) == 1
     imagesc(ColoredLabelMatrixImage)
     title('Cells colored according to their original colors')
 end
-if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveColoredNeighbors,'Y',1) == 1
 
-    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
-    %%% window in subplot(2,2,2).
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE IMAGES TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    if sum(sum(IncomingLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
-    else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
-    end
-
+        fieldname = ColoredObjectName;
+        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+        fieldname = ColoredNeighborsName;
+        handles.Pipeline.(fieldname) = ImOfNeighbors;

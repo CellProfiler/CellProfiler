@@ -9,7 +9,10 @@ function handles = CorrectIllumDivide(handles)
 % How it works:
 % An image that represents the variation in illumination across the
 % field of view is loaded from the pipeline.  Each image is divided by
-% this illumination image to produce the corrected image.
+% this illumination image to produce the corrected image.  Be sure
+% that the illumination correction function is in a reasonable range
+% (e.g. 1 to some number), so that the resulting image is in a
+% reasonable range (0 to 1).
 %
 % SAVING IMAGES: The illumination corrected images produced by this
 % module can be easily saved using the Save Images module, using the

@@ -212,7 +212,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
 
     fprintf(BatchFile, 'load([BatchFilePrefix ''data.mat'']);\n');
     fprintf(BatchFile, 'for BatchSetBeingAnalyzed = StartImage:EndImage,\n');
-    fprintf(BatchFile, '    disp(sprintf(''Analysing set %%d'', BatchSetBeingAnalyzed));\n');
+    fprintf(BatchFile, '    disp(sprintf(''Analyzing set %%d'', BatchSetBeingAnalyzed));\n');
     fprintf(BatchFile, '    toc;\n');
     fprintf(BatchFile, '    break_outer_loop = 0;\n');
     fprintf(BatchFile, '    handles.Current.SetBeingAnalyzed = BatchSetBeingAnalyzed;\n');
@@ -224,10 +224,10 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '        else\n');
     fprintf(BatchFile, '            handles.Current.CurrentModuleNumber = AlgNumberAsString;\n');
     fprintf(BatchFile, '            try\n');
-    fprintf(BatchFile, '                eval([''handles = Alg'',AlgName,''(handles);''])\n');
+    fprintf(BatchFile, '                eval([''handles = '',AlgName,''(handles);''])\n');
     fprintf(BatchFile, '            catch\n');
     fprintf(BatchFile, '                handles.BatchError = [AlgName '' '' lasterr];\n');
-    fprintf(BatchFile, '                disp([''Batch Error: '' AlgName '' '' lasterr];\n');
+    fprintf(BatchFile, '                disp([''Batch Error: '' AlgName '' '' lasterr]);\n');
     fprintf(BatchFile, '                break_outer_loop = 1;\n');
     fprintf(BatchFile, '            end\n');
     fprintf(BatchFile, '        end\n');

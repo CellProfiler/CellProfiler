@@ -56,13 +56,14 @@ ObjectName = handles.(fieldname);
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
 ImageName = handles.(fieldname);
 
-%textVAR03 = Note: it is advisable to use the original image rather than an adjusted image.
-%textVAR04 = Adjustments alter the intensity levels from one image relative to another
-%textVAR05 = so that intensity measurements cannot be accurately compared. If you have
-%textVAR06 = cropped an image, however, the cropped image should be specified here.
+%textVAR03 = Measure the percent of cells with a total intensity greater
+%textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
+%defaultVAR04 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
+Threshold = handles.(fieldname);
 
-%textVAR07 = The measurements made by this module will be named after the two boxes above, 
-%textVAR08 = e.g. "OrigRedwithinNuclei".
+%textVAR09 = The measurements made by this module will be named based on
+%textVAR10 = your entries, e.g. "OrigRedwithinNuclei".
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2num(handles.Vpixelsize{1});
@@ -188,6 +189,16 @@ handles.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
 fieldname = ['dMTSumIntegratedIntensity', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 
+%%% Calculates the percent of cells whose integrated intensity is above the
+%%% user's threshold.
+if strcmp(upper(Threshold),'N') ~= 1
+    NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2num(Threshold));
+    TotalNumberObjects = length(IntegratedIntensity);
+    PercentObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
+    fieldname = ['dMTPercentAboveThreshold', ObjectName];
+    handles.(fieldname)(handles.setbeinganalyzed) = {PercentObjectsAboveThreshold};
+end
+
 %%%
 %%% MEAN INTENSITY (PER OBJECT)
 %%%
@@ -247,37 +258,37 @@ ThisAlgFigureNumber = handles.(fieldname);
 %%% for one whose handle is equal to the figure number for this algorithm.
 if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
-     originalsize = get(ThisAlgFigureNumber, 'position');
-%     newsize = originalsize;
-%     newsize(3) = 305;
-%     set(ThisAlgFigureNumber, 'position', newsize);
-%     displaytext = ' ';
-newsize = originalsize;
-newsize(1) = 0;
-newsize(2) = 0;
-if handles.setbeinganalyzed == 1
-    newsize(3) = originalsize(3)*.5;
-    originalsize(3) = originalsize(3)*.5;
-    set(ThisAlgFigureNumber, 'position', originalsize);
-end
-displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
-%%% Note that the number of spaces after each measurement name results in
-%%% the measurement numbers lining up properly when displayed in a fixed
-%%% width font.  Also, it costs less than 0.1 seconds to do all of these
-%%% calculations, so I won't bother to retrieve the already calculated
-%%% means and sums from each measurement's code above.
-%%% Checks whether any objects were found in the image.
-if sum(sum(LabelMatrixImage)) == 0
-    displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
-        ['Number of ', ObjectName ,':      zero']);
-else
-    displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
-        ['MeanIntegratedIntensity:  ', num2str(mean(IntegratedIntensity))],...
-        ['MeanMeanIntensity:        ', num2str(mean(MeanIntensity))],...
-        ['MeanStDevIntensity:       ', num2str(mean(StDevIntensity))],...
-        ['SumIntegratedIntensity:   ', num2str(sum(IntegratedIntensity))]);
-end % Goes with: if no objects were in the label matrix image.
-set(displaytexthandle,'string',displaytext)
+    originalsize = get(ThisAlgFigureNumber, 'position');
+    newsize = originalsize;
+    newsize(1) = 0;
+    newsize(2) = 0;
+    if handles.setbeinganalyzed == 1
+        newsize(3) = originalsize(3)*.5;
+        originalsize(3) = originalsize(3)*.5;
+        set(ThisAlgFigureNumber, 'position', originalsize);
+    end
+    displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    %%% Note that the number of spaces after each measurement name results in
+    %%% the measurement numbers lining up properly when displayed in a fixed
+    %%% width font.  Also, it costs less than 0.1 seconds to do all of these
+    %%% calculations, so I won't bother to retrieve the already calculated
+    %%% means and sums from each measurement's code above.
+    %%% Checks whether any objects were found in the image.
+    if sum(sum(LabelMatrixImage)) == 0
+        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
+            ['Number of ', ObjectName ,':      zero']);
+    else
+        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
+            ['MeanIntegratedIntensity:          ', num2str(mean(IntegratedIntensity))],...
+            ['MeanMeanIntensity:                ', num2str(mean(MeanIntensity))],...
+            ['MeanStDevIntensity:               ', num2str(mean(StDevIntensity))],...
+            ['SumIntegratedIntensity:           ', num2str(sum(IntegratedIntensity))]);
+        if strcmp(upper(Threshold),'N') ~= 1
+            displaytext = strvcat(displaytext,...
+            ['Percent above intensity threshold:', num2str(PercentObjectsAboveThreshold)]);
+        end
+    end % Goes with: if no objects were in the label matrix image.
+    set(displaytexthandle,'string',displaytext)
 end
 
 %%%%%%%%%%%

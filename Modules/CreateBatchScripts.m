@@ -159,6 +159,24 @@ function handles = CreateBatchScripts(handles)
 % of this script at /home/carpente so that is the directory from which
 % the script should be run. The first time I ran it, I had to change
 % the permissions by doing this: chmod a+w runallbatchjobs.sh)
+%
+% 11. Certain jobs fail for transient reasons and simply need to be
+% resubmitted. The following code will look through all the text log
+% files in a directory, look for the text "exit code" within those log
+% files to find the batches that did not successfully complete, and
+% move the corresponding .m-file to a subdirectory. You can then run
+% runallbatchjobs.sh on the subdirectory (don't forget to copy or move
+% Batch_data.mat into the subdirectory as well, or point to the parent
+% directory which contains the file.)
+%  a. Make the subdirectory BatchesToRerun and change permissions so
+%  you can write to it.
+%  b. Run this line first to see a printout of the proposed moved files:
+% grep -l "exit code" *.txt | sed "s/^/mv /" | sed 's/$/
+% BatchesToRerun/' | sed "s/.txt//"
+%  c. Run the same line with | sh appended to actually move the files:
+% grep -l "exit code" *.txt | sed "s/^/mv /" | sed 's/$/
+% BatchesToRerun/' | sed "s/.txt//" | sh
+%  d. Start the jobs in that subdirectory using runallbatchjobs.
 % --------------------------------------------------------------------
 % 
 % Bsub Functions: 

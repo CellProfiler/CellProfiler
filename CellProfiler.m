@@ -1873,8 +1873,8 @@ else
                 %%% Creates the text box within the timer window which will display the
                 %%% timer text.
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
-                    'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',...
-                    'FontSize',handles.Current.FontSize+2,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle,'position', [0 40 494 74],'FontName','Times',...
+                    'FontSize',handles.Current.FontSize,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
                 %%% Saves text handle to the handles structure.
                 handles.timertexthandle = text_handle;
                 %%% Creates the Cancel and Pause buttons.
@@ -2029,9 +2029,20 @@ else
                         %%% Finds and records total time to run module.
                         a=clock;
                         finish=a(5:6);
-                        TotalModuleTime=60*(finish(1)-begin(1))+(finish(2)-begin(2));
-                        handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber), handles.Current.SetBeingAnalyzed)= {['Set ' num2str(handles.Current.SetBeingAnalyzed) ', Module ' num2str(handles.Current.CurrentModuleNumber) ' : ' num2str(TotalModuleTime)]};
-
+                        TotalModuleTime = num2str(roundn(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
+                        while numel(TotalModuleTime) <=4
+                            TotalModuleTime = [TotalModuleTime ' '];
+                        end
+                        
+                        moduletime_text = ['Module' handles.Current.CurrentModuleNumber ': ' TotalModuleTime];
+                        if (handles.Current.SetBeingAnalyzed) == 1 %& num2str(handles.Current.CurrentModuleNumber) == 1
+                            moduletime_text_all = moduletime_text;
+                        handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)= {moduletime_text_all};
+                        else
+                            moduletime_text_all = [char(handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)) ' ' moduletime_text];
+                            handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber), :)= {moduletime_text_all};
+                        end
+                        
                     end %%% ends loop over slot number
 
                     closeFig = closeFigures;
@@ -2083,7 +2094,12 @@ else
                                 num2str(round(10*toc/setbeinganalyzed)/10)];
                     else time_per_set = 'Time per image set (seconds) = none completed'; 
                     end
-                    timertext = {timer_elapsed_text; number_analyzed; time_per_set};
+                    if setbeinganalyzed == 2
+                    time_set1 = ['Time for first image set = ' num2str(TotalSetTime)];
+                    elseif setbeinganalyzed <=2
+                        time_set1 = '  ';
+                    end
+                    timertext = {timer_elapsed_text; number_analyzed; time_per_set; time_set1};
                     %%% Display calculations in 
                     %%% the "Timer" window by changing the string property.
                     set(text_handle,'string',timertext)
@@ -2109,12 +2125,21 @@ else
                     if strncmp(CancelWaiting,'Cancel',6) == 1
                         break
                     end
-                    %%% Record time elapsed for each image set.
-                        a=clock;
+                    
+                     %%% Record time elapsed for each image set.
+                     a=clock;
                         finish_set=a(5:6);
                         TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
                         set_time_elapsed(handles.Current.SetBeingAnalyzed) = TotalSetTime;
-                        
+                        ThisSet = handles.Current.SetBeingAnalyzed - 1;
+                        if handles.Current.SetBeingAnalyzed-1 == 1
+                            set_text = ['        Set' num2str(handles.Current.SetBeingAnalyzed-1) '           '];
+                            show_set_text = set_text;
+                        else
+                            set_text = [show_set_text '       Set' num2str(handles.Current.SetBeingAnalyzed-1) '           '];
+                            show_set_text = set_text;
+                        end
+                                                
                 end %%% This "end" goes with the "while" loop (going through the image sets).
                 
                 %%% After all the image sets have been processed, the following checks to
@@ -2190,15 +2215,16 @@ else
                 total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(round(10*toc)/10)];
                 number_analyzed = ['Number of image sets analyzed = ',...
                         num2str(setbeinganalyzed - 1)];
+                    
                 if setbeinganalyzed ~=1 
                     time_per_set = ['Time per image set (seconds) = ', ...
-                            num2str(round(10*toc/(setbeinganalyzed - 1))/10)];
+                            num2str(round(10*toc/(setbeinganalyzed - 1))/10)];                        
                 else time_per_set = 'Time per image set (seconds) = none completed'; 
                 end
                 
 
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
-                    'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',... 
+                    'parent',timer_handle,'position', [0 40 494 74],'FontName','Times',... 
                     'FontSize',handles.Current.FontSize,'FontWeight','bold','backgroundcolor',[0.7,0.7,0.9]);
                 timertext = {'IMAGE PROCESSING IS COMPLETE!';total_time_elapsed; number_analyzed; time_per_set};
 
@@ -2209,15 +2235,16 @@ else
                 try
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
                 for i=1:handles.Current.NumberOfImageSets;
-                    show_time_elapsed_text = ['Time elapsed for image set ' num2str(i) ' = ' num2str(set_time_elapsed(i)) '            .'];
+                    show_time_elapsed_text = ['Time elapsed for image set' num2str(i) '= ' num2str(set_time_elapsed(i)) ];
                     show_time_elapsed(i) = {show_time_elapsed_text};
                 end
-                show_time_elapsed = char(show_time_elapsed);
+                show_time_elapsed = char(show_time_elapsed);    
                 module_times = char(handles.Current.ModuleTime);
-                split_time_elapsed = strvcat(show_time_elapsed, module_times);
+                split_time_elapsed = strvcat(show_time_elapsed, show_set_text, module_times);
                 handles.Figures.timebox = msgbox(split_time_elapsed);
                 end
-
+                                
+                clear handles.Current.ModuleTime 
                 %%% Re-enable/disable appropriate buttons.
                 set(handles.PipelineOfModulesText,'visible','on')
                 set(handles.LoadPipelineButton,'visible','on')

@@ -376,16 +376,16 @@ if strcmp(OldPathname, '.') ~= 1
     %%% Changes pathnames in variables within this module.
     %%% BatchSavePath is not changed, because that function is carried
     %%% out on the local machine.
-    BatchCellProfilerPath = strrep(BatchCellProfilerPath,OldPathname,NewPathname)
-    BatchImagePath = strrep(BatchImagePath,OldPathname,NewPathname)
-    BatchOutputPath = strrep(BatchOutputPath,OldPathname,NewPathname)
-    BatchRemotePath = strrep(BatchRemotePath,OldPathname,NewPathname)
+    BatchCellProfilerPath = strrep(BatchCellProfilerPath,OldPathname,NewPathname);
+    BatchImagePath = strrep(BatchImagePath,OldPathname,NewPathname);
+    BatchOutputPath = strrep(BatchOutputPath,OldPathname,NewPathname);
+    BatchRemotePath = strrep(BatchRemotePath,OldPathname,NewPathname);
     %%% Changes the default output and image pathnames.
     OldDefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
-    NewDefaultOutputDirectory = strrep(OldDefaultOutputDirectory,OldPathname,NewPathname)
+    NewDefaultOutputDirectory = strrep(OldDefaultOutputDirectory,OldPathname,NewPathname);
     handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
     OldDefaultImageDirectory = handles.Current.DefaultImageDirectory;
-    NewDefaultImageDirectory = strrep(OldDefaultImageDirectory,OldPathname,NewPathname)
+    NewDefaultImageDirectory = strrep(OldDefaultImageDirectory,OldPathname,NewPathname);
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
 end
 

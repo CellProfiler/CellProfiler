@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 30-Sep-2004 16:09:26
+% Last Modified by GUIDE v2.5 01-Oct-2004 17:23:19
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -55,8 +55,10 @@ handles.output = hObject;
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 0;
 handles.numVariables = zeros(1,99);
-handles.MaxAlgorithms = 8;
+handles.MaxAlgorithms = 11;
 handles.MaxVariables = 11;
+handles.AlgorithmHighlighted = '01';
+handles.FigureDisplayString = cell(1,99);
 
 % Turn on debugging
 handles.Debug = 1;
@@ -554,7 +556,7 @@ else
     
     %%% The last clearalgorithm function leaves the indicator bar set at
     %%% the last algorithm, so the following makes it invisible.
-    set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
+    %set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
   end
 
   %%% Splice the subset of variables from the "settings" structure into the
@@ -565,23 +567,25 @@ else
 
   handles.numAlgorithms = 0;
   for AlgorithmNumber=1:handles.MaxAlgorithms,
-    AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
-    if isfield(Settings, AlgorithmFieldName),
-      handles.(AlgorithmFieldName) = Settings.(AlgorithmFieldName);
-      set(handles.(['AlgorithmName' TwoDigitString(AlgorithmNumber)]) ,'string', handles.(AlgorithmFieldName));
-      handles.numAlgorithms = AlgorithmNumber;
-
-      handles.numVariables(AlgorithmNumber) = 0;
-      for VariableNumber=1:handles.MaxVariables,
-        VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
-        if isfield(Settings, VariableFieldName),
-          handles.([VariableFieldName]) = Settings.([VariableFieldName]);
-          handles.numVariables(AlgorithmNumber) = VariableNumber;
-        end
+      AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
+      if isfield(Settings, AlgorithmFieldName),
+          handles.(AlgorithmFieldName) = Settings.(AlgorithmFieldName);
+          %set(handles.(['AlgorithmName' TwoDigitString(AlgorithmNumber)]) ,'string', handles.(AlgorithmFieldName));
+          contents = get(handles.AlgorithmBox,'String');
+          contents{AlgorithmNumber} = [handles.(AlgorithmFieldName)];
+          set(handles.AlgorithmBox,'String',contents);
+          handles.numAlgorithms = AlgorithmNumber;
+          handles.numVariables(AlgorithmNumber) = 0;
+          for VariableNumber=1:handles.MaxVariables,
+              VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+              if isfield(Settings, VariableFieldName),
+                  handles.([VariableFieldName]) = Settings.([VariableFieldName]);
+                  handles.numVariables(AlgorithmNumber) = VariableNumber;
+              end
+          end
       end
-    end
   end
-
+  
   if isfield(Settings, 'VpixelSize'),
     handles.VpixelSize = Settings.VpixelSize;
   end
@@ -593,7 +597,7 @@ else
   %%% save it as a separate Settings file for future use.
   if isfield(LoadedSettings, 'handles'),
     if questdlg('Save settings from output file in a separate, settings-only file?','','Yes','No','Yes') == 'Yes',
-      SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
+      SaveCurrentSettingsButton_Callback(hObject, eventdata, handles);
     end
   end  
       
@@ -616,18 +620,18 @@ if FileName ~= 0
   %%% structure 'Settings' with the same name
   
   for AlgorithmNumber=1:handles.numAlgorithms,
-    AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
-    if isfield(handles, AlgorithmFieldName),
-      Settings.(AlgorithmFieldName) = handles.(AlgorithmFieldName);
-      for VariableNumber=1:handles.MaxVariables,
-        VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
-        if isfield(handles, VariableFieldName),
-          Settings.(VariableFieldName) = handles.(VariableFieldName);
-        end
+      AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
+      if isfield(handles, AlgorithmFieldName),
+          Settings.(AlgorithmFieldName) = handles.(AlgorithmFieldName);
+          for VariableNumber=1:handles.MaxVariables,
+              VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+              if isfield(handles, VariableFieldName),
+                  Settings.(VariableFieldName) = handles.(VariableFieldName);
+              end
+          end
       end
-    end
   end
-  
+
   if isfield(handles,'Vpixelsize'),
     Settings.Vpixelsize = handles.Vpixelsize;
   end
@@ -768,7 +772,9 @@ cd(CurrentDirectory);
 function LoadAlgorithm_Callback(hObject,eventdata,handles)
 % Find which algorithm slot number this callback was called for.
 LoadAlgorithmButtonTag = get(hObject,'tag');
-AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
+%AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
+%AlgorithmNumber = handles.AlgorithmHighlighted;
+AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
 
 %%% 1. Opens a user interface to retrieve the .m file you want to use.  The
 %%% name of that .m file is stored as the variablebox2_1
@@ -812,9 +818,9 @@ else
   %%% you are editing settings for) to be invisible and then set
   %%% the one you are working on to be visible.
   for i=1:handles.numAlgorithms;
-    set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
+    %set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
   end;
-  set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
+  %set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
 
   %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
   %%% to be invisible.
@@ -841,10 +847,14 @@ else
   %%% The name of the algorithm is shown in a text box in the GUI (the text
   %%% box is called AlgorithmName1.) and in a text box in the GUI which
   %%% displays the current algorithm (whose settings are shown).
-  set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
+  %set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
 
   %%% 7. Saves the AlgorithmName to the handles structure.
   handles.(['Valgorithmname' AlgorithmNumber]) = AlgorithmName;
+  contents = get(handles.AlgorithmBox,'String');
+  %contents{get(handles.AlgorithmBox,'Value')} = ['Algorithm ' handles.AlgorithmHighlighted ' - ' AlgorithmName];
+  contents{str2num(AlgorithmNumber)} = [AlgorithmName];
+  set(handles.AlgorithmBox,'String',contents);
 
   %%% 8. The text description for each variable for the chosen algorithm is 
   %%% extracted from the algorithm's .m file and displayed.  
@@ -875,7 +885,6 @@ else
    end
   fclose(fid);
 
-
   %%% 9. Update handles.numAlgorithms
   if str2num(AlgorithmNumber) > handles.numAlgorithms,
     handles.numAlgorithms = str2num(AlgorithmNumber);
@@ -893,7 +902,7 @@ end
 % --- Executes on button press for all ClearAlgorithm buttons.
 function ClearAlgorithm_Callback(hObject, eventdata, handles)
 AlgorithmName = get(hObject,'tag');
-AlgorithmNumber = trimstr(AlgorithmName,'ClearAlgorithm','left');
+AlgorithmNumber = handles.AlgorithmHighlighted;
 handles = ClearAlgorithm_Helper(AlgorithmNumber, handles, 'Confirm');
 
 % separated because it's called elsewhere
@@ -907,7 +916,17 @@ if strcmp(ConfirmOrNot, 'Confirm') == 1
     end
 end
 %%% 1. Sets the proper algorithm name to "No analysis module loaded" 
-set(handles.(['AlgorithmName' AlgorithmNumber]),'String','No analysis module loaded');
+% set(handles.(['AlgorithmName' AlgorithmNumber]),'String','No analysis module loaded');
+contents = get(handles.AlgorithmBox,'String');
+if(str2num(AlgorithmNumber)==1)
+    contents{str2num(AlgorithmNumber)} = ['No Algorithms Loaded'];
+elseif (get(handles.AlgorithmBox,'Value')==2)
+    contents{str2num(AlgorithmNumber)} = ['Please Load Algorithms'];
+else
+    contents{str2num(AlgorithmNumber)} = [];
+end
+set(handles.AlgorithmBox,'String',contents);
+
 
 %%% 2. Removes the AlgorithmName from the handles structure.
 ConstructedName = strcat('Valgorithmname',AlgorithmNumber);
@@ -915,21 +934,14 @@ if isfield(handles,ConstructedName) == 1,
   handles = rmfield(handles,ConstructedName); 
 end
 
-%%% 3. Set all the indicator bars (which tell you which algorithm 
-%%% you are editing settings for) to be invisible and then set 
-%%% the one you are working on to be visible.
-for i=1:handles.numAlgorithms
-   set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
-end
-
-%%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
+%%% 3. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
 %%% to be invisible.
 for i = 1:handles.numVariables(str2num(AlgorithmNumber));
    set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
    set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
 
-%%% 5. Clears the variable values in the handles structure.
+%%% 4. Clears the variable values in the handles structure.
 
 for i=1:handles.numVariables(str2num(AlgorithmNumber));
     ConstructedName = ['Vvariable' AlgorithmNumber '_' TwoDigitString(i)];
@@ -938,7 +950,7 @@ for i=1:handles.numVariables(str2num(AlgorithmNumber));
     end;
 end;
 
-%%% 6. Update the number of algorithms loaded
+%%% 5. Update the number of algorithms loaded
 handles.numAlgorithms = 0;
 for i=1:handles.MaxAlgorithms,
   if isfield(handles, ['Valgorithmname' TwoDigitString(i)]),
@@ -955,46 +967,38 @@ guidata(gcbo, handles);
 % --- Executes on button press in ViewAlgorithm.
 function ViewAlgorithm_Callback(hObject,eventdata,handles)
 ButtonTag = get(hObject,'tag');
-AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
+%AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
 
-%%% 1. Set all the indicator bars (which tell you which algorithm 
-%%% you are editing settings for) to be invisible and then set 
-%%% the one you are working on to be visible.
-for i=1:handles.numAlgorithms
-    set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
-end
-set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
+AlgorithmNumber = handles.AlgorithmHighlighted;
+if( (handles.numAlgorithms > 1) | ((handles.numAlgorithms == 1) & (str2num(AlgorithmNumber) == 1)))
 
+    %%% 2. Sets all 11 VariableBox edit boxes and all 11
+    %%% VariableDescriptions to be invisible.
+    for i = 1:handles.MaxVariables
+        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
+        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+    end
 
-%%% 2. Sets all 11 VariableBox edit boxes and all 11
-%%% VariableDescriptions to be invisible.
-for i = 1:handles.MaxVariables
-    set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
-    set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
-end
+    %%% 2.5 Checks whether an algorithm is loaded in this slot.
 
-%%% 2.5 Checks whether an algorithm is loaded in this slot.
-AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]),'String');
-IsItNotChosen = strncmp(AlgorithmName,'No a',4);
-if IsItNotChosen == 1
-    helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
-else
+    contents = get(handles.AlgorithmBox,'String');
+    AlgorithmName = contents{get(handles.AlgorithmBox,'Value')};
 
     %%% 3. Extracts and displays the variable descriptors from the .m file.
-    AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]), 'string');
+    %AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]), 'string');
     AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
     if exist(AlgorithmNamedotm) ~= 2
         errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']);
     else
         fid=fopen(AlgorithmNamedotm);
-        
+
         while 1;
             output = fgetl(fid); if ~ischar(output); break; end;
             for i=1:handles.MaxVariables,
-              if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
-                set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                break;
-              end
+                if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
+                    set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+                    break;
+                end
             end
         end
         fclose(fid);
@@ -1011,7 +1015,133 @@ else
         else set(handles.(['VariableBox' VariableNumber]),'string','n/a','visible','off');
         end;
     end;
+else
+    helpdlg('Algorithm Not Loaded');
+end;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MOVE UP/DOWN BUTTONS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function MoveUp_Callback(hObject,eventdata,handles)
+ButtonTag = get(hObject,'tag');
+%AlgorithmNumber = trimstr(ButtonTag,'ViewAlgorithm','left');
+AlgorithmNumber = handles.AlgorithmHighlighted;
+if(str2num(AlgorithmNumber) == 1)
+    helpdlg('You cannot move an Algorithm higher than the highest slot');
+else
+    AlgorithmUp = TwoDigitString( (str2num(AlgorithmNumber) - 1));
+    %%% 1. Saves the AlgorithmNames
+    tempName = handles.(['Valgorithmname' AlgorithmUp]);
+    handles.(['Valgorithmname' AlgorithmUp]) = handles.(['Valgorithmname' AlgorithmNumber]);
+    handles.(['Valgorithmname' AlgorithmNumber]) = tempName;
+    
+    tempVariableUp = cell(1,99);
+    tempVariableNumber = cell(1,99);
+    
+    %%% 3. Copy then clear the variable values in the handles structure.
+    for i=1:handles.numVariables(str2num(AlgorithmUp));
+        ConstructedName = ['Vvariable' AlgorithmUp '_' TwoDigitString(i)];
+        if isfield(handles,ConstructedName) == 1;
+            tempVariableUp{i} = handles.(['Vvariable' AlgorithmUp '_' TwoDigitString(i)]);
+            handles = rmfield(handles, ConstructedName);
+        end;
+    end;
+    for i=1:handles.numVariables(str2num(AlgorithmNumber));
+        ConstructedName = ['Vvariable' AlgorithmNumber '_' TwoDigitString(i)];
+        if isfield(handles,ConstructedName) == 1;
+            tempVariableNumber{i} = handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]); 
+            handles = rmfield(handles, ConstructedName);
+        end;
+    end;
+
+    tempNumVariables = handles.numVariables(str2num(AlgorithmUp));
+    handles.numVariables(str2num(AlgorithmUp)) = handles.numVariables(str2num(AlgorithmNumber));
+    handles.numVariables(str2num(AlgorithmNumber)) = tempNumVariables;
+
+    for i=1:handles.numVariables(str2num(AlgorithmUp)),
+        if (isempty(tempVariableNumber{i}) == 0)
+        handles.(['Vvariable' AlgorithmUp '_' TwoDigitString(i)]) = tempVariableNumber{i};
+        end
+    end
+    for i=1:handles.numVariables(str2num(AlgorithmNumber)),
+        if (isempty(tempVariableUp{i}) == 0)
+            handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]) = tempVariableUp{i};
+        end
+    end
+
+    %%% 4. Changes the Listbox to show the changes
+    AlgorithmName = handles.(['Valgorithmname' AlgorithmNumber]);
+    AlgorithmUpName = handles.(['Valgorithmname' AlgorithmUp]);
+    contents = get(handles.AlgorithmBox,'String');
+    contents{str2num(AlgorithmNumber)} = [AlgorithmName];
+    contents{str2num(AlgorithmUp)} = [AlgorithmUpName];
+    set(handles.AlgorithmBox,'String',contents);
+
+    %%% Updates the handles structure to incorporate all the changes.
+    guidata(gcbo, handles);
+    ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
 end
+
+function MoveDown_Callback(hObject,eventdata,handles)
+ButtonTag = get(hObject,'tag');
+AlgorithmNumber = handles.AlgorithmHighlighted;
+if(str2num(AlgorithmNumber) >= handles.numAlgorithms)
+    helpdlg('You cannot move an Algorithm lower than the lowest slot');
+else
+    AlgorithmDown = TwoDigitString( (str2num(AlgorithmNumber) + 1));
+    %%% 1. Saves the AlgorithmNames
+    tempName = handles.(['Valgorithmname' AlgorithmDown]);
+    handles.(['Valgorithmname' AlgorithmDown]) = handles.(['Valgorithmname' AlgorithmNumber]);
+    handles.(['Valgorithmname' AlgorithmNumber]) = tempName;
+    
+    tempVariableDown = cell(1,99);
+    tempVariableNumber = cell(1,99);
+    
+    %%% 3. Copy then clear the variable values in the handles structure.
+    for i=1:handles.numVariables(str2num(AlgorithmDown));
+        ConstructedName = ['Vvariable' AlgorithmDown '_' TwoDigitString(i)];
+        if isfield(handles,ConstructedName) == 1;
+            tempVariableDown{i} = handles.(['Vvariable' AlgorithmDown '_' TwoDigitString(i)]);
+            handles = rmfield(handles, ConstructedName);
+        end;
+    end;
+    for i=1:handles.numVariables(str2num(AlgorithmNumber));
+        ConstructedName = ['Vvariable' AlgorithmNumber '_' TwoDigitString(i)];
+        if isfield(handles,ConstructedName) == 1;
+            tempVariableNumber{i} = handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]); 
+            handles = rmfield(handles, ConstructedName);
+        end;
+    end;
+
+    tempNumVariables = handles.numVariables(str2num(AlgorithmDown));
+    handles.numVariables(str2num(AlgorithmDown)) = handles.numVariables(str2num(AlgorithmNumber));
+    handles.numVariables(str2num(AlgorithmNumber)) = tempNumVariables;
+
+    for i=1:handles.numVariables(str2num(AlgorithmDown)),
+        if (isempty(tempVariableNumber{i}) == 0)
+        handles.(['Vvariable' AlgorithmDown '_' TwoDigitString(i)]) = tempVariableNumber{i};
+        end
+    end
+    for i=1:handles.numVariables(str2num(AlgorithmNumber)),
+        if (isempty(tempVariableDown{i}) == 0)
+            handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]) = tempVariableDown{i};
+        end
+    end
+
+    %%% 4. Changes the Listbox to show the changes
+    AlgorithmName = handles.(['Valgorithmname' AlgorithmNumber]);
+    AlgorithmDownName = handles.(['Valgorithmname' AlgorithmDown]);
+    contents = get(handles.AlgorithmBox,'String');
+    contents{str2num(AlgorithmNumber)} = [AlgorithmName];
+    contents{str2num(AlgorithmDown)} = [AlgorithmDownName];
+    set(handles.AlgorithmBox,'String',contents);
+
+    %%% Updates the handles structure to incorporate all the changes.
+    guidata(gcbo, handles);
+    ViewAlgorithm_Callback(handles.ViewAlgorithm, eventdata, handles);
+end
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE DISPLAY BUTTONS %%%
@@ -1042,6 +1172,9 @@ elseif strcmp(ButtonStatus, 'Open Figure') == 1
     drawnow
 end
 
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1055,16 +1188,7 @@ handles.(['Vvariable' AlgorithmNumberString '_' VariableNumber]) = UserEntry;
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles);
-tempJ = 0;
-for i=1:handles.numAlgorithms;
-    if strncmp(get(handles.(['Indicator' TwoDigitString(i)]),'visible'),'on',2) == 1
-        AlgorithmNumber = i;
-        tempJ = 1;
-    end
-end
-if tempJ == 0;
-    AlgorithmNumber = 0;
-end
+AlgorithmNumber = str2num(handles.AlgorithmHighlighted);
     
 % --- Executes during object creation, after setting all properties.
 function VariableBox_CreateFcn(hObject, eventdata, handles);
@@ -1096,6 +1220,43 @@ else
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% AlGORITHM BOXES %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Executes on selection change in AlgorithmBox.
+function AlgorithmBox_Callback(hObject, eventdata, handles)
+% hObject    handle to AlgorithmBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns AlgorithmBox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from AlgorithmBox
+contents = get(hObject,'String');
+handles.AlgorithmHighlighted = TwoDigitString(get(hObject,'Value'));
+guidata(hObject, handles);
+
+% Update handles structure
+guidata(hObject, handles);
+
+% --- Executes during object creation, after setting all properties.
+function AlgorithmBox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to AlgorithmBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+contents = get(hObject,'String');
+handles.AlgorithmHighlighted = contents{get(hObject,'Value')};
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 %%%%%%%%%%%%%%%%%
@@ -2718,11 +2879,11 @@ else
                 set(handles.PixelSizeEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.LoadSettingsFromFileButton,'enable','off')
                 set(handles.SaveCurrentSettingsButton,'enable','off')
-                for i=1:handles.numAlgorithms;
-                    set(handles.(['LoadAlgorithm' TwoDigitString(i)]),'visible','off');
-                    set(handles.(['ClearAlgorithm' TwoDigitString(i)]),'visible','off');
-                    set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','off');
-                end
+                %listbox changes 
+                set(handles.LoadAlgorithm,'visible','off');
+                set(handles.ClearAlgorithm,'visible','off');
+                set(handles.ViewAlgorithm,'visible','off');
+
                 % FIXME: This should loop just over the number of actual variables in the display.
                 for VariableNumber=1:handles.MaxVariables;
                     set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
@@ -2844,19 +3005,25 @@ else
                 %%% can find the handles.
 
                 
+                set(handles.(['FigureDisplay']),'visible','on')
+                set(handles.(['ViewAlgorithm']),'visible','on')
+               
+                %listbox changes 
+               
                 for i=1:handles.numAlgorithms;
-                    if isfield(handles,strcat('Valgorithmname',TwoDigitString(i))) == 1
-                        set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','on')
-                        set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','on')
+                    if isfield(handles,['Valgorithmname' TwoDigitString(i)]) == 1
                         handles.(['figurealgorithm' TwoDigitString(i)]) = ...
-                            figure('name',[handles.(['Valgorithmname' TwoDigitString(i)]), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
+                            figure('name',[handles.(['Valgorithmname' TwoDigitString(i)]), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);        
+                            %{
                         global HandleFigureDisplay
-                        HandleFigureDisplay(i) = handles.(['FigureDisplay' TwoDigitString(i)]);
+                        HandleFigureDisplay(i) = handles.FigureDisplayString{1,i}
                         ClosingFunction = ['global HandleFigureDisplay; set(HandleFigureDisplay(' int2str(i) '), ''string'', ''Closing...''); drawnow; clear HandleFigureDisplay'];
                         %%% Sets the closing function of the figure window to be the line above.
                         set(handles.(['figurealgorithm' TwoDigitString(i)]),'CloseRequestFcn',ClosingFunction);
+                            %}
                     end
                 end
+                
                 
                 %%% For the first time through, the number of image sets
                 %%% will not yet have been determined.  So, the Number of
@@ -2894,7 +3061,7 @@ else
                           AlgNumberAsString = TwoDigitString(SlotNumber);
                           AlgName = ['Valgorithmname' AlgNumberAsString];
                           if isfield(handles,AlgName) == 0
-                          else 
+                          else
                               %%% Saves the current algorithm number in the handles structure.
                               handles.currentalgorithm = AlgNumberAsString;
                               %%% The try/catch/end set catches any errors that occur during the
@@ -2922,39 +3089,43 @@ else
                           %%% be partially complete.
                           CancelWaiting = get(handles.timertexthandle,'string');
                           if strncmp(CancelWaiting,'Immedi',6) == 1
-                                  break_outer_loop = 1;
+                              break_outer_loop = 1;
                               break
                           end
+
+                          %%% In a similar manner to determining whether a
+                          %%% cancel request is pending (see below),
+                          %%% determine whether a figure closing/opening
+                          %%% request is pending.
                           
-                        %%% In a similar manner to determining whether a
-                        %%% cancel request is pending (see below),
-                        %%% determine whether a figure closing/opening
-                        %%% request is pending.
-                        ThisFigDisplay = handles.(['FigureDisplay' AlgNumberAsString]);
-                        if strcmp(get(ThisFigDisplay, 'string'), 'Closing...') == 1
-                          Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
-                          delete(Thisfigurealgorithm)
-                          %%% Set the button's text to "Open Figure".
-                          set(ThisFigDisplay, 'string', 'Open Figure')
-                          %%% Refreshes the Main GUI window, or else "Open Figure" is not
-                          %%% displayed.
-                          drawnow
-                        elseif strcmp(get(ThisFigDisplay, 'string'), 'Opening...') == 1
-                          Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
-                          figure(Thisfigurealgorithm)
-                          set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display'])
-                          %%% Sets the closing function of the window appropriately. (See way
-                          %%% above where 'ClosingFunction's are defined).
-                          set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' AlgNumberAsString]));
-                          %%% Set the button's text to "Close Figure".
-                          set(ThisFigDisplay, 'string', 'Close Figure')
-                          %%% Refreshes the Main GUI window, or else "Close Figure" is not
-                          %%% displayed.
-                          drawnow
-                        end
+                          %listbox changes
+                          ThisFigDisplayString = handles.FigureDisplayString{1,str2num(AlgNumberAsString)};
+                          if strcmp(ThisFigDisplayString, 'Closing...') == 1
+                              Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
+                              delete(Thisfigurealgorithm)
+                              %%% Set the button's text to "Open Figure".
+                              ThisFigDisplayString = 'Open Figure';
+                              %%% Refreshes the Main GUI window, or else "Open Figure" is not
+                              %%% displayed.
+                              %drawnow
+                          elseif strcmp(ThisFigDisplayString, 'Opening...') == 1
+                              Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
+                              figure(Thisfigurealgorithm)
+                              set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display'])
+                              %%% Sets the closing function of the window appropriately. (See way
+                              %%% above where 'ClosingFunction's are defined).
+                              set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' AlgNumberAsString]));
+                              %%% Set the button's text to "Close Figure".
+                              ThisFigDisplayString = 'Close Figure';
+                              %%% Refreshes the Main GUI window, or else "Close Figure" is not
+                              %%% displayed.
+                              %drawnow
+                          end
+
                       end %%% ends loop over slot number
+                      
                       if (break_outer_loop),
-                        break;  %%% this break is out of the outer loop of image analysis
+                          break;  %%% this break is out of the outer loop of image analysis
                       end
 
                       %%% Get a list of the measurement fields (after the first pass has run through
@@ -3182,12 +3353,15 @@ else
                 set(handles.PixelSizeEditBox,'enable','on','foregroundcolor','black')
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
+
+                %listbox changes
+                set(handles.LoadAlgorithm,'visible','on');
+                set(handles.ClearAlgorithm,'visible','on');
+                set(handles.FigureDisplay,'visible','off');
+                set(handles.FigureDisplay,'string', 'Close Figure');
+                set(handles.ViewAlgorithm,'visible','on');
+
                 for AlgorithmNumber=1:handles.numAlgorithms;
-                    set(handles.(['LoadAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
-                    set(handles.(['ClearAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
-                    set(handles.(['FigureDisplay' TwoDigitString(AlgorithmNumber)]),'visible','off');
-                    set(handles.(['FigureDisplay' TwoDigitString(AlgorithmNumber)]),'string', 'Close Figure');
-                    set(handles.(['ViewAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
                     for VariableNumber = 1:handles.numVariables(AlgorithmNumber);
                         set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
                     end
@@ -3231,6 +3405,7 @@ else
                 %%% handles.figurealgorithm1.  Before looking that up, you have to check to
                 %%% see if it exists or else an error occurs.
                 
+    
                 for i=1:handles.numAlgorithms
                     AlgorithmNum = TwoDigitString(i);
                     if isfield(handles,['figurealgorithm' AlgorithmNum]) ==1
@@ -3240,6 +3415,7 @@ else
                         end
                     end
                 end
+
                 
                 %%% Clears the global variables, if they exist.
                 clear text_handle HandleFigureDisplay timer_handle
@@ -3489,7 +3665,7 @@ AlgorithmNumber = whichactive(handles);
 if AlgorithmNumber == 0
     helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
 else
-    AlgorithmName = get(handles.(['AlgorithmName' TwoDigitString(AlgorithmNumber)]),'String');
+    AlgorithmName = handles.(['Valgorithmname' TwoDigitString(AlgorithmNumber)]);
     IsItNotChosen = strncmp(AlgorithmName,'No a',4);
     if IsItNotChosen == 1
         helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')

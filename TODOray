@@ -1,4 +1,6 @@
 Near-term:
+   Incorporate feature measurements from Bob Murphy's lab into our Measure modules (Murphy, Velliste, Porreca 2003 etc).
+
    Verify that illumination correction keeps values in 0-1.
 
    Test "clear functions" in parallel code. [BETA]

@@ -36,6 +36,7 @@ Image analysis modules - New:
 - Try to get code for yeast segmentation from this paper, and incorporate it into CellProfiler: SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan 1;32 Database issue:D319-22. PMID: 14681423 
 
 Image analysis modules - Improvements:
+- Add more texture measurements to the MeasureIntensityTexture module. Perhaps use texture measurements from Murphy, Velliste, and Porreca 2003.
 - Decide whether to incorporate bug fixes from Matt Tudor into AlgIdentifyPrimAdaptThresholdC (see %MT lines in AlgTempMattTudor.m)
 - Make measure windows expand to fit the number of lines of data that are produced.
 - Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original.
@@ -49,7 +50,7 @@ Image analysis modules - Improvements:
 - Combine CorrIllumDivideAll with RetrieveImg version.
 
 Data exporting
-- Allow data to be exported to bioinformatics programs like Spotfire or GenePattern.
+- Allow data to be exported to bioinformatics programs like Spotfire (? can't decide how useful this will be) or GenePattern.
 - Allow data to be exported in MAGE format to go into databases.
 - Allow data to be exported to Open Microscopy Environment databases.
 - Allow adding sample info post-processing

@@ -1,25 +1,26 @@
 function handles = LoadMoviesText(handles)
 
-% Help for the Load Images Text module:
+% Help for the Load Movies Text module:
 % Category: File Handling
-% 
-% Tells CellProfiler where to retrieve images and gives each image a
-% meaningful name for the other modules to access.
 %
-% If more than four images per set must be loaded, more than one Load
-% Images Text module can be run sequentially. Running more than one of
-% these modules also allows images to be retrieved from different
-% folders. If you want to load all images in a directory, you can
+% Tells CellProfiler where to retrieve movies, extracts each frame of
+% each movie as a separate image, and gives these images a meaningful
+% name for the other modules to access.
+%
+% If more than four movies per set must be loaded, more than one Load
+% Movies Text module can be run sequentially. Running more than one of
+% these modules also allows movies to be retrieved from different
+% folders. If you want to load all movies in a directory, you can
 % enter the file extension as the text for which to search.
-%  
-% This module is different from the Load Images Order module because
-% Load Images Text can be used to load images that are not in a
-% defined order.  That is, Load Images Order is useful when images are
+%
+% This module is different from the Load Movies Order module because
+% Load Movies Text can be used to load movies that are not in a
+% defined order.  That is, Load Movies Order is useful when movies are
 % present in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red,
-% and so on, where images are selected based on how many images are in
+% and so on, where movies are selected based on how many movies are in
 % each set and what position within each set a particular color is
-% located (e.g. three images per set, DAPI is always first).  Load
-% Images Text is used instead to load images that have a particular
+% located (e.g. three movies per set, DAPI is always first).  Load
+% Movies Text is used instead to load movies that have a particular
 % piece of text in the name.
 %
 % You have the option of matching text exactly, or using regular
@@ -27,25 +28,25 @@ function handles = LoadMoviesText(handles)
 % asking for text in common and typing R in the Exact/Regular expression
 % box will select any file containing the digit 1 or 2 immediately in
 % between the text 'image' and 'dapi'.
-% 
+%
 % You may have subfolders within the folder that is being searched, but the
 % names of the folders themselves must not contain the text you are
 % searching for or an error will result.
 %
-% SAVING IMAGES: The images loaded by this module can be easily saved
-% using the Save Images module, using the name you assign (e.g.
-% OrigBlue).  In the Save Images module, the images can be saved in a
-% different format, allowing this module to function as a file format
-% converter.
+% SAVING IMAGES: The frames of the movies loaded by this module can be
+% easily saved using the Save Images module, using the name you assign
+% (e.g. OrigBlue).  In the Save Images module, the images can be saved
+% in a different format, allowing this module to function as a file
+% format converter.
 %
-% See also LOADIMAGESORDER.
+% See also LOADMOVIESORDER.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -63,7 +64,7 @@ function handles = LoadMoviesText(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -87,7 +88,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -98,7 +99,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -113,44 +114,44 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Type the text that this set of images has in common
+%textVAR01 = Type the text that this set of movies has in common
 %defaultVAR01 = DAPI
 TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call these images?
+%textVAR02 = What do you want to call the images loaded from these movies?
 %defaultVAR02 = OrigBlue
 MovieName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Type the text that this set of images has in common
+%textVAR03 = Type the text that this set of movies has in common
 %defaultVAR03 = /
 TextToFind2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call these images?
+%textVAR04 = What do you want to call the images loaded from these movies?
 %defaultVAR04 = /
 MovieName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Type the text that this set of images has in common
+%textVAR05 = Type the text that this set of movies has in common
 %defaultVAR05 = /
 TextToFind3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What do you want to call these images?
+%textVAR06 = What do you want to call the images loaded from these movies?
 %defaultVAR06 = /
 MovieName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Type the text that this set of images has in common
+%textVAR07 = Type the text that this set of movies has in common
 %defaultVAR07 = /
 TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call these images?
+%textVAR08 = What do you want to call the images loaded from these movies?
 %defaultVAR08 = /
 MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If an image slot above is not being used, type a slash  /  in the box. 
+%textVAR09 = If an image slot above is not being used, type a slash  /  in the box.
 
 %textVAR10 = Do you want to match the text exactly (E), or use regular expressions (R)?
 %defaultVAR10 = E
@@ -160,7 +161,7 @@ ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %defaultVAR11 = N
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Enter the path name to the folder where the images to be loaded are located. Leave a period (.) to retrieve images from the default image directory #LongBox#
+%textVAR12 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
 %defaultVAR12 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
@@ -190,9 +191,9 @@ MovieName{4} = MovieName4;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -206,10 +207,10 @@ MovieName{4} = MovieName4;
 if SetBeingAnalyzed == 1
     %%% Makes sure this entry is appropriate.
     if strncmpi(ExactOrRegExp,'E',1) == 1 | strncmpi(ExactOrRegExp,'R',1) == 1
-    else error('You must enter E or R in the Load Images Text module to look for exact text matches or regular expression text matches.')
+    else error('You must enter E or R in the Load Movies Text module to look for exact text matches or regular expression text matches.')
     end
     %%% If the user did not enter any data in the first slot (they put
-    %%% a slash in either box), no images are retrieved.
+    %%% a slash in either box), no movies are retrieved.
     if strcmp(TextToFind{1}, '/') == 1 || strcmp(MovieName{1}, '/') == 1
         error('Image processing was canceled because the first movie slot in the Load Movies Text module was left blank.')
     end
@@ -217,7 +218,7 @@ if SetBeingAnalyzed == 1
         Pathname = handles.Current.DefaultImageDirectory;
     end
     SpecifiedPathname = Pathname;
-    %%% For all 4 image slots, extracts the file names.
+    %%% For all 4 movie slots, extracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
         %%% the user.
@@ -227,18 +228,20 @@ if SetBeingAnalyzed == 1
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             end
-            FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
+            FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
             %%% Checks whether any files are left.
-            if isempty(FileList{n})
+            if isempty(FileList)
                 error(['Image processing was canceled because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesText module.'])
             end
             StartingPositionForThisMovie = 0;
-            for MovieFileNumber = 1:length(FileList{:})
-                CurrentMovieFileName = fullfile(SpecifiedPathname, char(FileList{n}(1, MovieFileNumber)));
-                MovieAttributes = aviinfo(char(CurrentMovieFileName));
+            for MovieFileNumber = 1:length(FileList)
+                CurrentMovieFileName = char(FileList(MovieFileNumber));
+                try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
+                catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                end
                 for FrameNumber = 1:MovieAttributes.NumFrames
                     %%% Puts the file name into the FrameByFrameFileList in the first row.
-                    FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = FileList{n}(1, MovieFileNumber);
+                    FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                     %%% Puts the frame number into the FrameByFrameFileList in the second row.
                     FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                 end
@@ -252,6 +255,7 @@ if SetBeingAnalyzed == 1
             %% for reference in saved files
             handles.Measurements.(fieldname) = SpecifiedPathname;
             NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
+            clear FileList % Prevents confusion when loading this value later, for each movie set.
         end
     end
     %%% Determines which slots are empty.  None should be zero, because there is
@@ -263,9 +267,10 @@ if SetBeingAnalyzed == 1
     %%% Image Name array.
     NumberOfFiles = NumberOfFiles(~LogicalSlotsToBeDeleted);
     MovieName2 = MovieName(~LogicalSlotsToBeDeleted);
-    %%% Determines how many unique numbers of files there are.  If all the image
-    %%% types have loaded the same number of images, there should only be one
-    %%% unique number, which is the number of image sets.
+    %%% Determines how many unique numbers of files there are.  If all
+    %%% the movie types have loaded the same number of images, there
+    %%% should only be one unique number, which is the number of image
+    %%% sets.
     UniqueNumbers = unique(NumberOfFiles);
     %%% If NumberOfFiles is not all the same number at each position, generate an error.
     if length(UniqueNumbers) ~= 1
@@ -293,7 +298,7 @@ if SetBeingAnalyzed == 1
     %%% value determined by another image-loading module.
     if handles.Current.NumberOfImageSets ~= 1;
         if handles.Current.NumberOfImageSets ~= NumberOfImageSets
-            error(['The number of image sets loaded by the Load Images Text module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
+            error(['The number of image sets loaded by the Load Movies Text module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
         end
     end
     handles.Current.NumberOfImageSets = NumberOfImageSets;
@@ -304,22 +309,20 @@ end % Goes with: if SetBeingAnalyzed == 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for n = 1:4
-    %%% This try/catch will catch any problems in the load images module.
+    %%% This try/catch will catch any problems in the load movies module.
     try
         if strcmp(TextToFind{n}, '/') == 0 && strcmp(MovieName{n}, '/') == 0
-            %%% The following runs every time through this module (i.e. for
-            %%% every image set).
-            %%% Determines which image to analyze.
+            %%% Determines which movie to analyze.
             fieldname = ['FileList', MovieName{n}];
             FileList = handles.Pipeline.(fieldname);
-            %%% Determines the file name of the image you want to analyze.
+            %%% Determines the file name of the movie you want to analyze.
             CurrentFileName = FileList(:,SetBeingAnalyzed);
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', MovieName{n}];
             Pathname = handles.Pipeline.(fieldname);
             LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
             LoadedImage = im2double(LoadedRawImage.cdata);
-            %%% Saves the original image file name to the handles
+            %%% Saves the original movie file name to the handles
             %%% structure.  The field is named appropriately based on
             %%% the user's input, in the Pipeline substructure so that
             %%% this field will be deleted at the end of the analysis
@@ -340,10 +343,10 @@ for n = 1:4
         ErrorNumber(2) = {'second'};
         ErrorNumber(3) = {'third'};
         ErrorNumber(4) = {'fourth'};
-        error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in uncompressed avi format. Matlab says the problem is: ', ErrorMessage])
+        error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of movies using the Load Movies Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in uncompressed avi format. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
 end
-    
+
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
 %       In CellProfiler (and Matlab in general), each independent
@@ -396,7 +399,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -424,7 +427,7 @@ end
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
@@ -474,6 +477,7 @@ if SetBeingAnalyzed == 1
     if any(findobj == ThisModuleFigureNumber) == 1;
         close(ThisModuleFigureNumber)
     end
+    drawnow
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -537,7 +541,7 @@ else
                 FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                 Count = Count + 1;
             end
-        else error('You must enter E or R in the Load Images Text module to look for exact text matches or regular expression text matches.')
+        else error('You must enter E or R in the Load Movies Text module to look for exact text matches or regular expression text matches.')
         end
     end
 end

@@ -3,8 +3,9 @@ function handles = LoadMoviesOrder(handles)
 % Help for the Load Movies Order module:
 % Category: File Handling
 %
-% Tells CellProfiler where to retrieve movies and gives each movie a
-% meaningful name for the other modules to access.
+% Tells CellProfiler where to retrieve movies, extracts each frame of
+% each movie as a separate image, and gives these images a meaningful
+% name for the other modules to access.
 %
 % If more than four movies per set must be loaded, more than one Load
 % Movies Order module can be run sequentially. Running more than one
@@ -16,18 +17,19 @@ function handles = LoadMoviesOrder(handles)
 % order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where
 % movies are selected based on how many movies are in each set and
 % what position within each set a particular color is located (e.g.
-% three movies per set, DAPI is always first).  By contrast, Load
-% Movies Text is used to load movies that have a particular piece of
-% text in the name.
+% three movies per set, DAPI is always the first movie in each set).
+% By contrast, Load Movies Text is used to load movies that have a
+% particular piece of text in the name.
 %
-% You may have folders within the directory that is being searched;
-% they will be ignored by this module.
+% You may have subfolders within the folder that is being searched, but the
+% names of the folders themselves must not contain the text you are
+% searching for or an error will result.
 %
-% SAVING IMAGES: The frames of the movies loaded by this module can be easily saved
-% using the Save Images module, using the name you assign (e.g.
-% OrigBlue).  In the Save Images module, the images can be saved in a
-% different format, allowing this module to function as a file format
-% converter.
+% SAVING IMAGES: The frames of the movies loaded by this module can be
+% easily saved using the Save Images module, using the name you assign
+% (e.g. OrigBlue).  In the Save Images module, the images can be saved
+% in a different format, allowing this module to function as a file
+% format converter.
 %
 % See also LOADMOVIESTEXT.
 
@@ -141,7 +143,7 @@ NumberInSet4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = OrigOther1
 MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If an image slot above is not being used, type a zero in the box. 
+%textVAR09 = If an image slot above is not being used, type a zero in the box.
 
 %textVAR10 = How many movies are there in each set (i.e. each field of view)?
 %defaultVAR10 = 3
@@ -162,8 +164,9 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
-%%% Determines which set is being analyzed.
+%%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 MoviesPerSet = str2double(MoviesPerSet);
 %%% If the user left boxes blank, sets the values to 0.
@@ -243,38 +246,76 @@ if SetBeingAnalyzed == 1
                 Number = (i - 1) .* MoviesPerSet + NumberInSet{n};
                 FileList(i) = FileNames(Number);
             end
-            
-            
-            %%% BLABLABLA  LEFT OFF HERE>
             StartingPositionForThisMovie = 0;
             for MovieFileNumber = 1:length(FileList)
-                CurrentMovieFileName = fullfile(SpecifiedPathname, char(FileList{n}));
-                MovieAttributes = aviinfo(char(CurrentMovieFileName));
+                CurrentMovieFileName = char(FileList(MovieFileNumber));
+                try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
+                catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                end
                 for FrameNumber = 1:MovieAttributes.NumFrames
                     %%% Puts the file name into the FrameByFrameFileList in the first row.
-                    FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = FileList{n}(1, MovieFileNumber);
+                    FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                     %%% Puts the frame number into the FrameByFrameFileList in the second row.
                     FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                 end
                 StartingPositionForThisMovie = StartingPositionForThisMovie + MovieAttributes.NumFrames;
             end
-            
-            
-            
-            
-            
-            
-            
-            
             %%% Saves the File Lists and Path Names to the handles structure.
             fieldname = ['FileList', MovieName{n}];
             handles.Pipeline.(fieldname) = FrameByFrameFileList{n};
             fieldname = ['Pathname', MovieName{n}];
             handles.Pipeline.(fieldname) = SpecifiedPathname;
+            %% for reference in saved files
+            handles.Measurements.(fieldname) = SpecifiedPathname;
+            NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
             clear FileList % Prevents confusion when loading this value later, for each movie set.
         end
     end
-end
+    %%% Determines which slots are empty.  None should be zero, because there is
+    %%% an error check for that when looping through n = 1:5.
+    for g = 1: length(NumberOfFiles)
+        LogicalSlotsToBeDeleted(g) =  isempty(NumberOfFiles{g});
+    end
+    %%% Removes the empty slots from both the Number of Files array and the
+    %%% Image Name array.
+    NumberOfFiles = NumberOfFiles(~LogicalSlotsToBeDeleted);
+    MovieName2 = MovieName(~LogicalSlotsToBeDeleted);
+    %%% Determines how many unique numbers of files there are.  If all
+    %%% the movie types have loaded the same number of images, there
+    %%% should only be one unique number, which is the number of image
+    %%% sets.
+    UniqueNumbers = unique(NumberOfFiles);
+    %%% If NumberOfFiles is not all the same number at each position, generate an error.
+    if length(UniqueNumbers) ~= 1
+        CharMovieName = char(MovieName2);
+        CharNumberOfFiles = char(NumberOfFiles);
+        Number = length(CharNumberOfFiles);
+        for f = 1:Number
+            SpacesArray(f,:) = ':     ';
+        end
+        PreErrorText = cat(2, CharMovieName, SpacesArray);
+        ErrorText = cat(2, PreErrorText, CharNumberOfFiles);
+        msgbox(ErrorText)
+        error('In the Load Movies Order module, the number of movies identified for each movie type is not equal.  In the window under this box you will see how many movie have been found for each movie type.')
+    end
+    NumberOfImageSets = str2double(UniqueNumbers{1});
+    %%% Checks whether another load images module has already recorded a
+    %%% number of image sets.  If it has, it will not be set at the default
+    %%% of 1.  Then, it checks whether the number already stored as the
+    %%% number of image sets is equal to the number of image sets that this
+    %%% module has found.  If not, an error message is generated. Note:
+    %%% this will not catch the case where the number of image sets
+    %%% detected by this module is more than 1 and another module has
+    %%% detected only one image set, since there is no way to tell whether
+    %%% the 1 stored in handles.Current.NumberOfImageSets is the default value or a
+    %%% value determined by another image-loading module.
+    if handles.Current.NumberOfImageSets ~= 1;
+        if handles.Current.NumberOfImageSets ~= NumberOfImageSets
+            error(['The number of image sets loaded by the Load Movies Order module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
+        end
+    end
+    handles.Current.NumberOfImageSets = NumberOfImageSets;
+end % Goes with: if SetBeingAnalyzed == 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
@@ -292,33 +333,22 @@ for n = 1:4
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', MovieName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            
-            
-            
             LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
             LoadedImage = im2double(LoadedRawImage.cdata);
-
-            
-            
-            
-            
-            
-            
-   %         LoadedMovie = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
-            %%% Saves the original movie file name to the handles.Pipeline structure.
-            %%% The field is named appropriately based on the user's input, and will
-            %%% be deleted at the end of the analysis batch.
+            %%% Saves the original movie file name to the handles
+            %%% structure.  The field is named appropriately based on
+            %%% the user's input, in the Pipeline substructure so that
+            %%% this field will be deleted at the end of the analysis
+            %%% batch.
             fieldname = ['Filename', MovieName{n}];
             [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(char(CurrentFileName(1)));
             CurrentFileNameWithFrame = [BareFileName, '_', num2str(cell2mat(CurrentFileName(2))),ext];
-            
-            
-            
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
             %%% Also saved to the handles.Measurements structure for reference in output files.
             handles.Measurements.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
-            %%% Saves the loaded movie to the handles structure.  The field is named
-            %%% appropriately based on the user's input.
+            %%% Saves the loaded image to the handles structure.  The field is named
+            %%% appropriately based on the user's input, and put into the Pipeline
+            %%% substructure so it will be deleted at the end of the analysis batch.
             handles.Pipeline.(MovieName{n}) = LoadedImage;
         end
     catch ErrorMessage = lasterr;
@@ -446,10 +476,9 @@ end
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%%%%%%%%%%%%%%%%%%%
-%%% FIGURE WINDOW %%%
-%%%%%%%%%%%%%%%%%%%%
-drawnow
+%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%
 
 if SetBeingAnalyzed == 1
     %%% The figure window display is unnecessary for this module, so the figure
@@ -457,10 +486,11 @@ if SetBeingAnalyzed == 1
     %%% Determines the figure number.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    %%% If the window is open, it is closed.
+    %%% Closes the window if it is open.
     if any(findobj == ThisModuleFigureNumber) == 1;
         close(ThisModuleFigureNumber)
     end
+    drawnow
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

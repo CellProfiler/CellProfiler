@@ -311,13 +311,22 @@ if SettingsFileName == 0
 end
 %%% Loads the Settings file.
 LoadedSettings = load([SettingsPathname SettingsFileName]);
-
-if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles')),
-    errordlg(['The file ' SettingsPathname SettingsFilename ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
+%%% Error Checking for valid settings file.
+if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
+    errordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     cd(handles.Current.StartupDirectory)
     return
 end
-
+try
+    [NumberOfModules, MaxNumberVariables] = size(LoadedSettings.Settings.VariableValues);
+    if (size(LoadedSettings.Settings.ModuleNames,2) ~= NumberOfModules)||(size(LoadedSettings.Settings.NumbersOfVariables,2) ~= NumberOfModules);
+        errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+        return
+    end
+catch
+    errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+        return
+end
 %%% Figures out whether we loaded a Settings or Output file, and puts
 %%% the correct values into Settings. Splices the subset of variables
 %%% from the "settings" structure into the handles structure.
@@ -832,7 +841,6 @@ twodigit = sprintf('%02d', val);
 function RemoveModule_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, 'Confirm');
-
 %%% SUBFUNCTION %%%
 function RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, ConfirmOrNot) %#ok We want to ignore MLint error checking for this line.
 
@@ -843,7 +851,9 @@ if strcmp(ConfirmOrNot, 'Confirm') == 1
         return
     end
 end
-
+if isempty(handles.Settings.ModuleNames);
+    return
+end
 %%% 1. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
 for i = 1:99
@@ -1756,7 +1766,7 @@ if strcmp(Answer, 'Yes') == 1
     %%% Checks which handles were open before 
     FigureHandlesToBeDeleted = setdiff(AllHandles, handles.Current.CurrentHandles);
     %%% Closes the figure windows.
-    delete(FigureHandlesToBeDeleted)
+    delete(FigureHandlesToBeDeleted);
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
     delete(TimerHandles)

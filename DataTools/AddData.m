@@ -32,7 +32,7 @@ if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     OutputFile = []; pOutName = []; fOutName = [];
-else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP','*.mat'),'Add sample info to which existing output file?');
+else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Add sample info to which existing output file?');
 %%% Allows canceling.
     if fOutName == 0
         return

@@ -302,7 +302,7 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP', '*.mat'),'Choose a settings or output file');
+    [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
 else
     [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 end
@@ -746,7 +746,7 @@ end
 %%% Preferences.
 
 if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
-    [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'MATLABBUG11432TP', '*.m'),...
+    [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'.', '*.m'),...
     'Choose an image analysis module');
 else
 [ModuleNamedotm,Pathname] = uigetfile('*.m',...

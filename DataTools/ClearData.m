@@ -55,7 +55,7 @@ elseif strcmp(ExistingOrMemory, 'Memory') == 1
         %%% loaded?"
     end
 elseif strcmp(ExistingOrMemory, 'Existing') == 1
-[fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP','*.mat'),'Choose the output file');
+[fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Choose the output file');
     %%% Allows canceling.
     if fOutName == 0
         return

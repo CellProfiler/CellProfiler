@@ -57,8 +57,7 @@ Settings =      ModuleNames: {1x6 cell}
 
 +++ Make a module to identify and count and measure objects
        within previously identified objects (e.g. nucleoli or
-       organelles or speckles within nuclei or cells).  Not sure how
-       to save the individual measurements for each sub-object.
+       organelles or speckles within nuclei or cells).  This also requires designing a way to store measurements of Subobjects. See MeasureNeighbors.m for an example of saving several measurements per object.  Need to also develop tools to export the Subobject measurements.
 
 ++ Histograms: allow fewer labels, plus fewer decimals (right now, it's either-or). 
 
@@ -182,7 +181,7 @@ For each title, add properties at the end:
 - Make all pop-up windows use the proper background color and
        come to the center of the CP window (helpdlg, warndlg, msgbox):
        requires getting the handle then setting the color and
-       position. 
+       position. Also, for the variablerevisionnumber window, set colors appropriately.
 
 - Export mean data button: currently, if you enter a filename
          in use, it warns you and then cancels the export. Instead,

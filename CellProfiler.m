@@ -28,7 +28,7 @@ function varargout = CellProfiler(varargin)
 % $Revision$
 
 
-% Last Modified by GUIDE v2.5 27-Jan-2005 12:31:08
+% Last Modified by GUIDE v2.5 19-Dec-2004 02:52:31
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -2641,12 +2641,3 @@ HelpText = help('HelpAnalyzeImages.m');
 helpdlg(HelpText,'CellProfiler Help');
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%
-
-
-% --- Executes during object creation, after setting all properties.
-function bottompanelframe_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to bottompanelframe (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-

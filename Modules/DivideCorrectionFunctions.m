@@ -174,7 +174,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         MinimumAcceptableValue = min(.01, PixelIntensities(2));
         IntensityProjectionImage(IntensityProjectionImage == 0) = MinimumAcceptableValue;
     end
-        %%% Makes sure neither projection image has zeros to prevent
+    %%% Makes sure neither projection image has zeros to prevent
     %%% errors when dividing.
     PixelIntensities2 = unique(MaskedProjectionImage(:,:));
     if PixelIntensities2(1) == 0

@@ -177,10 +177,6 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Makes note of the current directory so the module can return to it
-%%% at the end of this module.
-CurrentDirectory = cd;
-
 %%% The first time the module is run, the threshold shifting value must be
 %%% calculated.
 if handles.Current.SetBeingAnalyzed == 1

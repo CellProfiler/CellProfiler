@@ -179,9 +179,6 @@ drawnow
 
 %%% The first time the module is run, the tiling is performed.
 if handles.Current.SetBeingAnalyzed == 1
-    %%% Makes note of the current directory so the module can return to it
-    %%% at the end of this module.
-    CurrentDirectory = cd;
     %%% Checks whether any sample info has been loaded.
     if isfield(handles, 'headings') == 1
         %%% Retrieves the Sample Info (only the first column is used).

@@ -169,9 +169,6 @@ drawnow
 if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')) == 1
     if handles.Current.SetBeingAnalyzed == 1
         try
-            %%% Makes note of the current directory so the module can return to it
-            %%% at the end of this module.
-            CurrentDirectory = cd;
             %%% Notifies the user that the first image set will take much longer than
             %%% subsequent sets.
             %%% Obtains the screen size.

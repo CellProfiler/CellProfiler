@@ -167,7 +167,7 @@ if SetBeingAnalyzed == 1
                 end 
                 for i=1:length(FileNames),
                     if findstr(char(FileNames(i)), char(TextToFind(n))),
-                        Match(Count) = i;
+                        Match(Count) = i; %#ok We want to ignore MLint error checking for this line.
                         Count = Count + 1;
                     end
                 end
@@ -176,7 +176,7 @@ if SetBeingAnalyzed == 1
                 end
                 %%% Creates the File List by extracting the names of files
                 %%% that matched the text of interest.
-                FileList{n} = FileNames(Match);
+                FileList{n} = FileNames(Match); %#ok We want to ignore MLint error checking for this line.
             else
                 %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
@@ -213,7 +213,7 @@ if SetBeingAnalyzed == 1
             handles.(fieldname) = FileList{n};
             fieldname = ['dOTPathName', ImageName{n}];
             handles.(fieldname) = PathName;
-            NumberOfFiles{n} = num2str(length(FileList{n}));
+            NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
         end % Goes with: if isempty
     end  % Goes with: for i = 1:5
     %%% Determines which slots are empty.  None should be zero, because there is

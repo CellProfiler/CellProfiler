@@ -289,16 +289,16 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% means and sums from each measurement's code above.
     %%% Checks whether any objects were found in the image.
     if sum(sum(LabelMatrixImage)) == 0
-        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
+        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['Number of ', ObjectName ,':      zero']);
     else
-        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],...
+        displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['MeanIntegratedIntensity:          ', num2str(mean(IntegratedIntensity))],...
             ['MeanMeanIntensity:                ', num2str(mean(MeanIntensity))],...
             ['MeanStDevIntensity:               ', num2str(mean(StDevIntensity))],...
             ['SumIntegratedIntensity:           ', num2str(sum(IntegratedIntensity))]);
         if strcmp(upper(Threshold),'N') ~= 1
-            displaytext = strvcat(displaytext,...
+            displaytext = strvcat(displaytext,... %#ok We want to ignore MLint error checking for this line.
             ['Percent above intensity threshold:', num2str(PercentObjectsAboveThreshold)]);
         end
     end % Goes with: if no objects were in the label matrix image.

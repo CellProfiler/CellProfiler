@@ -151,9 +151,9 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% image.
     subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', [0 0 265 35],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
-    displaytext = strvcat(['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
+    displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...
-        ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]);
+        ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]};
     set(displaytexthandle,'string',displaytext, 'HorizontalAlignment', 'left')
     set(ThisAlgFigureNumber,'toolbar','figure')
 end

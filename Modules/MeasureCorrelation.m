@@ -243,47 +243,47 @@ if strcmp(Image1Name,'/') ~= 1
 Image1Column = reshape(Image1,[],1);
      % figure, imshow(Image1Column), title('Image1Column'), colormap(gray)
 ImageMatrix = horzcat(ImageMatrix,Image1Column);
-ImageNames = strvcat(ImageNames,Image1Name);
+ImageNames = strvcat(ImageNames,Image1Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image2Name,'/') ~= 1
 Image2Column = reshape(Image2,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image2Column);
-ImageNames = strvcat(ImageNames,Image2Name);
+ImageNames = strvcat(ImageNames,Image2Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image3Name,'/') ~= 1
 Image3Column = reshape(Image3,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image3Column);
-ImageNames = strvcat(ImageNames,Image3Name);
+ImageNames = strvcat(ImageNames,Image3Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image4Name,'/') ~= 1
 Image4Column = reshape(Image4,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image4Column);
-ImageNames = strvcat(ImageNames,Image4Name);
+ImageNames = strvcat(ImageNames,Image4Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image5Name,'/') ~= 1
 Image5Column = reshape(Image5,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image5Column);
-ImageNames = strvcat(ImageNames,Image5Name);
+ImageNames = strvcat(ImageNames,Image5Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image6Name,'/') ~= 1
 Image6Column = reshape(Image6,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image6Column);
-ImageNames = strvcat(ImageNames,Image6Name);
+ImageNames = strvcat(ImageNames,Image6Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image7Name,'/') ~= 1
 Image7Column = reshape(Image7,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image7Column);
-ImageNames = strvcat(ImageNames,Image7Name);
+ImageNames = strvcat(ImageNames,Image7Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image8Name,'/') ~= 1
 Image8Column = reshape(Image8,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image8Column);
-ImageNames = strvcat(ImageNames,Image8Name);
+ImageNames = strvcat(ImageNames,Image8Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image9Name,'/') ~= 1
 Image9Column = reshape(Image9,[],1);
 ImageMatrix = horzcat(ImageMatrix,Image9Column);
-ImageNames = strvcat(ImageNames,Image9Name);
+ImageNames = strvcat(ImageNames,Image9Name); %#ok We want to ignore MLint error checking for this line.
 end
 %%% Applies the mask, if requested
 if strcmp(ObjectName,'/') ~= 1
@@ -348,7 +348,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     for i = 1:size(ImageNames,1)-1
         for j = i+1:size(ImageNames,1)
             Value = num2str(Results(i,j));
-            TextToDisplay = strvcat(TextToDisplay, [ImageNames(i,:),'/', ImageNames(j,:),' Correlation: ',Value]);
+            TextToDisplay = strvcat(TextToDisplay, [ImageNames(i,:),'/', ImageNames(j,:),' Correlation: ',Value]); %#ok We want to ignore MLint error checking for this line.
         end
     end
     set(Displaytexthandle,'string',TextToDisplay)

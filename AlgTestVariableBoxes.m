@@ -89,7 +89,7 @@ ImagesPerSet = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located
-%defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
+%defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1#LongBox#
 PathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %textVAR12 = Testing variable 12

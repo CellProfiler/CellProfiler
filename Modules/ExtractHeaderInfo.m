@@ -101,7 +101,7 @@ ThirdImageName = handles.(fieldname);
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
 FifthImageName = handles.(fieldname);
 %textVAR11 = Enter the directory path name where the images are saved.
-%defaultVAR11 = Default directory - leave this text to retrieve images from the directory specified above
+%defaultVAR11 = Default directory - leave this text to retrieve images from the directory specified above#LongBox#
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
 PathName = handles.(fieldname);
 

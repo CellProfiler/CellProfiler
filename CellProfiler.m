@@ -874,16 +874,20 @@ if (length(AlgorithmHighlighted) > 0)
         numberOfLongBoxes = 0;
         for i=1:handles.numVariables(AlgorithmNumber),
             if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
-                set(handles.(['VariableBox' TwoDigitString(i)]),...
-                    'string',char(handles.Settings.Vvariable(AlgorithmNumber,i)),...
-                    'visible','on');
                 set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 291-25*(i+numberOfLongBoxes) 465 23]);
-                if ( length(handles.Settings.Vvariable{AlgorithmNumber, i}) > 20)
+                vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
+                varLength = length(vVariableString);
+                if( (varLength > 8) & (strcmp(vVariableString(varLength-8:varLength), '#LongBox#')) )
+                    vVariableString = vVariableString(1,varLength-9);
                     numberOfLongBoxes = numberOfLongBoxes+1;
                     set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes) 539 23]);
-                else 
+                elseif ( varLength > 20)
+                    numberOfLongBoxes = numberOfLongBoxes+1;
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes) 539 23]);
+                else
                     set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes) 94 23]);
                 end
+                set(handles.(['VariableBox' TwoDigitString(i)]),'string',vVariableString,'visible','on');
             else set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
             end
         end

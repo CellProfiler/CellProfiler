@@ -812,8 +812,8 @@ else
     %%% Checks whether a file with that name already exists, to warn the user
     %%% that the file will be overwritten.
     CurrentDirectory = cd;
-    if exist([Pathname,'/',UserEntry],'file') ~= 0
-        errordlg(['A file already exists at ', [Pathname,'/',UserEntry],...
+    if exist([Pathname,'/',UserEntry],'file') ~= 0   %%% TODO: Fix filename construction.
+        errordlg(['A file already exists at ', [Pathname,'/',UserEntry],... %%% TODO: Fix filename construction.
             '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
         set(handles.OutputFileName,'string',[])
     else guidata(gcbo, handles);
@@ -1028,7 +1028,7 @@ end
 
 % --- Executes on button press in SetPreferencesButton.
 function SetPreferencesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% Determine what the current directory is, so we can change back 
+%%% Determine what the current directory is, so we can change back
 %%% when this process is done.
 CurrentDirectory = cd;
 %%% Change to the Matlab root directory.
@@ -1036,11 +1036,12 @@ cd(matlabroot)
 %%% If the CellProfilerPreferences.mat file does not exist in the matlabroot
 %%% directory, change to the current directory.
 if exist('CellProfilerPreferences.mat','file') == 0
-  cd(CurrentDirectory);
+    cd(CurrentDirectory);
+    try load CellProfilerPreferences
+    end
 else
-    %%% If the CellProfilerPreferences.mat file exists, load it and change to the
-%%% default algorithm directory.
-  load CellProfilerPreferences
+    %%% If the CellProfilerPreferences.mat file exists, load it.
+    load CellProfilerPreferences
 end
 
 %%% (1) GET DEFAULT PIXEL SIZE
@@ -1093,14 +1094,13 @@ end
 %%% the remaining arguments are the names of the variables which are saved.
 try cd(matlabroot)
     save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
-    helpdlg('Your CellProfiler Preferences were successfully set.  They are contained within a folder in the Matlab root directory in a file called CellProfilerPreferences.mat.')
+    helpdlg('Your CellProfiler Preferences were successfully set.  They are contained in the Matlab root directory in a file called CellProfilerPreferences.mat.')
     handles.Settings.Vpixelsize = PixelSize{1};
     handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
     handles.Vworkingdirectory = WorkingDirectory;
     set(handles.PixelSizeEditBox,'string',PixelSize{1});
     %%% Update handles structure.
     guidata(hObject,handles);
-
 catch
     cd(CurrentDirectory)
     try save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
@@ -1111,11 +1111,16 @@ catch
         set(handles.PixelSizeEditBox,'string',PixelSize{1});
         %%% Update handles structure.
         guidata(hObject,handles);
-
     catch
-        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences were not saved.');
+        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.');
+        handles.Settings.Vpixelsize = PixelSize{1};
+        handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
+        handles.Vworkingdirectory = WorkingDirectory;
+        set(handles.PixelSizeEditBox,'string',PixelSize{1});
+        %%% Update handles structure.
+        guidata(hObject,handles);
     end
-end % Goes with try/catch.
+end
 cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
@@ -1574,7 +1579,7 @@ if isempty(Answers) ~= 1
     CompleteFileName = [FileName,'.',Extension];
     %%% Checks whether the specified file name will overwrite an
     %%% existing file. 
-    OutputFileOverwrite = exist([cd,'/',CompleteFileName],'file');
+    OutputFileOverwrite = exist([cd,'/',CompleteFileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
         Answer = questdlg(['A file with the name ', CompleteFileName, ' already exists. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
         if strcmp(Answer,'Yes') == 1;
@@ -1612,7 +1617,7 @@ else
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
-    Image = im2double(imread([Pathname,'/',FileName]));
+    Image = im2double(imread([Pathname,'/',FileName])); %%% TODO: Fix filename construction.
     figure; imagesc(Image), colormap(gray)
     pixval
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
@@ -1753,7 +1758,7 @@ else
             if isempty(FileName)
             else
                 FileName = FileName{1};
-                OutputFileOverwrite = exist([cd,'/',FileName],'file');
+                OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
                 if OutputFileOverwrite ~= 0
                     errordlg('A file with that name already exists in the directory containing the raw measurements file.  Repeat and choose a different file name.')
                 else
@@ -1956,7 +1961,7 @@ if strcmp(Answer, 'All images') == 1
         return
     end
     FileName = FileName{1};
-    OutputFileOverwrite = exist([cd,'/',FileName],'file');
+    OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
         Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
@@ -2111,7 +2116,7 @@ elseif strcmp(Answer, 'All measurements') == 1
         return
     end
     FileName = FileName{1};
-    OutputFileOverwrite = exist([cd,'/',FileName],'file');
+    OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
     if OutputFileOverwrite ~= 0
         Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
@@ -2345,7 +2350,7 @@ if ok ~= 0
             cd(CurrentDirectory);
             return
         end
-        OutputFileOverwrite = exist([cd,'/',SaveData],'file');
+        OutputFileOverwrite = exist([cd,'/',SaveData],'file'); %%% TODO: Fix filename construction.
         if OutputFileOverwrite ~= 0
             Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
             if strcmp(Answer, 'No') == 1
@@ -3095,7 +3100,7 @@ if RawFileName ~= 0
                             return
                         else
                             %%% Opens and displays the image, with pixval shown.
-                            ImageToDisplay = im2double(imread([Pathname,'/',FileName]));
+                            ImageToDisplay = im2double(imread([Pathname,'/',FileName])); %%% TODO: Fix filename construction.
                             %%% Allows underscores to be displayed properly.
                             ImageFileName = strrep(ImageFileName,'_','\_');
                             FigureHandle = figure; imagesc(ImageToDisplay), colormap(gray), title([EditedMeasurementToExtract, ' on ', ImageFileName])
@@ -3186,7 +3191,7 @@ else
 
             %%% Checks whether the specified output file name will overwrite an
             %%% existing file.
-            OutputFileOverwrite = exist([cd,'/',handles.Voutputfilename],'file');
+            OutputFileOverwrite = exist([cd,'/',handles.Voutputfilename],'file'); %%% TODO: Fix filename construction.
             if OutputFileOverwrite ~= 0
                 errordlg('An output file with the name you entered in Step 2 already exists. Overwriting is not allowed, so please enter a new filename.')
             else

@@ -319,7 +319,7 @@ if SettingsFileName == 0
     return
 end
 %%% Loads the Settings file.
-LoadedSettings = load([SettingsPathname SettingsFileName]);
+LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
 %%% Error Checking for valid settings file.
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     errordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
@@ -648,7 +648,7 @@ if FileName ~= 0
     if isfield(handles.Settings,'VariableRevisionNumbers'),
         Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
     end
-    save([Pathname FileName],'Settings')
+    save(fullfile(Pathname,FileName),'Settings')
     %%% Writes settings into a readable text file.
     if strcmp(SaveText,'Yes') == 1
         VariableValues = handles.Settings.VariableValues;
@@ -804,7 +804,7 @@ else
     ModuleNumber = TwoDigitString(handles.Current.NumberOfModules+1);
     ModuleNums = handles.Current.NumberOfModules+1;
 
-    fid=fopen([Pathname ModuleNamedotm]);
+    fid=fopen(fullfile(Pathname,ModuleNamedotm));
     lastVariableCheck = 0;
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;

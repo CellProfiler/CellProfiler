@@ -28,6 +28,7 @@ function handles = AlgSubtractImages(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%% The "drawnow" function allows figure windows to be updated and buttons
 %%% to be pushed (like the pause, cancel, help, and view buttons).  The
@@ -70,37 +71,37 @@ drawnow
 %textVAR01 = Subtract this image (enter the name here)
 %defaultVAR01 = tubulinw3
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-SubtractImageName = handles.(fieldname);
+SubtractImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = From this image (enter the name here)
 %defaultVAR02 = NHSw1
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-BasicImageName = handles.(fieldname);
+BasicImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What do you want to call the resulting image?
 %defaultVAR03 = SubtractedCellStain
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-ResultingImageName = handles.(fieldname);
+ResultingImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Enter the factor to multiply the subtracted image by:
 %defaultVAR04 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-MultiplyFactor = str2num(handles.(fieldname));
+MultiplyFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %textVAR05 = Contrast stretch the resulting image?
 %defaultVAR05 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-Stretch = handles.(fieldname);
+Stretch = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = Blur radius for the basic image
 %defaultVAR06 = 3
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-BlurRadius = str2num(handles.(fieldname));
+BlurRadius = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %textVAR08 = To save the resulting image, enter text to append to the name 
 %defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = If saving images, what file format do you want to use? Do not include a period.
 %defaultVAR11 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -30,6 +30,7 @@ function handles = AlgMeasureCorrelation(handles)
 %%% Reads the current algorithm number, since this is needed to find the
 %%% variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -39,43 +40,43 @@ drawnow
 %textVAR01 = Enter the names of each image type to be compared. If a box is unused, leave "/"
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-Image1Name = handles.(fieldname);
+Image1Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = All pairwise comparisons will be performed.
 %defaultVAR02 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-Image2Name = handles.(fieldname);
+Image2Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = 
 %defaultVAR03 = OrigRed
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-Image3Name = handles.(fieldname);
+Image3Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = 
 %defaultVAR04 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-Image4Name = handles.(fieldname);
+Image4Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = 
 %defaultVAR05 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-Image5Name = handles.(fieldname);
+Image5Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = 
 %defaultVAR06 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-Image6Name = handles.(fieldname);
+Image6Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 = 
 %defaultVAR07 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
-Image7Name = handles.(fieldname);
+Image7Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %textVAR08 = 
 %defaultVAR08 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-Image8Name = handles.(fieldname);
+Image8Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = 
 %defaultVAR09 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
-Image9Name = handles.(fieldname);
+Image9Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 = What did you call the objects within which to compare the images?
 %defaultVAR10 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
-ObjectName = handles.(fieldname);
+ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 %textVAR11 = Leave "/" to compare the entire images
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

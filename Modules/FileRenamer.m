@@ -3,6 +3,7 @@ function handles = AlgFileRenamer1(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -11,17 +12,17 @@ CurrentAlgorithm = handles.currentalgorithm;
 %textVAR01 = How many characters at the beginning of the file name do you want to retain?
 %defaultVAR01 = 6
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-NumberCharactersPrefix = str2num(handles.(fieldname));
+NumberCharactersPrefix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,1}));
 
 %textVAR02 = How many characters at the end do you want to retain, including file extension?
 %defaultVAR02 = 8
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-NumberCharactersSuffix = str2num(handles.(fieldname));
+NumberCharactersSuffix = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,2}));
 
 %textVAR03 = Enter any text you want to place between those two portions of filename
 %defaultVAR03 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-TextToAdd = handles.(fieldname);
+TextToAdd = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Leave "/" to not add any text.
 
 %textVAR06 = Be very careful since you will be renaming (=overwriting) your files!!

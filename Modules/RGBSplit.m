@@ -28,6 +28,7 @@ function handles = AlgRGBSplit(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -37,37 +38,37 @@ drawnow
 %textVAR01 = What did you call the image to be split into black and white images?
 %defaultVAR01 = OrigRGB
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-RGBImageName = handles.(fieldname);
+RGBImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the image that was red?
 %defaultVAR02 = OrigRed
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-RedImageName = handles.(fieldname);
+RedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What do you want to call the image that was green?
 %defaultVAR03 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-GreenImageName = handles.(fieldname);
+GreenImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = What do you want to call the image that was blue?
 %defaultVAR04 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-BlueImageName = handles.(fieldname);
+BlueImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = Type "N" in any slots above to ignore that color.
 %textVAR06 = To save the red image, enter text to append to the image name
 %defaultVAR06 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-RedTextAppend = handles.(fieldname);
+RedTextAppend = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 = To save the green image, enter text to append to the image name
 %defaultVAR07 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
-GreenTextAppend = handles.(fieldname);
+GreenTextAppend = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %textVAR08 = To save the blue image, enter text to append to the image name
 %defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-BlueTextAppend = handles.(fieldname);
+BlueTextAppend = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 =  Otherwise, leave as "N".
 %textVAR10 = In what file format do you want to save images? Do not include a period
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

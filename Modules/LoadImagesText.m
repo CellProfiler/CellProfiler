@@ -1,4 +1,25 @@
 function handles = AlgLoadImagesText(handles)
+%%%%% Help for Load Images Text module:
+%%%%% .
+%%%%% This module is required to load images from the hard drive into a
+%%%%% format recognizable by CellProfiler.  The images are given a
+%%%%% meaningful name, which is then used by subsequent modules to retrieve
+%%%%% the proper image.  If more than five images per set must be loaded,
+%%%%% more than one Load Images module can be run sequentially. 
+%%%%% . 
+%%%%% This module is different from the Load Images Order module because
+%%%%% Load Images Text can be used to load images that are not in a defined
+%%%%% order.  That is, Load Images Order is useful when images are present
+%%%%% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
+%%%%% on, where images are selected based on how many images are in each
+%%%%% set and what position within each set a particular color is located
+%%%%% (e.g. three images per set, DAPI is always first).  Load Images Text
+%%%%% is used instead to load images that have a particular piece of text
+%%%%% in the name.
+%%%%% .
+%%%%% You may have folders within the directory that is being searched, but
+%%%%% these folders must not contain the text you are searching for or an
+%%%%% error will result.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -28,6 +49,7 @@ function handles = AlgLoadImagesText(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -36,44 +58,44 @@ CurrentAlgorithm = handles.currentalgorithm;
 %textVAR01 = Type the text that this set of images has in common
 %defaultVAR01 = DAPI
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-TextToFind1 = handles.(fieldname);
+TextToFind1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call these images?
 %defaultVAR02 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-ImageName1 = handles.(fieldname);
+ImageName1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = Type the text that this set of images has in common
 %defaultVAR03 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-TextToFind2 = handles.(fieldname);
+TextToFind2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = What do you want to call these images?
 %defaultVAR04 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-ImageName2 = handles.(fieldname);
+ImageName2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = Type the text that this set of images has in common
 %defaultVAR05 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-TextToFind3 = handles.(fieldname);
+TextToFind3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = What do you want to call these images?
 %defaultVAR06 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-ImageName3 = handles.(fieldname);
+ImageName3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 = Type the text that this set of images has in common
 %defaultVAR07 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
-TextToFind4 = handles.(fieldname);
+TextToFind4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %textVAR08 = What do you want to call these images?
 %defaultVAR08 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-ImageName4 = handles.(fieldname);
+ImageName4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = If an image slot is not being used, type a slash  /  in the box.
 %textVAR10 = Type the file format of the images
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located
 %defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-TypedPathName = handles.(fieldname);
+TypedPathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -330,24 +352,3 @@ end
 %%% HELP %%%
 %%%%%%%%%%%
 
-%%%%% Help for Load Images Text module:
-%%%%% .
-%%%%% This module is required to load images from the hard drive into a
-%%%%% format recognizable by CellProfiler.  The images are given a
-%%%%% meaningful name, which is then used by subsequent modules to retrieve
-%%%%% the proper image.  If more than five images per set must be loaded,
-%%%%% more than one Load Images module can be run sequentially. 
-%%%%% . 
-%%%%% This module is different from the Load Images Order module because
-%%%%% Load Images Text can be used to load images that are not in a defined
-%%%%% order.  That is, Load Images Order is useful when images are present
-%%%%% in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red, and so
-%%%%% on, where images are selected based on how many images are in each
-%%%%% set and what position within each set a particular color is located
-%%%%% (e.g. three images per set, DAPI is always first).  Load Images Text
-%%%%% is used instead to load images that have a particular piece of text
-%%%%% in the name.
-%%%%% .
-%%%%% You may have folders within the directory that is being searched, but
-%%%%% these folders must not contain the text you are searching for or an
-%%%%% error will result.

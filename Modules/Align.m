@@ -1,5 +1,4 @@
 function handles = AlgAlign(handles)
-
 %%%%% Help for the Align module: 
 %%%%% .
 %%%%% The optimal alignment between 2 or 3 incoming images is determined.
@@ -7,11 +6,11 @@ function handles = AlgAlign(handles)
 %%%%% the final images will be smaller than the originals by a few pixels
 %%%%% if alignment is necessary.
 %%%%% .
-%%%%% Which image is displayed as which color can be changed by going into
-%%%%% the module's ".m" file and changing the lines after "FOR DISPLAY
-%%%%% PURPOSES ONLY".  The first line in each set is red, then green, then
-%%%%% blue.
-%
+%%%%% Which image is displayed as which color can be changed by going into the module's ".m" file
+%%%%% and changing the lines after "FOR DISPLAY PURPOSES ONLY".  The first
+%%%%% line in each set is red, then green, then blue.
+
+
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
 % the License. You may obtain a copy of the License at 
@@ -23,7 +22,7 @@ function handles = AlgAlign(handles)
 % License.
 % 
 % 
-% The Original Code is the Align Module.
+% The Original Code is the Align module.
 % 
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research
@@ -40,6 +39,7 @@ function handles = AlgAlign(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -49,36 +49,66 @@ drawnow
 %textVAR01 = What did you call the first image to be aligned?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-Image1Name = handles.(fieldname);
+Image1Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the aligned first image?
 %defaultVAR02 = AlignedBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-AlignedImage1Name = handles.(fieldname);
-%textVAR03 = What did you call the second image to be aligned?
-%defaultVAR03 = OrigGreen
+AlignedImage1Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+%textVAR03 = To save the adjusted first image, enter text to append to the image name 
+%defaultVAR03 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-Image2Name = handles.(fieldname);
-%textVAR04 = What do you want to call the aligned second image?
-%defaultVAR04 = AlignedGreen
+SaveImage1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+%textVAR04 = What did you call the second image to be aligned?
+%defaultVAR04 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-AlignedImage2Name = handles.(fieldname);
-%textVAR05 = What did you call the third image to be aligned?
-%defaultVAR05 = /
+Image2Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+%textVAR05 = What do you want to call the aligned second image?
+%defaultVAR05 = AlignedGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-Image3Name = handles.(fieldname);
-%textVAR06 = What do you want to call the aligned third image?
-%defaultVAR06 = /
+AlignedImage2Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+%textVAR06 = To save the adjusted second image, enter text to append to the image name 
+%defaultVAR06 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-AlignedImage3Name = handles.(fieldname);
-%textVAR07 = This module calculates the alignment shift. Do you want to actually adjust the images?
-%defaultVAR07 = N
+SaveImage2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+%textVAR07 = What did you call the third image to be aligned?
+%defaultVAR07 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
-AdjustImage = upper(handles.(fieldname));
+Image3Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+%textVAR08 = What do you want to call the aligned third image?
+%defaultVAR08 = /
+fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
+AlignedImage3Name = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
+%textVAR09 = To save the adjusted third image, enter text to append to the image name 
+%defaultVAR09 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
+SaveImage3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+%textVAR10 = This module calculates the alignment shift. Do you want to actually adjust the images?
+%defaultVAR10 = N
+fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
+AdjustImage = upper(char(handles.Settings.Vvariable{CurrentAlgorithmNum,10}));
+%textVAR11 = In what file format do you want to save images? Do not include a period
+%defaultVAR11 = tif
+fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+%%% The first time through, checks whether the user is trying to save images that haven't been
+%%% altered.
+if handles.setbeinganalyzed == 1
+    if strcmp(AdjustImage,'N') == 1
+        if strcmp(upper(SaveImage1), 'N') ~= 1
+            error('Image processing was canceled because you have attempted to save an image, ', SaveImage1, ', in the Align module but you chose not to adjust the images. You need to answer the question "Do you want to actually adjust the images?" with "Y" if you want to save any images in this module.');
+        elseif strcmp(upper(SaveImage2), 'N') ~= 1
+            error('Image processing was canceled because you have attempted to save an image, ', SaveImage2, ', in the Align module but you chose not to adjust the images. You need to answer the question "Do you want to actually adjust the images?" with "Y" if you want to save any images in this module.');
+        elseif strcmp(upper(SaveImage3), 'N') ~= 1
+            error('Image processing was canceled because you have attempted to save an image, ', SaveImage3, ', in the Align module but you chose not to adjust the images. You need to answer the question "Do you want to actually adjust the images?" with "Y" if you want to save any images in this module.');
+        end
+    end
+end
 
 if strcmp(Image1Name,'/') == 1
     error('Image processing was canceled because no image was loaded in the Align module''s first image slot')
@@ -96,6 +126,7 @@ if isfield(handles, fieldname) == 0
 end
 %%% Reads the image.
 Image1 = handles.(fieldname);
+% figure, imshow(Image1), title('Image1')
 
 %%% Same for Image 2.
 if strcmp(Image2Name,'/') == 1
@@ -106,6 +137,7 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 Image2 = handles.(fieldname);
+% figure, imshow(Image2), title('Image2')
 
 %%% Same for Image 3.
 if strcmp(Image3Name,'/') ~= 1
@@ -114,6 +146,7 @@ if strcmp(Image3Name,'/') ~= 1
         error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     Image3 = handles.(fieldname);
+    % figure, imshow(Image1), title('Image3')
 end
 
 %%% Determine the filenames of the images to be analyzed.
@@ -121,10 +154,88 @@ fieldname = ['dOTFilename', Image1Name];
 FileName1 = handles.(fieldname)(handles.setbeinganalyzed);
 fieldname = ['dOTFilename', Image2Name];
 FileName2 = handles.(fieldname)(handles.setbeinganalyzed);
-if strcmp(upper(Image3Name),'/') ~= 1
+if strcmp(upper(Image3Name),'N') ~= 1
     fieldname = ['dOTFilename', Image3Name];
     FileName3 = handles.(fieldname)(handles.setbeinganalyzed);
 end
+
+%%% Checks whether the file format the user entered is readable by Matlab.
+IsFormat = imformats(FileFormat);
+if isempty(IsFormat) == 1
+    error('The image file type entered in the Align module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
+end
+
+%%% Checks whether the appendages to be added to the file names of images
+%%% will result in overwriting the original file, or in a file name that
+%%% contains spaces.
+if strcmp(upper(SaveImage1),'N') ~= 1
+    %%% Finds and removes the file format extension within the original file
+    %%% name, but only if it is at the end. Strips the original file format extension 
+    %%% off of the file name, if it is present, otherwise, leaves the original
+    %%% name intact.
+    CharFileName1 = char(FileName1);
+    PotentialDot1 = CharFileName1(end-3:end-3);
+    if strcmp(PotentialDot1,'.') == 1
+        BareFileName1 = CharFileName1(1:end-4);
+    else BareFileName1 = CharFileName1;
+    end
+    %%% Assembles the new image name.
+    NewImageName1 = [BareFileName1,SaveImage1,'.',FileFormat];
+    %%% Checks whether the new image name is going to result in a name with
+    %%% spaces.
+    A = isspace(SaveImage1);
+    if any(A) == 1
+        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned image name in the Align module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+    %%% Checks whether the new image name is going to result in overwriting the
+    %%% original file.
+    B = strcmp(upper(CharFileName1), upper(NewImageName1));
+    if B == 1
+        error('Image processing was canceled because you have not entered text to append to the aligned image name in the Align module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+end
+
+%%% Same for Image 2.
+if strcmp(upper(SaveImage2),'N') ~= 1
+    CharFileName2 = char(FileName2);
+    PotentialDot2 = CharFileName2(end-3:end-3);
+    if strcmp(PotentialDot2,'.') == 1
+        BareFileName2 = CharFileName2(1:end-4);
+    else BareFileName2 = CharFileName2;
+    end
+    NewImageName2 = [BareFileName2,SaveImage2,'.',FileFormat];
+    A = isspace(SaveImage2);
+    if any(A) == 1
+        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned image name in the Align module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+    B = strcmp(upper(CharFileName2), upper(NewImageName2));
+    if B == 1
+        error('Image processing was canceled because you have not entered text to append to the aligned image name in the Align module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+end
+if strcmp(upper(SaveImage3),'N') ~= 1
+    CharFileName3 = char(FileName3);
+    PotentialDot3 = CharFileName3(end-3:end-3);
+    if strcmp(PotentialDot3,'.') == 1
+        BareFileName3 = CharFileName3(1:end-4);
+    else BareFileName3 = CharFileName3;
+    end
+    NewImageName3 = [BareFileName3,SaveImage3,'.',FileFormat];
+    A = isspace(SaveImage3);
+    if any(A) == 1
+        error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the aligned image name in the Align module.  If you do not want to save the image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+    B = strcmp(upper(CharFileName3), upper(NewImageName3));
+    if B == 1
+        error('Image processing was canceled because you have not entered text to append to the aligned image name in the Align module.  If you do not want to save the aligned image to the hard drive, type "N" into the appropriate box.')
+        return
+    end
+end 
 drawnow
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -150,6 +261,7 @@ if strcmp(Image3Name,'/') ~= 1
         AlignedImage1 = subim(Temp1, sx2, sy2);
     end
 else %%% Aligns two input images.
+    %%% Aligns 1 and 2.
     [sx, sy] = autoalign(Image1, Image2);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy),')'];
     if strcmp(AdjustImage,'Y') == 1
@@ -159,24 +271,24 @@ else %%% Aligns two input images.
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
+%%% DISPaLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% user has closed
+%%% the figure window, so do not do any important calculations here.
+%%% Otherwise an error message will be produced if the user has closed the
+%%% window but you have attempted to access data that was supposed to be
+%%% produced by this part of the code.
 
 %%% Determines the figure number to display in.
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
-
-%%% Note: Everything between the "if" and "end" is not carried out if the 
-%%% user has closed the figure window, so do not do any important
-%%% calculations here. Otherwise an error message will be produced if the
-%%% user has closed the window but you have attempted to access data that
-%%% was supposed to be produced by this part of the code.
-
-%%% Check whether the figure is open. This checks all the figure handles
+%%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
 %%% Also, check whether any of these images 
-if any(findobj(ThisAlgFigureNumber)) == 1;
+if any(findobj == ThisAlgFigureNumber) == 1;
 
     %%% START CALCULATE IMAGES FOR DISPLAY ONLY %%%
     if strcmp(AdjustImage,'Y') == 1
@@ -239,6 +351,25 @@ end
 %%% displayed.
 drawnow
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Determine whether the user wanted to save the adjusted image
+%%% by comparing their entry "SaveImage" with "N" (after
+%%% converting SaveImage to uppercase).
+if strcmp(upper(SaveImage1),'N') ~= 1
+%%% Save the image to the hard drive.    
+imwrite(AlignedImage1, NewImageName1, FileFormat);
+end
+if strcmp(upper(SaveImage2),'N') ~= 1
+imwrite(AlignedImage2, NewImageName2, FileFormat);
+end
+if strcmp(upper(SaveImage3),'N') ~= 1
+imwrite(AlignedImage3, NewImageName3, FileFormat);
+end
+drawnow
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -280,6 +411,7 @@ handles.(fieldname)(handles.setbeinganalyzed) = {sx2};
 fieldname = ['dMTYAlignFirstTwoImages',AlignedImage3Name];
 handles.(fieldname)(handles.setbeinganalyzed) = {sy2};
 end
+
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
@@ -390,3 +522,4 @@ end
 function I = mutualinf(X, Y)
 %%% Mutual information of images X and Y
 I = entropy(X) + entropy(Y) - entropy2(X,Y);
+

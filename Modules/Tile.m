@@ -3,6 +3,7 @@ function handles = AlgImageTiler5(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -12,44 +13,44 @@ drawnow
 %textVAR01 = What did you call the images to be tiled?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the tiled image?
 %defaultVAR02 = TiledImage
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-TiledImageName = handles.(fieldname);
+TiledImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = Number of rows to display (leave "A" to calculate automatically)
 %defaultVAR03 = A
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-NumberRows = handles.(fieldname);
+NumberRows = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Number of columns to display (leave "A" to calculate automatically)
 %defaultVAR04 = A
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-NumberColumns = handles.(fieldname);
+NumberColumns = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = Are the first two images arranged in a row or a column?
 %defaultVAR05 = C
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-RowOrColumn = handles.(fieldname);
+RowOrColumn = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = Is the first image at the bottom or the top?
 %defaultVAR06 = T
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-TopOrBottom = handles.(fieldname);
+TopOrBottom = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 = Is the first image at the left or the right?
 %defaultVAR07 = L
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
-LeftOrRight = handles.(fieldname);
+LeftOrRight = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %textVAR08 = What fraction should the images be sized (the resolution will be changed)?
 %defaultVAR08 = .1
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-SizeChange = handles.(fieldname);
+SizeChange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = To save the resulting tiled image, enter a filename (no extension) 
 %defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = In what file format do you want to save the image? Do not include a period
 %defaultVAR11 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

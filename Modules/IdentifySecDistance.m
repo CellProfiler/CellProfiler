@@ -3,6 +3,7 @@ function handles = AlgIdentifySecDistance6(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -12,33 +13,33 @@ drawnow
 %textVAR01 = What did you call the primary objects you want to create secondary objects around? 
 %defaultVAR01 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-PrimaryObjectName = handles.(fieldname);
+PrimaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the secondary objects identified by this algorithm?
 %defaultVAR02 = Cells
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-SecondaryObjectName = handles.(fieldname);
+SecondaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = On which image would you like to display the outlines of the secondary objects?
 %defaultVAR03 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-OrigImageName = handles.(fieldname);
+OrigImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR05 = Set the number of pixels by which to expand the primary objects [Positive number]
 %defaultVAR05 = 10
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-DistanceToDilate = str2num(handles.(fieldname));
+DistanceToDilate = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR08 = To save object outlines as an image, enter text to append to the name 
 %defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-SaveObjectOutlines = handles.(fieldname);
+SaveObjectOutlines = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = To save colored object blocks as an image, enter text to append to the name 
 %defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
-SaveColoredObjects = handles.(fieldname);
+SaveColoredObjects = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = If saving images, what file format do you want to use? Do not include a period.
 %defaultVAR11 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

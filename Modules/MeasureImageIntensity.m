@@ -30,6 +30,7 @@ function handles = AlgMeasureTotalIntensity(handles)
 %%% Reads the current algorithm number, since this is needed to find  the
 %%% variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -39,29 +40,29 @@ drawnow
 %textVAR01 = What did you call the images you want to process?  
 %defaultVAR01 = OrigGreen
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR03 = What do you want to call the staining measured by this algorithm? 
 %defaultVAR03 = Sytox
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-ObjectName = handles.(fieldname);
+ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Set the threshold above which intensity should be measured (Range = 0-1)
 %defaultVAR04 = 0
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-LowThreshold = str2num(handles.(fieldname));
+LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %textVAR05 = The threshold should be a bit higher than the typical background pixel value. 
 %textVAR06 = Set the threshold below which intensity should be measured (Range = 0-1)
 %defaultVAR06 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-HighThreshold = str2num(handles.(fieldname));
+HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 %textVAR07 = To save the adjusted image, enter text to append to the image name  
 %defaultVAR07 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_07'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
 %textVAR08 =  Otherwise, leave as "N". To save or display other images, press Help button 
 %textVAR09 = In what file format do you want to save images? Do not include a period 
 %defaultVAR09 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

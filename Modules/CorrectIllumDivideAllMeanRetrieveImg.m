@@ -3,6 +3,7 @@ function handles = AlgCorrectIlluminationDivideAllMean10(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -12,30 +13,30 @@ drawnow
 %textVAR01 = What did you call the image to be corrected?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the corrected image?
 %defaultVAR02 = CorrBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-CorrectedImageName = handles.(fieldname);
+CorrectedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR04 = To save each corrected image, enter text to append to the image name 
 %defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR06 = In what file format do you want to save images? Do not include a period
 %defaultVAR06 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR08 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
 %defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-IllumCorrectFileName = handles.(fieldname);
+IllumCorrectFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = If you have already created an illumination corrrection image to be used, enter the 
 %textVAR10 = path & file name of the image below. To calculate the illumination correction image 
 %textVAR11 = from all the images of this color that will be processed, leave a slash in the box below.
 %defaultVAR11 = /
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-IllumCorrectPathAndFileName = handles.(fieldname);
+IllumCorrectPathAndFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -11,6 +11,7 @@ function handles = AlgMeasureAreaShapeIntensityTexture13(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -19,12 +20,12 @@ CurrentAlgorithm = handles.currentalgorithm;
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ObjectName = handles.(fieldname);
+ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 
 %textVAR02 = What did you call the greyscale images you want to measure? 
 %defaultVAR02 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Note: it is advisable to use the original image rather than an adjusted image.
 %textVAR04 = Adjustments alter the intensity levels from one image relative to another

@@ -28,6 +28,7 @@ function handles = AlgSaveImages(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -37,21 +38,21 @@ drawnow
 %textVAR01 = What did you call the images you want to save? 
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = Which image's original filename do you want to use as a base
 %textVAR03 = to create the new file name? Type N to use sequential numbers.
 %defaultVAR03 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-ImageFileName = handles.(fieldname);
+ImageFileName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = Enter text to append to the image name, or leave "N" to keep
 %textVAR05 = the name the same except for the file extension.
 %defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-Appendage = handles.(fieldname);
+Appendage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR06 = In what file format do you want to save images? Do not include a period
 %defaultVAR06 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -28,6 +28,7 @@ function handles = AlgSubtractBackground(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -37,20 +38,20 @@ drawnow
 %textVAR01 = What did you call the image to be corrected?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the corrected image?
 %defaultVAR02 = CorrBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-CorrectedImageName = handles.(fieldname);
+CorrectedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = To save each corrected image, enter text to append to the image name 
 %defaultVAR03 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR05 = In what file format do you want to save images? Do not include a period
 %defaultVAR05 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -41,6 +41,7 @@ function handles = AlgMeasureIntensityTexture(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -49,12 +50,12 @@ CurrentAlgorithm = handles.currentalgorithm;
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ObjectName = handles.(fieldname);
+ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 
 %textVAR02 = What did you call the greyscale images you want to measure? 
 %defaultVAR02 = OrigRed
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Measure the percent of cells with a total intensity greater
 %textVAR04 = than or equal to this threshold.  Type N to skip this measurement.

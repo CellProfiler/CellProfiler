@@ -3,6 +3,7 @@ function handles = AlgAlignAndCrop(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 drawnow
 
@@ -13,40 +14,40 @@ drawnow
 %textVAR01 = What did you call the traced images?
 %defaultVAR01 = OrigTraced
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-TracedImageName = handles.(fieldname);
+TracedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the aligned, cropped traced images?
 %defaultVAR02 = ACTraced
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-FinishedTracedImageName = handles.(fieldname);
+FinishedTracedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = To save the adjusted traced images, enter text to append to the image name.
 %defaultVAR03 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-SaveTracedImage = handles.(fieldname);
+SaveTracedImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 %textVAR04 = What did you call the real images?
 %defaultVAR04 = OrigReal
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-RealImageName = handles.(fieldname);
+RealImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = What do you want to call the aligned, cropped real images?
 %defaultVAR05 = ACReal
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-FinishedRealImageName = handles.(fieldname);
+FinishedRealImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
 %textVAR06 = To save the adjusted real images, enter text to append to the image name.
 %defaultVAR06 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-SaveRealImage = handles.(fieldname);
+SaveRealImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 %textVAR07 = If you do not wish to save an image, leave the field as "N".
 %textVAR08 = Enter the printed size of the real image in inches as "height,width" (no quotes).
 %defaultVAR08 = height,width
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-PrintedImageSize = handles.(fieldname);
+PrintedImageSize = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR10 = In what file format do you want to save images? Do not use a period.
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 %textVAR11 = Enter the page orientation of the traced images (portrait or landscape)
 %defaultVAR11 = portrait
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-Orientation = handles.(fieldname);
+Orientation = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

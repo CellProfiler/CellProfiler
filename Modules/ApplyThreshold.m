@@ -3,6 +3,7 @@ function handles = AlgApplyThreshold(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -12,33 +13,33 @@ drawnow
 %textVAR01 = What did you call the image to be thresholded?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the thresholded image?
 %defaultVAR02 = ThreshBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-ThresholdedImageName = handles.(fieldname);
+ThresholdedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR04 = Pixels below this value (Range = 0-1) will be set to zero
 %defaultVAR04 = 0
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-LowThreshold = str2num(handles.(fieldname));
+LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 %textVAR05 = Pixels above this value (Range = 0-1) will be set to zero
 %defaultVAR05 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-HighThreshold = str2num(handles.(fieldname));
+HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 %textVAR06 = Bright pixel areas should be expanded by this many pixels in every direction
 %defaultVAR06 = 0
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-DilationValue = str2num(handles.(fieldname));
+DilationValue = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %textVAR08 = To save the thresholded image, enter text to append to the image name 
 %defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR10 = In what file format do you want to save images? Do not include a period
 %defaultVAR10 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_10'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

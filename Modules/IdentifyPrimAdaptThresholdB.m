@@ -5,6 +5,7 @@ function handles = AlgIdentifyPrimAdaptiveThresholdB5(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%% The "drawnow" function allows figure windows to be updated and buttons
 %%% to be pushed (like the pause, cancel, help, and view buttons).  The
@@ -20,43 +21,43 @@ drawnow
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the objects identified by this algorithm?
 %defaultVAR02 = Nuclei
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-ObjectName = handles.(fieldname);
+ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
 %defaultVAR03 = 1,99999
 fieldname = ['Vvariable',CurrentAlgorithm,'_03'];
-SizeRange = handles.(fieldname);
+SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR04 = Enter the desired minimum threshold (0 to 1), or "A" to calculate automatically
 %defaultVAR04 = A
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-MinimumThreshold = handles.(fieldname);
+MinimumThreshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 = Enter the threshold adjustment factor (>1 = more stringent, <1 = less stringent)
 %defaultVAR05 = 1
 fieldname = ['Vvariable',CurrentAlgorithm,'_05'];
-ThresholdAdjustmentFactor = str2num(handles.(fieldname));
+ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %textVAR06 = Neighborhood size, in pixels (Odd number)
 %defaultVAR06 = 51
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-NeighborhoodSize = str2num(handles.(fieldname));
+NeighborhoodSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
 
 %textVAR08 = To save object outlines as an image, enter text to append to the name 
 %defaultVAR08 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-SaveObjectOutlines = handles.(fieldname);
+SaveObjectOutlines = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 %textVAR09 = To save colored object blocks as an image, enter text to append to the name 
 %defaultVAR09 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_09'];
-SaveColoredObjects = handles.(fieldname);
+SaveColoredObjects = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
 %textVAR10 = Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR11 = If saving images, what file format do you want to use? Do not include a period.
 %defaultVAR11 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_11'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

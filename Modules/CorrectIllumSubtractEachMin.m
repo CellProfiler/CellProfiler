@@ -3,6 +3,7 @@ function handles = AlgCorrectIlluminationSubtractEachMin_9(handles)
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -12,26 +13,26 @@ drawnow
 %textVAR01 = What did you call the image to be corrected?
 %defaultVAR01 = OrigBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_01'];
-ImageName = handles.(fieldname);
+ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 %textVAR02 = What do you want to call the corrected image?
 %defaultVAR02 = CorrBlue
 fieldname = ['Vvariable',CurrentAlgorithm,'_02'];
-CorrectedImageName = handles.(fieldname);
+CorrectedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR04 = To save the corrected image, enter text to append to the image name 
 %defaultVAR04 = N
 fieldname = ['Vvariable',CurrentAlgorithm,'_04'];
-SaveImage = handles.(fieldname);
+SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR05 =  Otherwise, leave as "N". To save or display other images, press Help button
 %textVAR06 = In what file format do you want to save images? Do not include a period
 %defaultVAR06 = tif
 fieldname = ['Vvariable',CurrentAlgorithm,'_06'];
-FileFormat = handles.(fieldname);
+FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
 
 %textVAR08 = Block size. This should be set large enough that every square block 
 %defaultVAR08 = 60
 fieldname = ['Vvariable',CurrentAlgorithm,'_08'];
-BlockSize = str2num(handles.(fieldname));
+BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,8}));
 %textVAR09 = of pixels is likely to contain some background. Default = 60 pixels
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

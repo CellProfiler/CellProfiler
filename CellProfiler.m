@@ -55,7 +55,7 @@ handles.output = hObject;
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 0;
 handles.numVariables = zeros(1,99);
-handles.MaxAlgorithms = 11;
+handles.MaxAlgorithms = 17;
 handles.MaxVariables = 11;
 handles.AlgorithmHighlighted = '01';
 handles.FigureDisplayString = cell(1,99);

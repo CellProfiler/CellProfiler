@@ -128,6 +128,9 @@ for i = 1:length(FileList),
     for j = 1:length(SubSetMeasurements),
         for fieldnum=1:length(Fieldnames),
             idxs = ~ cellfun('isempty', SubSetMeasurements.(Fieldnames{fieldnum}));
+            lo = min(find(idxs));
+            hi = max(find(idxs));
+            disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
             handles.Measurements.(Fieldnames{fieldnum})(idxs) = ...
                 SubSetMeasurements.(Fieldnames{fieldnum})(idxs);
         end

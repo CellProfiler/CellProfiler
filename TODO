@@ -27,7 +27,7 @@ Settings =      ModuleNames: {1x6 cell}
          NumbersOfVariables: [13 6 5 6 4 8]
     VariableRevisionNumbers: [2 0 1 0 1 1]
 
-     - Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
+     -almost- Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
 
      - Allow canceling from the first dialog box when using the Save Image As button.
 
@@ -37,7 +37,7 @@ Settings =      ModuleNames: {1x6 cell}
 
      - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
 
-     - done?- Have LoadSettings button determine whether a file is a valid Settings file, in particular, if no algorithms were loaded at the time the settings file was saved, does it fail?
+     - done- Have LoadSettings button determine whether a file is a valid Settings file, in particular, if no algorithms were loaded at the time the settings file was saved, does it fail?
 
      - Remove unnecessary cd's and use full pathnames instead (Ask Ray).
 

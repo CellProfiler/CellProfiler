@@ -39,22 +39,25 @@ load(fullfile(RawPathname, RawFileName));
 %%% Opens a window that lets the user chose what to export and if
 %%% only a summary (mean and std) should be exported
 
-[ObjectNames,Summary] = ObjectsToExport(handles);
+[ObjectNames,Summary,BaseFileName] = ObjectsToExport(handles,RawFileName);
 
 for Object = 1:length(ObjectNames)
     ObjectName = ObjectNames{Object};
 
     % Open a file for exporting the measurements
     if strcmp(Summary,'no')
-        ExportFileName = [RawFileName(1:end-4),'_',ObjectName,'.xls'];
+        ExportFileName = [BaseFileName,'_',ObjectName,'.xls'];
     else
-        ExportFileName = [RawFileName(1:end-4),'_',ObjectName,'_Summary.xls'];
+        ExportFileName = [BaseFileName,'_',ObjectName,'_Summary.xls'];
     end
     fid = fopen(fullfile(RawPathname,ExportFileName),'w');
+    if fid == -1
+        errordlg('Cannot create the output file. There might be another program using a file with the same name.')
+        return
+    end
 
     %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
-
 
     %%% Organize features in format suitable for exportation. Create
     %%% a cell array Measurements where all features are concatenated
@@ -62,17 +65,25 @@ for Object = 1:length(ObjectNames)
     FeatureNames = {};
     Measurements = {};
     for k = 1:length(fields)
-        if ~isempty(strfind(fields{k},'Features'))                          % Found a field with feature names
+        if ~isempty(strfind(fields{k},'Features'))                              % Found a field with feature names
+            
+            % Get the associated cell array of measurements
+            try
+                tmp = handles.Measurements.(ObjectName).(fields{k}(1:end-8));  
+            catch
+                fclose(fid);
+                errordlg('Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.');
+            end
+            
             % Concatenate measurement and feature name matrices
-            tmp = handles.Measurements.(ObjectName).(fields{k}(1:end-8));   % Get the associated cell array of measurements
-            if isempty(Measurements)                                        % Have to initialize
+            if isempty(Measurements)                                           % Have to initialize
                 Measurements = tmp;
             else
                 for j = 1:length(tmp)
                     Measurements(j) = {cat(2,Measurements{j},tmp{j})};
                 end
             end
-
+           
             % Construct informative feature names
             tmp = handles.Measurements.(ObjectName).(fields{k});
             for j = 1:length(tmp)
@@ -93,7 +104,7 @@ for Object = 1:length(ObjectNames)
     if strcmp(Summary,'yes')
         for k = 1:length(Measurements)
             if ~isempty(Measurements{k})       % Make sure there are some measurements
-                Measurements{k} = [mean(Measurements{k});median(Measurements{k});std(Measurements{k})];
+                Measurements{k} = [mean(Measurements{k},1);median(Measurements{k},1);std(Measurements{k},0,1)];
             end
         end
     end
@@ -102,10 +113,12 @@ for Object = 1:length(ObjectNames)
     % Get general information from handles.Measurements.GeneralInfo
     InfoFields = fieldnames(handles.Measurements.GeneralInfo);
     Filenames  = InfoFields(strmatch('Filename',InfoFields));
-    Thresholds = InfoFields(strmatch('ImageThreshold',InfoFields));
-    for k = 1:length(Thresholds)
-        if strcmp(Thresholds{k}(15:end),ObjectName)
-            Threshold = handles.Measurements.GeneralInfo.(Thresholds{k});
+    if ~isempty(strmatch('ImageThreshold',InfoFields))                         % Some measurement do not require a segmentation/thresholding, e.g. MeasureCorrelation
+        Thresholds = InfoFields(strmatch('ImageThreshold',InfoFields));
+        for k = 1:length(Thresholds)
+            if strcmp(Thresholds{k}(15:end),ObjectName)
+                Threshold = handles.Measurements.GeneralInfo.(Thresholds{k});
+            end
         end
     end
     Time = handles.Measurements.GeneralInfo.TimeElapsed;
@@ -138,7 +151,13 @@ for Object = 1:length(ObjectNames)
         for j = 1:length(Filenames)
             fprintf(fid,'"%s":%s ',Filenames{j}(9:end),handles.Measurements.GeneralInfo.(Filenames{j}){k});
         end
-        fprintf(fid,',Threshold: %g\n',Threshold{k});
+
+        % Write segmentation threshold if it exists
+        if exist('Threshold','var')
+            fprintf(fid,',Threshold: %g\n',Threshold{k});
+        else
+            fprintf(fid,'\n');
+        end
 
         % Write measurements
         if ~isempty(Measurements{k})
@@ -156,17 +175,23 @@ for Object = 1:length(ObjectNames)
         fprintf(fid,'\n');                                         % Separate image sets with a blank row
     end
     fclose(fid);
+    msgbox('','Exportation completed')
 end
 
 
 
-function [ObjectNames,Summary] = ObjectsToExport(handles)
+function [ObjectNames,Summary,Filename] = ObjectsToExport(handles,RawFileName)
 % This function displays a window so that lets the user choose which
 % measurements to export. If the return variable 'ObjectNames' is empty
 % it means that either no measurements were found or the user pressed
 % the Cancel button (or the window was closed). 'Summary' takes on the values'yes'
 % or 'no', depending if the user only wants a summary report (mean and std)
 % or a full report.
+
+% Initialize output variables
+ObjectNames = [];
+Filename = [];
+Summary = [];
 
 % The fontsize is stored in the 'UserData' property of the main Matlab window
 FontSize = get(0,'UserData');
@@ -178,33 +203,55 @@ fields = fieldnames(handles.Measurements);
 index = setdiff(1:length(fields),strmatch('GeneralInfo',fields));
 fields = fields(index);
 
+if length(fields) > 20
+    errordlg('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')
+    return
+end
+
 % Create Export window
 ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
 pos = get(ETh,'position');
-Height = 1.5+length(fields)*0.25;                       % Window height in inches, depends on the number of objects
+Height = 1.7+length(fields)*0.25;                       % Window height in inches, depends on the number of objects
 set(ETh,'position',[pos(1) pos(2) 4 Height]);
 
 if ~isempty(fields)
-% Top text
-uicontrol(ETh,'style','text','String','The following measurements were found:','FontName','Times','FontSize',FontSize,...
-    'units','inches','position',[0 Height-0.2 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+    % Top text
+    uicontrol(ETh,'style','text','String','The following measurements were found:','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[0.2 Height-0.3 4 0.15],'BackgroundColor',get(ETh,'color'))
 
-% Radio buttons for extracted measurements
-h = [];
-for k = 1:length(fields)
-    uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-        'units','inches','position',[0.6 Height-0.35-0.2*k 3 0.15],'BackgroundColor',get(ETh,'color'))
-    h(k) = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 Height-0.35-0.2*k 0.2 0.2],...
-        'BackgroundColor',get(ETh,'color'),'Value',1);
-end
+    % Radio buttons for extracted measurements
+    h = [];
+    for k = 1:length(fields)
+        uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
+            'units','inches','position',[0.6 Height-0.35-0.2*k 3 0.15],'BackgroundColor',get(ETh,'color'))
+        h(k) = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 Height-0.35-0.2*k 0.2 0.2],...
+            'BackgroundColor',get(ETh,'color'),'Value',1);
+    end
 
-% Full report or Summary report
-reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 0.7 1.5 0.2],...
-    'backgroundcolor',[1 1 1],'String','Full report|Summary report');
+    % Full report or Summary report
+    uicontrol(ETh,'style','text','String','Choose report style:','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[0.2 0.9 1.5 0.2],'BackgroundColor',get(ETh,'color'))
+    reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 0.7 1.5 0.2],...
+        'backgroundcolor',[1 1 1],'String','Full report|Summary report');
+
+
+    % Filename
+    % Remove 'OUT' and '.mat' extension from filename
+    ProposedFilename = RawFileName;
+    indexOUT = strfind(ProposedFilename,'OUT');
+    if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];end
+    indexMAT = strfind(ProposedFilename,'mat');
+    if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
+    ProposedFilename = [ProposedFilename,'_Export'];
+    uicontrol(ETh,'style','text','String','Chose base of output filename:','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[2 0.9 1.8 0.2],'BackgroundColor',get(ETh,'color'))
+    editfilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 0.7 1.8 0.2],...
+        'backgroundcolor',[1 1 1],'String',ProposedFilename);
+
 else  % No measurements found
-uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
-    'units','inches','position',[0 Height-0.5 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+    uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
+        'units','inches','position',[0 Height-0.5 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 end
 
 % Export and Cancel pushbuttons
@@ -220,17 +267,19 @@ end
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
 
-if get(ETh,'Userdata') == 0
-    ObjectNames = [];                                   % The user pressed the Cancel button
-    Summary = [];
+if get(ETh,'Userdata') == 0         % The user pressed the Cancel button
     close(ETh)
 elseif get(ETh,'Userdata') == 1
-    
+
+    % Which kind of report
     if get(reportbutton,'value') == 1
         Summary = 'no';
     else
         Summary = 'yes';
     end
+
+    % File name
+    Filename = get(editfilename,'String');
 
     buttonchoice = get(h,'Value');
     if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects

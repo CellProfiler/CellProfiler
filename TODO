@@ -233,7 +233,7 @@ Debugging:
      - The confirmation window upon "cancel after image set" button
        clicking ought to say "confirm cancel", not "confirm close". 
 
-     - We adapted the LoadImagesOrder and LoadImagesText modules to
+     -Done- We adapted the LoadImagesOrder and LoadImagesText modules to
        allow loading of DIB format images, but we have so far not
        adjusted the Show data on image button or the Show image button
        to load this type of image. Also need to adjust any other modules

@@ -266,7 +266,6 @@ if SetBeingAnalyzed == 1
                 fieldname = ['Pathname', ImageName{n}];
                 handles.Pipeline.(fieldname) = SpecifiedPathname;
                 clear FileList
-
             end
         end
     end  % Goes with: for n = 1:4
@@ -540,8 +539,7 @@ else
             end
         end
     end
-
-        
+    
     %%% Checks whether any files are left.
     if isempty(FileNames) == 1
         errordlg('There are no image files in the chosen directory')

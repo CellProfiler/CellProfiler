@@ -271,7 +271,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
             Counts = zeros(256,1);
             NumberOfBins = 256;
             for i=1:length(FileList)
-                Image = imread(char(FileList(i)));
+                Image = imreadimagefile(char(FileList(i)),handles);
                 Counts = Counts + imhist(im2uint8(Image(:)), NumberOfBins);
                 drawnow
             end
@@ -585,4 +585,41 @@ try
 %%% I am pretty sure this try/catch is no longer necessary, but will
 %%% leave in just in case.
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images could not be saved to the handles structure. The Save Images module will therefore not function on these images.')
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%
+%%%% SUBFUNCTION %%%%
+%%%%%%%%%%%%%%%%%%%%%
+function LoadedImage = imreadimagefile(CurrentFileName, handles)
+%%% Handles a non-Matlab readable file format.
+if isfield(handles.Pipeline, 'DIBwidth') == 1
+    %%% Opens this non-Matlab readable file format.
+    Width = handles.Pipeline.DIBwidth;
+    Height = handles.Pipeline.DIBheight;
+    Channels = handles.Pipeline.DIBchannels;
+    BitDepth = handles.Pipeline.DIBbitdepth;
+    fid = fopen(char(CurrentFileName), 'r');
+    if (fid == -1),
+        error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
+    end
+    fread(fid, 52, 'uchar');
+    LoadedImage = zeros(Height,Width,Channels);
+    for c=1:Channels,
+        [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+        if Count < (Width * Height),
+            fclose(fid);
+            error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
+        end
+        LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+    end
+    fclose(fid);
+else
+    %%% Opens Matlab-readable file formats.
+    try
+        %%% Read (open) the image you want to analyze and assign it to a variable,
+        %%% "LoadedImage".
+        LoadedImage = im2double(imread(char(CurrentFileName)));
+    catch error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
+    end
 end

@@ -230,7 +230,8 @@ if handles.Current.SetBeingAnalyzed == 1
             %%% Calculates the mean image.  If cells are distributed uniformly in
             %%% the images, the mean of all the images should be a good
             %%% estimate of the illumination.
-            TotalImage = im2double(imread(char(FileList(1))));
+            %%% Image file is read differently if it is a .dib image.
+            TotalImage = imreadimagefile(char(FileList(1)), handles);
             %%% Waitbar shows the percentage of image sets remaining.
             WaitbarHandle = waitbar(0,'');
             set(WaitbarHandle, 'Position', PositionMsgBox)
@@ -238,7 +239,7 @@ if handles.Current.SetBeingAnalyzed == 1
             TimeStart = clock;
             NumberOfImages = length(FileList);
             for i=2:length(FileList)
-                TotalImage = TotalImage + im2double(imread(char(FileList(i))));
+                TotalImage = TotalImage + imreadimagefile(char(FileList(i)), handles);
                 CurrentTime = clock;
                 TimeSoFar = etime(CurrentTime,TimeStart);
                 TimePerSet = TimeSoFar/i;
@@ -516,3 +517,39 @@ FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% field named after the corrected image name.
 fieldname = ['Filename', CorrectedImageName];
 handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+
+%%%%%%%%%%%%%%%%%%%%%
+%%%% SUBFUNCTION %%%%
+%%%%%%%%%%%%%%%%%%%%%
+function LoadedImage = imreadimagefile(CurrentFileName, handles)
+%%% Handles a non-Matlab readable file format.
+if isfield(handles.Pipeline, 'DIBwidth') == 1
+    %%% Opens this non-Matlab readable file format.
+    Width = handles.Pipeline.DIBwidth;
+    Height = handles.Pipeline.DIBheight;
+    Channels = handles.Pipeline.DIBchannels;
+    BitDepth = handles.Pipeline.DIBbitdepth;
+    fid = fopen(char(CurrentFileName), 'r');
+    if (fid == -1),
+        error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
+    end
+    fread(fid, 52, 'uchar');
+    LoadedImage = zeros(Height,Width,Channels);
+    for c=1:Channels,
+        [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+        if Count < (Width * Height),
+            fclose(fid);
+            error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
+        end
+        LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+    end
+    fclose(fid);
+else
+    %%% Opens Matlab-readable file formats.
+    try
+        %%% Read (open) the image you want to analyze and assign it to a variable,
+        %%% "LoadedImage".
+        LoadedImage = im2double(imread(char(CurrentFileName)));
+    catch error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
+    end
+end

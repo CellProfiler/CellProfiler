@@ -467,9 +467,11 @@ elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
     %%% Saves the projected image to the handles structure so it can be used by
     %%% subsequent modules.
     handles.Pipeline.(ProjectedImageName) = ProjectedImage;
-    %%% This is somewhat temporary, so we can retrieve the image for
-    %%% diagnostic purposes.
-    handles.Pipeline.(['Raw',ProjectedImageName]) = FinalRawProjectedImage;
+    if strcmp(ReadyFlag, 'ProjectedImageReady') == 1
+        %%% This is somewhat temporary, so we can retrieve the image for
+        %%% diagnostic purposes.
+        handles.Pipeline.(['Raw',ProjectedImageName]) = FinalRawProjectedImage;
+    end
     %%% Saves the ready flag to the handles structure so it can be used by
     %%% subsequent modules.
     fieldname = [ProjectedImageName,'ReadyFlag'];

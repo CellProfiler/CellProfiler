@@ -222,10 +222,21 @@ BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}
 %defaultVAR08 = No
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
 
+%textVAR09 = Will you want to save the outlines of the objects (using the Save Images module)? (Yes or No)
+%defaultVAR09 = No
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+
+%textVAR10 =  Will you want to save the image of the pseudo-colored objects (using the Save Images module)? (Yes or No)
+%defaultVAR10 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
+
+%%%VariableRevisionNumber = 01
+% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -414,6 +425,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
     %%% Determines the grayscale intensity to use for the cell outlines.
     LineIntensity = max(OrigImageToBeAnalyzed(:));
+    %%% TEMPORARY DO NOT COMMIT>>>    
+    LineIntensity = 1;
+%%% <<<<<<
     ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
@@ -592,3 +606,17 @@ FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% Saves the filename of the image to be analyzed.
 fieldname = ['Filename', ObjectName];
 handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+try 
+    if strncmpi(SaveColored,'Y',1) ==1
+fieldname = ['Colored',ObjectName];
+handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+end
+if strncmpi(SaveOutlined,'Y',1) ==1
+fieldname = ['Outlined',ObjectName];
+handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+end
+catch errordlg('The object outlines or colored objects were not calculated by the Identify Primary Intensity Intensity module (possibly because the window is closed) so these images could not be saved to the handles structure. The Save Images module will therefore not function on these images.')
+end

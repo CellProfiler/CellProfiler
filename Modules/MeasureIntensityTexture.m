@@ -125,17 +125,19 @@ ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %textVAR06 =
 %defaultVAR06 = /
 ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%textVAR07 = Measure the fraction of cells with a total intensity greater than or equal to this threshold.  Type N to skip this measurement.
+%textVAR07 = Measure the fraction of cells with an integrated intensity greater than or equal to this threshold.  Type N to skip this measurement.
 %defaultVAR07 = N
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+IntegrIntensThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR08 = Measure the fraction of cells with a mean intensity greater than or equal to this threshold.  Type N to skip this measurement.
+%defaultVAR08 = N
+MeanIntensThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR09 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'. Also, it is easy to expand the code for more than 5 objects. See MeasureIntensityTexture.m for details. 
 
-%textVAR08 = Note: The measurements made by this module will be named based on your entries, e.g. 'OrigBluewithinNuclei', 'OrigBluewithinCells'. Also, it is easy to expand the code for more than 5 objects. See MeasureIntensityTexture.m for details. 
-
-%%% To expand for more than 5 objects, just add more lines in groups
+%%% To expand for more than 5 objects, just add more variable lines in groups
 %%% of three like those above, then change the line about five lines
 %%% down from here (for i = 1:5).
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 3
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:5
@@ -376,12 +378,12 @@ for i = 1:5
 
         %%% Calculates the fraction of cells whose integrated intensity is above the
         %%% user's threshold.
-        if strcmp(upper(Threshold),'N') ~= 1
-            NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
+        if strcmp(upper(IntegrIntensThreshold),'N') ~= 1
+            NumberObjectsAboveIntegrIntensThreshold = sum(IntegratedIntensity >= str2double(IntegrIntensThreshold));
             TotalNumberObjects = length(IntegratedIntensity);
-            FractionObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
-            fieldname = ['ImageFractionAboveThreshold', ObjectName];
-            handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {FractionObjectsAboveThreshold};
+            FractionObjectsAboveIntegrIntensThreshold = NumberObjectsAboveIntegrIntensThreshold/TotalNumberObjects;
+            fieldname = ['ImageFractionAboveIntegrIntensThreshold', ObjectName];
+            handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {FractionObjectsAboveIntegrIntensThreshold};
         end
 
         %%%
@@ -403,7 +405,7 @@ for i = 1:5
         Map1 = [0 MeanIntensity];
         try
             OrigImageToBeAnalyzed2 = OrigImageToBeAnalyzed - Map1(LabelMatrixImage + 1);
-        catch error('There was a problem in the MeasureIntensityTexture module.  The image to be analyzed is a different size than the image of identified objects.  If the objects were identified from a cropped image, the cropped image should be used by the Measure module.')
+        catch error('There was a problem in the Measure Intensity Texture module.  The image to be analyzed is a different size than the image of identified objects.  If the objects were identified from a cropped image, the cropped image should be used by the Measure module.')
         end
         %%% Avoids divide by zero.
         Areas1(Areas1 < 2) = 2;
@@ -432,7 +434,16 @@ for i = 1:5
         handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(StDevIntensity)};
         fieldname = ['ImageMedianStDevIntensity', ObjectName];
         handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(StDevIntensity)};
-
+       
+        %%% Calculates the fraction of cells whose mean intensity is above the
+        %%% user's threshold.
+        if strcmp(upper(MeanIntensThreshold),'N') ~= 1
+            NumberObjectsAboveMeanIntensThreshold = sum(MeanIntensity >= str2double(MeanIntensThreshold));
+            TotalNumberObjects = length(MeanIntensity);
+            FractionObjectsAboveMeanIntensThreshold = NumberObjectsAboveMeanIntensThreshold/TotalNumberObjects;
+            fieldname = ['ImageFractionAboveMeanIntensThreshold', ObjectName];
+            handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {FractionObjectsAboveMeanIntensThreshold};
+        end
     end % Goes with: if no objects are in the image.
 
     %%%%%%%%%%%%%%%%%%%%%%
@@ -478,9 +489,13 @@ for i = 1:5
                 ['MeanMeanIntensity:                ', num2str(mean(MeanIntensity))],...
                 ['MeanStDevIntensity:               ', num2str(mean(StDevIntensity))],...
                 ['SumIntegratedIntensity:           ', num2str(sum(IntegratedIntensity))]);
-            if strcmp(upper(Threshold),'N') ~= 1
+            if strcmp(upper(IntegrIntensThreshold),'N') ~= 1
                 displaytext = strvcat(displaytext,... %#ok We want to ignore MLint error checking for this line.
-                    ['Fraction above intensity threshold:', num2str(FractionObjectsAboveThreshold)]);
+                    ['Fraction above integrated intensity threshold:', num2str(FractionObjectsAboveIntegrIntensThreshold)]);
+            end
+            if strcmp(upper(MeanIntensThreshold),'N') ~= 1
+                displaytext = strvcat(displaytext,... %#ok We want to ignore MLint error checking for this line.
+                    ['Fraction above mean intensity threshold:', num2str(FractionObjectsAboveMeanIntensThreshold)]);
             end
         end % Goes with: if no objects were in the label matrix image.
         set(displaytexthandle,'string',displaytext)

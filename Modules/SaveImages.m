@@ -205,8 +205,8 @@ if any(Spaces) == 1
 end
 %%% Checks whether the new image name is going to overwrite the
 %%% original file.
-NewFileAndPathName = fullfile(FileDirectory,NewImageName);
-OldFileAndPathName = fullfile(handles.Pipeline.(['Pathname' ImageFileName]), CharFileName);
+NewFileAndPathName = fullfile(FileDirectory, NewImageName);
+OldFileAndPathName = fullfile(FileDirectory, CharFileName);
 if strcmp(OldFileAndPathName, NewFileAndPathName) == 1
     error('Image processing was canceled because the specifications in the Save Images module will result in image files being overwritten.')
 end

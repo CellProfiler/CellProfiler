@@ -251,7 +251,7 @@ Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 
-%%% Set a suitable fontsize. 
+%%% Sets a suitable fontsize. 
 %%% With the current setting, the fontsize is 10pts on a 
 %%% screen with 90 pixels/inch resolution and 8pts on a 
 %%% screen with 116 pixels/inch.
@@ -264,7 +264,6 @@ for k = 1:length(names)
         set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',FontSize,'FontName','Times')
     end
 end 
-
 
 cd(handles.Current.StartupDirectory)
 
@@ -886,7 +885,6 @@ variablepanelPos = get(handles.variablepanel, 'position');
 set(handles.variablepanel, 'position', [235 80+scrollPos 563 297]);
 
 function slider1_CreateFcn(hObject, eventdata, handles)
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
 
 function handles = createVariablePanel(handles)
 for i=1:99,
@@ -908,7 +906,7 @@ for i=1:99,
     handles.(['VariableDescription' TwoDigitString(i)]) = uicontrol(...
         'Parent',handles.variablepanel,...
         'Units','pixels',...
-        'BackgroundColor',[0.699999988079071 0.699999988079071 0.899999976158142],...
+        'BackgroundColor',[0.7 0.7 0.9],...
         'CData',[],...
         'FontName','Times',...
         'FontSize',12,...

@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 28-Sep-2004 13:28:19
+% Last Modified by GUIDE v2.5 30-Sep-2004 16:09:26
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -74,6 +74,11 @@ varargout{1} = handles.output;
 %%% INITIAL SETTINGS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 
+%%% Checks whether the user has the Image Processing Toolbox.
+Answer = license('test','image_toolbox');
+if Answer ~= 1
+    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly.') 
+end
 % Determines the current directory in order to switch back to it later.
 CurrentDirectory = pwd;
 
@@ -2699,7 +2704,6 @@ else
                 set(handles.PixelSizeEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.LoadSettingsFromFileButton,'enable','off')
                 set(handles.SaveCurrentSettingsButton,'enable','off')
-                set(handles.ExtractSettings,'enable','off')
                 for i=1:handles.numAlgorithms;
                     set(handles.(['LoadAlgorithm' TwoDigitString(i)]),'visible','off');
                     set(handles.(['ClearAlgorithm' TwoDigitString(i)]),'visible','off');
@@ -3164,7 +3168,6 @@ else
                 set(handles.PixelSizeEditBox,'enable','on','foregroundcolor','black')
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
-                set(handles.ExtractSettings,'enable','on')
                 for AlgorithmNumber=1:handles.numAlgorithms;
                     set(handles.(['LoadAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
                     set(handles.(['ClearAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
@@ -3504,3 +3507,15 @@ else
 end;
 
 %%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%
+
+
+% --- Executes on button press in RevealDataAnalysisButtons.
+function RevealDataAnalysisButtons_Callback(hObject, eventdata, handles)
+CurrentButtonLabel = get(hObject,'string');
+if strcmp(CurrentButtonLabel,'Hide')
+    set(handles.CoverDataAnalysisFrame,'visible','on')
+    set(hObject,'String','Data')
+else
+        set(handles.CoverDataAnalysisFrame,'visible','off')
+            set(hObject,'String','Hide')
+end

@@ -1552,6 +1552,25 @@ if exist(pathname,'dir') ~= 0
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
     handles = RetrieveImageFileNames(handles,pathname);
+    %%% Test whether this is during CellProfiler launching or during
+    %%% the image analysis run itself (by looking at some of the GUI
+    %%% elements). If either is the case, the message is NOT
+    %%% shown.
+    ListBoxContents = get(handles.FilenamesListBox,'String');
+    IsStartup = strcmp(ListBoxContents(1),'Listbox');
+    IsAnalysisRun = strcmp(get(handles.PipelineOfModulesText,'visible'),'off');
+    if any([IsStartup, IsAnalysisRun]) == 0 && isempty(handles.Current.FilenamesInImageDir) == 1;
+        %%% Obtains the screen size and determines where the wait bar
+        %%% will be displayed.
+        ScreenSize = get(0,'ScreenSize');
+        ScreenHeight = ScreenSize(4);
+        PotentialBottom = [0, (ScreenHeight-720)];
+        BottomOfMsgBox = max(PotentialBottom);
+        PositionMsgBox = [500 BottomOfMsgBox 350 100];
+        ErrorDlgHandle = msgbox('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
+        set(ErrorDlgHandle, 'Position', PositionMsgBox)
+        drawnow
+    end
     guidata(hObject, handles);
     %%% If the directory entered in the box does not exist, give an error
     %%% message, change the contents of the edit box back to the
@@ -1590,20 +1609,6 @@ FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 
 if isempty(FileNamesNoDir) == 1
     handles.Current.FilenamesInImageDir = [];
-    %%% Test whether this is during CellProfiler launching, in which case
-    %%% the following error is unnecessary.
-    if strcmp(get(handles.FilenamesListBox,'String'),'Listbox') ~= 1
-        %%% Obtains the screen size and determines where the wait bar
-        %%% will be displayed.
-        ScreenSize = get(0,'ScreenSize');
-        ScreenHeight = ScreenSize(4);
-        PotentialBottom = [0, (ScreenHeight-720)];
-        BottomOfMsgBox = max(PotentialBottom);
-        PositionMsgBox = [500 BottomOfMsgBox 350 100];
-        ErrorDlgHandle = errordlg('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
-        set(ErrorDlgHandle, 'Position', PositionMsgBox)
-        drawnow
-    end
 else
     %%% Makes a logical array that marks with a "1" all file names that start
     %%% with a period (hidden files):
@@ -1635,20 +1640,6 @@ else
     %%% Checks whether any files are left.
     if isempty(FileNames)
         handles.Current.FilenamesInImageDir = [];
-        %%% Test whether this is during CellProfiler launching, in which case
-        %%% the following error is unnecessary.
-        if strcmp(get(handles.FilenamesListBox,'String'),'Listbox') ~= 1
-            %%% Obtains the screen size and determines where the wait bar
-            %%% will be displayed.
-            ScreenSize = get(0,'ScreenSize');
-            ScreenHeight = ScreenSize(4);
-            PotentialBottom = [0, (ScreenHeight-720)];
-            BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 100];
-            ErrorDlgHandle = errordlg('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
-            set(ErrorDlgHandle, 'Position', PositionMsgBox)
-            drawnow
-        end
     else
         %%% Stores the final list of file names in the handles structure
         handles.Current.FilenamesInImageDir = FileNames;
@@ -1880,7 +1871,7 @@ else
             
             %%% TODO: Use fullfile to make the following
             %%% multi-platform compatible.
-            OutputFileOverwrite = exist([cd,'/',handles.Current.OutputFilename],'file'); %%% TODO: Fix filename construction.
+            OutputFileOverwrite = exist([cd,'/',handles.Current.OutputFilename],'file');
             if OutputFileOverwrite ~= 0
                 errordlg('An output file with the name you entered in Step 2 already exists. Overwriting can cause errors and is disallowed, so please enter a new filename.');
             else
@@ -1892,6 +1883,7 @@ else
                 %%% was chosen, but in case some files were moved or
                 %%% changed in the meantime, this will refresh the
                 %%% list.
+                set(handles.PipelineOfModulesText,'visible','off')
                 handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
                 %%% Updates the handles structure.
                 guidata(gcbo, handles);

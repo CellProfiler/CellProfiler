@@ -309,11 +309,11 @@ function LoadSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ig
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
-FutureOrExisting = questdlg('Do you want to add sample info into an existing output file or into future output files?', 'Load Sample Info', 'Future', 'Existing', 'Cancel', 'Future');
-if strcmp(FutureOrExisting, 'Cancel') == 1 | isempty(FutureOrExisting) ==1
+ExistingOrMemory = questdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
+if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
     return
-elseif strcmp(FutureOrExisting, 'Future') == 1
+elseif strcmp(ExistingOrMemory, 'Memory') == 1
     OutputFile = []; pOutName = []; fOutName = [];
 else [fOutName,pOutName] = uigetfile('*.mat','Add sample info to which existing output file?');
     %%% Allows canceling.
@@ -357,7 +357,7 @@ else extension = fname(end-2:end);
                 if i == 1
                    Newhandles = handles; 
                 end
-                [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(Newhandles,ColumnOfData,FutureOrExisting,HeadingsPresent,OutputFile);
+                [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(Newhandles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
                 if CancelOption == 1
                     fclose(fid);
                     warndlg('None of the sample info was saved.')
@@ -365,7 +365,7 @@ else extension = fname(end-2:end);
                 end
             end
             fclose(fid);
-            if strcmp(FutureOrExisting,'Future') == 1
+            if strcmp(ExistingOrMemory,'Memory') == 1
                 %%% For future output files:
                 %%% Saves the new sample info to the handles
                 %%% structure.
@@ -394,14 +394,14 @@ else extension = fname(end-2:end);
            ColumnOfData = ColumnOfData';
            %%% Sends the heading and the sample info to a
            %%% subfunction to be previewed and saved.
-           [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,FutureOrExisting,HeadingsPresent,OutputFile);
+           [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
            if CancelOption == 1
                fclose(fid);
                warndlg('None of the sample info was saved.')
                 return
             end
             fclose(fid);
-            if strcmp(FutureOrExisting,'Future') == 1
+            if strcmp(ExistingOrMemory,'Memory') == 1
                 %%% For future output files:
                 %%% Saves the new sample info to the handles
                 %%% structure.
@@ -428,7 +428,7 @@ else extension = fname(end-2:end);
 end
 cd(CurrentDirectory)
 
-function [handles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,FutureOrExisting,HeadingsPresent,OutputFile);
+function [handles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
 %%% Sets the initial value to zero.
 CancelOption = 0;
 %%% Extracts the sample info and the headings from the first row, if they are present.
@@ -514,7 +514,7 @@ else
             elseif strcmp(SingleHeading,'') == 1
                 errordlg('No heading was entered. Please try again.');
                 %%% For future output files:
-            elseif strcmp(FutureOrExisting, 'Future') == 1
+            elseif strcmp(ExistingOrMemory, 'Memory') == 1
                 %%% Checks to see if the heading exists already.
                 if isfield(handles, 'Measurements') == 1
                     if isfield(handles.Measurements, ['Imported',char(SingleHeading)]) == 1
@@ -577,7 +577,7 @@ else
         end
         %%% Saves the sample info to the handles structure or existing output
         %%% file.
-        if strcmp(FutureOrExisting, 'Future') == 1
+        if strcmp(ExistingOrMemory, 'Memory') == 1
             %%% For future files:
             %%% Saves the column of sample info to the handles.
             handles.Measurements.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
@@ -604,77 +604,181 @@ end
 
 % --- Executes on button press in ClearSampleInfo.
 function ClearSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% The Clear Sample Info button allows deleting any list of 
+%%% The Clear Sample Info button allows deleting any list of
 %%% sample info, specified by its heading, from the handles structure.
 
-%%% Checks whether any headings are loaded yet.
-Fieldnames = fieldnames(handles.Measurements);
-ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
-if isempty(ImportedFieldnames) == 1
-    errordlg('No sample info has been loaded.')
-else
-%%% Opens a listbox which displays the list of headings so that one can be
-%%% selected.  The OK button has been assigned to mean "Delete".
-[Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-    'Name','Current sample info loaded',...
-    'PromptString','Select the sample descriptions you would like to delete',...
-    'OKString','Delete','CancelString','Cancel','SelectionMode','single');
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 
-%%% Extracts the actual heading name.
-SelectedFieldName = ImportedFieldnames(Selected);
-
-% Action = 1 if the user pressed the OK (DELETE) button.  If they pressed
-% the cancel button or closed the window Action == 0 and nothing happens.
-if Action == 1
-    %%% Delete the selected heading (with its contents, the sample data) 
-    %%% from the structure.
-    handles.Measurements = rmfield(handles.Measurements,SelectedFieldName);
-    %%% Might want to remove the field 'Measurements' if it is empty?
-   
-    %%% Handles structure is updated
-    guidata(gcbo,handles)
+ExistingOrMemory = questdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
+if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
+    %%% Allows canceling.
+    return
+elseif strcmp(ExistingOrMemory, 'Memory') == 1
+    %%% Checks whether any headings are loaded yet.
+    Fieldnames = fieldnames(handles.Measurements);
+    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+    if isempty(ImportedFieldnames) == 1
+        errordlg('No sample info has been loaded.')
+    else
+        %%% Opens a listbox which displays the list of headings so that one can be
+        %%% selected.  The OK button has been assigned to mean "Delete".
+        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
+            'Name','Current sample info loaded',...
+            'PromptString','Select the sample descriptions you would like to delete',...
+            'OKString','Delete','CancelString','Cancel','SelectionMode','single');
+        %%% Extracts the actual heading name.
+        SelectedFieldName = ImportedFieldnames(Selected);
+        % Action = 1 if the user pressed the OK (DELETE) button.  If they pressed
+        % the cancel button or closed the window Action == 0 and nothing happens.
+        if Action == 1
+            %%% Delete the selected heading (with its contents, the sample data)
+            %%% from the structure.
+            handles.Measurements = rmfield(handles.Measurements,SelectedFieldName);
+            %%% Handles structure is updated
+            guidata(gcbo,handles)
+            h = msgbox(['The sample info was successfully deleted from memory']);
+        end
+        %%% This end goes with the error-detecting - "Do you have any sample info
+        %%% loaded?"
+    end
+elseif strcmp(ExistingOrMemory, 'Existing') == 1
+    [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
+    %%% Allows canceling.
+    if fOutName == 0
+        return
+    else
+        try OutputFile = load([pOutName fOutName]);
+        catch error('Sorry, the file could not be loaded for some reason.')
+        end
+    end
+    %%% Checks whether any sample info is contained within the file.
+    Fieldnames = fieldnames(OutputFile.handles.Measurements);
+    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
+    if isempty(ImportedFieldnames) == 1
+        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements, and would be prefixed with either ''Image'' or ''Imported''.')
+    else
+        %%% Opens a listbox which displays the list of headings so that one can be
+        %%% selected.  The OK button has been assigned to mean "Delete".
+        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
+            'Name','Current sample info loaded',...
+            'PromptString','Select the sample descriptions you would like to delete',...
+            'OKString','Delete','CancelString','Cancel','SelectionMode','single');
+        %%% Extracts the actual heading name.
+        SelectedFieldName = ImportedFieldnames(Selected);
+        % Action = 1 if the user pressed the OK (DELETE) button.  If they pressed
+        % the cancel button or closed the window Action == 0 and nothing happens.
+        if Action == 1
+            %%% Delete the selected heading (with its contents, the sample data)
+            %%% from the structure.
+            OutputFile.handles.Measurements = rmfield(OutputFile.handles.Measurements,SelectedFieldName);
+                %%% Saves the output file with this new sample info.
+                save([pOutName,fOutName],'-struct','OutputFile');
+                h = msgbox(['The sample info was successfully deleted from the output file']);
+        end
+        %%% This end goes with the error-detecting - "Do you have any sample info
+        %%% loaded?"
+    end
 end
-%%% This end goes with the error-detecting - "Do you have any sample info
-%%% loaded?"
-end
+cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ViewSampleInfo.
 function ViewSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% The View Sample Info button allows viewing any list of 
+%%% The View Sample Info button allows viewing any list of
 %%% sample info, specified by its heading, taken from the handles structure.
 
-%%% Checks whether any headings are loaded yet.
-Fieldnames = fieldnames(handles.Measurements);
-ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
-if isempty(ImportedFieldnames) == 1
-    errordlg('No sample info has been loaded.')
-%%% Opens a listbox which displays the list of headings so that one can be
-%%% selected.  The OK button has been assigned to mean "View".
-else 
-[Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-    'Name','Current sample info loaded',...
-    'PromptString','Select the sample descriptions you would like to view.',...
-    'OKString','View','CancelString','Cancel','SelectionMode','single');
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 
-%%% Extracts the actual heading name.
-SelectedFieldName = ImportedFieldnames(Selected);
+ExistingOrMemory = questdlg('Do you want to view sample info or data in an existing output file or do you want to view the sample info or data stored in memory to be placed into future output files?', 'View Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
+if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
+    %%% Allows canceling.
+    return
+elseif strcmp(ExistingOrMemory, 'Memory') == 1
+    %%% Checks whether any headings are loaded yet.
+    if isfield(handles,'Measurements') == 1
+        Fieldnames = fieldnames(handles.Measurements);
+        ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+        if isempty(ImportedFieldnames) == 1
+            errordlg('No sample info or data is currently stored in memory.')
+            %%% Opens a listbox which displays the list of headings so that one can be
+            %%% selected.  The OK button has been assigned to mean "View".
+        else
+            [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
+                'Name','Current sample info loaded',...
+                'PromptString','Select the sample descriptions you would like to view.',...
+                'OKString','View','CancelString','Cancel','SelectionMode','single');
 
-% Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
-% the cancel button or closed the window Action == 0.
-if Action == 1
-    ListToShow = handles.Measurements.(char(SelectedFieldName));
-    listdlg('ListString',ListToShow, 'ListSize', [300 600],...
-        'Name','Preview your sample data','PromptString',...
-        char(SelectedFieldName),'SelectionMode','single');
-    %%% The OK buttons within this window don't do anything.
-else
-    %%% If the user pressed "cancel" or closes the window, Action = 0, so
-    %%% nothing happens. 
+            %%% Extracts the actual heading name.
+            SelectedFieldName = ImportedFieldnames(Selected);
+
+            % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
+            % the cancel button or closed the window Action == 0.
+            if Action == 1
+                ListToShow = handles.Measurements.(char(SelectedFieldName));
+                listdlg('ListString',ListToShow, 'ListSize', [300 600],...
+                    'Name','Preview your sample info/data','PromptString',...
+                    char(SelectedFieldName),'SelectionMode','single');
+                %%% The OK buttons within this window don't do anything.
+            else
+                %%% If the user pressed "cancel" or closes the window, Action = 0, so
+                %%% nothing happens.
+            end
+            %%% This "end" goes with the "isempty" if no sample info is loaded.
+        end
+    else errordlg('No sample info or data is currently stored in memory.')
+    end
+elseif strcmp(ExistingOrMemory, 'Existing') == 1
+    [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
+    %%% Allows canceling.
+    if fOutName == 0
+        return
+    else
+        try OutputFile = load([pOutName fOutName]);
+        catch error('Sorry, the file could not be loaded for some reason.')
+        end
+    end
+    %%% Checks whether any sample info is contained within the file.
+    Fieldnames = fieldnames(OutputFile.handles.Measurements);
+    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
+    if isempty(ImportedFieldnames) == 1
+        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements, and would be prefixed with either ''Image'' or ''Imported''.')
+        %%% Opens a listbox which displays the list of headings so that one can be
+        %%% selected.  The OK button has been assigned to mean "View".
+    else
+        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
+            'Name','Current sample info loaded',...
+            'PromptString','Select the sample descriptions you would like to view.',...
+            'OKString','View','CancelString','Cancel','SelectionMode','single');
+
+        %%% Extracts the actual heading name.
+        SelectedFieldName = ImportedFieldnames(Selected);
+
+        % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
+        % the cancel button or closed the window Action == 0.
+        if Action == 1
+            try
+                ListToShow = OutputFile.handles.Measurements.(char(SelectedFieldName));
+                if strcmp(class(ListToShow{1}),'double') == 1
+                    ListToShow = sprintf('%d\n',cell2mat(ListToShow));
+                end
+                listdlg('ListString',ListToShow, 'ListSize', [300 600],...
+                    'Name','Preview your sample info/data','PromptString',...
+                    char(SelectedFieldName),'SelectionMode','single');
+                %%% The OK buttons within this window don't do anything.
+            catch errordlg('Sorry, there was an error displaying this sample info or data. This function may not yet work properly on mixed numerical and text data.')
+            end
+        else
+            %%% If the user pressed "cancel" or closes the window, Action = 0, so
+            %%% nothing happens.
+        end
+        %%% This "end" goes with the "isempty" if no sample info is loaded.
+    end
 end
-%%% This "end" goes with the "isempty" if no sample info is loaded.
-end
+cd(CurrentDirectory)
+
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.

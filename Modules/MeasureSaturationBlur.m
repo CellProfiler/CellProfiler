@@ -46,11 +46,11 @@ function handles = AlgSaturationBlurCheck(handles)
 % will also be used to automatically generate a manual page for the
 % module. An example image demonstrating the function of the module
 % can also be saved in tif format, using the same name as the
-% algorithm (minus Alg), and it will automatically be included in the
+% module (minus Alg), and it will automatically be included in the
 % manual page as well.  Follow the convention of: purpose of the
 % module, description of the variables and acceptable range for each,
 % how it works (technical description), info on which images can be 
-% saved, and See also CAPITALLETTEROTHERALGORITHMS. The license/author
+% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank
 % line so that it does not show up in the help displays.  Do not
 % change the programming notes in any modules! These are standard
@@ -77,10 +77,10 @@ drawnow
 % The '%textVAR' lines contain the text which is displayed in the GUI
 % next to each variable box. The '%defaultVAR' lines contain the
 % default values which are displayed in the variable boxes when the
-% user loads the algorithm. The line of code after the textVAR and
+% user loads the module. The line of code after the textVAR and
 % defaultVAR extracts the value that the user has entered from the
 % handles structure and saves it as a variable in the workspace of
-% this algorithm with a descriptive name. The syntax is important for
+% this module with a descriptive name. The syntax is important for
 % the %textVAR and %defaultVAR lines: be sure there is a space before
 % and after the equals sign and also that the capitalization is as
 % shown.  Don't allow the text to wrap around to another line; the
@@ -89,47 +89,46 @@ drawnow
 % can put text in the %textVAR line above or below the one of
 % interest, and do not include a %defaultVAR line so that the variable
 % edit box for that variable will not be displayed; the text will
-% still be displayed. CellProfiler is currently being restructured to
-% handle more than 11 variable boxes. Keep in mind that you can have
+% still be displayed. Keep in mind that you can have
 % several inputs into the same box: for example, a box could be
 % designed to receive two numbers separated by a comma, as long as you
 % write a little extraction algorithm that separates the input into
 % two distinct variables.  Any extraction algorithms like this should
 % be within the VARIABLES section of the code, at the end.
 
-%%% Reads the current algorithm number, since this is needed to find
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2double(handles.currentalgorithm);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the image you want to check for saturation and blur?
 %defaultVAR01 = OrigBlue
-NameImageToCheck{1} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+NameImageToCheck{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What did you call the image you want to check for saturation and blur?
 %defaultVAR02 = OrigGreen
-NameImageToCheck{2} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+NameImageToCheck{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What did you call the image you want to check for saturation and blur?
 %defaultVAR03 = OrigRed
-NameImageToCheck{3} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+NameImageToCheck{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What did you call the image you want to check for saturation and blur?
 %defaultVAR04 = N
-NameImageToCheck{4} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+NameImageToCheck{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = What did you call the image you want to check for saturation and blur?
 %defaultVAR05 = N
-NameImageToCheck{5} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What did you call the image you want to check for saturation and blur?
 %defaultVAR06 = N
-NameImageToCheck{6} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 =  For unused colors, leave "N" in the boxes above.
-%textVAR09 = Do you want to check for blur?
-%defaultVAR09 = Y
-BlurCheck = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+%textVAR08 = Do you want to check for blur?
+%defaultVAR08 = Y
+BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%
@@ -178,15 +177,15 @@ drawnow
 % nuclei which results in a set of 12 measurements ("TotalNucArea")
 % stored in the handles structure. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "TotalNucArea" to
 % analyze 4 image sets, the 4 measurements will overwrite the first 4
 % measurements of the previous analysis, but the remaining 8
 % measurements will still be present. So, the user will end up with 12
 % measurements from the 4 sets. Another potential problem is that if,
-% in the second analysis run, the user runs only an algorithm which
-% depends on the output "SegmNucImg" but does not run an algorithm
-% that produces an image by that name, the algorithm will run just
+% in the second analysis run, the user runs only a module which
+% depends on the output "SegmNucImg" but does not run a module
+% that produces an image by that name, the module will run just
 % fine: it will just repeatedly use the processed image of nuclei
 % leftover from the last image set, which was left in the handles
 % structure ("SegmNucImg").
@@ -267,8 +266,8 @@ if isfield(handles.Pipeline, fieldname)==0,
 %             end
 %             %%% Subtracts the BlurredImage from the original.
 %             SubtractedImage = imsubtract(eval(['ImageToCheck',ImageNumber]), BlurredImage);
-%             handles.FocusScore(handles.setbeinganalyzed) = std(SubtractedImage(:));
-%             handles.FocusScore2(handles.setbeinganalyzed) = sum(sum(SubtractedImage.*SubtractedImage));
+%             handles.FocusScore(handles.Current.SetBeingAnalyzed) = std(SubtractedImage(:));
+%             handles.FocusScore2(handles.Current.SetBeingAnalyzed) = sum(sum(SubtractedImage.*SubtractedImage));
 %             FocusScore = handles.FocusScore
 %             FocusScore2 = handles.FocusScore2
 % 
@@ -276,13 +275,13 @@ if isfield(handles.Pipeline, fieldname)==0,
             %%% field is named appropriately based on the user's
             %%% input, with the 'Image' prefix added.
             fieldname = ['ImageFocusScore', NameImageToCheck{ImageNumber}];
-            handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FocusScore{ImageNumber}};
+            handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {FocusScore{ImageNumber}};
         end
         %%% Saves the Percent Saturation to the handles.Measurements
         %%% structure.  The field is named appropriately based on the
         %%% user's input, with the 'Image' prefix added.
         fieldname = ['ImagePercentSaturation', NameImageToCheck{ImageNumber}];
-        handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {PercentSaturation{ImageNumber}};
+        handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {PercentSaturation{ImageNumber}};
     end
     drawnow
 end
@@ -296,7 +295,7 @@ end
 % Each module checks whether its figure is open before calculating
 % images that are for display only. This is done by examining all the
 % figure handles for one whose handle is equal to the assigned figure
-% number for this algorithm. If the figure is not open, everything
+% number for this module. If the figure is not open, everything
 % between the "if" and "end" is ignored (to speed execution), so do
 % not do any important calculations here. Otherwise an error message
 % will be produced if the user has closed the window but you have
@@ -305,21 +304,21 @@ end
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
 
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisAlgFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
     originalsize = get(ThisAlgFigureNumber, 'position');
     newsize = originalsize;
     newsize(1) = 0;
     newsize(2) = 0;
-    if handles.setbeinganalyzed == 1
+    if handles.Current.SetBeingAnalyzed == 1
         newsize(3) = originalsize(3)*.5;
         originalsize(3) = originalsize(3)*.5;
         set(ThisAlgFigureNumber, 'position', originalsize);
     end
     displaytexthandle = uicontrol(ThisAlgFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth');
-    DisplayText = strvcat(['    Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+    DisplayText = strvcat(['    Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
         '      ',...
         'Percent of pixels that are Saturated:');
     for ImageNumber = 1:6

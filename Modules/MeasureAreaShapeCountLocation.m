@@ -46,11 +46,11 @@ function handles = AlgMeasureAreaShapeCountLocation(handles)
 % will also be used to automatically generate a manual page for the
 % module. An example image demonstrating the function of the module
 % can also be saved in tif format, using the same name as the
-% algorithm (minus Alg), and it will automatically be included in the
+% module (minus Alg), and it will automatically be included in the
 % manual page as well.  Follow the convention of: purpose of the
 % module, description of the variables and acceptable range for each,
 % how it works (technical description), info on which images can be 
-% saved, and See also CAPITALLETTEROTHERALGORITHMS. The license/author
+% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank
 % line so that it does not show up in the help displays.  Do not
 % change the programming notes in any modules! These are standard
@@ -77,10 +77,10 @@ drawnow
 % The '%textVAR' lines contain the text which is displayed in the GUI
 % next to each variable box. The '%defaultVAR' lines contain the
 % default values which are displayed in the variable boxes when the
-% user loads the algorithm. The line of code after the textVAR and
+% user loads the module. The line of code after the textVAR and
 % defaultVAR extracts the value that the user has entered from the
 % handles structure and saves it as a variable in the workspace of
-% this algorithm with a descriptive name. The syntax is important for
+% this module with a descriptive name. The syntax is important for
 % the %textVAR and %defaultVAR lines: be sure there is a space before
 % and after the equals sign and also that the capitalization is as
 % shown.  Don't allow the text to wrap around to another line; the
@@ -89,45 +89,42 @@ drawnow
 % can put text in the %textVAR line above or below the one of
 % interest, and do not include a %defaultVAR line so that the variable
 % edit box for that variable will not be displayed; the text will
-% still be displayed. CellProfiler is currently being restructured to
-% handle more than 11 variable boxes. Keep in mind that you can have
+% still be displayed. Keep in mind that you can have
 % several inputs into the same box: for example, a box could be
 % designed to receive two numbers separated by a comma, as long as you
 % write a little extraction algorithm that separates the input into
 % two distinct variables.  Any extraction algorithms like this should
 % be within the VARIABLES section of the code, at the end.
 
-%%% Reads the current algorithm number, since this is needed to find
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2double(handles.currentalgorithm);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %defaultVAR01 = Nuclei
-ObjectNameList{1} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = Type / in unused boxes.
 %defaultVAR02 = Cells
-ObjectNameList{2} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = 
 %defaultVAR03 = /
-ObjectNameList{3} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = 
 %defaultVAR04 = /
-ObjectNameList{4} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = 
 %defaultVAR05 = /
-ObjectNameList{5} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
-%textVAR06 = 
-%defaultVAR06 = /
-ObjectNameList{6} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
-%textVAR07 = 
-%defaultVAR07 = /
-ObjectNameList{7} = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR06 = It is easy to expand the code for more than 5 objects.
+%textVAR07 = See AlgMeasureAreaShapeCountLocation.m for details.
 
-%%% NOTE: It's easy to expand the code for more than 7 objects.
+%%% To expand for more than 5 objects, just add more lines in groups
+%%% of three like those above, then change the line about ten lines
+%%% down from here (for i = 1:5).
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Settings.Vpixelsize);
+PixelSize = str2double(handles.Settings.PixelSize);
 
 %%% POTENTIAL IMPROVEMENT: Allow the user to select which measurements will
 %%% be made, particularly for those which take a long time to calculate?
@@ -137,7 +134,7 @@ PixelSize = str2double(handles.Settings.Vpixelsize);
 %%% they can alter this .m file to comment out the measurements.
 
 %%% START LOOP THROUGH ALL THE OBJECTS
-for i = 1:7
+for i = 1:5
     ObjectName = ObjectNameList{i};
 if strcmp(ObjectName,'/') == 1
 break
@@ -147,11 +144,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Retrieves the label matrix image that contains the segmented objects which
-%%% will be measured with this algorithm.
+%%% will be measured with this module.
 fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Measure algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the Measure module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure module cannot locate this image.']);
+    error(['Image processing has been canceled. Prior to running the Measure module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure module cannot locate this image.']);
 end
 LabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -190,15 +187,15 @@ drawnow
 % nuclei which results in a set of 12 measurements ("TotalNucArea")
 % stored in the handles structure. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "TotalNucArea" to
 % analyze 4 image sets, the 4 measurements will overwrite the first 4
 % measurements of the previous analysis, but the remaining 8
 % measurements will still be present. So, the user will end up with 12
 % measurements from the 4 sets. Another potential problem is that if,
-% in the second analysis run, the user runs only an algorithm which
-% depends on the output "SegmNucImg" but does not run an algorithm
-% that produces an image by that name, the algorithm will run just
+% in the second analysis run, the user runs only a module which
+% depends on the output "SegmNucImg" but does not run a module
+% that produces an image by that name, the module will run just
 % fine: it will just repeatedly use the processed image of nuclei
 % leftover from the last image set, which was left in the handles
 % structure ("SegmNucImg").
@@ -237,7 +234,7 @@ drawnow
     ObjectCount = length(unique(LabelMatrixImage(:))) - 1;
     %%% Saves the count to the handles structure.
     fieldname = ['ImageCount', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {ObjectCount};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {ObjectCount};
 
 if ObjectCount ~= 0
     %%% None of the measurements are made if there are no objects.
@@ -264,15 +261,15 @@ if ObjectCount ~= 0
     Area = Area.*(PixelSize*PixelSize);
     %%% Saves the areas to the handles structure.
     fieldname = ['ObjectArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Area};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Area};
     fieldname = ['ImageMeanArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Area)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(Area)};
     fieldname = ['ImageStdevArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Area)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(Area)};
     fieldname = ['ImageMedianArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Area)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(Area)};
     fieldname = ['ImageSumArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sum(Area)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sum(Area)};
 
     %%%
     %%% PERIMETER
@@ -296,13 +293,13 @@ if ObjectCount ~= 0
     Perimeter = Perimeter*PixelSize;
     %%% Saves Perimeters to handles structure.
     fieldname = ['ObjectPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Perimeter};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Perimeter};
     fieldname = ['ImageMeanPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Perimeter)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(Perimeter)};
     fieldname = ['ImageStdevPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Perimeter)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(Perimeter)};
     fieldname = ['ImageMedianPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Perimeter)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(Perimeter)};
 
     %%%
     %%% CONVEX AREA
@@ -316,13 +313,13 @@ if ObjectCount ~= 0
     ConvexArea = ConvexArea.*(PixelSize*PixelSize);
     %%% Saves the areas to the handles structure.
     fieldname = ['ObjectConvexArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {ConvexArea};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {ConvexArea};
     fieldname = ['ImageMeanConvexArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(ConvexArea)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(ConvexArea)};
     fieldname = ['ImageStdevConvexArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(ConvexArea)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(ConvexArea)};
     fieldname = ['ImageMedianConvexArea', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(ConvexArea)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(ConvexArea)};
 
     %%%
     %%% MAJOR AXIS
@@ -335,13 +332,13 @@ if ObjectCount ~= 0
     MajorAxis = MajorAxis*PixelSize;
     %%% Saves the major axis lengths to the handles structure.
     fieldname = ['ObjectMajorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MajorAxis};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {MajorAxis};
     fieldname = ['ImageMeanMajorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MajorAxis)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(MajorAxis)};
     fieldname = ['ImageStdevMajorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MajorAxis)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(MajorAxis)};
     fieldname = ['ImageMedianMajorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MajorAxis)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(MajorAxis)};
 
     %%%
     %%% MINOR AXIS
@@ -354,13 +351,13 @@ if ObjectCount ~= 0
     MinorAxis = MinorAxis*PixelSize;
     %%% Saves the minor axis lengths to the handles structure.
     fieldname = ['ObjectMinorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MinorAxis};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {MinorAxis};
     fieldname = ['ImageMeanMinorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MinorAxis)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(MinorAxis)};
     fieldname = ['ImageStdevMinorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MinorAxis)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(MinorAxis)};
     fieldname = ['ImageMedianMinorAxis', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MinorAxis)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(MinorAxis)};
 
     %%%
     %%% ECCENTRICITY
@@ -383,13 +380,13 @@ if ObjectCount ~= 0
     %%% dimensionless.
     %%% Saves the Eccentricities to the handles structure.
     fieldname = ['ObjectEccentricity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Eccentricity};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Eccentricity};
     fieldname = ['ImageMeanEccentricity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Eccentricity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(Eccentricity)};
     fieldname = ['ImageStdevEccentricity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Eccentricity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(Eccentricity)};
     fieldname = ['ImageMedianEccentricity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Eccentricity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(Eccentricity)};
 
     %%%
     %%% SOLIDITY
@@ -405,13 +402,13 @@ if ObjectCount ~= 0
     %%% dimensionless.
     %%% Saves the Solidities to the handles structure.
     fieldname = ['ObjectSolidity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Solidity};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Solidity};
     fieldname = ['ImageMeanSolidity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Solidity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(Solidity)};
     fieldname = ['ImageStdevSolidity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Solidity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(Solidity)};
     fieldname = ['ImageMedianSolidity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Solidity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(Solidity)};
 
     %%%
     %%% EXTENT
@@ -427,13 +424,13 @@ if ObjectCount ~= 0
     %%% dimensionless.
     %%% Saves the Extents to the handles structure.
     fieldname = ['ObjectExtent', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Extent};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Extent};
     fieldname = ['ImageMeanExtent', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Extent)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(Extent)};
     fieldname = ['ImageStdevExtent', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Extent)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(Extent)};
     fieldname = ['ImageMedianExtent', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Extent)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(Extent)};
 
     %%%
     %%% CIRCULARITY
@@ -444,13 +441,13 @@ if ObjectCount ~= 0
     %%% is dimensionless anyway.
     Circularity = (Perimeter.*Perimeter)./Area;
     fieldname = ['ObjectCircularity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Circularity};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Circularity};
     fieldname = ['ImageMeanCircularity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Circularity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(Circularity)};
     fieldname = ['ImageStdevCircularity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Circularity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(Circularity)};
     fieldname = ['ImageMedianCircularity', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Circularity)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(Circularity)};
 
     %%%
     %%% FORM FACTOR
@@ -461,13 +458,13 @@ if ObjectCount ~= 0
     %%% is dimensionless anyway.
     FormFactor = 4*pi.*Area./(Perimeter.*Perimeter);
     fieldname = ['ObjectFormFactor', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FormFactor};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {FormFactor};
     fieldname = ['ImageMeanFormFactor', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(FormFactor)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(FormFactor)};
     fieldname = ['ImageStdevFormFactor', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(FormFactor)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(FormFactor)};
     fieldname = ['ImageMedianFormFactor', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(FormFactor)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(FormFactor)};
 
     %%%
     %%% AREA TO PERIMETER RATIO
@@ -477,13 +474,13 @@ if ObjectCount ~= 0
     AreaPerimRatio = Area./Perimeter;
 
     fieldname = ['ObjectAreaPerimRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {AreaPerimRatio};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {AreaPerimRatio};
     fieldname = ['ImageMeanAreaPerimRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(AreaPerimRatio)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(AreaPerimRatio)};
     fieldname = ['ImageStdevAreaPerimRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(AreaPerimRatio)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(AreaPerimRatio)};
     fieldname = ['ImageMedianAreaPerimRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(AreaPerimRatio)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(AreaPerimRatio)};
 
     %%%
     %%% ASPECT RATIO
@@ -497,13 +494,13 @@ if ObjectCount ~= 0
     AspectRatio = MajorAxis./MinorAxis;
 
     fieldname = ['ObjectAspectRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {AspectRatio};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {AspectRatio};
     fieldname = ['ImageMeanAspectRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(AspectRatio)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {mean(AspectRatio)};
     fieldname = ['ImageStdevAspectRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(AspectRatio)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {std(AspectRatio)};
     fieldname = ['ImageMedianAspectRatio', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(AspectRatio)};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {median(AspectRatio)};
 
     %%%
     %%% CENTER POSITIONS
@@ -521,9 +518,9 @@ if ObjectCount ~= 0
     CentersY = CentersXY(:,2);
     %%% Saves X and Y positions to handles structure.
     fieldname = ['ObjectCenterX', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersX};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {CentersX};
     fieldname = ['ObjectCenterY', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersY};
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {CentersY};
 
 end % Goes with: if no objects are in the image.
 
@@ -536,7 +533,7 @@ end % Goes with: if no objects are in the image.
 % Each module checks whether its figure is open before calculating
 % images that are for display only. This is done by examining all the
 % figure handles for one whose handle is equal to the assigned figure
-% number for this algorithm. If the figure is not open, everything
+% number for this module. If the figure is not open, everything
 % between the "if" and "end" is ignored (to speed execution), so do
 % not do any important calculations here. Otherwise an error message
 % will be produced if the user has closed the window but you have
@@ -545,13 +542,13 @@ end % Goes with: if no objects are in the image.
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
 
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisAlgFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
     originalsize = get(ThisAlgFigureNumber, 'position');
     newsize = originalsize;
-    if handles.setbeinganalyzed == 1 && i == 1
+    if handles.Current.SetBeingAnalyzed == 1 && i == 1
         newsize(3) = originalsize(3)*.5;
         set(ThisAlgFigureNumber, 'position', newsize);
     end
@@ -568,10 +565,10 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% means and sums from each measurement's code above.
     %%% Checks whether any objects were found in the image.
     if sum(sum(LabelMatrixImage)) == 0
-        displaytext = strvcat(displaytext,['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+        displaytext = strvcat(displaytext,['      Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['Number of ', ObjectName ,':      zero']);
     else
-        displaytext = strvcat(displaytext,['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
+        displaytext = strvcat(displaytext,['      Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
             ['Number of ', ObjectName ,':      ', num2str(ObjectCount)],...
             ['SumArea:                  ', num2str(sum(Area))],...
             ['MeanArea:                 ', num2str(mean(Area))],...

@@ -57,45 +57,36 @@ end
 
 % End initialization code - DO NOT EDIT
 
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% INITIAL SETTINGS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
 % --- Executes just before CellProfiler is made visible.
 function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin) %#ok We want to ignore MLint error checking for this line.
 
-%create additional gui elements
+% create additional gui elements
 handles = createVariablePanel(handles);
 
 % Choose default command line output for CellProfiler
 handles.output = hObject;
 
-% The Number of Algorithms/Variables hardcoded in
-handles.numAlgorithms = 0;
-handles.MaxAlgorithms = 99;
-handles.MaxVariables = 99;
+% The Number of Modules/Variables hardcoded in
+handles.Current.NumberOfModules = 0;
+handles.Current.MaxNumberOfVariables = 99;
+
+%%% Creates variables for later use.
+handles.Settings = struct;
+handles.Pipeline = struct;
+handles.Measurements = struct;
+
 global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
 
-handles.Pipeline = struct;
-handles.Measurements = struct;
-handles.Settings = struct;
-
-
-% Update handles structure
-guidata(hObject, handles);
-
-% --- Outputs from this function are returned to the command line.
-function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-
-% Get default command line output from handles structure
-varargout{1} = handles.output;
-
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% INITIAL SETTINGS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
-
 %%% Checks whether the user has the Image Processing Toolbox.
 Answer = license('test','image_toolbox');
 if Answer ~= 1
-    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly.') 
+    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.')
 end
 % Determines the current directory in order to switch back to it later.
 CurrentDirectory = pwd;
@@ -105,36 +96,48 @@ CurrentDirectory = pwd;
 %%% directory and then the current directory.  This is not necessary for
 %%% CellProfiler to function; it just allows defaults to be pre-loaded. If
 %%% successful, this produces three variables in the workspace:
-%%% PixelSize, DefaultAlgorithmDirectory, WorkingDirectory.
+%%% PixelSize, DefaultModuleDirectory, DefaultImageDirectory.
 try cd(matlabroot)
     load CellProfilerPreferences
-    PreferencesExist = 1;
-catch try cd(CurrentDirectory);
-     load CellProfilerPreferences
-        PreferencesExist = 1;
-    catch PreferencesExist = 0;
+catch
+    try cd(CurrentDirectory);
+        load CellProfilerPreferences
     end
 end
 
-%%% Stores some initial values in the handles structure based either on the
-%%% Preferences, if they were successfully loaded, or on the current
-%%% directory.
-if PreferencesExist == 1
-    handles.Settings.Vpixelsize = PixelSize;
-    handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
-    handles.Vworkingdirectory = WorkingDirectory;
-    handles.Vpathname = WorkingDirectory;
-    handles.Vtestpathname = handles.Vworkingdirectory;
+%%% Stores some initial values in the handles structure based on the
+%%% Preferences, if they were successfully loaded.  Otherwise,
+%%% defaults are used: i.e. the current directory for pathnames and
+%%% the pixel size that is loaded when the fig file starts up.
+try handles.Settings.PixelSize = PixelSize;
     set(handles.PixelSizeEditBox,'string',PixelSize);
-    set(handles.PathToLoadEditBox,'String',handles.Vworkingdirectory);
-else
-    handles.Settings.Vpixelsize = get(handles.PixelSizeEditBox,'string');
-    handles.Vdefaultalgorithmdirectory = pwd;
-    handles.Vworkingdirectory = pwd;
-    handles.Vpathname = pwd;
-    handles.Vtestpathname = pwd;
-    set(handles.PathToLoadEditBox,'String',pwd);
+catch handles.Settings.PixelSize = get(handles.PixelSizeEditBox,'string');
 end
+
+try handles.Current.DefaultModuleDirectory = DefaultModuleDirectory;
+catch handles.Current.DefaultModuleDirectory = pwd;
+end
+
+try handles.Current.DefaultOutputDirectory = DefaultOutputDirectory;
+catch handles.Current.DefaultOutputDirectory = pwd;
+end
+
+try handles.Current.DefaultImageDirectory = DefaultImageDirectory;
+catch handles.Current.DefaultImageDirectory = pwd;
+end
+
+try handles.Current.SelectedImageDirectory = DefaultImageDirectory;
+catch handles.Current.SelectedImageDirectory = pwd;
+end
+
+try set(handles.PathToLoadEditBox,'String',handles.Current.DefaultImageDirectory);
+catch set(handles.PathToLoadEditBox,'String',pwd);
+end
+
+%%% Retrieves the list of image file names from the chosen directory,
+%%% stores them in the handles structure, and displays them in the
+%%% listbox, by faking a click on the PathToLoadEditBox.
+handles = PathToLoadEditBox_Callback(hObject, eventdata, handles);
 
 %%% Sets up the main program window (Main GUI window) so that it asks for
 %%% confirmation prior to closing.
@@ -158,27 +161,88 @@ Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 
-
-%%% Retrieves the list of image file names from the chosen directory and
-%%% stores them in the handles structure, using the function
-%%% RetrieveImageFileNames.
-Pathname = handles.Vpathname;
-handles = RetrieveImageFileNames(handles, Pathname);
-guidata(hObject, handles);
-if isempty(handles.Vfilenames)
-    set(handles.ListBox,'String','No image files recognized',...
-    'Value',1)
-else
-    %%% Loads these image names into the ListBox.
-set(handles.ListBox,'String',handles.Vfilenames,...
-    'Value',1)
-end
 cd(CurrentDirectory)
 % Update handles structure
 guidata(hObject, handles);
 
-%%%%%%%%%%%%%%%%%
+% --- Outputs from this function are returned to the command line.
+function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+% Get default command line output from handles structure
+varargout{1} = handles.output;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% BROWSE TO LOAD DEFAULT IMAGE DIRECTORY BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Executes on button press in BrowseToLoad.
+function BrowseToLoad_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+CurrentDirectory = pwd;
+cd(handles.Current.SelectedImageDirectory)
+%%% Opens a dialog box to allow the user to choose a directory and loads
+%%% that directory name into the edit box.  Also, changes the current
+%%% directory to the chosen directory.
+pathname = uigetdir('','Choose the directory of images to be analyzed');
+%%% If the user presses "Cancel", the pathname will = 0 and nothing will
+%%% happen.
+if pathname == 0
+else
+    %%% Saves the pathname in the handles structure.
+    handles.Current.SelectedImageDirectory = pathname;
+    %%% Displays the chosen directory in the PathToLoadEditBox.
+    set(handles.PathToLoadEditBox,'String',pathname);
+    guidata(hObject,handles)
+    %%% Retrieves the list of image file names from the chosen directory,
+    %%% stores them in the handles structure, and displays them in the
+    %%% listbox, by faking a click in the PathToLoadEditBox.
+    handles = PathToLoadEditBox_Callback(hObject, eventdata, handles);
+    guidata(hObject, handles);
+end
+cd(CurrentDirectory)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PATH TO LOAD DEFAULT IMAGE DIRECTORY BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Executes during object creation, after setting all properties.
+function PathToLoadEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+set(hObject,'BackgroundColor',[1 1 1]);
+
+function handles = PathToLoadEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+%%% Retrieves the text that was typed in.
+pathname = get(handles.PathToLoadEditBox,'string');
+%%% Checks whether a directory with that name exists.
+if exist(pathname,'dir') ~= 0
+    %%% Saves the pathname in the handles structure.
+    handles.Current.SelectedImageDirectory = pathname;
+    guidata(hObject,handles)
+    %%% Retrieves the list of image file names from the chosen directory and
+    %%% stores them in the handles structure, using the function
+    %%% RetrieveImageFileNames.
+    handles = RetrieveImageFileNames(handles,pathname);
+    guidata(hObject, handles);
+    %%% If the directory entered in the box does not exist, give an error
+    %%% message, change the contents of the edit box back to the
+    %%% previously selected directory, and change the contents of the
+    %%% listbox back to the previously selected directory.
+else errordlg('A directory with that name does not exist')
+end
+%%% Whether or not the directory exists and was updated, we want to
+%%% update the GUI display to show the currrently stored information.
+%%% Display the path in the edit box.
+set(handles.PathToLoadEditBox,'String',handles.Current.SelectedImageDirectory);
+if isempty(handles.Current.FilenamesInImageDir)
+    set(handles.ListBox,'String','No image files recognized',...
+        'Value',1)
+else
+    %%% Loads these image names into the ListBox.
+    set(handles.ListBox,'String',handles.Current.FilenamesInImageDir,...
+        'Value',1)
+end
+
+%%% Updates the handles structure.
+guidata(hObject,handles)
+
+%%% SUBFUNCTION %%%
 function handles = RetrieveImageFileNames(handles, Pathname)
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
@@ -192,123 +256,53 @@ LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 
 if isempty(FileNamesNoDir)
-    handles.Vfilenames = [];
+    handles.Current.FilenamesInImageDir = [];
     %%% Test whether this is during CellProfiler launching, in which case
     %%% the following error is unnecessary.
     if strcmp(get(handles.ListBox,'String'),'Listbox') ~= 1
-    errordlg('There are no files in the chosen directory')
+        errordlg('There are no files in the chosen directory')
     end
 else
-
-DiscardsHidden = strncmp(FileNamesNoDir,'.',1);
-DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt|csv)$', 'once');
-if strcmp(class(DiscardsByExtension), 'cell')
-  DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
-else 
-  DiscardsByExtension = [];
-end
-
-%%% Combines all of the DiscardLogical arrays into one.
-Discards = DiscardsHidden | DiscardsByExtension;
-%%% Eliminates filenames to be discarded.
-if isempty(Discards)
-  FileNames = FileNamesNoDir;
-else 
-  FileNames = FileNamesNoDir(~Discards);
-end
-%%% Checks whether any files are left.
-if isempty(FileNames)
-    handles.Vfilenames = [];
-    %%% Test whether this is during CellProfiler launching, in which case
-    %%% the following error is unnecessary.
-    if strcmp(get(handles.ListBox,'String'),'Listbox') ~= 1
-    errordlg('There are no files in the chosen directory')
-    end
-else
-%%% Stores the final list of file names in the handles structure
-handles.Vfilenames = FileNames;
-guidata(handles.figure1,handles);
-end
-end
-
-%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in BrowseToLoad.
-function BrowseToLoad_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
-%%% Opens a dialog box to allow the user to choose a directory and loads
-%%% that directory name into the edit box.  Also, changes the current 
-%%% directory to the chosen directory.
-pathname = uigetdir('','Choose the directory of images to be analyzed');
-%%% If the user presses "Cancel", the pathname will = 0 and nothing will
-%%% happen.
-if pathname == 0
-else
-    %%% Saves the pathname in the handles structure.
-    handles.Vpathname = pathname;
-    guidata(hObject,handles)
-    %%% Retrieves the list of image file names from the chosen directory and
-    %%% stores them in the handles structure, using the function
-    %%% RetrieveImageFileNames.
-    handles = RetrieveImageFileNames(handles,pathname);
-    guidata(hObject, handles);
-    if isempty(handles.Vfilenames)
-        set(handles.ListBox,'String','No image files recognized',...
-            'Value',1)
+    DiscardsHidden = strncmp(FileNamesNoDir,'.',1);
+    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt|csv)$', 'once');
+    if strcmp(class(DiscardsByExtension), 'cell')
+        DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
     else
-        %%% Loads these image names into the ListBox.
-        set(handles.ListBox,'String',handles.Vfilenames,...
-            'Value',1)
+        DiscardsByExtension = [];
     end
-    %%% Displays the chosen directory in the PathToLoadEditBox.
-    set(handles.PathToLoadEditBox,'String',pathname);
+    %%% Combines all of the DiscardLogical arrays into one.
+    Discards = DiscardsHidden | DiscardsByExtension;
+    %%% Eliminates filenames to be discarded.
+    if isempty(Discards)
+        FileNames = FileNamesNoDir;
+    else
+        FileNames = FileNamesNoDir(~Discards);
+    end
+    %%% Checks whether any files are left.
+    if isempty(FileNames)
+        handles.Current.FilenamesInImageDir = [];
+        %%% Test whether this is during CellProfiler launching, in which case
+        %%% the following error is unnecessary.
+        if strcmp(get(handles.ListBox,'String'),'Listbox') ~= 1
+            errordlg('There are no files in the chosen directory')
+        end
+    else
+        %%% Stores the final list of file names in the handles structure
+        handles.Current.FilenamesInImageDir = FileNames;
+        guidata(handles.figure1,handles);
+    end
 end
-cd(CurrentDirectory)
+guidata(handles.figure1,handles);
 
-%%%%%%%%%%%%%%%%%
-
-% --- Executes during object creation, after setting all properties.
-function PathToLoadEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-    set(hObject,'BackgroundColor',[1 1 1]);
-
-function PathToLoadEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% Retrieves the text that was typed in.
-pathname = get(hObject,'string');
-%%% Checks whether a directory with that name exists.
-if exist(pathname,'dir') ~= 0
-%%% Saves the pathname in the handles structure.
-handles.Vpathname = pathname;
-guidata(hObject,handles)
-%%% Retrieves the list of image file names from the chosen directory and
-%%% stores them in the handles structure, using the function
-%%% RetrieveImageFileNames.
-handles = RetrieveImageFileNames(handles,pathname);
-guidata(hObject, handles);
-%%% Display the path in the edit box.
-set(handles.PathToLoadEditBox,'String',handles.Vpathname);
-if isempty(handles.Vfilenames)
-    set(handles.ListBox,'String','No image files recognized',...
-    'Value',1)
-else
-    %%% Loads these image names into the ListBox.
-set(handles.ListBox,'String',handles.Vfilenames,...
-    'Value',1)
-end
-%%% If the directory entered in the box does not exist, give an error
-%%% message and change the contents of the edit box back to the current
-%%% directory.
-else errordlg('A directory with that name does not exist')
-    set(handles.PathToLoadEditBox,'String',pwd)
-end
-
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LOAD SAMPLE INFO BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in LoadSampleInfo.
 function LoadSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 ExistingOrMemory = questdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
@@ -428,6 +422,7 @@ else extension = fname(end-2:end);
 end
 cd(CurrentDirectory)
 
+%%% SUBFUNCTION %%%
 function [handles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
 %%% Sets the initial value to zero.
 CancelOption = 0;
@@ -516,7 +511,6 @@ else
                 %%% For future output files:
             elseif strcmp(ExistingOrMemory, 'Memory') == 1
                 %%% Checks to see if the heading exists already.
-                if isfield(handles, 'Measurements') == 1
                     if isfield(handles.Measurements, ['Imported',char(SingleHeading)]) == 1
                         Answer = questdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
                         %%% Allows canceling.
@@ -526,8 +520,6 @@ else
                         end
                     else Answer = 'Newfield';
                     end
-                else Answer = 'Newfield';
-                end
                 %%% If the user does not want to overwrite, try again.
                 if strcmp(Answer,'No')
 
@@ -545,7 +537,9 @@ else
                     end
                 end
             else %%% For existing output files:
-                %%% Checks to see if the heading exists already.
+                %%% Checks to see if the heading exists already. Some
+                %%% old output files may not have the 'Measurements'
+                %%% substructure, so we check for that field first.
                 if isfield(OutputFile.handles, 'Measurements') == 1
                     if isfield(OutputFile.handles.Measurements, ['Imported',char(SingleHeading)]) == 1
                         Answer = questdlg(['Sample info with the heading ',char(SingleHeading),' already exists in the output file.  Do you want to overwrite?']);
@@ -600,7 +594,9 @@ end
 % This will assign the string matrix being created into a single cell
 % element.
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CLEAR SAMPLE INFO BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ClearSampleInfo.
 function ClearSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -608,11 +604,12 @@ function ClearSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to i
 %%% sample info, specified by its heading, from the handles structure.
 
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 
 ExistingOrMemory = questdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
+    cd(CurrentDirectory)
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     %%% Checks whether any headings are loaded yet.
@@ -646,6 +643,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
     [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
     %%% Allows canceling.
     if fOutName == 0
+        cd(CurrentDirectory)
         return
     else
         try OutputFile = load([pOutName fOutName]);
@@ -682,7 +680,9 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
 end
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% VIEW SAMPLE INFO BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ViewSampleInfo.
 function ViewSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -690,59 +690,63 @@ function ViewSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ig
 %%% sample info, specified by its heading, taken from the handles structure.
 
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 
 ExistingOrMemory = questdlg('Do you want to view sample info or data in an existing output file or do you want to view the sample info or data stored in memory to be placed into future output files?', 'View Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
+    cd(CurrentDirectory)
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     %%% Checks whether any headings are loaded yet.
-    if isfield(handles,'Measurements') == 1
-        Fieldnames = fieldnames(handles.Measurements);
-        ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
-        if isempty(ImportedFieldnames) == 1
-            errordlg('No sample info or data is currently stored in memory.')
-            %%% Opens a listbox which displays the list of headings so that one can be
-            %%% selected.  The OK button has been assigned to mean "View".
+    Fieldnames = fieldnames(handles.Measurements);
+    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+    if isempty(ImportedFieldnames) == 1
+        errordlg('No sample info or data is currently stored in memory.')
+        %%% Opens a listbox which displays the list of headings so that one can be
+        %%% selected.  The OK button has been assigned to mean "View".
+    else
+        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
+            'Name','Current sample info loaded',...
+            'PromptString','Select the sample descriptions you would like to view.',...
+            'OKString','View','CancelString','Cancel','SelectionMode','single');
+
+        %%% Extracts the actual heading name.
+        SelectedFieldName = ImportedFieldnames(Selected);
+
+        % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
+        % the cancel button or closed the window Action == 0.
+        if Action == 1
+            ListToShow = handles.Measurements.(char(SelectedFieldName));
+            listdlg('ListString',ListToShow, 'ListSize', [300 600],...
+                'Name','Preview your sample info/data','PromptString',...
+                char(SelectedFieldName),'SelectionMode','single');
+            %%% The OK buttons within this window don't do anything.
         else
-            [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-                'Name','Current sample info loaded',...
-                'PromptString','Select the sample descriptions you would like to view.',...
-                'OKString','View','CancelString','Cancel','SelectionMode','single');
-
-            %%% Extracts the actual heading name.
-            SelectedFieldName = ImportedFieldnames(Selected);
-
-            % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
-            % the cancel button or closed the window Action == 0.
-            if Action == 1
-                ListToShow = handles.Measurements.(char(SelectedFieldName));
-                listdlg('ListString',ListToShow, 'ListSize', [300 600],...
-                    'Name','Preview your sample info/data','PromptString',...
-                    char(SelectedFieldName),'SelectionMode','single');
-                %%% The OK buttons within this window don't do anything.
-            else
-                %%% If the user pressed "cancel" or closes the window, Action = 0, so
-                %%% nothing happens.
-            end
-            %%% This "end" goes with the "isempty" if no sample info is loaded.
+            %%% If the user pressed "cancel" or closes the window, Action = 0, so
+            %%% nothing happens.
         end
-    else errordlg('No sample info or data is currently stored in memory.')
+        %%% This "end" goes with the "isempty" if no sample info is loaded.
     end
 elseif strcmp(ExistingOrMemory, 'Existing') == 1
     [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
     %%% Allows canceling.
     if fOutName == 0
+        cd(CurrentDirectory)
         return
     else
         try OutputFile = load([pOutName fOutName]);
         catch error('Sorry, the file could not be loaded for some reason.')
         end
     end
-    %%% Checks whether any sample info is contained within the file.
-    Fieldnames = fieldnames(OutputFile.handles.Measurements);
-    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
+    %%% Checks whether any sample info is contained within the file. Some
+    %%% old output files may not have the 'Measurements'
+    %%% substructure, so we check for that field first.
+    if isfield(OutputFile.handles,'Measurements') == 1
+        Fieldnames = fieldnames(OutputFile.handles.Measurements);
+        ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
+    else ImportedFieldnames = [];
+    end
     if isempty(ImportedFieldnames) == 1
         errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements, and would be prefixed with either ''Image'' or ''Imported''.')
         %%% Opens a listbox which displays the list of headings so that one can be
@@ -779,7 +783,9 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
 end
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% OUTPUT FILE NAME EDIT BOX %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
 function OutputFileName_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -787,11 +793,11 @@ set(hObject,'BackgroundColor',[1 1 1]);
 
 function OutputFileName_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
-Pathname = get(handles.PathToLoadEditBox,'string');
+Pathname = handles.Current.DefaultOutputDirectory;
 %%% Gets the user entry and stores it in the handles structure.
 InitialUserEntry = get(handles.OutputFileName,'string');
 if isempty(InitialUserEntry)
-    handles.Voutputfilename =[];
+    handles.Current.OutputFilename =[];
     guidata(gcbo, handles);
 else
     if length(InitialUserEntry) >=7
@@ -817,24 +823,27 @@ else
             '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
         set(handles.OutputFileName,'string',[])
     else guidata(gcbo, handles);
-        handles.Voutputfilename = UserEntry;
+        handles.Current.OutputFilename = UserEntry;
         set(handles.OutputFileName,'string',UserEntry)
     end
 end
 guidata(gcbo, handles);
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LOAD SETTINGS BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in LoadSettingsFromFileButton.
 function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
+    cd(CurrentDirectory)
     return
 end
 %%% Loads the Settings file.
@@ -842,92 +851,94 @@ LoadedSettings = load([SettingsPathname SettingsFileName]);
 
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles')),
     errordlg(['The file ' SettingsPathname SettingsFilename ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
-    cd(CurrentDirectory);
-    return;
+    cd(CurrentDirectory)
+    return
 end
 
-%%% Figure out whether we loaded a Settings or Output file, and put the correct values into Settings
-%%% Splice the subset of variables from the "settings" structure into the
-%%% handles structure.
-
-
+%%% Figures out whether we loaded a Settings or Output file, and puts
+%%% the correct values into Settings. Splices the subset of variables
+%%% from the "settings" structure into the handles structure.
 if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
 else
     Settings = LoadedSettings.handles.Settings;
-    Settings.numVariables = LoadedSettings.handles.numVariables;
+    Settings.NumbersOfVariables = LoadedSettings.handles.Settings.NumbersOfVariables;
 end
 
-handles.Settings.Valgorithmname = Settings.Valgorithmname;
-AlgorithmNamedotm = ['Alg' char(handles.Settings.Valgorithmname{1}) '.m'];
-%% Check to make sure that the modules have not changed
-if exist(AlgorithmNamedotm,'file')
-    FullPathname = which(AlgorithmNamedotm);
+handles.Settings.ModuleNames = Settings.ModuleNames;
+ModuleNamedotm = ['Alg' char(handles.Settings.ModuleNames{1}) '.m'];
+%% Checks to make sure that the modules have not changed
+if exist(ModuleNamedotm,'file')
+    FullPathname = which(ModuleNamedotm);
     [Pathname, filename, ext, versn] = fileparts(FullPathname);
 else
     Pathname = uigetdir('','Please select directory where modules are located');
 end
-for algNum=1:length(handles.Settings.Valgorithmname),
-    [defVvariable handles.numVariables(algNum) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(algNum)));
-    if (isfield(Settings,'VariableRevisionNumber')),
-        SavedVarRevNum = Settings.VariableRevisionNumber;
+for algNum=1:length(handles.Settings.ModuleNames),
+    [defVariableValues handles.Settings.NumbersOfVariables(algNum) CurrentVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(algNum)));
+    if (isfield(Settings,'VariableRevisionNumbers')),
+        SavedVarRevNum = Settings.VariableRevisionNumbers(algNum);
     else
         SavedVarRevNum = 0;
     end
     if( (SavedVarRevNum ~= 0) & (SavedVarRevNum == CurrentVarRevNum))
-        if(handles.numVariables(algNum) == Setting.numVariables(algNum))
-            handles.Settings.Vvariable = Settings.Vvariable;
+        if(handles.Settings.NumbersOfVariables(algNum) == Settings.NumbersOfVariables(algNum))
+            handles.Settings.VariableValues = Settings.VariableValues;
             varChoice = 0;
         else
             errorString = 'Variable Revision Number same, but number of variables different for some reason';
             cd(Pathname);
-            savedVvariable = Settings.Vvariable(algNum,1:Settings.numVariables(algNum));
-            for i=1:(length(savedVvariable)),
-                if (iscellstr(savedVvariable(i)) == 0)
-                    savedVvariable(i) = {''};
+            savedVariableValues = Settings.VariableValues(algNum,1:Settings.NumbersOfVariables(algNum));
+            for i=1:(length(savedVariableValues)),
+                if (iscellstr(savedVariableValues(i)) == 0)
+                    savedVariableValues(i) = {''};
                 end
             end
-            varChoice = HelpLoadSavedVariables(savedVvariable,defVvariable, errorString, char(handles.Settings.Valgorithmname(algNum)));
+            varChoice = HelpLoadSavedVariables(savedVariableValues,defVariableValues, errorString, char(handles.Settings.ModuleNames(algNum)));
             cd(CurrentDirectory);
         end
     else
         errorString = 'Variable Revision Numbers are not the same';
         cd(Pathname);
-        savedVvariable = Settings.Vvariable(algNum,1:Settings.numVariables(algNum));
-        for i=1:(length(savedVvariable)),
-            if (iscellstr(savedVvariable(i)) == 0)
-                savedVvariable(i) = {''};
+        savedVariableValues = Settings.VariableValues(algNum,1:Settings.NumbersOfVariables(algNum));
+        for i=1:(length(savedVariableValues)),
+            if (iscellstr(savedVariableValues(i)) == 0)
+                savedVariableValues(i) = {''};
             end
         end
-        varChoice = HelpLoadSavedVariables(savedVvariable,defVvariable, errorString, char(handles.Settings.Valgorithmname(algNum)));
+        varChoice = HelpLoadSavedVariables(savedVariableValues,defVariableValues, errorString, char(handles.Settings.ModuleNames(algNum)));
         cd(CurrentDirectory);
     end
     if (varChoice == 1),
-        handles.Settings.Vvariable(algNum,1:handles.numVariables(algNum)) = defVvariable(1:handles.numVariables(algNum));
-        handles.Settings.Vvariable(algNum,1:Settings.numVariables(algNum)) = Settings.Vvariable(algNum,1:Settings.numVariables(algNum));
+        handles.Settings.VariableValues(algNum,1:handles.Settings.NumbersOfVariables(algNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(algNum));
+        handles.Settings.VariableValues(algNum,1:Settings.NumbersOfVariables(algNum)) = Settings.VariableValues(algNum,1:Settings.NumbersOfVariables(algNum));
     elseif (varChoice == 2),
-        handles.Settings.Vvariable(algNum,1:handles.numVariables(algNum)) = defVvariable(1:handles.numVariables(algNum));
+        handles.Settings.VariableValues(algNum,1:handles.Settings.NumbersOfVariables(algNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(algNum));
     end
 end
 
-handles.Settings.Vpixelsize = Settings.Vpixelsize;
+try 
+    handles.Settings.PixelSize = Settings.PixelSize;
+catch %%% Allows compatibility with old settings files which used a different nomenclature.
+    handles.Settings.PixelSize = Settings.Vpixelsize;
+end
 
-handles.numAlgorithms = 0;
-handles.numAlgorithms = length(handles.Settings.Valgorithmname);
+handles.Current.NumberOfModules = 0;
+handles.Current.NumberOfModules = length(handles.Settings.ModuleNames);
 
-if (isfield(Settings,'numVariables')),
-    handles.numVariables = max(handles.numVariables,Settings.numVariables);
+if (isfield(Settings,'NumbersOfVariables')),
+    handles.Settings.NumbersOfVariables = max(handles.Settings.NumbersOfVariables,Settings.NumbersOfVariables);
 end
 
 
-contents = handles.Settings.Valgorithmname;
+contents = handles.Settings.ModuleNames;
 set(handles.AlgorithmBox,'String',contents);
 set(handles.AlgorithmBox,'Value',1);
-set(handles.PixelSizeEditBox,'string',handles.Settings.Vpixelsize);
+set(handles.PixelSizeEditBox,'string',handles.Settings.PixelSize);
 
 %%% Update handles structure.
 guidata(hObject,handles);
-ViewAlgorithm(handles);
+ViewModule(handles);
 
 %%% If the user loaded settings from an output file, prompt them to
 %%% save it as a separate Settings file for future use.
@@ -939,67 +950,70 @@ if isfield(LoadedSettings, 'handles'),
 end
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
-function [vVariable numVariables VarRevNum] = LoadSettings_Helper(Pathname, AlgorithmName)
+%%% SUBFUNCTION %%%
+function [VariableValues NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName)
 
-vVariable = {[]};
+VariableValues = {[]};
 VarRevNum = 0;
-numVariables = 0;
+NumbersOfVariables = 0;
 
 try
-    AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
-    fid=fopen(fullfile(Pathname,AlgorithmNamedotm));
+    ModuleNamedotm = ['Alg' ModuleName '.m'];
+    fid=fopen(fullfile(Pathname,ModuleNamedotm));
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
         if (strncmp(output,'%defaultVAR',11) == 1),
             displayval = output(17:end);
             istr = output(12:13);
             i = str2num(istr);
-            vVariable(i) = {displayval};
-            numVariables = i;
+            VariableValues(i) = {displayval};
+            NumbersOfVariables = i;
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
             VarRevNum = str2num(output(29:30));
         end
     end
     fclose(fid);
 catch
-    errordlg('Algorithm could not be found in directory specified','Error')
+    errordlg('Module could not be found in directory specified','Error')
 end
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE SETTINGS BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveSettingsButton.
 function SaveSettingsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 %%% The "Settings" variable is saved to the file name the user chooses.
 [FileName,Pathname] = uiputfile('*.mat', 'Save Settings As...');
 %%% Allows canceling.
 if FileName ~= 0
   %%% Checks if a field is present, and if it is, the value is stored in the 
-  %%% structure 'Settings' with the same name
-  
-  if isfield(handles.Settings,'Vvariable'),
-      Settings.Vvariable = handles.Settings.Vvariable;
+  %%% structure 'Settings' with the same name.
+  if isfield(handles.Settings,'VariableValues'),
+      Settings.VariableValues = handles.Settings.VariableValues;
   end
-  if isfield(handles.Settings,'Valgorithmname'),
-      Settings.Valgorithmname = handles.Settings.Valgorithmname;
+  if isfield(handles.Settings,'ModuleNames'),
+      Settings.ModuleNames = handles.Settings.ModuleNames;
   end
-  if isfield(handles,'numVariables'),
-      Settings.numVariables = handles.numVariables;
+  if isfield(handles.Settings,'NumbersOfVariables'),
+      Settings.NumbersOfVariables = handles.Settings.NumbersOfVariables;
   end
-  if isfield(handles.Settings,'Vpixelsize'),
-    Settings.Vpixelsize = handles.Settings.Vpixelsize;
+  if isfield(handles.Settings,'PixelSize'),
+    Settings.PixelSize = handles.Settings.PixelSize;
   end
-  if isfield(handles,'VariableRevisionNumber'),
-      Settings.VariableRevisionNumber = handles.VariableRevisionNumber;
+  if isfield(handles.Settings,'VariableRevisionNumbers'),
+      Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
   end
   save([Pathname FileName],'Settings')
   helpdlg('The settings file has been written.')
 end
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PIXEL SIZE EDIT BOX %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
 function PixelSizeEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1020,235 +1034,413 @@ elseif user_entry<=0
 else
 %%% Gets the user entry and stores it in the handles structure.
 UserEntry = get(handles.PixelSizeEditBox,'string');
-handles.Settings.Vpixelsize = UserEntry;
+handles.Settings.PixelSize = UserEntry;
 guidata(gcbo, handles);
 end
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SET PREFERENCES BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SetPreferencesButton.
 function SetPreferencesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+global NewData
 %%% Determine what the current directory is, so we can change back
 %%% when this process is done.
 CurrentDirectory = cd;
 %%% Change to the Matlab root directory.
 cd(matlabroot)
-%%% If the CellProfilerPreferences.mat file does not exist in the matlabroot
-%%% directory, change to the current directory.
+
+%%% Tries to load already saved preferences file so the values can be
+%%% presented in the dialog box.
+
+%%% Looks for the CellProfilerPreferences.mat file in the matlabroot
+%%% directory, and if not found there, looks in the current directory.
 if exist('CellProfilerPreferences.mat','file') == 0
     cd(CurrentDirectory);
     try load CellProfilerPreferences
     end
 else
-    %%% If the CellProfilerPreferences.mat file exists, load it.
     load CellProfilerPreferences
 end
 
-%%% (1) GET DEFAULT PIXEL SIZE
-%%% Tries to load the pixel size from the existing file, to use it in the
-%%% dialog box below.
+%%% Tries to load individual values saved in preferences.
 try PixelSizeForDialogBox = PixelSize;
 catch PixelSizeForDialogBox = {'1'};
 end
-%%% Asks for the default pixel size.
-PixelSize = inputdlg('How many micrometers per pixel?','Set default pixel size',1,PixelSizeForDialogBox);
-%%% Allows canceling.
-if isempty(PixelSize) == 1
-    cd(CurrentDirectory);
-    return
+try cd(DefaultModuleDirectory)  %#ok We want to ignore MLint error checking for this line.    
+    ModuleDirectoryForDialogBox = DefaultModuleDirectory;
+catch ModuleDirectoryForDialogBox = CurrentDirectory;
+end
+try cd(DefaultImageDirectory) %#ok We want to ignore MLint error checking for this line.
+    ImageDirectoryForDialogBox = DefaultImageDirectory;
+catch ImageDirectoryForDialogBox = CurrentDirectory;
+end
+try cd(DefaultOutputDirectory) %#ok We want to ignore MLint error checking for this line.
+    OutputDirectoryForDialogBox = DefaultOutputDirectory;
+catch OutputDirectoryForDialogBox = CurrentDirectory;
 end
 
-%%% (2) GET DEFAULT ALGORITHM DIRECTORY
-try   %#ok We want to ignore MLint error checking for this line.
-  %%% Tries to change to the default algorithm directory, whose name is a variable
-  %%% that is stored in the CellProfilerPreferences.mat file.
-  cd(DefaultAlgorithmDirectory)
-end
-%%% Open a dialog box to get the directory from the user.
-DefaultAlgorithmDirectory = uigetdir(pwd, 'Where are the analysis modules?'); 
-%%% Allows canceling.
-if DefaultAlgorithmDirectory == 0
-    %%% Change back to the original directory and do nothing.
-    cd(CurrentDirectory);
-    return
-end
+%%% Opens a dialog box to retrieve input from the user.
+%%% Sets the functions of the buttons and edit boxes in the dialog
+%%% box.
+PixelSizeEditBoxCallback = 'PixelSize = str2double(get(gco,''string'')); if isempty(PixelSize) == 1, PixelSize = {''1''}, set(gco,''string'',PixelSize), end, clear';
+ImageDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); try cd(CurrentChoice), end, DefaultImageDirectory = uigetdir(cd,''Select the default image directory''); if DefaultImageDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultImageDirectory), end, clear';
+ImageDirEditBoxCallback = 'DefaultImageDirectory = get(gco,''string''); if isempty(DefaultImageDirectory) == 1; DefaultImageDirectory = cd; set(gco,''string'',DefaultImageDirectory); end, clear';
+OutputDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); try cd(CurrentChoice), end, DefaultOutputDirectory = uigetdir(cd,''Select the default output directory''); if DefaultOutputDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultOutputDirectory), end, clear';
+OutputDirEditBoxCallback = 'DefaultOutputDirectory = get(gco,''string''); if isempty(DefaultOutputDirectory) == 1; DefaultOutputDirectory = cd; set(gco,''string'',DefaultOutputDirectory), end, clear';
+ModuleDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); try cd(CurrentChoice), end, DefaultModuleDirectory = uigetdir(cd,''Select the directory where modules are stored''); if DefaultModuleDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultModuleDirectory), end, clear';
+ModuleDirEditBoxCallback = 'DefaultModuleDirectory = get(gco,''string''); if isempty(DefaultModuleDirectory) == 1; DefaultModuleDirectory = cd; set(gco,''string'',DefaultModuleDirectory), end, clear';
 
-%%% (3) GET WORKING DIRECTORY
-%%% Tries to change to the working directory, whose name is a variable
-%%% that is stored in the CellProfilerPreferences.mat file.
-try cd(WorkingDirectory) %#ok We want to ignore MLint error checking for this line.
-end
-%%% Open a dialog box to get the directory from the user.
-WorkingDirectory = uigetdir(pwd, 'Which folder should be the default for your output and settings files?'); 
-%%% Allows canceling.
-if WorkingDirectory == 0
-    %%% Change back to the original directory and do nothing.
-    cd(CurrentDirectory);
-    return
-end
+%%% TODO: Add error checking to each directory edit box (does pathname exist).
+%%% TODO: Add error checking to pixel size box (is it a number).
 
-%%% (4) SAVE PREFERENCES
-%%% The pathname is saved as a variable in a .mat file in the Matlab root
-%%% directory. In this way, the file can always be found by the Load
-%%% algorithm function. The first argument is the name of the .mat file;
-%%% the remaining arguments are the names of the variables which are saved.
-try cd(matlabroot)
-    save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
-    helpdlg('Your CellProfiler Preferences were successfully set.  They are contained in the Matlab root directory in a file called CellProfilerPreferences.mat.')
-    handles.Settings.Vpixelsize = PixelSize{1};
-    handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
-    handles.Vworkingdirectory = WorkingDirectory;
-    set(handles.PixelSizeEditBox,'string',PixelSize{1});
-    %%% Update handles structure.
-    guidata(hObject,handles);
-catch
-    cd(CurrentDirectory)
-    try save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
-        helpdlg('You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly while you are in the current directory.')
-        handles.Settings.Vpixelsize = PixelSize{1};
-        handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
-        handles.Vworkingdirectory = WorkingDirectory;
-        set(handles.PixelSizeEditBox,'string',PixelSize{1});
-        %%% Update handles structure.
-        guidata(hObject,handles);
-    catch
-        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.');
-        handles.Settings.Vpixelsize = PixelSize{1};
-        handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
-        handles.Vworkingdirectory = WorkingDirectory;
-        set(handles.PixelSizeEditBox,'string',PixelSize{1});
-        %%% Update handles structure.
-        guidata(hObject,handles);
+SaveButtonCallback = 'SetPreferencesWindowHandle = findobj(''name'',''SetPreferences''); global NewData, PixelSizeEditBoxHandle = findobj(''Tag'',''PixelSizeEditBox''); ImageDirEditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); OutputDirEditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); ModuleDirEditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); PixelSize = get(PixelSizeEditBoxHandle,''string''); PixelSize = PixelSize{1}; DefaultImageDirectory = get(ImageDirEditBoxHandle,''string''); DefaultOutputDirectory = get(OutputDirEditBoxHandle,''string''); DefaultModuleDirectory = get(ModuleDirEditBoxHandle,''string''); try cd(matlabroot), save CellProfilerPreferences PixelSize DefaultImageDirectory DefaultOutputDirectory DefaultModuleDirectory, helpdlg(''Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.''), catch, try save CellProfilerPreferences PixelSize DefaultImageDirectory DefaultOutputDirectory DefaultModuleDirectory, helpdlg(''You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly when you start CellProfiler from the current directory.''), catch, helpdlg(''CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.''); end, end, NewData.PixelSize = PixelSize; NewData.DefaultImageDirectory = DefaultImageDirectory; NewData.DefaultOutputDirectory = DefaultOutputDirectory; NewData.DefaultModuleDirectory = DefaultModuleDirectory; clear PixelSize* *Dir* , close(SetPreferencesWindowHandle), clear SetPreferencesWindowHandle';
+CancelButtonCallback = 'delete(gcf)';
+
+%%% Creates the dialog box and its text, buttons, and edit boxes.
+SetPreferencesWindowHandle = figure(...
+'Units','characters',...
+'Color',[0.701960784313725 0.701960784313725 0.701960784313725],...
+'Colormap',[0 0 0.5625;0 0 0.625;0 0 0.6875;0 0 0.75;0 0 0.8125;0 0 0.875;0 0 0.9375;0 0 1;0 0.0625 1;0 0.125 1;0 0.1875 1;0 0.25 1;0 0.3125 1;0 0.375 1;0 0.4375 1;0 0.5 1;0 0.5625 1;0 0.625 1;0 0.6875 1;0 0.75 1;0 0.8125 1;0 0.875 1;0 0.9375 1;0 1 1;0.0625 1 1;0.125 1 0.9375;0.1875 1 0.875;0.25 1 0.8125;0.3125 1 0.75;0.375 1 0.6875;0.4375 1 0.625;0.5 1 0.5625;0.5625 1 0.5;0.625 1 0.4375;0.6875 1 0.375;0.75 1 0.3125;0.8125 1 0.25;0.875 1 0.1875;0.9375 1 0.125;1 1 0.0625;1 1 0;1 0.9375 0;1 0.875 0;1 0.8125 0;1 0.75 0;1 0.6875 0;1 0.625 0;1 0.5625 0;1 0.5 0;1 0.4375 0;1 0.375 0;1 0.3125 0;1 0.25 0;1 0.1875 0;1 0.125 0;1 0.0625 0;1 0 0;0.9375 0 0;0.875 0 0;0.8125 0 0;0.75 0 0;0.6875 0 0;0.625 0 0;0.5625 0 0],...
+'DockControls','off',...
+'InvertHardcopy',get(0,'defaultfigureInvertHardcopy'),...
+'MenuBar','none',...
+'Name','SetPreferences',...
+'NumberTitle','off',...
+'PaperPosition',get(0,'defaultfigurePaperPosition'),...
+'Position',[103.8 29.3782051282051 89.6666666666667 36],...
+'Renderer',get(0,'defaultfigureRenderer'),...
+'RendererMode','manual',...
+'Resize','off',...
+'HandleVisibility','on',...
+'Tag','figure1',...
+'Behavior',get(0,'defaultfigureBehavior'),...
+'Visible','on');
+TextHandle1 = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'HorizontalAlignment','left',...
+'Position',[3.16666666666667 23.6666666666667 82 11.3333333333333],...
+'String',{'Your preferences will be stored in a file called CellProfilerPreferences.mat';...
+    'which will be saved in the Matlab root directory, if you have write access '; ...
+    'there. Typing matlabroot at the command line will show you the Matlab root'; ...
+    'directory. The data will then be loaded every time you launch CellProfiler.'; ...
+    'If you do not have write access to the Matlab root directory, ';...
+    'CellProfilerPreferences.mat will be saved in the current directory, and ';...
+    'the data will only be used when you start CellProfiler from that directory.';...
+    'If you do not have write access to the current directory either, your '; ...
+    'preferences will be used only for the current session of CellProfiler.' },...
+'Style','text',...
+'Tag','TextHandle1',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+TextHandle2 = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'HorizontalAlignment','left',...
+'Position',[13.5 21.25 67 2],...
+'String','Enter the default pixel size (in micrometers)',...
+'Style','text',...
+'Tag','TextHandle2',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+TextHandle3 = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'HorizontalAlignment','left',...
+'Position',[3.16666666666667 18.75 70 1.58333333333333],...
+'String','Select the default image directory:',...
+'Style','text',...
+'Tag','TextHandle3',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+TextHandle4 = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'HorizontalAlignment','left',...
+'Position',[3.16666666666667 12.5 70 1.58333333333333],...
+'String','Select the default directory for output:',...
+'Style','text',...
+'Tag','TextHandle4',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+TextHandle5 = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'HorizontalAlignment','left',...
+'Position',[3.16666666666667 6.58333333333333 70 1.58333333333333],...
+'String','Select the directory where CellProfiler modules are stored:',...
+'Style','text',...
+'Tag','TextHandle5',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+SaveButton = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'Callback',SaveButtonCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[38 1 20 2],...
+'String','Save preferences',...
+'Tag','SaveButton',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+CancelButton = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'Callback',CancelButtonCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[20 1 11 2],...
+'String','Cancel',...
+'Tag','CancelButton',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+PixelSizeEditBox = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'BackgroundColor',[1 1 1],...
+'Callback',PixelSizeEditBoxCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[1.5 21.8333333333333 11.5 1.66666666666667],...
+'String',PixelSizeForDialogBox,...
+'Style','edit',...
+'Tag','PixelSizeEditBox',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+ImageDirBrowseButton = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'Callback',ImageDirBrowseButtonCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[75 18.8333333333333 11.5 1.8],...
+'String','Browse...',...
+'Tag','ImageDirBrowseButton',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+ImageDirEditBox = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'BackgroundColor',[1 1 1],...
+'Callback',ImageDirEditBoxCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[1.5 16.6666666666667 85 2],...
+'String',ImageDirectoryForDialogBox,...
+'Style','edit',...
+'Tag','ImageDirEditBox',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+OutputDirBrowseButton = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'Callback',OutputDirBrowseButtonCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[75 12.75 11.5 1.8],...
+'String','Browse...',...
+'Tag','OutputDirBrowseButton',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+OutputDirEditBox = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'BackgroundColor',[1 1 1],...
+'Callback',OutputDirEditBoxCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[1.5 10.58333333333333 85 2],...
+'String',OutputDirectoryForDialogBox,...
+'Style','edit',...
+'Tag','OutputDirEditBox',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+ModuleDirBrowseButton = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'Callback',ModuleDirBrowseButtonCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[75 6.66666666666667 11.5 1.8],...
+'String','Browse...',...
+'Tag','ModuleDirBrowseButton',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+ModuleDirEditBox = uicontrol(...
+'Parent',SetPreferencesWindowHandle,...
+'Units','characters',...
+'BackgroundColor',[1 1 1],...
+'Callback',ModuleDirEditBoxCallback,...
+'FontName','Times',...
+'FontSize',12,...
+'FontWeight','bold',...
+'Position',[1.5 4.5 85 2],...
+'String',ModuleDirectoryForDialogBox,...
+'Style','edit',...
+'Tag','ModuleDirEditBox',...
+'Behavior',get(0,'defaultuicontrolBehavior'));
+
+%%% Waits for the user to respond to the window.
+uiwait(SetPreferencesWindowHandle)
+%%% Allows canceling by checking whether NewData exists.
+if exist('NewData','var') == 1
+    if isempty(NewData) ~= 1
+        %%% Retrieves the data that the user entered, saves it to the
+        %%% handles structure, and for some data, fills it into GUI edit
+        %%% boxes.
+        handles.Settings.PixelSize = NewData.PixelSize;
+        set(handles.PixelSizeEditBox,'string', NewData.PixelSize)
+        handles.Current.DefaultImageDirectory = NewData.DefaultImageDirectory;
+        set(handles.PathToLoadEditBox,'string', NewData.DefaultImageDirectory)
+        handles.Current.DefaultOutputDirectory = NewData.DefaultOutputDirectory;
+        handles.Current.DefaultModuleDirectory = NewData.DefaultModuleDirectory;
+        clear global NewData
+        %%% Updates the handles structure to incorporate all the changes.
+        %%% Retrieves the list of image file names from the chosen directory,
+        %%% stores them in the handles structure, and displays them in the
+        %%% listbox, by faking a click on the PathToLoadEditBox.
+        handles = PathToLoadEditBox_Callback(hObject, eventdata, handles);
+        guidata(gcbo, handles);
     end
 end
-cd(CurrentDirectory);
 
-%%%%%%%%%%%%%%%%%
-%%% ADD BUTTON %%%
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ADD MODULE BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AddAlgorithm.
 function AddAlgorithm_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
-    % Find which algorithm slot number this callback was called for.
-    AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
-    AlgorithmNums = handles.numAlgorithms+1;
 
-    %%% 1. Opens a user interface to retrieve the .m file you want to use.  The
-    %%% name of that .m file is stored as the variablebox2_1
-    %%% "FirstImageAlgorithmName".
+if handles.Current.NumberOfModules == 99
+    errordlg('CellProfiler in its current state can only handle 99 modules. You have just attempted to load the 100th module. It should be fairly straightforward to modify the code in CellProfiler.m to expand its capabilities.');
+    return
+end
+% Find which module slot number this callback was called for.
+ModuleNumber = TwoDigitString(handles.Current.NumberOfModules+1);
+ModuleNums = handles.Current.NumberOfModules+1;
 
-    %%% First, the current directory is stored so we can switch back to it at
-    %%% the end of this step:
-    CurrentDirectory = cd;
-    %%% Change to the default algorithm directory, whose name is a variable
-    %%% that is stored in that .mat file. It is within a try-end pair because
-    %%% the user may have changed the folder names leading up to this directory
-    %%% sometime after saving the Preferences.
-    try cd(handles.Vdefaultalgorithmdirectory) %#ok We want to ignore MLint error checking for this line.
+%%% 1. Opens a user interface to retrieve the .m file you want to use.
+
+%%% First, the current directory is stored so we can switch back to it at
+%%% the end of this step:
+CurrentDirectory = cd;
+%%% Change to the default module directory, whose name is a variable
+%%% that is stored in that .mat file. It is within a try-end pair because
+%%% the user may have changed the folder names leading up to this directory
+%%% sometime after saving the Preferences.
+try cd(handles.Current.DefaultModuleDirectory) %#ok We want to ignore MLint error checking for this line.
+end
+%%% Now, when the dialog box is opened to retrieve an module, the
+%%% directory will be the default module directory.
+[ModuleNamedotm,Pathname] = uigetfile('Alg*.m',...
+    'Choose an image analysis module');
+%%% Change back to the original directory.
+cd(CurrentDirectory)
+
+%%% 2. If the user presses "Cancel", the ModuleNamedotm = 0, and
+%%% everything should be left as it was.  If the module is not on
+%%% Matlab's search path, the user is warned.
+if ModuleNamedotm == 0,
+    %%% If the module's .m file is not found on the search path, the result
+    %%% of exist is zero.
+elseif exist(ModuleNamedotm,'file') == 0
+    msgbox(['The .m file ', ModuleNamedotm, ...
+        ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
+    %%% The folder containing the desired .m file is added to Matlab's search path.
+    addpath(Pathname)
+    %%% Doublecheck that the module exists on Matlab's search path.
+    if exist(ModuleNamedotm,'file') == 0
+        errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
     end
-    %%% Now, when the dialog box is opened to retrieve an algorithm, the
-    %%% directory will be the default algorithm directory.
-    [AlgorithmNamedotm,Pathname] = uigetfile('Alg*.m',...
-        'Choose an image analysis module');
-    %%% Change back to the original directory.
-    cd(CurrentDirectory)
+else
+    %%% 3. The last two characters (=.m) are removed from the
+    %%% ModuleName.m and called ModuleName.
+    ModuleName = ModuleNamedotm(4:end-2);
+    %%% The name of the module is shown in a text box in the GUI (the text
+    %%% box is called ModuleName1.) and in a text box in the GUI which
+    %%% displays the current module (whose settings are shown).
+    
+    %%% 4. Saves the ModuleName to the handles structure.
+    handles.Settings.ModuleNames{ModuleNums} = ModuleName;
+    contents = get(handles.AlgorithmBox,'String');
+    contents{ModuleNums} = ModuleName;
+    set(handles.AlgorithmBox,'String',contents);
 
-    %%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and
-    %%% everything should be left as it was.  If the algorithm is not on
-    %%% Matlab's search path, the user is warned.
-    if AlgorithmNamedotm == 0,
-        %%% If the algorithm's .m file is not found on the search path, the result
-        %%% of exist is zero.
-    elseif exist(AlgorithmNamedotm,'file') == 0
-        msgbox(['The .m file ', AlgorithmNamedotm, ...
-            ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
-        %%% The folder containing the desired .m file is added to Matlab's search path.
-        addpath(Pathname)
-        %%% Doublecheck that the algorithm exists on Matlab's search path.
-        if exist(AlgorithmNamedotm,'file') == 0
-            errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
+    %%% 5. The text description for each variable for the chosen module is
+    %%% extracted from the module's .m file and displayed.
+    fid=fopen([Pathname ModuleNamedotm]);
+
+    while 1;
+        output = fgetl(fid); if ~ischar(output); break; end;
+
+        if strncmp(output,'%defaultVAR',11) == 1
+            displayval = output(17:end);
+            istr = output(12:13);
+            i = str2num(istr);
+            handles.Settings.VariableValues(ModuleNums, i) = {displayval};
+            handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = i;
+        elseif strncmp(output,'%%%VariableRevisionNumber',25) == 1
+            handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = str2num(output(29:30));
         end
-    else
+    end
+    fclose(fid);
 
-        %%% 3. The last two characters (=.m) are removed from the
-        %%% AlgorithmName.m and called AlgorithmName.
-        AlgorithmName = AlgorithmNamedotm(4:end-2);
-        %%% The name of the algorithm is shown in a text box in the GUI (the text
-        %%% box is called AlgorithmName1.) and in a text box in the GUI which
-        %%% displays the current algorithm (whose settings are shown).
-
-
-        %%% 4. Saves the AlgorithmName to the handles structure.
-        handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
-        contents = get(handles.AlgorithmBox,'String');
-        contents{AlgorithmNums} = AlgorithmName;
-        set(handles.AlgorithmBox,'String',contents);
-
-        %%% 5. The text description for each variable for the chosen algorithm is
-        %%% extracted from the algorithm's .m file and displayed.
-        fid=fopen([Pathname AlgorithmNamedotm]);
-
-        while 1;
-            output = fgetl(fid); if ~ischar(output); break; end;
-
-            if (strncmp(output,'%defaultVAR',11) == 1),
-                displayval = output(17:end);
-                istr = output(12:13);
-                i = str2num(istr);
-                handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
-                handles.numVariables(str2double(AlgorithmNumber)) = i;
-            elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
-                handles.VariableRevisionNumber = str2num(output(29:30));
-            end
-        end
-        fclose(fid);
-
-        %%% 6. Update handles.numAlgorithms
-        if str2double(AlgorithmNumber) > handles.numAlgorithms,
-            handles.numAlgorithms = str2double(AlgorithmNumber);
-        end
-
-        %%% 7. Choose Loaded Algorithm in Listbox
-        set(handles.AlgorithmBox,'Value',handles.numAlgorithms);
-
-        %%% Updates the handles structure to incorporate all the changes.
-        guidata(gcbo, handles);
-        ViewAlgorithm(handles);
+    %%% 6. Update handles.Current.NumberOfModules
+    if str2double(ModuleNumber) > handles.Current.NumberOfModules,
+        handles.Current.NumberOfModules = str2double(ModuleNumber);
     end
 
+    %%% 7. Choose Loaded Module in Listbox
+    set(handles.AlgorithmBox,'Value',handles.Current.NumberOfModules);
 
-%%%%%%%%%%%%%%%%%
+    %%% Updates the handles structure to incorporate all the changes.
+    guidata(gcbo, handles);
+    ViewModule(handles);
+end
 
-function ViewAlgorithm(handles)
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-if (length(AlgorithmHighlighted) > 0)
-    AlgorithmNumber = AlgorithmHighlighted(1);
-    if( handles.numAlgorithms > 0 )
-
+%%% SUBFUNCTION %%%
+function ViewModule(handles)
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+if (length(ModuleHighlighted) > 0)
+    ModuleNumber = ModuleHighlighted(1);
+    if( handles.Current.NumberOfModules > 0 )
         %%% 2. Sets all VariableBox edit boxes and all
         %%% VariableDescriptions to be invisible.
-        for i = 1:handles.MaxVariables,
+        for i = 1:handles.Current.MaxNumberOfVariables,
             set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
             set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
         end
 
-        %%% 2.25 Remove slider and move panel back to original position
-        %%% if panel location gets changed in guide, must change the
-        %%% position values here as well
+        %%% 2.25 Removes slider and moves panel back to original
+        %%% position.
+        %%% If panel location gets changed in GUIDE, must change the
+        %%% position values here as well.
         set(handles.variablepanel, 'position', [235 80 563 297]);
         set(handles.slider1,'visible','off');
 
-        %%% 2.5 Checks whether an algorithm is loaded in this slot.
+        %%% 2.5 Checks whether an module is loaded in this slot.
         contents = get(handles.AlgorithmBox,'String');
-        AlgorithmName = contents{AlgorithmNumber};
+        ModuleName = contents{ModuleNumber};
 
         %%% 3. Extracts and displays the variable descriptors from the .m file.
-        AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
-        if exist(AlgorithmNamedotm,'file') ~= 2
-            errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this module will be displayed, but this module will not run properly.']);
+        ModuleNamedotm = strcat('Alg',ModuleName,'.m');
+        if exist(ModuleNamedotm,'file') ~= 2
+            errordlg(['The image analysis module named ', ModuleNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this module will be displayed, but this module will not run properly.']);
         else
-            fid=fopen(AlgorithmNamedotm);
-
+            fid=fopen(ModuleNamedotm);
             while 1;
                 output = fgetl(fid); if ~ischar(output); break; end;
                 if (strncmp(output,'%textVAR',8) == 1);
@@ -1258,13 +1450,12 @@ if (length(AlgorithmHighlighted) > 0)
             end
             fclose(fid);
         end
-        %%% 4. The stored values for the variables are extracted from the handles
-        %%% structure and displayed in the edit boxes.
-        
+        %%% 4. Extracts the stored values for the variables from the handles
+        %%% structure and displays in the edit boxes.
         numberExtraLinesOfDescription = 0;
         numberOfLongBoxes = 0;
-        if (lastVariableCheck < handles.numVariables(AlgorithmNumber))
-            lastVariableCheck = handles.numVariables(AlgorithmNumber);
+        if (lastVariableCheck < handles.Settings.NumbersOfVariables(ModuleNumber))
+            lastVariableCheck = handles.Settings.NumbersOfVariables(ModuleNumber);
         end
         for i=1:lastVariableCheck,
             if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
@@ -1281,51 +1472,47 @@ if (length(AlgorithmHighlighted) > 0)
                 set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 292+linesVarDes-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 464 23*(linesVarDes)-3*linesVarDes]);
             end
 
-            if (i <= handles.numVariables(AlgorithmNumber))
-                if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
-                    vVariableString = char(handles.Settings.Vvariable{AlgorithmNumber, i});
-                    if ( ( length(vVariableString) > 13) | (flagExist) )
+            if (i <= handles.Settings.NumbersOfVariables(ModuleNumber))
+                if iscellstr(handles.Settings.VariableValues(ModuleNumber, i));
+                    VariableValuesString = char(handles.Settings.VariableValues{ModuleNumber, i});
+                    if ( ( length(VariableValuesString) > 13) | (flagExist) )
                         numberOfLongBoxes = numberOfLongBoxes+1;
                         set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
                     else
                         set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 295-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 94 23]);
                     end
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'string',vVariableString,'visible','on');
+                    set(handles.(['VariableBox' TwoDigitString(i)]),'string',VariableValuesString,'visible','on');
                 else
                     set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
                 end
             end
         end
 
-        %%% 5.  Set the slider
-
-        if((handles.numVariables(AlgorithmNumber)+numberOfLongBoxes+numberExtraLinesOfDescription) > 12)
+        %%% 5.  Sets the slider
+        if((handles.Settings.NumbersOfVariables(ModuleNumber)+numberOfLongBoxes+numberExtraLinesOfDescription) > 12)
             set(handles.slider1,'visible','on');
-            set(handles.slider1,'max',((handles.numVariables(AlgorithmNumber)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25));
+            set(handles.slider1,'max',((handles.Settings.NumbersOfVariables(ModuleNumber)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25));
             set(handles.slider1,'value',get(handles.slider1,'max'));
         end
-
-    else
-        helpdlg('Module not loaded.');
+    else helpdlg('No modules are loaded.');
     end
-else
-    helpdlg('No module highlighted.');
+else helpdlg('No module highlighted.');
 end
 
-%%%%%%%%%%%%%%%%%%%%
-%%% REMOVE BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% REMOVE MODULE BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press for RemoveAlgorithm button.
 function RemoveAlgorithm_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, 'Confirm');
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, 'Confirm');
 
 % separated because it's called elsewhere
-function RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, ConfirmOrNot) %#ok We want to ignore MLint error checking for this line.
+function RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, ConfirmOrNot) %#ok We want to ignore MLint error checking for this line.
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
-    %%% Confirms the choice to clear the algorithm.
+    %%% Confirms the choice to clear the module.
     Answer = questdlg('Are you sure you want to clear this analysis module and its settings?','Confirm','Yes','No','Yes');
     if strcmp(Answer,'No') == 1
         return
@@ -1334,116 +1521,117 @@ end
 
 %%% 1. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
-for i = 1:handles.MaxVariables
+for i = 1:handles.Current.MaxNumberOfVariables
     set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
     set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
 
-for AlgDelete = 1:length(AlgorithmHighlighted);
-    %%% 2. Removes the AlgorithmName from the handles structure.
-    handles.Settings.Valgorithmname(AlgorithmHighlighted(AlgDelete)-AlgDelete+1) = [];
+for AlgDelete = 1:length(ModuleHighlighted);
+    %%% 2. Removes the ModuleName from the handles structure.
+    handles.Settings.ModuleNames(ModuleHighlighted(AlgDelete)-AlgDelete+1) = [];
     %%% 3. Clears the variable values in the handles structure.
-    handles.Settings.Vvariable(AlgorithmHighlighted(AlgDelete)-AlgDelete+1,:) = [];
-    %%% 4. Clears the number of variables in each algorithm slot from handles structure.
-    handles.numVariables(AlgorithmHighlighted(AlgDelete)-AlgDelete+1) = [];
+    handles.Settings.VariableValues(ModuleHighlighted(AlgDelete)-AlgDelete+1,:) = [];
+    %%% 4. Clears the number of variables in each module slot from handles structure.
+    handles.Settings.NumbersOfVariables(ModuleHighlighted(AlgDelete)-AlgDelete+1) = [];
+    %%% 4. Clears the Variable Revision Numbers in each module slot from handles structure.
+    handles.Settings.VariableRevisionNumbers(ModuleHighlighted(AlgDelete)-AlgDelete+1) = [];
+
 end
 
-%%% 5. Update the number of algorithms loaded
-handles.numAlgorithms = 0;
-handles.numAlgorithms = length(handles.Settings.Valgorithmname);
+%%% 5. Update the number of modules loaded
+handles.Current.NumberOfModules = 0;
+handles.Current.NumberOfModules = length(handles.Settings.ModuleNames);
 
-%%% 6. Sets the proper algorithm name to "No analysis module loaded"
-if(isempty(handles.Settings.Valgorithmname))
-    contents = {'No Algorithms Loaded'};
+%%% 6. Sets the proper module name to "No analysis module loaded"
+if(isempty(handles.Settings.ModuleNames))
+    contents = {'No Modules Loaded'};
 else
-    contents = handles.Settings.Valgorithmname;
+    contents = handles.Settings.ModuleNames;
 end
 
 set(handles.AlgorithmBox,'String',contents);
 
-while((isempty(AlgorithmHighlighted)==0) && (AlgorithmHighlighted(length(AlgorithmHighlighted)) > handles.numAlgorithms) )
-    AlgorithmHighlighted(length(AlgorithmHighlighted)) = [];
+while((isempty(ModuleHighlighted)==0) && (ModuleHighlighted(length(ModuleHighlighted)) > handles.Current.NumberOfModules) )
+    ModuleHighlighted(length(ModuleHighlighted)) = [];
 end
 
-if(handles.numAlgorithms == 0)
-    AlgorithmHighlighted = 1;
-elseif (isempty(AlgorithmHighlighted))
-    AlgorithmHighlighted = handles.numAlgorithms;
+if(handles.Current.NumberOfModules == 0)
+    ModuleHighlighted = 1;
+elseif (isempty(ModuleHighlighted))
+    ModuleHighlighted = handles.Current.NumberOfModules;
 end
 
-set(handles.AlgorithmBox,'Value',AlgorithmHighlighted);
+set(handles.AlgorithmBox,'Value',ModuleHighlighted);
 
 guidata(gcbo, handles);
-ViewAlgorithm(handles);
+ViewModule(handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function MoveUpButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-if(handles.numAlgorithms < 1 || AlgorithmHighlighted(1) == 1)
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+if(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
 else
-    for AlgUp = 1:length(AlgorithmHighlighted);
-        AlgorithmUp = AlgorithmHighlighted(AlgUp)-1;
-        AlgorithmNow = AlgorithmHighlighted(AlgUp);
-        %%% 1. Switches AlgorithmNames
-        AlgorithmUpName = char(handles.Settings.Valgorithmname(AlgorithmUp));
-        AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
-        handles.Settings.Valgorithmname{AlgorithmUp} = AlgorithmName;
-        handles.Settings.Valgorithmname{AlgorithmNow} = AlgorithmUpName;
+    for AlgUp = 1:length(ModuleHighlighted);
+        ModuleUp = ModuleHighlighted(AlgUp)-1;
+        ModuleNow = ModuleHighlighted(AlgUp);
+        %%% 1. Switches ModuleNames
+        ModuleUpName = char(handles.Settings.ModuleNames(ModuleUp));
+        ModuleName = char(handles.Settings.ModuleNames(ModuleNow));
+        handles.Settings.ModuleNames{ModuleUp} = ModuleName;
+        handles.Settings.ModuleNames{ModuleNow} = ModuleUpName;
         %%% 2. Copy then clear the variable values in the handles structure.
-        copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
-        handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmUp,:);
-        handles.Settings.Vvariable(AlgorithmUp,:) = copyVariables;
+        copyVariables = handles.Settings.VariableValues(ModuleNow,:);
+        handles.Settings.VariableValues(ModuleNow,:) = handles.Settings.VariableValues(ModuleUp,:);
+        handles.Settings.VariableValues(ModuleUp,:) = copyVariables;
         %%% 3. Copy then clear the num of variables in the handles
         %%% structure.
-        copyNumVariables = handles.numVariables(AlgorithmNow);
-        handles.numVariables(AlgorithmNow) = handles.numVariables(AlgorithmUp);
-        handles.numVariables(AlgorithmUp) = copyNumVariables;
+        copyNumVariables = handles.Settings.NumbersOfVariables(ModuleNow);
+        handles.Settings.NumbersOfVariables(ModuleNow) = handles.Settings.NumbersOfVariables(ModuleUp);
+        handles.Settings.NumbersOfVariables(ModuleUp) = copyNumVariables;
     end
     %%% 4. Changes the Listbox to show the changes
-    contents = handles.Settings.Valgorithmname;
-    AlgorithmHighlighted = AlgorithmHighlighted-1;
+    contents = handles.Settings.ModuleNames;
+    ModuleHighlighted = ModuleHighlighted-1;
     set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',AlgorithmHighlighted);
+    set(handles.AlgorithmBox,'Value',ModuleHighlighted);
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
-    ViewAlgorithm(handles)
+    ViewModule(handles)
 end
 
-%%%%%%%
-
 function MoveDownButton_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-if(handles.numAlgorithms<1 || AlgorithmHighlighted(length(AlgorithmHighlighted)) >= handles.numAlgorithms)
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+if(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
 else
-    for AlgDown = 1:length(AlgorithmHighlighted);
-        AlgorithmDown = AlgorithmHighlighted(AlgDown) + 1;
-        AlgorithmNow = AlgorithmHighlighted(AlgDown);
-        %%% 1. Saves the AlgorithmName
-        AlgorithmDownName = char(handles.Settings.Valgorithmname(AlgorithmDown));
-        AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
-        handles.Settings.Valgorithmname{AlgorithmDown} = AlgorithmName;
-        handles.Settings.Valgorithmname{AlgorithmNow} = AlgorithmDownName;
+    for AlgDown = 1:length(ModuleHighlighted);
+        ModuleDown = ModuleHighlighted(AlgDown) + 1;
+        ModuleNow = ModuleHighlighted(AlgDown);
+        %%% 1. Saves the ModuleName
+        ModuleDownName = char(handles.Settings.ModuleNames(ModuleDown));
+        ModuleName = char(handles.Settings.ModuleNames(ModuleNow));
+        handles.Settings.ModuleNames{ModuleDown} = ModuleName;
+        handles.Settings.ModuleNames{ModuleNow} = ModuleDownName;
         %%% 2. Copy then clear the variable values in the handles structure.
-        copyVariables = handles.Settings.Vvariable(AlgorithmNow,:);
-        handles.Settings.Vvariable(AlgorithmNow,:) = handles.Settings.Vvariable(AlgorithmDown,:);
-        handles.Settings.Vvariable(AlgorithmDown,:) = copyVariables;
+        copyVariables = handles.Settings.VariableValues(ModuleNow,:);
+        handles.Settings.VariableValues(ModuleNow,:) = handles.Settings.VariableValues(ModuleDown,:);
+        handles.Settings.VariableValues(ModuleDown,:) = copyVariables;
         %%% 3. Copy then clear the num of variables in the handles
         %%% structure.
-        copyNumVariables = handles.numVariables(AlgorithmNow);
-        handles.numVariables(AlgorithmNow) = handles.numVariables(AlgorithmDown);
-        handles.numVariables(AlgorithmDown) = copyNumVariables;
+        copyNumVariables = handles.Settings.NumbersOfVariables(ModuleNow);
+        handles.Settings.NumbersOfVariables(ModuleNow) = handles.Settings.NumbersOfVariables(ModuleDown);
+        handles.Settings.NumbersOfVariables(ModuleDown) = copyNumVariables;
     end
     %%% 4. Changes the Listbox to show the changes
-    contents = handles.Settings.Valgorithmname;
+    contents = handles.Settings.ModuleNames;
     set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',AlgorithmHighlighted+1);
-    AlgorithmHighlighted = AlgorithmHighlighted+1;
+    set(handles.AlgorithmBox,'Value',ModuleHighlighted+1);
+    ModuleHighlighted = ModuleHighlighted+1;
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
-    ViewAlgorithm(handles)
+    ViewModule(handles)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1455,90 +1643,136 @@ end
 
 function CloseFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global closeFigures;
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-for i=1:length(AlgorithmHighlighted),
-        closeFigures(length(closeFigures)+1) = AlgorithmHighlighted(i);
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+for i=1:length(ModuleHighlighted),
+        closeFigures(length(closeFigures)+1) = ModuleHighlighted(i);
 end
 guidata(hObject, handles);
 
-
-% --- Executes on button press in OpenFigureButton.
 function OpenFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global openFigures;
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-for i=1:length(AlgorithmHighlighted),
-        openFigures(length(openFigures)+1) = AlgorithmHighlighted(i);
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+for i=1:length(ModuleHighlighted),
+        openFigures(length(openFigures)+1) = ModuleHighlighted(i);
 end
 guidata(hObject, handles);
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles)
+function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% This function stores a variable's value in the handles structure, 
-%%% when given the Algorithm Number, the Variable Number, 
+%%% when given the Module Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-
-handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber)) = {UserEntry};
+handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
 guidata(gcbo, handles);
 
-
-function [AlgorithmNumber] = whichactive(handles)
-AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
-AlgorithmNumber = AlgorithmHighlighted(1);
+function [ModuleNumber] = whichactive(handles)
+ModuleHighlighted = get(handles.AlgorithmBox,'Value');
+ModuleNumber = ModuleHighlighted(1);
     
-% --- Executes during object creation, after setting all properties.
 function VariableBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
     set(hObject,'BackgroundColor',[1 1 1])
 
-
 function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% The following lines fetch the contentvs of the edit box,
-%%% determine which algorithm we are dealing with at the moment (by
-%%% running the "whichactive" subfunction), and call the storevariable
-%%% function.
+%%% Fetches the contents of the edit box, determines which module
+%%% we are dealing with at the moment (by running the "whichactive"
+%%% subfunction), and calls the storevariable function.
 VariableName = get(hObject,'tag');
 VariableNumberStr = VariableName(12:13);
 
 UserEntry = get(handles.(['VariableBox' VariableNumberStr]),'string');
-AlgorithmNumber = whichactive(handles);
+ModuleNumber = whichactive(handles);
 if isempty(UserEntry)
   errordlg('Variable boxes must not be left blank')
   set(handles.(['VariableBox' VariableNumberStr]),'string', 'Fill in');
-  storevariable(AlgorithmNumber,VariableNumberStr, 'Fill in', handles);
+  storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
 else
-  if AlgorithmNumber == 0,     
+  if ModuleNumber == 0,     
     errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred')
   else
-    storevariable(AlgorithmNumber,VariableNumberStr,UserEntry, handles);
+    storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% AlGORITHM BOXES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% VARIABLE WINDOW SLIDER %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Executes on slider movement.
+function slider1_Callback(hObject, eventdata, handles)
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range
+%        of slider
+scrollPos = get(hObject,'max') - get(hObject, 'Value');
+variablepanelPos = get(handles.variablepanel, 'position');
+set(handles.variablepanel, 'position', [235 80+scrollPos 563 297]);
+
+function slider1_CreateFcn(hObject, eventdata, handles)
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+
+function handles = createVariablePanel(handles)
+for i=1:99,
+    handles.(['VariableBox' TwoDigitString(i)]) = uicontrol(...
+        'Parent',handles.variablepanel,...
+        'Units','pixels',...
+        'BackgroundColor',[1 1 1],...
+        'Callback','CellProfiler(''VariableBox_Callback'',gcbo,[],guidata(gcbo))',...
+        'FontName','Times',...
+        'FontSize',12,...
+        'Position',[470 295-25*i 94 23],...
+        'String','n/a',...
+        'Style','edit',...
+        'CreateFcn', 'CellProfiler(''VariableBox_CreateFcn'',gcbo,[],guidata(gcbo))',...
+        'Tag',['VariableBox' TwoDigitString(i)],...
+        'Behavior',get(0,'defaultuicontrolBehavior'),...
+        'Visible','off');
+
+    handles.(['VariableDescription' TwoDigitString(i)]) = uicontrol(...
+        'Parent',handles.variablepanel,...
+        'Units','pixels',...
+        'BackgroundColor',[0.699999988079071 0.699999988079071 0.899999976158142],...
+        'CData',[],...
+        'FontName','Times',...
+        'FontSize',12,...
+        'FontWeight','bold',...
+        'HorizontalAlignment','right',...
+        'Position',[2 291-25*i 465 23],...
+        'String','No analysis module has been loaded',...
+        'Style','text',...
+        'Tag',['VariableDescription' TwoDigitString(i)],...
+        'UserData',[],...
+        'Behavior',get(0,'defaultuicontrolBehavior'),...
+        'Visible','off',...
+        'CreateFcn', '');
+end
+
+%%%%%%%%%%%%%%%%%%%%%
+%%% MODULE LISTBOX %%%
+%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on selection change in AlgorithmBox.
 function AlgorithmBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 % Update handles structure
 guidata(hObject, handles);
-ViewAlgorithm(handles)
+ViewModule(handles)
 
 % --- Executes during object creation, after setting all properties.
 function AlgorithmBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 set(hObject,'BackgroundColor',[1 1 1]);
-initialString = 'No Algorithms Loaded';
+initialString = 'No Modules Loaded';
 initialContents{1} = initialString;
 set(hObject, 'String', initialContents);
 
 % Update handles structure
 guidata(hObject, handles);
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE LIST BOX %%%
+%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
 function ListBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1546,25 +1780,34 @@ function ListBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore M
 
 % --- Executes on selection change in ListBox.
 function ListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+%%% The list box has no function other than to display its contents,
+%%% so there is no code here.
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TECHNICAL DIAGNOSIS BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in TechnicalDiagnosisButton.
 function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% I am using this button to show the handles structure in the
-%%% main Matlab window.
-handles %#ok We want to ignore MLint error checking for this line.
-handles.Settings %#ok We want to ignore MLint error checking for this line.
-handles.Measurements %#ok We want to ignore MLint error checking for this line.
-handles.Pipeline %#ok We want to ignore MLint error checking for this line.
+%%% This button shows the handles structure in the main Matlab window.
+%%% When running a GUI, typing these lines at the command line of
+%%% Matlab is useless, because the CellProfiler GUI's workspace and
+%%% the main workspace is not shared.
+try MainHandles = handles, end %#ok We want to ignore MLint error checking for this line.
+try Current = handles.Current, end %#ok We want to ignore MLint error checking for this line.
+try Settings = handles.Settings, end %#ok We want to ignore MLint error checking for this line.
+try Pipeline = handles.Pipeline, end %#ok We want to ignore MLint error checking for this line.
+try Measurements = handles.Measurements, end %#ok We want to ignore MLint error checking for this line.
 msgbox('The handles structure has been printed out at the command line of Matlab.')
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE IMAGE AS BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveImageAsButton.
 function SaveImageAsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 MsgboxHandle = msgbox('Click twice on the image you wish to save. This window will be closed automatically - do not close it or click OK.');
 waitforbuttonpress
 ClickedImage = getimage(gca);
@@ -1594,14 +1837,16 @@ end
 delete(MsgboxHandle)
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SHOW IMAGE BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowImageButton.
 function ShowImageButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.SelectedImageDirectory)
 %%% Opens a user interface window which retrieves a file name and path 
-%%% name for the image to be used as a test image.
+%%% name for the image to be shown.
 [FileName,Pathname] = uigetfile('*.*','Select the image to view');
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
@@ -1640,7 +1885,9 @@ else
 end
 cd(CurrentDirectory)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SHOW PIXEL DATA BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowPixelDataButton.
 function ShowPixelDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1650,7 +1897,9 @@ if ~isempty(FigureNumber)
     pixval(FigureNumber,'on')
 end
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CLOSE FIGURES & TIMERS BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in CloseAllFigureWindowsButton.
 function CloseAllFigureWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1676,7 +1925,9 @@ if strcmp(Answer, 'Yes') == 1
     delete(TimerHandles)
 end
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% REVEAL DATA ANALYSIS BUTTONS BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in RevealDataAnalysisButtons.
 function RevealDataAnalysisButtons_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1689,13 +1940,16 @@ else
             set(hObject,'String','Hide')
 end
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% EXPORT MEAN DATA BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % --- Executes on button press in ExportDataButton.
 function ExportDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1708,18 +1962,21 @@ else
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5) == 1);
     FileFieldNames = Fieldnames(strncmp(Fieldnames, 'Filename', 8) == 1);
     ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+    TimeElapsedFieldNames = Fieldnames(strncmp(Fieldnames, 'TimeElapsed', 11) == 1);
     
     %%% Error detection.
-    if isempty(MeasFieldnames) && isempty(FileFieldNames) && isempty(ImportedFieldnames) 
-        errordlg('No measurements were found in the file you selected. In the handles structure contained within the output file, the Measurements substructure must have fieldnames prefixed by ''Image'',''Filename'', or ''Imported''.')
+    if isempty(MeasFieldnames) && isempty(FileFieldNames) && isempty(ImportedFieldnames) && isempty(TimeElapsedFieldNames)
+        errordlg('No measurements were found in the file you selected. In the handles structure contained within the output file, the Measurements substructure must have fieldnames prefixed by ''Image'', ''Imported'', ''Filename'', or ''TimeElapsed''.')
     else
         %%% Tries to determine the number of image sets for which there are data.
-        if isempty(MeasFieldnames{1}) == 0
-        fieldname = MeasFieldnames{1};
-        elseif isempty(FileFieldNames{1}) == 0
+        if isempty(FileFieldNames{1}) == 0
         fieldname = FileFieldNames{1};
+        elseif isempty(MeasFieldnames{1}) == 0
+        fieldname = MeasFieldnames{1};
         elseif isempty(ImportedFieldnames{1}) == 0
         fieldname = ImportedFieldnames{1};
+        elseif isempty(TimeElapsedFieldNames{1}) == 0
+        fieldname = TimeElapsedFieldNames{1};
         end
         TotalNumberImageSets = num2str(length(handles.Measurements.(fieldname)));
         TotalNumberImageSetsMsg = ['As a shortcut,                     type the numeral 0 to extract data from all ', TotalNumberImageSets, ' image sets.'];
@@ -1772,26 +2029,32 @@ else
                     NumberOfMeasFieldnames = length(MeasFieldnames);
                     NumberOfFileFieldNames = length(FileFieldNames);
                     NumberOfImportedFieldnames = length(ImportedFieldnames);
-                    NumberOfFields = NumberOfMeasFieldnames + NumberOfFileFieldNames + NumberOfImportedFieldnames;
+                    NumberOfTimeElapsedFieldNames = length(TimeElapsedFieldNames);
+                    
+                    NumberOfFields = NumberOfMeasFieldnames + NumberOfFileFieldNames + NumberOfImportedFieldnames + NumberOfTimeElapsedFieldNames;
                     Measurements(NumberOfImages,NumberOfFields) = {[]};
                     %%% Finished preallocating the variable Measurements.
                     TimeStart = clock;
                     for imagenumber = 1:NumberOfImages
+                        for FileNameFieldNumber = 1:NumberOfFileFieldNames
+                            Fieldname = cell2mat(FileFieldNames(FileNameFieldNumber));
+                            FieldNumber = FieldNumber + 1;
+                            Measurements(imagenumber,FieldNumber) = {handles.Pipeline.(Fieldname){imagenumber}};
+                        end
+                        for ImportedFieldNumber = 1:NumberOfImportedFieldnames
+                            Fieldname = cell2mat(ImportedFieldnames(ImportedFieldNumber));
+                            FieldNumber = FieldNumber + 1;
+                            Measurements(imagenumber, FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
+                        end
                         for FieldNumber = 1:NumberOfMeasFieldnames
                             Fieldname = cell2mat(MeasFieldnames(FieldNumber));
                             Measurements(imagenumber,FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
                         end
-                        for FileNameNumber = 1:NumberOfFileFieldNames
-                            Fieldname = cell2mat(FileFieldNames(FileNameNumber));
-                            FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber,FieldNumber) = {handles.Pipeline.(Fieldname){imagenumber}};
-                        end
-                        for HeadingNumber = 1:NumberOfImportedFieldnames
-                            Fieldname = cell2mat(ImportedFieldnames(HeadingNumber));
+                        for TimeElapsedFieldNumber = 1:NumberOfTimeElapsedFieldNames
+                            Fieldname = cell2mat(TimeElapsedFieldNames(TimeElapsedFieldNumber));
                             FieldNumber = FieldNumber + 1;
                             Measurements(imagenumber, FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
                         end
-
                         CurrentTime = clock;
                         TimeSoFar = etime(CurrentTime,TimeStart);
                         TimePerSet = TimeSoFar/imagenumber;
@@ -1814,6 +2077,10 @@ else
                     end
                     for i = 1:NumberOfImportedFieldnames
                         fwrite(fid, char(ImportedFieldnames(i)), 'char');
+                        fwrite(fid, sprintf('\t'), 'char');
+                    end
+                    for i = 1:NumberOfTimeElapsedFieldNames
+                        fwrite(fid, char(TimeElapsedFieldNames(i)), 'char');
                         fwrite(fid, sprintf('\t'), 'char');
                     end
 
@@ -1863,13 +2130,15 @@ cd(CurrentDirectory);
 % fclose(fid);
 % type eval(filename)
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% EXPORT CELL BY CELL DATA BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ExportCellByCellButton.
 function ExportCellByCellButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1914,10 +2183,10 @@ if strcmp(Answer, 'All images') == 1
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
     Fieldnames = fieldnames(handles.Measurements);
-    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8) == 1 | strncmp(Fieldnames,'Imported',8) == 1);
+    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8) == 1 | strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'TimeElapsed',11) == 1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
-        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename'' or ''Imported''.')
+        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline or handles.Measurements structure preceded by ''Filename'', ''Imported'', or ''TimeElapsed''.')
         cd(CurrentDirectory);
         return
     end
@@ -2038,7 +2307,7 @@ if strcmp(Answer, 'All images') == 1
 
     
 elseif strcmp(Answer, 'All measurements') == 1
-    TotalNumberImageSets = handles.setbeinganalyzed;
+    TotalNumberImageSets = handles.Current.SetBeingAnalyzed;
     %%% Asks the user to specify which image set to export.
     Answers = inputdlg({['Enter the sample number to export. There are ', num2str(TotalNumberImageSets), ' total.']},'Choose samples to export',1,{'1'});
     if isempty(Answers{1})
@@ -2174,13 +2443,15 @@ elseif strcmp(Answer, 'All measurements') == 1
 end
 cd(CurrentDirectory);
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% PLOT DATA BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in PlotDataButton.
 function PlotDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -2190,12 +2461,10 @@ end
 cd(RawPathname);
 load(RawFileName);
 
-%%% Check if the user wants to plot a set of histograms or a
-%%% measurement per image
-
+%%% Checks if the user wants to plot a set of histograms or a single
+%%% measurement per image.
 Answer = questdlg('Do you want to plot histograms of cell populations, or a single measurement per image?', 'Type of Plot', 'Histograms', 'Single Measurement', 'Histograms');
 
-%%% Just patch this in as a special case
 if (strcmp(Answer, 'Single Measurement') == 1),
     Fieldnames = fieldnames(handles.Measurements);
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
@@ -2223,7 +2492,8 @@ if (strcmp(Answer, 'Single Measurement') == 1),
         set(get(h, 'Children'), 'EdgeAlpha', 0);
         title(EditedMeasurementToExtract);
     end
-    return;
+        cd(CurrentDirectory);
+return;
 end
 
 %%% Extract the fieldnames of measurements from the handles structure. 
@@ -2822,13 +3092,15 @@ if ok ~= 0
 end
 cd(CurrentDirectory);
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% DATA LAYOUT BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in DataLayoutButton.
 function DataLayoutButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -3011,13 +3283,15 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % % h = msgbox('The original data used to generate those normalization factors is now on the clipboard. Paste them where desired (if desired) and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
 % % waitfor(h)
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SHOW DATA ON IMAGE BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowDataOnImageButton.
 function ShowDataOnImageButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
-cd(handles.Vworkingdirectory)
+cd(handles.Current.DefaultOutputDirectory)
 %%% Asks the user to choose the file from which to extract measurements.
 [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName ~= 0
@@ -3091,6 +3365,7 @@ if RawFileName ~= 0
                         h = msgbox(['Browse to find the image called ', ImageFileName,'.']);
                         %%% Opens a user interface window which retrieves a file name and path 
                         %%% name for the image to be displayed.
+                        cd(handles.Current.SelectedImageDirectory)
                         [FileName,Pathname] = uigetfile('*.*','Select the image to view');
                         delete(h)
                         %%% If the user presses "Cancel", the FileName will = 0 and nothing will
@@ -3158,27 +3433,29 @@ if RawFileName ~= 0
 end
 cd(CurrentDirectory);
 
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ANALYZE IMAGES BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeImagesButton.
 function AnalyzeImagesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global closeFigures openFigures;
 CurrentDirectory = cd;
-%%% Checks whether any algorithms are loaded.
+%%% Checks whether any modules are loaded.
 sum = 0;
-for i = 1:handles.numAlgorithms;
-    sum = sum + iscellstr(handles.Settings.Valgorithmname(i));
+for i = 1:handles.Current.NumberOfModules;
+    sum = sum + iscellstr(handles.Settings.ModuleNames(i));
 end
 if sum == 0, errordlg('You do not have any analysis modules loaded')
 else
     %%% Checks whether an output file name has been specified.
-    if isfield(handles, 'Voutputfilename') == 0
+    if isfield(handles.Current, 'OutputFilename') == 0
         errordlg('You have not entered an output file name in Step 2.')
-    elseif isempty(handles.Voutputfilename)
+    elseif isempty(handles.Current.OutputFilename)
         errordlg('You have not entered an output file name in Step 2.')
     else
         %%% Retrieves the chosen directory.
-        pathname = handles.Vpathname;
+        pathname = handles.Current.SelectedImageDirectory;
         %%% If the directory exists, change to that directory.
         DirDoesNotExist = 0;
         try cd(pathname);
@@ -3187,31 +3464,26 @@ else
 
         if DirDoesNotExist == 1
             errordlg('The chosen directory does not exist')
-        else
-
+        else           
             %%% Checks whether the specified output file name will overwrite an
             %%% existing file.
-            OutputFileOverwrite = exist([cd,'/',handles.Voutputfilename],'file'); %%% TODO: Fix filename construction.
+            
+            %%% TODO: Use fullfile to make the following
+            %%% multi-platform compatible.
+            OutputFileOverwrite = exist([cd,'/',handles.Current.OutputFilename],'file'); %%% TODO: Fix filename construction.
             if OutputFileOverwrite ~= 0
                 errordlg('An output file with the name you entered in Step 2 already exists. Overwriting is not allowed, so please enter a new filename.')
             else
-
-                %%% Retrieves the list of image file names in the chosen directory and
-                %%% stores them in the handles structure, using the function
-                %%% RetrieveImageFileNames.  This should already have been done when the
-                %%% directory was chosen, but in case some files were moved or changed in
-                %%% the meantime, this will refresh the list.
-                handles = RetrieveImageFileNames(handles,pathname);
-                guidata(hObject, handles);
-                if isempty(handles.Vfilenames)
-                    set(handles.ListBox,'String','No image files recognized',...
-                        'Value',1)
-                else
-                    %%% Loads these image names into the ListBox.
-                    set(handles.ListBox,'String',handles.Vfilenames,...
-                        'Value',1)
-                end
-                %%% Update the handles structure. Not sure if it's necessary here.
+                %%% Retrieves the list of image file names from the
+                %%% chosen directory, stores them in the handles
+                %%% structure, and displays them in the listbox, by
+                %%% faking a click on the PathToLoadEditBox. This
+                %%% should already have been done when the directory
+                %%% was chosen, but in case some files were moved or
+                %%% changed in the meantime, this will refresh the
+                %%% list.
+                handles = PathToLoadEditBox_Callback(hObject, eventdata, handles);
+                %%% Updates the handles structure.
                 guidata(gcbo, handles);
                 %%% Disables a lot of the buttons on the GUI so that the program doesn't
                 %%% get messed up.  The Help buttons are left enabled.
@@ -3231,7 +3503,7 @@ else
                 set(handles.MoveDownButton,'visible','off');
 
                 % FIXME: This should loop just over the number of actual variables in the display.
-                for VariableNumber=1:handles.MaxVariables;
+                for VariableNumber=1:handles.Current.MaxNumberOfVariables;
                     set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
                 set(handles.ListBox,'enable','off')
@@ -3333,9 +3605,9 @@ else
                 %%%  decided to live with that gap being present.  I am not absolutely sure
                 %%%  that this was causing the problems, though.
 
-                %%% If an algorithm is chosen in this slot, assign it an output figure
+                %%% If a module is chosen in this slot, assign it an output figure
                 %%% window and write the figure window number to the handles structure so
-                %%% that the algorithms know where to write to.  Each algorithm should
+                %%% that the modules know where to write to.  Each module should
                 %%% resize the figure window appropriately.  The closing function of the
                 %%% figure window is set to wait until an image set is done processing
                 %%% before closing the window, to avoid unexpected results.              
@@ -3343,20 +3615,20 @@ else
                 set(handles.OpenFigureButton,'visible','on')
                 %listbox changes
 
-                for i=1:handles.numAlgorithms;
-                    if iscellstr(handles.Settings.Valgorithmname(i)) == 1
-                        handles.(['figurealgorithm' TwoDigitString(i)]) = ...
-                            figure('name',[char(handles.Settings.Valgorithmname(i)), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
+                for i=1:handles.Current.NumberOfModules;
+                    if iscellstr(handles.Settings.ModuleNames(i)) == 1
+                        handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
+                            figure('name',[char(handles.Settings.ModuleNames(i)), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
                     end
                 end
 
                 %%% For the first time through, the number of image sets
                 %%% will not yet have been determined.  So, the Number of
                 %%% image sets is set temporarily.
-                handles.Vnumberimagesets = 1;
-                handles.setbeinganalyzed = 1;
+                handles.Current.NumberOfImageSets = 1;
+                handles.Current.SetBeingAnalyzed = 1;
                 %%% Marks the time that analysis was begun.
-                handles.Vtimestarted = datestr(now);
+                handles.Current.TimeStarted = datestr(now);
                 %%% Clear the buffers (Pipeline and Measurements)
                 handles.Pipeline = struct;
                 handles.Measurements = struct;
@@ -3372,22 +3644,22 @@ else
                 %%% variable to allow breaking out of nested loops.
                 break_outer_loop = 0;
 
-                while handles.setbeinganalyzed <= handles.Vnumberimagesets
-                    setbeinganalyzed = handles.setbeinganalyzed;
+                while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
+                    setbeinganalyzed = handles.Current.SetBeingAnalyzed;
 
-                    for SlotNumber = 1:handles.numAlgorithms,
-                        %%% If an algorithm is not chosen in this slot, continue on to the next.
+                    for SlotNumber = 1:handles.Current.NumberOfModules,
+                        %%% If a module is not chosen in this slot, continue on to the next.
                         AlgNumberAsString = TwoDigitString(SlotNumber);
-                        AlgName = char(handles.Settings.Valgorithmname(SlotNumber));
-                        if iscellstr(handles.Settings.Valgorithmname(SlotNumber)) == 0
+                        AlgName = char(handles.Settings.ModuleNames(SlotNumber));
+                        if iscellstr(handles.Settings.ModuleNames(SlotNumber)) == 0
                         else
-                            %%% Saves the current algorithm number in the handles structure.
-                            handles.currentalgorithm = AlgNumberAsString;
+                            %%% Saves the current module number in the handles structure.
+                            handles.Current.CurrentModuleNumber = AlgNumberAsString;
                             %%% The try/catch/end set catches any errors that occur during the
-                            %%% running of algorithm 1, notifies the user, breaks out of the image
+                            %%% running of module 1, notifies the user, breaks out of the image
                             %%% analysis loop, and completes the refreshing process.
                             try
-                                %%% Runs the appropriate algorithm, with the handles structure as an
+                                %%% Runs the appropriate module, with the handles structure as an
                                 %%% input argument and as the output argument.
                                 eval(['handles = Alg',AlgName,'(handles);'])
                             catch
@@ -3407,8 +3679,8 @@ else
                             CancelWaiting = get(handles.timertexthandle,'string');
                             if (strncmp(CancelWaiting, 'Immediate', 9) == 1),
                                 break_outer_loop = 1;
-                                break;
-                            end;
+                                break
+                            end
                         end
                                             
                         openFig = openFigures;
@@ -3416,14 +3688,14 @@ else
                         for i=1:length(openFig),
                             algNumber = openFig(i);
                             try
-                                Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
-                                figure(Thisfigurealgorithm);
-                                set(Thisfigurealgorithm, 'name',[(char(handles.Settings.Valgorithmname(algNumber))), ' Display']);
-                                set(Thisfigurealgorithm, 'Position',[(ScreenWidth*((algNumber-1)/12)) (ScreenHeight-522) 560 442]);
-                                set(Thisfigurealgorithm,'color',[0.7,0.7,0.7]);
+                                ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(algNumber)]);
+                                figure(ThisFigureNumber);
+                                set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(algNumber))), ' Display']);
+                                set(ThisFigureNumber, 'Position',[(ScreenWidth*((algNumber-1)/12)) (ScreenHeight-522) 560 442]);
+                                set(ThisFigureNumber,'color',[0.7,0.7,0.7]);
                                 %%% Sets the closing function of the window appropriately. (See way
                                 %%% above where 'ClosingFunction's are defined).
-                                %set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(algNumber)]));
+                                %set(ThisFigureNumber,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(algNumber)]));
                             catch
                             end
                         end
@@ -3434,8 +3706,8 @@ else
                     for i=1:length(closeFig),
                         algNumber = closeFig(i);
                         try
-                            Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
-                            delete(Thisfigurealgorithm);
+                            ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(algNumber)]);
+                            delete(ThisFigureNumber);
                         catch
                         end
                     end
@@ -3445,20 +3717,18 @@ else
                     for i=1:length(openFig),
                         algNumber = openFig(i);
                         try
-                            Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
-                            figure(Thisfigurealgorithm);
-                            set(Thisfigurealgorithm, 'name',[(char(handles.Settings.Valgorithmname(algNumber))), ' Display']);
-                            set(Thisfigurealgorithm, 'Position',[(ScreenWidth*((algNumber-1)/12)) (ScreenHeight-522) 560 442]);
-                            set(Thisfigurealgorithm,'color',[0.7,0.7,0.7]);
+                            ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(algNumber)]);
+                            figure(ThisFigureNumber);
+                            set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(algNumber))), ' Display']);
+                            set(ThisFigureNumber, 'Position',[(ScreenWidth*((algNumber-1)/12)) (ScreenHeight-522) 560 442]);
+                            set(ThisFigureNumber,'color',[0.7,0.7,0.7]);
                             %%% Sets the closing function of the window appropriately. (See way
                             %%% above where 'ClosingFunction's are defined).
-                            %set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(algNumber)]));
+                            %set(ThisFigureNumber,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(algNumber)]));
                         catch
                         end
                     end
                     
-
-
                     if (break_outer_loop),
                         break;  %%% this break is out of the outer loop of image analysis
                     end
@@ -3469,7 +3739,7 @@ else
                     time_elapsed = num2str(toc);
                     timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
                     number_analyzed = ['Number of image sets analyzed = ',...
-                            num2str(setbeinganalyzed), ' of ', num2str(handles.Vnumberimagesets)];
+                            num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
                     if setbeinganalyzed ~=0
                         time_per_set = ['Time per image set (seconds) = ', ...
                                 num2str(toc/setbeinganalyzed)];
@@ -3489,10 +3759,11 @@ else
                     end
                     %%% Save all data that is in the handles structure to the output file 
                     %%% name specified by the user.
-                    eval(['save ',handles.Voutputfilename, ' handles;'])
+                    cd(handles.Current.DefaultOutputDirectory)
+                    eval(['save ',handles.Current.OutputFilename, ' handles;'])                   
                     %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                     setbeinganalyzed = setbeinganalyzed + 1;
-                    handles.setbeinganalyzed = setbeinganalyzed;
+                    handles.Current.SetBeingAnalyzed = setbeinganalyzed;
                     guidata(gcbo, handles)
 
                     %%% If a "cancel" signal is waiting, break and go to the "end" that goes
@@ -3565,7 +3836,7 @@ else
                         listdlg('ListString', HeadingsToBeRemoved, 'PromptString', HeadingsErrorMessage, 'CancelString', 'OK');
                         %%% Save all data that is in the handles structure to the output file 
                         %%% name specified by the user.
-                        eval(['save ',handles.Voutputfilename, ' handles;'])
+                        eval(['save ',handles.Current.OutputFilename, ' handles;'])
                     end % This end goes with the "isempty" line.
                 end % This end goes with the 'isempty' line.    
                 %%% Update the handles structure.
@@ -3599,8 +3870,8 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveSettingsButton,'enable','on')
                 %listbox changes
-                for AlgorithmNumber=1:handles.numAlgorithms;
-                    for VariableNumber = 1:handles.numVariables(AlgorithmNumber);
+                for ModuleNumber=1:handles.Current.NumberOfModules;
+                    for VariableNumber = 1:handles.Settings.NumbersOfVariables(ModuleNumber);
                         set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
                     end
                 end
@@ -3642,22 +3913,21 @@ else
                 %%% wait for the image analysis to complete a loop (which would never
                 %%% happen).  Has to check to see whether the figure exists first before
                 %%% setting the close request function.  That requires looking up
-                %%% handles.figurealgorithm1.  Before looking that up, you have to check to
+                %%% handles.Current.FigureNumber1.  Before looking that up, you have to check to
                 %%% see if it exists or else an error occurs.
-                
     
-                for i=1:handles.numAlgorithms
-                    AlgorithmNum = TwoDigitString(i);
-                    if isfield(handles,['figurealgorithm' AlgorithmNum]) ==1
-                        if any(findobj == handles.(['figurealgorithm' AlgorithmNum])) == 1;
-                            properhandle = handles.(['figurealgorithm' AlgorithmNum]);
+                for i=1:handles.Current.NumberOfModules
+                    ModuleNum = TwoDigitString(i);
+                    if isfield(handles.Current,['FigureNumberForModule' ModuleNum]) ==1
+                        if any(findobj == handles.Current.(['FigureNumberForModule' ModuleNum])) == 1;
+                            properhandle = handles.Current.(['FigureNumberForModule' ModuleNum]);
                             set(properhandle,'CloseRequestFcn','delete(gcf)');
                         end
                     end
                 end
                 %%% Clears the output file name to prevent it from being reused.
                 set(handles.OutputFileName,'string',[])
-                handles = rmfield(handles,'Voutputfilename');
+                handles.Current = rmfield(handles.Current,'OutputFilename');
                 guidata(gcbo, handles)
                 
                 %%% This "end" goes with the error-detecting "You have no analysis modules
@@ -3684,26 +3954,24 @@ cd(CurrentDirectory);
 %%% would require redefining the Zoom tool's action, which is not likely to
 %%% be a simple task.
 
-function errorfunction(CurrentAlgorithmNumber)
+function errorfunction(CurrentModuleNumber)
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> Alg", which will be recognized here.
 if strncmp(Error,'Error using ==> Alg', 19) == 1
-    ErrorExplanation = ['There was a problem running the analysis module number ',CurrentAlgorithmNumber, '.', Error];
+    ErrorExplanation = ['There was a problem running the analysis module number ',CurrentModuleNumber, '.', Error];
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
 elseif isempty(strfind(Error,'bad magic')) == 0
     ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the image sets up to the one which generated this error are OK in the output file.';
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in module ', CurrentAlgorithmNumber];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in module ', CurrentModuleNumber];
 end
 errordlg(ErrorExplanation)
 
-%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 %%% Aux Functions %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 
 function twodigit = TwoDigitString(val)
 %TwoDigitString is a function like num2str(int) but it returns a two digit
@@ -3719,7 +3987,7 @@ twodigit = sprintf('%02d', val);
 
 %%% --- Executes on button press in the permanent Help buttons.
 %%% (The permanent Help buttons are the ones that don't change 
-%%% depending on the algorithm loaded.) 
+%%% depending on the module loaded.) 
 function HelpButton1_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help1.m');
 helpdlg(HelpText,'CellProfiler Help #1')
@@ -3736,27 +4004,22 @@ function HelpButton4_Callback(hObject, eventdata, handles) %#ok We want to ignor
 HelpText = help('Help4.m');
 helpdlg(HelpText,'CellProfiler Help #4')
 
-% --- Executes on button press in HelpExportMeanDataButton.
 function HelpExportMeanDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpExportMeanData.m');
 helpdlg(HelpText,'CellProfiler Help: Export mean data')
 
-% --- Executes on button press in HelpExportCellByCellDataButton.
 function HelpExportCellByCellDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpExportCellByCellData.m');
 helpdlg(HelpText,'CellProfiler Help: Export cell by cell data')
 
-% --- Executes on button press in HelpShowDataOnImageButton.
 function HelpShowDataOnImageButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpShowDataOnImage.m');
 helpdlg(HelpText,'CellProfiler Help: Show data on image')
 
-% --- Executes on button press in HelpHistogramsButton.
 function HelpHistogramsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpHistograms.m');
 helpdlg(HelpText,'CellProfiler Help: Histograms')
 
-% --- Executes on button press in HelpNormalizationButton.
 function HelpNormalizationButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpNormalization.m');
 helpdlg(HelpText,'CellProfiler Help: Normalization')
@@ -3765,23 +4028,23 @@ function HelpAnalyzeImagesButton_Callback(hObject, eventdata, handles) %#ok We w
 HelpText = help('HelpAnalyzeImages.m');
 helpdlg(HelpText,'CellProfiler Help: Analyze images')
 
-% --- Executes on button press in HelpForThisAnalysisModule.  
+%%% --- Executes on button press in the HelpForThisAnalysisModule button.
 function HelpForThisAnalysisModule_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% First, check to see whether there is a specific algorithm loaded.
+%%% First, check to see whether there is a specific module loaded.
 %%% If not, it opens a help dialog which explains how to pick one.
-AlgorithmNumber = whichactive(handles);
-if AlgorithmNumber == 0
+ModuleNumber = whichactive(handles);
+if ModuleNumber == 0
     helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
 else
-    AlgorithmName = handles.Settings.Valgorithmname(AlgorithmNumber);
-    IsItNotChosen = strncmp(AlgorithmName,'No a',4);
+    ModuleName = handles.Settings.ModuleNames(ModuleNumber);
+    IsItNotChosen = strncmp(ModuleName,'No a',4);
     if IsItNotChosen == 1
         helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
     else
-        %%% This is the function that actually reads the algorithm's help
+        %%% This is the function that actually reads the module's help
         %%% data.
-        AlgorithmNoDotM = strcat('Alg',AlgorithmName);
-        HelpText = help(char(AlgorithmNoDotM));
+        ModuleNoDotM = strcat('Alg',ModuleName);
+        HelpText = help(char(ModuleNoDotM));
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
             helpFig = figure;
@@ -3828,70 +4091,3 @@ else
 end
 
 %%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%
-
-% --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
-scrollPos = get(hObject,'max') - get(hObject, 'Value');
-variablepanelPos = get(handles.variablepanel, 'position');
-set(handles.variablepanel, 'position', [235 80+scrollPos 563 297]);
-
-
-% --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background, change
-%       'usewhitebg' to 0 to use default.  See ISPC and COMPUTER.
-usewhitebg = 1;
-if usewhitebg
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-
-function handles = createVariablePanel(handles)
-
-for i=1:99,
-    handles.(['VariableBox' TwoDigitString(i)]) = uicontrol(...
-        'Parent',handles.variablepanel,...
-        'Units','pixels',...
-        'BackgroundColor',[1 1 1],...
-        'Callback','CellProfiler(''VariableBox_Callback'',gcbo,[],guidata(gcbo))',...
-        'FontName','Times',...
-        'FontSize',12,...
-        'Position',[470 295-25*i 94 23],...
-        'String','n/a',...
-        'Style','edit',...
-        'CreateFcn', 'CellProfiler(''VariableBox_CreateFcn'',gcbo,[],guidata(gcbo))',...
-        'Tag',['VariableBox' TwoDigitString(i)],...
-        'Behavior',get(0,'defaultuicontrolBehavior'),...
-        'Visible','off');
-
-    handles.(['VariableDescription' TwoDigitString(i)]) = uicontrol(...
-        'Parent',handles.variablepanel,...
-        'Units','pixels',...
-        'BackgroundColor',[0.699999988079071 0.699999988079071 0.899999976158142],...
-        'CData',[],...
-        'FontName','Times',...
-        'FontSize',12,...
-        'FontWeight','bold',...
-        'HorizontalAlignment','right',...
-        'Position',[2 291-25*i 465 23],...
-        'String','No analysis module has been loaded',...
-        'Style','text',...
-        'Tag',['VariableDescription' TwoDigitString(i)],...
-        'UserData',[],...
-        'Behavior',get(0,'defaultuicontrolBehavior'),...
-        'Visible','off',...
-        'CreateFcn', '');
-end

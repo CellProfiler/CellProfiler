@@ -54,11 +54,11 @@ function handles = AlgSpotIdentifier(handles)
 % will also be used to automatically generate a manual page for the
 % module. An example image demonstrating the function of the module
 % can also be saved in tif format, using the same name as the
-% algorithm (minus Alg), and it will automatically be included in the
+% module (minus Alg), and it will automatically be included in the
 % manual page as well.  Follow the convention of: purpose of the
 % module, description of the variables and acceptable range for each,
 % how it works (technical description), info on which images can be 
-% saved, and See also CAPITALLETTEROTHERALGORITHMS. The license/author
+% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank
 % line so that it does not show up in the help displays.  Do not
 % change the programming notes in any modules! These are standard
@@ -85,10 +85,10 @@ drawnow
 % The '%textVAR' lines contain the text which is displayed in the GUI
 % next to each variable box. The '%defaultVAR' lines contain the
 % default values which are displayed in the variable boxes when the
-% user loads the algorithm. The line of code after the textVAR and
+% user loads the module. The line of code after the textVAR and
 % defaultVAR extracts the value that the user has entered from the
 % handles structure and saves it as a variable in the workspace of
-% this algorithm with a descriptive name. The syntax is important for
+% this module with a descriptive name. The syntax is important for
 % the %textVAR and %defaultVAR lines: be sure there is a space before
 % and after the equals sign and also that the capitalization is as
 % shown.  Don't allow the text to wrap around to another line; the
@@ -97,38 +97,37 @@ drawnow
 % can put text in the %textVAR line above or below the one of
 % interest, and do not include a %defaultVAR line so that the variable
 % edit box for that variable will not be displayed; the text will
-% still be displayed. CellProfiler is currently being restructured to
-% handle more than 11 variable boxes. Keep in mind that you can have
+% still be displayed. Keep in mind that you can have
 % several inputs into the same box: for example, a box could be
 % designed to receive two numbers separated by a comma, as long as you
 % write a little extraction algorithm that separates the input into
 % two distinct variables.  Any extraction algorithms like this should
 % be within the VARIABLES section of the code, at the end.
 
-%%% Reads the current algorithm number, since this is needed to find
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2double(handles.currentalgorithm);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the image to be rotated and labeled with spot information?
 %defaultVAR01 = OrigBlue
-ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Do you want to rotate the image? (No, C = Coordinates, M = Mouse)
 %defaultVAR02 = No
-RotateMethod = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What do you want to call the rotated image?
 %defaultVAR03 = RotatedImage
-RotatedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Mark the top, left corner of the grid by coordinates (C), or by mouse (M)?
 %defaultVAR04 = C
-MarkingMethod = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter the number of rows, columns
 %defaultVAR05 = 40,140
-RowsColumns = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %%% Extracts the rows and columns from the user's input.
 try
     RowsColumnsNumerical = str2num(RowsColumns);%#ok We want to ignore MLint error checking for this line.
@@ -139,7 +138,7 @@ end
 
 %textVAR06 = Enter the spacing between rows, columns (vertical spacing, horizontal spacing)
 %defaultVAR06 = 57,57
-HorizVertSpacing = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%% Extracts the vertical and horizontal spacing from the user's input.
 try
     HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
@@ -150,7 +149,7 @@ end
 
 %textVAR07 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
 %defaultVAR07 = 57,0
-HorizVertOffset = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%% Extracts the vertical and horizontal offset from the user's input.
 try
     HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
@@ -161,17 +160,17 @@ end
 
 %textVAR08 = Is the first spot at the Left or Right?
 %defaultVAR08 = L
-LeftOrRight = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
+LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 LeftOrRight = upper(LeftOrRight);
 
 %textVAR09 = Is the first spot at the Bottom or Top?
 %defaultVAR09 = B
-TopOrBottom = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 TopOrBottom = upper(TopOrBottom);
 
 %textVAR10 = Do you want to load spot information from a file (e.g. gene names)?
 %defaultVAR10 = N
-LoadSpotIdentifiers = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
+LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -194,14 +193,14 @@ drawnow
 %%% "OrigImageToBeAnalyzed".
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, ImageName) == 0
-    error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run an algorithm to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
+    error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
 end
 OriginalImage = handles.Pipeline.(ImageName);
 
-if handles.setbeinganalyzed == 1
+if handles.Current.SetBeingAnalyzed == 1
     %%% Determines the figure number to display in.
-    fieldname = ['figurealgorithm',CurrentAlgorithm];
-    ThisAlgFigureNumber = handles.(fieldname);
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisAlgFigureNumber = handles.Current.(fieldname);
     FigureHandle = figure(ThisAlgFigureNumber); ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
 else FigureHandle = figure; ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
 end
@@ -559,15 +558,15 @@ drawnow
 % nuclei which results in a set of 12 measurements ("TotalNucArea")
 % stored in the handles structure. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "TotalNucArea" to
 % analyze 4 image sets, the 4 measurements will overwrite the first 4
 % measurements of the previous analysis, but the remaining 8
 % measurements will still be present. So, the user will end up with 12
 % measurements from the 4 sets. Another potential problem is that if,
-% in the second analysis run, the user runs only an algorithm which
-% depends on the output "SegmNucImg" but does not run an algorithm
-% that produces an image by that name, the algorithm will run just
+% in the second analysis run, the user runs only a module which
+% depends on the output "SegmNucImg" but does not run a module
+% that produces an image by that name, the module will run just
 % fine: it will just repeatedly use the processed image of nuclei
 % leftover from the last image set, which was left in the handles
 % structure ("SegmNucImg").
@@ -596,28 +595,28 @@ drawnow
 % the second image.
 
 %%% Saves the adjusted image to the handles structure so it can be used by
-%%% subsequent algorithms.
+%%% subsequent modules.
 handles.Pipeline.(RotatedImageName) = RotatedImage;
 
 if strncmp(RotateMethod, 'N', 1) ~= 1
 %%% Saves the Rotation coordinates to the handles structure so they are
 %%% saved in the measurements file.
 fieldname = ['ImageRotationLowerLeftX', ImageName];
-handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerLeftX};
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerLeftX};
 fieldname = ['ImageRotationLowerRightX', ImageName];
-handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerRightX};
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerRightX};
 fieldname = ['ImageRotationLowerLeftY', ImageName];
-handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerLeftY};
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerLeftY};
 fieldname = ['ImageRotationLowerRightY', ImageName];
-handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerRightY};
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerRightY};
 end
 
 %%% Saves the top, left marker locations to the handles structure so they are
 %%% saved in the measurements file.
 fieldname = ['ImageTopLeftX', ImageName];
-handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TopLeftX};
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftX};
 fieldname = ['ImageTopLeftY', ImageName];
-handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TopLeftY};
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftY};
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE
@@ -625,7 +624,7 @@ handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TopLeftY};
 % Each module checks whether its figure is open before calculating
 % images that are for display only. This is done by examining all the
 % figure handles for one whose handle is equal to the assigned figure
-% number for this algorithm. If the figure is not open, everything
+% number for this module. If the figure is not open, everything
 % between the "if" and "end" is ignored (to speed execution), so do
 % not do any important calculations here. Otherwise an error message
 % will be produced if the user has closed the window but you have

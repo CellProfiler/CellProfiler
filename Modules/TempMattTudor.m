@@ -39,34 +39,34 @@ function handles = AlgIdentifyPrimAdaptThresholdC(handles)
 %%%%%%%%%%%%%%%%
 drawnow 
 
-%%% Reads the current algorithm number, since this is needed to find 
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigBlue
-ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this algorithm?
 %defaultVAR02 = Nuclei
-ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
 %defaultVAR03 = 1,99999
-SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the desired minimum threshold (0 to 1), or "A" to calculate automatically
 %defaultVAR04 = A
-MinimumThreshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter the threshold adjustment factor (>1 = more stringent, <1 = less stringent)
 %defaultVAR05 = 1
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+ThresholdAdjustmentFactor = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
 %textVAR06 = Block size, in pixels
 %defaultVAR06 = 100
-BlockSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+BlockSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -83,7 +83,7 @@ MaxSize = SizeRangeNumerical(2);
 fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Identify Primary Adaptive Threshold module, you must have previously run an algorithm to load an image. You specified in the Identify Primary Adaptive Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Adaptive Threshold module cannot find this image.']);
+    error(['Image processing has been canceled. Prior to running the Identify Primary Adaptive Threshold module, you must have previously run a module to load an image. You specified in the Identify Primary Adaptive Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Adaptive Threshold module cannot find this image.']);
     end
 OrigImageToBeAnalyzed = handles.(fieldname);
 
@@ -215,8 +215,8 @@ FinalLabelMatrixImage = bwlabel(FinalBinary);
 drawnow 
 
 %%% Determines the figure number to display in.
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisAlgFigureNumber = handles.Current.(fieldname);
 %%% Checks whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
 %%% Note: Everything between the "if" and "end" is not carried out if the
@@ -283,7 +283,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
-    title(['Input Image, Image Set # ',num2str(handles.setbeinganalyzed)]);
+    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
@@ -316,10 +316,10 @@ handles.(fieldname) = FinalLabelMatrixImage;
 
 %%% Determines the filename of the image to be analyzed.
 fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+FileName = handles.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% Saves the filename of the image to be analyzed.
 fieldname = ['dOTFilename', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+handles.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% ISODATA SUBFUNCTION %%%
@@ -447,34 +447,34 @@ level = (Irange(2)-Irange(1))*(Threshold - 1) / (N(end) - 1);function handles = 
 %%%%%%%%%%%%%%%%
 drawnow 
 
-%%% Reads the current algorithm number, since this is needed to find 
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigBlue
-ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this algorithm?
 %defaultVAR02 = Nuclei
-ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
 %defaultVAR03 = 1,99999
-SizeRange = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the desired minimum threshold (0 to 1), or "A" to calculate automatically
 %defaultVAR04 = A
-MinimumThreshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter the threshold adjustment factor (>1 = more stringent, <1 = less stringent)
 %defaultVAR05 = 1
-ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+ThresholdAdjustmentFactor = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
 %textVAR06 = Neighborhood size, in pixels (Odd number)
 %defaultVAR06 = 51
-NeighborhoodSize = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,6}));
+NeighborhoodSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -527,7 +527,7 @@ end
 %%% Neighborhood must be an odd number.
 if rem(NeighborhoodSize,2) == 0
     NeighborhoodSize = NeighborhoodSize - 1;
-    if handles.setbeinganalyzed == 1
+    if handles.Current.SetBeingAnalyzed == 1
         warndlg(['The neighborhood size in the Identify Primary Adaptive Threshold module must be an odd number. The value that will be used is ', num2str(NeighborhoodSize), '.'])
         drawnow
     end
@@ -614,8 +614,8 @@ FinalLabelMatrixImage = bwlabel(FinalBinary);
 drawnow 
 
 %%% Determines the figure number to display in.
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisAlgFigureNumber = handles.Current.(fieldname);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
 %%% Note: Everything between the "if" and "end" is not carried out if the
@@ -677,7 +677,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(pink);
-    title(['Input Image, Image Set # ',num2str(handles.setbeinganalyzed)]);
+    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
@@ -710,7 +710,7 @@ handles.(fieldname) = FinalLabelMatrixImage;
 
 %%% Determines the filename of the image to be analyzed.
 fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+FileName = handles.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% Saves the filename of the image to be analyzed.
 fieldname = ['dOTFilename', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+handles.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

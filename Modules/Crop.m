@@ -14,7 +14,7 @@ function handles = AlgCrop(handles)
 % the exact same starting size as your image, and has zeros for the
 % parts you want to remove and 255 for the parts you want to retain.
 % This image should contain a contiguous block of 255's, because keep
-% in mind that the cropping algorithm will remove rows and columns
+% in mind that the cropping module will remove rows and columns
 % that are completely blank. This image can be created in any image
 % program, such as Photoshop.
 %
@@ -76,11 +76,11 @@ function handles = AlgCrop(handles)
 % will also be used to automatically generate a manual page for the
 % module. An example image demonstrating the function of the module
 % can also be saved in tif format, using the same name as the
-% algorithm (minus Alg), and it will automatically be included in the
+% module (minus Alg), and it will automatically be included in the
 % manual page as well.  Follow the convention of: purpose of the
 % module, description of the variables and acceptable range for each,
 % how it works (technical description), info on which images can be 
-% saved, and See also CAPITALLETTEROTHERALGORITHMS. The license/author
+% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank
 % line so that it does not show up in the help displays.  Do not
 % change the programming notes in any modules! These are standard
@@ -108,10 +108,10 @@ drawnow
 % The '%textVAR' lines contain the text which is displayed in the GUI
 % next to each variable box. The '%defaultVAR' lines contain the
 % default values which are displayed in the variable boxes when the
-% user loads the algorithm. The line of code after the textVAR and
+% user loads the module. The line of code after the textVAR and
 % defaultVAR extracts the value that the user has entered from the
 % handles structure and saves it as a variable in the workspace of
-% this algorithm with a descriptive name. The syntax is important for
+% this module with a descriptive name. The syntax is important for
 % the %textVAR and %defaultVAR lines: be sure there is a space before
 % and after the equals sign and also that the capitalization is as
 % shown.  Don't allow the text to wrap around to another line; the
@@ -120,44 +120,43 @@ drawnow
 % can put text in the %textVAR line above or below the one of
 % interest, and do not include a %defaultVAR line so that the variable
 % edit box for that variable will not be displayed; the text will
-% still be displayed. CellProfiler is currently being restructured to
-% handle more than 11 variable boxes. Keep in mind that you can have
+% still be displayed. Keep in mind that you can have
 % several inputs into the same box: for example, a box could be
 % designed to receive two numbers separated by a comma, as long as you
 % write a little extraction algorithm that separates the input into
 % two distinct variables.  Any extraction algorithms like this should
 % be within the VARIABLES section of the code, at the end.
 
-%%% Reads the current algorithm number, since this is needed to find 
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2double(handles.currentalgorithm);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the image to be cropped?
 %defaultVAR01 = OrigBlue
-ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the cropped image?
 %defaultVAR02 = CropBlue
-CroppedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = For rectangular cropping, type R. For any shape (based on an image File), type F
 %textVAR04 = To draw an ellipse on each image, type EE; draw one ellipse for all images: EA
 %defaultVAR04 = R
-Shape = upper(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+Shape = upper(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %textVAR05 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma)
 %defaultVAR05 = 1,1
-LeftTop = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma)
 %defaultVAR06 = 100,100
-RightBottom = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR10 = File-based cropping: To crop to another shape, type the location and file name of 
-%textVAR11 = the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#
-%defaultVAR11 = /
-BinaryCropImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+%textVAR07 = File-based cropping: To crop to another shape, type the location and file name of 
+%textVAR08 = the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#
+%defaultVAR08 = .
+BinaryCropImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -261,12 +260,12 @@ elseif Shape == 'R'
     end
 
 elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
-    if handles.setbeinganalyzed == 1 || strcmp(Shape, 'EE') == 1
+    if handles.Current.SetBeingAnalyzed == 1 || strcmp(Shape, 'EE') == 1
         if strcmp(Shape, 'EA') == 1
             %%% Asks the user to open an image file upon which to draw the
             %%% ellipse.
             CurrentDirectory = cd;
-            Directory = handles.Vpathname;
+            Directory = handles.Current.DefaultImageDirectory;
             cd(Directory)
             %%% Opens a user interface window which retrieves a file name and path
             %%% name for the image to be used as a test image.
@@ -276,7 +275,7 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
             if CroppingFileName == 0
                 error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
             else
-                ImageToBeCropped = imread([CroppingPathname,'/',CroppingFileName]);
+                ImageToBeCropped = imread(fullfile(CroppingPathname,CroppingFileName));
             end
             cd(CurrentDirectory)
         else ImageToBeCropped = OrigImage;
@@ -365,7 +364,7 @@ drawnow
 % Each module checks whether its figure is open before calculating
 % images that are for display only. This is done by examining all the
 % figure handles for one whose handle is equal to the assigned figure
-% number for this algorithm. If the figure is not open, everything
+% number for this module. If the figure is not open, everything
 % between the "if" and "end" is ignored (to speed execution), so do
 % not do any important calculations here. Otherwise an error message
 % will be produced if the user has closed the window but you have
@@ -374,8 +373,8 @@ drawnow
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
 
-fieldname = ['figurealgorithm',CurrentAlgorithm];
-ThisAlgFigureNumber = handles.(fieldname);
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisAlgFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% Sets the window to be half as wide as usual.
     originalsize = get(ThisAlgFigureNumber, 'position');
@@ -403,7 +402,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     figure(ThisAlgFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); imagesc(OrigImage);colormap(gray);
-    title(['Input Image, Image Set # ',num2str(handles.setbeinganalyzed)]);
+    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
     subplot(2,1,2); imagesc(CroppedImage); title('Cropped Image');
@@ -444,15 +443,15 @@ drawnow
 % nuclei which results in a set of 12 measurements ("TotalNucArea")
 % stored in the handles structure. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
+% ("SegmNucImg"). Now, if the user uses a different module which
 % happens to have the same measurement output name "TotalNucArea" to
 % analyze 4 image sets, the 4 measurements will overwrite the first 4
 % measurements of the previous analysis, but the remaining 8
 % measurements will still be present. So, the user will end up with 12
 % measurements from the 4 sets. Another potential problem is that if,
-% in the second analysis run, the user runs only an algorithm which
-% depends on the output "SegmNucImg" but does not run an algorithm
-% that produces an image by that name, the algorithm will run just
+% in the second analysis run, the user runs only a module which
+% depends on the output "SegmNucImg" but does not run a module
+% that produces an image by that name, the module will run just
 % fine: it will just repeatedly use the processed image of nuclei
 % leftover from the last image set, which was left in the handles
 % structure ("SegmNucImg").
@@ -481,13 +480,13 @@ drawnow
 % the second image.
 
 %%% Saves the adjusted image to the handles structure so it can be used by
-%%% subsequent algorithms.
+%%% subsequent modules.
 handles.Pipeline.(CroppedImageName) = CroppedImage;
 
 %%% Determines the filename of the image to be analyzed.
 fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
+FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
 fieldname = ['Filename', CroppedImageName];
-handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;
+handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

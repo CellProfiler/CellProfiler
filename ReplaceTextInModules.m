@@ -1,18 +1,24 @@
 function ReplaceTextInModules(TestMode)
-%%% Type any text as an argument in order to run this function in test
-%%% mode, where the files will not be altered but you can see which
-%%% replacements will be made.
+%%% Normally this function is run with no arguments; dialog boxes will
+%%% guide you through the process. You must prepare two .m files in
+%%% advance: one containing the old text, and the other containing the
+%%% new text.
+%%%
+%%% If you would like to run this function in test mode, where the
+%%% files will not be altered but you can see which replacements will
+%%% be made, run ReplaceTextInModules('test').
+
 
 [FileName,PathName] = uigetfile('*.m', 'Choose the M-file with the old text');
 if FileName == 0
     return
 end
-TextToRemove = retrievetextfromfile([PathName,FileName]);
+TextToRemove = retrievetextfromfile([PathName,FileName])
 [FileName,PathName] = uigetfile('*.m', 'Choose the M-file with the new text');
 if FileName == 0
     return
 end
-TextToAddInItsPlace = retrievetextfromfile([PathName,FileName]);
+TextToAddInItsPlace = retrievetextfromfile([PathName,FileName])
 PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
 if PathName == 0
     return

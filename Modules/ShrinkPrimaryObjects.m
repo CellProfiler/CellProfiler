@@ -136,8 +136,8 @@ end
 %%% so that if the user has made measurements on the non-shrunk objects,
 %%% the order of these objects will be exactly the same as the shrunk
 %%% objects, which may go on to be used to identify secondary objects.
-FinalShrunkenPrelimSegmentedImage = ShrunkenSegmentedImage.*PrelimSegmentedImage;
-FinalShrunkenPrelimSmallSegmentedImage = ShrunkenSegmentedImage.*PrelimSmallSegmentedImage;
+FinalShrunkenPrelimSegmentedImage = ShrunkenPrelimSegmentedImage.*PrelimSegmentedImage;
+FinalShrunkenPrelimSmallSegmentedImage = ShrunkenPrelimSmallSegmentedImage.*PrelimSmallSegmentedImage;
 FinalShrunkenSegmentedImage = ShrunkenSegmentedImage.*SegmentedImage;
 
 %%%%%%%%%%%%%%%%%%%%%%

@@ -364,7 +364,6 @@ ObjectName = 'overall';
 else ObjectName = ['within',ObjectName];
 end
 
-HeadingName = [];
 for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)
         Value = num2str(Results(i,j));

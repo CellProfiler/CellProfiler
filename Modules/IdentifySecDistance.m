@@ -131,7 +131,7 @@ DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage
 %%% Computes nearest neighbor image of nuclei centers so that the dividing
 %%% line between secondary objects is halfway between them rather than
 %%% favoring the primary object with the greater label number.
-[ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0));
+[ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
 drawnow
 %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
 ExpandedRelabeledDilatedPrelimSecObjectImage = PrelimPrimaryLabelMatrixImage(Labels);

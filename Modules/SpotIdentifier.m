@@ -168,7 +168,7 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     PatienceHandle = msgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
-    figure(FigureHandle); ImageHandle = imagesc(RotatedImage), colormap(gray), axis image;
+    figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image;
     title('Rotated Image'), pixval
     try %#ok We want to ignore MLint error checking for this line.
         delete(PatienceHandle)
@@ -195,9 +195,9 @@ elseif strncmp(RotateMethod, 'C',1) == 1
     PatienceHandle = msgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
-    figure(FigureHandle); ImageHandle = imagesc(RotatedImage), colormap(gray), axis image
+    figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image
     title('Rotated Image'), pixval
-    try, delete(PatienceHandle), end
+    try, delete(PatienceHandle), end %#ok We want to ignore MLint error checking for this line.
 else
     error('Image processing was canceled because your entry relating to image rotation was not one of the options: No, C, or M.')
 end
@@ -246,7 +246,7 @@ end
 LinearNumbers = reshape(NumbersGridShape, 1, NumberSpots);
 %%% Converts to text for display purposes.
 for i = 1:length(LinearNumbers)
-    PositionList{i} = num2str(LinearNumbers(i));,
+    PositionList{i} = num2str(LinearNumbers(i));
 end
 drawnow
 %%% Calculates the locations for all the sample labelings (whether it is
@@ -274,7 +274,7 @@ YLocations = reshape(GridYLocations, 1, NumberSpots);
 
 %%% Draws the Numbers, though they are initially invisible until the
 %%% user clicks "Show".
-PositionListHandles = text(XLocations, YLocations, PositionList, ...
+text(XLocations, YLocations, PositionList, ...
     'HorizontalAlignment','center', 'Color', 'red','visible','off', ...
     'UserData','PositionListHandles');
 drawnow
@@ -290,7 +290,7 @@ if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
     end
     cd(PathName)
     SheetName = Answer{1};
-    [data_numbers,SpotIdentifyingInfo]=xlsread(FileName,SheetName);
+    [ignore,SpotIdentifyingInfo]=xlsread(FileName,SheetName); %#ok We want to ignore MLint error checking for this line.
     SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
     SpotIdentifyingInfo = SpotIdentifyingInfo(2:end,:);
     %%% Determines the number of rows and columns for later use.
@@ -305,7 +305,7 @@ if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
     end
     %%% Draws the SpotIdentifyingInfo, though they are initially invisible until the
     %%% user clicks "Show".
-    SpotIdentifyingInfoHandles = text(XLocations, YLocations, SpotIdentifyingInfo, ...
+    text(XLocations, YLocations, SpotIdentifyingInfo, ...
         'HorizontalAlignment','center', 'Color', 'white','visible','off', ...
         'UserData','SpotIdentifyingInfoHandles');
 end
@@ -444,7 +444,7 @@ set(gca, 'YTick', GridYLocations(:,1))
 
 %%% Sets the Tick Labels.
 if strcmp(LeftOrRight,'R') == 1
-    set(gca, 'XTickLabel',[fliplr(1:NumberColumns)])
+    set(gca, 'XTickLabel',fliplr(1:NumberColumns))
 else
     set(gca, 'XTickLabel',{1:NumberColumns})
 end

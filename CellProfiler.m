@@ -59,7 +59,7 @@ end
 % End initialization code - DO NOT EDIT
 
 % --- Executes just before CellProfiler is made visible.
-function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin)
+function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin) %#ok We want to ignore MLint error checking for this line.
 
 % Choose default command line output for CellProfiler
 handles.output = hObject;
@@ -78,7 +78,7 @@ openFigures = [];
 guidata(hObject, handles);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles)
+function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
@@ -232,7 +232,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in BrowseToLoad.
-function BrowseToLoad_Callback(hObject, eventdata, handles)
+function BrowseToLoad_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% Opens a dialog box to allow the user to choose a directory and loads
@@ -266,10 +266,10 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
-function PathToLoadEditBox_CreateFcn(hObject, eventdata, handles)
+function PathToLoadEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
     set(hObject,'BackgroundColor',[1 1 1]);
 
-function PathToLoadEditBox_Callback(hObject, eventdata, handles)
+function PathToLoadEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Retrieves the text that was typed in.
 pathname = get(hObject,'string');
 %%% Checks whether a directory with that name exists.
@@ -302,7 +302,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in LoadSampleInfo.
-function LoadSampleInfo_Callback(hObject, eventdata, handles)
+function LoadSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -401,7 +401,7 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ClearSampleInfo.
-function ClearSampleInfo_Callback(hObject, eventdata, handles)
+function ClearSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% The Clear Sample Info button allows deleting any list of 
 %%% sample info, specified by its heading, from the handles structure.
 
@@ -446,7 +446,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ViewSampleInfo.
-function ViewSampleInfo_Callback(hObject, eventdata, handles)
+function ViewSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% The View Sample Info button allows viewing any list of 
 %%% sample info, specified by its heading, taken from the handles structure.
 
@@ -482,10 +482,10 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
-function OutputFileName_CreateFcn(hObject, eventdata, handles)
+function OutputFileName_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 set(hObject,'BackgroundColor',[1 1 1]);
 
-function OutputFileName_Callback(hObject, eventdata, handles)
+function OutputFileName_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
 PathName = get(handles.PathToLoadEditBox,'string');
 %%% Gets the user entry and stores it in the handles structure using the
@@ -536,7 +536,7 @@ guidata(gcbo, handles);
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in LoadSettingsFromFileButton.
-function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
+function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -600,7 +600,7 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveSettingsButton.
-function SaveSettingsButton_Callback(hObject, eventdata, handles)
+function SaveSettingsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% The "Settings" variable is saved to the file name the user chooses.
@@ -630,10 +630,10 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
-function PixelSizeEditBox_CreateFcn(hObject, eventdata, handles)
+function PixelSizeEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
     set(hObject,'BackgroundColor',[1 1 1]);
 
-function PixelSizeEditBox_Callback(hObject, eventdata, handles)
+function PixelSizeEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Checks to see whether the user input is a number, and generates an
 %%% error message if it is not a number.
 user_entry = str2double(get(hObject,'string'));
@@ -655,7 +655,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SetPreferencesButton.
-function SetPreferencesButton_Callback(hObject, eventdata, handles)
+function SetPreferencesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determine what the current directory is, so we can change back 
 %%% when this process is done.
 CurrentDirectory = cd;
@@ -751,7 +751,7 @@ cd(CurrentDirectory);
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AddAlgorithm.
-function AddAlgorithm_Callback(hObject,eventdata,handles)
+function AddAlgorithm_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
 % Find which algorithm slot number this callback was called for.
 AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
 AlgorithmNums = handles.numAlgorithms+1;
@@ -920,12 +920,12 @@ end
 %%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press for RemoveAlgorithm button.
-function RemoveAlgorithm_Callback(hObject, eventdata, handles)
+function RemoveAlgorithm_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
 RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, 'Confirm');
 
 % separated because it's called elsewhere
-function RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, ConfirmOrNot)
+function RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, ConfirmOrNot) %#ok We want to ignore MLint error checking for this line.
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the algorithm.
@@ -970,7 +970,7 @@ while((isempty(AlgorithmHighlighted)==0) && (AlgorithmHighlighted(length(Algorit
 end
 
 if(handles.numAlgorithms == 0)
-    AlgorithmHighlighted = [1];
+    AlgorithmHighlighted = 1;
 elseif (isempty(AlgorithmHighlighted))
     AlgorithmHighlighted = handles.numAlgorithms;
 end
@@ -984,7 +984,7 @@ ViewAlgorithm(handles);
 %%% MOVE UP/DOWN BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function MoveUpButton_Callback(hObject, eventdata, handles)
+function MoveUpButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
 if(handles.numAlgorithms < 1 || AlgorithmHighlighted(1) == 1)
 else
@@ -1018,7 +1018,7 @@ end
 
 %%%%%%%
 
-function MoveDownButton_Callback(hObject,eventdata,handles)
+function MoveDownButton_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
 if(handles.numAlgorithms<1 || AlgorithmHighlighted(length(AlgorithmHighlighted)) >= handles.numAlgorithms)
 else
@@ -1056,7 +1056,7 @@ end
 
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
-function CloseFigureButton_Callback(hObject, eventdata, handles)
+function CloseFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global closeFigures;
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
 for i=1:length(AlgorithmHighlighted),
@@ -1066,7 +1066,7 @@ guidata(hObject, handles);
 
 
 % --- Executes on button press in OpenFigureButton.
-function OpenFigureButton_Callback(hObject, eventdata, handles)
+function OpenFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global openFigures;
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
 for i=1:length(AlgorithmHighlighted),
@@ -1092,11 +1092,11 @@ AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
 AlgorithmNumber = AlgorithmHighlighted(1);
     
 % --- Executes during object creation, after setting all properties.
-function VariableBox_CreateFcn(hObject, eventdata, handles)
+function VariableBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
     set(hObject,'BackgroundColor',[1 1 1])
 
 
-function VariableBox_Callback(hObject, eventdata, handles)
+function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% The following lines fetch the contents of the edit box,
 %%% determine which algorithm we are dealing with at the moment (by
 %%% running the "whichactive" subfunction), and call the storevariable
@@ -1123,14 +1123,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on selection change in AlgorithmBox.
-function AlgorithmBox_Callback(hObject, eventdata, handles)
+function AlgorithmBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 % Update handles structure
 guidata(hObject, handles);
 ViewAlgorithm(handles)
 
 % --- Executes during object creation, after setting all properties.
-function AlgorithmBox_CreateFcn(hObject, eventdata, handles)
+function AlgorithmBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 set(hObject,'BackgroundColor',[1 1 1]);
 initialString = 'No Algorithms Loaded';
 initialContents{1} = initialString;
@@ -1142,16 +1142,16 @@ guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
-function ListBox_CreateFcn(hObject, eventdata, handles)
+function ListBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
     set(hObject,'BackgroundColor',[1 1 1]);
 
 % --- Executes on selection change in ListBox.
-function ListBox_Callback(hObject, eventdata, handles)
+function ListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in TechnicalDiagnosisButton.
-function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles)
+function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% I am using this button to show the handles structure in the
 %%% main Matlab window.
 handles %#ok We want to ignore MLint error checking for this line.
@@ -1160,7 +1160,7 @@ msgbox('The handles structure has been printed out at the command line of Matlab
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveImageAsButton.
-function SaveImageAsButton_Callback(hObject, eventdata, handles)
+function SaveImageAsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
 cd(handles.Vworkingdirectory)
 MsgboxHandle = msgbox('Click twice on the image you wish to save. This window will be closed automatically - do not close it or click OK.');
@@ -1195,7 +1195,7 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowImageButton.
-function ShowImageButton_Callback(hObject, eventdata, handles)
+function ShowImageButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
 cd(handles.Vworkingdirectory)
 %%% Opens a user interface window which retrieves a file name and path 
@@ -1216,7 +1216,7 @@ else
     
     %%% Reads the image.
     Image = im2double(imread([PathName,'/',FileName]));
-    FigureHandle = figure; imagesc(Image), colormap(gray)
+    figure; imagesc(Image), colormap(gray)
     pixval
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
 %%% SHOULD CONSIDER ADDING IT BACK.
@@ -1241,7 +1241,7 @@ cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowPixelDataButton.
-function ShowPixelDataButton_Callback(hObject, eventdata, handles)
+function ShowPixelDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 FigureNumber = inputdlg('In which figure number would like to see pixel data?','',1);
 if ~isempty(FigureNumber)
     FigureNumber = str2double(FigureNumber{1});
@@ -1251,7 +1251,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in CloseAllFigureWindowsButton.
-function CloseAllFigureWindowsButton_Callback(hObject, eventdata, handles)
+function CloseAllFigureWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Requests confirmation to really delete all the figure windows.
 Answer = questdlg('Are you sure you want to close all open figure windows and timers?','Confirm','Yes','No','Yes');
@@ -1277,7 +1277,7 @@ end
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in RevealDataAnalysisButtons.
-function RevealDataAnalysisButtons_Callback(hObject, eventdata, handles)
+function RevealDataAnalysisButtons_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentButtonLabel = get(hObject,'string');
 if strcmp(CurrentButtonLabel,'Hide')
     set(handles.CoverDataAnalysisFrame,'visible','on')
@@ -1289,7 +1289,7 @@ end
 
 %%%%%%%%%%%%%%%%%
 % --- Executes on button press in ExportDataButton.
-function ExportDataButton_Callback(hObject, eventdata, handles)
+function ExportDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
@@ -1433,7 +1433,7 @@ cd(CurrentDirectory);
 %%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ExportCellByCellButton.
-function ExportCellByCellButton_Callback(hObject, eventdata, handles)
+function ExportCellByCellButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -1676,7 +1676,7 @@ cd(CurrentDirectory);
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in HistogramButton.
-function HistogramButton_Callback(hObject, eventdata, handles)
+function HistogramButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -2369,7 +2369,7 @@ cd(CurrentDirectory);
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in NormalizationButton.
-function NormalizationButton_Callback(hObject, eventdata, handles)
+function NormalizationButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 h = msgbox('Copy your data to the clipboard then press OK');
 waitfor(h)
 
@@ -2493,7 +2493,7 @@ msgbox('The original data and the corrected data are now displayed in the Matlab
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in ShowDataOnImageButton.
-function ShowDataOnImageButton_Callback(hObject, eventdata, handles)
+function ShowDataOnImageButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -2644,7 +2644,7 @@ cd(CurrentDirectory);
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeImagesButton.
-function AnalyzeImagesButton_Callback(hObject, eventdata, handles)
+function AnalyzeImagesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global closeFigures openFigures;
 CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
@@ -3303,7 +3303,7 @@ errordlg(ErrorExplanation)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeAllImagesClusterButton.
-function AnalyzeAllImagesClusterButton_Callback(hObject, eventdata, handles)
+function AnalyzeAllImagesClusterButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 Prompts = {'Path to CellProfiler on the remote machine(s)','Path to the images on the remote machine(s)','File containing the list of remote machine(s)'};
 
 % set up default values for the answers
@@ -3456,53 +3456,53 @@ end; %if s isempty
 %%% --- Executes on button press in the permanent Help buttons.
 %%% (The permanent Help buttons are the ones that don't change 
 %%% depending on the algorithm loaded.) 
-function HelpButton1_Callback(hObject, eventdata, handles)
+function HelpButton1_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help1.m');
 helpdlg(HelpText,'CellProfiler Help #1')
 
-function HelpButton2_Callback(hObject, eventdata, handles)
+function HelpButton2_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help2.m');
 msgbox(HelpText,'CellProfiler Help #2')
 
-function HelpButton3_Callback(hObject, eventdata, handles)
+function HelpButton3_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help3.m');
 helpdlg(HelpText,'CellProfiler Help #3')
 
-function HelpButton4_Callback(hObject, eventdata, handles)
+function HelpButton4_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help4.m');
 helpdlg(HelpText,'CellProfiler Help #4')
 
 % --- Executes on button press in HelpExportMeanDataButton.
-function HelpExportMeanDataButton_Callback(hObject, eventdata, handles)
+function HelpExportMeanDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpExportMeanData.m');
 helpdlg(HelpText,'CellProfiler Help: Export mean data')
 
 % --- Executes on button press in HelpExportCellByCellDataButton.
-function HelpExportCellByCellDataButton_Callback(hObject, eventdata, handles)
+function HelpExportCellByCellDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpExportCellByCellData.m');
 helpdlg(HelpText,'CellProfiler Help: Export cell by cell data')
 
 % --- Executes on button press in HelpShowDataOnImageButton.
-function HelpShowDataOnImageButton_Callback(hObject, eventdata, handles)
+function HelpShowDataOnImageButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpShowDataOnImage.m');
 helpdlg(HelpText,'CellProfiler Help: Show data on image')
 
 % --- Executes on button press in HelpHistogramsButton.
-function HelpHistogramsButton_Callback(hObject, eventdata, handles)
+function HelpHistogramsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpHistograms.m');
 helpdlg(HelpText,'CellProfiler Help: Histograms')
 
 % --- Executes on button press in HelpNormalizationButton.
-function HelpNormalizationButton_Callback(hObject, eventdata, handles)
+function HelpNormalizationButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpNormalization.m');
 helpdlg(HelpText,'CellProfiler Help: Normalization')
 
-function HelpAnalyzeImagesButton_Callback(hObject, eventdata, handles)
+function HelpAnalyzeImagesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpAnalyzeImages.m');
 helpdlg(HelpText,'CellProfiler Help: Analyze images')
 
 % --- Executes on button press in HelpForThisAnalysisModule.  
-function HelpForThisAnalysisModule_Callback(hObject, eventdata, handles)
+function HelpForThisAnalysisModule_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% First, check to see whether there is a specific algorithm loaded.
 %%% If not, it opens a help dialog which explains how to pick one.
 AlgorithmNumber = whichactive(handles);

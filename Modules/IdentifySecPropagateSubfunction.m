@@ -1,4 +1,4 @@
-% function LABELS_OUT = AlgSegmentSecPropagateSubfunction(LABELS_IN, IMAGE, MASK, LAMBDA) %#ok
+%#ok function LABELS_OUT = AlgSegmentSecPropagateSubfunction(LABELS_IN, IMAGE, MASK, LAMBDA) %#ok
 % 
 % Help for the Segment Secondary Propagate Subfunction:
 % 

@@ -18,10 +18,11 @@ Infrastructure improvements:
 - Whenever anything is saved to the hard drive, add an error check to see whether the user has permission to write to that location. From within the target directory, run: [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0, then error(INSERT PROPER ERROR STUFF HERE), end
 
 Image analysis modules - New:
+- Make an image sorter to take an incoming image and break the loop if the image does not meet particular conditions (e.g. maximum pixel intensity is below a certain brightness).
 - Make modules to identify objects in transmitted light/DIC images.
 - Neurite outgrowth module
 - Particle tracking over time module
-- Make a user-scoring module that allows the user to view and annotate each image manually. Show control side by side (1-4 at a time) and add that assessment to the data structure. Maybe allow randomizing (to do blind tests). Allow clicking through.
+- Make a user-scoring module that allows the user to view and annotate each image manually. Show control side by side (1-4 at a time) and add that assessment to the data structure. Maybe allow randomizing (to do blind tests). Allow clicking through. Could also be used just for viewing images (e.g. every third image in a gigantic image set).  Whether the file name and/or sample info is shown should be optional.
 - Make a quality-control module that checks for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation.
 - Make a module to expand or shrink secondary objects. (e.g. to define membrane compartment)
 - Binucleate cells: figure out how to identify and count them

@@ -22,12 +22,9 @@ function handles = ClearData(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
-
 ExistingOrMemory = CPquestdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
-    cd(handles.Current.StartupDirectory)
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     %%% Checks whether any headings are loaded yet.
@@ -61,7 +58,6 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
     [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
     %%% Allows canceling.
     if fOutName == 0
-        cd(handles.Current.StartupDirectory)
         return
     else
         try OutputFile = load([pOutName fOutName]);
@@ -96,4 +92,3 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
         %%% loaded?"
     end
 end
-cd(handles.Current.StartupDirectory)

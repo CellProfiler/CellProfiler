@@ -195,7 +195,8 @@ if handles.Current.SetBeingAnalyzed == 1
     catch error('Image processing was canceled because the Image Tiler module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Image Tiler module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Image Tiler module onward.')
     end
     %%% Changes to that directory.
-    cd(Pathname)
+    %%% cd(Pathname)
+    %%% Commented out -- James Whittle 3/22/05
     %%% Retrieves the list of filenames where the images are stored from the
     %%% handles structure.
     fieldname = ['FileList', ImageName];
@@ -337,8 +338,6 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% module.  Without the following cancel line, the module will run X
     %%% times, where X is the number of files in the current directory.
     set(handles.timertexthandle,'string','Cancel')
-    %%% Returns to the original directory.
-    cd(CurrentDirectory)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -426,7 +425,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     uicontrol('Style', 'pushbutton', ...
         'String', 'Change', 'Position', [490 6 45 20], ...
         'Callback', ChangeColormapButtonFunction, 'parent',ThisModuleFigureNumber);
-    FolderButtonFunction = 'Pathname = uigetdir('''',''Choose the directory where images are stored''); if Pathname ~= 0, set(findobj(''UserData'',''PathnameTextDisplay''), ''String'', Pathname), cd(Pathname), end';
+    FolderButtonFunction = 'Pathname = uigetdir('''',''Choose the directory where images are stored''); if Pathname ~= 0, set(findobj(''UserData'',''PathnameTextDisplay''), ''String'', Pathname), end';
     uicontrol('Style', 'pushbutton', ...
         'String', 'Change', 'Position', [550 6 45 20], ...
         'Callback', FolderButtonFunction, 'parent',ThisModuleFigureNumber);

@@ -243,7 +243,9 @@ if handles.Current.SetBeingAnalyzed == 1
             catch error('Image processing was canceled because the Correct Illumination module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first image set through the pipeline. In other words, the Correct Illumination module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination module onward.')
             end
             %%% Changes to that directory.
-            cd(Pathname)
+            %%% cd(Pathname)
+            %%% Commented out, not sure of impact on remaining code -- JW
+            %%% 3/22/05
             %%% Retrieves the list of filenames where the images are stored from the
             %%% handles structure.
             fieldname = ['FileList', ImageName];
@@ -341,8 +343,6 @@ CorrectedImage = imsubtract(OrigImage, IlluminationImage);
 %%% calculate the IlluminationImage.
 CorrectedImage(CorrectedImage < 0) = 0;
 
-%%% Returns to the original directory.
-cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

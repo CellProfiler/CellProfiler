@@ -193,7 +193,8 @@ if handles.Current.SetBeingAnalyzed == 1
         catch error('Image processing was canceled because the Subtract Background module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Subtract Background module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Subtract Background module onward.')
         end
         %%% Changes to that directory.
-        cd(Pathname)
+        %%% cd(Pathname)
+        %%% Commented out -- James Whittle 3/22/05
         %%% Retrieves the list of filenames where the images are stored from the
         %%% handles structure.
         fieldname = ['FileList', ImageName];
@@ -202,7 +203,7 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% each image, then finds the Minimum of that value across all
         %%% images. Our typical images have a million pixels. We are not
         %%% choosing the lowest pixel value, because it might be zero if
-        %%% it’s a stuck pixel.  We are pretty sure there won’t be 10 stuck
+        %%% it?s a stuck pixel.  We are pretty sure there won?t be 10 stuck
         %%% pixels so this should be safe.
         %%% Starts with a high value for MinimumTenthMinimumPixelValue;
         MinimumTenthMinimumPixelValue = 1;
@@ -268,8 +269,7 @@ if MinimumTenthMinimumPixelValue ~= 0
     CorrectedImage = OrigImage - MinimumTenthMinimumPixelValue;
     %%% Values below zero are set to zero.
     CorrectedImage(CorrectedImage < 0) = 0;
-    %%% Returns to the original directory.
-    cd(CurrentDirectory)
+
 
     %%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%

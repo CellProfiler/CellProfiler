@@ -20,11 +20,13 @@ function handles = DataLayout(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+else
+    [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+end
 if RawFileName == 0
-    cd(handles.Current.StartupDirectory);
     return
 end
     load(fullfile(RawPathname, RawFileName));
@@ -34,7 +36,6 @@ MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
 %%% Error detection.
 if isempty(MeasFieldnames)
     errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Image''.')
-    cd(handles.Current.StartupDirectory);
     return
 end
 %%% Removes the 'Object' prefix from each name for display purposes.

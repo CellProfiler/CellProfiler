@@ -203,7 +203,8 @@ for n = 1:2:5
         fieldname = ['dOTPathName', ImageName{n}];
         PathName = handles.(fieldname);
         %%% Switch to the directory
-        cd(PathName);
+        %%% cd(PathName);
+        %%% Commented out -- James Whittle 3/22/05
         try
             %%% run the header info function on the loaded image
             [ExpTime, ExpNum, WorldXYZ, TimeDate] = ExtractHeaderInfo(char(CurrentFileName));
@@ -244,8 +245,7 @@ for n = 1:2:5
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Extract Header Information module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
 end
-%%% Changes back to the original directory.
-cd(CurrentDirectory)
+
 %%% Update the handles structure.
 guidata(gcbo, handles);
 

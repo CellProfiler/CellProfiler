@@ -191,7 +191,8 @@ if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')
             catch error('Image processing was canceled because the Rescale Intensity module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Rescale Intensity module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Rescale Intensity module onward.')
             end
             %%% Changes to that directory.
-            cd(Pathname)
+            %%% cd(Pathname)
+            %%% Commented out -- James Whittle 3/22/05
             %%% Retrieves the list of filenames where the images are stored from the
             %%% handles structure.
             fieldname = ['FileList', ImageName];
@@ -218,7 +219,6 @@ if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')
         handles.Pipeline.(fieldname) = HighestPixelOrig;
         fieldname = ['MinPixelValue', ImageName];
         handles.Pipeline.(fieldname) = LowestPixelOrig;
-        cd(CurrentDirectory)
     else 
         fieldname = ['MaxPixelValue', ImageName];
         HighestPixelOrig = handles.Pipeline.(fieldname);

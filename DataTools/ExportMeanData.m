@@ -25,9 +25,13 @@ function handles = ExportMeanData(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+else
+    [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+end
+
 if RawFileName == 0
 else
     LoadedHandles = load(fullfile(RawPathname, RawFileName));
@@ -199,7 +203,7 @@ else
     end % This goes with the "Cancel" button on the FileName dialog.
 end % This goes with the "Cancel" button on the RawFileName dialog.
 
-cd(handles.Current.StartupDirectory);
+
 % In case I want to save data that is 
 % all numbers, with different numbers of rows for each column, the
 % following code might be helpful:

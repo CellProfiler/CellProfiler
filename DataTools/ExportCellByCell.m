@@ -24,11 +24,14 @@ function handles = ExportCellByCell(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+else
+    [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+end
+
 if RawFileName == 0
-    cd(handles.Current.StartupDirectory);
     return
 end
 LoadedHandles = load(fullfile(RawPathname, RawFileName));
@@ -42,7 +45,6 @@ if strcmp(Answer, 'All images') == 1
     %%% Error detection.
     if isempty(MeasFieldnames)
         errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
-        cd(handles.Current.StartupDirectory);
         return
     end
     %%% Removes the 'Object' prefix from each name for display purposes.
@@ -56,7 +58,6 @@ if strcmp(Answer, 'All images') == 1
         'PromptString','Choose a measurement to export','CancelString','Cancel',...
         'SelectionMode','single');
     if ok == 0
-        cd(handles.Current.StartupDirectory);
         return
     end
     EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
@@ -72,7 +73,6 @@ if strcmp(Answer, 'All images') == 1
     %%% Error detection.
     if isempty(HeadingFieldnames)
         errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline or handles.Measurements structure preceded by ''Filename'', ''Imported'', or ''TimeElapsed''.')
-        cd(handles.Current.StartupDirectory);
         return
     end
 
@@ -82,7 +82,6 @@ if strcmp(Answer, 'All images') == 1
         'PromptString','Choose a field to label each column of data with','CancelString','Cancel',...
         'SelectionMode','single');
     if ok == 0
-        cd(handles.Current.StartupDirectory);
         return
     end
     HeadingToDisplay = char(HeadingFieldnames(Selection));
@@ -111,7 +110,6 @@ if strcmp(Answer, 'All images') == 1
     FileName = inputdlg('What do you want to call the resulting measurements file?  To open the file easily in Excel, add ".xls" to the name.','Name the file',1,{BareFileName});
     %%% If the user presses the Cancel button, the program goes to the end.
     if isempty(FileName)
-        cd(handles.Current.StartupDirectory);
         return
     end
     FileName = FileName{1};
@@ -119,7 +117,6 @@ if strcmp(Answer, 'All images') == 1
     if OutputFileOverwrite ~= 0
         Answer = CPquestdlg('A file with that name already exists in the default output directory. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
-            cd(handles.Current.StartupDirectory);
             return    
         end
     end
@@ -196,17 +193,14 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Asks the user to specify which image set to export.
     Answers = inputdlg({['Enter the sample number to export. There are ', num2str(TotalNumberImageSets), ' total.']},'Choose samples to export',1,{'1'});
     if isempty(Answers{1})
-        cd(handles.Current.StartupDirectory);
         return
     end
     try ImageNumber = str2double(Answers{1});
     catch errordlg('The text entered was not a number.')
-        cd(handles.Current.StartupDirectory);
         return
     end
     if ImageNumber > TotalNumberImageSets
         errordlg(['There are only ', num2str(TotalNumberImageSets), ' image sets total.'])
-        cd(handles.Current.StartupDirectory);
         return
     end
     
@@ -216,7 +210,6 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Error detection.
     if isempty(MeasFieldnames)
         errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
-        cd(handles.Current.StartupDirectory);
         return
     end
     
@@ -228,7 +221,6 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Error detection.
     if isempty(HeadingFieldnames)
         errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename''.')
-        cd(handles.Current.StartupDirectory);
         return
     end
 
@@ -238,7 +230,6 @@ elseif strcmp(Answer, 'All measurements') == 1
         'PromptString','Choose a field to label this data.','CancelString','Cancel',...
         'SelectionMode','single');
     if ok == 0
-        cd(handles.Current.StartupDirectory);
         return
     end
     HeadingToDisplay = char(HeadingFieldnames(Selection));
@@ -266,7 +257,6 @@ elseif strcmp(Answer, 'All measurements') == 1
     FileName = inputdlg('What do you want to call the resulting measurements file?  To open the file easily in Excel, add ".xls" to the name.','Name the file',1,{BareFileName});
     %%% If the user presses the Cancel button, the program goes to the end.
     if isempty(FileName)
-        cd(handles.Current.StartupDirectory);
         return
     end
     FileName = FileName{1};
@@ -274,7 +264,6 @@ elseif strcmp(Answer, 'All measurements') == 1
     if OutputFileOverwrite ~= 0
         Answer = CPquestdlg('A file with that name already exists in the default output directory, as specified in the main CellProfiler window. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
-            cd(handles.Current.StartupDirectory);
             return    
         end
     end
@@ -326,4 +315,3 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the default output directory.'])
 end
-cd(handles.Current.StartupDirectory);

@@ -22,11 +22,9 @@ function handles = ViewData(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 ExistingOrMemory = CPquestdlg('Do you want to view sample info or data in an existing output file or do you want to view the sample info or data stored in memory to be placed into future output files?', 'View Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
-    cd(handles.Current.StartupDirectory)
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     %%% Checks whether any headings are loaded yet.
@@ -57,10 +55,9 @@ elseif strcmp(ExistingOrMemory, 'Memory') == 1
         %%% This "end" goes with the "isempty" if no sample info is loaded.
     end
 elseif strcmp(ExistingOrMemory, 'Existing') == 1
-    [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
+    [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Choose the output file');
     %%% Allows canceling.
     if fOutName == 0
-        cd(handles.Current.StartupDirectory)
         return
     else
         try OutputFile = load([pOutName fOutName]);
@@ -107,4 +104,3 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
         %%% This "end" goes with the "isempty" if no sample info is loaded.
     end
 end
-cd(handles.Current.StartupDirectory)

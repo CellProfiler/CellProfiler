@@ -26,14 +26,13 @@ function handles = AddData(handles)
 %
 % $Revision$
 
-cd(handles.Current.DefaultOutputDirectory)
 ExistingOrMemory = CPquestdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     OutputFile = []; pOutName = []; fOutName = [];
-else [fOutName,pOutName] = uigetfile('*.mat','Add sample info to which existing output file?');
+else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Add sample info to which existing output file?');
     %%% Allows canceling.
     if fOutName == 0
         return
@@ -144,7 +143,7 @@ else extension = fname(end-2:end);
     else errordlg('Sorry, the list of sample descriptions must be in a text file (.txt) or comma delimited file (.csv).');
     end
 end
-cd(handles.Current.StartupDirectory)
+
 
 %%% SUBFUNCTION %%%
 function [handles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);

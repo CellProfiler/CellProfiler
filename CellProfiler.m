@@ -3169,7 +3169,14 @@ else
 %                        pnet_remote(handles.parallel_machines, 'PUT', 'handles', handles_culled);
 %                    end
                     
-                    
+
+                    %%% Reads the text in the timer window to check whether it is a cancel
+                    %%% signal, since the text will be overwritten in the calculations for the
+                    %%% timer.  The timer calculations have to be done before canceling because
+                    %%% the time elapsed must be stored in the handles structure and therefore
+                    %%% in the output file.
+                    CancelWaiting = get(handles.timertexthandle,'string');
+
                     %%% Make calculations for the Timer window.
                     time_elapsed = num2str(toc);
                     timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
@@ -3200,13 +3207,6 @@ else
                     handles.setbeinganalyzed = setbeinganalyzed;
                     guidata(gcbo, handles)
 
-                    %%% Reads the text in the timer window to check whether it is a cancel
-                    %%% signal, since the text will be overwritten in the calculations for the
-                    %%% timer.  The timer calculations have to be done before canceling because
-                    %%% the time elapsed must be stored in the handles structure and therefore
-                    %%% in the output file.
-                    CancelWaiting = get(handles.timertexthandle,'string');
-                    
                     %%% If a "cancel" signal is waiting, break and go to the "end" that goes
                     %%% with the "while" loop.
                     if strncmp(CancelWaiting,'Cancel',6) == 1

@@ -1,6 +1,7 @@
 Unclaimed projects/feature requests/bug fixes
 
 General:
+- Rename HelpHistogram and HelpNormalization now that the buttons have different names.
 - Make Images and Data buttons into icons in a toolbar.
 - 'Fetch new modules from website' button in CP's main GUI.
 - 'Report bug' button in CP's main GUI.

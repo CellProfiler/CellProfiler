@@ -302,13 +302,7 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    cd(handles.Current.DefaultOutputDirectory)
-    [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
-    % [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory, '*.mat'),'Choose a settings or output file');
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-    try cd(handles.Current.StartupDirectory), end
+    [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP', '*.mat'),'Choose a settings or output file');
 else
     [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 end
@@ -751,22 +745,8 @@ end
 %%% leading up to this directory sometime after saving the
 %%% Preferences.
 
-try cd(handles.Preferences.DefaultModuleDirectory) %#ok We want to ignore MLint error checking for this line.
-end
-% Commented out by James Whittle 3/22/05
-%%% Restored this code, because the uigetfile function does not seem
-%%% to work properly.  It goes to the parent of the directory that was
-%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-
-%%% Now, when the dialog box is opened to retrieve an module, the
-%%% directory will be the default module directory.
 if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
-%    [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory, '*.m'),...
-%%% Replaced this code, because the uigetfile function does not seem
-%%% to work properly.  It goes to the parent of the directory that was
-%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-    [ModuleNamedotm,Pathname] = uigetfile('*.m',...
-        'Choose an image analysis module');
+    [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'MATLABBUG11432TP', '*.m'),...
 else
     [ModuleNamedotm,Pathname] = uigetfile('*.m',...
         'Choose an image analysis module');

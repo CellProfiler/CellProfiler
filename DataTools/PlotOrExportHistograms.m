@@ -87,23 +87,9 @@ function handles = PlotOrExportHistograms(handles)
 %
 % $Revision$
 
-%%% Restored this code, because the uigetfile function does not seem
-%%% to work properly.  It goes to the parent of the directory that was
-%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-CurrentDir = pwd;
-cd(handles.Current.DefaultOutputDirectory)
-
-
-
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.
-% [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
-[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
-
-%%% Restored this code, because the uigetfile function does not seem
-%%% to work properly.  It goes to the parent of the directory that was
-%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-
+ [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP','*.mat'),'Select the raw measurements file');
 %%% Allows canceling.
 if RawFileName == 0
     return
@@ -889,8 +875,3 @@ catch
     waitfor(h);
     return;
 end
-
-cd(CurrentDir)
-%%% Restored this code, because the uigetfile function does not seem
-%%% to work properly.  It goes to the parent of the directory that was
-%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne

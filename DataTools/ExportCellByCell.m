@@ -24,20 +24,9 @@ function handles = ExportCellByCell(handles)
 %
 % $Revision$
 
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-CurrentDir = pwd;
-    cd(handles.Current.DefaultOutputDirectory)
-
 %%% Ask the user to choose the file from which to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    % [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
-     [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
-
+    [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP','*.mat'),'Select the raw measurements file');
 else
     [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 end
@@ -326,9 +315,3 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the default output directory.'])
 end
-
-cd(CurrentDir)
-    %%% Restored this code, because the uigetfile function does not seem
-    %%% to work properly.  It goes to the parent of the directory that was
-    %%% specified.  I have asked Mathworks about this issue 3/23/05.
-    %%% -Anne

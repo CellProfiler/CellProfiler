@@ -37,7 +37,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 21-Oct-2004 15:43:32
+% Last Modified by GUIDE v2.5 21-Oct-2004 18:22:51
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -597,8 +597,8 @@ cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in SaveCurrentSettingsButton.
-function SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
+% --- Executes on button press in SaveSettingsButton.
+function SaveSettingsButton_Callback(hObject, eventdata, handles)
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% The "Settings" variable is saved to the file name the user chooses.
@@ -699,10 +699,9 @@ if DefaultAlgorithmDirectory == 0
 end
 
 %%% (3) GET WORKING DIRECTORY
-try   
-  %%% Tries to change to the working directory, whose name is a variable
-  %%% that is stored in the CellProfilerPreferences.mat file.
-  cd(WorkingDirectory)
+%%% Tries to change to the working directory, whose name is a variable
+%%% that is stored in the CellProfilerPreferences.mat file.
+try cd(WorkingDirectory)
 end
 %%% Open a dialog box to get the directory from the user.
 WorkingDirectory = uigetdir(pwd, 'Which folder should be the default for your output and settings files?'); 
@@ -718,9 +717,7 @@ end
 %%% directory. In this way, the file can always be found by the Load
 %%% algorithm function. The first argument is the name of the .mat file;
 %%% the remaining arguments are the names of the variables which are saved.
-try
-    %%% Change the directory to the Matlab root directory
-    cd(matlabroot)
+try cd(matlabroot)
     save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
     helpdlg('Your CellProfiler Preferences were successfully set.  They are contained within a folder in the Matlab root directory in a file called CellProfilerPreferences.mat.')
     handles.Vpixelsize = PixelSize;
@@ -732,8 +729,7 @@ try
 
 catch
     cd(CurrentDirectory)
-    try
-        save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
+    try save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
         helpdlg('You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly while you are in the current directory.')
         handles.Vpixelsize = PixelSize;
         handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
@@ -769,8 +765,7 @@ CurrentDirectory = cd;
 %%% that is stored in that .mat file. It is within a try-end pair because
 %%% the user may have changed the folder names leading up to this directory
 %%% sometime after saving the Preferences.
-try
-    cd(handles.Vdefaultalgorithmdirectory)
+try cd(handles.Vdefaultalgorithmdirectory)
 end 
 %%% Now, when the dialog box is opened to retrieve an algorithm, the
 %%% directory will be the default algorithm directory.
@@ -2722,7 +2717,7 @@ else
                 set(handles.SetPreferencesButton,'enable','off')
                 set(handles.PixelSizeEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.LoadSettingsFromFileButton,'enable','off')
-                set(handles.SaveCurrentSettingsButton,'enable','off')
+                set(handles.SaveSettingsButton,'enable','off')
                 set(handles.AddAlgorithm,'visible','off');
                 set(handles.RemoveAlgorithm,'visible','off');
                 set(handles.MoveUpButton,'visible','off');
@@ -3176,7 +3171,7 @@ else
                 set(handles.SetPreferencesButton,'enable','on')
                 set(handles.PixelSizeEditBox,'enable','on','foregroundcolor','black')
                 set(handles.LoadSettingsFromFileButton,'enable','on')
-                set(handles.SaveCurrentSettingsButton,'enable','on')
+                set(handles.SaveSettingsButton,'enable','on')
                 %listbox changes
                 for AlgorithmNumber=1:handles.numAlgorithms;
                     for VariableNumber = 1:handles.numVariables(AlgorithmNumber);
@@ -3470,8 +3465,6 @@ function HelpStep2_Callback(hObject, eventdata, handles)
 helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with "OUT" to avoid confusion.  You do not need to type ".mat" at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called CellProfilerPreferences.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
 function HelpStep3_Callback(hObject, eventdata, handles)
 helpdlg('FOR HELP ON INDIVIDUAL MODULES: Click the "Help for this analysis module" button towards the right of the CellProfiler window.       LOAD/CLEAR/VIEW BUTTONS:  Choose image analysis modules in the desired order by clicking "Load" and selecting the corresponding Matlab ".m" file.      SHORTCUTS: Once you have loaded the desired image analysis modules and modified all of the settings as desired, you may save these settings for future use by clicking "Save Settings" and naming the file.  Later, you can click "Load Settings", select this file that you made, and all of the modules and settings will be restored.  ALTERNATELY, if you previously ran an image analysis and you want to repeat the exact analysis, you may click "Extract Settings from an output file".  Select the output file, and the modules and settings used to create it will be extracted.  You then name the settings file and load it using the "Load Settings" button.  Troubleshooting: If you loaded an analysis module by loading a settings file, and then obtained error messages in the Matlab main window, the most likely cause is that the analysis modules loaded are not on the Matlab search path. Be sure that the folder immediately containing the analysis module is on the search path. The search path can be edited by choosing File > Set Path.  Another possibility is that the Settings file was created with old versions of CellProfiler or with old versions of modules.  The Settings file can be opened with any word processor as plain text and you should be able to figure out what the settings were.        TECHNICAL DIAGNOSIS: Clicking here causes text to appear in the main Matlab window.  This text shows the "handles structure" which is sometimes useful for diagnosing problems with the software.','Step 3 Help')
-function HelpStep4_Callback(hObject, eventdata, handles)
-helpdlg('THIS DOES NOT YET WORK!!   CHOOSE TEST IMAGE: Using either the Browse button, the pull-down menu, or the text box (type carefully!), choose the image file that is the first in the set you would like to analyze.  Then click "Analyze test image".','Step 4 Help')
 function HelpStep5_Callback(hObject, eventdata, handles)
 helpdlg('SHOW PIXEL DATA: If you have an image displayed in a figure window and would like to determine the X, Y position or the intensity at a particular pixel, click this button.        CLOSE ALL FIGURES AND TIMERS: Click this button to close all open figure/image windows and timers. The main CellProfiler window and any error/message windows will remain open. You will be asked for confirmation first before the windows are all closed.           EXTRACT DATA: Once image analysis is complete, click this button and select the output file to extract the measurements and other information about the analysis.  The data will be converted to a delimited text file which can be read by most programs.  By naming the file with the extension for Microsoft Excel (.xls), the file is usually easily openable by that program.       ANALYZE ALL IMAGES: All of the images in the selected directory/directories will be analyzed using the modules and settings you have specified.  You will have the option to cancel at any time.  At the end of each data set, the data are stored in the output file.','Step 5 Help')
 function HelpStep6_Callback(hObject, eventdata, handles)

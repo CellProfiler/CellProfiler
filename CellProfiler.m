@@ -699,12 +699,6 @@ else
     fclose(fid);
     if lastVariableCheck == 0
         errordlg(['blahThe module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.'])
-        % TODO: If this happens, we need to remove the module
-        % name from the list box, etc. I.e. revert everything
-        % as if we had not tried to load this module. As it
-        % is, the module's name is displayed in the pipeline
-        % list box, but it cannot be removed without causing
-        % errors.
         return
     end
     
@@ -938,12 +932,6 @@ if (length(ModuleHighlighted) > 0)
             fclose(fid);
             if lastVariableCheck == 0
                 errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.'])
-                % TODO: If this happens, we need to remove the module
-                % name from the list box, etc. I.e. revert everything
-                % as if we had not tried to load this module. As it
-                % is, the module's name is displayed in the pipeline
-                % list box, but it cannot be removed without causing
-                % errors.
                 return  
             end
         end
@@ -1584,7 +1572,6 @@ pathname = get(handles.DefaultOutputDirectoryEditBox,'string');
 if exist(pathname,'dir') ~= 0
     %%% Saves the pathname in the handles structure.
     handles.Current.DefaultOutputDirectory = pathname;
-    guidata(hObject,handles) %%% TODO: Is this necessary?
     %%% If the directory entered in the box does not exist, give an error
     %%% message, change the contents of the edit box back to the
     %%% previously selected directory, and change the contents of the
@@ -1716,7 +1703,6 @@ Pathname = handles.Current.DefaultOutputDirectory;
 InitialUserEntry = get(handles.OutputFileNameEditBox,'string');
 if isempty(InitialUserEntry)
     handles.Current.OutputFilename =[];
-    guidata(gcbo, handles); %%% TODO: Is this necessary?
 else
     if length(InitialUserEntry) >=7
         if strncmpi(InitialUserEntry(end-6:end),'out.mat',7) == 1
@@ -1732,14 +1718,13 @@ else
         end
     else UserEntry = [InitialUserEntry,'OUT.mat'];
     end
-    guidata(gcbo, handles);  %%% TODO: Is this necessary?
     %%% Checks whether a file with that name already exists, to warn the user
     %%% that the file will be overwritten.
     if exist([Pathname,'/',UserEntry],'file') ~= 0   %%% TODO: Fix filename construction.
         errordlg(['A file already exists at ', [Pathname,'/',UserEntry],... %%% TODO: Fix filename construction.
             '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
         set(handles.OutputFileNameEditBox,'string',[])
-    else guidata(gcbo, handles); %%% TODO: Is this necessary?
+    else 
         handles.Current.OutputFilename = UserEntry;
         set(handles.OutputFileNameEditBox,'string',UserEntry)
     end

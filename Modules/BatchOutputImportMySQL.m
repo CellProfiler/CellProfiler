@@ -119,7 +119,7 @@ if (handles.Current.SetBeingAnalyzed > 1),
 end
         
 %%% Load the data file
-BatchData = load(fullfile(BatchPath,BatchFilePrefix,'data.mat'));
+BatchData = load(fullfile(BatchPath,[BatchFilePrefix 'data.mat']));
 
 
 %%% Create the SQL script

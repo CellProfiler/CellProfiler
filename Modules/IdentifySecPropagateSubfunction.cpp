@@ -15,7 +15,7 @@
  * 
  * The Initial Developer of the Original Code is
  * Whitehead Institute for Biomedical Research
- * Portions created by the Initial Developer are Copyright (C) 2003
+ * Portions created by the Initial Developer are Copyright (C) 2003,2004
  * the Initial Developer. All Rights Reserved.
  * 
  * Contributor(s):

@@ -680,8 +680,8 @@ if (isfield(LoadedSettings, 'Settings')),
     Pathname = uigetdir('','Please select directory where modules are located');
     for i=1:length(handles.Settings.Valgorithmname),
         [defVvariable handles.numVariables(i)] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
-        handles.Settings.Vvariable(i,1:length(defVvariable)) = defVvariable;
-        handles.Settings.Vvariable(i,1:length(Settings.Vvariable(i))) = Settings.Vvariable(i);
+        handles.Settings.Vvariable(i,1:handles.numVariables(i)) = defVvariable(1:handles.numVariables(i));
+        handles.Settings.Vvariable(i,1:Settings.numVariables(i)) = Settings.Vvariable(i,1:Settings.numVariables(i));
     end
     handles.Settings.Vpixelsize = Settings.Vpixelsize;
 else
@@ -692,8 +692,8 @@ else
         Pathname = uigetdir('','Please select directory where modules are located');
         for i=1:length(handles.Settings.Valgorithmname),
             [defVvariable handles.numVariables(i)] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
-            handles.Settings.Vvariable(i,1:length(defVvariable)) = defVvariable;
-            handles.Settings.Vvariable(i,1:length(Settings.Settings.Vvariable(i))) = Settings.Settings.Vvariable(i);
+            handles.Settings.Vvariable(i,1:handles.numVariables(i)) = defVvariable(1:handles.numVariables(i));
+            handles.Settings.Vvariable(i,1:Settings.numVariables(i)) = Settings.Settings.Vvariable(i,1:Settings.numVariables(i));
         end  
         handles.Settings.Vpixelsize = Settings.Settings.Vpixelsize;
     end
@@ -729,22 +729,25 @@ cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 function [vVariable numVariables] = LoadSettings_Helper(Pathname, AlgorithmName)
+try
+    AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
+    fid=fopen([Pathname '\' AlgorithmNamedotm]);
+    while 1;
+        output = fgetl(fid); if ~ischar(output); break; end;
 
-AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
-fid=fopen([Pathname '\' AlgorithmNamedotm]);
-while 1;
-    output = fgetl(fid); if ~ischar(output); break; end;
-
-    if (strncmp(output,'%defaultVAR',11) == 1),
-        displayval = output(17:end);
-        istr = output(12:13);
-        i = str2num(istr);
-        vVariable(i) = {displayval};
-        numVariables = i;
+        if (strncmp(output,'%defaultVAR',11) == 1),
+            displayval = output(17:end);
+            istr = output(12:13);
+            i = str2num(istr);
+            vVariable(i) = {displayval};
+            numVariables = i;
+        end
     end
+    fclose(fid);
+catch
+    errordlg('Algorithm could not be found in directory specified','Error')
 end
-fclose(fid);
-
+    
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveSettingsButton.

@@ -139,32 +139,34 @@ Specified5Email = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 %%%VariableRevisionNumber = 01
 % The variables have changed for this module.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
 %%% SENDING EMAILS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
+
 setpref('Internet','SMTP_Server',SMTPServer);
 setpref('Internet','E_mail',AddressFrom);
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-numAddresses = 0
-while (isempty(AddressEmail) == 0)
-    numAddresses = numAddresses + 1
+numAddresses = 0;
+while isempty(AddressEmail) == 0
+    numAddresses = numAddresses + 1;
     [AddressTo{numAddresses} AddressEmail] = strtok(AddressEmail, ',');
 end
 
-
-if ( strcmp(FirstImageEmail, 'Y') & (SetBeingAnalyzed == 1))
-    subject = 'CellProfiler:  First Image Set has been completed';
+if strcmp(FirstImageEmail, 'Y') == 1 & SetBeingAnalyzed == 1
+    subject = 'CellProfiler:  First image set has been completed';
     sendmail(AddressTo,subject,subject);
-elseif ( strcmp(LastImageEmail, 'Y') & SetBeingAnalyzed == handles.Current.NumberOfImageSets)
-    subject = 'CellProfiler:  Last Image Set has been completed';
+elseif strcmp(LastImageEmail, 'Y') == 1 & SetBeingAnalyzed == handles.Current.NumberOfImageSets
+    subject = 'CellProfiler:  Last image set has been completed';
     sendmail(AddressTo,'CellProfiler Progress',subject);
-elseif ( (EveryXImageEmail > 0) & ( mod(SetBeingAnalyzed,EveryXImageEmail) == 0) )
-    subject = 'CellProfiler: Last Image Set has been completed';
+elseif EveryXImageEmail > 0 & mod(SetBeingAnalyzed,EveryXImageEmail) == 0
+    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' image sets have been completed'];
+    sendmail(AddressTo,subject,subject);
+elseif Specified1Email == SetBeingAnalyzed | Specified2Email == SetBeingAnalyzed | Specified3Email == SetBeingAnalyzed | Specified4Email == SetBeingAnalyzed | Specified5Email == SetBeingAnalyzed
+    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' image sets have been completed'];
     sendmail(AddressTo,subject,subject);
 end
-    
 
 %%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%

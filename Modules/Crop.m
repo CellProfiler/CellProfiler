@@ -151,7 +151,7 @@ Shape = upper(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma)
-%defaultVAR06 = 100,100
+%defaultVAR05 = 100,100
 RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = File-based cropping: To crop to another shape, type the location and file name of the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#

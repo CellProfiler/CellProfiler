@@ -28,7 +28,7 @@ if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     %%% Checks whether any headings are loaded yet.
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(handles.Measurements.GeneralInfo);
     ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
     if isempty(ImportedFieldnames) == 1
         errordlg('No sample info or data is currently stored in memory.')
@@ -68,12 +68,12 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
     %%% old output files may not have the 'Measurements'
     %%% substructure, so we check for that field first.
     if isfield(OutputFile.handles,'Measurements') == 1
-        Fieldnames = fieldnames(OutputFile.handles.Measurements);
+        Fieldnames = fieldnames(OutputFile.handles.Measurements.GeneralInfo);
         ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1 | strncmp(Fieldnames,'Filename',8) == 1 );
     else ImportedFieldnames = [];
     end
     if isempty(ImportedFieldnames) == 1
-        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements, and would be prefixed with either ''Image'' or ''Imported''.')
+        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements.GeneralInfo, and would be prefixed with either ''Image'' or ''Imported''.')
         %%% Opens a filenameslistbox which displays the list of headings so that one can be
         %%% selected.  The OK button has been assigned to mean "View".
     else
@@ -89,7 +89,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
         % the cancel button or closed the window Action == 0.
         if Action == 1
             try
-                ListToShow = OutputFile.handles.Measurements.(char(SelectedFieldName));
+                ListToShow = OutputFile.handles.Measurements.GeneralInfo.(char(SelectedFieldName));
                 if strcmp(class(ListToShow{1}),'double') == 1
                     ListToShow = sprintf('%d\n',cell2mat(ListToShow));
                 end

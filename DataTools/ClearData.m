@@ -28,7 +28,7 @@ if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     %%% Checks whether any headings are loaded yet.
-    Fieldnames = fieldnames(handles.Measurements);
+    Fieldnames = fieldnames(handles.Measurements.GeneralInfo);
     ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
     if isempty(ImportedFieldnames) == 1
         errordlg('No sample info has been loaded.')
@@ -46,7 +46,7 @@ elseif strcmp(ExistingOrMemory, 'Memory') == 1
         if Action == 1
             %%% Delete the selected heading (with its contents, the sample data)
             %%% from the structure.
-            handles.Measurements = rmfield(handles.Measurements,SelectedFieldName);
+            handles.Measurements.GeneralInfo = rmfield(handles.Measurements.GeneralInfo,SelectedFieldName);
             %%% Handles structure is updated
             guidata(gcbo,handles)
             h = CPmsgbox(['The sample info was successfully deleted from memory']);
@@ -65,10 +65,10 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
         end
     end
     %%% Checks whether any sample info is contained within the file.
-    Fieldnames = fieldnames(OutputFile.handles.Measurements);
+    Fieldnames = fieldnames(OutputFile.handles.Measurements.GeneralInfo);
     ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
     if isempty(ImportedFieldnames) == 1
-        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements, and would be prefixed with either ''Image'' or ''Imported''.')
+        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements.GeneralInfo, and would be prefixed with either ''Image'' or ''Imported''.')
     else
         %%% Opens a filenameslistbox which displays the list of headings so that one can be
         %%% selected.  The OK button has been assigned to mean "Delete".
@@ -83,7 +83,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
         if Action == 1
             %%% Delete the selected heading (with its contents, the sample data)
             %%% from the structure.
-            OutputFile.handles.Measurements = rmfield(OutputFile.handles.Measurements,SelectedFieldName);
+            OutputFile.handles.Measurements.GeneralInfo = rmfield(OutputFile.handles.Measurements.GeneralInfo,SelectedFieldName);
             %%% Saves the output file with this new sample info.
             save(fullfile(pOutName,fOutName),'-struct','OutputFile');
             h = CPmsgbox(['The sample info was successfully deleted from the output file']);

@@ -93,9 +93,8 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
-
 %%% Blurs the image using a separable Gaussian filtering.
-sigma = (Diameter/2)/2.35;                                                 % Convert from FWHM to sigma
+sigma = (Diameter/8)/2.35;                                                 % Convert from FWHM to sigma
 FiltLength = max(1,ceil(3*sigma));                                         % Determine filter length
 f = exp(-linspace(-FiltLength,FiltLength,2*FiltLength+1).^2/(2*sigma^2));  % 1D Gaussian filter kernel
 f = f/sum(f(:));                                                           % Normalize
@@ -103,17 +102,17 @@ BlurredImage = conv2(f,f,OriginalImage,'same');                            % Sep
 
 %%% Extract object markers by finding local maxima in the blurred image
 MaximaImage = BlurredImage;
-MaximaMask = getnhood(strel('disk', max(1,floor(Diameter/2/1.5))));
+MaximaMask = getnhood(strel('disk', max(1,floor(Diameter/4))));
 MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+
 
 %%% Thresholds the image to eliminate dim maxima.
 if Threshold == '-', Threshold = CPgraythresh(OriginalImage); end
 MaximaImage = MaximaImage > Threshold;
 
-
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
 %%% there are black dots on top of each dark nucleus on a white background.
-Overlaid = imimposemin(1 - OriginalImage,MaximaImage);
+Overlaid = imimposemin(1 - BlurredImage,MaximaImage);
 WatershedBoundaries = watershed(Overlaid) > 0;
 
 Objects = OriginalImage > Threshold;                          % Threshold image
@@ -138,12 +137,28 @@ Objects = imclearborder(Objects);
 BorderObjects = tmp - Objects;                      
 NumOfBorderObjects = length(unique(BorderObjects(:)))-1;
 
+%%% Remove objects with no marker in it
+List = setdiff(unique(Objects(:)),0);
+for k = 1:length(List)
+    index = find(Objects==List(k));                       % Get index for Object nr k pixels
+    if sum(MaximaImage(index)) == 0                       % If there is no maxima in these pixels, exclude object
+        Objects(index) = 0;
+    end
+end
+
 %%% Relabel the objects
 [Objects,NumOfObjects] = bwlabel(Objects > 0);
 
-%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Merge objects
+%for k = 1:NumOfObjects
+%    NeighborIndex = setdiff(unique(bwmorph(Objects==k,'dilate').*Objects),[0 k]);
+%end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
@@ -201,7 +216,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];

@@ -113,7 +113,6 @@ ProjectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = Note that this module only performs its processing on the first time through the image analysis pipeline, because it retrieves all the images specified and creates a single projected image from them.
 
 %%%VariableRevisionNumber = 00
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -103,7 +103,6 @@ NumeratorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 DenominatorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 00
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%

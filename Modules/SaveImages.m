@@ -138,7 +138,6 @@ CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %textVAR08 = Warning! It is possible to overwrite existing files using this module! 
 
 %%%VariableRevisionNumber = 04
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

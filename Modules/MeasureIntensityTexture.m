@@ -136,7 +136,6 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%% down from here (for i = 1:5).
 
 %%%VariableRevisionNumber = 02
-% The variables have changed for this module.
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:5

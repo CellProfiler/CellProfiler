@@ -122,7 +122,6 @@ HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum
 DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -137,7 +137,6 @@ Specified4Email = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 Specified5Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% SENDING EMAILS %%%

@@ -144,7 +144,6 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 PixelSize = str2double(handles.Settings.PixelSize);
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

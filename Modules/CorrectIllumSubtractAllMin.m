@@ -154,7 +154,6 @@ IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %%%VariableRevisionNumber = 2
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

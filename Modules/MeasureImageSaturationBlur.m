@@ -134,7 +134,6 @@ NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%VariableRevisionNumber = 02
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%

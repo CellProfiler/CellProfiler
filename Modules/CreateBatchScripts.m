@@ -149,7 +149,6 @@ BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %textVAR07 = WARNING: This module should be the last one in the analysis pipeline.
 
 %%%VariableRevisionNumber = 03
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

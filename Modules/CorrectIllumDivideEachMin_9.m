@@ -133,7 +133,6 @@ CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

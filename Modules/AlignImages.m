@@ -134,7 +134,6 @@ AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 AdjustImage = upper(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
 %%%VariableRevisionNumber = 02
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

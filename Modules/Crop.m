@@ -159,7 +159,6 @@ RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 BinaryCropImageName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

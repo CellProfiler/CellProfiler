@@ -108,7 +108,6 @@ TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

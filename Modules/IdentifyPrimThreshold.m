@@ -204,7 +204,6 @@ MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
 %%%VariableRevisionNumber = 4
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

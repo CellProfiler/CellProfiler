@@ -223,7 +223,6 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 
 %%%VariableRevisionNumber = 2
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

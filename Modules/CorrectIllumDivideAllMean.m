@@ -159,7 +159,6 @@ ProjectionPathName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%VariableRevisionNumber = 4
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -159,7 +159,6 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 02
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

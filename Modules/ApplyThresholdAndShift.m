@@ -113,7 +113,6 @@ HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum
 LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %%%VariableRevisionNumber = 01
-% The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

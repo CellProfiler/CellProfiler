@@ -164,7 +164,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     end
     %%% Reads the image.
     BlueImage = handles.Pipeline.(fieldname);
-
     BlueImageExists = 1;
 else BlueImageExists = 0;
 end
@@ -172,7 +171,7 @@ end
 drawnow
 %%% Repeat for Green and Red.
 if strcmp(upper(GreenImageName), 'N') == 0
-    if isfield(handles, GreenImageName) == 0
+    if isfield(handles.Pipeline, GreenImageName) == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     GreenImage = handles.Pipeline.(GreenImageName);
@@ -180,7 +179,7 @@ if strcmp(upper(GreenImageName), 'N') == 0
 else GreenImageExists = 0;
 end
 if strcmp(upper(RedImageName), 'N') == 0
-    if isfield(handles, RedImageName) == 0
+    if isfield(handles.Pipeline, RedImageName) == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     RedImage = handles.Pipeline.(RedImageName);

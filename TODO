@@ -120,6 +120,8 @@ Settings =      ModuleNames: {1x6 cell}
 
 - Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot. 
 
+- Pull RetrieveImageFileNames out of individual modules (and CellProfiler.m) and make it a standalone function.
+
 [Do the following prior to releasing the new beta version:
 - Smart Indent
 - M Lint error checking

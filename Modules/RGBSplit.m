@@ -1,5 +1,8 @@
 function handles = AlgRGBSplit(handles)
 
+% Help for the RGB Split module: 
+% Sorry, this module has not yet been documented.
+
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
 % the License. You may obtain a copy of the License at 
@@ -25,57 +28,42 @@ function handles = AlgRGBSplit(handles)
 %
 % $Revision$
 
-%%% Reads the current algorithm number, since this is needed to find 
-%%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
 
+%%% Reads the current algorithm number, since this is needed to find 
+%%% the variable values that the user entered.
+CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+
 %textVAR01 = What did you call the image to be split into black and white images?
 %defaultVAR01 = OrigRGB
 RGBImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+
 %textVAR02 = What do you want to call the image that was red?
 %defaultVAR02 = OrigRed
 RedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
 %textVAR03 = What do you want to call the image that was green?
 %defaultVAR03 = OrigGreen
 GreenImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+
 %textVAR04 = What do you want to call the image that was blue?
 %defaultVAR04 = OrigBlue
 BlueImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+
 %textVAR05 = Type "N" in any slots above to ignore that color.
-%textVAR06 = To save the red image, enter text to append to the image name
-%defaultVAR06 = N
-RedTextAppend = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
-%textVAR07 = To save the green image, enter text to append to the image name
-%defaultVAR07 = N
-GreenTextAppend = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
-%textVAR08 = To save the blue image, enter text to append to the image name
-%defaultVAR08 = N
-BlueTextAppend = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
-%textVAR09 =  Otherwise, leave as "N".
-%textVAR10 = In what file format do you want to save images? Do not include a period
-%defaultVAR10 = tif
-FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Checks whether the file format the user entered is readable by Matlab.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    error('The image file type entered in the SplitRGB module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
-end
-
 %%% Retrieves the RGB image from the handles structure.
 fieldname = ['dOT', RGBImageName];
-%%% Check whether the image to be analyzed exists in the handles structure.
+%%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles, fieldname) == 0
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
@@ -83,86 +71,23 @@ if isfield(handles, fieldname) == 0
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the SplitRGB module could not find the input image.  It was supposed to be named ', RGBImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled because the RGB Split module could not find the input image.  It was supposed to be named ', RGBImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-%%% Read the image.
+%%% Reads the image.
 RGBImage = handles.(fieldname);
+
 Size = size(RGBImage);
 if length(Size) ~= 3
-    error(['Image processing was canceled because the RGB image you specified in the SplitRGB module could not be separated into three layers of image data.  Is it a color image?  This module was only tested with TIF and BMP images.'])
+    error(['Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  Is it a color image?  This module was only tested with TIF and BMP images.'])
 end
 if Size(3) ~= 3
-    error(['Image processing was canceled because the RGB image you specified in the SplitRGB module could not be separated into three layers of image data.  This module was only tested with TIF and BMP images.'])
+    error(['Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  This module was only tested with TIF and BMP images.'])
 end
-%%% Determine the filename of the image to be analyzed.
-fieldname = ['dOTFilename', RGBImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
-%%% Check whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces.
-if strcmp(upper(GreenTextAppend),'N') ~= 1 | strcmp(upper(BlueTextAppend),'N') ~= 1 | strcmp(upper(RedTextAppend),'N') ~= 1
-    %%% Find and remove the file format extension within the original file
-    %%% name, but only if it is at the end. Strip the original file format extension 
-    %%% off of the file name, if it is present, otherwise, leave the original
-    %%% name intact.
-    CharFileName = char(FileName);
-    PotentialDot = CharFileName(end-3:end-3);
-    if strcmp(PotentialDot,'.') == 1
-        BareFileName = CharFileName(1:end-4);
-    else BareFileName = CharFileName;
-    end
-end
-if strcmp(upper(RedTextAppend),'N') ~= 1
-    %%% Assemble the new image name.
-    NewImageNameRed = [BareFileName,RedTextAppend,'.',FileFormat];
-    %%% Check whether the new image name is going to result in a name with
-    %%% spaces.
-    A = isspace(NewImageNameRed);
-    if any(A) == 1
-        NewImageNameRed = strrep(NewImageNameRed,'','');
-        RedHandle = errordlg('The file name for the Red Image would contain one or more spaces, either because the original name had spaces or you entered a space in the box of text to append to the Red image name in the SplitRGB module. Spaces have been removed from the name and image processing will continue.','Red file name will be changed','on');
-    end
-    %%% Check whether the new image name is going to result in overwriting the
-    %%% original file.
-    B = strcmp(upper(CharFileName), upper(NewImageNameRed));
-    if B == 1
-        error('Image processing was canceled because you have not entered text to append to the Red image name in the SplitRGB module.  If you do not want to save that image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-end
-%%% Repeat for Green and Blue.
-if strcmp(upper(GreenTextAppend),'N') ~= 1
-    NewImageNameGreen = [BareFileName,GreenTextAppend,'.',FileFormat];
-    A = isspace(NewImageNameGreen);
-    if any(A) == 1
-        NewImageNameGreen = strrep(NewImageNameGreen,'','');
-        GreenHandle = errordlg('The file name for the Green Image would contain one or more spaces, either because the original name had spaces or you entered a space in the box of text to append to the Green image name in the SplitRGB module. Spaces have been removed from the name and image processing will continue.','Green file name will be changed','on');
-    end
-    B = strcmp(upper(CharFileName), upper(NewImageNameGreen));
-    if B == 1
-        error('Image processing was canceled because you have not entered text to append to the Green image name in the SplitRGB module.  If you do not want to save that image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-end
-
-if strcmp(upper(BlueTextAppend),'N') ~= 1
-    NewImageNameBlue = [BareFileName,BlueTextAppend,'.',FileFormat];
-    A = isspace(NewImageNameBlue);
-    if any(A) == 1
-        NewImageNameBlue = strrep(NewImageNameBlue,'','');
-        BlueHandle = errordlg('The file name for the Blue Image would contain one or more spaces, either because the original name had spaces or you entered a space in the box of text to append to the Blue image name in the SplitRGB module. Spaces have been removed from the name and image processing will continue.','Blue file name will be changed','on');
-    end
-    B = strcmp(upper(CharFileName), upper(NewImageNameBlue));
-    if B == 1
-        error('Image processing was canceled because you have not entered text to append to the Blue image name in the SplitRGB module.  If you do not want to save that image to the hard drive, type "N" into the appropriate box.')
-        return
-    end
-end
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Determines whether the user has specified an image to be loaded in
 %%% blue.
@@ -184,18 +109,16 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Note: Everything between the "if" and "end" is not carried out if the 
-%%% user has closed
-%%% the figure window, so do not do any important calculations here.
-%%% Otherwise an error message will be produced if the user has closed the
-%%% window but you have attempted to access data that was supposed to be
-%%% produced by this part of the code.
-
 %%% Determines the figure number to display in.
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
-%%% Check whether that figure is open. This checks all the figure handles
+%%% Checks whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
+%%% Note: Everything between the "if" and "end" is not carried out if the
+%%% user has closed the figure window, so do not do any important
+%%% calculations here. Otherwise an error message will be produced if the
+%%% user has closed the window but you have attempted to access data that
+%%% was supposed to be produced by this part of the code.
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows
@@ -227,25 +150,25 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the red image.
     subplot(2,2,4); imagesc(RedImage); colormap(gray), title('Red Image');
 end
-%%% Executes pending figure-related commands so that the results are
-%%% displayed.
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
-%%% The adjusted image is saved to the
-%%% handles structure so it can be used by subsequent algorithms.
+%%% Saves the adjusted image to the handles structure so it can be used by
+%%% subsequent algorithms.
 fieldname = ['dOT', RedImageName];
 handles.(fieldname) = RedImage;
 fieldname = ['dOT', GreenImageName];
 handles.(fieldname) = GreenImage;
 fieldname = ['dOT', BlueImageName];
 handles.(fieldname) = BlueImage;
-%%% Removed for parallel: guidata(gcbo, handles);
 
-%%% The original file name is saved to the handles structure in a
+%%% Determines the filename of the image to be analyzed.
+fieldname = ['dOTFilename', RGBImageName];
+FileName = handles.(fieldname)(handles.setbeinganalyzed);
+%%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
 fieldname = ['dOTFilename', RGBImageName];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName;
@@ -255,31 +178,3 @@ fieldname = ['dOTFilename', GreenImageName];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName;
 fieldname = ['dOTFilename', BlueImageName];
 handles.(fieldname)(handles.setbeinganalyzed) = FileName;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% Determine whether the user wanted to save the adjusted image
-%%% by comparing their entry "RedTextAppend" with "N" (after
-%%% converting RedTextAppend to uppercase).
-if strcmp(upper(RedTextAppend),'N') ~= 1
-    %%% Save the image to the hard drive.    
-    imwrite(RedImage, NewImageNameRed, FileFormat);
-end
-if strcmp(upper(GreenTextAppend),'N') ~= 1
-    %%% Save the image to the hard drive.    
-    imwrite(GreenImage, NewImageNameGreen, FileFormat);
-end
-if strcmp(upper(BlueTextAppend),'N') ~= 1
-    %%% Save the image to the hard drive.    
-    imwrite(BlueImage, NewImageNameBlue, FileFormat);
-end
-drawnow
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for the SplitRGB module: 
-%%%%% .

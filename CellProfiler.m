@@ -671,29 +671,22 @@ else
     %%% The name of the module is shown in a text box in the GUI (the text
     %%% box is called ModuleName1.) and in a text box in the GUI which
     %%% displays the current module (whose settings are shown).
-
-    %%% 4. Saves the ModuleName to the handles structure.
-    % Find which module slot number this callback was called for.
+    
+    %%% 4. The text description for each variable for the chosen module is
+    %%% extracted from the module's .m file and displayed.
     ModuleNumber = TwoDigitString(handles.Current.NumberOfModules+1);
     ModuleNums = handles.Current.NumberOfModules+1;
 
-    handles.Settings.ModuleNames{ModuleNums} = ModuleName;
-    contents = get(handles.ModulePipelineListBox,'String');
-    contents{ModuleNums} = ModuleName;
-    set(handles.ModulePipelineListBox,'String',contents);
-
-    %%% 5. The text description for each variable for the chosen module is
-    %%% extracted from the module's .m file and displayed.
     fid=fopen([Pathname ModuleNamedotm]);
+    lastVariableCheck = 0;
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-
         if strncmp(output,'%defaultVAR',11) == 1
             displayval = output(17:end);
             istr = output(12:13);
-            i = str2num(istr);
-            handles.Settings.VariableValues(ModuleNums, i) = {displayval};
-            handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = i;
+            lastVariableCheck = str2num(istr);
+            handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {displayval};
+            handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
         elseif strncmp(output,'%%%VariableRevisionNumber',25) == 1
             try
             handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = str2num(output(29:30));
@@ -703,7 +696,17 @@ else
         end
     end
     fclose(fid);
-
+    if lastVariableCheck == 0
+        errordlg(['blahThe module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.'])
+        % TODO: If this happens, we need to remove the module
+        % name from the list box, etc. I.e. revert everything
+        % as if we had not tried to load this module. As it
+        % is, the module's name is displayed in the pipeline
+        % list box, but it cannot be removed without causing
+        % errors.
+        return
+    end
+    
     try Contents = handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber));
     catch Contents = [];
     end
@@ -711,6 +714,14 @@ else
     if isempty(Contents) == 1
         handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = 0;
     end
+    
+    %%% 5. Saves the ModuleName to the handles structure.
+    % Find which module slot number this callback was called for.
+
+    handles.Settings.ModuleNames{ModuleNums} = ModuleName;
+    contents = get(handles.ModulePipelineListBox,'String');
+    contents{ModuleNums} = ModuleName;
+    set(handles.ModulePipelineListBox,'String',contents);
     
     %%% 6. Update handles.Current.NumberOfModules
     if str2double(ModuleNumber) > handles.Current.NumberOfModules,
@@ -926,13 +937,13 @@ if (length(ModuleHighlighted) > 0)
             fclose(fid);
             if lastVariableCheck == 0
                 errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.'])
-                return 
                 % TODO: If this happens, we need to remove the module
                 % name from the list box, etc. I.e. revert everything
                 % as if we had not tried to load this module. As it
                 % is, the module's name is displayed in the pipeline
                 % list box, but it cannot be removed without causing
                 % errors.
+                return  
             end
         end
         %%% 4. Extracts the stored values for the variables from the handles

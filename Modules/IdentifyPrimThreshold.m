@@ -236,7 +236,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
             %%% at the end of this module.
             CurrentDirectory = cd;
             %%% Notifies the user that the first image set will take much longer than
-            %%% subsequent sets. 
+            %%% subsequent sets.
             %%% Obtains the screen size.
             ScreenSize = get(0,'ScreenSize');
             ScreenHeight = ScreenSize(4);
@@ -275,8 +275,8 @@ if strcmp(upper(Threshold), 'ALL') == 1
             % Saves the warning state and disable warnings to prevent divide-by-zero
             % warnings.
             State = warning;
-warning off Matlab:DivideByZero
-SigmaBSquared = (Mu_t * Omega - Mu).^2 ./ (Omega .* (1 - Omega));
+            warning off Matlab:DivideByZero
+            SigmaBSquared = (Mu_t * Omega - Mu).^2 ./ (Omega .* (1 - Omega));
             % Restores the warning state.
             warning(State);
             % Finds the location of the maximum value of sigma_b_squared.

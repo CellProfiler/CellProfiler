@@ -4,7 +4,12 @@ function handles = AlgRescaleIntensity(handles)
 % Category: Pre-processing
 %
 % Pixels are scaled from their user-specified original range to a new
-% user-specified range. Pixels in the original image that are above or
+% user-specified range.  If the user enters "AE", then the highest and
+% lowest pixel values will be Automatically computed for Each image by
+% taking the maximum and minimum pixel values in Each image.  If the user
+% enters "AA", then the highest and lowest pixel values will be
+% Automatically computed by taking the maximum and minimum pixel values in
+% All the images in the set. Pixels in the original image that are above or
 % below the original range are pinned to the high/low values of that range
 % before being scaled.
 %
@@ -15,7 +20,7 @@ function handles = AlgRescaleIntensity(handles)
 % code for this module to save those images to the handles structure
 % (see the SaveImages module help) and then use the Save Images
 % module.
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 % 
@@ -103,12 +108,12 @@ ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 RescaledImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = What is the lowest pixel value of the original image?
-%defaultVAR03 = 0
-LowestPixelOrig = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
+%defaultVAR03 = AA
+LowestPixelOrig = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
 %textVAR04 = What is the highest pixel value of the original image?
-%defaultVAR04 = 1
-HighestPixelOrig = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+%defaultVAR04 = AA
+HighestPixelOrig = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 
 %textVAR05 = What is the lowest pixel value of the rescaled image?
 %defaultVAR05 = 0
@@ -157,11 +162,73 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Rescale Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')) == 1
+    if handles.setbeinganalyzed == 1
+        try
+            %%% Makes note of the current directory so the module can return to it
+            %%% at the end of this module.
+            CurrentDirectory = cd;
+            %%% Notifies the user that the first image set will take much longer than
+            %%% subsequent sets.
+            %%% Obtains the screen size.
+            ScreenSize = get(0,'ScreenSize');
+            ScreenHeight = ScreenSize(4);
+            PotentialBottom = [0, (ScreenHeight-720)];
+            BottomOfMsgBox = max(PotentialBottom);
+            PositionMsgBox = [500 BottomOfMsgBox 350 100];
+            h = msgbox('Preliminary calculations are under way for the Rescale Intensity module.  Subsequent image sets will be processed much more quickly than the first image set.');
+            set(h, 'Position', PositionMsgBox)
+            drawnow
+            %%% Retrieves the path where the images are stored from the handles
+            %%% structure.
+            fieldname = ['Pathname', ImageName];
+            try Pathname = handles.Pipeline.(fieldname);
+            catch error('Image processing was canceled because the Rescale Intensity module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Identify Primary Threshold module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Identify Primary Threshold module onward.')
+            end
+            %%% Changes to that directory.
+            cd(Pathname)
+            %%% Retrieves the list of filenames where the images are stored from the
+            %%% handles structure.
+            fieldname = ['FileList', ImageName];
+            FileList = handles.Pipeline.(fieldname);
+            %%% Calculates the maximum and minimum pixel values based on all of the images.
+            maxPixelValue = 0;
+            minPixelValue = 255;
+            for i=1:length(FileList)
+                Image = imread(char(FileList(i)));
+                if(max(max(Image)) > maxPixelValue)
+                    maxPixelValue = max(max(Image));
+                end
+                if(min(min(Image)) < minPixelValue)
+                    minPixelValue = min(min(Image));
+                end
+                drawnow
+            end
+        catch [ErrorMessage, ErrorMessage2] = lasterr;
+            error(['An error occurred in the Rescale Intensity module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+        end
+        HighestPixelOrig = double(maxPixelValue)/255
+        LowestPixelOrig = double(minPixelValue)/255
+        fieldname = ['MaxPixelValue', ImageName];
+        handles.Pipeline.(fieldname) = HighestPixelOrig;
+        fieldname = ['MinPixelValue', ImageName];
+        handles.Pipeline.(fieldname) = LowestPixelOrig;
+        cd(CurrentDirectory)
+    else 
+        fieldname = ['MaxPixelValue', ImageName];
+        HighestPixelOrig = handles.Pipeline.(fieldname);
+        fieldname = ['MinPixelValue',ImageName];
+        LowestPixelOrig = handles.Pipeline.(fieldname);
+    end
+elseif (strcmp(upper(LowestPixelOrig), 'AE') & strcmp(upper(HighestPixelOrig), 'AE'))== 1
+    LowestPixelOrig = min(min(OrigImage));
+    HighestPixelOrig = max(max(OrigImage));
+else
+    LowestPixelOrig = str2double(LowestPixelOrig);
+    HighestPixelOrig = str2double(HighestPixelOrig);
 end
+
+
 
 %%% Rescales the Image
 OrigImageMod = OrigImage;

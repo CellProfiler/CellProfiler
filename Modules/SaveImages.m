@@ -7,7 +7,11 @@ function handles = SaveImages(handles)
 % processed images created by CellProfiler during the analysis can be
 % saved. SaveImages can also be used as a file format converter by
 % loading files in their original format and then saving them in an
-% alternate format.
+% alternate format.  Please note that this module works for the few
+% cases we have tried, but you may run into difficulties when dealing
+% with images that are not 8 bit.  For example, you may wish to alter
+% the code to handle 16 bit images.  These features will hopefully be
+% added soon.
 % 
 % If you want to save images that are produced by other modules but
 % that are not given an official name in the settings boxes for that

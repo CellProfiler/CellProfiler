@@ -1986,15 +1986,6 @@ else
                 for VariableNumber=1:99;
                     set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
-                %%% The following code prevents the warning message in the Matlab
-                %%% main window: "Warning: Image is too big to fit on screen":
-                %%% This warning appears due to the truesize command which
-                %%% rescales an image so that it fits on the screen.  Truesize is often
-                %%% called by imshow.
-                try
-                    iptsetpref('TruesizeWarning','off')
-                catch error('You do not have the Image Processing Toolbox installed or licensed on this computer. It may be necessary for running most of the modules. If you know you do not need the image processing toolbox for the modules you want to run, you may want to try removing the "iptsetpref" lines in the main CellProfiler program and try again.')
-                end
                 %%% In the following code, the Timer window and
                 %%% timer_text is created.  Each time around the loop,
                 %%% the text will be updated using the string property.
@@ -2430,14 +2421,6 @@ else
                 set(CancelAfterImageSetButton_handle,'enable','off')
                 set(PauseButton_handle,'enable','off')
                 set(CancelNowCloseButton_handle,'enable','off')
-                %%% The following code turns the warning message back on that 
-                %%% I turned off when the GUI was launched. 
-                %%% "Warning: Image is too big to fit on screen":
-                %%% This warning appears due to the truesize command which 
-                %%% rescales an image so that it fits on the screen.  Truesize is often
-                %%% called by imshow.
-                iptsetpref('TruesizeWarning','on')
-                
                 %%% Sets the figure windows' Closing Functions back to normal, if 
                 %%% the figure windows are still open.  If this is not done,
                 %%% after the analysis is complete, these windows cannot be closed with the

@@ -3,20 +3,29 @@ function handles = MergeBatchOutput(handles)
 % Help for the Merge Batch Output module:
 % Category: Other
 %
-% This module merges the output from several output files, each resulting
-% from scripts created by the the CreateBatchFiles module.
+% This module merges the output from several output files, each
+% resulting from scripts created by the the CreateBatchFiles module.
 %
-% After a batch run has completed, the individual output files must be
-% merged.  This module takes two arguments, the directory where the
-% output files are located (by default the current default output
-% directory), and the prefix for the batch files.  This module
-% assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat
-% is a batch output file.  When running batches from different
-% analysis runs, make sure they do not write to the same directory.
+% After a batch run has completed, the individual output files contain
+% results from a subset of images and can be merged into a single
+% output file.  This module takes two arguments, the directory where
+% the output files are located (by default the current default output
+% directory), and the prefix for the batch files.  This module assumes
+% anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat is a
+% batch output file.
 %
-% The combined output is written to the default output file as given
-% to CellProfiler.  (The output file's handles.Pipeline is a snapshot
-% of the pipeline after the first image set completes.)
+% The combined output is written to the output filename as specified
+% in the lower right box of CellProfiler's main window.  (The output
+% file's handles.Pipeline is a snapshot of the pipeline after the
+% first image set completes), and handles.Measurements will contain
+% all of the merged measurement data.
+%
+% Sometimes output files can be quite large, so before attempting
+% merging, be sure that the total size of the merged output file is of
+% a reasonable size to be opened on your computer (based on the amount
+% of RAM available). It may be preferable instead to import data from
+% individual output files directly into a database.  Sabatini lab uses
+% mySQL for this purpose.
 %
 % It does not make sense to run this module in conjunction with other
 % modules.  It should be the only module in the pipeline.
@@ -110,7 +119,7 @@ BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -134,27 +134,24 @@ end
 %%% Sets up the main program window (Main GUI window) so that it asks for
 %%% confirmation prior to closing.
 %%% First, obtains the handle for the main GUI window (aka figure1).
-global MainGUIhandle
-MainGUIhandle = handles.figure1;
 ClosingFunction = ...
-    'global MainGUIhandle ; answer = questdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch answer; case ''Yes''; delete(MainGUIhandle); case ''No''; return; end; clear answer MainGUIhandle; clear HandleFigureDisplay';
+    ['deleteme = questdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme'];
 %%% Sets the closing function of the Main GUI window to be the line above.
-set(MainGUIhandle,'CloseRequestFcn',ClosingFunction);
+set(handles.figure1,'CloseRequestFcn',ClosingFunction);
 
 %%% Obtains the screen size.
 ScreenSize = get(0,'ScreenSize');
 ScreenWidth = ScreenSize(3);
 ScreenHeight = ScreenSize(4);
-%%% Sets the position of the Main GUI window so it is in the center of the
-%%% screen. I designed the
-%%% GUI window itself to be 800 pixels wide and 600 high, but the following
-%%% code looks up the size anyway to be sure.
-GUIsize = get(MainGUIhandle,'position');
+%%% Sets the position of the Main GUI window so it is in the center of
+%%% the screen. At one point, I designed the GUI window itself to be
+%%% 800 pixels wide and 600 high, but it has changed since then.
+GUIsize = get(handles.figure1,'position');
 GUIwidth = GUIsize(3);
 GUIheight = GUIsize(4);
 Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
-set(MainGUIhandle,'Position',[Left Bottom GUIwidth GUIheight]);
+set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 
 
 %%% Retrieves the list of image file names from the chosen directory and
@@ -2703,7 +2700,7 @@ else
                 %%% Update the handles structure. Not sure if it's necessary here.
                 guidata(gcbo, handles);
                 %%% Disables a lot of the buttons on the GUI so that the program doesn't
-                %%% get messed up.  The View buttons and Help buttons are left enabled.
+                %%% get messed up.  The Help buttons are left enabled.
                 set(handles.BrowseToLoad,'enable','off')
                 set(handles.PathToLoadEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.LoadSampleInfo,'enable','off')
@@ -2754,8 +2751,6 @@ else
                 ScreenWidth = ScreenSize(3);
                 ScreenHeight = ScreenSize(4);
 
-                %%% Makes the timer_handle variable global for future use.
-                global timer_handle
                 %%% Determines where to place the timer window: We want it below the image
                 %%% windows, which means at about 720 pixels from the top of the screen,
                 %%% but in case the screen doesn't have that many pixels, we don't want it
@@ -2768,12 +2763,6 @@ else
                     'color',[0.7,0.7,0.9]);
                 %%% Sets initial text to be displayed in the text box within the timer window.
                 timertext = 'First image set is being processed';
-                %%% The text_handle, CancelAfterImageSetButton_handle, and PauseButton_handle
-                %%% variables are made global so that the Cancel and Pause
-                %%% button functions are able to find them when the time comes to set the
-                %%% string to "Canceling in progress" or to disable the Cancel and Pause
-                %%% buttons when they have already been pressed.
-                global text_handle CancelAfterImageSetButton_handle CancelAfterModuleButton_handle PauseButton_handle
                 %%% Creates the text box within the timer window which will display the
                 %%% timer text.
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
@@ -2781,27 +2770,30 @@ else
                     'FontSize',14,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
                 %%% Saves text handle to the handles structure.
                 handles.timertexthandle = text_handle;
-                %%% Sets the functions to be called when the Cancel and Pause buttons
-                %%% within the Timer window are pressed.
-                PauseButtonFunction = 'h = msgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
-                CancelAfterImageSetButtonFunction = 'deleteme = questdlg(''Paused. Are you sure you want to cancel after this image set? Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; global text_handle CancelAfterModuleButton_handle CancelAfterImageSetButton_handle; set(CancelAfterImageSetButton_handle,''enable'',''off''); set(text_handle,''string'',''Canceling in progress; Waiting for the processing of current image set to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current image set will not be saved in the output file.''); clear Cancel*; clear text_handle deleteme; case ''No''; return; end;';
-                CancelAfterModuleButtonFunction = 'deleteme = questdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled.'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; global text_handle CancelAfterModuleButton_handle CancelAfterImageSetButton_handle; set(CancelAfterImageSetButton_handle,''enable'',''off''); set(CancelAfterModuleButton_handle,''enable'',''off''); set(text_handle,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); clear Cancel*; clear text_handle deleteme; case ''No''; return; end;';
-                CancelNowCloseButtonFunction = 'global MainGUIhandle; deleteme = questdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''), switch deleteme; case ''Yes''; delete(MainGUIhandle); case ''No''; return; end; clear MainGUIhandle, clear deleteme';
-                HelpButtonFunction = 'msgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
-
                 %%% Creates the Cancel and Pause buttons.
                 PauseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Pause', 'Position', [5 10 40 30], ...
-                    'Callback', PauseButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
                 CancelAfterImageSetButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after image set', 'Position', [50 10 120 30], ...
-                    'Callback', CancelAfterImageSetButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
                 CancelAfterModuleButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after module', 'Position', [175 10 115 30], ...
-                    'Callback', CancelAfterModuleButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
                 CancelNowCloseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel now & close CellProfiler', 'Position', [295 10 160 30], ...
-                    'Callback', CancelNowCloseButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                %%% Sets the functions to be called when the Cancel and Pause buttons
+                %%% within the Timer window are pressed.
+                PauseButtonFunction = 'h = msgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
+                set(PauseButton_handle,'Callback', PauseButtonFunction)
+                CancelAfterImageSetButtonFunction = ['deleteme = questdlg(''Paused. Are you sure you want to cancel after this image set? Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current image set to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current image set will not be saved in the output file.''); case ''No''; return; end; clear deleteme'];
+                set(CancelAfterImageSetButton_handle, 'Callback', CancelAfterImageSetButtonFunction)
+                CancelAfterModuleButtonFunction = ['deleteme = questdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled.'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme'];
+                set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
+                CancelNowCloseButtonFunction = ['deleteme = questdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''), switch deleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme']
+                set(CancelNowCloseButton_handle,'Callback', CancelNowCloseButtonFunction)
+                HelpButtonFunction = 'msgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
                 %%% HelpButton
                 uicontrol('Style', 'pushbutton', ...
                     'String', '?', 'Position', [460 10 15 30], ...
@@ -2815,8 +2807,8 @@ else
                 guidata(gcbo, handles);
                 %%% Sets the timer window to show a warning box before allowing it to be
                 %%% closed.
-                CloseFunction = 'deleteme = questdlg(''DO NOT CLOSE the Timer window while image processing is in progress!! Are you sure you want to close the timer?'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; global timer_handle; delete(timer_handle); case ''No''; return; end; clear deleteme; clear timer_handle;';
-                set(timer_handle,'CloseRequestFcn',CloseFunction);
+                CloseFunction = ['deleteme = questdlg(''DO NOT CLOSE the Timer window while image processing is in progress!! Are you sure you want to close the timer?'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; delete(',num2str(timer_handle*8192), '/8192); case ''No''; return; end; clear deleteme'];
+                set(timer_handle,'CloseRequestFcn',CloseFunction)
                 %%% Note: The size of the text object that fits inside the timer window is
                 %%% officially 1 pixel smaller than the size of the timer window itself.
                 %%%  There is, however, a ~20 pixel gap at the top of the timer window: I
@@ -2832,9 +2824,7 @@ else
                 %%% that the algorithms know where to write to.  Each algorithm should
                 %%% resize the figure window appropriately.  The closing function of the
                 %%% figure window is set to wait until an image set is done processing
-                %%% before closing the window, to avoid unexpected results.  The handles
-                %%% for each algorithm's figure must be made global so the closing function
-                %%% can find the handles.
+                %%% before closing the window, to avoid unexpected results.              
                 set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
                 %listbox changes
@@ -3231,11 +3221,6 @@ else
                         end
                     end
                 end
-
-                
-                %%% Clears the global variables, if they exist.
-                clear text_handle HandleFigureDisplay timer_handle
-                
                 %%% Removes the temporary measurements and image files from the "buffer",
                 %%% i.e. the handles structure.
                 %%% Lists the fields that are present in the handles structure.
@@ -3452,6 +3437,12 @@ else
   end;  
      
 end; %if s isempty
+
+%%%%%%%%%%%%%%%%%%%
+
+function stringhandle = handlenum2str(numberhandle)
+stringhandle = ['eval(' num2str(numberhandle*8192) '/8192)'];
+
 
 %%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%

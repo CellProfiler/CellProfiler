@@ -7,12 +7,8 @@ helpdlg(help('CPInstallGuide'))
 % your computer and has a valid license. To check for the Image Processing
 % toolbox, start Matlab and type into the command window:
 % 		license('test','image_toolbox')
-% 	If the Image Processing Toolbox is installed and has a valid license
-% 	you will see:
-% 		ans = 1
-% 	If you see the following, you will need to install the toolbox and a
-% 	license.
-% 		ans = 0
+% If the Image Processing Toolbox is installed, with a valid license you will
+% see: ans = 1, but if ans = 0, the toolbox and/or license is not installed.
 % 
 % 2. Copy the CellProfiler files to a folder named CellProfiler on your
 % computer (any location is fine).  Do not move or rename this folder or any
@@ -22,7 +18,7 @@ helpdlg(help('CPInstallGuide'))
 % navigate to select the CellProfiler folder you just made.  Click “OK”,
 % then “Save”, then “Close”.
 % 
-% 4. In the command window of Matlab, type:
+% 4. In the command window of Matlab, type the following to start:
 % 		CellProfiler
 % 	CellProfiler should then launch. 
 % 
@@ -33,17 +29,8 @@ helpdlg(help('CPInstallGuide'))
 % 
 % 
 % 
-% Please note that CellProfiler was designed to work with the following Mac
-% system and has not been extensively tested on other platforms/versions,
-% although we routinely run the software on Windows and UNIX systems. If
-% you encounter problems, check the command window of Matlab for error
-% messages.
-% 
-% MATLAB Version 7.0.0.19901 (R14)
-% Operating System: Darwin 7.5.0 Darwin Kernel Version 7.5.0: Thu Aug  5
-% 19:26:16 PDT 2004; root:xnu/xnu-517.7.21.obj~3/RELEASE_PPC  Power
-% Macintosh
-% Java VM Version: Java 1.4.2_05 with "Apple Computer
-% ---------------------------------------------------------------------
-% MATLAB                                  	 Version 7.0        (R14)
-% Image Processing Toolbox                 	 Version 4.2        (R14)
+% CellProfiler was designed for Release 14 of Matlab, although it is
+% possible that many functions will work on Release 13.  It has been
+% tested most extensively on a Mac, but also is routinely run on
+% Windows and UNIX systems. If you encounter problems, check the
+% command window of Matlab for error messages.

@@ -235,10 +235,12 @@ elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
     %%% If the last image set has just been processed, indicate that the
     %%% projection image is ready.
     if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-        %%% The following line is somewhat temporary so we can retrieve
-        %%% this image if necessary.
-        FinalRawProjectedImage = ProjectedImage + OrigImage;
+	%%% Divides by the total number of images in order to average.
+	ProjectedImage = ProjectedImage/handles.Current.NumberOfImageSets;
         ReadyFlag = 'ProjectedImageReady';
+        %%% The following line is somewhat temporary so we can retrieve
+        %%% this image if necessary (pre-dilation).
+ 	FinalRawProjectedImage = ProjectedImage;
     else ReadyFlag = 'ProjectedImageNotReady';
     end
 else

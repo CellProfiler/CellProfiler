@@ -185,12 +185,6 @@ end
 RealImage = handles.Pipeline.(RealImageName);
 % figure, imshow(RealImage), title('RealImage')
 
-%%% Determine the filenames of the images to be analyzed.
-fieldname = ['Filename', TracedImageName];
-TracedFileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-fieldname = ['Filename', RealImageName];
-RealFileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
@@ -502,13 +496,6 @@ drawnow
 %%% by subsequent modules.
 handles.Pipeline.(FinishedTracedImageName) = CroppedAlignedTracedImage;
 handles.Pipeline.(FinishedRealImageName) = CroppedAlignedRealImage;
-
-%%% The original file name is saved to the handles structure in a
-%%% field named after the adjusted image name.
-fieldname = ['Filename', FinishedTracedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = TracedFileName;
-fieldname = ['Filename', FinishedRealImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = RealFileName;
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

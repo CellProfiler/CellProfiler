@@ -173,16 +173,6 @@ if strcmp(Image3Name,'/') ~= 1
     Image3 = handles.Pipeline.(Image3Name);
 end
 
-%%% Determine the filenames of the images to be analyzed.
-fieldname = ['Filename', Image1Name];
-FileName1 = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-fieldname = ['Filename', Image2Name];
-FileName2 = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-if strcmp(upper(Image3Name),'/') ~= 1
-    fieldname = ['Filename', Image3Name];
-    FileName3 = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-end
-
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
@@ -430,16 +420,6 @@ if strcmp(AdjustImage,'Y') == 1
     if strcmp(Image3Name,'/') ~= 1
         handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
     end
-end
-%%% Saves the original file name ito the handles structure in a
-%%% field named after the adjusted image name.
-fieldname = ['Filename', AlignedImage1Name];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName1;
-fieldname = ['Filename', AlignedImage2Name];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName2;
-if strcmp(Image3Name,'/') ~= 1
-fieldname = ['Filename', AlignedImage3Name];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName3;
 end
 
 %%% Stores the shift in alignment as a measurement for quality control

@@ -8,6 +8,10 @@ Lines with --- are longer term, less critical
 Lines with NOW are more critical.
 
 Infrastructure improvements:
+     - Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
+
+     - Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).
+
      - Allow canceling from the first dialog box when using the Save Image As button.
 
      - In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
@@ -260,14 +264,14 @@ Post-release support:
      - Maintain for new releases of OS's and Matlab
 
      - Check Matlab Central for useful code to incorporate into
-       CellProfilerTM or its modules (last checked on 9-16-04:
+       CellProfiler or its modules (last checked on 9-16-04:
        Biotech/medical, Graphics (all 3 categories), Image Processing,
        Utilities - GUI Tools & examples, and Misc.) 
 
 
 Things needing documentation:
 
-     - Change saving of the output file to be faster for large jobs
+     - Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
 
      - There is no way to save images which are normally calculated
        for display only when running on the cluster, because the

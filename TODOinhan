@@ -1,4 +1,4 @@
-   For modules that have very long help descriptions when selecting the module in the listbox and clicking "Help for this analysis module", the text does not fit into the window.
+   For modules that have very long help descriptions when selecting the module in the listbox and clicking "Help for this analysis module", the text does not fit into the window.  Esp. see AlgIdentifySecPropagate.m's help
 
    Figure out how to make font sizes uniform on PC vs Unix vs Mac. [BETA]
 

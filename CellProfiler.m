@@ -240,7 +240,7 @@ cd(handles.Current.StartupDirectory)
 guidata(hObject, handles);
 
 % Set default output filename
-set(handles.OutputFileNameEditBox,'string','DefaultOUT')
+set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
 
 % --- Outputs from this function are returned to the command line.
 function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1879,9 +1879,9 @@ if ~isempty(UserEntry)
         else
             outputnumber = max(numbers) + 1;
         end
-        set(handles.OutputFileNameEditBox,'string',sprintf('%s__%d',UserEntry,outputnumber))
+        set(handles.OutputFileNameEditBox,'string',sprintf('%s__%d.mat',UserEntry,outputnumber))
     else
-        set(handles.OutputFileNameEditBox,'string',UserEntry)
+        set(handles.OutputFileNameEditBox,'string',[UserEntry '.mat'])
     end
     drawnow
 end

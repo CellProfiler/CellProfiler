@@ -23,13 +23,15 @@ Error in ==> gui_mainfcn at 75
 Error in ==> CellProfiler at 56
     gui_mainfcn(gui_State, varargin{:});
 
-Move Algorithms and Variables to arrays, and to handles.Settings
+   Move Algorithms and Variables to arrays, and to handles.Settings
       substructure  (in VariableArrayBranch) [BETA, Anne thinks]
 
    Refine List box [BETA]
    
    Fix close/open figure button [BETA]
 
+   Fix the "FIXME" sections in CellProfiler, unless Ray wanted to do it himself
+   
    Add scroll bar interface to allow > 11 variables
 
    "Make projection" module (= average, get code from DivideAllMean). Did In Han finish this already?  If so, make a manual page.

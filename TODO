@@ -70,6 +70,8 @@ Settings =      ModuleNames: {1x6 cell}
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
+    - it is a bit annoying to have to type in the name of an output file each time you are testing parameters. Have the output file be automatically named (e.g. by incrementing numbers) when you have not typed a name into the box.
+
      - When attempting to Export data using any of the various
        buttons, add an error check in case the mat file does not
        contain the field "Measurements". 

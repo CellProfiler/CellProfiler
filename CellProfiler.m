@@ -49,6 +49,9 @@ end
 % --- Executes just before CellProfiler is made visible.
 function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin)
 
+% Determines the current directory in order to switch back to it later.
+CurrentDirectory = pwd;
+
 % Choose default command line output for CellProfiler
 handles.output = hObject;
 
@@ -73,6 +76,42 @@ varargout{1} = handles.output;
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% INITIAL SETTINGS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Retrieves preferences from CellProfilerPreferences.mat, if possible.
+%%% Try loading CellProfilerPreferences.mat first from the matlabroot
+%%% directory and then the current directory.  This is not necessary for
+%%% CellProfiler to function; it just allows defaults to be pre-loaded. If
+%%% successful, this produces three variables in the workspace:
+%%% PixelSize, DefaultAlgorithmDirectory, WorkingDirectory.
+try cd(matlabroot)
+    load CellProfilerPreferences
+    PreferencesExist = 1;
+catch try cd(CurrentDirectory);
+     load CellProfilerPreferences
+        PreferencesExist = 1;
+    catch PreferencesExist = 0;
+    end
+end
+
+%%% Stores some initial values in the handles structure based either on the
+%%% Preferences, if they were successfully loaded, or on the current
+%%% directory.
+if PreferencesExist == 1
+    handles.Vpixelsize = PixelSize;
+    handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
+    handles.Vworkingdirectory = WorkingDirectory;
+    handles.Vpathname = WorkingDirectory;
+    handles.Vtestpathname = handles.Vworkingdirectory;
+    set(handles.PixelSizeEditBox,'string',PixelSize);
+    set(handles.PathToLoadEditBox,'String',handles.Vworkingdirectory);
+else
+    handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
+    handles.Vdefaultalgorithmdirectory = pwd;
+    handles.Vworkingdirectory = pwd;
+    handles.Vpathname = pwd;
+    handles.Vtestpathname = pwd;
+    set(handles.PathToLoadEditBox,'String',pwd);
+end
 
 %%% Sets up the main program window (Main GUI window) so that it asks for
 %%% confirmation prior to closing.
@@ -99,16 +138,6 @@ Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(MainGUIhandle,'Position',[Left Bottom GUIwidth GUIheight]);
 
-%%% Shows the current pathname in the PathToLoadEditBox object upon 
-%%% opening the GUI.
-set(handles.PathToLoadEditBox,'String',pwd);
-
-%%% Stores some initial values in the handles structure.
-handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
-handles.Vpathname = pwd;
-handles.Vtestpathname = pwd;
-guidata(hObject, handles);
-
 %%% Retrieves the list of image file names from the chosen directory and
 %%% stores them in the handles structure, using the function
 %%% RetrieveImageFileNames.
@@ -123,6 +152,9 @@ else
 set(handles.ListBox,'String',handles.Vfilenames,...
     'Value',1)
 end
+
+% Update handles structure
+guidata(hObject, handles);
 
 %%%%%%%%%%%%%%%%%
 
@@ -174,6 +206,8 @@ end
 
 % --- Executes on button press in BrowseToLoad.
 function BrowseToLoad_Callback(hObject, eventdata, handles)
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% Opens a dialog box to allow the user to choose a directory and loads
 %%% that directory name into the edit box.  Also, changes the current 
 %%% directory to the chosen directory.
@@ -205,7 +239,7 @@ else
     %%% Displays the chosen directory in the PathToLoadEditBox.
     set(handles.PathToLoadEditBox,'String',pathname);
 end
-
+cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
@@ -246,6 +280,9 @@ end
 
 % --- Executes on button press in LoadSampleInfo.
 function output = LoadSampleInfo_Callback(hObject, eventdata, handles)
+
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% Opens a dialog box to retrieve a file name that contains a list of 
 %%% sample descriptions, like gene names or sample numbers.
 [fname,pname] = uigetfile('*.*','Choose sample info text file');
@@ -327,7 +364,7 @@ else
     %%% One of these "end"s goes with the if A is empty, when user presses
     %%% cancel. 
 end 
-
+cd(CurrentDirectory)
 % Some random advice from Ganesh:
 % SampleNames is a n x m (n - number of rows, m - 1 column) cell array
 % If you want to make it into a 1x1 cell array where the cell element
@@ -471,6 +508,9 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in LoadSettingsFromFileButton.
 function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
+
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 [SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
@@ -482,6 +522,7 @@ else
 
   if ~ isfield(LoadedSettings, 'Settings'),
     errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings file (does not contain a variable named ''Settings'').']);
+    cd(CurrentDirectory);
     return;
   end
 
@@ -529,11 +570,14 @@ else
   %%% Update handles structure.
   guidata(hObject,handles);
 end
+cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveCurrentSettingsButton.
 function SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% The "Settings" variable is saved to the file name the user chooses.
 [FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
 %%% Allows canceling.
@@ -562,6 +606,7 @@ if FileName ~= 0
   save([PathName FileName],'Settings')
   helpdlg('The settings file has been written.')
 end
+cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
@@ -571,11 +616,12 @@ function ExtractSettings_Callback(hObject, eventdata, handles)
 %%% separate function, because I don't want the handles structure of the
 %%% Main GUI to get mixed up with the handles structure loaded from the
 %%% output file.
-extractsettings %%% Note that the handles structure is not an argument.
+extractsettings(handles.Vworkingdirectory) %%% Note that the handles structure itself is not an argument.
 
-function extractsettings
+function extractsettings(WorkingDirectory)
 %%% Determines the current directory so it can switch back when done.
-CurrentDirectory = cd;
+CurrentDirectory = pwd;
+cd(WorkingDirectory)
 %%% Opens a dialog for the user to select the file from which to extract
 %%% settings.
 [OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
@@ -615,8 +661,8 @@ end
 helpdlg('The settings file has been written.')
     end
 
-cd(CurrentDirectory)
 end
+cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
@@ -647,41 +693,94 @@ end
 
 % --- Executes on button press in SetDefaultsButton.
 function SetDefaultsButton_Callback(hObject, eventdata, handles)
-%%% Determine what the current directory is, so you can change back 
+%%% Determine what the current directory is, so we can change back 
 %%% when this process is done.
-CurrentDir = cd;
-%%% Open a dialog box to get the directory from the user.
-DefAlgDir = uigetdir('The directory you choose will be set as the default directory when "Load" analysis module is chosen in STEP 3 (Image analysis settings).','Where are the analysis modules?');
-%%% If the user presses "Cancel", the pathname will = 0 and nothing will
-%%% happen.
-if DefAlgDir == 0
+CurrentDirectory = cd;
+%%% Change to the Matlab root directory.
+cd(matlabroot)
+%%% If the CellProfilerPreferences.mat file does not exist in the matlabroot
+%%% directory, change to the current directory.
+if exist('CellProfilerPreferences.mat') == 0
+  cd(CurrentDirectory);
 else
+    %%% If the CellProfilerPreferences.mat file exists, load it and change to the
+%%% default algorithm directory.
+  load CellProfilerPreferences
+end
+
+%%% (1) GET DEFAULT PIXEL SIZE
+%%% Tries to load the pixel size from the existing file, to use it in the
+%%% dialog box below.
+try PixelSizeForDialogBox = PixelSize;
+catch PixelSizeForDialogBox = {'1'};
+end
+%%% Asks for the default pixel size.
+PixelSize = inputdlg('How many micrometers per pixel?','Set default pixel size',1,PixelSizeForDialogBox);
+%%% Allows canceling.
+if isempty(PixelSize) == 1
+    cd(CurrentDirectory);
+    return
+end
+
+%%% (2) GET DEFAULT ALGORITHM DIRECTORY
+try   
+  %%% Tries to change to the default algorithm directory, whose name is a variable
+  %%% that is stored in the CellProfilerPreferences.mat file.
+  cd(DefaultAlgorithmDirectory)
+end
+%%% Open a dialog box to get the directory from the user.
+DefaultAlgorithmDirectory = uigetdir(pwd, 'Where are the analysis modules?'); 
+%%% Allows canceling.
+if DefaultAlgorithmDirectory == 0
+    %%% Change back to the original directory and do nothing.
+    cd(CurrentDirectory);
+    return
+end
+
+%%% (3) GET WORKING DIRECTORY
+%%% Open a dialog box to get the directory from the user.
+WorkingDirectory = uigetdir(pwd, 'Which folder should be the default for your output and settings files?'); 
+%%% Allows canceling.
+if WorkingDirectory == 0
+    %%% Change back to the original directory and do nothing.
+    cd(CurrentDirectory);
+    return
+end
+
+%%% (4) SAVE PREFERENCES
+%%% The pathname is saved as a variable in a .mat file in the Matlab root
+%%% directory. In this way, the file can always be found by the Load
+%%% algorithm function. The first argument is the name of the .mat file;
+%%% the remaining arguments are the names of the variables which are saved.
+try
     %%% Change the directory to the Matlab root directory
     cd(matlabroot)
-    %%% The pathname is saved as a variable in a .mat file in the Matlab
-    %%% root directory (which is for the moment the current directory).
-    %%% In this way, the file can always be found by
-    %%% the Load algorithm function. The first argument is the name of the 
-    %%% .mat file; 
-    %%% the second argument is the name of the variable which is saved. 
-        try
-        save DefaultAlgDirectory DefAlgDir
-        catch
-            Message = 'You do not have permission to write anything to the Matlab root directory, which is required to permanently set the default algorithm directory.  Instead, the default directory has been set, but will only function properly while you are in the current directory.';
-            cd(CurrentDir)
-            try
-                save DefaultAlgDirectory DefAlgDir
-            catch
-            Message = 'CellProfiler was unable to save your desired default algorithm directory, probably because you lack write permission for both the Matlab root directory as well as the current directory.  You will have to navigate to load your analysis modules.';    
-            end
-        end % Goes with try/catch.
-    MessageExists = exist('Message');
-    if MessageExists == 0
-        Message = 'The default directory was successfully set.';
+    save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
+    helpdlg('Your CellProfiler Preferences were successfully set.  They are contained within a folder in the Matlab root directory in a file called CellProfilerPreferences.mat.')
+    handles.Vpixelsize = PixelSize;
+    handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
+    handles.Vworkingdirectory = WorkingDirectory;
+    set(handles.PixelSizeEditBox,'string',PixelSize);
+    %%% Update handles structure.
+    guidata(hObject,handles);
+
+catch
+    cd(CurrentDir)
+    try
+        save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
+        helpdlg('You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly while you are in the current directory.')
+        handles.Vpixelsize = PixelSize;
+        handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
+        handles.Vworkingdirectory = WorkingDirectory;
+        set(handles.PixelSizeEditBox,'string',PixelSize);
+        %%% Update handles structure.
+        guidata(hObject,handles);
+
+    catch
+        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences were not saved.');
     end
-        helpdlg(Message);
-        cd(CurrentDir);
-end
+end % Goes with try/catch.
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%%%
 %%% LOAD BUTTONS %%%
@@ -700,22 +799,9 @@ AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
 %%% First, the current directory is stored so we can switch back to it at
 %%% the end of this step:
 CurrentDir = cd;
-%%% Change to the Matlab root directory.
-cd(matlabroot)
-%%% If the DefaultAlgDirectory .mat file does not exist in the matlabroot
-%%% directory, change to the current directory.
-if exist('DefaultAlgDirectory.mat') == 0
-  cd(CurrentDir);
-end
-%%% If the DefaultAlgDirectory .mat file exists, load it and change to the
-%%% default algorithm directory.
-if exist('DefaultAlgDirectory.mat') ~= 0
-  %%% Load the DefaultAlgDirectory.mat file
-  load DefaultAlgDirectory
-  %%% Change to the default algorithm directory, whose name is a variable
-  %%% that is stored in that .mat file.
-  cd(DefAlgDir)
-end
+%%% Change to the default algorithm directory, whose name is a variable
+%%% that is stored in that .mat file.
+cd(handles.Vdefaultalgorithmdirectory)
 %%% Now, when the dialog box is opened to retrieve an algorithm, the
 %%% directory will be the default algorithm directory.
 [AlgorithmNamedotm,PathName] = uigetfile('*.m',...
@@ -1020,7 +1106,8 @@ end
 
 % --- Executes on button press in SelectTestImageBrowseButton.
 function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be used as a test image.
 [FileName,PathName] = uigetfile('*.*','Select a test image (nuclei)');
@@ -1044,6 +1131,7 @@ else
             'Value',1)
     end
 end
+cd(CurrentDirectory)
 %%%%%%%%%%%%%%%%%
 
 % --- Executes during object creation, after setting all properties.
@@ -1099,6 +1187,7 @@ function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles)
 %%% I am using this button to show the handles structure in the
 %%% main Matlab window.
 handles
+msgbox('The handles structure has been printed out at the command line of Matlab.')
 
 %%%%%%%%%%%%%%%%%
 
@@ -1200,7 +1289,9 @@ end
 % --- Executes on button press in ExportDataButton.
 function ExportDataButton_Callback(hObject, eventdata, handles)
 
-CurrentDirectory = cd;
+%%% Determines the current directory so it can switch back when done.
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1341,10 +1432,13 @@ cd(CurrentDirectory);
 
 % --- Executes on button press in ExportCellByCellButton.
 function ExportCellByCellButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = cd;
+%%% Determines the current directory so it can switch back when done.
+CurrentDirectory = pwd
+cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
+    cd(CurrentDirectory);
     return
 end
 cd(RawPathName);
@@ -1359,6 +1453,7 @@ if strcmp(Answer, 'All images') == 1
     %%% Error detection.
     if isempty(MeasFieldnames)
         errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+        cd(CurrentDirectory);
         return
     end
     %%% Removes the 'dMC' prefix from each name for display purposes.
@@ -1372,6 +1467,7 @@ if strcmp(Answer, 'All images') == 1
         'PromptString','Choose a measurement to export','CancelString','Cancel',...
         'SelectionMode','single');
     if ok == 0
+        cd(CurrentDirectory);
         return
     end
     EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
@@ -1386,6 +1482,7 @@ if strcmp(Answer, 'All images') == 1
     %%% Error detection.
     if isempty(HeadingFieldnames)
         errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dOTFilename''.')
+        cd(CurrentDirectory);
         return
     end
     %%% Removes the 'dOT' prefix from each name for display purposes.
@@ -1399,6 +1496,7 @@ if strcmp(Answer, 'All images') == 1
         'PromptString','Choose a field to label each column of data with','CancelString','Cancel',...
         'SelectionMode','single');
     if ok == 0
+        cd(CurrentDirectory);
         return
     end
     EditedHeadingToDisplay = char(EditedHeadingFieldnames(Selection));
@@ -1424,6 +1522,7 @@ if strcmp(Answer, 'All images') == 1
     FileName = inputdlg('What do you want to call the resulting measurements file?  To open the file easily in Excel, add ".xls" to the name.','Name the file',1,{BareFileName});
     %%% If the user presses the Cancel button, the program goes to the end.
     if isempty(FileName)
+        cd(CurrentDirectory);
         return
     end
     FileName = FileName{1};
@@ -1431,6 +1530,7 @@ if strcmp(Answer, 'All images') == 1
     if OutputFileOverwrite ~= 0
         Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
+            cd(CurrentDirectory);
             return    
         end
     end
@@ -1461,14 +1561,17 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Asks the user to specify which image set to export.
     Answers = inputdlg({['Enter the sample number to export. There are ', num2str(TotalNumberImageSets), ' total.']},'Choose samples to export',1,{'1'});
     if isempty(Answers{1})
+        cd(CurrentDirectory);
         return
     end
     try ImageNumber = str2num(Answers{1});
     catch errordlg('The text entered was not a number.')
+        cd(CurrentDirectory);
         return
     end
     if ImageNumber > TotalNumberImageSets
         errordlg(['There are only ', num2str(TotalNumberImageSets), ' image sets total.'])
+        cd(CurrentDirectory);
         return
     end
     
@@ -1478,6 +1581,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Error detection.
     if isempty(MeasFieldnames)
         errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+        cd(CurrentDirectory);
         return
     end
     
@@ -1488,6 +1592,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Error detection.
     if isempty(HeadingFieldnames)
         errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dOTFilename''.')
+        cd(CurrentDirectory);
         return
     end
     %%% Removes the 'dOT' prefix from each name for display purposes.
@@ -1501,6 +1606,7 @@ elseif strcmp(Answer, 'All measurements') == 1
         'PromptString','Choose a field to label this data.','CancelString','Cancel',...
         'SelectionMode','single');
     if ok == 0
+        cd(CurrentDirectory);
         return
     end
     EditedHeadingToDisplay = char(EditedHeadingFieldnames(Selection));
@@ -1527,6 +1633,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     FileName = inputdlg('What do you want to call the resulting measurements file?  To open the file easily in Excel, add ".xls" to the name.','Name the file',1,{BareFileName});
     %%% If the user presses the Cancel button, the program goes to the end.
     if isempty(FileName)
+        cd(CurrentDirectory);
         return
     end
     FileName = FileName{1};
@@ -1534,6 +1641,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     if OutputFileOverwrite ~= 0
         Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
+            cd(CurrentDirectory);
             return    
         end
     end
@@ -1561,16 +1669,20 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
 end
+CurrentDirectory
 cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in HistogramButton.
 function HistogramButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = cd;
+%%% Determines the current directory so it can switch back when done.
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
+    cd(CurrentDirectory);
     return
 end
 cd(RawPathName);
@@ -1581,6 +1693,7 @@ MeasFieldnames = Fieldnames(strncmp(Fieldnames,'dMC',3)==1);
 %%% Error detection.
 if isempty(MeasFieldnames)
     errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+    cd(CurrentDirectory);
     return
 end
 %%% Removes the 'dMC' prefix from each name for display purposes.
@@ -1614,6 +1727,7 @@ if ok ~= 0
             %%% Checks whether the chosen file is a text file.
             if strcmp(extension,'txt') == 0;
                 errordlg('Sorry, the list of sample descriptions must be in a text file (.txt).');
+                cd(CurrentDirectory);
                 return
             else 
                 %%% Saves the text from the file into a new variable, "SampleNames".  The
@@ -1662,9 +1776,11 @@ if ok ~= 0
                 if (isempty(A)) 
                 elseif strcmp(A,'') == 1, 
                     errordlg('Sample info was not saved, because no heading was entered.');
+                    cd(CurrentDirectory);
                     return
                 elseif isfield(handles, A) == 1
                     errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
+                    cd(CurrentDirectory);
                     return    
                 else
                     %%% Uses the heading the user entered to name the field in the handles
@@ -1681,6 +1797,7 @@ if ok ~= 0
                         end
                         guidata(hObject, handles);
                     catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
+                        cd(CurrentDirectory);
                         return
                     end % Goes with catch
                 end
@@ -1704,7 +1821,8 @@ if ok ~= 0
         if ok ~= 0
             HeadingName = char(HeadingNames(Selection));
             SampleNames = handles.(HeadingName);
-        else return
+        else cd(CurrentDirectory);
+            return
         end                    
     end
     %%% Asks the user whether a histogram should be shown for all image
@@ -1720,10 +1838,12 @@ if ok ~= 0
         LastImage = str2num(Answers{2});
         if isempty(FirstImage)
             errordlg('No number was entered for the first sample number to display.')
+            cd(CurrentDirectory);
             return
         end
         if isempty(LastImage)
             errordlg('No number was entered for the last sample number to display.')
+            cd(CurrentDirectory);
             return
         end
         NumberOfImages = LastImage - FirstImage + 1;
@@ -1731,6 +1851,7 @@ if ok ~= 0
             NumberOfImages = TotalNumberImageSets;
         elseif NumberOfImages > TotalNumberImageSets
             errordlg(['There are only ', TextTotalNumberImageSets, ' image sets total.'])
+            cd(CurrentDirectory);
             return
         end
         
@@ -1740,50 +1861,60 @@ if ok ~= 0
         Answers = inputdlg(Prompts,'Choose histogram settings',1,Defaults);
         %%% Error checking/canceling.
         if isempty(Answers)
+            cd(CurrentDirectory);
             return
         end
         try NumberOfBins = str2num(Answers{1});
         catch errordlg('The text entered for the question "Enter the number of bins you want to be displayed in the histogram" was not a number.')
+            cd(CurrentDirectory);
             return
         end
         if isempty(NumberOfBins) ==1
             errordlg('No text was entered for "Enter the number of bins you want to be displayed in the histogram".')
+            cd(CurrentDirectory);
             return
         end
         MinHistogramValue = Answers{2};
         if isempty(MinHistogramValue) ==1
             errordlg('No text was entered for "Enter the minimum value to display".')
+            cd(CurrentDirectory);
             return
         end
         MaxHistogramValue = Answers{3};
         if isempty(MaxHistogramValue) ==1
             errordlg('No text was entered for "Enter the maximum value to display".')
+            cd(CurrentDirectory);
             return
         end
         CumulativeHistogram = Answers{4};
         %%% Error checking for the Y Axis Scale question.
         try YAxisScale = lower(Answers{5});
         catch errordlg('The text you entered for ''Do you want the Y-axis (number of cells) to be absolute or relative?'' was not recognized.');
+            cd(CurrentDirectory);
             return    
         end
         if strcmp(YAxisScale, 'relative') ~= 1 & strcmp(YAxisScale, 'absolute') ~= 1
             errordlg('The text you entered for ''Do you want the Y-axis (number of cells) to be absolute or relative?'' was not recognized.');
+            cd(CurrentDirectory);
             return
         end
         CompressedHistogram = Answers{6};
         if strcmp(CompressedHistogram,'yes') ~= 1 & strcmp(CompressedHistogram,'no') ~= 1 
             errordlg('You must enter "yes" or "no" for displaying the histograms in compressed format.');
+            cd(CurrentDirectory);
             return
         end
         SaveData = Answers{7};
         if isempty(SaveData)
             errordlg('You must enter "no", or a filename, in answer to the question about saving the data.');
+            cd(CurrentDirectory);
             return
         end
         OutputFileOverwrite = exist([cd,'/',SaveData]);
         if OutputFileOverwrite ~= 0
             Answer = questdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
             if strcmp(Answer, 'No') == 1
+                cd(CurrentDirectory);
                 return    
             end
         end
@@ -1801,6 +1932,7 @@ if ok ~= 0
                 MinHistogramValue = PotentialMinHistogramValue;
             else
                 errordlg('The value entered for the minimum histogram value must be either a number or the word ''automatic''.')
+                cd(CurrentDirectory);
                 return
             end
         else MinHistogramValue = str2num(MinHistogramValue);
@@ -1810,6 +1942,7 @@ if ok ~= 0
                 MaxHistogramValue = PotentialMaxHistogramValue;
             else
                 errordlg('The value entered for the maximum histogram value must be either a number or the word ''automatic''.')
+                cd(CurrentDirectory);
                 return
             end
         else MaxHistogramValue = str2num(MaxHistogramValue);
@@ -1818,6 +1951,7 @@ if ok ~= 0
         HistogramRange = MaxHistogramValue - MinHistogramValue;
         if HistogramRange <= 0
             errordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.')
+            cd(CurrentDirectory);
             return
         end
         BinWidth = HistogramRange/NumberOfBins;
@@ -2219,6 +2353,7 @@ if ok ~= 0
             set(AxisHandle,'XTick',NewPlotBinLocations)
             set(FigureHandle,'UserData',FigureSettings)
         else errordlg('In answering the question of whether to display a compressed histogram, you must type "yes" or "no".');
+            cd(CurrentDirectory);
             return
         end
     end % Goes with cancel button when selecting the measurement to display.
@@ -2353,7 +2488,9 @@ msgbox('The original data and the corrected data are now displayed in the Matlab
 
 % --- Executes on button press in DisplayDataOnImageButton.
 function DisplayDataOnImageButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = cd;
+%%% Determines the current directory so it can switch back when done.
+CurrentDirectory = pwd;
+cd(handles.Vworkingdirectory)
 %%% Asks the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName ~= 0
@@ -2365,6 +2502,7 @@ if RawFileName ~= 0
     %%% Error detection.
     if isempty(MeasFieldnames)
         errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+        cd(CurrentDirectory);
         return
     else
         %%% Removes the 'dMC' prefix from each name for display purposes.
@@ -2398,12 +2536,14 @@ if RawFileName ~= 0
                     %%% Prompts the user to choose a sample number to be displayed.
                     Answer = inputdlg({'Which sample number do you want to display?'},'Choose sample number',1,{'1'});
                     if isempty(Answer)
+                        cd(CurrentDirectory);
                         return
                     end
                     SampleNumber = str2num(Answer{1});
                     TotalNumberImageSets = length(handles.(MeasurementToExtract));
                     if SampleNumber > TotalNumberImageSets
                         error('The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.')
+                        cd(CurrentDirectory);
                         return
                     end
                     %%% Looks up the corresponding image file name.
@@ -2434,6 +2574,7 @@ if RawFileName ~= 0
                         %%% If the user presses "Cancel", the FileName will = 0 and nothing will
                         %%% happen.
                         if FileName == 0
+                            cd(CurrentDirectory);
                             return
                         else
                             %%% Opens and displays the image, with pixval shown.
@@ -3321,7 +3462,7 @@ end; %if s isempty
 function HelpStep1_Callback(hObject, eventdata, handles)
 helpdlg('Select the main folder containing the images you want to analyze. You will have the option within load images modules to retrieve images from more than one folder, but the folder selected here will be the default folder.  Use the Browse button to select the folder, or carefully type the full pathname in the box to the right.','Step 1 Help')
 function HelpStep2_Callback(hObject, eventdata, handles)
-helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?ÒOUT?Ó to avoid confusion.  You do not need to type ?Ò.mat?Ó at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called DefaultAlgDirectory.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
+helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?ÒOUT?Ó to avoid confusion.  You do not need to type ?Ò.mat?Ó at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called CellProfilerPreferences.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
 function HelpStep3_Callback(hObject, eventdata, handles)
 helpdlg('FOR HELP ON INDIVIDUAL MODULES: Click the "Help for this analysis module" button towards the right of the CellProfiler window.       LOAD/CLEAR/VIEW BUTTONS:  Choose image analysis modules in the desired order by clicking "Load" and selecting the corresponding Matlab ".m" file.      SHORTCUTS: Once you have loaded the desired image analysis modules and modified all of the settings as desired, you may save these settings for future use by clicking "Save Settings" and naming the file.  Later, you can click "Load Settings", select this file that you made, and all of the modules and settings will be restored.  ALTERNATELY, if you previously ran an image analysis and you want to repeat the exact analysis, you may click "Extract Settings from an output file".  Select the output file, and the modules and settings used to create it will be extracted.  You then name the settings file and load it using the "Load Settings" button.  Troubleshooting: If you loaded an analysis module by loading a settings file, and then obtained error messages in the Matlab main window, the most likely cause is that the analysis modules loaded are not on the Matlab search path. Be sure that the folder immediately containing the analysis module is on the search path. The search path can be edited by choosing File > Set Path.  Another possibility is that the Settings file was created with old versions of CellProfiler or with old versions of modules.  The Settings file can be opened with any word processor as plain text and you should be able to figure out what the settings were.        TECHNICAL DIAGNOSIS: Clicking here causes text to appear in the main Matlab window.  This text shows the "handles structure" which is sometimes useful for diagnosing problems with the software.','Step 3 Help')
 function HelpStep4_Callback(hObject, eventdata, handles)

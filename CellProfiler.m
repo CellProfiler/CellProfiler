@@ -1145,6 +1145,7 @@ function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We 
 handles %#ok We want to ignore MLint error checking for this line.
 handles.Settings %#ok We want to ignore MLint error checking for this line.
 handles.Measurements %#ok We want to ignore MLint error checking for this line.
+handles.Pipeline %#ok We want to ignore MLint error checking for this line.
 msgbox('The handles structure has been printed out at the command line of Matlab.')
 
 %%%%%%%%%%%%%%%%%
@@ -3083,6 +3084,14 @@ else
                                 break_outer_loop = 1;
                                 break;
                             end % Goes with try/catch.
+
+                            %%% Check for a pending "Cancel after Module"
+                            CancelWaiting = get(handles.timertexthandle,'string');
+                            if (strncmp(CancelWaiting, 'Immediate', 9) == 1),
+                                break_outer_loop = 1;
+                                break;
+                            end;
+
                         end
                                             
                         openFig = openFigures;
@@ -3161,13 +3170,6 @@ else
 %                    end
                     
                     
-                    %%% Reads the text in the timer window to check whether it is a cancel
-                    %%% signal, since the text will be overwritten in the calculations for the
-                    %%% timer.  The timer calculations have to be done before canceling because
-                    %%% the time elapsed must be stored in the handles structure and therefore
-                    %%% in the output file.
-                    CancelWaiting = get(handles.timertexthandle,'string');
-                    
                     %%% Make calculations for the Timer window.
                     time_elapsed = num2str(toc);
                     timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
@@ -3197,6 +3199,14 @@ else
                     setbeinganalyzed = setbeinganalyzed + 1;
                     handles.setbeinganalyzed = setbeinganalyzed;
                     guidata(gcbo, handles)
+
+                    %%% Reads the text in the timer window to check whether it is a cancel
+                    %%% signal, since the text will be overwritten in the calculations for the
+                    %%% timer.  The timer calculations have to be done before canceling because
+                    %%% the time elapsed must be stored in the handles structure and therefore
+                    %%% in the output file.
+                    CancelWaiting = get(handles.timertexthandle,'string');
+                    
                     %%% If a "cancel" signal is waiting, break and go to the "end" that goes
                     %%% with the "while" loop.
                     if strncmp(CancelWaiting,'Cancel',6) == 1

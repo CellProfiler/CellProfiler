@@ -1,6 +1,20 @@
 Unclaimed projects/feature requests/bug fixes
 
 General:
+- Make Images and Data buttons into icons in a toolbar.
+- 'Fetch new modules from website' button in CP's main GUI.
+- 'Report bug' button in CP's main GUI.
+- 'Start job midway' module, run image set #XXXX (allow putting in a bunch of comma-delimited numbers to allow random), every 50th.
+- Spot Identifier: Figure out Excel mac vs Pc problems.  Allow asking if numbers are in rows or columns.  Check offsets, flipping. Display value only when clicking. Make manual page. Toggle several images.
+- Image Tiler: Main GUI's error catching is causing problems when sample info is loaded.  Allow zoom in on thumbnail: get filename (GET COORDINATES) and display high res image.  Needs error catching for images to be the same size.  Display window stays open. See tooltips code. Make manual page.  Fails if there are fewer images than the total grid.
+- There is no way to save images which are normally calculated for display only when running on the cluster, because the figure windows are not open so the calculations are skipped.
+- Combine CorrIllumDivideAll with RetrieveImg version.
+- Allow adding sample info post-processing
+- Display data on image button: it currently is using global variables to store the numerical data, rather than using UserData.  Thus, the figure cannot be saved with the numerical data still accessible.  See histograms for how to use UserData to store the numbers with the figure.
+- Histograms: allow fewer labels, plus fewer decimals (right now, it's either-or).
+- Plot data button: allow adding error bars reflecting stdev or sem to the single parameter, multiple images bar plot (matlab central has error bar code).
+- Plot data button: allow displaying two parameters vs. each other in a scatter plot.
+- Compressed histograms: Add Y sample labels, allow to show relative brightness, allow to put in order by mean, change # of sig figs.  See hist2 at MC to smooth histograms.  Eventually allow histograms to be interactively updated? See automatic updated plot at MC, and also fancyplot. 
 - Interactive zoom button (within Show Image button):
 (1) It seems to always work OK the first time you click on Interactive Zoom.  The subsequent times you click on it though: sometimes it works just fine and other times there is no change to the image itself - it stays at fully zoomed out and doesn't respond to mouse clicks.  Perhaps related, sometimes lots of errors are spit out at the command line (I think only on subsequent tries to use the functionality).  Actually, maybe it has something to do with having other figure windows open at the same time?
 (2) Once things are working, I would like to add this Interactive Zoom button to several other places: In CellProfiler.m: "Display data on image", "Show pixel data", and all of the figure display windows (for each algorithm - I am not sure whether buttons will stay intact, though, once each algorithm runs. so I am not sure whether it makes more sense to have the button added within each algorithm's code or within the main CellProfiler code when the window is first created). The most important thing is to add the button to "AlgImageTiler.m"; that is why I acquired this code in the first place.- Calculations for display purposes only: surround by an if that is: "If figure window is open OR saveimage = Yes, then do these calculations."

@@ -1,3 +1,7 @@
+   Cancel after module doesn't work anymore!
+
+   In addition to the automatic sizing of long edit boxes, allow us to add a flag to edit boxes to force them to be long.  Then, go through modules looking for variables using the 11th slot (which used to be long) and add the flag.
+
    For modules that have very long help descriptions when selecting the module in the listbox and clicking "Help for this analysis module", the text does not fit into the window.  Esp. see AlgIdentifySecPropagate.m's help
 
    Figure out how to make font sizes uniform on PC vs Unix vs Mac. [BETA]

@@ -141,12 +141,13 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT',ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname) == 0,
     error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that loads a greyscale image.  You specified in the MeasureIntensityTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
     end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -156,12 +157,13 @@ end
 
 %%% Retrieves the label matrix image that contains the segmented objects which
 %%% will be measured with this algorithm.  
-fieldname = ['dOTSegmented',ObjectName];
+fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname) == 0,
     error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the MeasureIntensityTexture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
     end
-LabelMatrixImage = handles.(fieldname);
+LabelMatrixImage = handles.Pipeline.(fieldname);
+
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
@@ -241,8 +243,8 @@ if sum(sum(LabelMatrixImage)) == 0
     %%% None of the measurements are made if there are no objects in the label
     %%% matrix image.
     %%% Saves the count to the handles structure.
-    fieldname = ['dMTCount', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {0};
+    fieldname = ['ImageCount', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {0};
 else
 
 %%% The regionprops command extracts a lot of measurements.  It
@@ -282,16 +284,16 @@ AlmostIntegratedIntensity = sum(AllObjectsPixelValues(:,:));
 IntegratedIntensity = full(AlmostIntegratedIntensity');
 
 %%% Saves Integrated Intensities to handles structure.
-fieldname = ['dMCIntegratedIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
-fieldname = ['dMTMeanIntegratedIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
-fieldname = ['dMTStdevIntegratedIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {std(IntegratedIntensity)};
-fieldname = ['dMTMedianIntegratedIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
-fieldname = ['dMTSumIntegratedIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
+fieldname = ['ObjectIntegratedIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
+fieldname = ['ImageMeanIntegratedIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
+fieldname = ['ImageStdevIntegratedIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(IntegratedIntensity)};
+fieldname = ['ImageMedianIntegratedIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
+fieldname = ['ImageSumIntegratedIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 
 %%% Calculates the fraction of cells whose integrated intensity is above the
 %%% user's threshold.
@@ -299,8 +301,8 @@ if strcmp(upper(Threshold),'N') ~= 1
     NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
     TotalNumberObjects = length(IntegratedIntensity);
     FractionObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
-    fieldname = ['dMTFractionAboveThreshold', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {FractionObjectsAboveThreshold};
+    fieldname = ['ImageFractionAboveThreshold', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FractionObjectsAboveThreshold};
 end
 
 %%%
@@ -332,23 +334,23 @@ StDevIntensity = sqrt(full(sum(Temp2.^2)) ./ (Areas1 - 1));
 MeanIntensity = MeanIntensity';
 StDevIntensity = StDevIntensity';
 %%% Saves data to handles structure.
-fieldname = ['dMCMeanIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
-fieldname = ['dMTMeanMeanIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
-fieldname = ['dMTStdevMeanIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {std(MeanIntensity)};
-fieldname = ['dMTMedianMeanIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
+fieldname = ['ObjectMeanIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
+fieldname = ['ImageMeanMeanIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
+fieldname = ['ImageStdevMeanIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MeanIntensity)};
+fieldname = ['ImageMedianMeanIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
 
-fieldname = ['dMCStDevIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
-fieldname = ['dMTMeanStDevIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
-fieldname = ['dMTStdevStDevIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {std(StDevIntensity)};
-fieldname = ['dMTMedianStDevIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {median(StDevIntensity)};
+fieldname = ['ObjectStDevIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
+fieldname = ['ImageMeanStDevIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
+fieldname = ['ImageStdevStDevIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(StDevIntensity)};
+fieldname = ['ImageMedianStDevIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(StDevIntensity)};
 
 end % Goes with: if no objects are in the image.
 

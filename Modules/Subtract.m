@@ -137,18 +137,16 @@ drawnow
 
 %%% Reads (opens) the images you want to analyze and assigns them to
 %%% variables.
-fieldname = ['dOT', BasicImageName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Subtract Images module, you must have previously run an algorithm to load an image. You specified in the Subtract Images module that this image was called ', BasicImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Subtract Images module cannot find this image.']);
+if isfield(handles.Pipeline, BasicImageName) == 0
+    error(['Image processing has been canceled. Prior to running the Subtract Images module, you must have previously run an algorithm to load an image. You specified in the Subtract Images module that this image was called ', BasicImageName, ' which should have produced a field in the handles structure called ', BasicImageName, '. The Subtract Images module cannot find this image.']);
 end
-BasicImage = handles.(fieldname);
-fieldname = ['dOT', SubtractImageName];
+BasicImage = handles.Pipeline.(BasicImageName);
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Subtract Images module, you must have previously run an algorithm to load an image. You specified in the Subtract Images module that this image was called ', SubtractImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Subtract Images module cannot find this image.']);
+if isfield(handles.Pipeline, SubtractImageName) == 0
+    error(['Image processing has been canceled. Prior to running the Subtract Images module, you must have previously run an algorithm to load an image. You specified in the Subtract Images module that this image was called ', SubtractImageName, ' which should have produced a field in the handles structure called ', SubtractImageName, '. The Subtract Images module cannot find this image.']);
 end
-SubtractImage = handles.(fieldname);
+SubtractImage = handles.Pipeline.(SubtractImageName);
 
 %%% Checks that the original images are two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -298,13 +296,12 @@ drawnow
 % the second image.
 
 %%% Saves the processed image to the handles structure.
-fieldname = ['dOT',ResultingImageName];
-handles.(fieldname) = ResultingImage;
+handles.Pipeline.(ResultingImageName) = ResultingImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', BasicImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', BasicImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', ResultingImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ResultingImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

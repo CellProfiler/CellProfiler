@@ -151,9 +151,9 @@ drawnow
 
 %%% Reads (opes) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -163,7 +163,8 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
+
         
 %%% Checks whether the chosen block size is larger than the image itself.
 [m,n] = size(OrigImage);
@@ -352,13 +353,12 @@ drawnow
 
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', CorrectedImageName];
-handles.(fieldname) = CorrectedImage;
+handles.Pipeline.(CorrectedImageName) = CorrectedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the corrected image name.
-fieldname = ['dOTFilename', CorrectedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', CorrectedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

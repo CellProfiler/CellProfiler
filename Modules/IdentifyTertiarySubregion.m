@@ -147,9 +147,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOTSegmented', PrimaryObjectName];
+fieldname = ['Segmented', PrimaryObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -158,14 +158,15 @@ if isfield(handles, fieldname) == 0
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Identify Tertiary Subregion module could not find the input image.  It was supposed to be named ', PrimaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-PrimaryObjectImage = handles.(fieldname);
+PrimaryObjectImage = handles.Pipeline.(fieldname);
+
 
 %%% Retrieves the Secondary object segmented image.
-fieldname = ['dOTSegmented', SecondaryObjectName];
-if isfield(handles, fieldname) == 0
+fieldname = ['Segmented', SecondaryObjectName];
+if isfield(handles.Pipeline, fieldname) == 0
     error(['Image processing was canceled because the Identify Tertiary Subregion module could not find the input image.  It was supposed to be named ', SecondaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-SecondaryObjectImage = handles.(fieldname);
+SecondaryObjectImage = handles.Pipeline.(fieldname);
        
 %%% Checks that these images are two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -325,14 +326,14 @@ drawnow
 
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent algorithms.
-fieldname = ['dOTSegmented', SubregionObjectName];
-handles.(fieldname) = SubregionObjectImage;
+fieldname = ['Segmented', SubregionObjectName];
+handles.Pipeline.(fieldname) = SubregionObjectImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', PrimaryObjectName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', PrimaryObjectName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image to be analyzed.
-fieldname = ['dOTFilename', SubregionObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', SubregionObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;
 %%% Arbitrarily, I have chosen the primary object's filename to be saved
 %%% here rather than the secondary object's filename.  

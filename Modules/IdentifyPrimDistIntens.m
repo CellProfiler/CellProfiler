@@ -233,12 +233,11 @@ MaxSize = SizeRangeNumerical(2);
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Identify Primary Distance Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Distance Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Distance Intensity module cannot find this image.']);
+    if isfield(handles.Pipeline, ImageName)==0
+    error(['Image processing has been canceled. Prior to running the Identify Primary Distance Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Distance Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Distance Intensity module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -507,25 +506,25 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['dOTPrelimSegmented',ObjectName];
-handles.(fieldname) = PrelimLabelMatrixImage1;
+fieldname = ['PrelimSegmented',ObjectName];
+handles.Pipeline.(fieldname) = PrelimLabelMatrixImage1;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['dOTPrelimSmallSegmented',ObjectName];
-handles.(fieldname) = PrelimLabelMatrixImage2;
+fieldname = ['PrelimSmallSegmented',ObjectName];
+handles.Pipeline.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.
-fieldname = ['dOTSegmented',ObjectName];
-handles.(fieldname) = FinalLabelMatrixImage;
+fieldname = ['Segmented',ObjectName];
+handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the Threshold value to the handles structure.
-fieldname = ['dMTThreshold', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};
+fieldname = ['ImageThreshold', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Threshold};
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

@@ -160,9 +160,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', OrigImageName];
+fieldname = ['', OrigImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -171,29 +171,32 @@ if isfield(handles, fieldname) == 0
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Identify Secondary Distance module could not find the input image.  It was supposed to be named ', OrigImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
+
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects which will be used for dilation. Checks first to see
 %%% whether the appropriate image exists.
-fieldname = ['dOTSegmented',PrimaryObjectName];
+fieldname = ['Segmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Distance module, you must have previously run an algorithm that generates an image with the primary objects identified.  You specified in the Identify Secondary Distance module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous algorithm, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Distance module cannot locate this image.']);
 end
-PrimaryLabelMatrixImage = handles.(fieldname);
+PrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
+
 
 %%% Retrieves the preliminary label matrix image that contains the primary
 %%% segmented objects which have only been edited to discard objects 
 %%% that are smaller than a certain size.  This image
 %%% will be used as markers to segment the secondary objects with this
 %%% algorithm.  Checks first to see whether the appropriate image exists.
-fieldname = ['dOTPrelimSmallSegmented',PrimaryObjectName];
+fieldname = ['PrelimSmallSegmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Distance module, you must have previously run an algorithm that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Distance module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous algorithm, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Distance module cannot locate this image.']);
     end
-PrelimPrimaryLabelMatrixImage = handles.(fieldname);
+PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
+
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -386,16 +389,16 @@ drawnow
 
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent algorithms.
-fieldname = ['dOTSegmented',SecondaryObjectName];
-handles.(fieldname) = FinalSecObjectsLabelMatrixImage;
+fieldname = ['Segmented',SecondaryObjectName];
+handles.Pipeline.(fieldname) = FinalSecObjectsLabelMatrixImage;
 
 %%% Determines the filename of the image that was analyzed.
 %%% This is not entirely necessary, because this image was not actually
 %%% used for analysis, it was only used for display, but it allows this
 %%% module to be consistent with the other secondary object-identifying
 %%% modules.
-fieldname = ['dOTFilename', OrigImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', OrigImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image that was analyzed.
-fieldname = ['dOTFilename', SecondaryObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', SecondaryObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

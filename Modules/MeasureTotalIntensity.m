@@ -131,7 +131,7 @@ LowThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}
 HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Vpixelsize{1});
+PixelSize = str2double(handles.Settings.Vpixelsize{1});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -140,9 +140,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -151,7 +151,8 @@ if isfield(handles, fieldname) == 0
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Measure Total Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -311,11 +312,11 @@ drawnow
 % the second image.
 
 %%% Saves measurements to the handles structure.
-fieldname = ['dMTTotalIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {TotalIntensity};
+fieldname = ['ImageTotalIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TotalIntensity};
 
-fieldname = ['dMTMeanIntensity', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
+fieldname = ['ImageMeanIntensity', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
 
-fieldname = ['dMTTotalArea', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {TotalArea};
+fieldname = ['ImageTotalArea', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TotalArea};

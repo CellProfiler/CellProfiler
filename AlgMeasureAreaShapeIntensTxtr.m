@@ -128,7 +128,7 @@ Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 %textVAR07 = your entries, e.g. "OrigRedwithinNuclei".
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Vpixelsize{1});
+PixelSize = str2double(handles.Settings.Vpixelsize{1});
 
 %%% POTENTIAL IMPROVEMENT: Allow the user to select which measurements will
 %%% be made, particularly for those which take a long time to calculate?
@@ -143,12 +143,13 @@ PixelSize = str2double(handles.Vpixelsize{1});
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT',ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Measure algorithm, you must have previously run an algorithm that loads a greyscale image.  You specified in the Measure module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure module cannot locate this image.']);
 end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -158,12 +159,13 @@ end
 
 %%% Retrieves the label matrix image that contains the segmented objects which
 %%% will be measured with this algorithm.
-fieldname = ['dOTSegmented',ObjectName];
+fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Measure algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the Measure module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure module cannot locate this image.']);
 end
-LabelMatrixImage = handles.(fieldname);
+LabelMatrixImage = handles.Pipeline.(fieldname);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
@@ -233,8 +235,8 @@ if sum(sum(LabelMatrixImage)) == 0
     %%% None of the measurements are made if there are no objects in the label
     %%% matrix image.
     %%% Saves the count to the handles structure.
-    fieldname = ['dMTCount', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {0};
+    fieldname = ['ImageCount', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {0};
 else
 
     %%% The regionprops command extracts a lot of measurements.  It
@@ -258,16 +260,16 @@ else
     %%% to micrometers squared.
     Area = Area.*(PixelSize*PixelSize);
     %%% Saves the areas to the handles structure.
-    fieldname = ['dMCArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {Area};
-    fieldname = ['dMTMeanArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(Area)};
-    fieldname = ['dMTStdevArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(Area)};
-    fieldname = ['dMTMedianArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(Area)};
-    fieldname = ['dMTSumArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {sum(Area)};
+    fieldname = ['ObjectArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Area};
+    fieldname = ['ImageMeanArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Area)};
+    fieldname = ['ImageStdevArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Area)};
+    fieldname = ['ImageMedianArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Area)};
+    fieldname = ['ImageSumArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sum(Area)};
 
     %%%
     %%% CONVEX AREA
@@ -280,14 +282,14 @@ else
     %%% converted to micrometers squared.
     ConvexArea = ConvexArea.*(PixelSize*PixelSize);
     %%% Saves the areas to the handles structure.
-    fieldname = ['dMCConvexArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {ConvexArea};
-    fieldname = ['dMTMeanConvexArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(ConvexArea)};
-    fieldname = ['dMTStdevConvexArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(ConvexArea)};
-    fieldname = ['dMTMedianConvexArea', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(ConvexArea)};
+    fieldname = ['ObjectConvexArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {ConvexArea};
+    fieldname = ['ImageMeanConvexArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(ConvexArea)};
+    fieldname = ['ImageStdevConvexArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(ConvexArea)};
+    fieldname = ['ImageMedianConvexArea', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(ConvexArea)};
 
     %%%
     %%% MAJOR AXIS
@@ -299,14 +301,14 @@ else
     %%% Converts the measurement to micrometers.
     MajorAxis = MajorAxis*PixelSize;
     %%% Saves the major axis lengths to the handles structure.
-    fieldname = ['dMCMajorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {MajorAxis};
-    fieldname = ['dMTMeanMajorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(MajorAxis)};
-    fieldname = ['dMTStdevMajorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(MajorAxis)};
-    fieldname = ['dMTMedianMajorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(MajorAxis)};
+    fieldname = ['ObjectMajorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MajorAxis};
+    fieldname = ['ImageMeanMajorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MajorAxis)};
+    fieldname = ['ImageStdevMajorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MajorAxis)};
+    fieldname = ['ImageMedianMajorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MajorAxis)};
 
     %%%
     %%% MINOR AXIS
@@ -318,14 +320,14 @@ else
     %%% Converts the measurement to micrometers.
     MinorAxis = MinorAxis*PixelSize;
     %%% Saves the minor axis lengths to the handles structure.
-    fieldname = ['dMCMinorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {MinorAxis};
-    fieldname = ['dMTMeanMinorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(MinorAxis)};
-    fieldname = ['dMTStdevMinorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(MinorAxis)};
-    fieldname = ['dMTMedianMinorAxis', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(MinorAxis)};
+    fieldname = ['ObjectMinorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MinorAxis};
+    fieldname = ['ImageMeanMinorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MinorAxis)};
+    fieldname = ['ImageStdevMinorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MinorAxis)};
+    fieldname = ['ImageMedianMinorAxis', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MinorAxis)};
 
     %%%
     %%% ECCENTRICITY
@@ -347,14 +349,14 @@ else
     %%% Note: No need to convert the measurement to micrometers because it is
     %%% dimensionless.
     %%% Saves the Eccentricities to the handles structure.
-    fieldname = ['dMCEccentricity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {Eccentricity};
-    fieldname = ['dMTMeanEccentricity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(Eccentricity)};
-    fieldname = ['dMTStdevEccentricity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(Eccentricity)};
-    fieldname = ['dMTMedianEccentricity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(Eccentricity)};
+    fieldname = ['ObjectEccentricity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Eccentricity};
+    fieldname = ['ImageMeanEccentricity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Eccentricity)};
+    fieldname = ['ImageStdevEccentricity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Eccentricity)};
+    fieldname = ['ImageMedianEccentricity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Eccentricity)};
 
     %%%
     %%% SOLIDITY
@@ -369,14 +371,14 @@ else
     %%% Note: No need to convert the measurement to micrometers because it is
     %%% dimensionless.
     %%% Saves the Solidities to the handles structure.
-    fieldname = ['dMCSolidity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {Solidity};
-    fieldname = ['dMTMeanSolidity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(Solidity)};
-    fieldname = ['dMTStdevSolidity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(Solidity)};
-    fieldname = ['dMTMedianSolidity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(Solidity)};
+    fieldname = ['ObjectSolidity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Solidity};
+    fieldname = ['ImageMeanSolidity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Solidity)};
+    fieldname = ['ImageStdevSolidity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Solidity)};
+    fieldname = ['ImageMedianSolidity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Solidity)};
 
     %%%
     %%% EXTENT
@@ -391,14 +393,14 @@ else
     %%% Note: No need to convert the measurement to micrometers because it is
     %%% dimensionless.
     %%% Saves the Extents to the handles structure.
-    fieldname = ['dMCExtent', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {Extent};
-    fieldname = ['dMTMeanExtent', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(Extent)};
-    fieldname = ['dMTStdevExtent', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(Extent)};
-    fieldname = ['dMTMedianExtent', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(Extent)};
+    fieldname = ['ObjectExtent', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Extent};
+    fieldname = ['ImageMeanExtent', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Extent)};
+    fieldname = ['ImageStdevExtent', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Extent)};
+    fieldname = ['ImageMedianExtent', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Extent)};
 
     %%%
     %%% CENTER POSITIONS
@@ -415,10 +417,10 @@ else
     CentersX = CentersXY(:,1);
     CentersY = CentersXY(:,2);
     %%% Saves X and Y positions to handles structure.
-    fieldname = ['dMCCenterX', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {CentersX};
-    fieldname = ['dMCCenterY', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {CentersY};
+    fieldname = ['ObjectCenterX', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersX};
+    fieldname = ['ObjectCenterY', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersY};
 
     %%%
     %%% INTEGRATED INTENSITY (TOTAL INTENSITY PER OBJECT)
@@ -447,16 +449,16 @@ else
     %%% with respect to area.
 
     %%% Saves Integrated Intensities to handles structure.
-    fieldname = ['dMCIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
-    fieldname = ['dMTMeanIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
-    fieldname = ['dMTStdevIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(IntegratedIntensity)};
-    fieldname = ['dMTMedianIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
-    fieldname = ['dMTSumIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
+    fieldname = ['ObjectIntegratedIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
+    fieldname = ['ImageMeanIntegratedIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
+    fieldname = ['ImageStdevIntegratedIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(IntegratedIntensity)};
+    fieldname = ['ImageMedianIntegratedIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
+    fieldname = ['ImageSumIntegratedIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
 
     %%% Calculates the fraction of cells whose integrated intensity is above the
     %%% user's threshold.
@@ -464,8 +466,8 @@ else
         NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
         TotalNumberObjects = length(IntegratedIntensity);
         FractionObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
-        fieldname = ['dMTFractionAboveThreshold', ImageName, 'within', ObjectName];
-        handles.(fieldname)(handles.setbeinganalyzed) = {FractionObjectsAboveThreshold};
+        fieldname = ['ImageFractionAboveThreshold', ImageName, 'within', ObjectName];
+        handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FractionObjectsAboveThreshold};
     end
 
     %%%
@@ -494,23 +496,23 @@ else
     MeanIntensity = MeanIntensity';
     StDevIntensity = StDevIntensity';
     %%% Saves data to handles structure.
-    fieldname = ['dMCMeanIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
-    fieldname = ['dMTMeanMeanIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
-    fieldname = ['dMTStdevMeanIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(MeanIntensity)};
-    fieldname = ['dMTMedianMeanIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
+    fieldname = ['ObjectMeanIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
+    fieldname = ['ImageMeanMeanIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
+    fieldname = ['ImageStdevMeanIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MeanIntensity)};
+    fieldname = ['ImageMedianMeanIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
 
-    fieldname = ['dMCStDevIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
-    fieldname = ['dMTMeanStDevIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
-    fieldname = ['dMTStdevStDevIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(StDevIntensity)};
-    fieldname = ['dMTMedianStDevIntensity', ImageName, 'within', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(StDevIntensity)};
+    fieldname = ['ObjectStDevIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
+    fieldname = ['ImageMeanStDevIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
+    fieldname = ['ImageStdevStDevIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(StDevIntensity)};
+    fieldname = ['ImageMedianStDevIntensity', ImageName, 'within', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(StDevIntensity)};
 
     %%%
     %%% PERIMETER
@@ -533,14 +535,14 @@ else
     %%% Converts the measurement to micrometers.
     Perimeter = Perimeter*PixelSize;
     %%% Saves Perimeters to handles structure.
-    fieldname = ['dMCPerimeter', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {Perimeter};
-    fieldname = ['dMTMeanPerimeter', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(Perimeter)};
-    fieldname = ['dMTStdevPerimeter', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(Perimeter)};
-    fieldname = ['dMTMedianPerimeter', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(Perimeter)};
+    fieldname = ['ObjectPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Perimeter};
+    fieldname = ['ImageMeanPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Perimeter)};
+    fieldname = ['ImageStdevPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Perimeter)};
+    fieldname = ['ImageMedianPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Perimeter)};
 
     %%%
     %%% CIRCULARITY
@@ -550,14 +552,14 @@ else
     %%% micrometers was already done above; the result of the calculation below
     %%% is dimensionless anyway.
     Circularity = (Perimeter.*Perimeter)./Area;
-    fieldname = ['dMCCircularity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {Circularity};
-    fieldname = ['dMTMeanCircularity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(Circularity)};
-    fieldname = ['dMTStdevCircularity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(Circularity)};
-    fieldname = ['dMTMedianCircularity', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(Circularity)};
+    fieldname = ['ObjectCircularity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Circularity};
+    fieldname = ['ImageMeanCircularity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Circularity)};
+    fieldname = ['ImageStdevCircularity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Circularity)};
+    fieldname = ['ImageMedianCircularity', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Circularity)};
 
     %%%
     %%% FORM FACTOR
@@ -567,14 +569,14 @@ else
     %%% micrometers was already done above; the result of the calculation below
     %%% is dimensionless anyway.
     FormFactor = 4*pi.*Area./(Perimeter.*Perimeter);
-    fieldname = ['dMCFormFactor', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {FormFactor};
-    fieldname = ['dMTMeanFormFactor', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(FormFactor)};
-    fieldname = ['dMTStdevFormFactor', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(FormFactor)};
-    fieldname = ['dMTMedianFormFactor', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(FormFactor)};
+    fieldname = ['ObjectFormFactor', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FormFactor};
+    fieldname = ['ImageMeanFormFactor', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(FormFactor)};
+    fieldname = ['ImageStdevFormFactor', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(FormFactor)};
+    fieldname = ['ImageMedianFormFactor', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(FormFactor)};
 
     %%%
     %%% AREA TO PERIMETER RATIO
@@ -583,14 +585,14 @@ else
     %%% Conversion to micrometers was already done above.
     AreaPerimRatio = Area./Perimeter;
 
-    fieldname = ['dMCAreaPerimRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {AreaPerimRatio};
-    fieldname = ['dMTMeanAreaPerimRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(AreaPerimRatio)};
-    fieldname = ['dMTStdevAreaPerimRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(AreaPerimRatio)};
-    fieldname = ['dMTMedianAreaPerimRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(AreaPerimRatio)};
+    fieldname = ['ObjectAreaPerimRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {AreaPerimRatio};
+    fieldname = ['ImageMeanAreaPerimRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(AreaPerimRatio)};
+    fieldname = ['ImageStdevAreaPerimRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(AreaPerimRatio)};
+    fieldname = ['ImageMedianAreaPerimRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(AreaPerimRatio)};
 
     %%%
     %%% ASPECT RATIO
@@ -603,14 +605,14 @@ else
 
     AspectRatio = MajorAxis./MinorAxis;
 
-    fieldname = ['dMCAspectRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {AspectRatio};
-    fieldname = ['dMTMeanAspectRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {mean(AspectRatio)};
-    fieldname = ['dMTStdevAspectRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {std(AspectRatio)};
-    fieldname = ['dMTMedianAspectRatio', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {median(AspectRatio)};
+    fieldname = ['ObjectAspectRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {AspectRatio};
+    fieldname = ['ImageMeanAspectRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(AspectRatio)};
+    fieldname = ['ImageStdevAspectRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(AspectRatio)};
+    fieldname = ['ImageMedianAspectRatio', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(AspectRatio)};
 
     %%%
     %%% COUNT
@@ -623,8 +625,8 @@ else
     %%% substitute a different measurement name for "Area".
     CellCount = length(Area);
     %%% Saves the count to the handles structure.
-    fieldname = ['dMTCount', ObjectName];
-    handles.(fieldname)(handles.setbeinganalyzed) = {CellCount};
+    fieldname = ['ImageCount', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CellCount};
 
 end % Goes with: if no objects are in the image.
 

@@ -50,7 +50,7 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_OutputFcn',  @CellProfiler_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
-if nargin & isstr(varargin{1})
+if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
@@ -72,7 +72,6 @@ handles.output = hObject;
 handles.numAlgorithms = 0;
 handles.MaxAlgorithms = 99;
 handles.MaxVariables = 11;
-handles.FigureDisplayString = cell(1,99);
 global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
@@ -118,7 +117,7 @@ end
 %%% Preferences, if they were successfully loaded, or on the current
 %%% directory.
 if PreferencesExist == 1
-    handles.Vpixelsize = PixelSize;
+    handles.Settings.Vpixelsize = PixelSize;
     handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
     handles.Vworkingdirectory = WorkingDirectory;
     handles.Vpathname = WorkingDirectory;
@@ -126,7 +125,7 @@ if PreferencesExist == 1
     set(handles.PixelSizeEditBox,'string',PixelSize);
     set(handles.PathToLoadEditBox,'String',handles.Vworkingdirectory);
 else
-    handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
+    handles.Settings.Vpixelsize = get(handles.PixelSizeEditBox,'string');
     handles.Vdefaultalgorithmdirectory = pwd;
     handles.Vworkingdirectory = pwd;
     handles.Vpathname = pwd;
@@ -160,8 +159,8 @@ set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 %%% Retrieves the list of image file names from the chosen directory and
 %%% stores them in the handles structure, using the function
 %%% RetrieveImageFileNames.
-PathName = handles.Vpathname;
-handles = RetrieveImageFileNames(handles, PathName);
+Pathname = handles.Vpathname;
+handles = RetrieveImageFileNames(handles, Pathname);
 guidata(hObject, handles);
 if isempty(handles.Vfilenames)
     set(handles.ListBox,'String','No image files recognized',...
@@ -177,11 +176,11 @@ guidata(hObject, handles);
 
 %%%%%%%%%%%%%%%%%
 
-function handles = RetrieveImageFileNames(handles, PathName)
+function handles = RetrieveImageFileNames(handles, Pathname)
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
-FilesAndDirsStructure = dir(PathName);
+FilesAndDirsStructure = dir(Pathname);
 %%% Puts the names of each object into a list.
 FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
 %%% Puts the logical value of whether each object is a directory into a list.
@@ -487,9 +486,8 @@ set(hObject,'BackgroundColor',[1 1 1]);
 
 function OutputFileName_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 CurrentDirectory = cd;
-PathName = get(handles.PathToLoadEditBox,'string');
-%%% Gets the user entry and stores it in the handles structure using the
-%%% store1variable function.
+Pathname = get(handles.PathToLoadEditBox,'string');
+%%% Gets the user entry and stores it in the handles structure.
 InitialUserEntry = get(handles.OutputFileName,'string');
 if isempty(InitialUserEntry)
     handles.Voutputfilename =[];
@@ -513,25 +511,17 @@ else
     %%% Checks whether a file with that name already exists, to warn the user
     %%% that the file will be overwritten.
     CurrentDirectory = cd;
-    if exist([PathName,'/',UserEntry],'file') ~= 0
-        errordlg(['A file already exists at ', [PathName,'/',UserEntry],...
+    if exist([Pathname,'/',UserEntry],'file') ~= 0
+        errordlg(['A file already exists at ', [Pathname,'/',UserEntry],...
             '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
         set(handles.OutputFileName,'string',[])
     else guidata(gcbo, handles);
-        handles = store1variable('Voutputfilename',UserEntry, handles);
+        handles.Voutputfilename = UserEntry;
         set(handles.OutputFileName,'string',UserEntry)
     end
 end
 guidata(gcbo, handles);
 cd(CurrentDirectory)
-
-function handles = store1variable(VariableName,UserEntry, handles)
-%%% This function stores a variable's value in the handles structure, 
-%%% when given the Algorithm Number, the Variable Number, 
-%%% the UserEntry (from the Edit box), and the initial handles
-%%% structure.
-handles.(VariableName) = UserEntry;
-guidata(gcbo, handles);
 
 %%%%%%%%%%%%%%%%%
 
@@ -540,17 +530,17 @@ function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles) %#ok W
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
-[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose a settings or output file');
+[SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
     return
 end
 %%% Loads the Settings file.
-LoadedSettings = load([SettingsPathName SettingsFileName]);
+LoadedSettings = load([SettingsPathname SettingsFileName]);
 
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles')),
-    errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
+    errordlg(['The file ' SettingsPathname SettingsFilename ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     cd(CurrentDirectory);
     return;
 end
@@ -576,11 +566,10 @@ if isfield(Settings,'numVariables'),
 end
 handles.numAlgorithms = 0;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);
-handles.FigureDisplayString = cell(1,99);
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 set(handles.AlgorithmBox,'Value',1);
-handles.Vpixelsize = Settings.Vpixelsize;
+handles.Settings.Vpixelsize = Settings.Vpixelsize;
 set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);
 
 %%% Update handles structure.
@@ -604,7 +593,7 @@ function SaveSettingsButton_Callback(hObject, eventdata, handles) %#ok We want t
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% The "Settings" variable is saved to the file name the user chooses.
-[FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+[FileName,Pathname] = uiputfile('*.mat', 'Save Settings As...');
 %%% Allows canceling.
 if FileName ~= 0
   %%% Checks if a field is present, and if it is, the value is stored in the 
@@ -619,10 +608,10 @@ if FileName ~= 0
   if isfield(handles,'numVariables'),
       Settings.numVariables = handles.numVariables;
   end
-  if isfield(handles,'Vpixelsize'),
-    Settings.Vpixelsize = handles.Vpixelsize;
+  if isfield(handles.Settings,'Vpixelsize'),
+    Settings.Vpixelsize = handles.Settings.Vpixelsize;
   end
-  save([PathName FileName],'Settings')
+  save([Pathname FileName],'Settings')
   helpdlg('The settings file has been written.')
 end
 cd(CurrentDirectory)
@@ -646,10 +635,10 @@ elseif user_entry<=0
    errordlg('You entered a value less than or equal to zero','Bad Input','modal')
    set(hObject,'string', '0.25')
 else
-%%% Gets the user entry and stores it in the handles structure using the
-%%% store1variable function.
+%%% Gets the user entry and stores it in the handles structure.
 UserEntry = get(handles.PixelSizeEditBox,'string');
-store1variable('Vpixelsize',UserEntry, handles);
+handles.Settings.Vpixelsize = UserEntry;
+guidata(gcbo, handles);
 end
 
 %%%%%%%%%%%%%%%%%
@@ -722,7 +711,7 @@ end
 try cd(matlabroot)
     save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
     helpdlg('Your CellProfiler Preferences were successfully set.  They are contained within a folder in the Matlab root directory in a file called CellProfilerPreferences.mat.')
-    handles.Vpixelsize = PixelSize;
+    handles.Settings.Vpixelsize = PixelSize;
     handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
     handles.Vworkingdirectory = WorkingDirectory;
     set(handles.PixelSizeEditBox,'string',PixelSize);
@@ -733,7 +722,7 @@ catch
     cd(CurrentDirectory)
     try save CellProfilerPreferences DefaultAlgorithmDirectory PixelSize WorkingDirectory
         helpdlg('You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly while you are in the current directory.')
-        handles.Vpixelsize = PixelSize;
+        handles.Settings.Vpixelsize = PixelSize;
         handles.Vdefaultalgorithmdirectory = DefaultAlgorithmDirectory;
         handles.Vworkingdirectory = WorkingDirectory;
         set(handles.PixelSizeEditBox,'string',PixelSize);
@@ -771,7 +760,7 @@ try cd(handles.Vdefaultalgorithmdirectory) %#ok We want to ignore MLint error ch
 end 
 %%% Now, when the dialog box is opened to retrieve an algorithm, the
 %%% directory will be the default algorithm directory.
-[AlgorithmNamedotm,PathName] = uigetfile('Alg*.m',...
+[AlgorithmNamedotm,Pathname] = uigetfile('Alg*.m',...
     'Choose an image analysis module');
 %%% Change back to the original directory.
 cd(CurrentDirectory)
@@ -786,7 +775,7 @@ elseif exist(AlgorithmNamedotm,'file') == 0
   msgbox(['The .m file ', AlgorithmNamedotm, ...
         ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
   %%% The folder containing the desired .m file is added to Matlab's search path.
-  addpath(PathName)
+  addpath(Pathname)
   %%% Doublecheck that the algorithm exists on Matlab's search path.
   if exist(AlgorithmNamedotm,'file') == 0
     errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
@@ -823,7 +812,7 @@ else
 
   %%% 7. The text description for each variable for the chosen algorithm is 
   %%% extracted from the algorithm's .m file and displayed.  
-  fid=fopen([PathName AlgorithmNamedotm]);
+  fid=fopen([Pathname AlgorithmNamedotm]);
 
   while 1;
       output = fgetl(fid); if ~ischar(output); break; end;
@@ -956,7 +945,6 @@ handles.numAlgorithms = 0;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 
 %%% 6. Sets the proper algorithm name to "No analysis module loaded"
-contents = get(handles.AlgorithmBox,'String');
 if(isempty(handles.Settings.Valgorithmname))
     contents = {'No Algorithms Loaded'};
 else
@@ -1201,7 +1189,7 @@ CurrentDirectory = cd;
 cd(handles.Vworkingdirectory)
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be used as a test image.
-[FileName,PathName] = uigetfile('*.*','Select the image to view');
+[FileName,Pathname] = uigetfile('*.*','Select the image to view');
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
 if FileName == 0
@@ -1216,7 +1204,7 @@ else
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
-    Image = im2double(imread([PathName,'/',FileName]));
+    Image = im2double(imread([Pathname,'/',FileName]));
     figure; imagesc(Image), colormap(gray)
     pixval
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
@@ -1296,33 +1284,35 @@ function ExportDataButton_Callback(hObject, eventdata, handles) %#ok We want to 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
 else
-    cd(RawPathName);
+    cd(RawPathname);
     load(RawFileName);
     
-    %%% Extract the fieldnames of measurements from the handles structure. Also
-    %%% adds the fieldnames of file names that have been analyzed.
-    Fieldnames = fieldnames(handles);
-    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'dMT',3)==1 | strncmp(Fieldnames,'dOTFilename', 11)==1 | strncmp(Fieldnames,'dOTTimeElapsed', 14)==1);
+    %%% Extract the fieldnames of measurements from the handles structure.
+    Fieldnames = fieldnames(handles.Measurements);
+    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
+    Fieldnames = fieldnames(handles.Pipeline);
+    FileFieldNames = FileFieldNames(strncmp(FieldNames, 'Filename', 8)==1);
     %%% Determines whether any sample info has been loaded.  If sample info has
     %%% been loaded, the heading for that sample info would be listed in
     %%% handles.headings.  If sample info is present, the fieldnames for those
     %%% are also added to the list of data to extract.
     if isfield(handles, 'headings') == 1
-        HeadingNames = handles.headings';
-        MeasFieldnames = cat(1,HeadingNames, MeasFieldnames);
+      HeadingNames = handles.headings';
+    else
+      HeadingNames = {};
     end
     
     %%% Error detection.
     if isempty(MeasFieldnames)
-        errordlg('No measurements were found in the file you selected. In the handles structure contained within the output file, the fieldnames of data to be extracted must be preceded by the prefix dMT, dOTFilename, or a heading loaded via the "Load sample info" button.')
+        errordlg('No measurements were found in the file you selected. In the handles structure contained within the output file, the Measurements substructure must have fieldnames prefixed by ''Image''.')
     else
         
         %%% Determine the number of image sets for which there are data.
         fieldname = MeasFieldnames{1};
-        TotalNumberImageSets = num2str(length(handles.(fieldname)));
+        TotalNumberImageSets = num2str(length(handles.Measurements.(fieldname)));
         %%% Ask the user to specify the number of image sets to extract.
         NumberOfImages = inputdlg({['How many image sets do you want to extract? As a shortcut,                     type the numeral 0 to extract data from all ', TotalNumberImageSets, ' image sets.']},'Specify number of image sets',1,{'0';' '});
         %%% If the user presses the Cancel button, the program goes to the end.
@@ -1331,9 +1321,9 @@ else
             %%% Calculate the appropriate number of image sets.
             NumberOfImages = str2double(NumberOfImages{1});
             if NumberOfImages == 0
-                NumberOfImages = length(handles.(char(MeasFieldnames(1))));
-            elseif NumberOfImages > length(handles.(char(MeasFieldnames(1))));
-                errordlg(['There are only ', length(handles.(char(MeasFieldnames(1)))), ' image sets total.'])
+                NumberOfImages = length(handles.Measurements.(char(MeasFieldnames(1))));
+            elseif NumberOfImages > length(handles.Measurements.(char(MeasFieldnames(1))));
+                errordlg(['There are only ', length(handles.Measurements.(char(MeasFieldnames(1)))), ' image sets total.'])
             end
             %%% Determines the suggested file name.
             try
@@ -1371,8 +1361,19 @@ else
                     for imagenumber = 1:NumberOfImages
                         for FieldNumber = 1:length(MeasFieldnames)
                             Fieldname = cell2mat(MeasFieldnames(FieldNumber));
-                            Measurements(imagenumber,FieldNumber) = {handles.(Fieldname){imagenumber}};
+                            Measurements(imagenumber,FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
                         end
+                        for FileNameNumber = 1:length(FileFieldNames)
+                            Fieldname = cell2mat(FileFieldNames(FileNameNumber));
+                            Measurements(imagenumber,FieldNumber) = {handles.Pipeline.(Fieldname){imagenumber}};
+                            FieldNumber = FieldNumber + 1;
+                        end
+                        for HeadingNumber = 1:length(HeadingNames)
+                            Fieldname = cell2mat(HeadingNames(HeadingNumber));
+                            Measurements(imagenumber, FieldNumber) = {handles.(Fieldname){imagenumber}};
+                            FieldNumber = FieldNumber + 1;
+                        end
+
                         CurrentTime = clock;
                         TimeSoFar = etime(CurrentTime,TimeStart);
                         TimePerSet = TimeSoFar/imagenumber;
@@ -1443,29 +1444,29 @@ function ExportCellByCellButton_Callback(hObject, eventdata, handles) %#ok We wa
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
     cd(CurrentDirectory);
     return
 end
-cd(RawPathName);
+cd(RawPathname);
 load(RawFileName);
 
 Answer = questdlg('Do you want to export cell by cell data for all measurements from one image, or data from all images for one measurement?','','All measurements','All images','All measurements');
 
 if strcmp(Answer, 'All images') == 1
     %%% Extract the fieldnames of cell by cell measurements from the handles structure. 
-    Fieldnames = fieldnames(handles);
-    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'dMC',3)==1);
+    Fieldnames = fieldnames(handles.Measurements);
+    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);
     %%% Error detection.
     if isempty(MeasFieldnames)
-        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
         cd(CurrentDirectory);
         return
     end
-    %%% Removes the 'dMC' prefix from each name for display purposes.
+    %%% Removes the 'Object' prefix from each name for display purposes.
     for Number = 1:length(MeasFieldnames)
-        EditedMeasFieldnames{Number} = MeasFieldnames{Number}(4:end);
+        EditedMeasFieldnames{Number} = MeasFieldnames{Number}(7:end);
     end
     
     %%% Allows the user to select a measurement from the list.
@@ -1478,25 +1479,22 @@ if strcmp(Answer, 'All images') == 1
         return
     end
     EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
-    MeasurementToExtract = ['dMC', EditedMeasurementToExtract];
-    TotalNumberImageSets = length(handles.(MeasurementToExtract));
-    Measurements = handles.(MeasurementToExtract);
+    MeasurementToExtract = ['Object', EditedMeasurementToExtract];
+    TotalNumberImageSets = length(handles.Measurements.(MeasurementToExtract));
+    Measurements = handles.Measurements.(MeasurementToExtract);
     
     %%% Extract the fieldnames of non-cell by cell measurements from the
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
-    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'dOTFilename',11)==1);
+    Fieldnames = fieldnames(handles.Pipeline);
+    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
-        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dOTFilename''.')
+        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename''.')
         cd(CurrentDirectory);
         return
     end
-    %%% Removes the 'dOT' prefix from each name for display purposes.
-    for Number = 1:length(HeadingFieldnames)
-        EditedHeadingFieldnames{Number} = HeadingFieldnames{Number}(4:end);
-    end
-    
+
     %%% Allows the user to select a heading name from the list.
     [Selection, ok] = listdlg('ListString',EditedHeadingFieldnames, 'ListSize', [300 600],...
         'Name','Select measurement',...
@@ -1506,10 +1504,9 @@ if strcmp(Answer, 'All images') == 1
         cd(CurrentDirectory);
         return
     end
-    EditedHeadingToDisplay = char(EditedHeadingFieldnames(Selection));
-    HeadingToDisplay = ['dOT', EditedHeadingToDisplay];
+    HeadingToDisplay = char(EditedHeadingFieldnames(Selection));
     %%% Extracts the headings.
-    ListOfHeadings = handles.(HeadingToDisplay);
+    ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
     
     %%% Determines the suggested file name.
     try
@@ -1583,11 +1580,11 @@ elseif strcmp(Answer, 'All measurements') == 1
     end
     
     %%% Extract the fieldnames of cell by cell measurements from the handles structure. 
-    Fieldnames = fieldnames(handles);
-    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'dMC',3)==1);
+    Fieldnames = fieldnames(handles.Measurements);
+    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);
     %%% Error detection.
     if isempty(MeasFieldnames)
-        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
         cd(CurrentDirectory);
         return
     end
@@ -1595,20 +1592,17 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% Extract the fieldnames of non-cell by cell measurements from the
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
-    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'dOTFilename',11)==1);
+    Fieldnames = fieldnames(handles.Pipeline);
+    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
-        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dOTFilename''.')
+        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename''.')
         cd(CurrentDirectory);
         return
     end
-    %%% Removes the 'dOT' prefix from each name for display purposes.
-    for Number = 1:length(HeadingFieldnames)
-        EditedHeadingFieldnames{Number} = HeadingFieldnames{Number}(4:end);
-    end
-    
+
     %%% Allows the user to select a heading name from the list.
-    [Selection, ok] = listdlg('ListString',EditedHeadingFieldnames, 'ListSize', [300 600],...
+    [Selection, ok] = listdlg('ListString',HeadingFieldnames, 'ListSize', [300 600],...
         'Name','Select measurement',...
         'PromptString','Choose a field to label this data.','CancelString','Cancel',...
         'SelectionMode','single');
@@ -1616,10 +1610,9 @@ elseif strcmp(Answer, 'All measurements') == 1
         cd(CurrentDirectory);
         return
     end
-    EditedHeadingToDisplay = char(EditedHeadingFieldnames(Selection));
-    HeadingToDisplay = ['dOT', EditedHeadingToDisplay];
+    HeadingToDisplay = char(HeadingFieldnames(Selection));
     %%% Extracts the headings.
-    ImageNamesToDisplay = handles.(HeadingToDisplay);
+    ImageNamesToDisplay = handles.Pipeline.(HeadingToDisplay);
     ImageNameToDisplay = ImageNamesToDisplay(ImageNumber);
     
     %%% Determines the suggested file name.
@@ -1665,7 +1658,7 @@ elseif strcmp(Answer, 'All measurements') == 1
         fwrite(fid, FieldName, 'char');
         %%% Tabs to the next column.
         fwrite(fid, sprintf('\t'), 'char');
-        Measurements = handles.(FieldName);
+        Measurements = handles.Measurements.(FieldName);
         Measurements = Measurements';
         %%% Writes the measurements for that measurement type in successive columns.
         fprintf(fid,'%d\t',Measurements{ImageNumber});
@@ -1686,25 +1679,25 @@ function HistogramButton_Callback(hObject, eventdata, handles) %#ok We want to i
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
     cd(CurrentDirectory);
     return
 end
-cd(RawPathName);
+cd(RawPathname);
 load(RawFileName);
 %%% Extract the fieldnames of measurements from the handles structure. 
-Fieldnames = fieldnames(handles);
-MeasFieldnames = Fieldnames(strncmp(Fieldnames,'dMC',3)==1);
+Fieldnames = fieldnames(handles.Measurements);
+MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);
 %%% Error detection.
 if isempty(MeasFieldnames)
-    errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+    errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
     cd(CurrentDirectory);
     return
 end
-%%% Removes the 'dMC' prefix from each name for display purposes.
+%%% Removes the 'Object' prefix from each name for display purposes.
 for Number = 1:length(MeasFieldnames)
-    EditedMeasFieldnames{Number} = MeasFieldnames{Number}(4:end);
+    EditedMeasFieldnames{Number} = MeasFieldnames{Number}(7:end);
 end
 %%% Allows the user to select a measurement from the list.
 [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
@@ -1713,7 +1706,7 @@ end
     'SelectionMode','single');
 if ok ~= 0
     EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
-    MeasurementToExtract = ['dMC', EditedMeasurementToExtract];
+    MeasurementToExtract = ['Object', EditedMeasurementToExtract];
     %%% Allows the user to load sample info.
     Answer = questdlg('Do you want to load names for each image set, other than names that are already embedded in the output file?','','Yes','No','No');
     if strcmp(Answer,'Yes') ==1
@@ -1833,7 +1826,7 @@ if ok ~= 0
     end
     %%% Asks the user whether a histogram should be shown for all image
     %%% sets or just a few.
-    TotalNumberImageSets = length(handles.(MeasurementToExtract));
+    TotalNumberImageSets = length(handles.Measurements.(MeasurementToExtract));
     TextTotalNumberImageSets = num2str(TotalNumberImageSets);
     %%% Ask the user to specify which image sets to display.
     Prompts = {'Enter the first sample number to display','Enter the last sample number to display'};
@@ -1927,7 +1920,7 @@ if ok ~= 0
         
         %%% Calculates the default bin size and range based on all
         %%% the data.
-        AllMeasurementsCellArray = handles.(MeasurementToExtract);
+        AllMeasurementsCellArray = handles.Measurements.(MeasurementToExtract);
         SelectedMeasurementsCellArray = AllMeasurementsCellArray(:,FirstImage:LastImage);
         SelectedMeasurementsMatrix = cell2mat(SelectedMeasurementsCellArray(:));
         PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
@@ -2505,22 +2498,22 @@ function ShowDataOnImageButton_Callback(hObject, eventdata, handles) %#ok We wan
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
 %%% Asks the user to choose the file from which to extract measurements.
-[RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName ~= 0
-    cd(RawPathName);
+    cd(RawPathname);
     load(RawFileName);
     %%% Extracts the fieldnames of measurements from the handles structure. 
-    Fieldnames = fieldnames(handles);
-    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'dMC',3)==1);
+    Fieldnames = fieldnames(handles.Measurements);
+    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);
     %%% Error detection.
     if isempty(MeasFieldnames)
-        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles structure preceded by ''dMC''.')
+        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Object''.')
         cd(CurrentDirectory);
         return
     else
-        %%% Removes the 'dMC' prefix from each name for display purposes.
+        %%% Removes the 'Object' prefix from each name for display purposes.
         for Number = 1:length(MeasFieldnames)
-            EditedMeasFieldnames{Number} = MeasFieldnames{Number}(4:end);
+            EditedMeasFieldnames{Number} = MeasFieldnames{Number}(7:end);
         end
         %%% Allows the user to select a measurement from the list.
         [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
@@ -2529,7 +2522,7 @@ if RawFileName ~= 0
             'SelectionMode','single');
         if ok ~= 0
             EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
-            MeasurementToExtract = ['dMC', EditedMeasurementToExtract];
+            MeasurementToExtract = ['Object', EditedMeasurementToExtract];
             %%% Allows the user to select the X Locations from the list.
             [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
                 'Name','Select the X locations to be used',...
@@ -2537,7 +2530,7 @@ if RawFileName ~= 0
                 'SelectionMode','single');
             if ok ~= 0
                 EditedXLocationMeasurementName = char(EditedMeasFieldnames(Selection));
-                XLocationMeasurementName = ['dMC', EditedXLocationMeasurementName];
+                XLocationMeasurementName = ['Object', EditedXLocationMeasurementName];
                 %%% Allows the user to select the Y Locations from the list.
                 [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
                     'Name','Select the Y locations to be used',...
@@ -2545,7 +2538,7 @@ if RawFileName ~= 0
                     'SelectionMode','single');
                 if ok ~= 0
                     EditedYLocationMeasurementName = char(EditedMeasFieldnames(Selection));
-                    YLocationMeasurementName = ['dMC', EditedYLocationMeasurementName];
+                    YLocationMeasurementName = ['Object', EditedYLocationMeasurementName];
                     %%% Prompts the user to choose a sample number to be displayed.
                     Answer = inputdlg({'Which sample number do you want to display?'},'Choose sample number',1,{'1'});
                     if isempty(Answer)
@@ -2553,35 +2546,31 @@ if RawFileName ~= 0
                         return
                     end
                     SampleNumber = str2double(Answer{1});
-                    TotalNumberImageSets = length(handles.(MeasurementToExtract));
+                    TotalNumberImageSets = length(handles.Measurements.(MeasurementToExtract));
                     if SampleNumber > TotalNumberImageSets
                         cd(CurrentDirectory);
                         error(['The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.'])
                     end
                     %%% Looks up the corresponding image file name.
-                    PotentialImageNames = Fieldnames(strncmp(Fieldnames,'dOTFilename',11)==1);
+                    Fieldnames = fieldnames(handles.Pipeline);
+                    PotentialImageNames = Fieldnames(strncmp(Fieldnames,'Filename',11)==1);
                     %%% Error detection.
                     if isempty(PotentialImageNames)
                         errordlg('CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.')
                     end
-                    %%% Removes the 'dOT' prefix from each name for display purposes.
-                    for Number = 1:length(PotentialImageNames)
-                        EditedPotentialImageNames{Number} = PotentialImageNames{Number}(4:end);
-                    end
                     %%% Allows the user to select a filename from the list.
-                    [Selection, ok] = listdlg('ListString',EditedPotentialImageNames, 'ListSize', [300 600],...
+                    [Selection, ok] = listdlg('ListString',PotentialImageNames, 'ListSize', [300 600],...
                         'Name','Choose the image whose filename you want to display',...
                         'PromptString','Choose the image whose filename you want to display','CancelString','Cancel',...
                         'SelectionMode','single');
                     if ok ~= 0
-                        EditedSelectedImageName = char(EditedPotentialImageNames(Selection));
-                        SelectedImageName = ['dOT', EditedSelectedImageName];
+                        SelectedImageName = char(PotentialImageNames(Selection));
                         ImageFileName = handles.(SelectedImageName){SampleNumber};
                         %%% Prompts the user with the image file name.
                         h = msgbox(['Browse to find the image called ', ImageFileName,'.']);
                         %%% Opens a user interface window which retrieves a file name and path 
                         %%% name for the image to be displayed.
-                        [FileName,PathName] = uigetfile('*.*','Select the image to view');
+                        [FileName,Pathname] = uigetfile('*.*','Select the image to view');
                         delete(h)
                         %%% If the user presses "Cancel", the FileName will = 0 and nothing will
                         %%% happen.
@@ -2590,16 +2579,16 @@ if RawFileName ~= 0
                             return
                         else
                             %%% Opens and displays the image, with pixval shown.
-                            ImageToDisplay = im2double(imread([PathName,'/',FileName]));
+                            ImageToDisplay = im2double(imread([Pathname,'/',FileName]));
                             %%% Allows underscores to be displayed properly.
                             ImageFileName = strrep(ImageFileName,'_','\_');
                             FigureHandle = figure; imagesc(ImageToDisplay), colormap(gray), title([EditedMeasurementToExtract, ' on ', ImageFileName])
                             %%% Extracts the XY locations and the measurement values.
                             global StringListOfMeasurements
-                            ListOfMeasurements = handles.(MeasurementToExtract){SampleNumber};
+                            ListOfMeasurements = handles.Measurements.(MeasurementToExtract){SampleNumber};
                             StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
-                            Xlocations(:,FigureHandle) = handles.(XLocationMeasurementName){SampleNumber};
-                            Ylocations(:,FigureHandle) = handles.(YLocationMeasurementName){SampleNumber};
+                            Xlocations(:,FigureHandle) = handles.Measurements.(XLocationMeasurementName){SampleNumber};
+                            Ylocations(:,FigureHandle) = handles.Measurements.(YLocationMeasurementName){SampleNumber};
                             %%% A button is created in the display window which
                             %%% allows altering the properties of the text.
                             StdUnit = 'point';
@@ -2847,6 +2836,9 @@ else
                 handles.setbeinganalyzed = 1;
                 %%% Marks the time that analysis was begun.
                 handles.Vtimestarted = datestr(now);
+                %%% Clear the buffers (Pipeline and Measurements)
+                handles.Pipeline = struct;
+                handles.Measurements = struct;
                 %%% Start the timer.
                 tic
                 %%% Update the handles structure.
@@ -2862,62 +2854,33 @@ else
                 while handles.setbeinganalyzed <= handles.Vnumberimagesets
                     setbeinganalyzed = handles.setbeinganalyzed;
 
-                    %%% Loop through normally if this is the first
-                    %%% image set or this evaluation is being run
-                    %%% sequentially (i.e., not in parallel)
-                    if ((setbeinganalyzed == 1) || (~ isfield(handles, 'parallel_machines')))
-                        % clear the Pending flag if we're using parallel machines
-                        if isfield(handles, 'parallel_machines')
-                            Pending(handles.parallel_machines + 1) = 0;
-                        end
-
-                        for SlotNumber = 1:handles.numAlgorithms,
-                            %%% If an algorithm is not chosen in this slot, continue on to the next.
-                            AlgNumberAsString = TwoDigitString(SlotNumber);
-                            AlgName = char(handles.Settings.Valgorithmname(SlotNumber));
-                            if iscellstr(handles.Settings.Valgorithmname(SlotNumber)) == 0
-                            else
-                                %%% Saves the current algorithm number in the handles structure.
-                                handles.currentalgorithm = AlgNumberAsString;
-                                %%% The try/catch/end set catches any errors that occur during the
-                                %%% running of algorithm 1, notifies the user, breaks out of the image
-                                %%% analysis loop, and completes the refreshing process.
-                                try
-                                    %%% Runs the appropriate algorithm, with the handles structure as an
-                                    %%% input argument and as the output argument.
-                                    eval(['handles = Alg',AlgName,'(handles);'])
-                                catch
-                                    if exist(['Alg',AlgName,'.m'],'file') ~= 2,
-                                        errordlg(['Image processing was canceled because the image analysis module named ', (['Alg',handles.(AlgName),'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
-                                    else
-                                        %%% Runs the errorfunction function that catches errors and
-                                        %%% describes to the user what to do.
-                                        errorfunction(AlgNumberAsString)
-                                    end
-                                    %%% Causes break out of the image analysis loop (see below)
-                                    break_outer_loop = 1;
-                                    break;
-                                end % Goes with try/catch.
-                            end
-                            %%% If an immediate "cancel" signal is waiting, break and go to the "end" that goes
-                            %%% with the "while" loop.  The output file is not saved since it would only
-                            %%% be partially complete.
-                            CancelWaiting = get(handles.timertexthandle,'string');
-                            if strncmp(CancelWaiting,'Immedi',6) == 1
-                                break_outer_loop = 1;
-                                break
-                            end
-                        end %%% ends loop over slot number
-
-                        closeFig = closeFigures;
-                        closeFigures = [];
-                        for i=1:length(closeFig),
-                            algNumber = closeFig(i);
+                    for SlotNumber = 1:handles.numAlgorithms,
+                        %%% If an algorithm is not chosen in this slot, continue on to the next.
+                        AlgNumberAsString = TwoDigitString(SlotNumber);
+                        AlgName = char(handles.Settings.Valgorithmname(SlotNumber));
+                        if iscellstr(handles.Settings.Valgorithmname(SlotNumber)) == 0
+                        else
+                            %%% Saves the current algorithm number in the handles structure.
+                            handles.currentalgorithm = AlgNumberAsString;
+                            %%% The try/catch/end set catches any errors that occur during the
+                            %%% running of algorithm 1, notifies the user, breaks out of the image
+                            %%% analysis loop, and completes the refreshing process.
                             try
-                                Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
-                                delete(Thisfigurealgorithm);
+                                %%% Runs the appropriate algorithm, with the handles structure as an
+                                %%% input argument and as the output argument.
+                                eval(['handles = Alg',AlgName,'(handles);'])
                             catch
-                            end
+                                if exist(['Alg',AlgName,'.m'],'file') ~= 2,
+                                    errordlg(['Image processing was canceled because the image analysis module named ', (['Alg',handles.(AlgName),'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
+                                else
+                                    %%% Runs the errorfunction function that catches errors and
+                                    %%% describes to the user what to do.
+                                    errorfunction(AlgNumberAsString)
+                                end
+                                %%% Causes break out of the image analysis loop (see below)
+                                break_outer_loop = 1;
+                                break;
+                            end % Goes with try/catch.
                         end
                                             
                         openFig = openFigures;
@@ -2936,85 +2899,65 @@ else
                             catch
                             end
                         end
-                        
+                    end %%% ends loop over slot number
 
-
-                      if (break_outer_loop),
-                          break;  %%% this break is out of the outer loop of image analysis
-                      end
-
-                      %%% Get a list of the measurement fields (after the first pass has run through
-                      %%% all the modules)
-                      Fields = fieldnames(handles);
-                      mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
-                      MeasurementFields = Fields(mFields);
-                      
-                      % If we are using parallel machines, copy the handles structure to them.
-                      if (isfield(handles, 'parallel_machines')),
-                        handles_culled = handles;
-                        deleteFields = strncmp(Fields,'dOT',2);
-                        keepFields = strncmp(Fields,'dOTFileList',11) | ...
-                            strncmp(Fields,'dOTPathName',11) | strncmp(Fields,'dOTFilename',11) | ...
-                            strncmp(Fields,'dOTIllumImage',13) | strncmp(Fields,'dOTIntensityToShift',19) | ...
-                            strncmp(Fields,'dOTTimeElapsed',14);
-                        handles_culled = rmfield(handles_culled, Fields(deleteFields & (~keepFields)));
-                        % Make sure all the functions are cleared, so
-                        % that any changes to the modules are noticed.
-                        pnet_remote(handles.parallel_machines, 'EVAL', 'clear functions')
-                        pnet_remote(handles.parallel_machines, 'PUT', 'handles', handles_culled);
-                      end
-                      
-                    else %%% goes with the check for first-time or parallel machines
-                      NumParallelMachines = length(handles.parallel_machines);
-                      
-                      CurrMachine = handles.parallel_machines(1 + mod(setbeinganalyzed, NumParallelMachines));
-                      % Check if we need to get something back from this machine, and if so, fetch
-                      % it.  It would be nice if we could just fetch back the results once at the
-                      % end (and allow the remote machine to fill up the handles structure with
-                      % all of its results), but since the pnet_remote('EVAL') function is
-                      % non-blocking, I don't think that will work.  I guess we could ship off the
-                      % entire set to the remote machine, but this way allows for more
-                      % fine-grained error-catching.
-                      if Pending(CurrMachine+1),
-                        Pending(CurrMachine+1) = 0;
-                        % Check the status of the remote evaluation
-                        
-                        RemoteResults = pnet_remote(CurrMachine, 'GET', 'handles_results');
-                        RemoteError = RemoteResults.CellProfilerError;
-                        RemoteSet = RemoteResults.setbeinganalyzed;
-
-                        if ischar(RemoteError),
-                          %%% Remote machine returned a string.  It must be an error.
-                          errordlg(['Error in parallel evaluation on set ' int2str(RemoteSet) ' : ' RemoteError]);
-                          break;  %%% breaks out of image analysis loop
+                    closeFig = closeFigures;
+                    closeFigures = [];
+                    for i=1:length(closeFig),
+                        algNumber = closeFig(i);
+                        try
+                            Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
+                            delete(Thisfigurealgorithm);
+                        catch
                         end
-                        
-
-
-                        %%% Loop over measurement fields, merging them in
-                        for FieldIndex = 1:length(MeasurementFields),
-                          handles.(cell2mat(MeasurementFields(FieldIndex))){RemoteSet} = ...
-                              RemoteResults.(cell2mat(MeasurementFields(FieldIndex))){RemoteSet};
-                        end
-                      end
-                      pnet_remote(CurrMachine, 'WAITNOBUSY');
-                      pnet_remote(CurrMachine, 'PUT', 'setbeinganalyzed', setbeinganalyzed);
-                      pnet_remote(CurrMachine, 'WAITNOBUSY');
-                      pnet_remote(CurrMachine, 'EVAL', 'cellprofiler_one_loop');
-                      Pending(CurrMachine+1) = 1;
-
-
-                      %%% If an immediate "cancel" signal is waiting, break and go to the "end" that goes
-                      %%% with the "while" loop.  The output file is not saved since it would only
-                      %%% be partially complete.
-                      CancelWaiting = get(handles.timertexthandle,'string');
-                      if strncmp(CancelWaiting,'Immedi',6) == 1
-                        break
-                      end
-
-                      %%% TODO: need to check for figure closing requests here.
-
                     end
+                    
+                    openFig = openFigures;
+                    openFigures = [];
+                    for i=1:length(openFig),
+                        algNumber = openFig(i);
+                        try
+                            Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
+                            figure(Thisfigurealgorithm);
+                            set(Thisfigurealgorithm, 'name',[(char(handles.Settings.Valgorithmname(algNumber))), ' Display']);
+                            set(Thisfigurealgorithm, 'Position',[(ScreenWidth*((algNumber-1)/12)) (ScreenHeight-522) 560 442]);
+                            set(Thisfigurealgorithm,'color',[0.7,0.7,0.7]);
+                            %%% Sets the closing function of the window appropriately. (See way
+                            %%% above where 'ClosingFunction's are defined).
+                            %set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(algNumber)]));
+                        catch
+                        end
+                    end
+                    
+
+
+                    if (break_outer_loop),
+                        break;  %%% this break is out of the outer loop of image analysis
+                    end
+
+
+% PARALLEL DEAD CODE
+%                     %%% Get a list of the measurement fields (after the first pass has run through
+%                     %%% all the modules)
+%                     Fields = fieldnames(handles);
+%                     mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
+%                     MeasurementFields = Fields(mFields);
+%                     
+%                    % If we are using parallel machines, copy the handles structure to them.
+%                    if (isfield(handles, 'parallel_machines')),
+%                        handles_culled = handles;
+%                        deleteFields = strncmp(Fields,'dOT',2);
+%                        keepFields = strncmp(Fields,'dOTFileList',11) | ...
+%                            strncmp(Fields,'dOTPathname',11) | strncmp(Fields,'dOTFilename',11) | ...
+%                            strncmp(Fields,'dOTIllumImage',13) | strncmp(Fields,'dOTIntensityToShift',19) | ...
+%                            strncmp(Fields,'dOTTimeElapsed',14);
+%                        handles_culled = rmfield(handles_culled, Fields(deleteFields & (~keepFields)));
+%                        % Make sure all the functions are cleared, so
+%                        % that any changes to the modules are noticed.
+%                        pnet_remote(handles.parallel_machines, 'EVAL', 'clear functions')
+%                        pnet_remote(handles.parallel_machines, 'PUT', 'handles', handles_culled);
+%                    end
+                    
                     
                     %%% Reads the text in the timer window to check whether it is a cancel
                     %%% signal, since the text will be overwritten in the calculations for the
@@ -3042,7 +2985,7 @@ else
                     %%% Check first to see that the set being analyzed is not zero, or else an
                     %%% error will be produced when trying to do this.
                     if setbeinganalyzed ~= 0
-                        handles.dOTTimeElapsed{setbeinganalyzed} = toc;
+                        handles.Pipeline.TimeElapsed{setbeinganalyzed} = toc;
                         guidata(gcbo, handles)
                     end
                     %%% Save all data that is in the handles structure to the output file 
@@ -3059,35 +3002,6 @@ else
                     end
                 end %%% This "end" goes with the "while" loop (going through the image sets).
                 
-                %%% If we were using parallel machines, and there are still results pending on them,
-                %%% we need to fetch it back and merge it in.
-                if isfield(handles, 'parallel_machines'),
-                  for CurrMachine = handles.parallel_machines,
-                    if Pending(CurrMachine+1),
-                      Pending(CurrMachine+1) = 0;
-
-                      RemoteResults = pnet_remote(CurrMachine, 'GET', 'handles_results');
-                      RemoteError = RemoteResults.CellProfilerError;
-                      RemoteSet = RemoteResults.setbeinganalyzed;
-
-                      if ischar(RemoteError),
-                        %%% Remote machine returned a string.  It must be an error.
-                        errordlg(['Error in parallel evaluation on set ' int2str(RemoteSet) ' : ' RemoteError]);
-                        break;  %%% breaks out of image analysis loop
-                      end
-
-                      %%% Loop over measurement fields, merging them in
-                      for FieldIndex = 1:length(MeasurementFields),
-                        handles.(cell2mat(MeasurementFields(FieldIndex))){RemoteSet} = ...
-                            RemoteResults.(cell2mat(MeasurementFields(FieldIndex))){RemoteSet};
-                      end
-                    end
-
-                    % save results
-                    eval(['save ',handles.Voutputfilename, ' handles;'])
-                  end
-                end
-
                 %%% After all the image sets have been processed, the following checks to
                 %%% be sure that the data loaded as "Sample Info" has the proper number of
                 %%% entries.  If not, the data is removed from the handles structure so
@@ -3104,7 +3018,7 @@ else
                     end   
                     %%% Create a logical array that indicates which headings do not have the
                     %%% same number of entries as the number of image sets analyzed.
-                    IsWrongNumber = Lengths ~= setbeinganalyzed - 1;
+                    IsWrongNumber = (Lengths ~= setbeinganalyzed - 1);
                     %%% Determine which heading names to remove.
                     HeadingsToBeRemoved = HeadingsNames(IsWrongNumber);
                     %%% Remove headings names from handles.headings and remove the sample
@@ -3225,30 +3139,6 @@ else
                         end
                     end
                 end
-                %%% Removes the temporary measurements and image files from the "buffer",
-                %%% i.e. the handles structure.
-                %%% Lists the fields that are present in the handles structure.
-                Fields = fieldnames(handles);
-                %%% Produces a logical array called dFields which contains a 0 in every
-                %%% spot that does not begin 'dMT' and a 1 in every spot that does.
-                dFields = strncmp(Fields,'dMT',3);
-                %%% Produces a list of fields to remove by selecting those fields from
-                %%% "Fields" that correspond to a "1" in dFields.
-                FieldsToRemove = Fields(dFields);
-                %%% Sets the new handles structure as the old one with those fields
-                %%% removed.
-                handles = rmfield(handles,FieldsToRemove);
-                
-                Fields = fieldnames(handles);
-                dFields = strncmp(Fields,'dMC',3);
-                FieldsToRemove = Fields(dFields);
-                handles = rmfield(handles,FieldsToRemove);
-                
-                Fields = fieldnames(handles);
-                dFields = strncmp(Fields,'dOT',3);
-                FieldsToRemove = Fields(dFields);
-                handles = rmfield(handles,FieldsToRemove);
-                
                 %%% Clears the output file name to prevent it from being reused.
                 set(handles.OutputFileName,'string',[])
                 handles = rmfield(handles,'Voutputfilename');
@@ -3300,16 +3190,16 @@ function AnalyzeAllImagesClusterButton_Callback(hObject, eventdata, handles) %#o
 Prompts = {'Path to CellProfiler on the remote machine(s)','Path to the images on the remote machine(s)','File containing the list of remote machine(s)'};
 
 % set up default values for the answers
-if (~ isfield(handles, 'RemoteCellProfilerPathName'))
+if (~ isfield(handles, 'RemoteCellProfilerPathname'))
   LocationOfGUI = which('CellProfiler');
   Slashes = findstr(LocationOfGUI, '/');
-  handles.RemoteCellProfilerPathName = LocationOfGUI(1:Slashes(end));
-  handles.RemoteImagePathName = handles.Vpathname;
+  handles.RemoteCellProfilerPathname = LocationOfGUI(1:Slashes(end));
+  handles.RemoteImagePathname = handles.Vpathname;
   handles.RemoteMachineListFile = LocationOfGUI(1:Slashes(end));
 end
 
 % pop up the dialog
-Defaults = {handles.RemoteCellProfilerPathName,handles.RemoteImagePathName,handles.RemoteMachineListFile};
+Defaults = {handles.RemoteCellProfilerPathname,handles.RemoteImagePathname,handles.RemoteMachineListFile};
 Answers = inputdlg(Prompts,'Provide cluster information',1,Defaults,'on');
 
 if isempty(Answers)
@@ -3317,8 +3207,8 @@ if isempty(Answers)
 end
 
 % Store the answers as new defaults
-handles.RemoteCellProfilerPathName = Answers{1};
-handles.RemoteImagePathName = Answers{2};
+handles.RemoteCellProfilerPathname = Answers{1};
+handles.RemoteImagePathname = Answers{2};
 handles.RemoteMachineListFile = Answers{3};
 guidata(hObject, handles);
 
@@ -3353,7 +3243,7 @@ if isempty(handles.parallel_machines)
 end
 
 % set up the path on the remote machines
-pnet_remote(handles.parallel_machines, 'eval', ['addpath ' handles.RemoteCellProfilerPathName]);
+pnet_remote(handles.parallel_machines, 'eval', ['addpath ' handles.RemoteCellProfilerPathname]);
 
 % fake a click on the analyze images button
 AnalyzeImagesButton_Callback(hObject, eventdata, handles);

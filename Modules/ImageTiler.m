@@ -159,9 +159,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
+
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, ImageName) == 0
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -201,16 +201,16 @@ if handles.setbeinganalyzed == 1
     end
     %%% Retrieves the path where the images are stored from the handles
     %%% structure.
-    fieldname = ['dOTPathName', ImageName];
-    try PathName = handles.(fieldname);
+    fieldname = ['Pathname', ImageName];
+    try Pathname = handles.Pipeline.(fieldname);
     catch error('Image processing was canceled because the Image Tiler module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Image Tiler module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Image Tiler module onward.')
     end
     %%% Changes to that directory.
-    cd(PathName)
+    cd(Pathname)
     %%% Retrieves the list of filenames where the images are stored from the
     %%% handles structure.
-    fieldname = ['dOTFileList', ImageName];
-    FileList = handles.(fieldname);
+    fieldname = ['FileList', ImageName];
+    FileList = handles.Pipeline.(fieldname);
     %%% Checks whether the number of entries in the SampleInfo is equal to the
     %%% number of images.
     if isempty(SampleInfo) ~= 1
@@ -441,7 +441,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     uicontrol('Style', 'pushbutton', ...
         'String', 'Change', 'Position', [490 6 45 20], ...
         'Callback', ChangeColormapButtonFunction, 'parent',ThisAlgFigureNumber);
-    FolderButtonFunction = 'PathName = uigetdir('''',''Choose the directory where images are stored''); if PathName ~= 0, set(findobj(''UserData'',''PathNameTextDisplay''), ''String'', PathName), cd(PathName), end';
+    FolderButtonFunction = 'Pathname = uigetdir('''',''Choose the directory where images are stored''); if Pathname ~= 0, set(findobj(''UserData'',''PathnameTextDisplay''), ''String'', Pathname), cd(Pathname), end';
     uicontrol('Style', 'pushbutton', ...
         'String', 'Change', 'Position', [550 6 45 20], ...
         'Callback', FolderButtonFunction, 'parent',ThisAlgFigureNumber);
@@ -486,7 +486,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
         'Position',[625 28 NewFigureSize(3)-625 14], ...
         'HorizontalAlignment','left', ...
         'String',pwd, ...
-        'UserData', 'PathNameTextDisplay', ...
+        'UserData', 'PathnameTextDisplay', ...
         'Style','text');
     
     %%% Draws the grid on the image.  The 0.5 accounts for the fact that
@@ -612,5 +612,4 @@ drawnow
 
 %%% Saves the tiled image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', TiledImageName];
-handles.(fieldname) = TiledImage;
+handles.Pipeline.(TiledImageName) = TiledImage;

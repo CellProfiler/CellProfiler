@@ -151,9 +151,9 @@ drawnow
 if strcmp(Image1Name,'/') ~= 1
     try
         %%% Reads (opens) the image you want to analyze and assigns it to a variable.
-        fieldname = ['dOT', Image1Name];
+        fieldname = ['', Image1Name];
         %%% Checks whether image has been loaded.
-        if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
             %%% If the image is not there, an error message is produced.  The error
             %%% is not displayed: The error function halts the current function and
             %%% returns control to the calling function (the analyze all images
@@ -162,7 +162,8 @@ if strcmp(Image1Name,'/') ~= 1
             %%% analysis loop without attempting further modules.
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image1Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image1 = handles.(fieldname);
+        Image1 = handles.Pipeline.(fieldname);
+
         %%% Checks that the original image is two-dimensional (i.e. not a color
         %%% image), which would disrupt several of the image functions.
         if ndims(Image1) ~= 2
@@ -174,11 +175,10 @@ end
 %%% Repeat for the rest of the images.
 if strcmp(Image2Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image2Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image2Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image2 = handles.(fieldname);
+        Image2 = handles.Pipeline.(Image2Name);
         if ndims(Image2) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -187,11 +187,10 @@ if strcmp(Image2Name,'/') ~= 1
 end
 if strcmp(Image3Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image3Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image3Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image3 = handles.(fieldname);
+        Image3 = handles.Pipeline.(Image3Name);
         if ndims(Image3) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -200,11 +199,10 @@ if strcmp(Image3Name,'/') ~= 1
 end
 if strcmp(Image4Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image4Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image4Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image4Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image4 = handles.(fieldname);
+        Image4 = handles.Pipeline.(Image4Name);
         if ndims(Image4) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -213,11 +211,10 @@ if strcmp(Image4Name,'/') ~= 1
 end
 if strcmp(Image5Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image5Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image5Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image5Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image5 = handles.(fieldname);
+        Image5 = handles.Pipeline.(Image5Name);
         if ndims(Image5) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -226,11 +223,10 @@ if strcmp(Image5Name,'/') ~= 1
 end
 if strcmp(Image6Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image6Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image6Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image6Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image6 = handles.(fieldname);
+        Image6 = handles.Pipeline.(Image6Name);
         if ndims(Image6) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -239,11 +235,10 @@ if strcmp(Image6Name,'/') ~= 1
 end
 if strcmp(Image7Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image7Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image7Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image7Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image7 = handles.(fieldname);
+        Image7 = handles.Pipeline.(Image7Name);
         if ndims(Image7) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -252,11 +247,10 @@ if strcmp(Image7Name,'/') ~= 1
 end
 if strcmp(Image8Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image8Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image8Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image8Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image8 = handles.(fieldname);
+        Image8 = handles.Pipeline.(Image8Name);
         if ndims(Image8) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -265,11 +259,10 @@ if strcmp(Image8Name,'/') ~= 1
 end
 if strcmp(Image9Name,'/') ~= 1
     try
-        fieldname = ['dOT', Image9Name];
-        if isfield(handles, fieldname) == 0
+        if isfield(handles, Image9Name) == 0
             error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', Image9Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
-        Image9 = handles.(fieldname);
+        Image9 = handles.Pipeline.(Image9Name);
         if ndims(Image9) ~= 2
             error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
@@ -280,12 +273,13 @@ if strcmp(ObjectName,'/') ~= 1
     %%% Retrieves the label matrix image that contains the 
     %%% segmented objects which will be used as a mask. Checks first to see
     %%% whether the appropriate image exists.
-    fieldname = ['dOTSegmented',ObjectName];
+    fieldname = ['Segmented', ObjectName];
     %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
         error(['Image processing has been canceled. Prior to running the Measure Correlation module, you must have previously run an algorithm that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName, ' as a result of a previous algorithm, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
     end
-    MaskLabelMatrixImage = handles.(fieldname);
+    MaskLabelMatrixImage = handles.Pipeline.(fieldname);
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -504,7 +498,7 @@ for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)
         Value = num2str(Results(i,j));
         HeadingName = [char(cellstr(ImageNames(i,:))),'_', char(cellstr(ImageNames(j,:)))];
-        fieldname = ['dMTCorrelation', HeadingName, ObjectName];
-        handles.(fieldname)(handles.setbeinganalyzed) = {Value};
+        fieldname = ['ImageCorrelation', HeadingName, ObjectName];
+        handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Value};
     end
 end

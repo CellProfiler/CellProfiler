@@ -162,7 +162,7 @@ FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located
 %defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
-TypedPathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
+TypedPathname = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -209,10 +209,10 @@ if SetBeingAnalyzed == 1
         %%% Checks if the image is a DIB image file.
         if strcmp(upper(FileFormat),'DIB') == 1
             Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
-            handles.dOTDIBwidth = str2double(Answers{1});
-            handles.dOTDIBheight = str2double(Answers{2});
-            handles.dOTDIBbitdepth = str2double(Answers{3});
-            handles.dOTDIBchannels = str2double(Answers{4});
+            handles.Pipeline.DIBwidth = str2double(Answers{1});
+            handles.Pipeline.DIBheight = str2double(Answers{2});
+            handles.Pipeline.DIBbitdepth = str2double(Answers{3});
+            handles.Pipeline.DIBchannels = str2double(Answers{4});
         else
             error('The image file type entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
         end
@@ -227,10 +227,10 @@ if SetBeingAnalyzed == 1
         %%% Checks whether the two variables required have been entered by
         %%% the user.
         if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
-            if strncmp(TypedPathName, 'Default', 7) == 1
+            if strncmp(TypedPathname, 'Default', 7) == 1
                 FileNames = handles.Vfilenames;
-                PathName = handles.Vpathname;
-                cd(PathName)
+                Pathname = handles.Vpathname;
+                cd(Pathname)
                 %%% Loops through the names in the FileNames listing, looking for the text
                 %%% of interest.  Creates the array Match which contains the numbers of the
                 %%% file names that match.
@@ -245,7 +245,7 @@ if SetBeingAnalyzed == 1
                     end
                 end
                 if exist('Match','var') == 0
-                    error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
+                    error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', Pathname, '.'])
                 end
                 %%% Creates the File List by extracting the names of files
                 %%% that matched the text of interest.
@@ -253,12 +253,12 @@ if SetBeingAnalyzed == 1
             else
                 %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
-                if exist(TypedPathName,'var') ~= 7
+                if exist(TypedPathname,'var') ~= 7
                     error('Image processing was canceled because the directory typed into the Load Images Text module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
                 else
-                    PathName = TypedPathName;
+                    Pathname = TypedPathname;
                     %%% Lists the contents of the chosen directory.
-                    DirectoryListing = dir(PathName);
+                    DirectoryListing = dir(Pathname);
                     %%% Loops through the names in the Directory listing, looking for the text
                     %%% of interest.  Creates the array Match which contains the numbers of the
                     %%% file names that match.
@@ -273,7 +273,7 @@ if SetBeingAnalyzed == 1
                         end
                     end
                     if exist('Match','var') == 0
-                        error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', PathName, '.'])
+                        error(['Image processing was canceled because no image files containing the text you specified (', char(TextToFind(n)), ') were found in the directory you specified: ', Pathname, '.'])
                     end
                     %%% The File List is created by extracting only the names of files (not the
                     %%% directory or other information stored in the Directory Listing) and
@@ -282,10 +282,12 @@ if SetBeingAnalyzed == 1
                 end % Goes with: if exist - if the directory typed in exists error checking.
             end % Goes with: if strncmp
             %%% Saves the File Lists and Path Names to the handles structure.
-            fieldname = ['dOTFileList', ImageName{n}];
-            handles.(fieldname) = FileList{n};
-            fieldname = ['dOTPathName', ImageName{n}];
-            handles.(fieldname) = PathName;
+            fieldname = ['FileList', ImageName{n}];
+            handles.Pipeline.(fieldname) = FileList{n};
+            fieldname = ['Pathname', ImageName{n}];
+            handles.Pipeline.(fieldname) = Pathname;
+            %% for reference in saved files
+            handles.Measurements.(fieldname) = Pathname;
             NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
         end % Goes with: if isempty
     end  % Goes with: for i = 1:5
@@ -345,26 +347,22 @@ for n = 1:4
             %%% The following runs every time through this module (i.e. for
             %%% every image set).
             %%% Determines which image to analyze.
-            fieldname = ['dOTFileList', ImageName{n}];
-            FileList = handles.(fieldname);
+            fieldname = ['FileList', ImageName{n}];
+            FileList = handles.Pipeline.(fieldname);
             %%% Determines the file name of the image you want to analyze.
             CurrentFileName = FileList(SetBeingAnalyzed);
             %%% Determines the directory to switch to.
-            if (~ isfield(handles, 'parallel_machines')),
-                fieldname = ['dOTPathName', ImageName{n}];
-                PathName = handles.(fieldname);
-            else
-                PathName = handles.RemoteImagePathName;
-            end
+            fieldname = ['Pathname', ImageName{n}];
+            Pathname = handles.Pipeline.(fieldname);
             %%% Switches to the directory
-            cd(PathName);
+            cd(Pathname);
             %%% Handles a non-Matlab readable file format.
-            if isfield(handles, 'dOTDIBwidth') == 1
+            if isfield(handles.Pipeline, 'DIBwidth') == 1
                 %%% Opens this non-Matlab readable file format.
-                Width = handles.dOTDIBwidth;
-                Height = handles.dOTDIBheight;
-                Channels = handles.dOTDIBchannels;
-                BitDepth = handles.dOTDIBbitdepth;
+                Width = handles.Pipeline.DIBwidth;
+                Height = handles.Pipeline.DIBheight;
+                Channels = handles.Pipeline.DIBchannels;
+                BitDepth = handles.Pipeline.DIBbitdepth;
                 fid = fopen(char(CurrentFileName), 'r');
                 if (fid == -1),
                     error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
@@ -389,16 +387,16 @@ for n = 1:4
             end
             %%% Saves the original image file name to the handles structure.  The field
             %%% is named
-            %%% appropriately based on the user's input, with the 'dOT' prefix added so
+            %%% appropriately based on the user's input, in the Pipeline substructure so
             %%% that this field will be deleted at the end of the analysis batch.
-            fieldname = ['dOTFilename', ImageName{n}];
-            handles.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            %%% Saves the loaded image to the handles structure.The field is named
-            %%% appropriately based on the user's input.The prefix 'dOT' is added to
-            %%% the beginning of the measurement name so that this field will be
-            %%% deleted at the end of the analysis batch.
-            fieldname = ['dOT',ImageName{n}];
-            handles.(fieldname) = LoadedImage;
+            fieldname = ['Filename', ImageName{n}];
+            handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+            %%% Also saved to the handles.Measurements structure for reference in output files.
+            handles.Measurements.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+            %%% Saves the loaded image to the handles structure.  The field is named
+            %%% appropriately based on the user's input, and put into the Pipeline
+            %%% substructure so it will be deleted at the end of the analysis batch.
+            handles.Pipeline.(ImageName{n}) = LoadedImage;
         end
     catch ErrorMessage = lasterr;
         ErrorNumber(1) = {'first'};

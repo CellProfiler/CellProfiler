@@ -35,7 +35,7 @@ function handles = AlgIdentifySecPropagate(handles)
 % primary objects.
 % 
 % Note: Primary segmenters produce two output images that are used by
-% this module.  The dOTSegmented image contains the final, edited
+% this module.  The Segmented image contains the final, edited
 % primary objects (i.e. objects at the border and those that are too
 % small or large have been excluded).  The dOTPrelimSmallSegmented
 % image is the same except that the objects at the border and the
@@ -194,7 +194,7 @@ PrimaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR03 = What do you want to call the objects identified by this algorithm?
 %defaultVAR03 = Cells
 SecondaryObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
-%textVAR04 = (Note: Data will be produced based on this name, e.g. dMCTotalAreaCells)
+%textVAR04 = (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
 
 %textVAR05 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR05 = 0
@@ -215,9 +215,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -226,7 +226,8 @@ if isfield(handles, fieldname) == 0
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Identify Secondary Propagate module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -239,23 +240,25 @@ end
 %%% that are smaller than a certain size.  This image
 %%% will be used as markers to segment the secondary objects with this
 %%% algorithm.  Checks first to see whether the appropriate image exists.
-fieldname = ['dOTPrelimSmallSegmented',PrimaryObjectName];
+fieldname = ['PrelimSmallSegmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Propagate module, you must have previously run an algorithm that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous algorithm, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
     end
-PrelimPrimaryLabelMatrixImage = handles.(fieldname);
+PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
+
         
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects which will be used to weed out which objects are
 %%% real - not on the edges and not below or above the specified size
 %%% limits. Checks first to see whether the appropriate image exists.
-fieldname = ['dOTSegmented',PrimaryObjectName];
+fieldname = ['Segmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Propagate module, you must have previously run an algorithm that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous algorithm, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
     end
-EditedPrimaryLabelMatrixImage = handles.(fieldname);
+EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
+
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -497,16 +500,16 @@ drawnow
 
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent algorithms.
-fieldname = ['dOTSegmented',SecondaryObjectName];
-handles.(fieldname) = FinalLabelMatrixImage;
+fieldname = ['Segmented',SecondaryObjectName];
+handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the Threshold value to the handles structure.
-fieldname = ['dMTThreshold', SecondaryObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};
+fieldname = ['ImageThreshold', SecondaryObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Threshold};
        
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image to be analyzed.
-fieldname = ['dOTFilename', SecondaryObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', SecondaryObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

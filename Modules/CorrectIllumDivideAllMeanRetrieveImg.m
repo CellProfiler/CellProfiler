@@ -144,9 +144,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -156,7 +156,8 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
+
         
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -189,19 +190,19 @@ CurrentDirectory = cd;
 if handles.setbeinganalyzed == 1
     if strcmp(IllumCorrectPathAndFileName, '/') ~= 1
         try StructureIlluminationImage = load(IllumCorrectPathAndFileName);
-           fieldname = ['dOTIllumImageAD', ImageName];
-           IlluminationImage = StructureIlluminationImage.handles.(fieldname);
+           fieldname = ['IllumImageAD', ImageName];
+           IlluminationImage = StructureIlluminationImage.handles.Pipeline.(fieldname);
         catch error(['Image processing was canceled because there was a problem loading the image ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.'])
         end
     end    
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
     if exist('MeanImage','var') == 1
-        fieldname = ['dOTMeanImageAD', CorrectedImageName];
-        handles.(fieldname) = MeanImage;        
+        fieldname = ['MeanImageAD', CorrectedImageName];
+        handles.Pipeline.(fieldname) = MeanImage;        
     end
-    fieldname = ['dOTIllumImageAD', CorrectedImageName];
-    handles.(fieldname) = IlluminationImage;
+    fieldname = ['IllumImageAD', CorrectedImageName];
+    handles.Pipeline.(fieldname) = IlluminationImage;
     %%% Saves the illumination correction image to the hard
     %%% drive if requested.
     if strcmp(upper(IllumCorrectFileName), 'N') == 0
@@ -215,12 +216,12 @@ end
 %%% The following is run for every image set. Retrieves the mean image
 %%% and illumination image from the handles structure.  The mean image is
 %%% retrieved just for display purposes.
-fieldname = ['dOTMeanImageAD', CorrectedImageName];
-if isfield(handles, fieldname) == 1
-    MeanImage = handles.(fieldname);
+fieldname = ['MeanImageAD', CorrectedImageName];
+if isfield(handles.Pipeline, fieldname) == 1
+    MeanImage = handles.Pipeline.(fieldname);
 end
-fieldname = ['dOTIllumImageAD', CorrectedImageName];
-IlluminationImage = handles.(fieldname);
+fieldname = ['IllumImageAD', CorrectedImageName];
+IlluminationImage = handles.Pipeline.(fieldname);
 %%% Corrects the original image based on the IlluminationImage,
 %%% by dividing each pixel by the value in the IlluminationImage.
 CorrectedImage = OrigImage ./ IlluminationImage;
@@ -349,13 +350,12 @@ drawnow
 
 %%% Saves the corrected image to the handles structure so it can be
 %%% used by subsequent algorithms.
-fieldname = ['dOT', CorrectedImageName];
-handles.(fieldname) = CorrectedImage;
+handles.Pipeline.(CorrectedImageName) = CorrectedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
-%%% Saves the original file name to the handles structure in a field
-%%% named after the corrected image name.
-fieldname = ['dOTFilename', CorrectedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
+%%% Saves the original file name to the handles structure in a field named
+%%% after the corrected image name.
+fieldname = ['Filename', CorrectedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

@@ -188,9 +188,9 @@ end
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -200,7 +200,8 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Crop module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
+
         
 %%% For cropping from a file image, checks whether the crop image is the
 %%% same size as the image to be processed.
@@ -281,13 +282,13 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
             cd(Directory)
             %%% Opens a user interface window which retrieves a file name and path
             %%% name for the image to be used as a test image.
-            [CroppingFileName,CroppingPathName] = uigetfile('*.*','Select the image to use for cropping');
+            [CroppingFileName,CroppingPathname] = uigetfile('*.*','Select the image to use for cropping');
             %%% If the user presses "Cancel", the FileName will = 0 and an error
             %%% message results.
             if CroppingFileName == 0
                 error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
             else
-                ImageToBeCropped = imread([CroppingPathName,'/',CroppingFileName]);
+                ImageToBeCropped = imread([CroppingPathname,'/',CroppingFileName]);
             end
             cd(CurrentDirectory)
         else ImageToBeCropped = OrigImage;
@@ -334,13 +335,13 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         drawnow
         %%% The Binary Crop image is saved to the handles
         %%% structure so it can be used to crop subsequent image sets.
-        fieldname = ['dOTCropping', CroppedImageName];
-        handles.(fieldname) = BinaryCropImage;
+        fieldname = ['Cropping', CroppedImageName];
+        handles.Pipeline.(fieldname) = BinaryCropImage;
     end
     %%% Retrieves previously selected cropping ellipse from handles
     %%% structure.
-    fieldname = ['dOTCropping', CroppedImageName];
-    BinaryCropImage = handles.(fieldname);
+    fieldname = ['Cropping', CroppedImageName];
+    BinaryCropImage = handles.Pipeline.(fieldname);
     if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))
         error('Image processing was canceled because an image you wanted to analyze is not the same size as the image used for cropping in the Crop module.  The pixel dimensions must be identical.')
     end
@@ -482,13 +483,12 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', CroppedImageName];
-handles.(fieldname) = CroppedImage;
+handles.Pipeline.(CroppedImageName) = CroppedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', CroppedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', CroppedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

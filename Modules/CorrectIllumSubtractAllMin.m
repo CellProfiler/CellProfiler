@@ -170,9 +170,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -182,7 +182,8 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
+
 
 %%% Checks whether the chosen block size is larger than the image itself.
 [m,n] = size(OrigImage);
@@ -245,16 +246,16 @@ if handles.setbeinganalyzed == 1
             drawnow
             %%% Retrieves the path where the images are stored from the handles
             %%% structure.
-            fieldname = ['dOTPathName', ImageName];
-            try PathName = handles.(fieldname);
+            fieldname = ['Pathname', ImageName];
+            try Pathname = handles.Pipeline.(fieldname);
             catch error('Image processing was canceled because the Correct Illumination module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Correct Illumination module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination module onward.')
             end
             %%% Changes to that directory.
-            cd(PathName)
+            cd(Pathname)
             %%% Retrieves the list of filenames where the images are stored from the
             %%% handles structure.
-            fieldname = ['dOTFileList', ImageName];
-            FileList = handles.(fieldname);
+            fieldname = ['FileList', ImageName];
+            FileList = handles.Pipeline.(fieldname);
             
             %%% Calculates the best block size that minimizes padding with
             %%% zeros, so that the illumination function will not have dim
@@ -319,22 +320,22 @@ if handles.setbeinganalyzed == 1
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
     if exist('MeanIlluminationImage','var') == 1
-        fieldname = ['dOTMeanIlluminationImageAS', CorrectedImageName];
-        handles.(fieldname) = MeanIlluminationImage;        
+        fieldname = ['MeanIlluminationImageAS', CorrectedImageName];
+        handles.Pipeline.(fieldname) = MeanIlluminationImage;        
     end
-    fieldname = ['dOTIllumImageAS', CorrectedImageName];
-    handles.(fieldname) = IlluminationImage;
+    fieldname = ['IllumImageAS', CorrectedImageName];
+    handles.Pipeline.(fieldname) = IlluminationImage;
 end
 
 %%% The following is run for every image set. Retrieves the mean image
 %%% and illumination image from the handles structure.  The mean image is
 %%% retrieved just for display purposes.
-fieldname = ['dOTMeanIlluminationImageAS', CorrectedImageName];
-if isfield(handles, fieldname) == 1
-    MeanIlluminationImage = handles.(fieldname);
+fieldname = ['MeanIlluminationImageAS', CorrectedImageName];
+if isfield(handles.Pipeline, fieldname) == 1
+    MeanIlluminationImage = handles.Pipeline.(fieldname);
 end
-fieldname = ['dOTIllumImageAS', CorrectedImageName];
-IlluminationImage = handles.(fieldname);
+fieldname = ['IllumImageAS', CorrectedImageName];
+IlluminationImage = handles.Pipeline.(fieldname);
 %%% Corrects the original image based on the IlluminationImage,
 %%% by subtracting each pixel by the value in the IlluminationImage.
 CorrectedImage = imsubtract(OrigImage, IlluminationImage);
@@ -469,13 +470,12 @@ drawnow
 
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', CorrectedImageName];
-handles.(fieldname) = CorrectedImage;
+handles.Pipeline.(CorrectedImageName) = CorrectedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a field named
 %%% after the corrected image name.
-fieldname = ['dOTFilename', CorrectedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', CorrectedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

@@ -219,9 +219,9 @@ for ImageNumber = 1:6;
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
     if strcmp(upper(NameImageToCheck{ImageNumber}), 'N') ~= 1
-        fieldname = ['dOT', NameImageToCheck{ImageNumber}];
+        fieldname = ['', NameImageToCheck{ImageNumber}];
         %%% Checks whether the image to be analyzed exists in the handles structure.
-        if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
             %%% If the image is not there, an error message is produced.  The error
             %%% is not displayed: The error function halts the current function and
             %%% returns control to the calling function (the analyze all images
@@ -231,7 +231,8 @@ for ImageNumber = 1:6;
             error(['Image processing was canceled because the Saturation & Blur Check module could not find the input image.  It was supposed to be named ', NameImageToCheck{ImageNumber}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         %%% Reads the image.
-        ImageToCheck{ImageNumber} = handles.(fieldname);
+        ImageToCheck{ImageNumber} = handles.Pipeline.(fieldname);
+
         %%% Checks that the original image is two-dimensional (i.e. not a color
         %%% image), which would disrupt several of the image functions.
         if ndims(ImageToCheck{ImageNumber}) ~= 2
@@ -272,17 +273,17 @@ for ImageNumber = 1:6;
 %             FocusScore = handles.FocusScore
 %             FocusScore2 = handles.FocusScore2
 % 
-            %%% Saves the Focus Score to the handles structure.  The field is named
-            %%% appropriately based on the user's input, with the 'dMT' prefix added so
-            %%% that this field will be deleted at the end of the analysis batch.
-            fieldname = ['dMTFocusScore', NameImageToCheck{ImageNumber}];
-            handles.(fieldname)(handles.setbeinganalyzed) = {FocusScore{ImageNumber}};
+            %%% Saves the Focus Score to the handles.Measurements structure.  The
+            %%% field is named appropriately based on the user's
+            %%% input, with the 'Image' prefix added.
+            fieldname = ['ImageFocusScore', NameImageToCheck{ImageNumber}];
+            handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FocusScore{ImageNumber}};
         end
-        %%% Saves the Percent Saturation to the handles structure.  The field is named
-        %%% appropriately based on the user's input, with the 'dMT' prefix added so
-        %%% that this field will be deleted at the end of the analysis batch.
-        fieldname = ['dMTPercentSaturation', NameImageToCheck{ImageNumber}];
-        handles.(fieldname)(handles.setbeinganalyzed) = {PercentSaturation{ImageNumber}};
+        %%% Saves the Percent Saturation to the handles.Measurements
+        %%% structure.  The field is named appropriately based on the
+        %%% user's input, with the 'Image' prefix added.
+        fieldname = ['ImagePercentSaturation', NameImageToCheck{ImageNumber}];
+        handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {PercentSaturation{ImageNumber}};
     end
     drawnow
 end

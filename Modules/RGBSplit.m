@@ -127,9 +127,9 @@ BlueImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
 drawnow
 
 %%% Retrieves the RGB image from the handles structure.
-fieldname = ['dOT', RGBImageName];
+fieldname = ['', RGBImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -139,7 +139,8 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the RGB Split module could not find the input image.  It was supposed to be named ', RGBImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-RGBImage = handles.(fieldname);
+RGBImage = handles.Pipeline.(fieldname);
+
 
 Size = size(RGBImage);
 if length(Size) ~= 3
@@ -298,23 +299,20 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', RedImageName];
-handles.(fieldname) = RedImage;
-fieldname = ['dOT', GreenImageName];
-handles.(fieldname) = GreenImage;
-fieldname = ['dOT', BlueImageName];
-handles.(fieldname) = BlueImage;
+handles.Pipeline.(RedImageName) = RedImage;
+handles.Pipeline.(GreenImageName) = GreenImage;
+handles.Pipeline.(BlueImageName) = BlueImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', RGBImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', RGBImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', RGBImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
-fieldname = ['dOTFilename', RedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
-fieldname = ['dOTFilename', GreenImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
-fieldname = ['dOTFilename', BlueImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', RGBImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', RedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', GreenImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', BlueImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

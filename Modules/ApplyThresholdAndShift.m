@@ -130,9 +130,9 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Check whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -142,7 +142,8 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Apply Threshold and Shift module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Read the image.
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
+
         
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -290,13 +291,12 @@ drawnow
 
 %%% Saves the Thresholded image to the handles structure so it can be used
 %%% by subsequent algorithms.
-fieldname = ['dOT', ThresholdedImageName];
-handles.(fieldname) = ThresholdedImage;
+handles.Pipeline.(ThresholdedImageName) = ThresholdedImage;
 
 %%% Determines the filename of the image analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a field named
 %%% after the Thresholded image name.
-fieldname = ['dOTFilename', ThresholdedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ThresholdedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

@@ -204,12 +204,11 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run an algorithm to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Spot Identifier module cannot find this image.']);
+if isfield(handles.Pipeline, ImageName) == 0
+    error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run an algorithm to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
 end
-OriginalImage = handles.(fieldname);
+OriginalImage = handles.Pipeline.(ImageName);
 
 if handles.setbeinganalyzed == 1
     %%% Determines the figure number to display in.
@@ -357,7 +356,7 @@ text(XLocations, YLocations, PositionList, ...
 drawnow
 %%% Retrieves the spot identifying info from a file, if requested.
 if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
-    [FileName,PathName] = uigetfile('*.*', 'Choose the file containing the spot identifying information.');
+    [FileName,Pathname] = uigetfile('*.*', 'Choose the file containing the spot identifying information.');
     if FileName == 0
         error('Image processing was canceled during the Spot Identifier module.')
     end
@@ -365,7 +364,7 @@ if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
     if isempty(Answer) == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end
-    cd(PathName)
+    cd(Pathname)
     SheetName = Answer{1};
     [ignore,SpotIdentifyingInfo]=xlsread(FileName,SheetName); %#ok We want to ignore MLint error checking for this line.
     SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
@@ -599,28 +598,27 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', RotatedImageName];
-handles.(fieldname) = RotatedImage;
+handles.Pipeline.(RotatedImageName) = RotatedImage;
 
 if strncmp(RotateMethod, 'N', 1) ~= 1
 %%% Saves the Rotation coordinates to the handles structure so they are
 %%% saved in the measurements file.
-fieldname = ['dMTRotationLowerLeftX', ImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = {LowerLeftX};
-fieldname = ['dMTRotationLowerRightX', ImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = {LowerRightX};
-fieldname = ['dMTRotationLowerLeftY', ImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = {LowerLeftY};
-fieldname = ['dMTRotationLowerRightY', ImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = {LowerRightY};
+fieldname = ['ImageRotationLowerLeftX', ImageName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerLeftX};
+fieldname = ['ImageRotationLowerRightX', ImageName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerRightX};
+fieldname = ['ImageRotationLowerLeftY', ImageName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerLeftY};
+fieldname = ['ImageRotationLowerRightY', ImageName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {LowerRightY};
 end
 
 %%% Saves the top, left marker locations to the handles structure so they are
 %%% saved in the measurements file.
-fieldname = ['dMTTopLeftX', ImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = {TopLeftX};
-fieldname = ['dMTTopLeftY', ImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = {TopLeftY};
+fieldname = ['ImageTopLeftX', ImageName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TopLeftX};
+fieldname = ['ImageTopLeftY', ImageName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {TopLeftY};
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE
@@ -636,3 +634,4 @@ handles.(fieldname)(handles.setbeinganalyzed) = {TopLeftY};
 % part of the code. If you plan to save images which are normally
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
+

@@ -169,9 +169,8 @@ if strcmp(upper(Orientation),'PORTRAIT') ~= 1
     end
 end
 
-fieldname = ['dOT', TracedImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, TracedImageName) == 0
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -181,12 +180,11 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the AlignAndCrop module could not find the input image.  It was supposed to be named ', TracedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-TracedImage = handles.(fieldname);
+TracedImage = handles.Pipeline.(TracedImageName);
 % figure, imshow(TracedImage), title('TracedImage')
 
-fieldname = ['dOT', RealImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles, RealImageName) == 0
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -196,14 +194,14 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the AlignAndCrop module could not find the input image.  It was supposed to be named ', RealImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-RealImage = handles.(fieldname);
+RealImage = handles.Pipeline.(RealImageName);
 % figure, imshow(RealImage), title('RealImage')
 
 %%% Determine the filenames of the images to be analyzed.
-fieldname = ['dOTFilename', TracedImageName];
-TracedFileName = handles.(fieldname)(handles.setbeinganalyzed);
-fieldname = ['dOTFilename', RealImageName];
-RealFileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', TracedImageName];
+TracedFileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', RealImageName];
+RealFileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -459,17 +457,15 @@ drawnow
 
 %%% The adjusted image is saved to the handles structure so it can be used
 %%% by subsequent algorithms.
-fieldname = ['dOT', FinishedTracedImageName];
-handles.(fieldname) = CroppedAlignedTracedImage;
-fieldname = ['dOT', FinishedRealImageName];
-handles.(fieldname) = CroppedAlignedRealImage;
+handles.Pipeline.(FinishedTracedImageName) = CroppedAlignedTracedImage;
+handles.Pipeline.(FinishedRealImageName) = CroppedAlignedRealImage;
 
 %%% The original file name is saved to the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', FinishedTracedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = TracedFileName;
-fieldname = ['dOTFilename', FinishedRealImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = RealFileName;
+fieldname = ['Filename', FinishedTracedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = TracedFileName;
+fieldname = ['Filename', FinishedRealImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = RealFileName;
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

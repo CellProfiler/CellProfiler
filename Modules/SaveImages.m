@@ -139,9 +139,9 @@ drawnow
 
 %%% Retrieves the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
+fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -150,7 +150,8 @@ if isfield(handles, fieldname) == 0
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+
 
 %%% Checks whether the file format the user entered is readable by Matlab.
 IsFormat = imformats(FileFormat);
@@ -169,8 +170,8 @@ else
     %%% will result in overwriting the original file, or in a file name that
     %%% contains spaces.
     %%% Determine the filename of the image to be analyzed.
-    fieldname = ['dOTFilename', ImageFileName];
-    FileName = handles.(fieldname)(handles.setbeinganalyzed);
+    fieldname = ['Filename', ImageFileName];
+    FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
     %%% Find and remove the file format extension within the original file
     %%% name, but only if it is at the end. Strip the original file format extension
     %%% off of the file name, if it is present, otherwise, leave the original

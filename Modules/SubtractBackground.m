@@ -152,9 +152,8 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['dOT', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, ImageName) == 0
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -164,7 +163,7 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Subtract Background module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.(fieldname);
+OrigImage = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -200,16 +199,16 @@ if handles.setbeinganalyzed == 1
         drawnow
         %%% Retrieves the path where the images are stored from the handles
         %%% structure.
-        fieldname = ['dOTPathName', ImageName];
-        try PathName = handles.(fieldname);
+        fieldname = ['Pathname', ImageName];
+        try Pathname = handles.Pipeline.(fieldname);
         catch error('Image processing was canceled because the Subtract Background module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Subtract Background module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Subtract Background module onward.')
         end
         %%% Changes to that directory.
-        cd(PathName)
+        cd(Pathname)
         %%% Retrieves the list of filenames where the images are stored from the
         %%% handles structure.
-        fieldname = ['dOTFileList', ImageName];
-        FileList = handles.(fieldname);
+        fieldname = ['FileList', ImageName];
+        FileList = handles.Pipeline.(fieldname);
         %%% Calculates the pixel intensity of the pixel that is 10th dimmest in
         %%% each image, then finds the Minimum of that value across all
         %%% images. Our typical images have a million pixels. We are not
@@ -237,9 +236,9 @@ if handles.setbeinganalyzed == 1
                 msgbox([ImageName , ' image number ', num2str(i), ', and possibly others in the set, has the 10th dimmest pixel equal to zero, which means there is no camera background to subtract, either because the exposure time was very short, or the camera has 10 or more pixels stuck at zero, or that images have been rescaled such that at least 10 pixels are zero, or that for some other reason you have more than 10 pixels of value zero in the image.  This means that the Subtract Background module will not alter the images in any way, although image processing has not been aborted.'], 'Warning', 'warn','replace')
                 %%% Stores the minimum tenth minimum pixel value in the handles structure for
                 %%% later use.
-                fieldname = ['dOTIntensityToShift', ImageName];
+                fieldname = ['IntensityToShift', ImageName];
                 MinimumTenthMinimumPixelValue = 0;
-                handles.(fieldname) = 0;
+                handles.Pipeline.(fieldname) = 0;
                 %%% Determines the figure number to close, because no
                 %%% processing will be performed.
                 fieldname = ['figurealgorithm',CurrentAlgorithm];
@@ -265,14 +264,14 @@ if handles.setbeinganalyzed == 1
     end
     %%% Stores the minimum tenth minimum pixel value in the handles structure for
     %%% later use.
-    fieldname = ['dOTIntensityToShift', ImageName];
-    handles.(fieldname) = MinimumTenthMinimumPixelValue;
+    fieldname = ['IntensityToShift', ImageName];
+    handles.Pipeline.(fieldname) = MinimumTenthMinimumPixelValue;
 end
 
 %%% The following is run for every image set. Retrieves the minimum tenth
 %%% minimum pixel value from the handles structure.
-fieldname = ['dOTIntensityToShift', ImageName];
-MinimumTenthMinimumPixelValue = handles.(fieldname);
+fieldname = ['IntensityToShift', ImageName];
+MinimumTenthMinimumPixelValue = handles.Pipeline.(fieldname);
 if MinimumTenthMinimumPixelValue ~= 0
     %%% Subtracts the MinimumTenthMinimumPixelValue from every pixel in the
     %%% original image.  This strategy is similar to that used for the "Apply
@@ -415,13 +414,12 @@ drawnow
 
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', CorrectedImageName];
-handles.(fieldname) = CorrectedImage;
+handles.Pipeline.(CorrectedImageName) = CorrectedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the corrected image name.
-fieldname = ['dOTFilename', CorrectedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', CorrectedImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

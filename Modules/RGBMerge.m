@@ -151,9 +151,9 @@ drawnow
 %%% blue.
 if strcmp(upper(BlueImageName), 'N') == 0
     %%% Read (open) the images and assign them to variables.
-    fieldname = ['dOT', BlueImageName];
+    fieldname = ['', BlueImageName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
         %%% If the image is not there, an error message is produced.  The error
         %%% is not displayed: The error function halts the current function and
         %%% returns control to the calling function (the analyze all images
@@ -163,7 +163,8 @@ if strcmp(upper(BlueImageName), 'N') == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', BlueImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
-    BlueImage = handles.(fieldname);
+    BlueImage = handles.Pipeline.(fieldname);
+
     BlueImageExists = 1;
 else BlueImageExists = 0;
 end
@@ -171,20 +172,18 @@ end
 drawnow
 %%% Repeat for Green and Red.
 if strcmp(upper(GreenImageName), 'N') == 0
-    fieldname = ['dOT', GreenImageName];
-    if isfield(handles, fieldname) == 0
+    if isfield(handles, GreenImageName) == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
-    GreenImage = handles.(fieldname);
+    GreenImage = handles.Pipeline.(GreenImageName);
     GreenImageExists = 1;
 else GreenImageExists = 0;
 end
 if strcmp(upper(RedImageName), 'N') == 0
-    fieldname = ['dOT', RedImageName];
-    if isfield(handles, fieldname) == 0
+    if isfield(handles, RedImageName) == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
-    RedImage = handles.(fieldname);
+    RedImage = handles.Pipeline.(RedImageName);
     RedImageExists = 1;
 else RedImageExists = 0;
 end
@@ -364,20 +363,19 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent algorithms.
-fieldname = ['dOT', RGBImageName];
-handles.(fieldname) = RGBImage;
+handles.Pipeline.(RGBImageName) = RGBImage;
 
 %%% Determines the filename of the image to be analyzed. Only one of the
 %%% original file names is chosen to name this field.
 if BlueImageExists == 1
-    fieldname = ['dOTFilename', BlueImageName];
+    fieldname = ['Filename', BlueImageName];
 elseif GreenImageExists == 1
-    fieldname = ['dOTFilename', GreenImageName];
+    fieldname = ['Filename', GreenImageName];
 elseif RedImageExists == 1
-    fieldname = ['dOTFilename', RedImageName];
+    fieldname = ['Filename', RedImageName];
 end
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', RGBImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', RGBImageName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

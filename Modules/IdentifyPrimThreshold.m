@@ -212,12 +212,11 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Identify Primary Threshold module, you must have previously run an algorithm to load an image. You specified in the Identify Primary Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Threshold module cannot find this image.']);
+    if isfield(handles.Pipeline, ImageName) == 0
+    error(['Image processing has been canceled. Prior to running the Identify Primary Threshold module, you must have previously run an algorithm to load an image. You specified in the Identify Primary Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Threshold module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -261,16 +260,16 @@ if strcmp(upper(Threshold), 'ALL') == 1
             drawnow
             %%% Retrieves the path where the images are stored from the handles
             %%% structure.
-            fieldname = ['dOTPathName', ImageName];
-            try PathName = handles.(fieldname);
+            fieldname = ['Pathname', ImageName];
+            try Pathname = handles.Pipeline.(fieldname);
             catch error('Image processing was canceled because the Identify Primary Threshold module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Identify Primary Threshold module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Identify Primary Threshold module onward.')
             end
             %%% Changes to that directory.
-            cd(PathName)
+            cd(Pathname)
             %%% Retrieves the list of filenames where the images are stored from the
             %%% handles structure.
-            fieldname = ['dOTFileList', ImageName];
-            FileList = handles.(fieldname);
+            fieldname = ['FileList', ImageName];
+            FileList = handles.Pipeline.(fieldname);
             %%% Calculates the threshold based on all of the images.
             Counts = zeros(256,1);
             NumberOfBins = 256;
@@ -307,11 +306,11 @@ SigmaBSquared = (Mu_t * Omega - Mu).^2 ./ (Omega .* (1 - Omega));
         catch [ErrorMessage, ErrorMessage2] = lasterr;
             error(['An error occurred in the Identify Primary Threshold module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
         end
-        fieldname = ['dOTThreshold', ImageName];
-        handles.(fieldname) = Threshold;
+        fieldname = ['Threshold', ImageName];
+        handles.Pipeline.(fieldname) = Threshold;
         cd(CurrentDirectory)
-    else fieldname = ['dOTThreshold', ImageName];
-        Threshold = handles.(fieldname);
+    else fieldname = ['Threshold', ImageName];
+        Threshold = handles.Pipeline.(fieldname);
     end
 elseif strcmp(upper(Threshold), 'EACH') == 1
     Threshold = ThresholdAdjustmentFactor*graythresh(OrigImageToBeAnalyzed);
@@ -494,25 +493,25 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['dOTPrelimSegmented',ObjectName];
-handles.(fieldname) = PrelimLabelMatrixImage1;
+fieldname = ['PrelimSegmented',ObjectName];
+handles.Pipeline.(fieldname) = PrelimLabelMatrixImage1;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['dOTPrelimSmallSegmented',ObjectName];
-handles.(fieldname) = PrelimLabelMatrixImage2;
+fieldname = ['PrelimSmallSegmented',ObjectName];
+handles.Pipeline.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.
-fieldname = ['dOTSegmented',ObjectName];
-handles.(fieldname) = FinalLabelMatrixImage;
+fieldname = ['Segmented',ObjectName];
+handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the Threshold value to the handles structure.
-fieldname = ['dMTThreshold', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};
+fieldname = ['ImageThreshold', ObjectName];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Threshold};
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

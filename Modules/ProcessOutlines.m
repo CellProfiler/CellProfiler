@@ -127,12 +127,11 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
-fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
-    if isfield(handles, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run an algorithm to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Intensity module cannot find this image.']);
+    if isfield(handles.Pipeline, ImageName) == 0
+    error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run an algorithm to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Intensity module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -277,13 +276,13 @@ drawnow
 % the second image.
 
 %%% Saves the processed image to the handles structure.
-fieldname = ['dOTSegmented',ObjectName];
-handles.(fieldname) = ObjectsIdentifiedImage;
+fieldname = ['Segmented',ObjectName];
+handles.Pipeline.(fieldname) = ObjectsIdentifiedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ImageName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the original file name to the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', ObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

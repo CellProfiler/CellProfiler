@@ -165,28 +165,31 @@ drawnow
 
 %%% Retrieves the segmented image, not edited for objects along the edges or
 %%% for size.
-fieldname = ['dOTPrelimSegmented',ObjectName];
+fieldname = ['PrelimSegmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
-PrelimSegmentedImage = handles.(fieldname);
+PrelimSegmentedImage = handles.Pipeline.(fieldname);
+
 
 %%% Retrieves the segmented image, only edited for small objects.
-fieldname = ['dOTPrelimSmallSegmented',ObjectName];
+fieldname = ['PrelimSmallSegmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
-PrelimSmallSegmentedImage = handles.(fieldname);
+PrelimSmallSegmentedImage = handles.Pipeline.(fieldname);
+
 
 %%% Retrieves the final segmented label matrix image.
-fieldname = ['dOTSegmented',ObjectName];
+fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
-SegmentedImage = handles.(fieldname);
+SegmentedImage = handles.Pipeline.(fieldname);
+
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -369,21 +372,21 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['dOTPrelimSegmented',ShrunkenObjectName];
-handles.(fieldname) = FinalShrunkenPrelimSegmentedImage;
+fieldname = ['PrelimSegmented',ShrunkenObjectName];
+handles.Pipeline.(fieldname) = FinalShrunkenPrelimSegmentedImage;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['dOTPrelimSmallSegmented',ShrunkenObjectName];
-handles.(fieldname) = FinalShrunkenPrelimSmallSegmentedImage;
+fieldname = ['PrelimSmallSegmented',ShrunkenObjectName];
+handles.Pipeline.(fieldname) = FinalShrunkenPrelimSmallSegmentedImage;
 
 %%% Saves the final segmented label matrix image to the handles structure.
-fieldname = ['dOTSegmented',ShrunkenObjectName];
-handles.(fieldname) = FinalShrunkenSegmentedImage;
+fieldname = ['Segmented',ShrunkenObjectName];
+handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;
 
 %%% Determines the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ObjectName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', ObjectName];
+FileName = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 %%% Saves the filename of the objects created.
-fieldname = ['dOTFilename', ShrunkenObjectName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
+fieldname = ['Filename', ShrunkenObjectName];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName;

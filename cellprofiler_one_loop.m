@@ -33,9 +33,9 @@ clear handles_results
 handles_results.CellProfilerError = [];
 
 try
-  cd(handles.RemoteImagePathName)
+  cd(handles.RemoteImagePathname)
 catch
-  handles_results.CellProfilerError = ['Could not change directory to ' handles.RemoteImagePathName '.  Error was ' lasterr];
+  handles_results.CellProfilerError = ['Could not change directory to ' handles.RemoteImagePathname '.  Error was ' lasterr];
   return;
 end
   

@@ -153,8 +153,7 @@ if strcmp(Image1Name,'/') == 1
     error('Image processing was canceled because no image was loaded in the Align module''s first image slot')
 end
 %%% Checks whether the image to be analyzed exists in the handles structure.
-fieldname = ['dOT', Image1Name];
-if isfield(handles, fieldname) == 0
+if isfield(handles.Pipeline, Image1Name) == 0
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -164,35 +163,33 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image1Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-Image1 = handles.(fieldname);
+Image1 = handles.Pipeline.(Image1Name);
 
 %%% Same for Image 2.
 if strcmp(Image2Name,'/') == 1
     error('Image processing was canceled because no image was loaded in the Align module''s second image slot')
 end
-fieldname = ['dOT', Image2Name];
-if isfield(handles, fieldname) == 0
+if isfield(handles, Image2Name) == 0
     error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-Image2 = handles.(fieldname);
+Image2 = handles.Pipeline.(Image2Name);
 
 %%% Same for Image 3.
 if strcmp(Image3Name,'/') ~= 1
-    fieldname = ['dOT', Image3Name];
-    if isfield(handles, fieldname) == 0
+    if isfield(handles, Image3Name) == 0
         error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
-    Image3 = handles.(fieldname);
+    Image3 = handles.Pipeline.(Image3Name);
 end
 
 %%% Determine the filenames of the images to be analyzed.
-fieldname = ['dOTFilename', Image1Name];
-FileName1 = handles.(fieldname)(handles.setbeinganalyzed);
-fieldname = ['dOTFilename', Image2Name];
-FileName2 = handles.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', Image1Name];
+FileName1 = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
+fieldname = ['Filename', Image2Name];
+FileName2 = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 if strcmp(upper(Image3Name),'N') ~= 1
-    fieldname = ['dOTFilename', Image3Name];
-    FileName3 = handles.(fieldname)(handles.setbeinganalyzed);
+    fieldname = ['Filename', Image3Name];
+    FileName3 = handles.Pipeline.(fieldname)(handles.setbeinganalyzed);
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -382,39 +379,36 @@ drawnow
 if strcmp(AdjustImage,'Y') == 1
     %%% Saves the adjusted image to the
     %%% handles structure so it can be used by subsequent algorithms.
-    fieldname = ['dOT', AlignedImage1Name];
-    handles.(fieldname) = AlignedImage1;
-    fieldname = ['dOT', AlignedImage2Name];
-    handles.(fieldname) = AlignedImage2;
+    handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
+    handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
     if strcmp(Image3Name,'/') ~= 1
-        fieldname = ['dOT', AlignedImage3Name];
-        handles.(fieldname) = AlignedImage3;
+        handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
     end
 end
 %%% Saves the original file name ito the handles structure in a
 %%% field named after the adjusted image name.
-fieldname = ['dOTFilename', AlignedImage1Name];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName1;
-fieldname = ['dOTFilename', AlignedImage2Name];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName2;
+fieldname = ['Filename', AlignedImage1Name];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName1;
+fieldname = ['Filename', AlignedImage2Name];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName2;
 if strcmp(Image3Name,'/') ~= 1
-fieldname = ['dOTFilename', AlignedImage3Name];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName3;
+fieldname = ['Filename', AlignedImage3Name];
+handles.Pipeline.(fieldname)(handles.setbeinganalyzed) = FileName3;
 end
 
 %%% Stores the shift in alignment as a measurement for quality control
 %%% purposes.
-fieldname = ['dMTXAlign', AlignedImage1Name,AlignedImage2Name];
-handles.(fieldname)(handles.setbeinganalyzed) = {sx};
-fieldname = ['dMTYAlign', AlignedImage1Name,AlignedImage2Name];
-handles.(fieldname)(handles.setbeinganalyzed) = {sy};
+fieldname = ['ImageXAlign', AlignedImage1Name,AlignedImage2Name];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sx};
+fieldname = ['ImageYAlign', AlignedImage1Name,AlignedImage2Name];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sy};
 
 %%% If three images were aligned:
 if strcmp(Image3Name,'/') ~= 1
-fieldname = ['dMTXAlignFirstTwoImages',AlignedImage3Name];
-handles.(fieldname)(handles.setbeinganalyzed) = {sx2};
-fieldname = ['dMTYAlignFirstTwoImages',AlignedImage3Name];
-handles.(fieldname)(handles.setbeinganalyzed) = {sy2};
+fieldname = ['ImageXAlignFirstTwoImages',AlignedImage3Name];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sx2};
+fieldname = ['ImageYAlignFirstTwoImages',AlignedImage3Name];
+handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sy2};
 end
 
 %%%%%%%%%%%%%%%%%%%

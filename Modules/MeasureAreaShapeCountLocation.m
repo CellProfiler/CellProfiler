@@ -1,4 +1,4 @@
-function handles = MeasureAreaShapeCountLocation(handles)
+sfunction handles = MeasureAreaShapeCountLocation(handles)
 
 % Help for the Measure Area Shape Count Location module:
 % Category: Measurement
@@ -103,7 +103,7 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the segmented objects that you want to measure?
+%textVAR01 = What did you call the objects that you want to measure?
 %defaultVAR01 = Nuclei
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = Type / in unused boxes.

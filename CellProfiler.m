@@ -676,22 +676,38 @@ end
 if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
     handles.Settings.Valgorithmname = Settings.Valgorithmname;
-    handles.Settings.Vvariable = Settings.Vvariable;
+    %% Check to make sure that the modules have not changed
+    Pathname = uigetdir('','Please select directory where modules are located');
+    for i=1:length(handles.Settings.Valgorithmname),
+        [defVvariable handles.numVariables(i)] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
+        handles.Settings.Vvariable(i,1:length(defVvariable)) = defVvariable;
+        handles.Settings.Vvariable(i,1:length(Settings.Vvariable(i))) = Settings.Vvariable(i);
+    end
     handles.Settings.Vpixelsize = Settings.Vpixelsize;
 else
     Settings = LoadedSettings.handles;
     if isfield(Settings,'Settings'),
         handles.Settings.Valgorithmname = Settings.Settings.Valgorithmname;
-        handles.Settings.Vvariable = Settings.Settings.Vvariable;
+        %% Check to make sure that the modules have not changed
+        Pathname = uigetdir('','Please select directory where modules are located');
+        for i=1:length(handles.Settings.Valgorithmname),
+            [defVvariable handles.numVariables(i)] = LoadSettings_Helper(Pathname, char(handles.Settings.Valgorithmname(i)));
+            handles.Settings.Vvariable(i,1:length(defVvariable)) = defVvariable;
+            handles.Settings.Vvariable(i,1:length(Settings.Settings.Vvariable(i))) = Settings.Settings.Vvariable(i);
+        end  
         handles.Settings.Vpixelsize = Settings.Settings.Vpixelsize;
     end
 end
 
-if isfield(Settings,'numVariables'),
-    handles.numVariables = Settings.numVariables;
-end
+
 handles.numAlgorithms = 0;
 handles.numAlgorithms = length(handles.Settings.Valgorithmname);
+
+if (isfield(Settings,'numVariables')),
+    handles.numVariables = max(handles.numVariables,Settings.numVariables);
+end
+
+
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 set(handles.AlgorithmBox,'Value',1);
@@ -710,6 +726,24 @@ if isfield(LoadedSettings, 'handles'),
     end
 end
 cd(CurrentDirectory)
+
+%%%%%%%%%%%%%%%%%
+function [vVariable numVariables] = LoadSettings_Helper(Pathname, AlgorithmName)
+
+AlgorithmNamedotm = ['Alg' AlgorithmName '.m'];
+fid=fopen([Pathname '\' AlgorithmNamedotm]);
+while 1;
+    output = fgetl(fid); if ~ischar(output); break; end;
+
+    if (strncmp(output,'%defaultVAR',11) == 1),
+        displayval = output(17:end);
+        istr = output(12:13);
+        i = str2num(istr);
+        vVariable(i) = {displayval};
+        numVariables = i;
+    end
+end
+fclose(fid);
 
 %%%%%%%%%%%%%%%%%
 
@@ -866,90 +900,91 @@ cd(CurrentDirectory);
 
 % --- Executes on button press in AddAlgorithm.
 function AddAlgorithm_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
-% Find which algorithm slot number this callback was called for.
-AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
-AlgorithmNums = handles.numAlgorithms+1;
+    % Find which algorithm slot number this callback was called for.
+    AlgorithmNumber = TwoDigitString(handles.numAlgorithms+1);
+    AlgorithmNums = handles.numAlgorithms+1;
 
-%%% 1. Opens a user interface to retrieve the .m file you want to use.  The
-%%% name of that .m file is stored as the variablebox2_1
-%%% "FirstImageAlgorithmName".
+    %%% 1. Opens a user interface to retrieve the .m file you want to use.  The
+    %%% name of that .m file is stored as the variablebox2_1
+    %%% "FirstImageAlgorithmName".
 
-%%% First, the current directory is stored so we can switch back to it at
-%%% the end of this step:
-CurrentDirectory = cd;
-%%% Change to the default algorithm directory, whose name is a variable
-%%% that is stored in that .mat file. It is within a try-end pair because
-%%% the user may have changed the folder names leading up to this directory
-%%% sometime after saving the Preferences.
-try cd(handles.Vdefaultalgorithmdirectory) %#ok We want to ignore MLint error checking for this line.
-end 
-%%% Now, when the dialog box is opened to retrieve an algorithm, the
-%%% directory will be the default algorithm directory.
-[AlgorithmNamedotm,Pathname] = uigetfile('Alg*.m',...
-    'Choose an image analysis module');
-%%% Change back to the original directory.
-cd(CurrentDirectory)
+    %%% First, the current directory is stored so we can switch back to it at
+    %%% the end of this step:
+    CurrentDirectory = cd;
+    %%% Change to the default algorithm directory, whose name is a variable
+    %%% that is stored in that .mat file. It is within a try-end pair because
+    %%% the user may have changed the folder names leading up to this directory
+    %%% sometime after saving the Preferences.
+    try cd(handles.Vdefaultalgorithmdirectory) %#ok We want to ignore MLint error checking for this line.
+    end
+    %%% Now, when the dialog box is opened to retrieve an algorithm, the
+    %%% directory will be the default algorithm directory.
+    [AlgorithmNamedotm,Pathname] = uigetfile('Alg*.m',...
+        'Choose an image analysis module');
+    %%% Change back to the original directory.
+    cd(CurrentDirectory)
 
-%%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and
-%%% everything should be left as it was.  If the algorithm is not on
-%%% Matlab's search path, the user is warned.
-if AlgorithmNamedotm == 0,
-  %%% If the algorithm's .m file is not found on the search path, the result
-  %%% of exist is zero.
-elseif exist(AlgorithmNamedotm,'file') == 0
-  msgbox(['The .m file ', AlgorithmNamedotm, ...
-        ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
-  %%% The folder containing the desired .m file is added to Matlab's search path.
-  addpath(Pathname)
-  %%% Doublecheck that the algorithm exists on Matlab's search path.
-  if exist(AlgorithmNamedotm,'file') == 0
-    errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
-  end
-else
+    %%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and
+    %%% everything should be left as it was.  If the algorithm is not on
+    %%% Matlab's search path, the user is warned.
+    if AlgorithmNamedotm == 0,
+        %%% If the algorithm's .m file is not found on the search path, the result
+        %%% of exist is zero.
+    elseif exist(AlgorithmNamedotm,'file') == 0
+        msgbox(['The .m file ', AlgorithmNamedotm, ...
+            ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
+        %%% The folder containing the desired .m file is added to Matlab's search path.
+        addpath(Pathname)
+        %%% Doublecheck that the algorithm exists on Matlab's search path.
+        if exist(AlgorithmNamedotm,'file') == 0
+            errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
+        end
+    else
 
-  %%% 3. The last two characters (=.m) are removed from the
-  %%% AlgorithmName.m and called AlgorithmName.
-  AlgorithmName = AlgorithmNamedotm(4:end-2);
-  %%% The name of the algorithm is shown in a text box in the GUI (the text
-  %%% box is called AlgorithmName1.) and in a text box in the GUI which
-  %%% displays the current algorithm (whose settings are shown).
-  
+        %%% 3. The last two characters (=.m) are removed from the
+        %%% AlgorithmName.m and called AlgorithmName.
+        AlgorithmName = AlgorithmNamedotm(4:end-2);
+        %%% The name of the algorithm is shown in a text box in the GUI (the text
+        %%% box is called AlgorithmName1.) and in a text box in the GUI which
+        %%% displays the current algorithm (whose settings are shown).
 
-  %%% 4. Saves the AlgorithmName to the handles structure.
-  handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
-  contents = get(handles.AlgorithmBox,'String');
-  contents{AlgorithmNums} = AlgorithmName;
-  set(handles.AlgorithmBox,'String',contents);
 
-  %%% 5. The text description for each variable for the chosen algorithm is 
-  %%% extracted from the algorithm's .m file and displayed.  
-  fid=fopen([Pathname AlgorithmNamedotm]);
+        %%% 4. Saves the AlgorithmName to the handles structure.
+        handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
+        contents = get(handles.AlgorithmBox,'String');
+        contents{AlgorithmNums} = AlgorithmName;
+        set(handles.AlgorithmBox,'String',contents);
 
-  while 1;
-      output = fgetl(fid); if ~ischar(output); break; end;
+        %%% 5. The text description for each variable for the chosen algorithm is
+        %%% extracted from the algorithm's .m file and displayed.
+        fid=fopen([Pathname AlgorithmNamedotm]);
 
-      if (strncmp(output,'%defaultVAR',11) == 1),
-          displayval = output(17:end);
-          istr = output(12:13);
-          i = str2num(istr);
-          handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
-          handles.numVariables(str2double(AlgorithmNumber)) = i;
-      end
-  end
-  fclose(fid);
+        while 1;
+            output = fgetl(fid); if ~ischar(output); break; end;
 
-  %%% 6. Update handles.numAlgorithms
-  if str2double(AlgorithmNumber) > handles.numAlgorithms,
-    handles.numAlgorithms = str2double(AlgorithmNumber);
-  end
-  
-  %%% 7. Choose Loaded Algorithm in Listbox
-  set(handles.AlgorithmBox,'Value',handles.numAlgorithms);
-    
-  %%% Updates the handles structure to incorporate all the changes.
-  guidata(gcbo, handles);
-  ViewAlgorithm(handles);
-end
+            if (strncmp(output,'%defaultVAR',11) == 1),
+                displayval = output(17:end);
+                istr = output(12:13);
+                i = str2num(istr);
+                handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
+                handles.numVariables(str2double(AlgorithmNumber)) = i;
+            end
+        end
+        fclose(fid);
+
+        %%% 6. Update handles.numAlgorithms
+        if str2double(AlgorithmNumber) > handles.numAlgorithms,
+            handles.numAlgorithms = str2double(AlgorithmNumber);
+        end
+
+        %%% 7. Choose Loaded Algorithm in Listbox
+        set(handles.AlgorithmBox,'Value',handles.numAlgorithms);
+
+        %%% Updates the handles structure to incorporate all the changes.
+        guidata(gcbo, handles);
+        ViewAlgorithm(handles);
+    end
+
 
 %%%%%%%%%%%%%%%%%
 

@@ -1,4 +1,29 @@
-   Move Algorithms and Variables to arrays, and to handles.Settings
+   Figure out how to make font sizes uniform on PC vs Unix vs Mac.
+
+   Change CellProfiler.m code to preallocate if possible, relating to the following variables (line numbers are approximate).
+L 1391 (C 29-40): Array 'Measurements' is constructed using subscripting. Consider preallocating for speed
+L 1485 (C 9-28): Array 'EditedMeasFieldnames' is constructed using subscripting. Consider preallocating for speed
+L 1514 (C 9-31): Array 'EditedHeadingFieldnames' is constructed using subscripting. Consider preallocating for speed
+L 1982 (C 13-28): Array 'PlotBinLocations' is constructed using subscripting. Consider preallocating for speed
+L 1991 (C 45-55): Array 'XTickLabels' is constructed using subscripting. Consider preallocating for speed
+L 2073 (C 17-34): Array 'ListOfMeasurements' is constructed using subscripting. Consider preallocating for speed
+L 2532 (C 13-32): Array 'EditedMeasFieldnames' is constructed using subscripting. Consider preallocating for speed
+L 2578 (C 25-49): Array 'EditedPotentialImageNames' is constructed using subscripting. Consider preallocating for speed
+L 2886 (C 25-31): Array 'Pending' is constructed using subscripting. Consider preallocating for speed
+L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider preallocating for speed
+
+   Determine whether lines near the variable 'contents' can be removed from CellProfiler.m .   
+
+   Load settings from an output file works now, but Load settings from a settings file no longer works and it yields this error:
+??? Reference to non-existent field 'Valgorithmname'.
+Error in ==> CellProfiler>LoadSettingsFromFileButton_Callback at 561
+   handles.Settings.Valgorithmname = Settings.Valgorithmname;
+Error in ==> gui_mainfcn at 75
+        feval(varargin{:});
+Error in ==> CellProfiler at 56
+    gui_mainfcn(gui_State, varargin{:});
+
+Move Algorithms and Variables to arrays, and to handles.Settings
       substructure  (in VariableArrayBranch) [BETA, Anne thinks]
 
    Refine List box [BETA]
@@ -9,6 +34,6 @@
 
    "Make projection" module (= average, get code from DivideAllMean). Did In Han finish this already?  If so, make a manual page.
 
-   RGB to Grayscale module
+   RGB to Grayscale module [BETA]
 
    Rescale intensity image (stretch histogram)

@@ -46,29 +46,17 @@ for Object = 1:length(ObjectNames)
     %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
     
-    %%% Write comma-separated file that can be imported into Excel
-    %%%% Header part, general information goes here. Different for
-    % summary vs full report.
-    if strcmp(Summary,'no')
-        fprintf(fid,'%s: Full report\n', ObjectName);
-        fprintf(fid,'\n');                                 % ~Image names should be here
-    else
-        fprintf(fid,'%s: Summary\n', ObjectName);
-        fprintf(fid,'\n');
-    end
-
-    %%% Feature part
-    % Organize features in format suitable for exportation. Create
-    % a cell array Measurements where all features are concatenated
-    % with each column corresponding to a separate feature
+   
+    %%% Organize features in format suitable for exportation. Create
+    %%% a cell array Measurements where all features are concatenated
+    %%% with each column corresponding to a separate feature
     FeatureNames = {};
     Measurements = {};
-    
     for k = 1:length(fields)
-        if ~isempty(strfind(fields{k},'Features'))
+        if ~isempty(strfind(fields{k},'Features'))                          % Found a field with feature names
             % Concatenate measurement and feature name matrices
             tmp = handles.Measurements.(ObjectName).(fields{k}(1:end-8));   % Get the associated cell array of measurements
-            if isempty(Measurements)
+            if isempty(Measurements)                                        % Have to initialize 
                 Measurements = tmp;
             else
                 for j = 1:length(tmp)
@@ -98,17 +86,50 @@ for Object = 1:length(ObjectNames)
             Measurements{k} = [mean(Measurements{k});median(Measurements{k});std(Measurements{k})];
         end
     end
-
+    SummaryInfo = {'Mean','Median','Std'};
+    
+    % Get general information from handles.Measurements.GeneralInfo
+    InfoFields = fieldnames(handles.Measurements.GeneralInfo);
+    Filenames  = InfoFields(strmatch('Filename',InfoFields));
+    Thresholds = InfoFields(strmatch('ImageThreshold',InfoFields));
+    for k = 1:length(Thresholds)
+        if strcmp(Thresholds{k}(15:end),ObjectName)
+            Threshold = handles.Measurements.GeneralInfo.(Thresholds{k});
+        end
+    end
+    Time = handles.Measurements.GeneralInfo.TimeElapsed;
+    
+    
+    %%% Write comma-separated file that can be imported into Excel
+    
+    % Header part
+    if strcmp(Summary,'no')
+        fprintf(fid,'%s: Full report\nTotal time: %0.2f s', ObjectName,Time{end});
+    else
+        fprintf(fid,'%s: Summary\nTotal time: %0.2f s', ObjectName,Time{end});
+    end
+    fprintf(fid,'\n'); 
+    
+    % Write feature names in one row
     % Interleave feature names with commas and write to file
     str = cell(2*length(FeatureNames),1);
     str(1:2:end) = {','};
     str(2:2:end) = FeatureNames;
-    fprintf(fid,'%s\n',cat(2,str{:}));
+    fprintf(fid,',%s\n',cat(2,str{:}));
     
-    % Write measurements one row at the time
-    SummaryInfo = {'Mean','Median','Std'};
-    for k = 1:length(Measurements)                                 % Loop over image sets
-        fprintf(fid,'Set #%d %d objects\n',k,NumObjects(k));
+    
+    % Loop over the images sets
+    for k = 1:length(Measurements)                                 
+        
+        % Write info about the image set
+        fprintf(fid,'Set #%d, %d objects\n',k,NumObjects(k));
+        fprintf(fid,'Filenames: ');
+        for j = 1:length(Filenames)
+            fprintf(fid,'"%s":%s ',Filenames{j}(9:end),handles.Measurements.GeneralInfo.(Filenames{j}){k});
+        end
+        fprintf(fid,',Threshold: %g\n',Threshold{k});
+        
+        % Write measurements
         for row = 1:size(Measurements{k},1)                        % Loop over the rows
             if strcmp(Summary,'yes')
                 fprintf(fid,'%s',SummaryInfo{row});
@@ -117,11 +138,10 @@ for Object = 1:length(ObjectNames)
             str = cell(2*length(tmp),1);                           % Interleave with commas
             str(1:2:end) = {','};
             str(2:2:end) = tmp;
-            fprintf(fid,'%s\n',cat(2,str{:}));                     % Write to file
+            fprintf(fid,',%s\n',cat(2,str{:}));                     % Write to file
         end
         fprintf(fid,'\n');                                         % Separate image sets with a blank row
     end
-
     fclose(fid);
     cd(handles.Current.StartupDirectory);
 
@@ -136,28 +156,23 @@ function [ObjectNames,Summary] = ObjectsToExport(handles)
 % the Cancel button (or the window was closed). 'Summary' takes on the values'yes'
 % or 'no', depending if the user only wants a summary report (mean and std)
 % or a full report.
+
+% The fontsize is stored in the 'UserData' property of the main Matlab window
 FontSize = get(0,'UserData');
+
+% Get measurement object fields
 fields = fieldnames(handles.Measurements);
 
-% Remove fields that should be ignored
-Ignorefields = {'Pathname' 'Filename' 'ImageThreshold' 'TimeElapsed'};
-tmp = {};
-for k = 1:length(fields)
-    test = 0;
-    for j = 1:length(Ignorefields)
-        if ~isempty(strfind(fields{k},Ignorefields{j}))
-            test = test + 1;
-        end
-    end
-    if test == 0,tmp = cat(1,tmp,fields(k));end           % Field is not among the Ignorefields, store it
-end
-fields = tmp;
+% Remove the 'GeneralInfo' field
+index = setdiff(1:length(fields),strmatch('GeneralInfo',fields));
+fields = fields(index);
+
 
 % Create Export window
 ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
 pos = get(ETh,'position');
-Height = 1.5+length(fields)*0.25;                       % Window height in inches
+Height = 1.5+length(fields)*0.25;                       % Window height in inches, depends on the number of objects
 set(ETh,'position',[pos(1) pos(2) 4 Height]);
 
 % Top text

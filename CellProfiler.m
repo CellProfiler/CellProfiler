@@ -2263,42 +2263,44 @@ else
                 
                 %%% Create a vector that contains the length of each headings field.  In other
                 %%% words, determine the number of entries for each column of Sample Info.
-                Fieldnames = fieldnames(handles.Measurements.GeneralInfo);
-                ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
-                if isempty(ImportedFieldnames) == 0
-                    for i = 1:length(ImportedFieldnames);
-                        fieldname = char(ImportedFieldnames{i});
-                        Lengths(i) = length(handles.Measurements.GeneralInfo.(fieldname));
-                    end   
-                    %%% Create a logical array that indicates which headings do not have the
-                    %%% same number of entries as the number of image sets analyzed.
-                    IsWrongNumber = (Lengths ~= setbeinganalyzed - 1);
-                    %%% Determine which heading names to remove.
-                    HeadingsToBeRemoved = ImportedFieldnames(IsWrongNumber);
-                    %%% Remove headings names from handles.headings and remove the sample
-                    %%% info from the field named after the heading.
-                    if isempty(HeadingsToBeRemoved) == 0
-                        handles.Measurements.GeneralInfo = rmfield(handles.Measurements.GeneralInfo, HeadingsToBeRemoved);
-                        %%% Tell the user that fields have been removed.
-                        HeadingsErrorMessage(1) = {'Some of the sample info you'};
-                        HeadingsErrorMessage(2) = {'loaded does not have the'};
-                        HeadingsErrorMessage(3) = {'same number of entries as'};
-                        HeadingsErrorMessage(4) = {'the number of image sets'};
-                        HeadingsErrorMessage(5) = {['analyzed (which is ', num2str(setbeinganalyzed), ').']};
-                        HeadingsErrorMessage(6) = {'This mismatch will prevent'};
-                        HeadingsErrorMessage(7) = {'the extract data button from'};
-                        HeadingsErrorMessage(8) = { 'working, so the following'};
-                        HeadingsErrorMessage(9) = {'columns of sample info have'};
-                        HeadingsErrorMessage(10) = {'been deleted from the output'};
-                        HeadingsErrorMessage(11) = {'file. Click OK to continue.'};
-                        HeadingsErrorMessage = cellstr(HeadingsErrorMessage);
-                        listdlg('ListString', HeadingsToBeRemoved, 'PromptString', HeadingsErrorMessage, 'CancelString', 'OK');
-                        %%% Save all data that is in the handles structure to the output file
-                        %%% name specified by the user.
-                        eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
-                            get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
-                    end % This end goes with the "isempty" line.
-                end % This end goes with the 'isempty' line.
+                if isfield(handles.Measurements,'GeneralInfo') == 1
+                    Fieldnames = fieldnames(handles.Measurements.GeneralInfo);
+                    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+                    if isempty(ImportedFieldnames) == 0
+                        for i = 1:length(ImportedFieldnames);
+                            fieldname = char(ImportedFieldnames{i});
+                            Lengths(i) = length(handles.Measurements.GeneralInfo.(fieldname));
+                        end
+                        %%% Create a logical array that indicates which headings do not have the
+                        %%% same number of entries as the number of image sets analyzed.
+                        IsWrongNumber = (Lengths ~= setbeinganalyzed - 1);
+                        %%% Determine which heading names to remove.
+                        HeadingsToBeRemoved = ImportedFieldnames(IsWrongNumber);
+                        %%% Remove headings names from handles.headings and remove the sample
+                        %%% info from the field named after the heading.
+                        if isempty(HeadingsToBeRemoved) == 0
+                            handles.Measurements.GeneralInfo = rmfield(handles.Measurements.GeneralInfo, HeadingsToBeRemoved);
+                            %%% Tell the user that fields have been removed.
+                            HeadingsErrorMessage(1) = {'Some of the sample info you'};
+                            HeadingsErrorMessage(2) = {'loaded does not have the'};
+                            HeadingsErrorMessage(3) = {'same number of entries as'};
+                            HeadingsErrorMessage(4) = {'the number of image sets'};
+                            HeadingsErrorMessage(5) = {['analyzed (which is ', num2str(setbeinganalyzed), ').']};
+                            HeadingsErrorMessage(6) = {'This mismatch will prevent'};
+                            HeadingsErrorMessage(7) = {'the extract data button from'};
+                            HeadingsErrorMessage(8) = { 'working, so the following'};
+                            HeadingsErrorMessage(9) = {'columns of sample info have'};
+                            HeadingsErrorMessage(10) = {'been deleted from the output'};
+                            HeadingsErrorMessage(11) = {'file. Click OK to continue.'};
+                            HeadingsErrorMessage = cellstr(HeadingsErrorMessage);
+                            listdlg('ListString', HeadingsToBeRemoved, 'PromptString', HeadingsErrorMessage, 'CancelString', 'OK');
+                            %%% Save all data that is in the handles structure to the output file
+                            %%% name specified by the user.
+                            eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                                get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                        end % This end goes with the "isempty" line.
+                    end % This end goes with the 'isempty' line.
+                end
                 %%% Update the handles structure.
                 guidata(gcbo, handles)
 

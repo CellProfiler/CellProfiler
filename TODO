@@ -39,6 +39,7 @@ Image analysis modules - New:
 - Try to get code for yeast segmentation from this paper, and incorporate it into CellProfiler: SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan 1;32 Database issue:D319-22. PMID: 14681423 
 
 Image analysis modules - Improvements:
+- The error checking for "there are no images in this folder" should be moved out of CellProfiler.m and into the two Load Images modules, since some pipelines may not require images in order to run properly.
 - Save Image As module: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird).
 - Add more texture measurements to the MeasureIntensityTexture module. Perhaps use texture measurements from Murphy, Velliste, and Porreca 2003.  The image processing toolbox 5.0.1 has new texture analysis tools, though they would need to be adapted to deal with individual objects rather than entire images: 
 entropy -- Calculates the entropy of an intensity image
@@ -85,8 +86,15 @@ Increasing platform usability:
 - Compile CellProfiler to run independently of Matlab
 - Allow importing of images from Open Microscopy Environment databases.
 - ImageJ plugins: allow them to be run through CellProfiler
+- Allow the font sizes of GUI elements to be changed for various screen resolutions/platforms.  Make this part of "SetPreferences"?  Here is the quick fix which may help in determining a long term solution: Indeed, the font size is a platform/screen resolution issue.  We are working on addressing this but it is not straightforward. A quick fix, as you mention, is to type 'guide CellProfiler' at the command line of Matlab and adjust the font sizes so that they look good on your screen.  This involves somehow selecting each button/text object (using Select All or by clicking on each element) and adjusting the font size in View > Property Inspector. Some elements (like the module-specific information) must be changed within CellProfiler.m. Find the line:
+            set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+and add this line (replacing the number 8 with whatever size is appropriate for your screen):
+            set(handles.(['VariableDescription' TwoDigitString(i)]),'fontsize',8)
+
+
 
 Debugging:
+- The Set Preferences Tab only shows “Set default pixel size”, and not the other options on page 8 of the manual. So the user can not make a CellProfilerPreferences file.  (This is probably a platform-specific issue,  reported by Arne Heydorn).
 - The pixel size seems not to be loaded from CellProfilerPreferences.mat upon startup.  Also, the default when freshly installing CellProfiler ought to be 1 (I think it might be 0.25 right now).
 - The confirmation window upon "cancel after image set" button clicking ought to say "confirm cancel", not "confirm close".
 - We adapted the LoadImagesOrder and LoadImagesText modules to allow loading of DIB format images, but we have so far not adjusted the Show data on image button or the Show image button to load this type of image.
@@ -96,6 +104,9 @@ Validation:
 - Hand-outline a second set of images to compare to Chris' set.
 
 User-friendliness/interface/help:
+- Add this to the Show Image help: The Show Image button shows pixel values in the range 0 to 1.  Images are loaded into CellProfiler in this range so that modules behave consistently.  The display is set to the same range so that, for example, if a user wants to look at an image in order to determine which threshold to use within a module, the pixel values are directly applicable.
+- The Histograms tab at the lower part of the image is called Plot data, but seems to work as described in the manual.
+- The Normalization tab at the bottom of the window is called Data Layout and works differently from the Normalization described in the manual at page 17.
 - Make "applications" technical notes and automatic settings files to give a good starting place for common applications (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and for common cell types.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.

@@ -704,7 +704,7 @@ if FileName ~= 0
         RevisionNumbersDisplay = ['Variable Revision Numbers: ' num2str(handles.Settings.VariableRevisionNumbers)];
         display = strvcat(display, PixelSizeDisplay, RevisionNumbersDisplay);
         %% Save to a .txt file.
-        dlmwrite([SavePathname '\' filename], display, 'delimiter', '');
+        dlmwrite(fullfile(SavePathname,filename), display, 'delimiter', '');
     end
   helpdlg('The settings file(s) has been written.');
 end

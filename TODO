@@ -76,7 +76,7 @@ Settings =      ModuleNames: {1x6 cell}
        buttons, add an error check in case the mat file does not
        contain the field "Measurements". 
 
-     - Allow the user to 'export' the current settings into some nice,
+     -Done- Allow the user to 'export' the current settings into some nice,
        person-readable text file so they have a permanent record. 
 
      - All modules: look for speed improvements (esp. imresize?)

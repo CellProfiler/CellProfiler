@@ -2,6 +2,7 @@ CellProfiler cell image analysis software development
 November 8, 2004
 
 Infrastructure improvements:
+- In the main GUI, add a box to enter the default output directory.  Make all kinds of changes to default/working/current directories.
 - Allow running on a cluster in interactive mode
 - Allow running on a cluster in batch mode
 - Change saving of the output file to be faster for large jobs

@@ -174,6 +174,8 @@ else
                             val = val{1};
                             if ischar(val),
                                 fwrite(fid, sprintf('%s\t', val), 'char');
+                            elseif isempty(val)
+                                fwrite(fid, sprintf('%s\t', 'N/A'), 'char');
                             else
                                 fwrite(fid, sprintf('%g\t', val), 'char');
                             end

@@ -43,7 +43,7 @@ Settings =      ModuleNames: {1x6 cell}
 
      - Remove unnecessary cd's and use full pathnames instead (Ask Ray).
 
-     - When viewing algorithms in the main GUI, the down arrow should
+     -?- When viewing algorithms in the main GUI, the down arrow should
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens). 
 

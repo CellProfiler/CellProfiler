@@ -68,8 +68,11 @@ handles.output = hObject;
 handles.numAlgorithms = 0;
 handles.MaxAlgorithms = 99;
 handles.MaxVariables = 11;
-handles.AlgorithmHighlighted = 1;
 handles.FigureDisplayString = cell(1,99);
+global closeFigures openFigures;
+closeFigures = [];
+openFigures = [];
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -577,7 +580,6 @@ handles.FigureDisplayString = cell(1,99);
 contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 set(handles.AlgorithmBox,'Value',1);
-handles.AlgorithmHighlighted = 1;
 handles.Vpixelsize = Settings.Vpixelsize;
 set(handles.PixelSizeEditBox,'string',Settings.Vpixelsize);
 
@@ -608,10 +610,10 @@ if FileName ~= 0
   %%% Checks if a field is present, and if it is, the value is stored in the 
   %%% structure 'Settings' with the same name
   
-  if isfield(handles,'Settings.Vvariable'),
+  if isfield(handles.Settings,'Vvariable'),
       Settings.Vvariable = handles.Settings.Vvariable;
   end
-  if isfield(handles,'Settings.Valgorithmname'),
+  if isfield(handles.Settings,'Valgorithmname'),
       Settings.Valgorithmname = handles.Settings.Valgorithmname;
   end
   if isfield(handles,'numVariables'),
@@ -853,9 +855,7 @@ else
   
   %%% 9. Choose Loaded Algorithm in Listbox
   set(handles.AlgorithmBox,'Value',handles.numAlgorithms);
-  handles.AlgorithmHighlighted = handles.numAlgorithms;
-  
-  
+    
   %%% Updates the handles structure to incorporate all the changes.
   guidata(gcbo, handles);
   ViewAlgorithm(handles);
@@ -864,8 +864,9 @@ end
 %%%%%%%%%%%%%%%%%
 
 function ViewAlgorithm(handles)
-if (length(handles.AlgorithmHighlighted) > 0)
-    AlgorithmNumber = handles.AlgorithmHighlighted(1);
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+if (length(AlgorithmHighlighted) > 0)
+    AlgorithmNumber = AlgorithmHighlighted(1);
     if( handles.numAlgorithms > 0 )
 
     %%% 2. Sets all 11 VariableBox edit boxes and all 11
@@ -920,11 +921,11 @@ end
 
 % --- Executes on button press for RemoveAlgorithm button.
 function RemoveAlgorithm_Callback(hObject, eventdata, handles)
-AlgorithmNumber = handles.AlgorithmHighlighted;
-RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, 'Confirm');
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, 'Confirm');
 
 % separated because it's called elsewhere
-function RemoveAlgorithm_Helper(AlgorithmNumber, hObject, eventdata, handles, ConfirmOrNot)
+function RemoveAlgorithm_Helper(AlgorithmHighlighted, hObject, eventdata, handles, ConfirmOrNot)
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the algorithm.
@@ -934,19 +935,20 @@ if strcmp(ConfirmOrNot, 'Confirm') == 1
     end
 end
 
-%%% 1. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
-%%% to be invisible.
-for AlgDelete = 1:length(AlgorithmNumber);
-    for i = 1:handles.numVariables(AlgorithmNumber(AlgDelete));
-        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
-        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
-    end
+%%% 1. Sets all 11 VariableBox edit boxes and all 11
+%%% VariableDescriptions to be invisible.
+for i = 1:handles.MaxVariables
+    set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
+    set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+end
+
+for AlgDelete = 1:length(AlgorithmHighlighted);
     %%% 2. Removes the AlgorithmName from the handles structure.
-    handles.Settings.Valgorithmname(AlgorithmNumber(AlgDelete)-AlgDelete+1) = [];
+    handles.Settings.Valgorithmname(AlgorithmHighlighted(AlgDelete)-AlgDelete+1) = [];
     %%% 3. Clears the variable values in the handles structure.
-    handles.Settings.Vvariable(AlgorithmNumber(AlgDelete)-AlgDelete+1,:) = [];
+    handles.Settings.Vvariable(AlgorithmHighlighted(AlgDelete)-AlgDelete+1,:) = [];
     %%% 4. Clears the number of variables in each algorithm slot from handles structure.
-    handles.numVariables(AlgorithmNumber(AlgDelete)-AlgDelete+1) = [];
+    handles.numVariables(AlgorithmHighlighted(AlgDelete)-AlgDelete+1) = [];
 end
 
 %%% 5. Update the number of algorithms loaded
@@ -955,24 +957,25 @@ handles.numAlgorithms = length(handles.Settings.Valgorithmname);
 
 %%% 6. Sets the proper algorithm name to "No analysis module loaded"
 contents = get(handles.AlgorithmBox,'String');
-if(AlgorithmNumber(1)==1)
-    contents{AlgorithmNumber(1)} = 'No Algorithms Loaded';
+if(isempty(handles.Settings.Valgorithmname))
+    contents = {'No Algorithms Loaded'};
 else
-    contents{AlgorithmNumber(1)} = [];
+    contents = handles.Settings.Valgorithmname;
 end
 
-contents = handles.Settings.Valgorithmname;
 set(handles.AlgorithmBox,'String',contents);
 
-
-while((isempty(handles.AlgorithmHighlighted)==0) && (handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) > handles.numAlgorithms) )
-    handles.AlgorithmHighlighted(length(handles.AlgorithmHighlighted)) = [];
+while((isempty(AlgorithmHighlighted)==0) && (AlgorithmHighlighted(length(AlgorithmHighlighted)) > handles.numAlgorithms) )
+    AlgorithmHighlighted(length(AlgorithmHighlighted)) = [];
 end
 
-if(isempty(handles.AlgorithmHighlighted))
-    handles.AlgorithmHighlighted = handles.numAlgorithms;
+if(handles.numAlgorithms == 0)
+    AlgorithmHighlighted = [1];
+elseif (isempty(AlgorithmHighlighted))
+    AlgorithmHighlighted = handles.numAlgorithms;
 end
-set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
+
+set(handles.AlgorithmBox,'Value',AlgorithmHighlighted);
 
 guidata(gcbo, handles);
 ViewAlgorithm(handles);
@@ -982,12 +985,12 @@ ViewAlgorithm(handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function MoveUpButton_Callback(hObject, eventdata, handles)
-AlgorithmNumber = handles.AlgorithmHighlighted;
-if(handles.numAlgorithms < 1 || AlgorithmNumber(1) == 1)
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+if(handles.numAlgorithms < 1 || AlgorithmHighlighted(1) == 1)
 else
-    for AlgUp = 1:length(AlgorithmNumber);
-        AlgorithmUp = AlgorithmNumber(AlgUp)-1;
-        AlgorithmNow = AlgorithmNumber(AlgUp);
+    for AlgUp = 1:length(AlgorithmHighlighted);
+        AlgorithmUp = AlgorithmHighlighted(AlgUp)-1;
+        AlgorithmNow = AlgorithmHighlighted(AlgUp);
         %%% 1. Switches AlgorithmNames
         AlgorithmUpName = char(handles.Settings.Valgorithmname(AlgorithmUp));
         AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
@@ -1005,9 +1008,9 @@ else
     end
     %%% 4. Changes the Listbox to show the changes
     contents = handles.Settings.Valgorithmname;
-    handles.AlgorithmHighlighted = handles.AlgorithmHighlighted-1;
+    AlgorithmHighlighted = AlgorithmHighlighted-1;
     set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted);
+    set(handles.AlgorithmBox,'Value',AlgorithmHighlighted);
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)
@@ -1016,12 +1019,12 @@ end
 %%%%%%%
 
 function MoveDownButton_Callback(hObject,eventdata,handles)
-AlgorithmNumber = handles.AlgorithmHighlighted;
-if(handles.numAlgorithms<1 || AlgorithmNumber(length(AlgorithmNumber)) >= handles.numAlgorithms)
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+if(handles.numAlgorithms<1 || AlgorithmHighlighted(length(AlgorithmHighlighted)) >= handles.numAlgorithms)
 else
-    for AlgDown = 1:length(AlgorithmNumber);
-        AlgorithmDown = AlgorithmNumber(AlgDown) + 1;
-        AlgorithmNow = AlgorithmNumber(AlgDown);
+    for AlgDown = 1:length(AlgorithmHighlighted);
+        AlgorithmDown = AlgorithmHighlighted(AlgDown) + 1;
+        AlgorithmNow = AlgorithmHighlighted(AlgDown);
         %%% 1. Saves the AlgorithmName
         AlgorithmDownName = char(handles.Settings.Valgorithmname(AlgorithmDown));
         AlgorithmName = char(handles.Settings.Valgorithmname(AlgorithmNow));
@@ -1040,8 +1043,8 @@ else
     %%% 4. Changes the Listbox to show the changes
     contents = handles.Settings.Valgorithmname;
     set(handles.AlgorithmBox,'String',contents);
-    set(handles.AlgorithmBox,'Value',handles.AlgorithmHighlighted+1);
-    handles.AlgorithmHighlighted = handles.AlgorithmHighlighted+1;
+    set(handles.AlgorithmBox,'Value',AlgorithmHighlighted+1);
+    AlgorithmHighlighted = AlgorithmHighlighted+1;
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ViewAlgorithm(handles)
@@ -1054,47 +1057,23 @@ end
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
 function CloseFigureButton_Callback(hObject, eventdata, handles)
-AlgorithmNumber = handles.AlgorithmHighlighted;
-thisFigString = char(handles.FigureDisplayString{AlgorithmNumber});
-if(strcmp(thisFigString, 'Closing...') == 0)
-handles.FigureDisplayString{AlgorithmNumber} = 'Closing...';
+global closeFigures;
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+for i=1:length(AlgorithmHighlighted),
+        closeFigures(length(closeFigures)+1) = AlgorithmHighlighted(i);
 end
 guidata(hObject, handles);
-%%% First case: closing or opening is already in progress; Don't do
-%%% anything.
-%{
-CurrentHandle = handles.(['CloseFigureButton']);
-ButtonStatus = get(CurrentHandle, 'string');
-if strcmp(ButtonStatus, 'Closing...') == 1 
-elseif strcmp(ButtonStatus, 'Close Figure') == 1 
-    %%% Setting the text to "Closing" will allow this window to close at the
-    %%% end of the current image set.
-    set(CurrentHandle,'string', 'Closing...')
-    %%% Refreshes the Main GUI window.
-    drawnow
-end
-%}
+
 
 % --- Executes on button press in OpenFigureButton.
 function OpenFigureButton_Callback(hObject, eventdata, handles)
-AlgorithmNumber = handles.AlgorithmHighlighted;
-thisFigString = char(handles.FigureDisplayString{AlgorithmNumber});
-if(strcmp(thisFigString, 'Opening...') == 0)
-handles.FigureDisplayString{AlgorithmNumber} = 'Opening...';
+global openFigures;
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+for i=1:length(AlgorithmHighlighted),
+        openFigures(length(openFigures)+1) = AlgorithmHighlighted(i);
 end
 guidata(hObject, handles);
-%{
-CurrentHandle = handles.(['OpenFigureButton']);
-ButtonStatus = get(CurrentHandle, 'string');
-if strcmp(ButtonStatus, 'Opening...') == 1 
-elseif strcmp(ButtonStatus, 'Open Figure') == 1 
-    %%% Setting the text to "Closing" will allow this window to close at the
-    %%% end of the current image set.
-    set(CurrentHandle,'string', 'Opening...')
-    %%% Refreshes the Main GUI window.
-    drawnow
-end
-%}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
@@ -1109,7 +1088,8 @@ handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber)) = {UserE
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles)
-AlgorithmNumber = handles.AlgorithmHighlighted(1);
+AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
+AlgorithmNumber = AlgorithmHighlighted(1);
     
 % --- Executes during object creation, after setting all properties.
 function VariableBox_CreateFcn(hObject, eventdata, handles)
@@ -1144,9 +1124,6 @@ end
 
 % --- Executes on selection change in AlgorithmBox.
 function AlgorithmBox_Callback(hObject, eventdata, handles)
-
-contents = get(hObject,'String');
-handles.AlgorithmHighlighted = get(hObject,'Value');
 
 % Update handles structure
 guidata(hObject, handles);
@@ -2665,6 +2642,7 @@ cd(CurrentDirectory);
 
 % --- Executes on button press in AnalyzeAllImagesLocalButton.
 function AnalyzeAllImagesLocalButton_Callback(hObject, eventdata, handles)
+global closeFigures openFigures;
 CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
 sum = 0;
@@ -2672,8 +2650,8 @@ for i = 1:handles.numAlgorithms;
     sum = sum + iscellstr(handles.Settings.Valgorithmname(i));
 end
 if sum == 0, errordlg('You do not have any analysis modules loaded')
-else 
-    %%% Checks whether an output file name has been specified. 
+else
+    %%% Checks whether an output file name has been specified.
     if isfield(handles, 'Voutputfilename') == 0
         errordlg('You have not entered an output file name in Step 2.')
     elseif isempty(handles.Voutputfilename)
@@ -2686,18 +2664,18 @@ else
         try cd(pathname);
         catch DirDoesNotExist = 1;
         end
-        
+
         if DirDoesNotExist == 1
             errordlg('The chosen directory does not exist')
         else
-            
+
             %%% Checks whether the specified output file name will overwrite an
-            %%% existing file. 
+            %%% existing file.
             OutputFileOverwrite = exist([cd,'/',handles.Voutputfilename],'file');
             if OutputFileOverwrite ~= 0
                 errordlg('An output file with the name you entered in Step 2 already exists. Overwriting is not allowed, so please enter a new filename.')
             else
-                
+
                 %%% Retrieves the list of image file names in the chosen directory and
                 %%% stores them in the handles structure, using the function
                 %%% RetrieveImageFileNames.  This should already have been done when the
@@ -2745,29 +2723,29 @@ else
                 set(handles.AnalyzeAllImagesLocalButton,'enable','off')
                 set(handles.AnalyzeAllImagesClusterButton,'enable','off')
                 set(handles.ExportDataButton,'enable','off')
-                set(handles.ExportCellByCellButton,'enable','off')                
+                set(handles.ExportCellByCellButton,'enable','off')
                 set(handles.HistogramButton,'enable','off')
                 set(handles.NormalizationButton,'enable','off')
                 set(handles.DisplayDataOnImageButton,'enable','off')
-                
+
                 %%% The following code prevents the warning message in the Matlab
                 %%% main window: "Warning: Image is too big to fit on screen":
-                %%% This warning appears due to the truesize command which 
+                %%% This warning appears due to the truesize command which
                 %%% rescales an image so that it fits on the screen.  Truesize is often
                 %%% called by imshow.
                 try
                     iptsetpref('TruesizeWarning','off')
                 catch error('Apparently, you do not have the Image Processing Toolbox installed or licensed on this computer. This is likely to be necessary for running most of the modules. If you know you do not need the image processing toolbox for the modules you want to run, you might want to try removing the "iptsetpref" lines in the main CellProfiler program and trying again.')
                 end
-                %%% In the following code, the Timer window and 
-                %%% timer_text is created.  Each time around the loop, 
+                %%% In the following code, the Timer window and
+                %%% timer_text is created.  Each time around the loop,
                 %%% the text will be updated using the string property.
-                
+
                 %%% Obtains the screen size.
                 ScreenSize = get(0,'ScreenSize');
                 ScreenWidth = ScreenSize(3);
                 ScreenHeight = ScreenSize(4);
-                
+
                 %%% Makes the timer_handle variable global for future use.
                 global timer_handle
                 %%% Determines where to place the timer window: We want it below the image
@@ -2782,14 +2760,14 @@ else
                     'color',[0.7,0.7,0.9]);
                 %%% Sets initial text to be displayed in the text box within the timer window.
                 timertext = 'First image set is being processed';
-                %%% The text_handle, CancelAfterImageSetButton_handle, and PauseButton_handle 
+                %%% The text_handle, CancelAfterImageSetButton_handle, and PauseButton_handle
                 %%% variables are made global so that the Cancel and Pause
                 %%% button functions are able to find them when the time comes to set the
                 %%% string to "Canceling in progress" or to disable the Cancel and Pause
                 %%% buttons when they have already been pressed.
                 global text_handle CancelAfterImageSetButton_handle CancelAfterModuleButton_handle PauseButton_handle
                 %%% Creates the text box within the timer window which will display the
-                %%% timer text.  
+                %%% timer text.
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
                     'parent',timer_handle,'position', [0 40 494 64],'FontName','Times',...
                     'FontSize',14,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
@@ -2802,7 +2780,7 @@ else
                 CancelAfterModuleButtonFunction = 'deleteme = questdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled.'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; global text_handle CancelAfterModuleButton_handle CancelAfterImageSetButton_handle; set(CancelAfterImageSetButton_handle,''enable'',''off''); set(CancelAfterModuleButton_handle,''enable'',''off''); set(text_handle,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); clear Cancel*; clear text_handle deleteme; case ''No''; return; end;';
                 CancelNowCloseButtonFunction = 'global MainGUIhandle; deleteme = questdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''), switch deleteme; case ''Yes''; delete(MainGUIhandle); case ''No''; return; end; clear MainGUIhandle, clear deleteme';
                 HelpButtonFunction = 'msgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
-                
+
                 %%% Creates the Cancel and Pause buttons.
                 PauseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Pause', 'Position', [5 10 40 30], ...
@@ -2824,7 +2802,7 @@ else
                 %%% at the end of each time around the loop (i.e. at the end of each image
                 %%% set).  If it notices that the string says "Cancel...", it breaks out of
                 %%% the loop and finishes up.
-                
+
                 %%% Update the handles structure. Not sure if it's necessary here.
                 guidata(gcbo, handles);
                 %%% Sets the timer window to show a warning box before allowing it to be
@@ -2832,7 +2810,7 @@ else
                 CloseFunction = 'deleteme = questdlg(''DO NOT CLOSE the Timer window while image processing is in progress!! Are you sure you want to close the timer?'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; global timer_handle; delete(timer_handle); case ''No''; return; end; clear deleteme; clear timer_handle;';
                 set(timer_handle,'CloseRequestFcn',CloseFunction);
                 %%% Note: The size of the text object that fits inside the timer window is
-                %%% officially 1 pixel smaller than the size of the timer window itself. 
+                %%% officially 1 pixel smaller than the size of the timer window itself.
                 %%%  There is, however, a ~20 pixel gap at the top of the timer window: I
                 %%%  think this is because there is space allotted for a menu bar which is
                 %%%  not utilized in this window.  However, when I increased the size of
@@ -2840,7 +2818,7 @@ else
                 %%%  program crashing and creating segmentation faults, so I gave up and
                 %%%  decided to live with that gap being present.  I am not absolutely sure
                 %%%  that this was causing the problems, though.
-                
+
                 %%% If an algorithm is chosen in this slot, assign it an output figure
                 %%% window and write the figure window number to the handles structure so
                 %%% that the algorithms know where to write to.  Each algorithm should
@@ -2851,15 +2829,15 @@ else
                 %%% can find the handles.
                 set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
-                %listbox changes 
-               
+                %listbox changes
+
                 for i=1:handles.numAlgorithms;
                     if iscellstr(handles.Settings.Valgorithmname(i)) == 1
                         handles.(['figurealgorithm' TwoDigitString(i)]) = ...
-                            figure('name',[char(handles.Settings.Valgorithmname(i)), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);        
+                            figure('name',[char(handles.Settings.Valgorithmname(i)), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',[0.7,0.7,0.7]);
                     end
                 end
-                
+
                 %%% For the first time through, the number of image sets
                 %%% will not yet have been determined.  So, the Number of
                 %%% image sets is set temporarily.
@@ -2871,86 +2849,94 @@ else
                 tic
                 %%% Update the handles structure.
                 guidata(gcbo, handles);
-                
+
                 %%%%%%
                 %%% Begin loop (going through all the image sets).
                 %%%%%%
-                
+
                 %%% variable to allow breaking out of nested loops.
                 break_outer_loop = 0;
-                
+
                 while handles.setbeinganalyzed <= handles.Vnumberimagesets
                     setbeinganalyzed = handles.setbeinganalyzed;
-                    
+
                     %%% Loop through normally if this is the first
                     %%% image set or this evaluation is being run
                     %%% sequentially (i.e., not in parallel)
                     if ((setbeinganalyzed == 1) || (~ isfield(handles, 'parallel_machines')))
-                      % clear the Pending flag if we're using parallel machines
-                      if isfield(handles, 'parallel_machines')
-                        Pending(handles.parallel_machines + 1) = 0;
-                      end
+                        % clear the Pending flag if we're using parallel machines
+                        if isfield(handles, 'parallel_machines')
+                            Pending(handles.parallel_machines + 1) = 0;
+                        end
 
-                      for SlotNumber = 1:handles.numAlgorithms,
-                          %%% If an algorithm is not chosen in this slot, continue on to the next.
-                          AlgNumberAsString = TwoDigitString(SlotNumber);
-                          AlgName = char(handles.Settings.Valgorithmname(SlotNumber));
-                          if iscellstr(handles.Settings.Valgorithmname(SlotNumber)) == 0
-                          else
-                              %%% Saves the current algorithm number in the handles structure.
-                              handles.currentalgorithm = AlgNumberAsString;
-                              %%% The try/catch/end set catches any errors that occur during the
-                              %%% running of algorithm 1, notifies the user, breaks out of the image
-                              %%% analysis loop, and completes the refreshing process.
-                              try
-                                  %%% Runs the appropriate algorithm, with the handles structure as an
-                                  %%% input argument and as the output argument.
-                                  eval(['handles = Alg',AlgName,'(handles);'])
-                              catch
-                                  if exist(['Alg',AlgName,'.m'],'file') ~= 2,
-                                      errordlg(['Image processing was canceled because the image analysis module named ', (['Alg',handles.(AlgName),'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
-                                  else
-                                      %%% Runs the errorfunction function that catches errors and
-                                      %%% describes to the user what to do.
-                                      errorfunction(AlgNumberAsString)
-                                  end
-                                  %%% Causes break out of the image analysis loop (see below)
-                                  break_outer_loop = 1;
-                                  break;
-                              end % Goes with try/catch.
-                          end
-                          %%% If an immediate "cancel" signal is waiting, break and go to the "end" that goes
-                          %%% with the "while" loop.  The output file is not saved since it would only
-                          %%% be partially complete.
-                          CancelWaiting = get(handles.timertexthandle,'string');
-                          if strncmp(CancelWaiting,'Immedi',6) == 1
-                              break_outer_loop = 1;
-                              break
-                          end
+                        for SlotNumber = 1:handles.numAlgorithms,
+                            %%% If an algorithm is not chosen in this slot, continue on to the next.
+                            AlgNumberAsString = TwoDigitString(SlotNumber);
+                            AlgName = char(handles.Settings.Valgorithmname(SlotNumber));
+                            if iscellstr(handles.Settings.Valgorithmname(SlotNumber)) == 0
+                            else
+                                %%% Saves the current algorithm number in the handles structure.
+                                handles.currentalgorithm = AlgNumberAsString;
+                                %%% The try/catch/end set catches any errors that occur during the
+                                %%% running of algorithm 1, notifies the user, breaks out of the image
+                                %%% analysis loop, and completes the refreshing process.
+                                try
+                                    %%% Runs the appropriate algorithm, with the handles structure as an
+                                    %%% input argument and as the output argument.
+                                    eval(['handles = Alg',AlgName,'(handles);'])
+                                catch
+                                    if exist(['Alg',AlgName,'.m'],'file') ~= 2,
+                                        errordlg(['Image processing was canceled because the image analysis module named ', (['Alg',handles.(AlgName),'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
+                                    else
+                                        %%% Runs the errorfunction function that catches errors and
+                                        %%% describes to the user what to do.
+                                        errorfunction(AlgNumberAsString)
+                                    end
+                                    %%% Causes break out of the image analysis loop (see below)
+                                    break_outer_loop = 1;
+                                    break;
+                                end % Goes with try/catch.
+                            end
+                            %%% If an immediate "cancel" signal is waiting, break and go to the "end" that goes
+                            %%% with the "while" loop.  The output file is not saved since it would only
+                            %%% be partially complete.
+                            CancelWaiting = get(handles.timertexthandle,'string');
+                            if strncmp(CancelWaiting,'Immedi',6) == 1
+                                break_outer_loop = 1;
+                                break
+                            end
+                        end %%% ends loop over slot number
 
-                          %%% In a similar manner to determining whether a
-                          %%% cancel request is pending (see below),
-                          %%% determine whether a figure closing/opening
-                          %%% request is pending.
-                          ThisFigDisplayString = char(handles.FigureDisplayString{SlotNumber});
-                          if strcmp(ThisFigDisplayString, 'Closing...') == 1
-                              Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
-                              delete(Thisfigurealgorithm);
-                              handles.FigureDisplayString{SlotNumber} = 'Closed';
-                              %%% Refreshes the Main GUI window, or else "Open Figure" is not
-                              %%% displayed.
-                          elseif (strcmp(ThisFigDisplayString, 'Opening...') == 1);
-                              Thisfigurealgorithm = handles.(['figurealgorithm' AlgNumberAsString]);
-                              figure(Thisfigurealgorithm);
-                              set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display']);
-                              %%% Sets the closing function of the window appropriately. (See way
-                              %%% above where 'ClosingFunction's are defined).
-                              set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' AlgNumberAsString]));
-                              handles.FigureDisplayString{SlotNumber} = 'Opened';
-                          end
+                        closeFig = closeFigures;
+                        closeFigures = [];
+                        for i=1:length(closeFig),
+                            algNumber = closeFig(i);
+                            try
+                                Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
+                                delete(Thisfigurealgorithm);
+                            catch
+                            end
+                        end
+                        
+                        openFig = openFigures;
+                        openFigures = [];
+                        for i=1:length(openFig),
+                            algNumber = openFig(i);
+                            try
+                                Thisfigurealgorithm = handles.(['figurealgorithm' TwoDigitString(algNumber)]);
+                                figure(Thisfigurealgorithm);
+                                set(Thisfigurealgorithm, 'name',[(char(handles.Settings.Valgorithmname(algNumber))), ' Display']);
+                                set(Thisfigurealgorithm, 'Position',[(ScreenWidth*((algNumber-1)/12)) (ScreenHeight-522) 560 442]);
+                                set(Thisfigurealgorithm,'color',[0.7,0.7,0.7]);
+                                %%% Sets the closing function of the window appropriately. (See way
+                                %%% above where 'ClosingFunction's are defined).
+                                %set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(algNumber)]));
+                            catch
+                            end
+                        end
+                        
 
-                      end %%% ends loop over slot number
-                      
+
                       if (break_outer_loop),
                           break;  %%% this break is out of the outer loop of image analysis
                       end

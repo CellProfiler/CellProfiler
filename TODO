@@ -54,6 +54,7 @@ Data exporting
 - Allow data to be exported in MAGE format to go into databases.
 - Allow data to be exported to Open Microscopy Environment databases.
 - Allow adding sample info post-processing
+- Be sure that all exporting tools will function properly if some measurement fields are left blank, which is the case when there are no objects in a particular image, for example.  I am pretty sure that export mean data and export cell by cell data will result in an error.
 
 Data visualization/analysis:
 [[[ Note: We are not sure whether we want to focus on data visualization or leave this to other programs like Spotfire or GenePattern or Open Microscopy Environment.]]]

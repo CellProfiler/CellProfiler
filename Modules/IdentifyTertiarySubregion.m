@@ -212,9 +212,14 @@ drawnow
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
 if any(findobj == ThisAlgFigureNumber) == 1;
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    if sum(sum(SubregionObjectImage)) >= 1
+    ColoredSubregionObjectImage = label2rgb(SubregionObjectImage,'jet', 'k', 'shuffle');
+    else  ColoredSubregionObjectImage = SubregionObjectImage;
+    end
     %%% Converts the label matrix to a colored label matrix for display and saving
     %%% purposes.
-    ColoredSubregionObjectImage = label2rgb(SubregionObjectImage,'jet', 'k', 'shuffle');
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related

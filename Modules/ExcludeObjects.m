@@ -3,21 +3,20 @@ function handles = ExcludeObjects(handles)
 % Help for the Exclude Objects module:
 % Category: Object Identification
 %
-% This image analysis module has not yet been documented.
-%
-% Settings:
-%
-% What does Primary mean?
-% Identify Primary modules identify objects without relying on any
-% information other than a single grayscale input image (e.g. nuclei
-% are typically primary objects). Identify Secondary modules require a
-% grayscale image plus an image where primary objects have already
-% been identified, because the secondary objects' locations are
-% determined in part based on the primary objects (e.g. cells can be
-% secondary objects). Identify Tertiary modules require images where
-% two sets of objects have already been identified (e.g. nuclei and
-% cell regions are used to define the cytoplasm objects, which are
-% tertiary objects).
+% This image analysis module allows you to delete the objects and
+% portions of objects that are outside of a region you specify (e.g.
+% nuclei outside of a tissue region).  The objects and the region
+% should both result from any Identify module (Primary, Secondary, and
+% Tertiary modules will all work). Once the remaining objects are
+% identified, the user has the option to retain their original number
+% or renumber them consecutively. Retaining their original number
+% might be important if you intend to correlate measurements made on
+% the remaining objects with measurements made on the original
+% objects. Renumbering, on the other hand, makes the output file more
+% compact and the processing quicker. In addition, some subsequent
+% modules may not expect to have gaps in the list of objects (since
+% the objects no longer exist) so they may not run properly if the
+% objects are not renumbered.
 %
 % SAVING IMAGES: This module produces several images which can be
 % easily saved using the Save Images module. These will be grayscale
@@ -139,7 +138,11 @@ MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = EditedStaining
 RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%%%VariableRevisionNumber = 00
+%textVAR04 = For the remaining objects, do you want to retain their original number or renumber them consecutively (Retain or Renumber)? Retaining their original number might be important if you intend to correlate measurements made on the remaining objects with measurements made on the original objects.  Renumbering, on the other hand, makes the output file more compact and the processing quicker.
+%defaultVAR04 = Renumber
+Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%%%VariableRevisionNumber = 01
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -199,23 +202,29 @@ drawnow
 %%% within the regions identified in the MaskRegionObjectImage.
 NewSegmentedObjectImage = SegmentedObjectImage;
 NewSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
-%%% In case some objects are entirely deleted, the label matrix must
-%%% be compacted so that labels are not skipped. This is done by
-%%% relabeling. The default connectivity is used, to be consistent
-%%% with the connectivity used in the IdentifyPrim modules.
-NewSegmentedObjectImage2 = bwlabel(NewSegmentedObjectImage);
+if strncmpi(Renumber,'Ren',3) == 1
+    %%% In case some objects are entirely deleted, the label matrix is
+    %%% compacted so that labels are not skipped. This is done by
+    %%% relabeling. The default connectivity is used, to be consistent
+    %%% with the connectivity used in the IdentifyPrim modules.
+    NewSegmentedObjectImage = bwlabel(NewSegmentedObjectImage);
+end
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
 if exist('PrelimSegmentedObjectImage','var') == 1
-NewPrelimSegmentedObjectImage = PrelimSegmentedObjectImage;
-NewPrelimSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
-NewPrelimSegmentedObjectImage2 = bwlabel(NewPrelimSegmentedObjectImage);
+    NewPrelimSegmentedObjectImage = PrelimSegmentedObjectImage;
+    NewPrelimSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+    if strncmpi(Renumber,'Ren',3) == 1
+        NewPrelimSegmentedObjectImage = bwlabel(NewPrelimSegmentedObjectImage);
+    end
 end
 if exist('PrelimSmallSegmentedObjectImage','var') == 1
-NewPrelimSmallSegmentedObjectImage = PrelimSmallSegmentedObjectImage;
-NewPrelimSmallSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
-NewPrelimSmallSegmentedObjectImage2 = bwlabel(NewPrelimSmallSegmentedObjectImage);
+    NewPrelimSmallSegmentedObjectImage = PrelimSmallSegmentedObjectImage;
+    NewPrelimSmallSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+    if strncmpi(Renumber,'Ren',3) == 1
+        NewPrelimSmallSegmentedObjectImage = bwlabel(NewPrelimSmallSegmentedObjectImage);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -244,9 +253,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% window.
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
-    if sum(sum(NewSegmentedObjectImage2)) >= 1
-        ColoredNewSegmentedObjectImage2 = label2rgb(NewSegmentedObjectImage2, 'jet', 'k', 'shuffle');
-    else  ColoredNewSegmentedObjectImage2 = NewSegmentedObjectImage2;
+    if sum(sum(NewSegmentedObjectImage)) >= 1
+        ColoredNewSegmentedObjectImage = label2rgb(NewSegmentedObjectImage, 'jet', 'k', 'shuffle');
+    else  ColoredNewSegmentedObjectImage = NewSegmentedObjectImage;
     end
     if sum(sum(MaskRegionObjectImage)) >= 1
         ColoredMaskRegionObjectImage = label2rgb(MaskRegionObjectImage, 'jet', 'k', 'shuffle');
@@ -280,7 +289,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title(['Previously identified ', ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,2); imagesc(ColoredNewSegmentedObjectImage2);
+    subplot(2,2,2); imagesc(ColoredNewSegmentedObjectImage);
     title(RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
@@ -411,21 +420,21 @@ drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewSegmentedObjectImage2;
+handles.Pipeline.(fieldname) = NewSegmentedObjectImage;
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
-if exist('NewPrelimSegmentedObjectImage2','var') == 1
+if exist('NewPrelimSegmentedObjectImage','var') == 1
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
 fieldname = ['PrelimSegmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewPrelimSegmentedObjectImage2;
+handles.Pipeline.(fieldname) = NewPrelimSegmentedObjectImage;
 end
-if exist('NewPrelimSmallSegmentedObjectImage2','var') == 1
+if exist('NewPrelimSmallSegmentedObjectImage','var') == 1
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
 fieldname = ['PrelimSmallSegmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewPrelimSmallSegmentedObjectImage2;
+handles.Pipeline.(fieldname) = NewPrelimSmallSegmentedObjectImage;
 end
 
 %%% Determines the filename of the image to be analyzed.

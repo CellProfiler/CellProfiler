@@ -144,7 +144,7 @@ drawnow
 fieldname = ['', ImageName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname) == 0,
-    error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that loads a greyscale image.  You specified in the MeasureIntensityTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
+    error(['Image processing has been canceled. Prior to running the Measure Intensity Texture module, you must have previously run an algorithm that loads a greyscale image.  You specified in the MeasureIntensityTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity Texture module cannot locate this image.']);
     end
 OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
 
@@ -152,7 +152,7 @@ OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImageToBeAnalyzed) ~= 2
-    error('Image processing was canceled because the Segment Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error('Image processing was canceled because the Measure Intensity Texture module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%% Retrieves the label matrix image that contains the segmented objects which
@@ -160,11 +160,10 @@ end
 fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname) == 0,
-    error(['Image processing has been canceled. Prior to running the MeasureIntensityTexture algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the MeasureIntensityTexture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The MeasureIntensityTexture module cannot locate this image.']);
+    error(['Image processing has been canceled. Prior to running the Measure Intensity Texture algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the Measure Intensity Texture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity Texture module cannot locate this image.']);
     end
 LabelMatrixImage = handles.Pipeline.(fieldname);
-
-        
+   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

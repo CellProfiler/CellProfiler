@@ -1,12 +1,12 @@
 function handles = AlgLoadImagesOrder(handles)
-%%%%% Help for Load Images Order module:
-%%%%% .
-%%%%% This module is required to load images from the hard drive into a
-%%%%% format recognizable by CellProfiler.  The images are given a
-%%%%% meaningful name, which is then used by subsequent modules to retrieve
-%%%%% the proper image.  If more than five images per set must be loaded,
-%%%%% more than one Load Images Order module can be run sequentially. 
 
+% Help for the Load Images Order module:
+%
+% This module is required to load images from the hard drive into a
+% format recognizable by CellProfiler.  The images are given a
+% meaningful name, which is then used by subsequent modules to retrieve
+% the proper image.  If more than five images per set must be loaded,
+% more than one Load Images Order module can be run sequentially. 
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
@@ -33,44 +33,56 @@ function handles = AlgLoadImagesOrder(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%
+drawnow
+
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
 CurrentAlgorithm = handles.currentalgorithm;
 CurrentAlgorithmNum = str2num(handles.currentalgorithm);
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
 
 %textVAR01 = The images to be loaded are located in what position in each set? (1,2,3,...)
 %defaultVAR01 = 1
 NumberInSet1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+
 %textVAR02 = What do you want to call these images?
 %defaultVAR02 = OrigBlue
 ImageName1 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
 %textVAR03 = The images to be loaded are located in what position in each set? (1,2,3,...)
 %defaultVAR03 = 0
 NumberInSet2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
+
 %textVAR04 = What do you want to call these images?
 %defaultVAR04 = OrigGreen
 ImageName2 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
+
 %textVAR05 = The images to be loaded are located in what position in each set? (1,2,3,...)
 %defaultVAR05 = 0
 NumberInSet3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,5});
+
 %textVAR06 = What do you want to call these images?
 %defaultVAR06 = OrigRed
 ImageName3 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,6});
+
 %textVAR07 = The images to be loaded are located in what position in each set? (1,2,3,...)
 %defaultVAR07 = 0
 NumberInSet4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
+
 %textVAR08 = What do you want to call these images?
 %defaultVAR08 = OrigOther1
 ImageName4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
+
 %textVAR09 = How many images are there in each set (i.e. each field of view)?
 %defaultVAR09 = 3
 ImagesPerSet = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+
 %textVAR10 = Type the file format of the images
 %defaultVAR10 = tif
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
+
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located
 %defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
 PathName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});

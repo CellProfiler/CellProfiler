@@ -63,7 +63,7 @@ function handles = LoadImagesText(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -87,7 +87,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -98,7 +98,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -113,7 +113,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -212,12 +212,13 @@ if SetBeingAnalyzed == 1
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
         %%% Checks if the image is a DIB image file.
-        if strcmp(upper(FileFormat),'DIB') == 1
+        if strcmpi(FileFormat,'DIB') == 1
             Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
             handles.Pipeline.DIBwidth = str2double(Answers{1});
             handles.Pipeline.DIBheight = str2double(Answers{2});
             handles.Pipeline.DIBbitdepth = str2double(Answers{3});
             handles.Pipeline.DIBchannels = str2double(Answers{4});
+        elseif strcmpi(FileFormat,'mat') == 1
         else
             error(['The image file type "', FileFormat , '" entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
         end
@@ -241,20 +242,21 @@ if SetBeingAnalyzed == 1
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             end
-            FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
+            FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
             %%% Checks whether any files are left.
-            if isempty(FileList{n})
+            if isempty(FileList)
                 error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
             end
             %%% Saves the File Lists and Path Names to the handles structure.
             fieldname = ['FileList', ImageName{n}];
-            handles.Pipeline.(fieldname) = FileList{n};
+            handles.Pipeline.(fieldname) = FileList;
             fieldname = ['Pathname', ImageName{n}];
             handles.Pipeline.(fieldname) = SpecifiedPathname;
             %% for reference in saved files
             handles.Measurements.(fieldname) = SpecifiedPathname;
-            NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
-        end
+            NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
+            clear FileList % Prevents confusion when loading this value later, for each image set.
+       end
     end
     %%% Determines which slots are empty.  None should be zero, because there is
     %%% an error check for that when looping through n = 1:5.
@@ -299,7 +301,7 @@ if SetBeingAnalyzed == 1
         end
     end
     handles.Current.NumberOfImageSets = NumberOfImageSets;
-end % Goes with: if SetBeingAnalyzed == 1
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
@@ -342,7 +344,7 @@ for n = 1:4
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
 end
-    
+
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
 %       In CellProfiler (and Matlab in general), each independent
@@ -473,6 +475,7 @@ if SetBeingAnalyzed == 1
     if any(findobj == ThisModuleFigureNumber) == 1;
         close(ThisModuleFigureNumber)
     end
+    drawnow
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

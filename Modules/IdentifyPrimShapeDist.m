@@ -1,17 +1,20 @@
-function handles = AlgIdentifyPrimDistDist(handles)
+function handles = AlgIdentifyPrimShapeDist(handles)
 
-% Help for the Identify Primary Distance Distance module: Category:
+% Help for the Identify Primary Shape Distance module: Category:
 % Object Identification
 % 
 % This image analysis module identifies and separates clumps of
 % objects in a grayscale input image. The module works best for
 % objects that are very round-shaped. Separating objects that are
-% clumped and finding the dividing lines between them is based
-% entirely on shape (roundness) rather than intensity gradients of the
-% objects. The cells need not be brighter towards the interior as is
-% required for the intensity-based module, nor do they need to be
-% dimmer or brighter along the lines between clumped objects, as is
-% necessary for the Identify Primary Distance Intensity module.
+% clumped is based entirely on shape (roundness) rather than intensity
+% gradients of the objects. Dividing lines between clumped objects are
+% halfway between the 'center' of each object (this is not precisely
+% true, it's actually Voronoi distance) and do not depend on the
+% intensity gradients in the image. The cells need not be brighter
+% towards the interior as is required for the intensity-based module,
+% nor do they need to be dimmer or brighter along the lines between
+% clumped objects, as is necessary for the Identify Primary Shape
+% Intensity module.
 %
 % Settings:
 %
@@ -108,7 +111,7 @@ function handles = AlgIdentifyPrimDistDist(handles)
 % ALGIDENTIFYPRIMADAPTTHRESHOLDC, 
 % ALGIDENTIFYPRIMADAPTTHRESHOLDD,
 % ALGIDENTIFYPRIMTHRESHOLD,
-% ALGIDENTIFYPRIMDISTINTENS, 
+% ALGIDENTIFYPRIMSHAPEINTENS, 
 % ALGIDENTIFYPRIMINTENSINTENS.
 
 % The contents of this file are subject to the Mozilla Public License Version 
@@ -122,7 +125,7 @@ function handles = AlgIdentifyPrimDistDist(handles)
 % License.
 % 
 % 
-% The Original Code is the Identify Primary Distance Distance module.
+% The Original Code is the Identify Primary Shape Distance module.
 % 
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research
@@ -238,14 +241,14 @@ MaxSize = SizeRangeNumerical(2);
 %%% "OrigImageToBeAnalyzed".
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, ImageName)==0
-    error(['Image processing has been canceled. Prior to running the Segment Intensity module, you must have previously run an algorithm to load an image. You specified in the Segment Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Segment Intensity module cannot find this image.']);
+    error(['Image processing has been canceled. Prior to running the Identify Primary Shape Distance module, you must have previously run an algorithm to load an image. You specified in the Segment Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Segment Intensity module cannot find this image.']);
 end
 OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImageToBeAnalyzed) ~= 2
-    error('Image processing was canceled because the Segment Distance module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error('Image processing was canceled because the Identify Primary Shape Distance module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%

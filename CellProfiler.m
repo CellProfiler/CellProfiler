@@ -46,7 +46,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 01-Nov-2004 16:32:55
+% Last Modified by GUIDE v2.5 01-Nov-2004 20:25:45
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1723,8 +1723,8 @@ cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in HistogramButton.
-function HistogramButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+% --- Executes on button press in PlotDataButton.
+function PlotDataButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Determines the current directory so it can switch back when done.
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
@@ -2433,8 +2433,8 @@ cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
-% --- Executes on button press in NormalizationButton.
-function NormalizationButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+% --- Executes on button press in DataLayoutButton.
+function DataLayoutButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 h = msgbox('Copy your data to the clipboard then press OK');
 waitfor(h)
 
@@ -2787,8 +2787,8 @@ else
                 set(handles.AnalyzeImagesButton,'enable','off')
                 set(handles.ExportDataButton,'enable','off')
                 set(handles.ExportCellByCellButton,'enable','off')
-                set(handles.HistogramButton,'enable','off')
-                set(handles.NormalizationButton,'enable','off')
+                set(handles.PlotDataButton,'enable','off')
+                set(handles.DataLayoutButton,'enable','off')
                 set(handles.ShowDataOnImageButton,'enable','off')
 
                 %%% The following code prevents the warning message in the Matlab
@@ -3168,8 +3168,8 @@ else
                 set(handles.AnalyzeImagesButton,'enable','on')
                 set(handles.ExportDataButton,'enable','on')
                 set(handles.ExportCellByCellButton,'enable','on')                
-                set(handles.HistogramButton,'enable','on')
-                set(handles.NormalizationButton,'enable','on')
+                set(handles.PlotDataButton,'enable','on')
+                set(handles.DataLayoutButton,'enable','on')
                 set(handles.ShowDataOnImageButton,'enable','on')
                 set(CancelAfterModuleButton_handle,'enable','off')
                 set(CancelAfterImageSetButton_handle,'enable','off')

@@ -149,7 +149,7 @@ ImageName4 = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
 FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %textVAR11 = Carefully type the directory path name where the images to be loaded are located#LongBox#
-%defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1#LongBox#
+%defaultVAR11 = Default Directory - leave this text to retrieve images from the directory specified in STEP1
 TypedPathname = char(handles.Settings.Vvariable{CurrentAlgorithmNum,11});
 
 %textVAR12 = Analyze All Subdirectories (Y or N)?
@@ -229,7 +229,7 @@ if SetBeingAnalyzed == 1
                 Count = 1;
                 if exist('Match','var') ~= 0
                     clear('Match')
-                end 
+                end
                 for i=1:length(FileNames),
                     if findstr(char(FileNames(i)), char(TextToFind(n))),
                         Match(Count) = i; %#ok We want to ignore MLint error checking for this line.
@@ -242,6 +242,14 @@ if SetBeingAnalyzed == 1
                 %%% Creates the File List by extracting the names of files
                 %%% that matched the text of interest.
                 FileList{n} = FileNames(Match); %#ok We want to ignore MLint error checking for this line.
+                %%% Saves the File Lists and Path Names to the handles structure.
+                fieldname = ['FileList', ImageName{n}];
+                handles.Pipeline.(fieldname) = FileList{n};
+                fieldname = ['Pathname', ImageName{n}];
+                handles.Pipeline.(fieldname) = Pathname;
+                %% for reference in saved files
+                handles.Measurements.(fieldname) = Pathname;
+                NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
             else
                 %%% If a directory was typed in, retrieves the filenames
                 %%% from the chosen directory.
@@ -257,7 +265,7 @@ if SetBeingAnalyzed == 1
                     Count = 1;
                     if exist('Match','var') ~= 0
                         clear('Match')
-                    end 
+                    end
                     for i=1:length(DirectoryListing),
                         if findstr(DirectoryListing(i).name, char(TextToFind(n))),
                             Match(Count) = i;
@@ -272,15 +280,15 @@ if SetBeingAnalyzed == 1
                     %%% only those files that matched the text of interest.
                     FileList{n} = {DirectoryListing(Match).name};
                 end % Goes with: if exist - if the directory typed in exists error checking.
+                %%% Saves the File Lists and Path Names to the handles structure.
+                fieldname = ['FileList', ImageName{n}];
+                handles.Pipeline.(fieldname) = FileList{n};
+                fieldname = ['Pathname', ImageName{n}];
+                handles.Pipeline.(fieldname) = Pathname;
+                %% for reference in saved files
+                handles.Measurements.(fieldname) = Pathname;
+                NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
             end % Goes with: if strncmp
-            %%% Saves the File Lists and Path Names to the handles structure.
-            fieldname = ['FileList', ImageName{n}];
-            handles.Pipeline.(fieldname) = FileList{n};
-            fieldname = ['Pathname', ImageName{n}];
-            handles.Pipeline.(fieldname) = Pathname;
-            %% for reference in saved files
-            handles.Measurements.(fieldname) = Pathname;
-            NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
         end % Goes with: if isempty
     end  % Goes with: for i = 1:5
     %%% Determines which slots are empty.  None should be zero, because there is

@@ -1,8 +1,17 @@
 function CreateIlluminationCorrectionImageFromProjection(MeanImageFileName, DesiredIllumCorrFileName)
 
-%%% This is used in cases where the projection image comes from some
-%%% other source (not a CellProfiler module) and a illumination
-%%% correction function must be made from it.
+% This code is run from the command line.
+%
+% Its purpose is to take a projection (mean) image from some other
+% source (not a CellProfiler module) and make an illumination
+% correction function from it.
+%
+% To use it, type:
+% CreateIlluminationCorrectionImageFromProjection('OriginalFilename.
+% mat','NewFilename.mat') at the command line, where the first
+% filename is what you called the mean image and the second is what
+% you want to call the illumination correction image.
+
 
 load(MeanImageFileName);
 %%% The following is used to fit a low-dimensional polynomial to the mean image.

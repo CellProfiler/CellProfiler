@@ -1,5 +1,26 @@
 function CombineFourImageQuadrants
 
+
+% This code is run from the command line. 
+% 
+% Its purpose is to take four projection (mean) images, each
+% representing a different quadrant of the field of view, and combine
+% them into a single mean image. The quadrants do not need to be
+% identical in size (e.g. the two left images could be narrower than
+% the two right images), as long as they can be combined into a
+% perfect rectangle.
+%
+% To use: put the four files into their own folder and type
+% CombineFourImageQuadrants at the command line of Matlab, and it
+% guides you through creating the Whole Mean Image.
+% 
+% Then, to create the illumination function from them, type:
+% CreateIlluminationCorrectionImageFromProjection('OriginalFilename.
+% mat','NewFilename.mat') at the command line, where the first
+% filename is what you called the mean image and the second is what
+% you want to call the illumination correction image.
+
+
 PathName = uigetdir(pwd,'Select the folder with the four images in .mat format');
 if PathName == 0
     return

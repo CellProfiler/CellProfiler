@@ -143,7 +143,8 @@ IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-
+%%% Expands each object until almost 8-connected to its neighbors, if
+%%% requested by the user.
 if NeighborDistance == 0
     %%% The objects are thickened until they are one pixel shy of
     %%% being 8-connected.  This also turns the image binary rather
@@ -167,20 +168,12 @@ if NeighborDistance == 0
     NeighborDistance = 4;
 end
 
-
-
-
-
-
-
+%%% Determines the neighbors for each object.
 d = max(2,NeighborDistance+1);
-
 [sr,sc] = size(IncomingLabelMatrixImage);
-ImOfNeighbors = -ones(sr,sc);
-
+ImageOfNeighbors = -ones(sr,sc);
 se = strel('disk',d,0);                   
 for k = 1:max(IncomingLabelMatrixImage(:))
-
     % Cut patch
     [r,c] = find(IncomingLabelMatrixImage == k);
     rmax = min(sr,max(r) + (d+1));
@@ -188,25 +181,23 @@ for k = 1:max(IncomingLabelMatrixImage(:))
     cmax = min(sr,max(c) + (d+1));
     cmin = max(1,min(c) - (d+1));
     p = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
-
     % Extend cell boundary
     pextended = imdilate(p==k,se,'same');
     overlap = p.*pextended;
-    NrOfNeighbors = length(setdiff(unique(overlap(:)),0))-1;
-
-    ImOfNeighbors(sub2ind([sr sc],r,c)) = NrOfNeighbors; 
+    NumberOfNeighbors(k) = length(setdiff(unique(overlap(:)),0))-1;
+    IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
+    ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k); 
 end
 
-    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
-    %%% window and saving to the handles structure.
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
+%%% Calculates the ColoredLabelMatrixImage for displaying in the figure
+%%% window and saving to the handles structure.
+%%% Note that the label2rgb function doesn't work when there are no objects
+%%% in the label matrix image, so there is an "if".
 
-    if sum(sum(IncomingLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
-    else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
-    end
-
+if sum(sum(IncomingLabelMatrixImage)) >= 1
+    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
+else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
@@ -329,9 +320,15 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% TODO: ACTUALLY MAKE THE MEASUREMENTS AND STORE THEM IN HANDLES.
-%%% WAITING TO DECIDE EXACTLY WHAT OUTPUT MEASUREMENTS SHOULD BE IN
-%%% THE FORM OF.
+%%% Saves neighbor measurements to handles structure.
+fieldname = ['ObjectNumberNeighbors', ObjectName];
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberOfNeighbors};
+fieldname = ['SubObjectIdentityOfNeighbors', ObjectName];
+handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
+%%% To extract individual SubObject measurements, use code like this:
+%%% handles.Measurements.SubObjectIdentityOfNeighborsCells{1}{3}
+%%% Where 1 is the image number and 3 is the object number. This
+%%% yields a list of the objects who are neighbors with object 3.
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -378,8 +375,8 @@ if any(findobj == ThisModuleFigureNumber) == 1
     title('Cells colored according to their original colors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)
     subplot(2,1,2)
-    imagesc(ImOfNeighbors)
-    colormap([0 0 0;jet(max(ImOfNeighbors(:)))]);
+    imagesc(ImageOfNeighbors)
+    colormap([0 0 0;jet(max(ImageOfNeighbors(:)))]);
     colorbar('SouthOutside','FontSize',FontSize)
     title('Cells colored according to the number of neighbors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)
@@ -392,4 +389,4 @@ end
         fieldname = ColoredObjectName;
         handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
         fieldname = ColoredNeighborsName;
-        handles.Pipeline.(fieldname) = ImOfNeighbors;
+        handles.Pipeline.(fieldname) = ImageOfNeighbors;

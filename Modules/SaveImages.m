@@ -127,6 +127,8 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = .
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
+%textVAR06 = Warning! It is possible to overwrite existing files using this module! 
+
 %%%VariableRevisionNumber = 02
 % The variables have changed for this module.
 

@@ -14,6 +14,4 @@ L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider pr
    
    "Make projection" module (= average, get code from DivideAllMean). Did In Han finish this already?  If so, make a manual page.
 
-   Rescale intensity image (stretch histogram)
-
    Make closefigures and openfigures not global if possible.

@@ -150,7 +150,7 @@ PixelSize = str2double(handles.Settings.Vpixelsize{1});
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:7
-    ObjectName = ObjectNameList{i}
+    ObjectName = ObjectNameList{i};
 if strcmp(ObjectName,'/') == 1
 break
 end

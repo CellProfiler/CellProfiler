@@ -2078,8 +2078,8 @@ errordlg(ErrorExplanation)
 
 %%% --- Executes on button press in the Help buttons.
 function PipelineModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-HelpText = help('Help3.m');
-helpdlg(HelpText,'CellProfiler Help #3')
+HelpText = help('HelpPipelineOfModules.m');
+helpdlg(HelpText,'CellProfiler Help')
 
 function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% First, check to see whether there is a specific module loaded.
@@ -2100,7 +2100,7 @@ else
         if DoesHelpExist == 1
             helpFig = figure;
             set(helpFig,'NumberTitle','off');
-            set(helpFig,'name', 'Image analysis module help');
+            set(helpFig,'name', 'CellProfiler image analysis module help');
             set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
             helpFigPos = get(helpFig,'position');
             set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
@@ -2144,21 +2144,23 @@ end
 function PixelPreferencesTechHelp_Callback(hObject, eventdata, handles)
 
 function DefaultImageDirectoryHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-HelpText = help('Help1.m');
-helpdlg(HelpText,'CellProfiler Help #1')
+HelpText = help('HelpDefaultImageDirectory.m');
+helpdlg(HelpText,'Help')
 
 function DefaultOutputDirectoryHelp_Callback(hObject, eventdata, handles)
+HelpText = help('HelpDefaultOutputDirectory.m');
+helpdlg(HelpText,'Help')
 
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-HelpText = help('Help4.m');
-helpdlg(HelpText,'CellProfiler Help #4')
+HelpText = 'The help is located within individual m-files for each tool.  We are currently working on the display so that you can view the help using this button.';
+helpdlg(HelpText,'CellProfiler Help')
 
 function DataToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('Help2.m');
-msgbox(HelpText,'CellProfiler Help #2')
+msgbox(HelpText,'CellProfiler Help')
 
 function AnalyzeImagesHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpAnalyzeImages.m');
-helpdlg(HelpText,'CellProfiler Help: Analyze images')
+helpdlg(HelpText,'CellProfiler Help')
 
 %%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%

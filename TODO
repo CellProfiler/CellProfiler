@@ -42,6 +42,8 @@ WANT IT NOW:
 
 - For the data/image tools: ShowDataOnImage and PlotOrExportHistograms (and possibly other tools and modules) there is a bug in matlab that prevents certain handles from properly being edited, I think only on the mac platform.  Right now if there a try/catch which yields an error message referring to Service Request 1-RR6M1 if the propedit command fails.  However, even *trying* propedit seems to cause CellProfiler to become unstable, and it seems to have to do with its interaction with X11. So we should somehow check to see what platform is running, and if it's X11 (or maybe just mac), not even try the propedit command. The best way to find all functions with this problem is to search for the service request number and/or for the propedit command.
 
+- For the image tool OpenNewImageFile, the resulting figure should have the filename as its title.
+
 ---------------------------------------------------
 
 WANT IT SOON (~ for next beta release, late February 2005):
@@ -69,7 +71,7 @@ Settings =      ModuleNames: {1x6 cell}
 
 - When a figure has been produced by CellProfiler (either during the analysis run or by one of the ImageTools), and you choose File > Save As, the default directory for saving the figure is Matlab's current directory.  It would be nice if instead the directory were the default output directory. If this is not straightforward, abandon it, because it isn't a huge issue.
 
-- Make the DIB cancel button work in imcpread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like ShowImage.m
+- Make the DIB cancel button work in imcpread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like OpenNewImageFile.m
 
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 

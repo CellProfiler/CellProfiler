@@ -48,11 +48,11 @@ ThresholdedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR04 = Pixels above this value (Range = 0-1) will be set to zero
 %defaultVAR04 = 1
-HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR05 = This value will be subtracted from the entire image (Range = 0-1)
 %defaultVAR05 = 0
-LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+LowThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -48,15 +48,15 @@ ThresholdedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 
 %textVAR03 = Pixels below this value (Range = 0-1) will be set to zero
 %defaultVAR03 = 0
-LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
+LowThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,3}));
 
 %textVAR04 = Pixels above this value (Range = 0-1) will be set to zero
 %defaultVAR04 = 1
-HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+HighThreshold = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
 
 %textVAR05 = Bright pixel areas should be expanded by this many pixels in every direction
 %defaultVAR05 = 0
-DilationValue = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
+DilationValue = str2double(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

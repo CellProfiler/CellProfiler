@@ -145,7 +145,7 @@ if handles.setbeinganalyzed == 1
             TotalImage = im2double(imread(char(FileList(1))));
             %%% Waitbar shows the percentage of image sets remaining.
             WaitbarHandle = waitbar(0,'');
-            set(WaitbarHandle, 'Position', [PositionMsgBox])
+            set(WaitbarHandle, 'Position', PositionMsgBox)
             drawnow
             TimeStart = clock;
             NumberOfImages = length(FileList);
@@ -210,7 +210,7 @@ if handles.setbeinganalyzed == 1
     end    
     %%% Stores the mean image and the Illumination image to the handles
     %%% structure.
-    if exist('MeanImage') == 1
+    if exist('MeanImage','var') == 1
         fieldname = ['dOTMeanImageAD', ImageName];
         handles.(fieldname) = MeanImage;        
     end
@@ -277,7 +277,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% workspace.
     subplot(2,2,2); imagesc(CorrectedImage); 
     title('Illumination Corrected Image');
-    if exist('MeanImage') == 1
+    if exist('MeanImage','var') == 1
         subplot(2,2,3); imagesc(MeanImage); 
         title(['Mean of all ', ImageName, ' images']);
     end

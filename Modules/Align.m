@@ -299,7 +299,7 @@ for dx=-1:1,
     end
   end
 end
-if (bestx == 0) & (besty == 0),
+if (bestx == 0) && (besty == 0),
   shiftx = 0;
   shifty = 0;
   return;
@@ -310,7 +310,7 @@ lastdy = besty;
 %%% Loops until things stop improving.
 while true,
   [nextx, nexty, newbest] = one_step(in1, in2, bestx, besty, lastdx, lastdy, best);
-  if (nextx == 0) & (nexty == 0),
+  if (nextx == 0) && (nexty == 0),
     shiftx = bestx;
     shifty = besty;
     return;
@@ -327,7 +327,7 @@ function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
 nb = best;
 for dx=-1:1,
   for dy=-1:1,
-    if (dx == ldx) | (dy == ldy),
+    if (dx == ldx) || (dy == ldy),
       cur = mutualinf(subim(in1, bx+dx, by+dy), subim(in2, -(bx+dx), -(by+dy)));
       if (cur > nb),
         nb = cur;
@@ -361,7 +361,7 @@ function H = entropy(X)
 S = imhist(X,256);
 %%% if S is probability distribution function N is 1
 N=sum(sum(S));
-if ((N>0) & (min(S(:))>=0))
+if ((N>0) && (min(S(:))>=0))
    Snz=nonzeros(S);
    H=log2(N)-sum(Snz.*log2(Snz))/N;
 else
@@ -378,7 +378,7 @@ XY = 256*X + Y;
 S = histc(XY(:),0:(256*256-1));
 %%% If S is probability distribution function N is 1
 N=sum(sum(S));          
-if ((N>0) & (min(S(:))>=0))
+if ((N>0) && (min(S(:))>=0))
    Snz=nonzeros(S);
    H=log2(N)-sum(Snz.*log2(Snz))/N;
 else

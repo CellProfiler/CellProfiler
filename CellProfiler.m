@@ -821,24 +821,15 @@ else
 
   while 1;
       output = fgetl(fid); if ~ischar(output); break; end;
-
-      % FIXME: this doesn't need to loop over MaxVariables
-
-      for i=1:handles.MaxVariables,
-          if (strncmp(output,['%textVAR',TwoDigitString(i)],10) == 1);
-              set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-              break;
-          elseif (strncmp(output,['%defaultVAR' TwoDigitString(i)],13) == 1),
-              displayval = output(17:end);
-              set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
-              set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
-              handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
-              handles.numVariables(str2double(AlgorithmNumber)) = i;
-              break;
-          end
-
+      if (strncmp(output,'%defaultVAR',11) == 1),
+          displayval = output(17:end);
+          istr = output(12:13);
+          i = str2num(istr);
+          set(handles.(['VariableBox' istr]), 'string', displayval,'visible', 'on');
+          set(handles.(['VariableDescription' istr]), 'visible', 'on');
+          handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
+          handles.numVariables(str2double(AlgorithmNumber)) = i;
       end
-
   end
   fclose(fid);
 
@@ -883,11 +874,8 @@ if (length(AlgorithmHighlighted) > 0)
 
         while 1;
             output = fgetl(fid); if ~ischar(output); break; end;
-            for i=1:handles.MaxVariables,
-                if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
-                    set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                    break;
-                end
+            if (strncmp(output,'%textVAR',8) == 1);
+                set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end),'visible', 'on');
             end
         end
         fclose(fid);
@@ -1096,7 +1084,7 @@ function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignor
 %%% running the "whichactive" subfunction), and call the storevariable
 %%% function.
 VariableName = get(hObject,'tag');
-VariableNumberStr = trimstr(VariableName,'VariableBox','left');
+VariableNumberStr = VariableName(12:13);
 
 UserEntry = get(handles.(['VariableBox' VariableNumberStr]),'string');
 AlgorithmNumber = whichactive(handles);
@@ -3273,72 +3261,6 @@ if ((val > 99) || (val < 0)),
 end
 twodigit = sprintf('%02d', val);
 
-
-function y = trimstr( s, stripchars, leftorright )
-%TRIMSTR  Strip the whitespace and the defined characters from string.
-%   TRIMSTR( S, CHARS, LEFTORRIGHT ) strips the whitespace and the
-%   characters defined in CHARS from the string S. By default both sides 
-%   will be trimmed. With 'left' or 'right' you may choose to trim the  
-%   leading or trailing part only.
-%
-%   Examples:    o trimstr( ', a, b, c,', ',' )         --> 'a, b, c'
-%                o trimstr( ', a, b, c,', 'left' )      --> ', a, b, c,'
-%                o trimstr( ', a, b, c,', ',', 'left' ) --> 'a, b, c,'
-
-if isempty( s )
-  y = s([]);
-else
- if ~ischar( s )
-   error( 'Input must be a string (char array).' );
- end
- 
-   % arguments
- sc = '';        % stripchars
- lor = 0;        % leftorright (0: both, 1: left, 2: right)
- if (nargin == 2)
-   if strcmpi( stripchars, 'left' )
-     lor = 1; 
-   elseif strcmpi( stripchars, 'right' )
-     lor = 2; 
-   else
-     sc = stripchars;
-   end;
-  elseif nargin == 3
-    sc = stripchars;
-    if strcmpi( leftorright, 'left' )
-      lor = 1; 
-    elseif strcmpi( leftorright, 'right' )
-      lor = 2; 
-    else
-      error( 'Third argument must be ''left'' or ''right''' );
-    end;
-  end
-     
-    % start, end index
-  ind1 = 1;               
-  ind2 = size( s, 2 );
-  
-    % get indexes (avoiding ismember if possible is faster)
-  if isempty( sc )
-    ind = find( ~isspace( s ) );
-  else
-    ind = find( ~isspace( s ) & ~ismember( s, sc ) );
-  end;
-  if (lor == 0) || (lor == 1)
-    ind1 = min( ind );
-  end; %if both or left side
-  if (lor == 0) || (lor == 2)
-    ind2 = max( ind );
-  end; %if both or right side
-   
-    % output the trimmed string
-  y = s(ind1:ind2);
-  if isempty( y )
-    y = s([]);
-  end;  
-     
-end; %if s isempty
-
 %%%%%%%%%%%%%%%%%%%
 
 function stringhandle = handlenum2str(numberhandle)
@@ -3416,7 +3338,23 @@ else
         HelpText = help(char(AlgorithmNoDotM));
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
-            helpdlg(HelpText, 'Algorithm Help'); 
+            %helpdlg(HelpText, 'Algorithm Help'); 
+            h200 = uicontrol(...
+                'Units','characters',...
+                'BackgroundColor',[0.699999988079071 0.699999988079071 0.899999976158142],...
+                'CData',[],...
+                'FontName','Times',...
+                'FontSize',12,...
+                'FontWeight','bold',...
+                'HorizontalAlignment','right',...
+                'Max',2,...
+                'Min',0,...
+                'Position',[59.4 2.84615384615385 18 2.23076923076923],...
+                'String',HelpText,...
+                'Style','text',...
+                'Tag','PixelSizeText',...
+                'UserData',[],...
+                'Behavior',get(0,'defaultuicontrolBehavior'));
         else helpdlg('Sorry, there is no help information for this analysis module.','This is not helpful')
         end;
     end;

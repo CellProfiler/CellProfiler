@@ -2,7 +2,7 @@ function handles = LoadImagesOrder(handles)
 
 % Help for the Load Images Order module:
 % Category: File Handling
-%
+% 
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
 %
@@ -20,8 +20,9 @@ function handles = LoadImagesOrder(handles)
 % Images Text is used to load images that have a particular piece of
 % text in the name.
 %
-% You may have folders within the directory that is being searched;
-% they will be ignored by this module.
+% You may have subfolders within the folder that is being searched, but the
+% names of the folders themselves must not contain the text you are
+% searching for or an error will result.
 %
 % SAVING IMAGES: The images loaded by this module can be easily saved
 % using the Save Images module, using the name you assign (e.g.
@@ -157,13 +158,14 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%%%VariableRevisionNumber = 03
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
-%%% Determines which set is being analyzed.
+%%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 ImagesPerSet = str2double(ImagesPerSet);
 %%% If the user left boxes blank, sets the values to 0.
@@ -285,15 +287,18 @@ for n = 1:4
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             LoadedImage = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
-            %%% Saves the original image file name to the handles.Pipeline structure.
-            %%% The field is named appropriately based on the user's input, and will
-            %%% be deleted at the end of the analysis batch.
+            %%% Saves the original image file name to the handles
+            %%% structure.  The field is named appropriately based on
+            %%% the user's input, in the Pipeline substructure so that
+            %%% this field will be deleted at the end of the analysis
+            %%% batch.
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Also saved to the handles.Measurements structure for reference in output files.
             handles.Measurements.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Saves the loaded image to the handles structure.  The field is named
-            %%% appropriately based on the user's input.
+            %%% appropriately based on the user's input, and put into the Pipeline
+            %%% substructure so it will be deleted at the end of the analysis batch.
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         end
     catch ErrorMessage = lasterr;
@@ -421,10 +426,9 @@ end
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%%%%%%%%%%%%%%%%%%%
-%%% FIGURE WINDOW %%%
-%%%%%%%%%%%%%%%%%%%%
-drawnow
+%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%
 
 if SetBeingAnalyzed == 1
     %%% The figure window display is unnecessary for this module, so the figure
@@ -432,10 +436,11 @@ if SetBeingAnalyzed == 1
     %%% Determines the figure number.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    %%% If the window is open, it is closed.
+    %%% Closes the window if it is open.
     if any(findobj == ThisModuleFigureNumber) == 1;
         close(ThisModuleFigureNumber)
     end
+    drawnow
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -323,7 +323,7 @@ end
 
 %%% Opens a dialog box to retrieve a file name that contains a list of
 %%% sample descriptions, like gene names or sample numbers.
-[fname,pname] = uigetfile({'*.csv';'*.txt'},'Choose sample info file: .txt (Plain text) or .csv (Comma-separated)');
+[fname,pname] = uigetfile({'*.csv;*.txt','Readable files: .txt (Plain text) or .csv (Comma-separated)'},'Choose sample info file');
 %%% If the user presses "Cancel", the fname will = 0 and nothing will
 %%% happen.
 if fname == 0
@@ -333,7 +333,6 @@ else extension = fname(end-2:end);
     if strcmp(HeadingsPresent, 'Cancel') == 1 | isempty(HeadingsPresent) == 1
         return
     end
-
     %%% Determines the file type.
     if strcmp(extension,'csv') == 1
         try fid = fopen([pname fname]);
@@ -382,44 +381,39 @@ else extension = fname(end-2:end);
                 fclose(fid);
             end
         end
-
     elseif strcmp(extension,'txt') == 1
-        %%% Saves the text from the file into a new variable, "SampleNames".  The
-        %%% '%s' command tells it to select groups of strings not separated by
-        %%% things like carriage returns, and maybe spaces and commas, too. (Not
-        %%% sure about that).
-        SampleInfo = textread([pname fname],'%s');
-
-        if (strcmp(extension,'txt'))
-        else
-            %%% Retrieves a name for the heading of the sample data just entered.
-            A = inputdlg('Enter the heading for these sample descriptions (e.g. GeneNames                 or SampleNumber). Your entry must be one word with letters and                   numbers only, and must begin with a letter.','Name the Sample Info',1);
-            %%% If the user presses cancel A will be an empty array.  If the user
-            %%% doesn't enter anything in the dialog box but presses "OK" anyway,
-            %%% A is equal to '' (two quote marks).  In either case, skip to the end;
-            %%% don't save anything.
-            if (isempty(A))
-                ;
-            elseif strcmp(A,'') == 1,
-                errordlg('Sample info was not saved, because no heading was entered.');
-            elseif isfield(handles, A) == 1
-                errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
+       try fid = fopen([pname fname]);
+            ImportedData = textscan(fid,'%s','delimiter','\r');
+            ColumnOfData = ImportedData{1};
+            %%% Sends the heading and the sample info to a
+            %%% subfunction to be previewed and saved.
+            [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,FutureOrExisting,HeadingsPresent,OutputFile);
+            if CancelOption == 1
+                fclose(fid);
+                warndlg('None of the sample info was saved.')
+                return
+            end
+            fclose(fid);
+            if strcmp(FutureOrExisting,'Future') == 1
+                %%% For future output files:
+                %%% Saves the new sample info to the handles
+                %%% structure.
+                handles = Newhandles;
+                h = msgbox(['The sample info will be added to future output files']);
+                waitfor(h)
             else
-                %%% Uses the heading the user entered to name the field in the handles
-                %%% structure array and save the SampleNames list there.
-                try    handles.(char(A)) = SampleNames;
-                    %%% Also need to add this heading name (field name) to the headings
-                    %%% field of the handles structure (if it already exists), in the last position.
-                    if isfield(handles, 'headings') == 1
-                        N = length(handles.headings) + 1;
-                        handles.headings(N)  = A;
-                        %%% If the headings field doesn't yet exist, create it and put the heading
-                        %%% name in position 1.
-                    else handles.headings(1)  = A;
-                    end
-                    guidata(hObject, handles);
-                catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
-                end % Goes with catch
+                %%% For existing output files:
+                %%% Saves the output file with this new sample info.
+                save([pOutName,fOutName],'-struct','OutputFile');
+                h = msgbox(['The sample info was successfully added to output file']);
+                waitfor(h)
+            end
+        catch lasterr
+            fclose(fid)
+            if CancelOption == 1
+                fclose(fid);
+            else error('Sorry, the sample info could not be imported for some reason.')
+                fclose(fid);
             end
         end
     else errordlg('Sorry, the list of sample descriptions must be in a text file (.txt) or comma delimited file (.csv).');
@@ -433,12 +427,22 @@ CancelOption = 0;
 %%% Extracts the sample info and the headings from the first row, if they are present.
 if strcmp(HeadingsPresent, 'Yes') == 1
     SingleHeading = ColumnOfData(1);
-    %%% Need to (1) replace spaces with underscores, (2) strip weird
-    %%% characters and spaces out of headings using regexp. This might
-    %%% help:
-    %%% SingleHeading(strfind(SingleHeading,' ')) = '_'
-    %%% regexp(SingleHeading, '^[A-Za-z][0-9A-Za-z_]*$') = []
-
+    %%% Converts to char in order to perform the following lines.
+    SingleHeading = char(SingleHeading);
+    %%% Replaces spaces with underscores, because spaces
+    %%% are forbidden in fieldnames.
+    SingleHeading(strfind(SingleHeading,' ')) = '_';
+    %%% Strips weird characters (e.g. punctuation) out, because such
+    %%% characters are forbidden in fieldnames.  The user is still
+    %%% responsible for making sure their heading begins with a letter
+    %%% rather than a number or underscore.
+    PermittedCharacterLocations = regexp(SingleHeading, '[A-Za-z0-9_]');
+    SingleHeading = SingleHeading(PermittedCharacterLocations);
+    if isempty(SingleHeading) == 1
+        SingleHeading = 'Heading not yet entered';
+    end
+    %%% Converts back to cell array.
+    SingleHeading = {SingleHeading};
     ColumnOfSampleInfo = ColumnOfData(2:end);
 else SingleHeading = {'Heading not yet entered'};
     ColumnOfSampleInfo = ColumnOfData(1:end);

@@ -1,13 +1,16 @@
-function handles = AlgMeasureAreaShapeIntensTxtr(handles)
+function handles = AlgMeasureAreaShapeCountLocation(handles)
 
-% Help for the Measure Area Shape Count module:
+% Help for the Measure Area Shape Count Location module:
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module makes measurements of each object, including area, shape, and
-% count. Measurements are recorded for each object, and some
-% population measurements are calculated: Mean, Median, Standard
-% Deviation, and in some cases Sum.
+% module makes measurements of each object, including area (and
+% perimeter), shape (several measures), count, and location.
+% Measurements are recorded for each object, and some population
+% measurements are calculated: Mean, Median, Standard Deviation, and
+% in some cases Sum. The units of the measurements are based on the
+% pixel size the user entered in the main window of CellProfiler.  If
+% pixel size = 1, then the measurements are in pixels.
 %
 % TECHNICAL NOTES: Retrieves a segmented image, in label matrix format
 % and makes lots of measurements of the objects that are segmented in
@@ -115,18 +118,6 @@ CurrentAlgorithmNum = str2double(handles.currentalgorithm);
 %defaultVAR01 = Nuclei
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
 
-%textVAR02 = What did you call the greyscale images you want to measure?
-%defaultVAR02 = OrigBlue
-ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
-
-%textVAR03 = Measure the fraction of cells with a total intensity greater
-%textVAR04 = than or equal to this threshold.  Type N to skip this measurement.
-%defaultVAR04 = N
-Threshold = char(handles.Settings.Vvariable{CurrentAlgorithmNum,4});
-
-%textVAR06 = The measurements made by this module will be named based on
-%textVAR07 = your entries, e.g. "OrigRedwithinNuclei".
-
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.Vpixelsize{1});
 
@@ -141,22 +132,6 @@ PixelSize = str2double(handles.Settings.Vpixelsize{1});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
-fieldname = ['', ImageName];
-%%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Measure algorithm, you must have previously run an algorithm that loads a greyscale image.  You specified in the Measure module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure module cannot locate this image.']);
-end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
-
-
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
-    error('Image processing was canceled because the Measure Area Shape Intensity Texture module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-end
-
 %%% Retrieves the label matrix image that contains the segmented objects which
 %%% will be measured with this algorithm.
 fieldname = ['Segmented', ObjectName];
@@ -165,7 +140,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Measure algorithm, you must have previously run an algorithm that generates an image with the objects identified.  You specified in the Measure module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure module cannot locate this image.']);
 end
 LabelMatrixImage = handles.Pipeline.(fieldname);
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
@@ -241,14 +215,18 @@ drawnow
 %%%
 %%% COUNT
 %%%
-
-if sum(sum(LabelMatrixImage)) == 0
-    %%% None of the measurements are made if there are no objects in the label
-    %%% matrix image.
+    %%% Counts the number of objects in the label matrix image. This
+    %%% does not require that the objects be contiguous. Strange
+    %%% results may ensue with non-contiguous objects. Subtracting the
+    %%% 1 is necessary because zero (the background) would otherwise
+    %%% be counted as an object.
+    ObjectCount = length(unique(LabelMatrixImage(:))) - 1;
     %%% Saves the count to the handles structure.
     fieldname = ['ImageCount', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {0};
-else
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {ObjectCount};
+
+if ObjectCount ~= 0
+    %%% None of the measurements are made if there are no objects.
 
     %%% The regionprops command extracts a lot of measurements.  It
     %%% is most efficient to call the regionprops command once for all the
@@ -281,6 +259,36 @@ else
     handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Area)};
     fieldname = ['ImageSumArea', ObjectName];
     handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sum(Area)};
+
+    %%%
+    %%% PERIMETER
+    %%%
+
+    %%% Shifts labels in each of the 4 cardinal directions (stretching the
+    %%% exposed row/column), and compares to the original labels.
+    temp_labels = LabelMatrixImage .* ((LabelMatrixImage ~= LabelMatrixImage([1 1:end-1], :)) | ...
+        (LabelMatrixImage ~= LabelMatrixImage([2:end end], :)) | ...
+        (LabelMatrixImage ~= LabelMatrixImage(:, [1 1:end-1], :)) | ...
+        (LabelMatrixImage ~= LabelMatrixImage(:, [2:end end])));
+    %%% Finds the locations and labels for perimeter pixels.
+    perim_locations = find(temp_labels);
+    perim_labels = LabelMatrixImage(perim_locations);
+    %%% Creates a sparse matrix with column as label and row as location,
+    %%% with a 1 at (A,B) if location A has label B.  Summing the columns
+    %%% gives the count of perimeter pixels with a given label.
+    Perimeter = full(sum(sparse(perim_locations, perim_labels, 1)));
+    Perimeter = Perimeter';
+    %%% Converts the measurement to micrometers.
+    Perimeter = Perimeter*PixelSize;
+    %%% Saves Perimeters to handles structure.
+    fieldname = ['ObjectPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Perimeter};
+    fieldname = ['ImageMeanPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Perimeter)};
+    fieldname = ['ImageStdevPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Perimeter)};
+    fieldname = ['ImageMedianPerimeter', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Perimeter)};
 
     %%%
     %%% CONVEX AREA
@@ -414,148 +422,6 @@ else
     handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Extent)};
 
     %%%
-    %%% CENTER POSITIONS
-    %%%
-
-    %%% Note that the X, Y locations are stored as the pixel locations (not
-    %%% converted to micrometers.)
-
-    %%% Makes the Centers array a double object rather than a cell or struct
-    %%% object.  There are two columns in this array, the first is X and the
-    %%% second is Y, so they are extracted into two separate variables, CentersX
-    %%% and CentersY.
-    CentersXY = cat(1,Statistics.Centroid);
-    CentersX = CentersXY(:,1);
-    CentersY = CentersXY(:,2);
-    %%% Saves X and Y positions to handles structure.
-    fieldname = ['ObjectCenterX', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersX};
-    fieldname = ['ObjectCenterY', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersY};
-
-    %%%
-    %%% INTEGRATED INTENSITY (TOTAL INTENSITY PER OBJECT)
-    %%%
-
-    %%% The find function (when used as follows) returns the linear index
-    %%% position of all the nonzero elements in the label matrix image.
-    ForegroundPixels = find(LabelMatrixImage);
-    %%% Returns the actual label matrix value at each foreground pixel in the
-    %%% label matrix.
-    LabelValue = LabelMatrixImage(ForegroundPixels);
-    %%% Creates a sparse matrix: Can think of it this way (not sure if I have
-    %%% rows and columns mixed up, but it doesn't matter): each object is a
-    %%% column, identified by the LabelValue, which is really equivalent to the
-    %%% object number.  Each row of the matrix is a position in the original
-    %%% image, identified by linear indexing, so that the number of rows is equal
-    %%% to the linear index value of the last nonzero pixel in the label matrix
-    %%% image.  The value of each cell in this matrix is the intensity value from
-    %%% the original image at that position.
-    AllObjectsPixelValues = sparse(ForegroundPixels, LabelValue, OrigImageToBeAnalyzed(ForegroundPixels));
-    %%% Sums all pixel intensity values in each column.
-    AlmostIntegratedIntensity = sum(AllObjectsPixelValues(:,:));
-    %%% Converts from sparse to full to end up with one column of numbers.
-    IntegratedIntensity = full(AlmostIntegratedIntensity');
-    %%% Integrated Intensity is in arbitrary intensity units, dimensionless
-    %%% with respect to area.
-
-    %%% Saves Integrated Intensities to handles structure.
-    fieldname = ['ObjectIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {IntegratedIntensity};
-    fieldname = ['ImageMeanIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(IntegratedIntensity)};
-    fieldname = ['ImageStdevIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(IntegratedIntensity)};
-    fieldname = ['ImageMedianIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(IntegratedIntensity)};
-    fieldname = ['ImageSumIntegratedIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {sum(IntegratedIntensity)};
-
-    %%% Calculates the fraction of cells whose integrated intensity is above the
-    %%% user's threshold.
-    if strcmp(upper(Threshold),'N') ~= 1
-        NumberObjectsAboveThreshold = sum(IntegratedIntensity >= str2double(Threshold));
-        TotalNumberObjects = length(IntegratedIntensity);
-        FractionObjectsAboveThreshold = NumberObjectsAboveThreshold/TotalNumberObjects;
-        fieldname = ['ImageFractionAboveThreshold', ImageName, 'within', ObjectName];
-        handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {FractionObjectsAboveThreshold};
-    end
-
-    %%%
-    %%% MEAN INTENSITY (PER OBJECT)
-    %%%
-
-    %%% Note: this depends on the ForegroundPixels and LabelValue variables
-    %%% determined in the integrated intensity code above.
-    %%% Computes the mean.
-    MeanIntensity =  IntegratedIntensity ./ Area;
-    MeanIntensity = MeanIntensity';
-    %%% Subtracts the mean from each region.
-    Map1 = [0 MeanIntensity];
-    try
-        OrigImageToBeAnalyzed2 = OrigImageToBeAnalyzed - Map1(LabelMatrixImage + 1);
-    catch error('There was a problem in the Measure module.  The image to be analyzed is a different size than the image of identified objects.  If the objects were identified from a cropped image, the cropped image should be used by the Measure module.')
-    end
-    %%% Avoids divide by zero.
-    NonZeroArea = Area;
-    NonZeroArea(NonZeroArea < 2) = 2;
-    NonZeroArea = NonZeroArea';
-    %%% Estimates the standard deviation.
-    Temp2 = sparse(ForegroundPixels, LabelValue, OrigImageToBeAnalyzed2(ForegroundPixels));
-    StDevIntensity = sqrt(full(sum(Temp2.^2)) ./ (NonZeroArea - 1));
-    %%% Converts to a column.
-    MeanIntensity = MeanIntensity';
-    StDevIntensity = StDevIntensity';
-    %%% Saves data to handles structure.
-    fieldname = ['ObjectMeanIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {MeanIntensity};
-    fieldname = ['ImageMeanMeanIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(MeanIntensity)};
-    fieldname = ['ImageStdevMeanIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(MeanIntensity)};
-    fieldname = ['ImageMedianMeanIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(MeanIntensity)};
-
-    fieldname = ['ObjectStDevIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {StDevIntensity};
-    fieldname = ['ImageMeanStDevIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(StDevIntensity)};
-    fieldname = ['ImageStdevStDevIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(StDevIntensity)};
-    fieldname = ['ImageMedianStDevIntensity', ImageName, 'within', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(StDevIntensity)};
-
-    %%%
-    %%% PERIMETER
-    %%%
-
-    %%% Shifts labels in each of the 4 cardinal directions (stretching the
-    %%% exposed row/column), and compares to the original labels.
-    temp_labels = LabelMatrixImage .* ((LabelMatrixImage ~= LabelMatrixImage([1 1:end-1], :)) | ...
-        (LabelMatrixImage ~= LabelMatrixImage([2:end end], :)) | ...
-        (LabelMatrixImage ~= LabelMatrixImage(:, [1 1:end-1], :)) | ...
-        (LabelMatrixImage ~= LabelMatrixImage(:, [2:end end])));
-    %%% Finds the locations and labels for perimeter pixels.
-    perim_locations = find(temp_labels);
-    perim_labels = LabelMatrixImage(perim_locations);
-    %%% Creates a sparse matrix with column as label and row as location,
-    %%% with a 1 at (A,B) if location A has label B.  Summing the columns
-    %%% gives the count of perimeter pixels with a given label.
-    Perimeter = full(sum(sparse(perim_locations, perim_labels, 1)));
-    Perimeter = Perimeter';
-    %%% Converts the measurement to micrometers.
-    Perimeter = Perimeter*PixelSize;
-    %%% Saves Perimeters to handles structure.
-    fieldname = ['ObjectPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {Perimeter};
-    fieldname = ['ImageMeanPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {mean(Perimeter)};
-    fieldname = ['ImageStdevPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {std(Perimeter)};
-    fieldname = ['ImageMedianPerimeter', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(Perimeter)};
-
-    %%%
     %%% CIRCULARITY
     %%%
 
@@ -626,18 +492,24 @@ else
     handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {median(AspectRatio)};
 
     %%%
-    %%% COUNT
+    %%% CENTER POSITIONS
     %%%
 
-    %%% Counts the number of objects, by counting the number of area
-    %%% measurements made. NOTE: This depends on the Area calculation above, so
-    %%% if you remove the area calculation you will need to include the line
-    %%% Areas = regionprops(LabelMatrixImage,'Area') before the following, or
-    %%% substitute a different measurement name for "Area".
-    CellCount = length(Area);
-    %%% Saves the count to the handles structure.
-    fieldname = ['ImageCount', ObjectName];
-    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CellCount};
+    %%% Note that the X, Y locations are stored as the pixel locations (not
+    %%% converted to micrometers.)
+
+    %%% Makes the Centers array a double object rather than a cell or struct
+    %%% object.  There are two columns in this array, the first is X and the
+    %%% second is Y, so they are extracted into two separate variables, CentersX
+    %%% and CentersY.
+    CentersXY = cat(1,Statistics.Centroid);
+    CentersX = CentersXY(:,1);
+    CentersY = CentersXY(:,2);
+    %%% Saves X and Y positions to handles structure.
+    fieldname = ['ObjectCenterX', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersX};
+    fieldname = ['ObjectCenterY', ObjectName];
+    handles.Measurements.(fieldname)(handles.setbeinganalyzed) = {CentersY};
 
 end % Goes with: if no objects are in the image.
 
@@ -683,10 +555,11 @@ if any(findobj == ThisAlgFigureNumber) == 1;
             ['Number of ', ObjectName ,':      zero']);
     else
         displaytext = strvcat(['      Image Set # ',num2str(handles.setbeinganalyzed)],... %#ok We want to ignore MLint error checking for this line.
-            ['Number of ', ObjectName ,':      ', num2str(CellCount)],...
+            ['Number of ', ObjectName ,':      ', num2str(ObjectCount)],...
+            ['SumArea:                  ', num2str(sum(Area))],...
             ['MeanArea:                 ', num2str(mean(Area))],...
-            ['MeanConvexArea:           ', num2str(mean(ConvexArea))],...
             ['MeanPerimeter:            ', num2str(mean(Perimeter))],...
+            ['MeanConvexArea:           ', num2str(mean(ConvexArea))],...
             ['MeanMajorAxis:            ', num2str(mean(MajorAxis))],...
             ['MeanMinorAxis:            ', num2str(mean(MinorAxis))],...
             ['MeanEccentricity:         ', num2str(mean(Eccentricity))],...
@@ -695,16 +568,7 @@ if any(findobj == ThisAlgFigureNumber) == 1;
             ['MeanCircularity:          ', num2str(mean(Circularity))],...
             ['MeanFormFactor:           ', num2str(mean(FormFactor))],...
             ['MeanAreaPerimRatio:       ', num2str(mean(AreaPerimRatio))],...
-            ['MeanAspectRatio:          ', num2str(mean(AspectRatio))],...
-            ['MeanIntegratedIntensity:  ', num2str(mean(IntegratedIntensity))],...
-            ['MeanMeanIntensity:        ', num2str(mean(MeanIntensity))],...
-            ['MeanStDevIntensity:       ', num2str(mean(StDevIntensity))],...
-            ['SumIntegratedIntensity:   ', num2str(sum(IntegratedIntensity))],...
-            ['SumArea:                  ', num2str(sum(Area))]);
-        if strcmp(upper(Threshold),'N') ~= 1
-            displaytext = strvcat(displaytext,... %#ok We want to ignore MLint error checking for this line.
-                ['Fraction above intensity threshold:', num2str(FractionObjectsAboveThreshold)]);
-        end
+            ['MeanAspectRatio:          ', num2str(mean(AspectRatio))]);
     end % Goes with: if no objects were in the label matrix image.
     set(displaytexthandle,'string',displaytext)
 end

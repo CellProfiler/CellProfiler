@@ -355,10 +355,8 @@ if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
     if isempty(Answer) == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end
-    %%% cd(Pathname)
-    %%% Commented out -- James Whittle 3/22/05
     SheetName = Answer{1};
-    [ignore,SpotIdentifyingInfo]=xlsread(FileName,SheetName); %#ok We want to ignore MLint error checking for this line.
+    [ignore,SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName),SheetName); %#ok We want to ignore MLint error checking for this line.
     SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
     SpotIdentifyingInfo = SpotIdentifyingInfo(2:end,:);
     %%% Determines the number of rows and columns for later use.

@@ -206,10 +206,6 @@ end
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Makes note of the current directory so the module can return to it
-%%% at the end of this module.
-CurrentDirectory = cd;
-
 %%% The first time the module is run, calculates or retrieves the image to
 %%% be used for correction.
 if handles.Current.SetBeingAnalyzed == 1
@@ -242,10 +238,6 @@ if handles.Current.SetBeingAnalyzed == 1
             try Pathname = handles.Pipeline.(fieldname);
             catch error('Image processing was canceled because the Correct Illumination module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first image set through the pipeline. In other words, the Correct Illumination module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination module onward.')
             end
-            %%% Changes to that directory.
-            %%% cd(Pathname)
-            %%% Commented out, not sure of impact on remaining code -- JW
-            %%% 3/22/05
             %%% Retrieves the list of filenames where the images are stored from the
             %%% handles structure.
             fieldname = ['FileList', ImageName];
@@ -273,15 +265,15 @@ if handles.Current.SetBeingAnalyzed == 1
             
             %%% Calculates a coarse estimate of the background illumination by
             %%% determining the minimum of each block in the image.
-            MiniIlluminationImage = blkproc(padarray(CPimread(char(FileList(1)),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
+            MiniIlluminationImage = blkproc(padarray(CPimread(fullfile(Pathname,char(FileList(1))),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             for i=2:length(FileList)
-                MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(CPimread(char(FileList(i)),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
+                MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(CPimread(fullfile(Pathname,char(FileList(i))),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             end
             MeanMiniIlluminationImage = MiniIlluminationImage / length(FileList);
             %%% Expands the coarse estimate in size so that it is the same
             %%% size as the original image. Bicubic 
             %%% interpolation is used to ensure that the data is smooth.
-            MeanIlluminationImage = imresize(MeanMiniIlluminationImage, size(CPimread(char(FileList(1)),handles)), 'bicubic');
+            MeanIlluminationImage = imresize(MeanMiniIlluminationImage, size(CPimread(fullfile(Pathname,char(FileList(1))),handles)), 'bicubic');
             %%% Fits a low-dimensional polynomial to the mean image.
             %%% The result, IlluminationImage, is an image of the smooth illumination function.
             [x,y] = meshgrid(1:size(MeanIlluminationImage,2), 1:size(MeanIlluminationImage,1));

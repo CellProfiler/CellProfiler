@@ -22,10 +22,21 @@ function handles = OpenNewImageFile(handles)
 %
 % $Revision$
 
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+CurrentDir = pwd;
+    cd(handles.Current.DefaultOutputDirectory)
+
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be shown.
-[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'*.*'),'Select the image to view');
-%%% If the user presses "Cancel", the FileName will = 0 and nothing will
+%[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'*.*'),'Select the image to view');
+[FileName,Pathname] = uigetfile('*.*','Select the image to view');
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+
+    %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
 if FileName == 0
 else
@@ -60,3 +71,8 @@ else
 %         'Style','pushbutton');
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
 end
+
+cd(CurrentDir)
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne

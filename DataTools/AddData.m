@@ -26,18 +26,30 @@ function handles = AddData(handles)
 %
 % $Revision$
 
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+CurrentDir = pwd;
+    cd(handles.Current.DefaultOutputDirectory)
+
 ExistingOrMemory = CPquestdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
     return
 elseif strcmp(ExistingOrMemory, 'Memory') == 1
     OutputFile = []; pOutName = []; fOutName = [];
-else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Add sample info to which existing output file?');
-    %%% Allows canceling.
+else [fOutName,pOutName] = uigetfile('*.mat','Add sample info to which existing output file?');
+% else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Add sample info to which existing output file?');
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+
+
+%%% Allows canceling.
     if fOutName == 0
         return
     else
-        try OutputFile = load([pOutName fOutName]);
+        try OutputFile = load(fullfile(pOutName fOutName));
         catch error('Sorry, the file could not be loaded for some reason.')
         end
     end
@@ -143,6 +155,11 @@ else extension = fname(end-2:end);
     else errordlg('Sorry, the list of sample descriptions must be in a text file (.txt) or comma delimited file (.csv).');
     end
 end
+
+cd(CurrentDir)
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
 
 
 %%% SUBFUNCTION %%%

@@ -22,6 +22,12 @@ function handles = ClearData(handles)
 %
 % $Revision$
 
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+CurrentDir = pwd;
+    cd(handles.Current.DefaultOutputDirectory)
+
 ExistingOrMemory = CPquestdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
 if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
     %%% Allows canceling.
@@ -55,12 +61,17 @@ elseif strcmp(ExistingOrMemory, 'Memory') == 1
         %%% loaded?"
     end
 elseif strcmp(ExistingOrMemory, 'Existing') == 1
-    [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
+ [fOutName,pOutName] = uigetfile('*.mat','Choose the output file');
+%  [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Choose the output file');
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+    
     %%% Allows canceling.
     if fOutName == 0
         return
     else
-        try OutputFile = load([pOutName fOutName]);
+        try OutputFile = load(fullfile(pOutName,fOutName));
         catch error('Sorry, the file could not be loaded for some reason.')
         end
     end
@@ -92,3 +103,8 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
         %%% loaded?"
     end
 end
+
+cd(CurrentDir)
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne

@@ -209,10 +209,6 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Make note of the current directory so the module can return to it
-%%% at the end of this module.
-CurrentDirectory = cd;
-
 %%% The first time the module is run, the image to be used for
 %%% correction must be retrieved from a file or calculated.
 if handles.Current.SetBeingAnalyzed == 1
@@ -241,9 +237,6 @@ if handles.Current.SetBeingAnalyzed == 1
             try Pathname = handles.Pipeline.(fieldname);
             catch error('Image processing was canceled because the Correct Illumination module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first image set through the pipeline. In other words, the Correct Illumination module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination module onward.')
             end
-            %%% Changes to that directory.
-            %%% cd(Pathname)
-            %%% Commented out, but unsure whether remaining code will work --James Whittle 3/22/05
             %%% Retrieves the list of filenames where the images are stored from the
             %%% handles structure.
             fieldname = ['FileList', ImageName];
@@ -252,7 +245,7 @@ if handles.Current.SetBeingAnalyzed == 1
             %%% the images, the mean of all the images should be a good
             %%% estimate of the illumination.
             %%% Image file is read differently if it is a .dib image.
-            TotalImage = CPimread(char(FileList(1)), handles);
+            TotalImage = CPimread(fullfile(Pathname,char(FileList(1))), handles);
             %%% Waitbar shows the percentage of image sets remaining.
             WaitbarHandle = waitbar(0,'');
             set(WaitbarHandle, 'Position', PositionMsgBox)
@@ -260,7 +253,7 @@ if handles.Current.SetBeingAnalyzed == 1
             TimeStart = clock;
             NumberOfImages = length(FileList);
             for i=2:length(FileList)
-                TotalImage = TotalImage + CPimread(char(FileList(i)), handles);
+                TotalImage = TotalImage + CPimread(fullfile(Pathname,char(FileList(i))), handles);
                 CurrentTime = clock;
                 TimeSoFar = etime(CurrentTime,TimeStart);
                 TimePerSet = TimeSoFar/i;

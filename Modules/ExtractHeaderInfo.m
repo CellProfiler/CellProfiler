@@ -119,9 +119,6 @@ NumberInSet{5} = 5;
 ImageName{1} = FirstImageName;
 ImageName{3} = ThirdImageName;
 ImageName{5} = FifthImageName;
-%%% Determines the current directory so the module can switch back at the
-%%% end.
-CurrentDirectory = cd;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
@@ -202,12 +199,9 @@ for n = 1:2:5
         %%% Determine the directory to switch to.
         fieldname = ['dOTPathName', ImageName{n}];
         PathName = handles.(fieldname);
-        %%% Switch to the directory
-        %%% cd(PathName);
-        %%% Commented out -- James Whittle 3/22/05
         try
             %%% run the header info function on the loaded image
-            [ExpTime, ExpNum, WorldXYZ, TimeDate] = ExtractHeaderInfo(char(CurrentFileName));
+            [ExpTime, ExpNum, WorldXYZ, TimeDate] = ExtractHeaderInfo(fullfile(PathName,char(CurrentFileName)));
         catch error(['You encountered an error during the subfunction "ExtractHeaderInfo".  Not a good thing.'])
         end
         %%% Converts the WorldXYZ data into three separate variables

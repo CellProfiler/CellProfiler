@@ -1,0 +1,203 @@
+function handles = DataLayout(handles)
+
+% Help for the Data Layout tool:
+% Category: Data Tools
+%
+% This module has not yet been documented.
+%
+% See also <nothing relevant>.
+
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
+
+cd(handles.Current.DefaultOutputDirectory)
+%%% Ask the user to choose the file from which to extract measurements.
+[RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+if RawFileName == 0
+    cd(handles.Current.StartupDirectory);
+    return
+end
+    load(fullfile(RawPathname, RawFileName));
+%%% Extract the fieldnames of measurements from the handles structure.
+Fieldnames = fieldnames(handles.Measurements);
+MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
+%%% Error detection.
+if isempty(MeasFieldnames)
+    errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Image''.')
+    cd(handles.Current.StartupDirectory);
+    return
+end
+%%% Removes the 'Object' prefix from each name for display purposes.
+for Number = 1:length(MeasFieldnames)
+    EditedMeasFieldnames{Number} = MeasFieldnames{Number}(6:end);
+end
+%%% Allows the user to select a measurement from the list.
+[Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
+    'Name','Select measurement',...
+    'PromptString','Choose a measurement to display','CancelString','Cancel',...
+    'SelectionMode','single');
+if ok == 0
+    return
+end
+EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
+MeasurementToExtract = ['Image', EditedMeasurementToExtract];
+
+AllMeasurementsCellArray = handles.Measurements.(MeasurementToExtract);
+
+Prompts = {'Enter the number of rows','Enter the number of columns'};
+Defaults = {'24','16'};
+Answers = inputdlg(Prompts,'Describe Array/Slide Format',1,Defaults);
+if isempty(Answers)
+    return
+end
+NumberRows = str2double(Answers{1});
+NumberColumns = str2double(Answers{2});
+TotalSamplesToBeGridded = NumberRows*NumberColumns;
+NumberSamplesImported = length(AllMeasurementsCellArray);
+if TotalSamplesToBeGridded > NumberSamplesImported
+    h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
+    waitfor(h)
+    AllMeasurementsCellArray(NumberSamplesImported+1:TotalSamplesToBeGridded) = AllMeasurementsCellArray(NumberSamplesImported);
+elseif TotalSamplesToBeGridded < NumberSamplesImported
+    h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
+    waitfor(h)
+    AllMeasurementsCellArray(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
+end
+MeanImage = reshape(cell2mat(AllMeasurementsCellArray),NumberRows,NumberColumns);
+
+%%% Shows the results.
+figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
+
+% % --- Executes on button press in DataLayoutButton.
+% %%% THIS WAS A VERY SPECIALIZED VERSION OUR LAB USED TO NORMALIZE OUR
+% %%% DATA>>>>
+% function DataLayoutButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+% h = msgbox('Copy your data to the clipboard then press OK');
+% waitfor(h)
+% 
+% uiimport('-pastespecial');
+% h = msgbox('After importing your data and pressing "Finish", click OK');
+% waitfor(h)
+% if exist('clipboarddata','var') == 0
+%     return
+% end
+% IncomingData = clipboarddata;
+% 
+% Prompts = {'Enter the number of rows','Enter the number of columns','Enter the percentile below which values will be excluded from fitting the normalization function.','Enter the percentile above which values will be excluded from fitting the normalization function.'};
+% Defaults = {'24','16','.05','.95'};
+% Answers = inputdlg(Prompts,'Describe Array/Slide Format',1,Defaults);
+% if isempty(Answers)
+%     return
+% end
+% NumberRows = str2double(Answers{1});
+% NumberColumns = str2double(Answers{2});
+% LowPercentile = str2double(Answers{3});
+% HighPercentile = str2double(Answers{4});
+% TotalSamplesToBeGridded = NumberRows*NumberColumns;
+% NumberSamplesImported = length(IncomingData);
+% if TotalSamplesToBeGridded > NumberSamplesImported
+%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']); 
+%     waitfor(h)
+%     IncomingData(NumberSamplesImported+1:TotalSamplesToBeGridded) = IncomingData(NumberSamplesImported);
+% elseif TotalSamplesToBeGridded < NumberSamplesImported
+%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']); 
+%     waitfor(h)
+%     IncomingData(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
+% end
+% 
+% %%% The data is shaped into the appropriate grid.
+% MeanImage = reshape(IncomingData,NumberRows,NumberColumns);
+% 
+% %%% The data are listed in ascending order.
+% AscendingData = sort(IncomingData);
+% 
+% %%% The percentiles are calculated. (Statistics Toolbox has a percentile
+% %%% function, but many users may not have that function.)
+% %%% The values to be ignored are set to zero in the mask.
+% mask = MeanImage;
+% if LowPercentile ~= 0
+% RankOrderOfLowThreshold = floor(LowPercentile*NumberSamplesImported);
+% LowThreshold = AscendingData(RankOrderOfLowThreshold);
+% mask(mask <= LowThreshold) = 0;
+% end
+% if HighPercentile ~= 1
+% RankOrderOfHighThreshold = ceil(HighPercentile*NumberSamplesImported);
+% HighThreshold = AscendingData(RankOrderOfHighThreshold);
+% mask(mask >= HighThreshold) = 0;
+% end
+% ThrownOutDataForDisplay = mask;
+% ThrownOutDataForDisplay(mask > 0) = 1;
+% 
+% %%% Fits the data to a third-dimensional polynomial 
+% % [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
+% % x2 = x.*x;
+% % y2 = y.*y;
+% % xy = x.*y;
+% % x3 = x2.*x;
+% % x2y = x2.*y;
+% % xy2 = y2.*x;
+% % y3 = y2.*y;
+% % o = ones(size(MeanImage));
+% % ind = find((MeanImage > 0) & (mask > 0));
+% % coeffs = [x3(ind) x2y(ind) xy2(ind) y3(ind) x2(ind) y2(ind) xy(ind) x(ind) y(ind) o(ind)] \ double(MeanImage(ind));
+% % IlluminationImage = reshape([x3(:) x2y(:) xy2(:) y3(:) x2(:) y2(:) xy(:) x(:) y(:) o(:)] * coeffs, size(MeanImage));
+% % 
+% 
+% %%% Fits the data to a fourth-dimensional polynomial 
+% [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
+% x2 = x.*x;
+% y2 = y.*y;
+% xy = x.*y;
+% x3 = x2.*x;
+% x2y = x2.*y;
+% xy2 = y2.*x;
+% y3 = y2.*y;
+% x4 = x2.*x2;
+% y4 = y2.*y2;
+% x3y = x3.*y;
+% x2y2 = x2.*y2;
+% xy3 = x.*y3;
+% o = ones(size(MeanImage));
+% ind = find((MeanImage > 0) & (mask > 0));
+% coeffs = [x4(ind) x3y(ind) x2y2(ind) xy3(ind) y4(ind) ...
+%           x3(ind) x2y(ind) xy2(ind) y3(ind) ...
+%           x2(ind) xy(ind) y2(ind)  ...
+%           x(ind) y(ind) ...
+%           o(ind)] \ double(MeanImage(ind));
+% IlluminationImage = reshape([x4(:) x3y(:) x2y2(:) xy3(:) y4(:) ...
+%           x3(:) x2y(:) xy2(:) y3(:) ...
+%           x2(:) xy(:) y2(:)  ...
+%           x(:) y(:) ...
+%           o(:)] * coeffs, size(MeanImage));
+% CorrFactorsRaw = reshape(IlluminationImage,TotalSamplesToBeGridded,1);
+% IlluminationImage2 = IlluminationImage ./ mean(CorrFactorsRaw);
+%   
+% %%% Shows the results.
+% figure, subplot(1,3,1), imagesc(MeanImage), title('Imported Data'), colorbar
+% subplot(1,3,2), imagesc(ThrownOutDataForDisplay), title('Ignored Samples'),
+% subplot(1,3,3), imagesc(IlluminationImage2), title('Correction Factors'), colorbar
+% 
+% %%% Puts the results in a column and displays in the main Matlab window.
+% OrigData = reshape(MeanImage,TotalSamplesToBeGridded,1) %#ok We want to ignore MLint error checking for this line.
+% CorrFactors = reshape(IlluminationImage2,TotalSamplesToBeGridded,1);
+% CorrectedData = OrigData./CorrFactors %#ok We want to ignore MLint error checking for this line.
+% 
+% msgbox('The original data and the corrected data are now displayed in the Matlab window. You can cut and paste from there.')
+% 
+% % %%% Exports the results to the clipboard.
+% % clipboard('copy',CorrFactors);
+% % h = msgbox('The correction factors are now on the clipboard. Paste them where desired and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
+% % waitfor(h)
+% % clipboard('copy',OrigData);
+% % h = msgbox('The original data used to generate those normalization factors is now on the clipboard. Paste them where desired (if desired) and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
+% % waitfor(h)

@@ -1,10 +1,47 @@
-function handles = AlgCreateBatchFiles(handles)
+function handles = CreateBatchFiles(handles)
 
 % Help for the Create Batch Files module:
 % Category: Other
 %
 % This module writes a set of Matlab scripts that can be submitted in
 % parallel to a cluster for faster processing.
+%
+% This module should be placed at the end of an image processing
+% pipeline.  It takes five values as input: the size of each batch
+% that the full set of images should be split into, the patch to the
+% CellProfiler modules on the cluster machines, the path to the images
+% on the remote machine, where in the local system to save the batch
+% files, and finally, a prefix to put on the batch files.
+%
+% After the first image set is processed, batch files are created and
+% saved on the local machines, by default in the same directory as the
+% current default output directory.  Each batch file is of the form
+% Batch_X_to_Y.m, where (The prefix can be changed from Batch_ by the
+% user), X is the first image set to be processed in the particular
+% batch file, and Y is the last.  There is also a Batch_data.mat file
+% that each script uses to initialize the processing.
+%
+% After the batch files are created, they can be submitted
+% individually to the remote machines.  Note that the batch files and
+% Batch_data.mat file might have to be copied to the remote machines,
+% first.  Details of how remote jobs will be started vary from
+% location to location.  The output files will be written in the
+% directory where the batch files are running, which may or may not be
+% the directory where the batch scripts are located.  Please consult
+% your local cluster experts.
+%
+% After batch processing is complete, the output files can be merged
+% by the MergeBatchOutput module.  For the simplest behavior in
+% merging, it is best to save output files to a unique and initially
+% empty directory.
+%
+% If the batch processing fails for some reason, the handles structure
+% in the output file will have a field BatchError, and the error will
+% also be written to standard out.  Check the output from the batch
+% processes to make sure all batches complete.  Batches that fail for
+% transient reasons can be resubmitted.
+%
+% See also MERGEBATCHOUTPUT.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -82,14 +82,17 @@ addpath(pwd);
 %%% directory and then the current directory.  This is not necessary for
 %%% CellProfiler to function; it just allows defaults to be
 %%% pre-loaded.
+LoadedPreferencesExist = 0;
 try
-    load CellProfilerPreferences
+    load(fullfile(matlabroot,'CellProfilerPreferences.mat'))
     LoadedPreferences = SavedPreferences;
+    LoadedPreferencesExist = 1;
     clear SavedPreferences
 catch
     try 
-        load fullfile(handles.Current.StartupDirectory, CellProfilerPreferences)
+        load(fullfile(handles.Current.StartupDirectory, CellProfilerPreferences))
         LoadedPreferences = SavedPreferences;
+        LoadedPreferencesExist = 1;
         clear SavedPreferences
     end
 end
@@ -108,48 +111,41 @@ end
 try
     if exist(LoadedPreferences.DefaultModuleDirectory, 'dir')
         handles.Preferences.DefaultModuleDirectory = LoadedPreferences.DefaultModuleDirectory;
-        %%% Checks whether that pathname is valid.
-    else
-        %%% If the Default Module Directory is not present in the loaded
-        %%% preferences or cannot be found, look at where the
-        %%% CellProfiler.m file is located and see whether there is a
-        %%% subdirectory within that directory, called "Modules".  If so,
-        %%% use that subdirectory as the default module directory. If not,
-        %%% use the current directory.
-        [CellProfilerPathname,FileName,ext,versn] = fileparts(which('CellProfiler'));
-        if exist(fullfile(CellProfilerPathname,'Modules'), 'dir')
-            CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
-            handles.Preferences.DefaultModuleDirectory = CellProfilerModulePathname;
-            %%% Checks whether that pathname is valid.
-        else
-            handles.Preferences.DefaultModuleDirectory = handles.Current.StartupDirectory;
-        end
     end
-catch handles.Preferences.DefaultModuleDirectory = handles.Current.StartupDirectory;
 end
-
+%%% If the Default Module Directory has not yet been successfully
+%%% identified (i.e., it is not present in the loaded preferences or
+%%% the directory does not exist), look at where the CellProfiler.m
+%%% file is located and see whether there is a subdirectory within
+%%% that directory, called "Modules".  If so, use that subdirectory as
+%%% the default module directory. If not, use the current directory.
+if isfield(handles.Preferences,'DefaultModuleDirectory') == 0
+    [CellProfilerPathname,FileName,ext,versn] = fileparts(which('CellProfiler'));
+    %%% Checks whether the Modules subdirectory exists.
+    if exist(fullfile(CellProfilerPathname,'Modules'), 'dir')
+        CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
+        handles.Preferences.DefaultModuleDirectory = CellProfilerModulePathname;
+    else
+        handles.Preferences.DefaultModuleDirectory = handles.Current.StartupDirectory;
+    end
+end
+%%% Similar approach for the DefaultOutputDirectory.
 try
     if exist(LoadedPreferences.DefaultOutputDirectory, 'dir')
         handles.Preferences.DefaultOutputDirectory = LoadedPreferences.DefaultOutputDirectory;
-        %%% Checks whether that pathname is valid.
-    else
-        %%% If not present in the loaded preferences or not existent, the current
-        %%% directory is used.
-        handles.Preferences.DefaultOutputDirectory = handles.Current.StartupDirectory;
     end
-catch handles.Preferences.DefaultOutputDirectory = handles.Current.StartupDirectory;
 end
-
+if isfield(handles.Preferences,'DefaultOutputDirectory') == 0
+    handles.Preferences.DefaultOutputDirectory = handles.Current.StartupDirectory;
+end
+%%% Similar approach for the DefaultImageDirectory.
 try
     if exist(LoadedPreferences.DefaultImageDirectory, 'dir')
         handles.Preferences.DefaultImageDirectory = LoadedPreferences.DefaultImageDirectory;
-        %%% Checks whether that pathname is valid.
-    else
-        handles.Preferences.DefaultImageDirectory = handles.Current.StartupDirectory;
-        %%% If not present in the loaded preferences or not existent, the current
-        %%% directory is used.
     end
-catch    handles.Preferences.DefaultImageDirectory = handles.Current.StartupDirectory;
+end
+if isfield(handles.Preferences,'DefaultImageDirectory') == 0
+    handles.Preferences.DefaultImageDirectory = handles.Current.StartupDirectory;
 end
 
 %%% Now that handles.Preferences.(4 different variables) has been filled
@@ -305,13 +301,14 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 % --- Executes on button press in LoadPipelineButton.
 function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
-%%% THESE FOLLOWING TWO LINES DON"T DO ANYTHING. WHICH IS A GOOD
-%%% THING< BECAUSE IF THEY DID AND THE USER PRESSES CANCEL AT ANY
-%%% POINT< WE WOULD BE LEFT WITH NO SETTINGS.
-%clear('handles.Settings');
-%clear('handles.Current.NumberOfModules');
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory, '*.mat'),'Choose a settings or output file');
+    cd(handles.Current.DefaultOutputDirectory)
+    [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
+    % [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory, '*.mat'),'Choose a settings or output file');
+    %%% Restored this code, because the uigetfile function does not seem
+    %%% to work properly.  It goes to the parent of the directory that was
+    %%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+    try cd(handles.Current.StartupDirectory), end
 else
     [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
 end
@@ -754,14 +751,21 @@ end
 %%% leading up to this directory sometime after saving the
 %%% Preferences.
 
-% try cd(handles.Preferences.DefaultModuleDirectory) %#ok We want to ignore MLint error checking for this line.
-% end
+try cd(handles.Preferences.DefaultModuleDirectory) %#ok We want to ignore MLint error checking for this line.
+end
 % Commented out by James Whittle 3/22/05
+%%% Restored this code, because the uigetfile function does not seem
+%%% to work properly.  It goes to the parent of the directory that was
+%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
 
 %%% Now, when the dialog box is opened to retrieve an module, the
 %%% directory will be the default module directory.
 if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
-    [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory, '*.m'),...
+%    [ModuleNamedotm,Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory, '*.m'),...
+%%% Replaced this code, because the uigetfile function does not seem
+%%% to work properly.  It goes to the parent of the directory that was
+%%% specified.  I have asked Mathworks about this issue 3/23/05. -Anne
+    [ModuleNamedotm,Pathname] = uigetfile('*.m',...
         'Choose an image analysis module');
 else
     [ModuleNamedotm,Pathname] = uigetfile('*.m',...
@@ -1258,14 +1262,13 @@ global EnteredPreferences
 %%% Opens a dialog box to retrieve input from the user.
 %%% Sets the functions of the buttons and edit boxes in the dialog box.
 
-%Note, it doesn't seem like EditBox callbacks are ever executed...
 PixelSizeEditBoxCallback = 'PixelSize = str2double(get(gco,''string'')); if isempty(PixelSize) == 1 | ~isnumeric(PixelSize), PixelSize = {''1''}, set(gco,''string'',PixelSize), end, clear';
-ImageDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir = CurrentChoice, else, tempdir=cd, end, DefaultImageDirectory = uigetdir(tempdir,''Select the default image directory''); if DefaultImageDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultImageDirectory), end, clear';
-ImageDirEditBoxCallback = 'DefaultImageDirectory = get(gco,''string''); if isempty(DefaultImageDirectory) == 1; DefaultImageDirectory = cd; set(gco,''string'',DefaultImageDirectory); end, clear';
-OutputDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice, else, tempdir=cd, end, DefaultOutputDirectory = uigetdir(tempdir,''Select the default output directory''); if DefaultOutputDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultOutputDirectory), end, clear';
-OutputDirEditBoxCallback = 'DefaultOutputDirectory = get(gco,''string''); if isempty(DefaultOutputDirectory) == 1; DefaultOutputDirectory = cd; set(gco,''string'',DefaultOutputDirectory), end, clear';
-ModuleDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice, else tempdir=cd, end, DefaultModuleDirectory = uigetdir(tempdir,''Select the directory where modules are stored''); if DefaultModuleDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultModuleDirectory), end, clear';
-ModuleDirEditBoxCallback = 'DefaultModuleDirectory = get(gco,''string''); if isempty(DefaultModuleDirectory) == 1; DefaultModuleDirectory = cd; set(gco,''string'',DefaultModuleDirectory), end, clear';
+ImageDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir = CurrentChoice; else, tempdir=pwd; end, DefaultImageDirectory = uigetdir(tempdir,''Select the default image directory''); if DefaultImageDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultImageDirectory), end, clear';
+ImageDirEditBoxCallback = 'DefaultImageDirectory = get(gco,''string''); if isempty(DefaultImageDirectory) == 1; DefaultImageDirectory = pwd; set(gco,''string'',DefaultImageDirectory); end, clear';
+OutputDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else, tempdir=pwd; end, DefaultOutputDirectory = uigetdir(tempdir,''Select the default output directory''); if DefaultOutputDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultOutputDirectory), end, clear';
+OutputDirEditBoxCallback = 'DefaultOutputDirectory = get(gco,''string''); if isempty(DefaultOutputDirectory) == 1; DefaultOutputDirectory = pwd; set(gco,''string'',DefaultOutputDirectory), end, clear';
+ModuleDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else tempdir=pwd; end, DefaultModuleDirectory = uigetdir(tempdir,''Select the directory where modules are stored''); if DefaultModuleDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultModuleDirectory), end, clear';
+ModuleDirEditBoxCallback = 'DefaultModuleDirectory = get(gco,''string''); if isempty(DefaultModuleDirectory) == 1; DefaultModuleDirectory = pwd; set(gco,''string'',DefaultModuleDirectory), end, clear';
 
 %%% TODO: Add error checking to each directory edit box (does pathname exist).
 %%% TODO: Add error checking to pixel size box and font size box(is it a number).
@@ -1548,7 +1551,7 @@ function BrowseImageDirectoryButton_Callback(hObject, eventdata, handles) %#ok W
 %%% that directory name into the edit box.  Also, changes the current
 %%% directory to the chosen directory.
 if exist(handles.Current.DefaultImageDirectory, 'dir')
-    pathname = uigetdir('handles.Current.DefaultImageDirectory','Choose the directory of images to be analyzed');
+    pathname = uigetdir(handles.Current.DefaultImageDirectory,'Choose the directory of images to be analyzed');
 else
     pathname = uigetdir('','Choose the directory of images to be analyzed');
 end
@@ -1567,7 +1570,6 @@ else
     handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
     guidata(hObject, handles);
 end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DEFAULT IMAGE DIRECTORY EDIT BOX %%%
@@ -1706,7 +1708,6 @@ else
     guidata(hObject,handles)
 end
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DEFAULT OUTPUT DIRECTORY EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1832,47 +1833,10 @@ end
 % --- Executes during object creation, after setting all properties.
 function OutputFileNameEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
-% OLD OutputFileNameEditBox_Callback function, modified 2/13/2005.
-% function OutputFileNameEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-% Pathname = handles.Current.DefaultOutputDirectory;
-% %%% Gets the user entry and stores it in the handles structure.
-% InitialUserEntry = get(handles.OutputFileNameEditBox,'string');
-% 
-% if isempty(InitialUserEntry)
-%     handles.Current.OutputFilename =[];
-% else
-%     if length(InitialUserEntry) >=7
-%         if strncmpi(InitialUserEntry(end-6:end),'out.mat',7)
-%             UserEntry = InitialUserEntry;
-%         elseif strncmpi(InitialUserEntry(end-3:end),'.mat',4)
-%             UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
-%         else UserEntry = [InitialUserEntry,'OUT.mat'];
-%         end
-%     elseif length(InitialUserEntry) >=4
-%         if strncmp(InitialUserEntry(end-3:end),'.mat',4)
-%             UserEntry = [InitialUserEntry(1:end-4) 'OUT.mat'];
-%         else UserEntry = [InitialUserEntry,'OUT.mat'];
-%         end
-%     else UserEntry = [InitialUserEntry,'OUT.mat'];
-%     end
-%     %%% Checks whether a file with that name already exists, to warn the user
-%     %%% that the file will be overwritten.
-%     if exist([Pathname,'/',UserEntry],'file')    %%% TODO: Fix filename construction.
-%         errordlg(['A file already exists at ', [Pathname,'/',UserEntry],... %%% TODO: Fix filename construction.
-%             '. Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
-%         set(handles.OutputFileNameEditBox,'string',[])
-%     else
-%         handles.Current.OutputFilename = UserEntry;
-%         set(handles.OutputFileNameEditBox,'string',UserEntry)
-%     end
-% end
-%guidata(gcbo, handles);
-
 function OutputFileNameEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 Pathname = handles.Current.DefaultOutputDirectory;
 UserEntry = strtrim(get(handles.OutputFileNameEditBox,'string'));
-
 if ~isempty(UserEntry)
     % Drop '.mat' if the user entered it
     if strfind(UserEntry,'.mat')
@@ -1928,9 +1892,8 @@ for i = 1:handles.Current.NumberOfModules;
 end
 if sum == 0
     errordlg('You do not have any analysis modules loaded');
-else
-    
-    % Call Callback function of FileNameEditBox to update filename
+else    
+    %%% Call Callback function of FileNameEditBox to update filename
     tmp = get(handles.OutputFileNameEditBox,'string');
     OutputFileNameEditBox_Callback(hObject, eventdata, handles)
     if ~strcmp(tmp,get(handles.OutputFileNameEditBox,'string'))
@@ -1949,7 +1912,6 @@ else
     if isempty(get(handles.OutputFileNameEditBox,'string'))
         errordlg('You have not entered an output file name in Step 2.');
     else
-    
         %%% Checks whether the default output directory exists.
         if ~exist(handles.Current.DefaultOutputDirectory, 'dir')
             errordlg('The default output directory does not exist');
@@ -1958,7 +1920,6 @@ else
         if ~exist(handles.Current.DefaultImageDirectory, 'dir')
             errordlg('The default image directory does not exist');
         else
-
                 %%% Retrieves the list of image file names from the
                 %%% chosen directory, stores them in the handles
                 %%% structure, and displays them in the filenameslistbox, by
@@ -2261,11 +2222,8 @@ else
                     %%% Save all data that is in the handles structure to the output file 
                     %%% name specified by the user.
                     
-                    %%% Commented out cd and inserted fullfile into eval
-                    %%% block -- James Whittle 3/22/05
-                    %cd(handles.Current.DefaultOutputDirectory)
-                    eval(['save ',fullfile(handles.Current.DefaultOutputDirectory, ...
-                        get(handles.OutputFileNameEditBox,'string')), ' handles;'])                   
+                    eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                        get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
                     %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                     setbeinganalyzed = setbeinganalyzed + 1;
                     handles.Current.SetBeingAnalyzed = setbeinganalyzed;
@@ -2354,14 +2312,15 @@ else
                         HeadingsErrorMessage(11) = {'file. Click OK to continue.'};
                         HeadingsErrorMessage = cellstr(HeadingsErrorMessage);
                         listdlg('ListString', HeadingsToBeRemoved, 'PromptString', HeadingsErrorMessage, 'CancelString', 'OK');
-                        %%% Save all data that is in the handles structure to the output file 
+                        %%% Save all data that is in the handles structure to the output file
                         %%% name specified by the user.
-                        eval(['save ',get(handles.OutputFileNameEditBox','string'), ' handles;'])
+                        eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                            get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
                     end % This end goes with the "isempty" line.
-                end % This end goes with the 'isempty' line.    
+                end % This end goes with the 'isempty' line.
                 %%% Update the handles structure.
                 guidata(gcbo, handles)
-                
+
                 %%% Calculate total time elapsed and display Complete in the Timer window.
                 total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(round(10*toc)/10)];
                 number_analyzed = ['Number of image sets analyzed = ',...

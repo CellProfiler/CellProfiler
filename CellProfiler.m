@@ -875,6 +875,12 @@ else
    end
   fclose(fid);
 
+
+  %%% 9. Update handles.numAlgorithms
+  if str2num(AlgorithmNumber) > handles.numAlgorithms,
+    handles.Numalgorithms = str2num(AlgorithmNumber);
+  end
+
   %%% Updates the handles structure to incorporate all the changes.
   guidata(gcbo, handles);
 end
@@ -904,9 +910,10 @@ end
 set(handles.(['AlgorithmName' AlgorithmNumber]),'String','No analysis module loaded');
 
 %%% 2. Removes the AlgorithmName from the handles structure.
-             ConstructedName = strcat('Valgorithmname',AlgorithmNumber);
-             if isfield(handles,ConstructedName) == 1
-             handles = rmfield(handles,ConstructedName); end
+ConstructedName = strcat('Valgorithmname',AlgorithmNumber);
+if isfield(handles,ConstructedName) == 1,
+  handles = rmfield(handles,ConstructedName); 
+end
 
 %%% 3. Set all the indicator bars (which tell you which algorithm 
 %%% you are editing settings for) to be invisible and then set 
@@ -930,6 +937,14 @@ for i=1:handles.numVariables(str2num(AlgorithmNumber));
     if isfield(handles,ConstructedName) == 1;
         handles = rmfield(handles, ConstructedName);
     end;
+end;
+
+%%% 6. Update the number of algorithms loaded
+
+for i=1:handles.MaxAlgorithms,
+  if isfield(handles, ['Valgorithmname' TwoDigitString(i)]),
+    handles.numAlgorithms = i;
+  end;
 end;
 
 guidata(gcbo, handles);

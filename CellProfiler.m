@@ -46,7 +46,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 26-Oct-2004 19:01:40
+% Last Modified by GUIDE v2.5 01-Nov-2004 12:31:46
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1924,7 +1924,7 @@ if ok ~= 0
         PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
         PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
         %%% See whether the min and max histogram values were user-entered numbers or should be automatically calculated.
-        if isempty(str2double(MinHistogramValue))
+        if isempty(str2num(MinHistogramValue)) %#ok
             if strcmp(MinHistogramValue,'automatic') == 1
                 MinHistogramValue = PotentialMinHistogramValue;
             else
@@ -1932,9 +1932,9 @@ if ok ~= 0
                 cd(CurrentDirectory);
                 return
             end
-        else MinHistogramValue = str2double(MinHistogramValue);
+        else MinHistogramValue = str2num(MinHistogramValue); %#ok
         end
-        if isempty(str2double(MaxHistogramValue))
+        if isempty(str2num(MaxHistogramValue)) %#ok
             if strcmp(MaxHistogramValue,'automatic') == 1
                 MaxHistogramValue = PotentialMaxHistogramValue;
             else
@@ -1942,7 +1942,7 @@ if ok ~= 0
                 cd(CurrentDirectory);
                 return
             end
-        else MaxHistogramValue = str2double(MaxHistogramValue);
+        else MaxHistogramValue = str2num(MaxHistogramValue); %#ok
         end
         %%% Determine plot bin locations.
         HistogramRange = MaxHistogramValue - MinHistogramValue;
@@ -1980,6 +1980,9 @@ if ok ~= 0
             %%% that match + inf).
             HistogramData(n+1) = [];
             FinalHistogramData(:,1) = HistogramData;
+            %%% Saves this info in a variable, FigureSettings, which
+            %%% will be stored later with the figure.
+            FigureSettings{3} = FinalHistogramData;
             HistogramTitles{1} = ['Histogram of data from Image #', num2str(FirstImage), ' to #', num2str(LastImage)];
             FirstImage = 1;
             LastImage = 1;
@@ -2044,9 +2047,9 @@ if ok ~= 0
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         else
             %%% Preallocates the variable ListOfMeasurements.
-ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
+            ListOfMeasurements{LastImage} = handles.Measurements.(MeasurementToExtract){LastImage};
             for ImageNumber = FirstImage:LastImage
-                ListOfMeasurements{ImageNumber} = handles.(MeasurementToExtract){ImageNumber};
+                ListOfMeasurements{ImageNumber} = handles.Measurements.(MeasurementToExtract){ImageNumber};
                 HistogramData = histc(ListOfMeasurements{ImageNumber},BinLocations);
                 %%% Deletes the last value of HistogramData, which
                 %%% is always a zero (because it's the number of values that match
@@ -2058,8 +2061,11 @@ ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
                     HistogramTitles{ImageNumber} = ['#', num2str(ImageNumber), ': ' , SampleName];
                 else HistogramTitles{ImageNumber} = ['Image #', num2str(ImageNumber)];
                 end
-            end 
-            
+            end
+            %%% Saves this info in a variable, FigureSettings, which
+            %%% will be stored later with the figure.
+            FigureSettings{3} = FinalHistogramData
+
             %%% Saves the data to an excel file if desired.
             if strcmp(SaveData,'no') ~= 1
                 %%% Open the file and name it appropriately.
@@ -2130,7 +2136,6 @@ ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
                 h = helpdlg(['The file ', SaveData, ' has been written to the directory where the raw measurements file is located.']);
                 waitfor(h)
             end
-
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% Displays histogram data for non-compressed histograms %%%
@@ -2226,7 +2231,7 @@ ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
             uicontrol('Parent',FigureHandle, ...
                 'Unit',StdUnit, ...
                 'BackgroundColor',[0.8 0.8 0.8], ...
-                'Position',PointsPerPixel*[100 NewHeight-26 180 30], ...
+                'Position',PointsPerPixel*[100 NewHeight-26 240 30], ...
                 'Units','Normalized',...
                 'Style','frame');
             %%% Creates text 1
@@ -2241,7 +2246,7 @@ ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
             uicontrol('Parent',FigureHandle, ...
                 'BackgroundColor',get(FigureHandle,'Color'), ...
                 'Unit',StdUnit, ...
-                'Position',PointsPerPixel*[0.5*NewFigurePosition(3)+15 NewHeight-30 85 22], ...
+                'Position',PointsPerPixel*[0.5*NewFigurePosition(3)+85 NewHeight-30 85 22], ...
                 'Units','Normalized',...
                 'String','Change bars:', ...
                 'Style','text');
@@ -2329,13 +2334,23 @@ ListOfMeasurements{LastImage} = handles.(MeasurementToExtract){LastImage};
                 'Units','Normalized',...
                 'String','Fewer', ...
                 'Style','pushbutton');
-            %%% Restore original X axis labels.
-            Button9Callback = 'FigureSettings = get(gca,''UserData'');  PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Type'', ''axes''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+            %%% Decimal places X axis labels.
+            Button9Callback = 'FigureSettings = get(gca,''UserData''); PlotBinLocations = FigureSettings{1}; PreXTickLabels = FigureSettings{2}, XTickLabels = PreXTickLabels(2:end-1), AxesHandles = findobj(gcf, ''Type'', ''axes''); set(AxesHandles,''XTick'',PlotBinLocations); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels), Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command), NewNumberValuesPlusFirstLast = [char(PreXTickLabels(1)); NewNumberValues; char(PreXTickLabels(end-1))], CellNumberValues = cellstr(NewNumberValuesPlusFirstLast); set(AxesHandles,''XTickLabel'',CellNumberValues), drawnow'
             uicontrol('Parent',FigureHandle, ...
                 'Unit',StdUnit, ...
                 'BackgroundColor',StdColor, ...
                 'CallBack',Button9Callback, ...
                 'Position',PointsPerPixel*[227 NewHeight-22 50 22], ...
+                'Units','Normalized',...
+                'String','Decimals', ...
+                'Style','pushbutton');
+            %%% Restore original X axis labels.
+            Button10Callback = 'FigureSettings = get(gca,''UserData'');  PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Type'', ''axes''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+            uicontrol('Parent',FigureHandle, ...
+                'Unit',StdUnit, ...
+                'BackgroundColor',StdColor, ...
+                'CallBack',Button10Callback, ...
+                'Position',PointsPerPixel*[282 NewHeight-22 50 22], ...
                 'Units','Normalized',...
                 'String','Restore', ...
                 'Style','pushbutton');
@@ -3445,3 +3460,12 @@ for i=1:99,
         'Visible','off',...
         'CreateFcn', '');
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function topPanelFrame_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to topPanelFrame (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+

@@ -533,6 +533,7 @@ else
     return;
   end
 
+  %%% Figure out whether we loaded a Settings or Output file, and put the correct values into Settings
   if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
   else 
@@ -582,6 +583,16 @@ else
   
   %%% Update handles structure.
   guidata(hObject,handles);
+
+  %%% If the user loaded settings from an output file, prompt them to
+  %%% save it as a separate Settings file for future use.
+  if isfield(LoadedSettings, 'handles'),
+    if questdlg('Save settings from output file in a separate, settings-only file?','','Yes','No','Yes') == 'Yes',
+      SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
+    end
+  end  
+      
+
 end
 cd(CurrentDirectory)
 

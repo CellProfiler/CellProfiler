@@ -297,8 +297,8 @@ for n = 1:4
             %%% batch.
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            %%% Also saved to the handles.Measurements structure for reference in output files.
-            handles.Measurements.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+            %%% Also saved to the handles.Measurements.GeneralInfo structure for reference in output files.
+            handles.Measurements.GeneralInfo.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             %%% Saves the loaded image to the handles structure.  The field is named
             %%% appropriately based on the user's input, and put into the Pipeline
             %%% substructure so it will be deleted at the end of the analysis batch.

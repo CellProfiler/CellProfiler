@@ -118,36 +118,8 @@ for i = 1:length(ObjectNameList)
         end
     end
 
-
-    if max(LabelMatrixImage(:)) > 0
-        %%% Get the basic shape features
-        props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
-            'MajorAxisLength','MinorAxisLength','Centroid');
-
-        % Perimeter
-        perim = bwperim(LabelMatrixImage>0).*LabelMatrixImage;
-        perim = perim(:);
-        perim = perim(find(perim));
-        Perimeter = (hist(perim,[1:max(perim)])*PixelSize)';
-
-        % Form factor
-        FormFactor = 4*pi*cat(1,props.Area) ./ Perimeter.^2;
-
-        % Centroid
-        Centroid = cat(1,props.Centroid);
-
-        Basic = [cat(1,props.Area)*PixelSize^2,...
-            cat(1,props.Eccentricity),...
-            cat(1,props.Solidity),...
-            cat(1,props.Extent),...
-            cat(1,props.EulerNumber),...
-            Perimeter,...
-            FormFactor,...
-            cat(1,props.MajorAxisLength),...
-            cat(1,props.MinorAxisLength),...
-            Centroid(:,1),...
-            Centroid(:,2)];
-
+    NumObjects = max(LabelMatrixImage(:));
+    if  NumObjects> 0
 
         %%% Calculate Zernike shape features
         % Use ConvexArea to automatically calculate the average equivalent diameter
@@ -186,8 +158,9 @@ for i = 1:length(ObjectNameList)
         % over the centroids of the objects.
         tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
         Centroids = cat(1,tmp.Centroid);
-        Zernike = zeros(size(Centroids,1),size(Zernikeindex,1));
-        for Object = 1:size(Centroids,1)
+        Zernike = zeros(NumObjects,size(Zernikeindex,1));
+        Perimeter = zeros(NumObjects,1);
+        for Object = 1:NumObjects
 
             % Get image patch
             cx = round(Centroids(Object,1));
@@ -201,7 +174,35 @@ for i = 1:length(ObjectNameList)
             % Apply Zernike functions
             Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
 
+            % Get perimeter for object
+            perim = bwperim(BWpatch);
+            Perimeter(Object) = sum(perim(:));
+
         end
+     
+        %%% Get the basic shape features
+        props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
+            'MajorAxisLength','MinorAxisLength','Centroid');
+
+        % Centroid
+        Centroid = cat(1,props.Centroid);
+
+        
+        % Form factor
+        FormFactor = 4*pi*cat(1,props.Area) ./ Perimeter.^2;
+
+        % Save basic shape features
+        Basic = [cat(1,props.Area)*PixelSize^2,...
+            cat(1,props.Eccentricity),...
+            cat(1,props.Solidity),...
+            cat(1,props.Extent),...
+            cat(1,props.EulerNumber),...
+            Perimeter,...
+            FormFactor,...
+            cat(1,props.MajorAxisLength),...
+            cat(1,props.MinorAxisLength),...
+            Centroid(:,1),...
+            Centroid(:,2)];
     end
 
     %%% Save measurements
@@ -252,8 +253,8 @@ for i = 1:length(ObjectNameList)
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.85 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'string',num2str(max(LabelMatrixImage(:))));
-        
-        % Report features, if there are any.    
+
+        % Report features, if there are any.
         if max(LabelMatrixImage(:)) > 0
             % Basic shape features
             for k = 1:7

@@ -24,6 +24,7 @@
 % $Revision$
 
 % clear the results structure
+
 clear handles_results
 handles_results.CellProfilerError = [];
 

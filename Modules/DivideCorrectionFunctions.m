@@ -366,12 +366,4 @@ if ReadyFlag == 1
     %%% The IlluminationFunctionImage is saved to the handles structure so
     %%% it can be used by subsequent modules.
     handles.Pipeline.(IlluminationFunctionImageName) = IlluminationFunctionImage;
-
-%     %%% Determine the filename of the image analyzed.
-%     fieldname = ['Filename', IntensityProjectionImageName];
-%     FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%     %%% The original file name is saved to the handles structure in a
-%     %%% field named after the intensity projection image name.
-%     fieldname = ['Filename', IlluminationFunctionImageName];
-%     handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
 end

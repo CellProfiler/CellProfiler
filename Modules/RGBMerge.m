@@ -407,18 +407,3 @@ drawnow
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.
 handles.Pipeline.(RGBImageName) = RGBImage;
-
-%%% Determines the filename of the image to be analyzed. Only one of the
-%%% original file names is chosen to name this field.
-if BlueImageExists == 1
-    fieldname = ['Filename', BlueImageName];
-elseif GreenImageExists == 1
-    fieldname = ['Filename', GreenImageName];
-elseif RedImageExists == 1
-    fieldname = ['Filename', RedImageName];
-end
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the adjusted image name.
-fieldname = ['Filename', RGBImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

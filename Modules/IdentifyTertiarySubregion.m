@@ -378,15 +378,6 @@ drawnow
 fieldname = ['Segmented', SubregionObjectName];
 handles.Pipeline.(fieldname) = SubregionObjectImage;
 
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', PrimaryObjectName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the filename of the image to be analyzed.
-fieldname = ['Filename', SubregionObjectName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-%%% Arbitrarily, I have chosen the primary object's filename to be saved
-%%% here rather than the secondary object's filename.  
-
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try

@@ -335,11 +335,3 @@ drawnow
 %%% The Resized image is saved to the handles structure so it can be
 %%% used by subsequent modules.
 handles.Pipeline.(ResizedImageName) = ResizedImage;
-
-%%% Determine the filename of the image analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% The original file name is saved to the handles structure in a
-%%% field named after the Resized image name.
-fieldname = ['Filename', ResizedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

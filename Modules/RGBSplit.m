@@ -346,17 +346,3 @@ drawnow
 handles.Pipeline.(RedImageName) = RedImage;
 handles.Pipeline.(GreenImageName) = GreenImage;
 handles.Pipeline.(BlueImageName) = BlueImage;
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', RGBImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the adjusted image name.
-fieldname = ['Filename', RGBImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-fieldname = ['Filename', RedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-fieldname = ['Filename', GreenImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-fieldname = ['Filename', BlueImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

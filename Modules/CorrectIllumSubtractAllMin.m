@@ -521,11 +521,3 @@ drawnow
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent modules.
 handles.Pipeline.(CorrectedImageName) = CorrectedImage;
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a field named
-%%% after the corrected image name.
-fieldname = ['Filename', CorrectedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

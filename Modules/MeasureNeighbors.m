@@ -423,13 +423,6 @@ handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
 fieldname = ['Segmented',ExpandedObjectName];
 handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
 
-%%% Determines the filename of the objects analyzed.
-fieldname = ['Filename', ObjectName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the filename of the image to be analyzed.
-fieldname = ['Filename', ExpandedObjectName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-
 %%% Saves the colored version of images to the handles structure so
 %%% they can be saved to the hard drive, if the user requests.
 fieldname = ['Colored',ExpandedObjectName];

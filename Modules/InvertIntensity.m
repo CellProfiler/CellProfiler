@@ -322,11 +322,3 @@ drawnow
 %%% Saves the Inverted image to the
 %%% handles structure so it can be used by subsequent modules.
 handles.Pipeline.(InvertedImageName) = InvertedImage;
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the Inverted image name.
-fieldname = ['Filename', InvertedImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

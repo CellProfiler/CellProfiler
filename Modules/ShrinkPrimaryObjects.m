@@ -421,10 +421,3 @@ handles.Pipeline.(fieldname) = FinalShrunkenPrelimSmallSegmentedImage;
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ShrunkenObjectName];
 handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', ObjectName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the filename of the objects created.
-fieldname = ['Filename', ShrunkenObjectName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

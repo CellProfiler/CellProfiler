@@ -341,11 +341,3 @@ drawnow
 
 %%% Saves the processed image to the handles structure.
 handles.Pipeline.(ResultingImageName) = ResultingImage;
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', BasicImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the adjusted image name.
-fieldname = ['Filename', ResultingImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

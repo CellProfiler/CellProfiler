@@ -436,17 +436,6 @@ drawnow
 fieldname = ['Segmented',SecondaryObjectName];
 handles.Pipeline.(fieldname) = FinalSecObjectsLabelMatrixImage;
 
-%%% Determines the filename of the image that was analyzed.
-%%% This is not entirely necessary, because this image was not actually
-%%% used for analysis, it was only used for display, but it allows this
-%%% module to be consistent with the other secondary object-identifying
-%%% modules.
-fieldname = ['Filename', OrigImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the filename of the image that was analyzed.
-fieldname = ['Filename', SecondaryObjectName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;
-
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try

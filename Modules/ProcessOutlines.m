@@ -321,11 +321,3 @@ drawnow
 %%% Saves the processed image to the handles structure.
 fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = ObjectsIdentifiedImage;
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the original file name to the handles structure in a
-%%% field named after the adjusted image name.
-fieldname = ['Filename', ObjectName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

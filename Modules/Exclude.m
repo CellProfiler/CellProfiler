@@ -425,10 +425,3 @@ if exist('NewPrelimSmallSegmentedObjectImage','var') == 1
 fieldname = ['PrelimSmallSegmented',RemainingObjectName];
 handles.Pipeline.(fieldname) = NewPrelimSmallSegmentedObjectImage;
 end
-
-%%% Determines the filename of the image to be analyzed.
-fieldname = ['Filename', ObjectName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% Saves the filename of the image to be analyzed.
-fieldname = ['Filename', RemainingObjectName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

@@ -426,11 +426,3 @@ drawnow
 %%% The Rescaled image is saved to the handles structure so it can be
 %%% used by subsequent modules.
 handles.Pipeline.(RescaledImageName) = RescaledImage;
-
-%%% Determine the filename of the image analyzed.
-fieldname = ['Filename', ImageName];
-FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-%%% The original file name is saved to the handles structure in a
-%%% field named after the Rescaled image name.
-fieldname = ['Filename', RescaledImageName];
-handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed) = FileName;

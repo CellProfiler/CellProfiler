@@ -163,6 +163,11 @@ WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 
 - In CellProfiler.m, at the lines pertaining to OutputFileOverwrite, use fullfile to make the code multi-platform compatible.
 
+- When viewing an algorithm in the pipeline and the corresponding module's .m file no longer exists in the Modules directory, there is a nice error catch and popup message, but it fails to display the current settings and yields this error at the command line:
+??? Undefined function or variable "flagExist".
+Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
+  if ( ( length(VariableValuesString) > 13) | (flagExist))
+
 - For the ExportDataButton in CellProfiler.m, see the line marked
        TODO, where the three separate Fieldnames variables should be
        combined into one prior to running the for loops that follow,

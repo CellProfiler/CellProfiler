@@ -1,15 +1,15 @@
 function varargout = CellProfiler(varargin)
-% CELLPROFILER M-file for CellProfiler.fig
-%      CELLPROFILER, by itself, creates a new CELLPROFILER or raises the existing
+% CellProfiler M-file for CellProfiler.fig
+%      CellProfiler, by itself, creates a new CellProfiler or raises the existing
 %      singleton*.
 %
-%      H = CELLPROFILER returns the handle to a new CELLPROFILER or the handle to
+%      H = CellProfiler returns the handle to a new CellProfiler or the handle to
 %      the existing singleton*.
 %
-%      CELLPROFILER('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in CELLPROFILER.M with the given input arguments.
+%      CellProfiler('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in CellProfiler.M with the given input arguments.
 %
-%      CELLPROFILER('Property','Value',...) creates a new CELLPROFILER or raises the
+%      CellProfiler('Property','Value',...) creates a new CellProfiler or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before CellProfiler_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -25,7 +25,7 @@ function varargout = CellProfiler(varargin)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Edit the above text to modify the response to help CellProfiler
-% Last Modified by GUIDE v2.5 27-Sep-2004 15:14:50
+% Last Modified by GUIDE v2.5 16-Aug-2004 07:57:27
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -54,7 +54,12 @@ handles.output = hObject;
 
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 8;
-handles.numVariables = 11;
+handles.numVariables = zeros(1,99);
+handles.MaxAlgorithms = 8;
+handles.MaxVariables = 11;
+
+% Turn on debugging
+handles.Debug = 1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -101,6 +106,7 @@ set(handles.PathToLoadEditBox,'String',pwd);
 %%% Stores some initial values in the handles structure.
 handles.Vpixelsize = get(handles.PixelSizeEditBox,'string');
 handles.Vpathname = pwd;
+handles.Vtestpathname = pwd;
 guidata(hObject, handles);
 
 %%% Retrieves the list of image file names from the chosen directory and
@@ -176,7 +182,6 @@ pathname = uigetdir('','Choose the directory of images to be analyzed');
 %%% happen.
 if pathname == 0
 else
-    cd (pathname);
     %%% Saves the pathname in the handles structure.
     handles.Vpathname = pathname;
     guidata(hObject,handles)
@@ -195,10 +200,10 @@ else
         %%% Retrieves the SelectedTestImageName from the ListBox.
         Contents = get(handles.ListBox,'String');
         SelectedTestImageName = Contents{get(handles.ListBox,'Value')};
-        set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
+        set(handles.TestImageName,'String',[pathname,'/',SelectedTestImageName])
     end
     %%% Displays the chosen directory in the PathToLoadEditBox.
-    set(handles.PathToLoadEditBox,'String',pwd);
+    set(handles.PathToLoadEditBox,'String',pathname);
 end
 
 %%%%%%%%%%%%%%%%%
@@ -212,8 +217,6 @@ function PathToLoadEditBox_Callback(hObject, eventdata, handles)
 pathname = get(hObject,'string');
 %%% Checks whether a directory with that name exists.
 if exist(pathname) ~= 0
-%%% If the directory exists, change to that directory
-cd (pathname);
 %%% Saves the pathname in the handles structure.
 handles.Vpathname = pathname;
 guidata(hObject,handles)
@@ -423,6 +426,7 @@ function OutputFileName_CreateFcn(hObject, eventdata, handles)
     set(hObject,'BackgroundColor',[1 1 1]);
 
 function OutputFileName_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Change to the directory that was specified in Step 1 (Path to load edit
 %%% box), if possible.
 try pathname = get(handles.PathToLoadEditBox,'string');
@@ -444,13 +448,13 @@ else
         end
     else  UserEntry = [InitialUserEntry,'OUT.mat'];
     end
-guidata(gcbo, handles);
-%%% Checks whether a file with that name already exists, to warn the user
-%%% that the file will be overwritten.
-CurrentDirectory = cd;
+    guidata(gcbo, handles);
+    %%% Checks whether a file with that name already exists, to warn the user
+    %%% that the file will be overwritten.
+    CurrentDirectory = cd;
     if exist([CurrentDirectory,'/',UserEntry]) ~= 0
         errordlg(['A file with the name ',UserEntry,...
-                ' exists.  Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
+            ' exists.  Enter a different name. Click the help button for an explanation of why you cannot just overwrite an existing file.'], 'Warning!');
         set(handles.OutputFileName,'string',[])
     else guidata(gcbo, handles);
         handles = store1variable('Voutputfilename',UserEntry, handles);
@@ -458,6 +462,7 @@ CurrentDirectory = cd;
     end
 end
 guidata(gcbo, handles);
+cd(CurrentDirectory)
 
 function handles = store1variable(VariableName,UserEntry, handles);
 %%% This function stores a variable's value in the handles structure, 
@@ -471,99 +476,97 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in LoadSettingsFromFileButton.
 function LoadSettingsFromFileButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
-[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file');
+[SettingsFileName, SettingsPathName] = uigetfile('*.mat','Choose the settings file')
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
 else
-cd(SettingsPathName)
-%%% Loads the Settings file, which means that the handles structure is
-%%% loaded into the workspace.
-eval(['load ',SettingsFileName])
-    
-%%% Clears the current settings, using the clearalgorithm function.
-for i=1:handles.numAlgorithms,
+  %%% Loads the Settings file, which means that the handles structure is
+  %%% loaded into the workspace.
+  LoadedSettings = load([SettingsPathName SettingsFileName]);
+
+  if ~ isfield(LoadedSettings, 'Settings'),
+    errordlg(['The file ' SettingsPathName SettingsFilename ' does not appear to be a valid settings file (does not contain a variable named ''Settings'').']);
+    return;
+  end
+
+  Settings = LoadedSettings.Settings;
+  
+  %%% Clears the current settings, using the clearalgorithm function.
+  for i=1:handles.numAlgorithms,
     handles = ClearAlgorithm_Helper(TwoDigitString(i), handles, 'NoConfirm');
-    guidata(gcbo, handles);
-end
+  end
+  guidata(gcbo, handles);
 
-%%% The last clearalgorithm function leaves the indicator bar set at
-%%% algorithm 8, so the following makes it invisible.
-%%%set(handles.Indicator08,'Visible','off');
-set(handles.(['Indicator',TwoDigitString(i)]),'Visible','off');
+  %%% The last clearalgorithm function leaves the indicator bar set at
+  %%% the last algorithm, so the following makes it invisible.
+  set(handles.(['Indicator',TwoDigitString(handles.numAlgorithms)]),'Visible','off');
 
-%%% Splice the subset of variables from the "settings" structure into the
-%%% handles structure.  For each one, it checks whether the value is empty
-%%% before creating a field for it in the handles structure.  For the
-%%% algorithm names and the pixel size, this code also displays the values
-%%% in the GUI.
+  %%% Splice the subset of variables from the "settings" structure into the
+  %%% handles structure.  For each one, it checks whether the value is empty
+  %%% before creating a field for it in the handles structure.  For the
+  %%% algorithm names and the pixel size, this code also displays the values
+  %%% in the GUI.
 
+  handles.numAlgorithms = 0;
+  for AlgorithmNumber=1:handles.MaxAlgorithms,
+    AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
+    if isfield(Settings, AlgorithmFieldName),
+      handles.(AlgorithmFieldName) = Settings.(AlgorithmFieldName);
+      set(handles.(['AlgorithmName' TwoDigitString(AlgorithmNumber)]) ,'string', handles.(AlgorithmFieldName));
+      handles.numAlgorithms = AlgorithmNumber;
 
-
-for AlgorithmNumber=1:handles.numAlgorithms,
-    for VariableNumber=1:handles.numVariables,
-      VariableName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
-      if isempty(Settings{(AlgorithmNumber-1)*handles.numVariables+VariableNumber}) == 0,
-        handles.([VariableName])=Settings{(AlgorithmNumber-1)*handles.numVariables + VariableNumber}; 
+      handles.numVariables(AlgorithmNumber) = 0;
+      for VariableNumber=1:handles.MaxVariables,
+        VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+        if isfield(Settings, VariableFieldName),
+          handles.([VariableFieldName]) = Settings.([VariableFieldName]);
+          handles.numVariables(AlgorithmNumber) = VariableNumber;
+        end
       end
     end
+  end
+
+  if isfield(Settings, 'VpixelSize'),
+    handles.VpixelSize = Settings.VpixelSize;
+  end
+  
+  %%% Update handles structure.
+  guidata(hObject,handles);
 end
-
-% FIXME: replace i with AlgorithmNumber
-for i=1:handles.numAlgorithms,
-  if isempty(Settings{i+handles.numAlgorithms*handles.numVariables}) == 0, 
-    handles.(['Valgorithmname',TwoDigitString(i)]) = Settings{i+handles.numAlgorithms*handles.numVariables};
-  set(handles.(['AlgorithmName', TwoDigitString(i)]),'string',handles.(['Valgorithmname',TwoDigitString(i)])), end
-end
-
-if isempty(Settings{handles.numAlgorithms*(1+handles.numVariables)+1}) == 0, handles.Vpixelsize = Settings{handles.numAlgorithms*(1+handles.numVariables)+1}; 
-    set(handles.PixelSizeEditBox,'string',handles.Vpixelsize); end
-
-%%% Update handles structure.
-guidata(hObject,handles);
-end
-
-cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SaveCurrentSettingsButton.
 function SaveCurrentSettingsButton_Callback(hObject, eventdata, handles)
-CurrentDirectory = pwd;
-%%% Checks if a field is present, and if it is, the value is stored in the 
-%%% cell array called "Settings". 
-
-for AlgorithmNumber=1:handles.numAlgorithms,
-    for VariableNumber=1:handles.numVariables,
-      VariableName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
-        if isfield(handles, VariableName) ==1,
-            Settings{(AlgorithmNumber-1)*handles.numVariables + VariableNumber} = ...
-              handles.(VariableName); end
-    end
-end
-
-for AlgorithmNumber=1:handles.numAlgorithms,
-  if isfield(handles, ['Valgorithmname' TwoDigitString(AlgorithmNumber)]),
-    Settings{AlgorithmNumber+handles.numAlgorithms*handles.numVariables} = ...
-        handles.(['Valgorithmname' TwoDigitString(AlgorithmNumber)]);
-  end
-end
-
-if isfield(handles,'Vpixelsize') ==1, 
-    Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; end
-
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the settings. Do not forget to type in the desired filename.');
-uiwait(h) 
-
 %%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
+[FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+%%% Allows canceling.
+if FileName ~= 0
 
-helpdlg('The settings file has been written.')
+  %%% Checks if a field is present, and if it is, the value is stored in the 
+  %%% structure 'Settings' with the same name
+  
+  for AlgorithmNumber=1:handles.numAlgorithms,
+    AlgorithmFieldName = ['Valgorithmname', TwoDigitString(AlgorithmNumber)];
+    if isfield(handles, AlgorithmFieldName),
+      Settings.(AlgorithmFieldName) = handles.(AlgorithmFieldName);
+      for VariableNumber=1:handles.MaxVariables,
+        VariableFieldName = ['Vvariable' TwoDigitString(AlgorithmNumber) '_' TwoDigitString(VariableNumber)];
+        if isfield(handles, VariableFieldName),
+          Settings.(VariableFieldName) = handles.(VariableFieldName);
+        end
+      end
+    end
+  end
+  
+  if isfield(handles,'Vpixelsize'),
+    Settings.Vpixelsize = handles.Vpixelsize;
+  end
 
-%%% Switches back to the original directory.
-cd(CurrentDirectory)
+  save([PathName FileName],'Settings')
+  helpdlg('The settings file has been written.')
+end
 
 %%%%%%%%%%%%%%%%%
 
@@ -577,7 +580,7 @@ extractsettings %%% Note that the handles structure is not an argument.
 
 function extractsettings
 %%% Determines the current directory so it can switch back when done.
-CurrentDirectory = pwd;
+CurrentDirectory = cd;
 %%% Opens a dialog for the user to select the file from which to extract
 %%% settings.
 [OutputFileName,PathName] = uigetfile('*.mat','Choose the output file from which to extract settings');
@@ -593,31 +596,30 @@ eval(['load ',OutputFileName])
 %%% Checks if a field is present, and if it is, the value is stored in the 
 %%% cell array called "Settings". 
 
-% FIXME: nested loops should use more descriptive names for i,j
-for i=1:handles.numAlgorithms,
-    for j=1:handles.numVariables,
-        if isfield(handles, strcat('Vvariable',TwoDigitString(i),'_',TwoDigitString(j))) ==1,
-            Settings{(i-1)*handles.numVariables+j} = handles.(['Vvariable',TwoDigitString(i),'_',TwoDigitString(j)]); end
+for AlgorithmNumber=1:handles.numAlgorithms,
+    for j=VariableNumber:handles.numVariables,
+        if isfield(handles, strcat('Vvariable',TwoDigitString(AlgorithmNumber),'_',TwoDigitString(VariableNumber))) ==1,
+            Settings{(AlgorithmNumber-1)*handles.numVariables+VariableNumber} = handles.(['Vvariable',TwoDigitString(AlgorithmNumber),'_',TwoDigitString(VariableNumber)]); end
     end
 end
 
-% FIXME: make similar to loop above
-for i=1:handles.numAlgorithms,
-    if isfield(handles, strcat('Valgorithmname', num2str(i))),
-        Settings{i+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',num2str(i)]); end
+for AlgorithmNumber=1:handles.numAlgorithms,
+    if isfield(handles, strcat('Valgorithmname', TwoDigitString(AlgorithmNumber))),
+        Settings{AlgorithmNumber+handles.numAlgorithms*handles.numVariables} = handles.(['Valgorithmname',TwoDigitString(AlgorithmNumber)]); end
 end
 
 if isfield(handles,'Vpixelsize') ==1, 
     Settings{handles.numAlgorithms*(handles.numVariables+1)+1} = handles.Vpixelsize; 
 end
 
-h = msgbox('In the next window, select the directory location where you would like to save the new file containing the extracted settings. Do not forget to type in the desired filename.');
-uiwait(h) 
 %%% The "Settings" variable is saved to the file name the user chooses.
-VariableToSave = {'Settings'};
-uisave(VariableToSave)
+    [FileName,PathName] = uiputfile('*.mat', 'Save Settings As...');
+    %%% Allows canceling.
+    if FileName ~= 0
+        save([PathName,FileName],'Settings')
 helpdlg('The settings file has been written.')
-%%% Switches back to the original directory.
+    end
+
 cd(CurrentDirectory)
 end
 
@@ -633,12 +635,12 @@ function PixelSizeEditBox_Callback(hObject, eventdata, handles)
 user_entry = str2double(get(hObject,'string'));
 if isnan(user_entry)
     errordlg('You must enter a numeric value','Bad Input','modal')
-    set(hObject,'string',0.25)
+    set(hObject,'string','0.25')
 %%% Checks to see whether the user input is positive, and generates an
 %%% error message if it is not.
 elseif user_entry<=0
    errordlg('You entered a value less than or equal to zero','Bad Input','modal')
-   set(hObject,'string', 0.25)
+   set(hObject,'string', '0.25')
 else
 %%% Gets the user entry and stores it in the handles structure using the
 %%% store1variable function.
@@ -650,12 +652,9 @@ end
 
 % --- Executes on button press in SetDefaultsButton.
 function SetDefaultsButton_Callback(hObject, eventdata, handles)
-
-%%% BLABLABLA
-
 %%% Determine what the current directory is, so you can change back 
 %%% when this process is done.
-CurrentDir = pwd;
+CurrentDir = cd;
 %%% Open a dialog box to get the directory from the user.
 DefAlgDir = uigetdir('The directory you choose will be set as the default directory when "Load" analysis module is chosen in STEP 3 (Image analysis settings).','Where are the analysis modules?');
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
@@ -700,153 +699,122 @@ LoadAlgorithmButtonTag = get(hObject,'tag');
 AlgorithmNumber = trimstr(LoadAlgorithmButtonTag,'LoadAlgorithm','left');
 
 %%% 1. Opens a user interface to retrieve the .m file you want to use.  The
-%%% name of that .m file is stored as the variablebox02_1
+%%% name of that .m file is stored as the variablebox2_1
 %%% "FirstImageAlgorithmName".
 
 %%% First, the current directory is stored so we can switch back to it at
 %%% the end of this step:
-CurrentDir = pwd;
+CurrentDir = cd;
 %%% Change to the Matlab root directory.
 cd(matlabroot)
 %%% If the DefaultAlgDirectory .mat file does not exist in the matlabroot
 %%% directory, change to the current directory.
 if exist('DefaultAlgDirectory.mat') == 0
-    cd(CurrentDir);
+  cd(CurrentDir);
 end
 %%% If the DefaultAlgDirectory .mat file exists, load it and change to the
 %%% default algorithm directory.
 if exist('DefaultAlgDirectory.mat') ~= 0
-    %%% Load the DefaultAlgDirectory.mat file
-    load DefaultAlgDirectory
-    %%% Change to the default algorithm directory, whose name is a variable
-    %%% that is stored in that .mat file.
-    cd(DefAlgDir)
+  %%% Load the DefaultAlgDirectory.mat file
+  load DefaultAlgDirectory
+  %%% Change to the default algorithm directory, whose name is a variable
+  %%% that is stored in that .mat file.
+  cd(DefAlgDir)
 end
-    %%% Now, when the dialog box is opened to retrieve an algorithm, the
-    %%% directory will be the default algorithm directory.
-    [AlgorithmNamedotm,PathName] = uigetfile('*.m',...
-        'Choose an image analysis module');
-    %%% Change back to the original directory.
-    cd(CurrentDir)
+%%% Now, when the dialog box is opened to retrieve an algorithm, the
+%%% directory will be the default algorithm directory.
+[AlgorithmNamedotm,PathName] = uigetfile('*.m',...
+    'Choose an image analysis module');
+%%% Change back to the original directory.
+cd(CurrentDir)
 
-%%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and 
+%%% 2. If the user presses "Cancel", the AlgorithmNamedotm = 0, and
 %%% everything should be left as it was.  If the algorithm is not on
 %%% Matlab's search path, the user is warned.
-if AlgorithmNamedotm == 0;
-    %%% If the algorithm's .m file is not found on the search path, the result
-    %%% of exist is zero.
+if AlgorithmNamedotm == 0,
+  %%% If the algorithm's .m file is not found on the search path, the result
+  %%% of exist is zero.
 elseif exist(AlgorithmNamedotm) == 0
-    msgbox(['The .m file ', AlgorithmNamedotm, ...
+  msgbox(['The .m file ', AlgorithmNamedotm, ...
         ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path.  Please reload the analysis module; It should work fine from now on. If for some reason you did not want to add that folder to the path, go to Matlab > File > Set Path and remove the folder from the path.  If you have no idea what this means, don''t worry about it.'])
-    %%% The folder containing the desired .m file is added to Matlab's search path.
-    addpath(PathName)
-    %%% Doublecheck that the algorithm exists on Matlab's search path.
-    if exist(AlgorithmNamedotm) == 0
-        errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
-    end
+  %%% The folder containing the desired .m file is added to Matlab's search path.
+  addpath(PathName)
+  %%% Doublecheck that the algorithm exists on Matlab's search path.
+  if exist(AlgorithmNamedotm) == 0
+    errordlg('Something is wrong; Matlab still cannot find the .m file for the analysis module you selected.')
+  end
 else
 
-    %%% 3. Set all the indicator bars (which tell you which algorithm
-    %%% you are editing settings for) to be invisible and then set
-    %%% the one you are working on to be visible.
-    for i=1:handles.numAlgorithms;
-        set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
+  %%% 3. Set all the indicator bars (which tell you which algorithm
+  %%% you are editing settings for) to be invisible and then set
+  %%% the one you are working on to be visible.
+  for i=1:handles.numAlgorithms;
+    set(handles.(['Indicator' TwoDigitString(i)]),'Visible','off');
+  end;
+  set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
+
+  %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
+  %%% to be invisible.
+  for VariableNumber = 1:handles.MaxVariables;
+    set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'visible','off');
+    set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]),'visible','off');
+  end;
+
+  %%% 5. Clears the variable values in the handles structure in case some are
+  %%% not used in the new algorithm (they would remain intact and not be
+  %%% overwritten). Before removing a variable, you have to check that the
+  %%% variable exists or else the 'rmfield' function gives an error.
+  for VariableNumber=1:handles.MaxVariables
+    VarNumber = TwoDigitString(VariableNumber);
+    ConstructedName = ['Vvariable' AlgorithmNumber '_' VarNumber];
+    if isfield(handles,ConstructedName) == 1;
+      handles = rmfield(handles, ConstructedName);
     end;
-    set(handles.(['Indicator' TwoDigitString(str2num(AlgorithmNumber))]),'Visible','on');
+  end;
 
-    %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
-    %%% to be invisible.
-    for i = 1:handles.numVariables;
-        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off');
-        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off');
-    end;
+  %%% 6. The last two characters (=.m) are removed from the
+  %%% AlgorithmName.m and called AlgorithmName.
+  AlgorithmName = AlgorithmNamedotm(4:end-2);
+  %%% The name of the algorithm is shown in a text box in the GUI (the text
+  %%% box is called AlgorithmName1.) and in a text box in the GUI which
+  %%% displays the current algorithm (whose settings are shown).
+  set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
 
-    %%% 5. Clears the variable values in the handles structure in case some are
-    %%% not used in the new algorithm (they would remain intact and not be
-    %%% overwritten). Before removing a variable, you have to check that the
-    %%% variable exists or else the 'rmfield' function gives an error.
+  %%% 7. Saves the AlgorithmName to the handles structure.
+  handles.(['Valgorithmname' AlgorithmNumber]) = AlgorithmName;
 
-    % FIXME: Why the call to str2num?  Is it necessary?  Will it go away
-    % when variables are named with two digits?
-    for i=1:handles.numVariables
-        stringend = TwoDigitString(i);
-        ConstructedName = strcat('Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',stringend);
-        if isfield(handles,ConstructedName) == 1;
-            handles = rmfield(handles, ConstructedName);
-        end;
-    end;
+  %%% 8. The text description for each variable for the chosen algorithm is 
+  %%% extracted from the algorithm's .m file and displayed.  
+  fid=fopen([PathName AlgorithmNamedotm]);
 
-%%% 6. The last two characters (=.m) are removed from the
-%%% AlgorithmName.m and called AlgorithmName.
-AlgorithmName = AlgorithmNamedotm(4:end-2);
-%%% The name of the algorithm is shown in a text box in the GUI (the text
-%%% box is called AlgorithmName1.) and in a text box in the GUI which
-%%% displays the current algorithm (whose settings are shown).
-set(handles.(['AlgorithmName' TwoDigitString(str2num(AlgorithmNumber))]),'String',AlgorithmName);
-
-%%% 7. Saves the AlgorithmName to the handles structure.
-handles.(['Valgorithmname' TwoDigitString(str2num(AlgorithmNumber))]) = AlgorithmName;
-
-%%% 8. The text description for each variable for the chosen algorithm is 
-%%% extracted from the algorithm's .m file and displayed.  
-fid=fopen(AlgorithmNamedotm);
-% FIXME: The next two loops need some serious commenting.  
-%        I think the while loop should be "while not_done", 
-%        and 'j' should be replaced with a descriptive name.
-
-while 1;
+  while 1;
     output = fgetl(fid); if ~ischar(output); break; end;
-
-    j=0;
-    for i=1:handles.numVariables,
-        if j == 1;
-            break;
-        elseif i < 10;
-            if (strncmp(output,['%textVAR',num2str(i),' '],10) == 1);
-                set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
-                j=1;
-            end
-        else
-            if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                j=1;
-            end
-        end
+    
+    % FIXME: this doesn't need to loop over MaxVariables
+    
+    for i=1:handles.MaxVariables,
+      if (strncmp(output,['%textVAR',TwoDigitString(i)],10) == 1);
+        set(handles.(['VariableDescription',TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+        break;
+      end
     end
 
-    j=0;
-    for i=1:handles.numVariables,
-        if j == 1;
-            break;
-        elseif i < 10;
-            %%% FIXME: What is going on here?  Also, the string
-            %%% comparison count needs to be corrected for two digit
-            %%% appended numbers.  Also, get rid of the evals()
-            if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(16:end);
-                set(handles.(['VariableBox',TwoDigitString(i)]), 'string', displayval,'visible', 'on');
-                set(handles.(['VariableDescription',TwoDigitString(i)]), 'visible', 'on');
-                ConstructedName = strcat('handles.Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
-                eval([ConstructedName, '= displayval;']);
-                j=1;
-            end
-        else
-          % FIXME: shouldn't it be strncmp(..., 14)?
-            if (strncmp(output,['%defaultVAR',num2str(i),' '],13) == 1); displayval = output(17:end);
-                set(handles.(['VariableBox',num2str(i)]), 'string', displayval,'visible', 'on');
-                set(handles.(['VariableDescription',num2str(i)]), 'visible', 'on');
-                ConstructedName = strcat('handles.Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
-                eval([ConstructedName, '= displayval;']);
-                j=1;
-            end
-        end
+    for i=1:handles.MaxVariables,
+      if (strncmp(output,['%defaultVAR' TwoDigitString(i)],13) == 1),
+        % FIXME: check this offset.
+        displayval = output(17:end);
+        set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
+        set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
+        handles.(['Vvariable' AlgorithmNumber '_' TwoDigitString(i)]) = displayval;
+        break;
+      end
     end
-end
-      
-      fclose(fid);
-end
+   end
+  fclose(fid);
 
-%%% Updates the handles structure to incorporate all the changes.
-guidata(gcbo, handles);
+  %%% Updates the handles structure to incorporate all the changes.
+  guidata(gcbo, handles);
+end
 
 %%%%%%%%%%%%%%%%%%%%
 %%% CLEAR BUTTONS %%%
@@ -887,16 +855,15 @@ set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
 
 %%% 4. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
 %%% to be invisible.
-for i = 1:handles.numVariables
+for i = 1:handles.numVariables(str2num(AlgorithmNumber));
    set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off')
    set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
 
 %%% 5. Clears the variable values in the handles structure.
 
-% FIXME: str2num?  going away after variable rename?
-for i=1:handles.numVariables,
-    ConstructedName = strcat('Vvariable',TwoDigitString(str2num(AlgorithmNumber)),'_',TwoDigitString(i));
+for i=1:handles.numVariables(str2num(AlgorithmNumber));
+    ConstructedName = ['Vvariable' AlgorithmNumber '_' TwoDigitString(i)];
     if isfield(handles,ConstructedName) == 1;
         handles = rmfield(handles, ConstructedName);
     end;
@@ -924,7 +891,7 @@ set(handles.(['Indicator' AlgorithmNumber]),'Visible','on');
 
 %%% 2. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
-for i = 1:handles.numVariables
+for i = 1:handles.MaxVariables
     set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
     set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
 end
@@ -935,41 +902,29 @@ IsItNotChosen = strncmp(AlgorithmName,'No a',4);
 if IsItNotChosen == 1
     helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
 else
-    
+
     %%% 3. Extracts and displays the variable descriptors from the .m file.
     AlgorithmName = get(handles.(['AlgorithmName' AlgorithmNumber]), 'string');
     AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
     if exist(AlgorithmNamedotm) ~= 2
-        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']); 
-    else 
+        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this algorithm will be displayed, but this module will not run properly.']);
+    else
         fid=fopen(AlgorithmNamedotm);
+        
         while 1;
             output = fgetl(fid); if ~ischar(output); break; end;
-
-            j=0;
-            for i=1:handles.numVariables,
-                if j == 1;
-                    break;
-% FIXME: These can be merged after the variable renaming, right?
-                elseif i < 10;
-                    if (strncmp(output,['%textVAR' num2str(i),' '],10) == 1);
-                        set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(12:end),'visible', 'on');
-                        j=1;
-                    end
-                else
-                    if (strncmp(output,['%textVAR',num2str(i)],10) == 1);
-                        set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
-                        j=1;
-                    end
-                end
+            for i=1:handles.MaxVariables,
+              if (strncmp(output,['%textVAR' TwoDigitString(i)],10) == 1);
+                set(handles.(['VariableDescription' TwoDigitString(i)]), 'string', output(13:end),'visible', 'on');
+                break;
+              end
             end
         end
         fclose(fid);
     end
     %%% 4. The stored values for the variables are extracted from the handles
     %%% structure and displayed in the edit boxes.
-
-    for i=1:handles.numVariables,
+    for i=1:handles.numVariables(str2num(AlgorithmNumber)),
         VariableNumber = TwoDigitString(i);
         ConstructedName = strcat('Vvariable',AlgorithmNumber,'_',VariableNumber);
         if isfield(handles,ConstructedName) == 1;
@@ -1070,6 +1025,7 @@ end
 
 % --- Executes on button press in SelectTestImageBrowseButton.
 function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
+
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be used as a test image.
 [FileName,PathName] = uigetfile('*.*','Select a test image (nuclei)');
@@ -1077,7 +1033,8 @@ function SelectTestImageBrowseButton_Callback(hObject, eventdata, handles)
 %%% happen.
 if FileName == 0
 else
-    set(handles.TestImageName,'String',[PathName,'/',FileName])
+    set(handles.TestImageName,'String',[PathName,FileName])
+    handles.Vtestpathname = PathName;
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
@@ -1090,10 +1047,6 @@ else
         %%% Loads these image names into the ListBox.
         set(handles.ListBox,'String',handles.Vfilenames,...
             'Value',1)
-        %%% Retrieves the SelectedTestImageName from the ListBox.
-        Contents = get(hObject,'String');
-        SelectedTestImageName = Contents{get(hObject,'Value')};
-        set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
     end
 end
 %%%%%%%%%%%%%%%%%
@@ -1103,6 +1056,7 @@ function TestImageName_CreateFcn(hObject, eventdata, handles)
 set(hObject,'BackgroundColor',[1 1 1]);
 
 function TestImageName_Callback(hObject, eventdata, handles)
+
 %%% Retrieves the contents of the edit box.
 UserEntry = get(hObject, 'string');
 %%% Checks whether a file with that name exists.
@@ -1111,7 +1065,7 @@ if exist(UserEntry) ~= 0
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
-    PathName = pwd;
+    PathName = handles.Vtestpathname;
     handles = RetrieveImageFileNames(handles,PathName);
     guidata(hObject, handles);
     if isempty(handles.Vfilenames)
@@ -1140,7 +1094,8 @@ function ListBox_Callback(hObject, eventdata, handles)
 %%% Retrieves the SelectedTestImageName from the ListBox.
 Contents = get(hObject,'String');
 SelectedTestImageName = Contents{get(hObject,'Value')};
-set(handles.TestImageName,'String',[pwd,'/',SelectedTestImageName])
+PathName = handles.Vtestpathname;
+set(handles.TestImageName,'String',[PathName,SelectedTestImageName])
 
 %%%%%%%%%%%%%%%%%
 
@@ -1250,7 +1205,7 @@ end
 % --- Executes on button press in ExportDataButton.
 function ExportDataButton_Callback(hObject, eventdata, handles)
 
-OriginalDirectory = pwd;
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1375,7 +1330,7 @@ else
     end % This goes with the "Cancel" button on the FileName dialog.
 end % This goes with the "Cancel" button on the RawFileName dialog.
 
-cd(OriginalDirectory);
+cd(CurrentDirectory);
 % In case I want to save data that is 
 % all numbers, with different numbers of rows for each column, the
 % following code might be helpful:
@@ -1391,6 +1346,7 @@ cd(OriginalDirectory);
 
 % --- Executes on button press in ExportCellByCellButton.
 function ExportCellByCellButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -1610,11 +1566,13 @@ elseif strcmp(Answer, 'All measurements') == 1
     fclose(fid);
     helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.'])
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in HistogramButton.
 function HistogramButton_Callback(hObject, eventdata, handles)
+CurrentDirectory = cd;
 %%% Ask the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName == 0
@@ -2270,6 +2228,7 @@ if ok ~= 0
         end
     end % Goes with cancel button when selecting the measurement to display.
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
@@ -2399,7 +2358,7 @@ msgbox('The original data and the corrected data are now displayed in the Matlab
 
 % --- Executes on button press in DisplayDataOnImageButton.
 function DisplayDataOnImageButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = cd;
 %%% Asks the user to choose the file from which to extract measurements.
 [RawFileName, RawPathName] = uigetfile('*.mat','Select the raw measurements file');
 if RawFileName ~= 0
@@ -2539,12 +2498,13 @@ if RawFileName ~= 0
         end
     end
 end
+cd(CurrentDirectory);
 
 %%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeAllImagesButton.
 function AnalyzeAllImagesButton_Callback(hObject, eventdata, handles)
-
+CurrentDirectory = cd;
 %%% Checks whether any algorithms are loaded.
 sum = 0;
 for i = 1:handles.numAlgorithms;
@@ -2613,8 +2573,8 @@ else
                     set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','off');
                 end
                 % FIXME: This should loop just over the number of actual variables in the display.
-                for i=1:11;
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
+                for VariableNumber=1:handles.MaxVariables;
+                    set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 end
                 set(handles.SelectTestImageBrowseButton,'enable','off')
                 set(handles.ListBox,'enable','off')
@@ -2733,8 +2693,6 @@ else
                 %%% can find the handles.
 
                 
-                % FIXME: Is this still setting the closing function?  Or is it set somewhere else?
-                
                 for i=1:handles.numAlgorithms;
                     if isfield(handles,strcat('Valgorithmname',TwoDigitString(i))) == 1
                         set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','on')
@@ -2794,6 +2752,10 @@ else
                               try
                                   %%% Runs the appropriate algorithm, with the handles structure as an
                                   %%% input argument and as the output argument.
+                                  if handles.Debug,
+                                    global handles_debugging_snapshot
+                                    handles_debugging_snapshot = handles;
+                                  end
                                   eval(['handles = Alg',handles.(AlgName),'(handles);'])
                               catch
                                   if exist(['Alg',handles.(AlgName),'.m']) ~= 2,
@@ -2836,7 +2798,6 @@ else
                           set(Thisfigurealgorithm, 'name',[handles.(AlgName), ' Display'])
                           %%% Sets the closing function of the window appropriately. (See way
                           %%% above where 'ClosingFunction's are defined).
-                          % FIXME: does ClosingFunctionXX still exist?
                           set(Thisfigurealgorithm,'CloseRequestFcn',eval(['ClosingFunction' AlgNumberAsString]));
                           %%% Set the button's text to "Close Figure".
                           set(ThisFigDisplay, 'string', 'Close Figure')
@@ -2852,7 +2813,7 @@ else
                       %%% Get a list of the measurement fields (after the first pass has run through
                       %%% all the modules)
                       Fields = fieldnames(handles);
-                      mFields = strncmp(Fields,'dM',2);
+                      mFields = (strncmp(Fields,'dM',2) | strncmp(Fields,'dOTFilename',11));
                       MeasurementFields = Fields(mFields);
                       
                       % If we are using parallel machines, copy the handles structure to them.
@@ -3075,19 +3036,15 @@ else
                 set(handles.LoadSettingsFromFileButton,'enable','on')
                 set(handles.SaveCurrentSettingsButton,'enable','on')
                 set(handles.ExtractSettings,'enable','on')
-                % FIXME: hardcoded nubmer of algorithms
-                for i=1:8;
-                    set(handles.(['LoadAlgorithm' TwoDigitString(i)]),'visible','on');
-                    set(handles.(['ClearAlgorithm' TwoDigitString(i)]),'visible','on');
-                    set(handles.(['FigureDisplay' TwoDigitString(i)]),'visible','off');
-                    set(handles.(['FigureDisplay' TwoDigitString(i)]),'string', 'Close Figure');
-                    set(handles.(['ViewAlgorithm' TwoDigitString(i)]),'visible','on');
-                end
-                % FIXME: hardcoded number of variables.  I think this
-                % should be a loop over just the number of variables
-                % in the current algorithm
-                for i=1:11;
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'enable','on','foregroundcolor','black');
+                for AlgorithmNumber=1:handles.numAlgorithms;
+                    set(handles.(['LoadAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
+                    set(handles.(['ClearAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
+                    set(handles.(['FigureDisplay' TwoDigitString(AlgorithmNumber)]),'visible','off');
+                    set(handles.(['FigureDisplay' TwoDigitString(AlgorithmNumber)]),'string', 'Close Figure');
+                    set(handles.(['ViewAlgorithm' TwoDigitString(AlgorithmNumber)]),'visible','on');
+                    for VariableNumber = 1:handles.numVariables(AlgorithmNumber);
+                        set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
+                    end
                 end
                 set(handles.SelectTestImageBrowseButton,'enable','on')
                 set(handles.ListBox,'enable','on')
@@ -3182,6 +3139,7 @@ else
     %%% This "end" goes with the error-detecting "The chosen directory does not
     %%% exist."
 end
+cd(CurrentDirectory);
 
 %%% Note: an improvement I would like to make:
 %%% Currently, it is possible to use the Zoom tool in the figure windows to
@@ -3204,7 +3162,7 @@ if strncmp(Error,'Error using ==> Alg', 19) == 1
 elseif isempty(strfind(Error,'bad magic')) == 0
     ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the image sets up to the one which generated this error are OK in the output file.';
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in algorithm', CurrentAlgorithmNumber];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in Algorithm', CurrentAlgorithmNumber];
 end
 errordlg(ErrorExplanation)
 
@@ -3291,6 +3249,7 @@ if ((val > 99) | (val < 0)),
 end
 twodigit = sprintf('%02d', val);
 
+
 function y = trimstr( s, stripchars, leftorright )
 %TRIMSTR  Strip the whitespace and the defined characters from string.
 %   TRIMSTR( S, CHARS, LEFTORRIGHT ) strips the whitespace and the
@@ -3367,7 +3326,7 @@ end; %if s isempty
 function HelpStep1_Callback(hObject, eventdata, handles)
 helpdlg('Select the main folder containing the images you want to analyze. You will have the option within load images modules to retrieve images from more than one folder, but the folder selected here will be the default folder.  Use the Browse button to select the folder, or carefully type the full pathname in the box to the right.','Step 1 Help')
 function HelpStep2_Callback(hObject, eventdata, handles)
-helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?OUT? to avoid confusion.  You do not need to type ?.mat? at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called DefaultAlgDirectory.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
+helpdlg('OUTPUT FILE NAME: Type in the text you want to use to name the output file, which is where all of the information about the analysis as well as any measurements are stored. It is strongly recommended that all output files begin with ?ÒOUT?Ó to avoid confusion.  You do not need to type ?Ò.mat?Ó at the end of the file name, it will be added automatically. The program prevents you from entering a name which, when ''.mat'' is appended, exists already. This prevents overwriting an output data file by accident.  It also prevents intentionally overwriting an output file for the following reason: when a file is ''overwritten'', instead of completely overwriting the output file, Matlab just replaces some of the old data with the new data.  So, if you have an output file with 12 measurements and the new set of data has only 4 measurements, saving the output file to the same name would produce a file with 12 measurements: the new 4 followed by 8 old measurements.       PIXELS PER MICROMETER: Enter the pixel size of the images.  This is based on the resolution and binning of the camera and the magnification of the objective lens. This number is used to convert measurements to micrometers instead of pixels. If you do not know the pixel size or you want the measurements to be reported in pixels, enter "1".          SAMPLE INFO: If you would like text information about each image to be recorded in the output file along with measurements (e.g. Gene names, accession numbers, or sample numbers), click the Load button.  You will then be guided through the process of choosing a text file that contains the text data for each image. More than one set of text information can be entered for each image; each set of text will be a separate column in the output file.        SET DEFAULT FOLDER: Click this button and choose a folder to permanently set the folder to go to when you load analysis modules. This only needs to be done once, because a file called DefaultAlgDirectory.mat is created in the root directory of Matlab that stores this information.','Step 2 Help')
 function HelpStep3_Callback(hObject, eventdata, handles)
 helpdlg('FOR HELP ON INDIVIDUAL MODULES: Click the "Help for this analysis module" button towards the right of the CellProfiler window.       LOAD/CLEAR/VIEW BUTTONS:  Choose image analysis modules in the desired order by clicking "Load" and selecting the corresponding Matlab ".m" file.      SHORTCUTS: Once you have loaded the desired image analysis modules and modified all of the settings as desired, you may save these settings for future use by clicking "Save Settings" and naming the file.  Later, you can click "Load Settings", select this file that you made, and all of the modules and settings will be restored.  ALTERNATELY, if you previously ran an image analysis and you want to repeat the exact analysis, you may click "Extract Settings from an output file".  Select the output file, and the modules and settings used to create it will be extracted.  You then name the settings file and load it using the "Load Settings" button.  Troubleshooting: If you loaded an analysis module by loading a settings file, and then obtained error messages in the Matlab main window, the most likely cause is that the analysis modules loaded are not on the Matlab search path. Be sure that the folder immediately containing the analysis module is on the search path. The search path can be edited by choosing File > Set Path.  Another possibility is that the Settings file was created with old versions of CellProfiler or with old versions of modules.  The Settings file can be opened with any word processor as plain text and you should be able to figure out what the settings were.        TECHNICAL DIAGNOSIS: Clicking here causes text to appear in the main Matlab window.  This text shows the "handles structure" which is sometimes useful for diagnosing problems with the software.','Step 3 Help')
 function HelpStep4_Callback(hObject, eventdata, handles)

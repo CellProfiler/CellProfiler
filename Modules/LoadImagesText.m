@@ -319,7 +319,7 @@ for n = 1:4
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            LoadedImage = imcpread(fullfile(Pathname,CurrentFileName{1}), handles);
+            LoadedImage = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
             %%% Saves the original image file name to the handles
             %%% structure.  The field is named appropriately based on
             %%% the user's input, in the Pipeline substructure so that

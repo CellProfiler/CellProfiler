@@ -232,7 +232,7 @@ for n = 1:4
             if strcmpi(FileFormat,'mat') == 1
                 StructureLoadedImage = load(CurrentFileName);
                 LoadedImage = StructureLoadedImage.Image;                
-            else LoadedImage = imcpread(FileAndPathname,handles);
+            else LoadedImage = CPimread(FileAndPathname,handles);
             end
             %%% Saves the image to the handles structure.
             handles.Pipeline.(ImageName{n}) = LoadedImage;

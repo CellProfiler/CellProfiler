@@ -1,4 +1,4 @@
-function LoadedImage = imcpread(varargin)
+function LoadedImage = CPimread(varargin)
 
 if nargin == 2,
     CurrentFileName = varargin{1};

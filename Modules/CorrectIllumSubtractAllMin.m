@@ -271,15 +271,15 @@ if handles.Current.SetBeingAnalyzed == 1
             
             %%% Calculates a coarse estimate of the background illumination by
             %%% determining the minimum of each block in the image.
-            MiniIlluminationImage = blkproc(padarray(imcpread(char(FileList(1)),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
+            MiniIlluminationImage = blkproc(padarray(CPimread(char(FileList(1)),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             for i=2:length(FileList)
-                MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(imcpread(char(FileList(i)),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
+                MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(CPimread(char(FileList(i)),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
             end
             MeanMiniIlluminationImage = MiniIlluminationImage / length(FileList);
             %%% Expands the coarse estimate in size so that it is the same
             %%% size as the original image. Bicubic 
             %%% interpolation is used to ensure that the data is smooth.
-            MeanIlluminationImage = imresize(MeanMiniIlluminationImage, size(imcpread(char(FileList(1)),handles)), 'bicubic');
+            MeanIlluminationImage = imresize(MeanMiniIlluminationImage, size(CPimread(char(FileList(1)),handles)), 'bicubic');
             %%% Fits a low-dimensional polynomial to the mean image.
             %%% The result, IlluminationImage, is an image of the smooth illumination function.
             [x,y] = meshgrid(1:size(MeanIlluminationImage,2), 1:size(MeanIlluminationImage,1));

@@ -40,7 +40,7 @@ else
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
-    Image = imcpread(fullfile(Pathname, FileName));
+    Image = CPimread(fullfile(Pathname, FileName));
     figure; imagesc(Image), colormap(gray)
     pixval
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION

@@ -127,7 +127,7 @@ if RawFileName ~= 0
                             return
                         else
                             %%% Opens and displays the image, with pixval shown.
-                            ImageToDisplay = imcpread(fullfile(Pathname,FileName));
+                            ImageToDisplay = CPimread(fullfile(Pathname,FileName));
                             %%% Allows underscores to be displayed properly.
                             ImageFileName = strrep(ImageFileName,'_','\_');
                             FigureHandle = figure; imagesc(ImageToDisplay), colormap(gray), title([EditedMeasurementToExtract, ' on ', ImageFileName])

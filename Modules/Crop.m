@@ -170,7 +170,7 @@ drawnow
 %%% be found or opened.
 if Shape == 'F'
     try
-    BinaryCropImage = imcpread(BinaryCropImageName, handles);
+    BinaryCropImage = CPimread(BinaryCropImageName, handles);
     catch error(['Image processing was canceled because the Crop module could not find the binary cropping image.  It was supposed to be here: ', BinaryCropImageName, ', but a readable image does not exist at that location or with that name.  Perhaps there is a typo.'])
     end
 end
@@ -275,7 +275,7 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
             if CroppingFileName == 0
                 error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
             else
-                ImageToBeCropped = imcpread(fullfile(CroppingPathname,CroppingFileName), handles);
+                ImageToBeCropped = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
             end
         else ImageToBeCropped = OrigImage;
         end

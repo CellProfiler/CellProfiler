@@ -218,7 +218,7 @@ if handles.Current.SetBeingAnalyzed == 1
         WaitbarHandle = waitbar(1/NumberOfImages, WaitbarText);
         set(WaitbarHandle, 'Position', PositionMsgBox)
         for i=1:NumberOfImages
-            Image = imcpread(char(FileList(i)), handles);
+            Image = CPimread(char(FileList(i)), handles);
             SortedColumnImage = sort(reshape(Image, [],1));
             TenthMinimumPixelValue = SortedColumnImage(10);
             if TenthMinimumPixelValue == 0

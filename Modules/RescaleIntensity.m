@@ -200,7 +200,7 @@ if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')
             maxPixelValue = 0;
             minPixelValue = 255;
             for i=1:length(FileList)
-                Image = imcpread(char(FileList(i)), handles);
+                Image = CPimread(char(FileList(i)), handles);
                 if(max(max(Image)) > maxPixelValue)
                     maxPixelValue = max(max(Image));
                 end

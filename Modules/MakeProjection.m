@@ -159,7 +159,7 @@ if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
         FileList = handles.Pipeline.(fieldname);
         %%% Calculates the projection image.
         %%% Image file is read differently if it is a .dib image.
-        TotalImage = imcpread(fullfile(Pathname, char(FileList(1))), handles);
+        TotalImage = CPimread(fullfile(Pathname, char(FileList(1))), handles);
         %%% Does some error checking on the first image in the set.
         %%% Checks that the original image is two-dimensional (i.e. not a color
         %%% image), which would disrupt several of the image functions.
@@ -173,7 +173,7 @@ if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
         TimeStart = clock;
         NumberOfImages = length(FileList);
         for i=2:length(FileList)
-            TotalImage = TotalImage + imcpread(fullfile(Pathname, char(FileList(i))), handles);
+            TotalImage = TotalImage + CPimread(fullfile(Pathname, char(FileList(i))), handles);
             CurrentTime = clock;
             TimeSoFar = etime(CurrentTime,TimeStart);
             TimePerSet = TimeSoFar/i;

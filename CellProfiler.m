@@ -5,7 +5,7 @@ function varargout = CellProfiler(varargin)
 % CellProfiler cell image analysis software is designed for
 % biologists without training in computer vision or programming to
 % quantitatively measure phenotypes from thousands of images
-% automatically. CelollProfiler.m and CellProfiler.fig work together to
+% automatically. CellProfiler.m and CellProfiler.fig work together to
 % create a user interface which allows the analysis of large numbers
 % of images.  New modules can be written for the software using
 % Matlab.
@@ -346,6 +346,7 @@ else extension = fname(end-2:end);
             ImportedData = textscan(fid,Format,'delimiter',',');
             for i = 1:NumberOfColumns
                 ColumnOfData = ImportedData{i};
+                ColumnOfData = ColumnOfData';
                 %%% Sends the heading and the sample info to a
                 %%% subfunction to be previewed and saved.
                 if i == 1
@@ -364,7 +365,7 @@ else extension = fname(end-2:end);
                 %%% Saves the new sample info to the handles
                 %%% structure.
                 handles = Newhandles;
-                h = msgbox(['The sample info will be added to future output files']);
+                h = msgbox(['The sample info is successfully stored in memory and will be added to future output files']);
                 waitfor(h)
             else 
                 %%% For existing output files:
@@ -383,14 +384,15 @@ else extension = fname(end-2:end);
         end
     elseif strcmp(extension,'txt') == 1
        try fid = fopen([pname fname]);
-            ImportedData = textscan(fid,'%s','delimiter','\r');
-            ColumnOfData = ImportedData{1};
-            %%% Sends the heading and the sample info to a
-            %%% subfunction to be previewed and saved.
-            [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,FutureOrExisting,HeadingsPresent,OutputFile);
-            if CancelOption == 1
-                fclose(fid);
-                warndlg('None of the sample info was saved.')
+           ImportedData = textscan(fid,'%s','delimiter','\r');
+           ColumnOfData = ImportedData{1};
+           ColumnOfData = ColumnOfData';
+           %%% Sends the heading and the sample info to a
+           %%% subfunction to be previewed and saved.
+           [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,FutureOrExisting,HeadingsPresent,OutputFile);
+           if CancelOption == 1
+               fclose(fid);
+               warndlg('None of the sample info was saved.')
                 return
             end
             fclose(fid);
@@ -503,18 +505,21 @@ else
             %%% Allows canceling.
             if isempty(SingleHeading) == 1
                 CancelOption = 1;
-                break
+                return
             elseif strcmp(SingleHeading,'') == 1
                 errordlg('No heading was entered. Please try again.');
                 %%% For future output files:
             elseif strcmp(FutureOrExisting, 'Future') == 1
                 %%% Checks to see if the heading exists already.
-                if isfield(handles, SingleHeading) == 1
-                    Answer = questdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
-                    %%% Allows canceling.
-                    if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
-                        CancelOption = 1;
-                        break
+                if isfield(handles, 'Measurements') == 1
+                    if isfield(handles.Measurements, ['Imported',char(SingleHeading)]) == 1
+                        Answer = questdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
+                        %%% Allows canceling.
+                        if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
+                            CancelOption = 1;
+                            return
+                        end
+                    else Answer = 'Newfield';
                     end
                 else Answer = 'Newfield';
                 end
@@ -523,21 +528,11 @@ else
 
                 elseif strcmp(Answer,'Yes') == 1 | strcmp(Answer, 'Newfield') == 1
                     if strcmp(Answer,'Yes') == 1
-                        handles = rmfield(handles,SingleHeading);
-                        %%% Delete the selected heading from the headings list in the
-                        %%% structure, by assigning it the empty structure.
-                        handles.headings(strcmp(handles.headings,SingleHeading) == 1) = [];
-                        %%% If no sample info remains, the field "headings" is removed
-                        %%% so that when the user clicks Clear or View, the proper error
-                        %%% message is generated, telling the user that no sample info has been
-                        %%% loaded.
-                        if isempty(handles.headings) == 1
-                            handles = rmfield(handles, 'headings');
-                        end
+                        handles.Measurements = rmfield(handles.Measurements, ['Imported',char(SingleHeading)]);
                         guidata(gcbo,handles)
                     end
                     %%% Tries to make a field with that name.
-                    try handles.(char(SingleHeading)) = [];
+                    try handles.Measurements.(['Imported',char(SingleHeading)]) = [];
                         HeadingApproved = 1;
                     catch
                         MessageHandle = errordlg(['The heading name ',char(SingleHeading),' is not acceptable for some reason. Please try again.']);
@@ -546,12 +541,15 @@ else
                 end
             else %%% For existing output files:
                 %%% Checks to see if the heading exists already.
-                if isfield(OutputFile.handles, SingleHeading) == 1
-                    Answer = questdlg('Sample info with that heading already exists in the output file.  Do you want to overwrite?');
-                    %%% Allows canceling.
-                    if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
-                        CancelOption = 1;
-                        break
+                if isfield(OutputFile.handles, 'Measurements') == 1
+                    if isfield(OutputFile.handles.Measurements, ['Imported',char(SingleHeading)]) == 1
+                        Answer = questdlg(['Sample info with the heading ',char(SingleHeading),' already exists in the output file.  Do you want to overwrite?']);
+                        %%% Allows canceling.
+                        if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
+                            CancelOption = 1;
+                            return
+                        end
+                    else Answer = 'Newfield';
                     end
                 else Answer = 'Newfield';
                 end
@@ -560,10 +558,10 @@ else
 
                 elseif strcmp(Answer,'Yes') == 1 | strcmp(Answer, 'Newfield') == 1
                     if strcmp(Answer,'Yes') == 1
-                        OutputFile.handles = rmfield(OutputFile.handles,SingleHeading);
+                        OutputFile.handles.Measurements = rmfield(OutputFile.handles.Measurements,['Imported',char(SingleHeading)]);
                     end
                     %%% Tries to make a field with that name.
-                    try OutputFile.handles.(char(SingleHeading)) = [];
+                    try OutputFile.handles.Measurements.(['Imported',char(SingleHeading)]) = [];
                         HeadingApproved = 1;
                     catch
                         MessageHandle = errordlg(['The heading name ',char(SingleHeading),' is not acceptable for some reason. Please try again.']);
@@ -576,33 +574,13 @@ else
         %%% file.
         if strcmp(FutureOrExisting, 'Future') == 1
             %%% For future files:
-            %%% Saves the column of sample info to an existing output file.
-            handles.(char(SingleHeading)) = ColumnOfSampleInfo;
+            %%% Saves the column of sample info to the handles.
+            handles.Measurements.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
             guidata(gcbo,handles)
-            %%% Also need to add this heading name (field name) to the headings
-            %%% field of the handles structure (if it already exists), in the last position.
-            if isfield(handles, 'headings') == 1
-                NumberOfHeadingsAlready = length(handles.headings);
-                handles.headings(NumberOfHeadingsAlready + 1)  = SingleHeading;
-                guidata(gcbo,handles)
-                %%% If the headings field doesn't yet exist, create it and put the heading
-                %%% name in position 1.
-            else handles.headings(1) = SingleHeading;
-                guidata(gcbo,handles)
-            end
         else
             %%% For an existing file:
-            %%% Saves the column of sample info to an existing output file.
-            OutputFile.handles.(char(SingleHeading)) = ColumnOfSampleInfo;
-            %%% Also need to add this heading name (field name) to the headings
-            %%% field of the handles structure (if it already exists), in the last position.
-            if isfield(OutputFile.handles, 'headings') == 1
-                NumberOfHeadingsAlready = length(OutputFile.handles.headings);
-                OutputFile.handles.headings(NumberOfHeadingsAlready + 1)  = SingleHeading;
-                %%% If the headings field doesn't yet exist, create it and put the heading
-                %%% name in position 1.
-            else OutputFile.handles.headings(1) = SingleHeading;
-            end
+            %%% Saves the column of sample info to the handles structure from an existing output file.
+            OutputFile.handles.Measurements.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
         end
     end
 end
@@ -625,36 +603,29 @@ function ClearSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to i
 %%% sample info, specified by its heading, from the handles structure.
 
 %%% Checks whether any headings are loaded yet.
-if isfield(handles,'headings') == 0
+Fieldnames = fieldnames(handles.Measurements);
+ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+if isempty(ImportedFieldnames) == 1
     errordlg('No sample info has been loaded.')
 else
 %%% Opens a listbox which displays the list of headings so that one can be
 %%% selected.  The OK button has been assigned to mean "Delete".
-Headings = handles.headings;
-[Selected,Action] = listdlg('ListString',Headings, 'ListSize', [300 600],...
+[Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
     'Name','Current sample info loaded',...
     'PromptString','Select the sample descriptions you would like to delete',...
     'OKString','Delete','CancelString','Cancel','SelectionMode','single');
 
-%%% Extracts the actual heading name from the Headings variable.
-SelectedFieldName = Headings(Selected);
+%%% Extracts the actual heading name.
+SelectedFieldName = ImportedFieldnames(Selected);
 
 % Action = 1 if the user pressed the OK (DELETE) button.  If they pressed
 % the cancel button or closed the window Action == 0 and nothing happens.
 if Action == 1
     %%% Delete the selected heading (with its contents, the sample data) 
     %%% from the structure.
-    handles = rmfield(handles,SelectedFieldName);
-    %%% Delete the selected heading from the headings list in the
-    %%% structure, by assigning it the empty structure.
-    handles.headings(Selected) = [];
-    %%% If no sample info remains, the field "headings" is removed
-    %%% so that when the user clicks Clear or View, the proper error
-    %%% message is generated, telling the user that no sample info has been
-    %%% loaded.
-    if isempty(handles.headings) ==1
-          handles = rmfield(handles, 'headings');
-    end
+    handles.Measurements = rmfield(handles.Measurements,SelectedFieldName);
+    %%% Might want to remove the field 'Measurements' if it is empty?
+   
     %%% Handles structure is updated
     guidata(gcbo,handles)
 end
@@ -669,28 +640,29 @@ function ViewSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ig
 %%% The View Sample Info button allows viewing any list of 
 %%% sample info, specified by its heading, taken from the handles structure.
 
-%%% Checks whether any sample info has been loaded by determining 
-%%% whether handles.headings is empty or not.
-if isfield(handles,'headings') == 0
+%%% Checks whether any headings are loaded yet.
+Fieldnames = fieldnames(handles.Measurements);
+ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+if isempty(ImportedFieldnames) == 1
     errordlg('No sample info has been loaded.')
 %%% Opens a listbox which displays the list of headings so that one can be
 %%% selected.  The OK button has been assigned to mean "View".
-else Headings = handles.headings;
-[Selected,Action] = listdlg('ListString',Headings, 'ListSize', [300 600],...
+else 
+[Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
     'Name','Current sample info loaded',...
     'PromptString','Select the sample descriptions you would like to view.',...
     'OKString','View','CancelString','Cancel','SelectionMode','single');
 
-%%% Extracts the actual heading name from the Headings variable.
-SelectedFieldName = Headings(Selected);
+%%% Extracts the actual heading name.
+SelectedFieldName = ImportedFieldnames(Selected);
 
 % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
 % the cancel button or closed the window Action == 0.
 if Action == 1
-    ListToShow = handles.(char(SelectedFieldName));
+    ListToShow = handles.Measurements.(char(SelectedFieldName));
     listdlg('ListString',ListToShow, 'ListSize', [300 600],...
         'Name','Preview your sample data','PromptString',...
-        'Press any button to continue','CancelString','Ok','SelectionMode','single');
+        char(SelectedFieldName),'SelectionMode','single');
     %%% The OK buttons within this window don't do anything.
 else
     %%% If the user pressed "cancel" or closes the window, Action = 0, so
@@ -1619,38 +1591,37 @@ else
     
     %%% Extract the fieldnames of measurements from the handles structure.
     Fieldnames = fieldnames(handles.Measurements);
-    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
-    Fieldnames = fieldnames(handles.Measurements);
-    FileFieldNames = Fieldnames(strncmp(Fieldnames, 'Filename', 8)==1);
-    %%% Determines whether any sample info has been loaded.  If sample info has
-    %%% been loaded, the heading for that sample info would be listed in
-    %%% handles.headings.  If sample info is present, the fieldnames for those
-    %%% are also added to the list of data to extract.
-    if isfield(handles, 'headings') == 1
-      HeadingNames = handles.headings';
-    else
-      HeadingNames = {};
-    end
+    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5) == 1);
+    FileFieldNames = Fieldnames(strncmp(Fieldnames, 'Filename', 8) == 1);
+    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
     
     %%% Error detection.
-    if isempty(MeasFieldnames)
-        errordlg('No measurements were found in the file you selected. In the handles structure contained within the output file, the Measurements substructure must have fieldnames prefixed by ''Image''.')
+    if isempty(MeasFieldnames) && isempty(FileFieldNames) && isempty(ImportedFieldnames) 
+        errordlg('No measurements were found in the file you selected. In the handles structure contained within the output file, the Measurements substructure must have fieldnames prefixed by ''Image'',''Filename'', or ''Imported''.')
     else
-        
-        %%% Determine the number of image sets for which there are data.
+        %%% Tries to determine the number of image sets for which there are data.
+        if isempty(MeasFieldnames{1}) == 0
         fieldname = MeasFieldnames{1};
+        elseif isempty(FileFieldNames{1}) == 0
+        fieldname = FileFieldNames{1};
+        elseif isempty(ImportedFieldnames{1}) == 0
+        fieldname = ImportedFieldnames{1};
+        end
         TotalNumberImageSets = num2str(length(handles.Measurements.(fieldname)));
+        TotalNumberImageSetsMsg = ['As a shortcut,                     type the numeral 0 to extract data from all ', TotalNumberImageSets, ' image sets.'];
         %%% Ask the user to specify the number of image sets to extract.
-        NumberOfImages = inputdlg({['How many image sets do you want to extract? As a shortcut,                     type the numeral 0 to extract data from all ', TotalNumberImageSets, ' image sets.']},'Specify number of image sets',1,{'0';' '});
+        NumberOfImages = inputdlg({['How many image sets do you want to extract?  ',TotalNumberImageSetsMsg]},'Specify number of image sets',1,{'0';' '});
         %%% If the user presses the Cancel button, the program goes to the end.
         if isempty(NumberOfImages)
         else
             %%% Calculate the appropriate number of image sets.
             NumberOfImages = str2double(NumberOfImages{1});
             if NumberOfImages == 0
-                NumberOfImages = length(handles.Measurements.(char(MeasFieldnames(1))));
+                NumberOfImages = str2double(TotalNumberImageSets);
             elseif NumberOfImages > length(handles.Measurements.(char(MeasFieldnames(1))));
                 errordlg(['There are only ', length(handles.Measurements.(char(MeasFieldnames(1)))), ' image sets total.'])
+                %%% TODO: This error checking is only for the first field of
+                %%% measurements.  Should make it more comprehensive.
             end
             %%% Determines the suggested file name.
             try
@@ -1680,25 +1651,31 @@ else
                     %%% Extract the measurements.  Waitbar shows the percentage of image sets
                     %%% remaining.
                     WaitbarHandle = waitbar(0,'Extracting measurements...');
+                    %%% TODO: Combine all the fieldnames into a single
+                    %%% variable to speed this processing.
+                    
                     %%% Preallocate the variable Measurements.
-                    Fieldname = cell2mat(MeasFieldnames(length(MeasFieldnames)));
-                    Measurements(NumberOfImages,length(MeasFieldnames)) = {handles.Measurements.(Fieldname){NumberOfImages}};
+                    NumberOfMeasFieldnames = length(MeasFieldnames);
+                    NumberOfFileFieldNames = length(FileFieldNames);
+                    NumberOfImportedFieldnames = length(ImportedFieldnames);
+                    NumberOfFields = NumberOfMeasFieldnames + NumberOfFileFieldNames + NumberOfImportedFieldnames;
+                    Measurements(NumberOfImages,NumberOfFields) = {[]};
                     %%% Finished preallocating the variable Measurements.
                     TimeStart = clock;
                     for imagenumber = 1:NumberOfImages
-                        for FieldNumber = 1:length(MeasFieldnames)
+                        for FieldNumber = 1:NumberOfMeasFieldnames
                             Fieldname = cell2mat(MeasFieldnames(FieldNumber));
                             Measurements(imagenumber,FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
                         end
-                        for FileNameNumber = 1:length(FileFieldNames)
+                        for FileNameNumber = 1:NumberOfFileFieldNames
                             Fieldname = cell2mat(FileFieldNames(FileNameNumber));
                             FieldNumber = FieldNumber + 1;
                             Measurements(imagenumber,FieldNumber) = {handles.Pipeline.(Fieldname){imagenumber}};
                         end
-                        for HeadingNumber = 1:length(HeadingNames)
-                            Fieldname = cell2mat(HeadingNames(HeadingNumber));
+                        for HeadingNumber = 1:NumberOfImportedFieldnames
+                            Fieldname = cell2mat(ImportedFieldnames(HeadingNumber));
                             FieldNumber = FieldNumber + 1;
-                            Measurements(imagenumber, FieldNumber) = {handles.(Fieldname){imagenumber}};
+                            Measurements(imagenumber, FieldNumber) = {handles.Measurements.(Fieldname){imagenumber}};
                         end
 
                         CurrentTime = clock;
@@ -1713,16 +1690,16 @@ else
                     %%% Open the file and name it appropriately.
                     fid = fopen(FileName, 'wt');
                     %%% Write the MeasFieldnames as headings for columns.
-                    for i = 1:length(MeasFieldnames),
+                    for i = 1:NumberOfMeasFieldnames
                         fwrite(fid, char(MeasFieldnames(i)), 'char');
                         fwrite(fid, sprintf('\t'), 'char');
                     end
-                    for i = 1:length(FileFieldNames),
+                    for i = 1:NumberOfFileFieldNames
                         fwrite(fid, char(FileFieldNames(i)), 'char');
                         fwrite(fid, sprintf('\t'), 'char');
                     end
-                    for i = 1:length(HeadingNames),
-                        fwrite(fid, char(HeadingNames(i)), 'char');
+                    for i = 1:NumberOfImportedFieldnames
+                        fwrite(fid, char(ImportedFieldnames(i)), 'char');
                         fwrite(fid, sprintf('\t'), 'char');
                     end
 
@@ -1732,7 +1709,7 @@ else
                     NumberMeasurements = size(Measurements,1);
                     TimeStart = clock;
                     for i = 1:NumberMeasurements
-                        for measure = 1:(length(MeasFieldnames) + length(FileFieldNames) + length(HeadingNames)),
+                        for measure = 1:NumberOfFields
                             val = Measurements(i,measure);
                             val = val{1};
                             if ischar(val),
@@ -1742,7 +1719,7 @@ else
                             end
                         end
                         fwrite(fid, sprintf('\n'), 'char');
-                          CurrentTime = clock;
+                        CurrentTime = clock;
                         TimeSoFar = etime(CurrentTime,TimeStart);
                         TimePerSet = TimeSoFar/i;
                         ImagesRemaining = NumberOfImages - i;
@@ -1823,10 +1800,10 @@ if strcmp(Answer, 'All images') == 1
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
     Fieldnames = fieldnames(handles.Measurements);
-    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
+    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8) == 1 | strncmp(Fieldnames,'Imported',8) == 1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
-        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename''.')
+        errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename'' or ''Imported''.')
         cd(CurrentDirectory);
         return
     end
@@ -1845,8 +1822,9 @@ if strcmp(Answer, 'All images') == 1
     %%% Have the user choose which of image/cells should be rows/columns
     RowColAnswer = questdlg('Which layout do you want images and cells to follow in the exported data?  WARNING: Excel spreadsheets can only have 256 columns.','','Rows = Cells, Columns = Images','Rows = Images, Columns = Cells','Rows = Cells, Columns = Images');
     %%% Extracts the headings.
-    ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
-    
+    try ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
+    catch ListOfHeadings = handles.Measurements.(HeadingToDisplay);
+    end
     %%% Determines the suggested file name.
     try
         %%% Find and remove the file format extension within the original file
@@ -1978,7 +1956,7 @@ elseif strcmp(Answer, 'All measurements') == 1
     %%% handles structure. This will be used as headings for each column of
     %%% measurements.
     Fieldnames = fieldnames(handles.Measurements);
-    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
+    HeadingFieldnames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1 | strncmp(Fieldnames,'Imported',8) == 1);
     %%% Error detection.
     if isempty(HeadingFieldnames)
         errordlg('No headings were found in the file you selected.  They would be found within the output file''s handles.Pipeline structure preceded by ''Filename''.')
@@ -1997,8 +1975,10 @@ elseif strcmp(Answer, 'All measurements') == 1
     end
     HeadingToDisplay = char(HeadingFieldnames(Selection));
     %%% Extracts the headings.
-    ImageNamesToDisplay = handles.Pipeline.(HeadingToDisplay);
-    ImageNameToDisplay = ImageNamesToDisplay(ImageNumber);
+    try ImageNamesToDisplay = handles.Pipeline.(HeadingToDisplay);
+    catch ImageNamesToDisplay = handles.Measurements.(HeadingToDisplay);
+    end
+        ImageNameToDisplay = ImageNamesToDisplay(ImageNumber);
     
     %%% Determines the suggested file name.
     try
@@ -2131,8 +2111,6 @@ if (strcmp(Answer, 'Single Measurement') == 1),
     end
     return;
 end
-    
-
 
 %%% Extract the fieldnames of measurements from the handles structure. 
 Fieldnames = fieldnames(handles.Measurements);
@@ -2155,20 +2133,20 @@ end
 if ok ~= 0
     EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
     MeasurementToExtract = ['Object', EditedMeasurementToExtract];
-    %%% Determines whether any sample info has been loaded.  If sample info has
-    %%% been loaded, the heading for that sample info would be listed in
-    %%% handles.headings.  If sample info is present, the fieldnames for those
-    %%% are extracted.
-    if isfield(handles, 'headings') == 1
-        HeadingNames = handles.headings';
+    %%% Determines whether any sample info has been loaded.  If sample
+    %%% info is present, the fieldnames for those are extracted.
+    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Filename',8) == 1);
+    if isempty(ImportedFieldnames) == 0
         %%% Allows the user to select a heading from the list.
-        [Selection, ok] = listdlg('ListString',HeadingNames, 'ListSize', [300 600],...
+        [Selection, ok] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
             'Name','Select sample info',...
             'PromptString','Choose the sample info with which to label each histogram.','CancelString','Cancel',...
             'SelectionMode','single');
         if ok ~= 0
-            HeadingName = char(HeadingNames(Selection));
-            SampleNames = handles.(HeadingName);
+            HeadingName = char(ImportedFieldnames(Selection));
+            try SampleNames = handles.Measurements.(HeadingName);
+            catch SampleNames = handles.Pipeline.(HeadingName);
+            end
         else cd(CurrentDirectory);
             return
         end                    
@@ -3440,29 +3418,52 @@ else
                 end %%% This "end" goes with the "while" loop (going through the image sets).
                 
                 %%% After all the image sets have been processed, the following checks to
-                %%% be sure that the data loaded as "Sample Info" has the proper number of
+                %%% be sure that the data loaded as "Sample Info" (Imported) has the proper number of
                 %%% entries.  If not, the data is removed from the handles structure so
                 %%% that the extract data button will work later on.
                 
+                %%% We are considering removing the ability to load
+                %%% sample info into the handles structure prior to
+                %%% running an analysis (and instead only allowing the
+                %%% user to add it to an existing file.)  If that
+                %%% changes and imported data will routinely be present in the handles
+                %%% structure, we should adjust the following to have
+                %%% more sophisticated error handling.  If the number
+                %%% of entries of imported data does not equal the
+                %%% number of image sets that were analyzed, the
+                %%% current code forces that sample info to be deleted
+                %%% altogether form the handles structure *and* the
+                %%% output file.  It would be nice to at least allow
+                %%% the user to choose to save the imported data in
+                %%% the handles structure (for future runs), in case
+                %%% they canceled this run prematurely but will then repeat
+                %%% the analysis in full (which happens pretty
+                %%% frequently).  It might also be nice to allow the
+                %%% user to truncate the imported data to match how
+                %%% many image sets were actually analyzed, although
+                %%% we should show the user exactly what data will be
+                %%% retained and deleted so they can verify that no
+                %%% mistakes are made.
+               
+                
                 %%% Create a vector that contains the length of each headings field.  In other
                 %%% words, determine the number of entries for each column of Sample Info.
-                
-                if isfield(handles,'headings') == 1
-                    HeadingsNames = [handles.headings];
-                    for i = 1:length(HeadingsNames);
-                        fieldname = char(HeadingsNames{i});
-                        Lengths(i) = length(handles.(fieldname));
+                Fieldnames = fieldnames(handles.Measurements);
+                ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
+                if isempty(ImportedFieldnames) == 0
+                    for i = 1:length(ImportedFieldnames);
+                        fieldname = char(ImportedFieldnames{i});
+                        Lengths(i) = length(handles.Measurements.(fieldname));
                     end   
                     %%% Create a logical array that indicates which headings do not have the
                     %%% same number of entries as the number of image sets analyzed.
                     IsWrongNumber = (Lengths ~= setbeinganalyzed - 1);
                     %%% Determine which heading names to remove.
-                    HeadingsToBeRemoved = HeadingsNames(IsWrongNumber);
+                    HeadingsToBeRemoved = ImportedFieldnames(IsWrongNumber);
                     %%% Remove headings names from handles.headings and remove the sample
                     %%% info from the field named after the heading.
                     if isempty(HeadingsToBeRemoved) == 0
-                        handles = rmfield(handles, HeadingsToBeRemoved);
-                        handles.headings(IsWrongNumber == 1) = [];
+                        handles.Measurements = rmfield(handles.Measurements, HeadingsToBeRemoved);
                         %%% Tell the user that fields have been removed.
                         HeadingsErrorMessage(1) = {'Some of the sample info you'};
                         HeadingsErrorMessage(2) = {'loaded does not have the'};
@@ -3477,18 +3478,11 @@ else
                         HeadingsErrorMessage(11) = {'file. Click OK to continue.'};
                         HeadingsErrorMessage = cellstr(HeadingsErrorMessage);
                         listdlg('ListString', HeadingsToBeRemoved, 'PromptString', HeadingsErrorMessage, 'CancelString', 'OK');
-                        %%% If no sample info remains, the field "headings" is removed
-                        %%% so that when the user clicks Clear or View, the proper error
-                        %%% message is generated, telling the user that no sample info has been
-                        %%% loaded.
-                        if isempty(handles.headings) ==1
-                            handles = rmfield(handles, 'headings');
-                        end
                         %%% Save all data that is in the handles structure to the output file 
                         %%% name specified by the user.
                         eval(['save ',handles.Voutputfilename, ' handles;'])
                     end % This end goes with the "isempty" line.
-                end % This end goes with the 'isfield' line.    
+                end % This end goes with the 'isempty' line.    
                 %%% Update the handles structure.
                 guidata(gcbo, handles)
                 

@@ -125,7 +125,7 @@ if strcmp(BatchImagePath, '.') == 1
 end
 
 if strcmp(BatchCellProfilerPath, '.') == 1,
-    BatchCellProfilerPath = handles.Current.DefaultModuleDirectory;
+    BatchCellProfilerPath = handles.Preferences.DefaultModuleDirectory;
 end
 
 %%% Save a snapshot of handles.

@@ -290,7 +290,7 @@ for n = 1:4
             %%% Switches to the directory
             try
                 cd(Pathname);
-            catch error(['Could not CD to ' Pathname]);
+            catch error(['The directory ' Pathname, ' does not exist.  Images could not be loaded from that location.']);
             end;
             %%% Handles a non-Matlab readable file format.
             if isfield(handles.Pipeline, 'DIBwidth') == 1

@@ -135,14 +135,14 @@ drawnow
 
 if strcmp(FileDirectory,'.') == 1
     FileDirectory = handles.Current.DefaultOutputDirectory;
-elseif strcmp(FileDirectory,'I') == 1
+elseif strcmpi(FileDirectory,'I') == 1
     FileDirectory = handles.Current.DefaultImageDirectory;
 else
 end
 %%% Makes sure that the File Directory specified by the user exists.
 if isdir(FileDirectory) == 1
 else
-    error(['Image processing was canceled because the specified directory does not exist.']);
+    error(['Image processing was canceled because the specified directory in the Save Images module does not exist.']);
 end
 
 %%% Retrieves the image you want to analyze and assigns it to a variable,

@@ -177,10 +177,6 @@ end
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Makes note of the current directory so the module can return to it
-%%% at the end of this module.
-CurrentDirectory = cd;
-
 %%% The first time the module is run, retrieves the image to be used for
 %%% correction from a file.
 if handles.Current.SetBeingAnalyzed == 1
@@ -224,9 +220,6 @@ IlluminationImage = handles.Pipeline.(fieldname);
 %%% Corrects the original image based on the IlluminationImage,
 %%% by dividing each pixel by the value in the IlluminationImage.
 CorrectedImage = OrigImage ./ IlluminationImage;
-
-%%% Returns to the original directory.
-cd(CurrentDirectory)
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

@@ -267,9 +267,6 @@ if SetBeingAnalyzed == 1
     end
 end
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%

@@ -264,12 +264,10 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         if strcmp(Shape, 'EA') == 1
             %%% Asks the user to open an image file upon which to draw the
             %%% ellipse.
-            CurrentDirectory = cd;
-            Directory = handles.Current.DefaultImageDirectory;
-            cd(Directory)
+            Pathname = fullfile(handles.Current.DefaultImageDirectory,'*')
             %%% Opens a user interface window which retrieves a file name and path
             %%% name for the image to be used as a test image.
-            [CroppingFileName,CroppingPathname] = uigetfile('*.*','Select the image to use for cropping');
+            [CroppingFileName,CroppingPathname] = uigetfile('*.*','Select the image to use for cropping',Pathname);
             %%% If the user presses "Cancel", the FileName will = 0 and an error
             %%% message results.
             if CroppingFileName == 0
@@ -277,7 +275,6 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
             else
                 ImageToBeCropped = imread(fullfile(CroppingPathname,CroppingFileName));
             end
-            cd(CurrentDirectory)
         else ImageToBeCropped = OrigImage;
         end
         %%% Displays the image and asks the user to choose points for the

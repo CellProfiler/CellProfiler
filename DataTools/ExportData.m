@@ -225,7 +225,8 @@ if get(ETh,'Userdata') == 0
     Summary = [];
     close(ETh)
 elseif get(ETh,'Userdata') == 1
-    if strcmp(get(reportbutton,'string'),'Full report')
+    
+    if get(reportbutton,'value') == 1
         Summary = 'no';
     else
         Summary = 'yes';

@@ -109,8 +109,8 @@ function handles = AlgIdentifyPrimIntensIntens(handles)
 % ALGIDENTIFYPRIMADAPTTHRESHOLDC, 
 % ALGIDENTIFYPRIMADAPTTHRESHOLDD,
 % ALGIDENTIFYPRIMTHRESHOLD, 
-% ALGIDENTIFYPRIMDISTDIST,
-% ALGIDENTIFYPRIMDISTINTENS.
+% ALGIDENTIFYPRIMSHAPEDIST,
+% ALGIDENTIFYPRIMSHAPEINTENS.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -246,7 +246,6 @@ set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
 function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-
 %%% SUBFUNCTION %%%
 function ToolHelp = LoadToolsPopUpMenu(handles, ImageOrData)
 if strcmp(ImageOrData, 'Image') == 1
@@ -2581,7 +2580,7 @@ ToolsHelpSubfunction(handles, 'Data', ListOfTools)
 function ToolsHelpSubfunction(handles, ImageOrData, ToolsCellArray)
 global toolsChoice;
 ToolsCellArray(1) = [];
-okbuttoncallback = '); toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
+okbuttoncallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
 cancelbuttoncallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); global toolsChoice; toolsChoice = 0; close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
 
 MainWinPos = get(handles.figure1,'Position');
@@ -2607,6 +2606,7 @@ choosetext = uicontrol(...
 'Style','text',...
 'Tag','informtext');
 
+listboxcallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); if (strcmpi(get(ToolsHelpWindowHandle,''SelectionType''),''open'')==1) toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle); clear toolsbox; end; clear ToolsHelpWindowHandle';
 toolsbox = uicontrol(...
 'Parent',ToolsHelpWindowHandle,...
 'Units','normalized',...
@@ -2614,6 +2614,7 @@ toolsbox = uicontrol(...
 'Position',[0.30 0.18 0.45 0.464],...
 'String',ToolsCellArray,...
 'Style','listbox',...
+'Callback',listboxcallback,...
 'Value',1,...
 'Tag','toolsbox');
 
@@ -2641,7 +2642,7 @@ if(toolsChoice ~= 0)
     HelpText = handles.Current.([ImageOrData 'ToolHelp']){toolsChoice};
     helpFig = figure;
     set(helpFig,'NumberTitle','off');
-    set(helpFig,'name', 'CellProfiler Image Tools Help');
+    set(helpFig,'name', (['CellProfiler ' ImageOrData ' Tools Help']));
     set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
     helpFigPos = get(helpFig,'position');
     set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
@@ -2656,7 +2657,7 @@ if(toolsChoice ~= 0)
         'String',HelpText,...
         'BackgroundColor',[0.7 0.7 0.9],...
         'Style','text');
-    outstring = textwrap(helpUI,{HelpText});
+    outstring = textwrap(helpUI,{HelpText}); 
     set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.09]);
     if(length(outstring) > 27),
         helpUIPosition = get(helpUI,'position');

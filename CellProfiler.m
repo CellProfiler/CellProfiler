@@ -46,7 +46,7 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
-% Last Modified by GUIDE v2.5 25-Oct-2004 15:07:04
+% Last Modified by GUIDE v2.5 26-Oct-2004 19:01:40
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -70,13 +70,16 @@ end
 % --- Executes just before CellProfiler is made visible.
 function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin) %#ok We want to ignore MLint error checking for this line.
 
+%create additional gui elements
+handles = createVariablePanel(handles);
+
 % Choose default command line output for CellProfiler
 handles.output = hObject;
 
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 0;
 handles.MaxAlgorithms = 99;
-handles.MaxVariables = 11;
+handles.MaxVariables = 99;
 global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
@@ -787,21 +790,7 @@ elseif exist(AlgorithmNamedotm,'file') == 0
   end
 else
 
-    %{
-  %%% 3. Sets all 11 VariableBox edit boxes and all 11 VariableDescriptions
-  %%% to be invisible.
-  for VariableNumber = 1:handles.MaxVariables;
-    set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'visible','off');
-    set(handles.(['VariableDescription' TwoDigitString(VariableNumber)]),'visible','off');
-  end;
-
-  %%% 4. Clears the variable values in array.
-  for VariableNumber=1:handles.MaxVariables  
-     handles.Settings.Vvariable(AlgorithmNums,VariableNumber) = {[]};
-  end;
-    %}
-
-  %%% 5. The last two characters (=.m) are removed from the
+  %%% 3. The last two characters (=.m) are removed from the
   %%% AlgorithmName.m and called AlgorithmName.
   AlgorithmName = AlgorithmNamedotm(4:end-2);
   %%% The name of the algorithm is shown in a text box in the GUI (the text
@@ -809,18 +798,19 @@ else
   %%% displays the current algorithm (whose settings are shown).
   %set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
 
-  %%% 6. Saves the AlgorithmName to the handles structure.
+  %%% 4. Saves the AlgorithmName to the handles structure.
   handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
   contents = get(handles.AlgorithmBox,'String');
   contents{AlgorithmNums} = AlgorithmName;
   set(handles.AlgorithmBox,'String',contents);
 
-  %%% 7. The text description for each variable for the chosen algorithm is 
+  %%% 5. The text description for each variable for the chosen algorithm is 
   %%% extracted from the algorithm's .m file and displayed.  
   fid=fopen([Pathname AlgorithmNamedotm]);
 
   while 1;
       output = fgetl(fid); if ~ischar(output); break; end;
+
       if (strncmp(output,'%defaultVAR',11) == 1),
           displayval = output(17:end);
           istr = output(12:13);
@@ -833,12 +823,12 @@ else
   end
   fclose(fid);
 
-  %%% 8. Update handles.numAlgorithms
+  %%% 6. Update handles.numAlgorithms
   if str2double(AlgorithmNumber) > handles.numAlgorithms,
     handles.numAlgorithms = str2double(AlgorithmNumber);
   end
   
-  %%% 9. Choose Loaded Algorithm in Listbox
+  %%% 7. Choose Loaded Algorithm in Listbox
   set(handles.AlgorithmBox,'Value',handles.numAlgorithms);
     
   %%% Updates the handles structure to incorporate all the changes.
@@ -854,44 +844,57 @@ if (length(AlgorithmHighlighted) > 0)
     AlgorithmNumber = AlgorithmHighlighted(1);
     if( handles.numAlgorithms > 0 )
 
-    %%% 2. Sets all 11 VariableBox edit boxes and all 11
-    %%% VariableDescriptions to be invisible.
-    for i = 1:handles.MaxVariables
-        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
-        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
-    end
+        %%% 2. Sets all VariableBox edit boxes and all
+        %%% VariableDescriptions to be invisible.
+        for i = 1:handles.MaxVariables,
+            set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
+            set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
+        end
 
-    %%% 2.5 Checks whether an algorithm is loaded in this slot.
-    contents = get(handles.AlgorithmBox,'String');
-    AlgorithmName = contents{AlgorithmNumber};
+        %%% 2.25 Remove slider and move panel back to original position
+        set(handles.variablepanel, 'position', [46 5.3846 108.4 23.154]);
+        set(handles.slider1,'visible','off');
 
-    %%% 3. Extracts and displays the variable descriptors from the .m file.
-    AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
-    if exist(AlgorithmNamedotm,'file') ~= 2
-        errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this module will be displayed, but this module will not run properly.']);
-    else
-        fid=fopen(AlgorithmNamedotm);
+        %%% 2.5 Checks whether an algorithm is loaded in this slot.
+        contents = get(handles.AlgorithmBox,'String');
+        AlgorithmName = contents{AlgorithmNumber};
 
-        while 1;
-            output = fgetl(fid); if ~ischar(output); break; end;
-            if (strncmp(output,'%textVAR',8) == 1);
-                set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end),'visible', 'on');
+        %%% 3. Extracts and displays the variable descriptors from the .m file.
+        AlgorithmNamedotm = strcat('Alg',AlgorithmName,'.m');
+        if exist(AlgorithmNamedotm,'file') ~= 2
+            errordlg(['The image analysis module named ', AlgorithmNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this module will be displayed, but this module will not run properly.']);
+        else
+            fid=fopen(AlgorithmNamedotm);
+
+            while 1;
+                output = fgetl(fid); if ~ischar(output); break; end;
+                if (strncmp(output,'%textVAR',8) == 1);
+                    set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end),'visible', 'on');
+                end
+            end
+            fclose(fid);
+        end
+        %%% 4. The stored values for the variables are extracted from the handles
+        %%% structure and displayed in the edit boxes.
+        for i=1:handles.numVariables(AlgorithmNumber),
+            if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
+                set(handles.(['VariableBox' TwoDigitString(i)]),...
+                    'string',char(handles.Settings.Vvariable(AlgorithmNumber,i)),...
+                    'visible','on');
+            else set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
             end
         end
-        fclose(fid);
-    end
-    %%% 4. The stored values for the variables are extracted from the handles
-    %%% structure and displayed in the edit boxes.
-    for i=1:handles.numVariables(AlgorithmNumber),
-        if iscellstr(handles.Settings.Vvariable(AlgorithmNumber, i));
-            set(handles.(['VariableBox' TwoDigitString(i)]),...
-                'string',char(handles.Settings.Vvariable(AlgorithmNumber,i)),...
-                'visible','on');
-        else set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
+
+        %%% 5.  Set the slider
+
+        if(handles.numVariables(AlgorithmNumber) > 12)
+            set(handles.slider1,'visible','on');
+            set(handles.slider1,'max',(handles.numVariables(AlgorithmNumber)-12)*1.77);
+            set(handles.slider1,'value',(handles.numVariables(AlgorithmNumber)-12)*1.77);
         end
-    end
+
     else
-    helpdlg('Module not loaded.');
+        helpdlg('Module not loaded.');
     end
 else
     helpdlg('No module highlighted.');
@@ -3262,12 +3265,6 @@ end
 twodigit = sprintf('%02d', val);
 
 %%%%%%%%%%%%%%%%%%%
-
-function stringhandle = handlenum2str(numberhandle)
-stringhandle = ['eval(' num2str(numberhandle*8192) '/8192)'];
-
-
-%%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%
 %%%%%%%%%%%%%%%%%%%
 
@@ -3382,3 +3379,69 @@ else
 end
 
 %%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%
+
+% --- Executes on slider movement.
+function slider1_Callback(hObject, eventdata, handles)
+% hObject    handle to slider1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+scrollPos = get(hObject,'max') - get(hObject, 'Value');
+set(handles.variablepanel, 'position', [46 5.3846+scrollPos 108.4 23.154]);
+
+
+% --- Executes during object creation, after setting all properties.
+function slider1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background, change
+%       'usewhitebg' to 0 to use default.  See ISPC and COMPUTER.
+usewhitebg = 1;
+if usewhitebg
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+function handles = createVariablePanel(handles)
+
+for i=1:99,
+    handles.(['VariableBox' TwoDigitString(i)]) = uicontrol(...
+        'Parent',handles.variablepanel,...
+        'Units','characters',...
+        'BackgroundColor',[1 1 1],...
+        'Callback','CellProfiler(''VariableBox_Callback'',gcbo,[],guidata(gcbo))',...
+        'FontName','Times',...
+        'FontSize',12,...
+        'Position',[92 22.7-1.77*i 15.6 1.61538461538462],...
+        'String','n/a',...
+        'Style','edit',...
+        'CreateFcn', 'CellProfiler(''VariableBox_CreateFcn'',gcbo,[],guidata(gcbo))',...
+        'Tag',['VariableBox' TwoDigitString(i)],...
+        'Behavior',get(0,'defaultuicontrolBehavior'),...
+        'Visible','off');
+
+    handles.(['VariableDescription' TwoDigitString(i)]) = uicontrol(...
+        'Parent',handles.variablepanel,...
+        'Units','characters',...
+        'BackgroundColor',[0.699999988079071 0.699999988079071 0.899999976158142],...
+        'CData',[],...
+        'FontName','Times',...
+        'FontSize',12,...
+        'FontWeight','bold',...
+        'HorizontalAlignment','right',...
+        'Position',[0.1 22.7-1.77*i 90 1.30769230769231],...
+        'String','No analysis module has been loaded',...
+        'Style','text',...
+        'Tag',['VariableDescription' TwoDigitString(i)],...
+        'UserData',[],...
+        'Behavior',get(0,'defaultuicontrolBehavior'),...
+        'Visible','off',...
+        'CreateFcn', '');
+end

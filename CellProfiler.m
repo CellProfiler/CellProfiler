@@ -1144,6 +1144,8 @@ function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We 
 %%% I am using this button to show the handles structure in the
 %%% main Matlab window.
 handles %#ok We want to ignore MLint error checking for this line.
+handles.Settings %#ok We want to ignore MLint error checking for this line.
+handles.Measurements %#ok We want to ignore MLint error checking for this line.
 msgbox('The handles structure has been printed out at the command line of Matlab.')
 
 %%%%%%%%%%%%%%%%%
@@ -1294,7 +1296,7 @@ else
     Fieldnames = fieldnames(handles.Measurements);
     MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
     Fieldnames = fieldnames(handles.Pipeline);
-    FileFieldNames = FileFieldNames(strncmp(FieldNames, 'Filename', 8)==1);
+    FileFieldNames = Fieldnames(strncmp(Fieldnames, 'Filename', 8)==1);
     %%% Determines whether any sample info has been loaded.  If sample info has
     %%% been loaded, the heading for that sample info would be listed in
     %%% handles.headings.  If sample info is present, the fieldnames for those
@@ -1355,7 +1357,7 @@ else
                     WaitbarHandle = waitbar(0,'Extracting measurements...');
                     %%% Preallocate the variable Measurements.
                     Fieldname = cell2mat(MeasFieldnames(length(MeasFieldnames)));
-                    Measurements(NumberOfImages,length(MeasFieldnames)) = {handles.(Fieldname){NumberOfImages}};
+                    Measurements(NumberOfImages,length(MeasFieldnames)) = {handles.Measurements.(Fieldname){NumberOfImages}};
                     %%% Finished preallocating the variable Measurements.
                     TimeStart = clock;
                     for imagenumber = 1:NumberOfImages
@@ -1496,7 +1498,7 @@ if strcmp(Answer, 'All images') == 1
     end
 
     %%% Allows the user to select a heading name from the list.
-    [Selection, ok] = listdlg('ListString',EditedHeadingFieldnames, 'ListSize', [300 600],...
+    [Selection, ok] = listdlg('ListString',HeadingFieldnames, 'ListSize', [300 600],...
         'Name','Select measurement',...
         'PromptString','Choose a field to label each column of data with','CancelString','Cancel',...
         'SelectionMode','single');
@@ -1504,7 +1506,7 @@ if strcmp(Answer, 'All images') == 1
         cd(CurrentDirectory);
         return
     end
-    HeadingToDisplay = char(EditedHeadingFieldnames(Selection));
+    HeadingToDisplay = char(HeadingFieldnames(Selection));
     %%% Extracts the headings.
     ListOfHeadings = handles.Pipeline.(HeadingToDisplay);
     
@@ -2552,8 +2554,8 @@ if RawFileName ~= 0
                         error(['The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.'])
                     end
                     %%% Looks up the corresponding image file name.
-                    Fieldnames = fieldnames(handles.Pipeline);
-                    PotentialImageNames = Fieldnames(strncmp(Fieldnames,'Filename',11)==1);
+                    Fieldnames = fieldnames(handles.Measurements);
+                    PotentialImageNames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
                     %%% Error detection.
                     if isempty(PotentialImageNames)
                         errordlg('CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.')
@@ -2565,7 +2567,7 @@ if RawFileName ~= 0
                         'SelectionMode','single');
                     if ok ~= 0
                         SelectedImageName = char(PotentialImageNames(Selection));
-                        ImageFileName = handles.(SelectedImageName){SampleNumber};
+                        ImageFileName = handles.Measurements.(SelectedImageName){SampleNumber};
                         %%% Prompts the user with the image file name.
                         h = msgbox(['Browse to find the image called ', ImageFileName,'.']);
                         %%% Opens a user interface window which retrieves a file name and path 

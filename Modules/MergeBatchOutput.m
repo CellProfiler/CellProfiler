@@ -92,8 +92,6 @@ BatchPath = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %defaultVAR03 = Batch_
 BatchFilePrefix = char(handles.Settings.Vvariable{CurrentAlgorithmNum,3});
 
-%textVAR09 = WARNING: This module should be the last one in the analysis pipeline!
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

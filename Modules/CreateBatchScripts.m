@@ -168,6 +168,8 @@ for n = 2:BatchSize:handles.Vnumberimagesets,
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);
     fprintf(BatchFile, 'EndImage = %d;\n', EndImage);
 
+    fprintf(BatchFile, 'CurrentDirectory = cd;\n');
+
     fprintf(BatchFile, 'load([BatchFilePrefix ''data.mat'']);\n');
     fprintf(BatchFile, 'for BatchSetBeingAnalyzed = StartImage:EndImage,\n');
     fprintf(BatchFile, '    disp(sprintf(''Analysing set %%d'', BatchSetBeingAnalyzed));\n');
@@ -192,8 +194,8 @@ for n = 2:BatchSize:handles.Vnumberimagesets,
     fprintf(BatchFile, '        break;\n');
     fprintf(BatchFile, '    end\n');
     fprintf(BatchFile, 'end\n');
+    fprintf(BatchFile, 'cd(CurrentDirectory);\n');
     fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
-
     fclose(BatchFile);
 end
 

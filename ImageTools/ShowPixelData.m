@@ -7,7 +7,7 @@ function handles = ShowPixelData(handles)
 % window and would like to determine the X, Y position or the
 % intensity at a particular pixel.
 %
-% See also SHOWIMAGE, SHOWDATAONIMAGE (a Data tool).
+% See also SHOWIMAGE, SHOWDATAONIMAGE.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

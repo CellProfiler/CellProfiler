@@ -188,8 +188,8 @@ end
 
 %%%% Sets up the data and image tools popup menus using the
 %%%% LoadToolsPopUpMenu subfunction.
-LoadToolsPopUpMenu(handles, 'Image');
-LoadToolsPopUpMenu(handles, 'Data');
+handles.Current.ImageToolHelp = LoadToolsPopUpMenu(handles, 'Image');
+handles.Current.DataToolHelp = LoadToolsPopUpMenu(handles, 'Data');
 
 %%% Adds the Help folder to Matlab's search path.
 try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
@@ -245,17 +245,19 @@ function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We
 varargout{1} = handles.output;
 
 %%% SUBFUNCTION %%%
-function LoadToolsPopUpMenu(handles, ImageOrData)
+function ToolHelp = LoadToolsPopUpMenu(handles, ImageOrData)
 if strcmp(ImageOrData, 'Image') == 1
     FolderName = 'ImageTools';
     NoneLoadedText = 'Image tools: none loaded';
     PopUpMenuLabel = 'Image tools';
     PopUpMenuHandle = 'ImageToolsPopUpMenu';
+    ToolHelp = ['Help information from individual image tool files, which are Matlab m-files located within the ImageTools directory:' 10];
 elseif strcmp(ImageOrData, 'Data') == 1
     FolderName = 'DataTools';
     NoneLoadedText = 'Data tools: none loaded';
     PopUpMenuLabel = 'Data tools';
     PopUpMenuHandle = 'DataToolsPopUpMenu';
+    ToolHelp = ['Help information from individual data tool files, which are Matlab m-files located within the DataTools directory:' 10];
 end
 %%% Finds all available tools, which are .m files residing in the
 %%% DataTools or ImageTools folder. CellProfilerPathname was defined
@@ -278,10 +280,12 @@ try addpath(Pathname)
         for i = 1:length(FileNamesNoDir),
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
                 ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
+                ToolHelp = [ToolHelp, '--------' 10 help(char(FileNamesNoDir{i}(1:end-2)))];
             end
         end
         if length(ListOfTools) > 1
             ListOfTools(1) = {PopUpMenuLabel};
+        else ToolHelp = 'No image tools were loaded upon starting up CellProfiler. Image tools are Matlab m-files ending in ''.m'', and should be located in a folder called ImageTools within the folder containing CellProfiler.m';
         end
     end
 end
@@ -2143,18 +2147,21 @@ helpdlg(HelpText,'CellProfiler Help')
 function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% First, check to see whether there is a specific module loaded.
 %%% If not, it opens a help dialog which explains how to pick one.
+%%% The numeral 10 allows line breaks.
+GeneralIndividualModuleHelpText = help('HelpIndividualModule');
+NoModuleSelectedHelpMsg = ['You do not have an analysis module loaded.' 10 10 ...
+    GeneralIndividualModuleHelpText];
 ModuleNumber = whichactive(handles);
 if ModuleNumber == 0
-    helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
+    helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module')
 else
-    ModuleName = handles.Settings.ModuleNames(ModuleNumber);
-    IsItNotChosen = strncmp(ModuleName,'No a',4);
-    if IsItNotChosen == 1
-        helpdlg('You do not have an analysis module selected.  Click "?" next to "Image analysis settings" to get help in choosing an analysis module, or click "View" next to an analysis module that has been loaded already.','Help for choosing an analysis module')
-    else
+    try ModuleName = handles.Settings.ModuleNames(ModuleNumber);
         %%% This is the function that actually reads the module's help
         %%% data.
-        HelpText = help(char(ModuleName));
+        HelpText = ['GENERAL HELP:' 10 ...
+            GeneralIndividualModuleHelpText, 10, 10 ...
+            'MODULE-SPECIFIC HELP:' 10 ...
+            help(char(ModuleName))];
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
             helpFig = figure;
@@ -2163,7 +2170,7 @@ else
             set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
             helpFigPos = get(helpFig,'position');
             set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
-            
+
             helpUI = uicontrol(...
                 'Parent',helpFig,...
                 'Enable','inactive',...
@@ -2178,25 +2185,26 @@ else
             outstring = textwrap(helpUI,{HelpText});
             set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.09]);
             if(length(outstring) > 27),
-            
+
                 helpUIPosition = get(helpUI,'position');
                 helpScrollCallback = ['set(',num2str(helpUI,'%.13f'),',''position'',[', ...
                     num2str(helpUIPosition(1)),' ',num2str(helpUIPosition(2)),'+get(gcbo,''max'')-get(gcbo,''value'') ', num2str(helpUIPosition(3)), ...
                     ' ', num2str(helpUIPosition(4)),'])'];
-                    
+
                 helpScrollUI = uicontrol(...
                     'Parent',helpFig,...
                     'Callback',helpScrollCallback,...
                     'Units','characters',...
                     'Visible', 'on',...
-                                    'BackgroundColor',[0.7 0.7 0.9],...
+                    'BackgroundColor',[0.7 0.7 0.9],...
                     'Style', 'slider',...
                     'Position',[81 1 4 30]);
                 set(helpScrollUI,'max',(length(outstring)-27)*1.09);
                 set(helpScrollUI,'value',(length(outstring)-27)*1.09);
             end
-        else helpdlg('Sorry, there is no help information for this image analysis module.','Image analysis module help')
+        else helpdlg(['Sorry, there is no help information for this image analysis module.',GeneralIndividualModuleHelpText],'Image analysis module help')
         end
+    catch helpdlg(NoModuleSelectedHelpMsg,'Help for choosing an analysis module')
     end
 end
 
@@ -2213,15 +2221,83 @@ HelpText = help('HelpDefaultOutputDirectory.m');
 helpdlg(HelpText,'CellProfiler Help')
 
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-HelpText = 'The help is located within individual m-files for each tool.  We are currently working on the display so that you can view the help using this button.';
-helpdlg(HelpText,'CellProfiler Help')
+HelpText = handles.Current.ImageToolHelp;
+helpFig = figure;
+set(helpFig,'NumberTitle','off');
+set(helpFig,'name', 'CellProfiler Image Tools Help');
+set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
+helpFigPos = get(helpFig,'position');
+set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
+helpUI = uicontrol(...
+    'Parent',helpFig,...
+    'Enable','inactive',...
+    'Units','characters',...
+    'HorizontalAlignment','left',...
+    'Max',2,...
+    'Min',0,...
+    'Position',[1 1 helpFigPos(3) helpFigPos(4)],...
+    'String',HelpText,...
+    'BackgroundColor',[0.7 0.7 0.9],...
+    'Style','text');
+outstring = textwrap(helpUI,{HelpText});
+set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.09]);
+if(length(outstring) > 27),
+    helpUIPosition = get(helpUI,'position');
+    helpScrollCallback = ['set(',num2str(helpUI,'%.13f'),',''position'',[', ...
+        num2str(helpUIPosition(1)),' ',num2str(helpUIPosition(2)),'+get(gcbo,''max'')-get(gcbo,''value'') ', num2str(helpUIPosition(3)), ...
+        ' ', num2str(helpUIPosition(4)),'])'];
+    helpScrollUI = uicontrol(...
+        'Parent',helpFig,...
+        'Callback',helpScrollCallback,...
+        'Units','characters',...
+        'Visible', 'on',...
+        'BackgroundColor',[0.7 0.7 0.9],...
+        'Style', 'slider',...
+        'Position',[81 1 4 30]);
+    set(helpScrollUI,'max',(length(outstring)-27)*1.09);
+    set(helpScrollUI,'value',(length(outstring)-27)*1.09);
+end
 
 function DataToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-HelpText = 'The help is located within individual m-files for each tool.  We are currently working on the display so that you can view the help using this button.';
-helpdlg(HelpText,'CellProfiler Help')
+HelpText = handles.Current.DataToolHelp;
+helpFig = figure;
+set(helpFig,'NumberTitle','off');
+set(helpFig,'name', 'CellProfiler Data Tools Help');
+set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
+helpFigPos = get(helpFig,'position');
+set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
+helpUI = uicontrol(...
+    'Parent',helpFig,...
+    'Enable','inactive',...
+    'Units','characters',...
+    'HorizontalAlignment','left',...
+    'Max',2,...
+    'Min',0,...
+    'Position',[1 1 helpFigPos(3) helpFigPos(4)],...
+    'String',HelpText,...
+    'BackgroundColor',[0.7 0.7 0.9],...
+    'Style','text');
+outstring = textwrap(helpUI,{HelpText});
+set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.09]);
+if(length(outstring) > 27),
+    helpUIPosition = get(helpUI,'position');
+    helpScrollCallback = ['set(',num2str(helpUI,'%.13f'),',''position'',[', ...
+        num2str(helpUIPosition(1)),' ',num2str(helpUIPosition(2)),'+get(gcbo,''max'')-get(gcbo,''value'') ', num2str(helpUIPosition(3)), ...
+        ' ', num2str(helpUIPosition(4)),'])'];
+    helpScrollUI = uicontrol(...
+        'Parent',helpFig,...
+        'Callback',helpScrollCallback,...
+        'Units','characters',...
+        'Visible', 'on',...
+        'BackgroundColor',[0.7 0.7 0.9],...
+        'Style', 'slider',...
+        'Position',[81 1 4 30]);
+    set(helpScrollUI,'max',(length(outstring)-27)*1.09);
+    set(helpScrollUI,'value',(length(outstring)-27)*1.09);
+end
 
 function AnalyzeImagesHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 HelpText = help('HelpAnalyzeImages.m');
 helpdlg(HelpText,'CellProfiler Help')
 
-%%% ^ END OF HELP HELP HELP HELP HELP HELP BUTTONS ^ %%%
+%%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%

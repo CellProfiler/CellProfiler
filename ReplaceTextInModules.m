@@ -76,7 +76,7 @@ for i = 1:NumberOfAlgorithmFiles
         if exist('TestMode') == 1
             Result(NumberOfAlgorithmFiles+1,:) = {'This is test mode only. None of the replacements were actually made'};
         else
-            fid=fopen(AlgorithmFileNames{i},'w');
+            fid=fopen([AlgorithmFileNames{i},'.m'],'w');
             fwrite(fid,NewAlgorithmContents,'char');
             fclose(fid);
         end

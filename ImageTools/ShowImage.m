@@ -7,7 +7,7 @@ function handles = ShowImage(handles)
 % to check the background pixel intensity or to determine pixel
 % coordinates, or to check which wavelength it is).
 %
-% See also SHOWPIXELDATA, SHOWDATAONIMAGE (a Data tool).
+% See also SHOWPIXELDATA, SHOWDATAONIMAGE.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

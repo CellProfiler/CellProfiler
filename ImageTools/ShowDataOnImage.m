@@ -35,7 +35,7 @@ function handles = ShowDataOnImage(handles)
 % The resulting figure can be saved in Matlab format (.fig) or
 % exported in a traditional image file format.
 %
-% See also SHOWIMAGE, SHOWPIXELDATA (Image tools).
+% See also SHOWIMAGE, SHOWPIXELDATA.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -8,6 +8,7 @@ Lines with --- are longer term, less critical
 Lines with NOW are more critical.
 
 Infrastructure improvements:
+     - Use the User's preference for font size for all figure displays and dialog boxes.
 
      - Make the help button next to the image/data tools work.  It should pop open a listbox asking you to choose which tool's help you would like to see, and then it should extract the help from the tool's m-file.  The listbox should also give general help, i.e. "You can add your own tools by writing Matlab m-files, placing them in the ImageTools or DataTools folder, and restarting CellProfiler."
 

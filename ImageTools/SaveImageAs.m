@@ -5,7 +5,9 @@ function handles = SaveImageAs(handles)
 %
 % Any image that is displayed can be saved to the hard drive in any
 % standard image file format using this tool.  Type 'imformats' in the
-% command window to see a list of acceptable file formats.
+% command window to see a list of acceptable file formats. To
+% routinely save images that result from running an image analysis
+% pipeline, use the SaveImages module.
 %
 % See also <nothing relevant>.
 

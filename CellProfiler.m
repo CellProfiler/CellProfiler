@@ -73,7 +73,6 @@ global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
 
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -1053,6 +1052,7 @@ end
 
 %%% NOTE: These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
+
 function CloseFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global closeFigures;
 AlgorithmHighlighted = get(handles.AlgorithmBox,'Value');
@@ -2915,7 +2915,7 @@ else
                             catch
                             end
                         end
-                        
+                                            
                         openFig = openFigures;
                         openFigures = [];
                         for i=1:length(openFig),

@@ -1768,6 +1768,45 @@ if RawFileName == 0
 end
 cd(RawPathname);
 load(RawFileName);
+
+%%% Check if the user wants to plot a set of histograms or a
+%%% measurement per image
+
+Answer = questdlg('Do you want to plot histograms of cell populations, or a single measurement per image?', 'Type of Plot', 'Histograms', 'Single Measurement', 'Histograms');
+
+%%% Just patch this in as a special case
+if (strcmp(Answer, 'Single Measurement') == 1),
+    Fieldnames = fieldnames(handles.Measurements);
+    MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
+    %%% Error detection.
+    if isempty(MeasFieldnames)
+        errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Image''.')
+        cd(CurrentDirectory);
+        return
+    end
+    %%% Removes the 'Image' prefix from each name for display purposes.
+    for Number = 1:length(MeasFieldnames)
+        EditedMeasFieldnames{Number} = MeasFieldnames{Number}(6:end);
+    end
+    %%% Allows the user to select a measurement from the list.
+    [Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
+        'Name','Select measurement',...
+        'PromptString','Choose a measurement to display as histograms','CancelString','Cancel',...
+        'SelectionMode','single');
+    if ok ~= 0,
+        EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
+        MeasurementToExtract = ['Image', EditedMeasurementToExtract];
+        figure;
+        h = bar(cell2mat(handles.Measurements.(MeasurementToExtract)));
+        axis tight;
+        set(get(h, 'Children'), 'EdgeAlpha', 0);
+        title(EditedMeasurementToExtract);
+    end
+    return;
+end
+    
+
+
 %%% Extract the fieldnames of measurements from the handles structure. 
 Fieldnames = fieldnames(handles.Measurements);
 MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Object',6)==1);

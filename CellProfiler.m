@@ -34,7 +34,7 @@ function varargout = CellProfiler(varargin)
 % The Original Code is the CellProfiler Main Function.
 % 
 % The Initial Developer of the Original Code is
-% Whitehead Institute for Biological Research
+% Whitehead Institute for Biomedical Research
 % Portions created by the Initial Developer are Copyright (C) 2003
 % the Initial Developer. All Rights Reserved.
 % 

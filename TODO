@@ -158,7 +158,14 @@ WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
        combined into one prior to running the for loops that follow,
        for the sake of simplicity and speed.
 
-- Use the User's preference for font size for all figure displays and dialog boxes.
+- Use the User's preference for font size for all figure displays and dialog boxes.  Do this by adding this line:
+    FontSize = handles.Current.FontSize;
+After the line in the DISPLAY RESULTS section:
+if any(findobj == ThisModuleFigureNumber) == 1
+And then, for each subplot or text window, add this line:
+    set(gca,'FontSize',FontSize)
+For each title, add properties at the end:
+    title('Original Image', 'FontSize', FontSize)
 
 -almost- Modify CellProfiler.m to keep track of time elapsed, broken down for each module, and have a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.
 

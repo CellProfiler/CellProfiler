@@ -239,7 +239,7 @@ if handles.Current.SetBeingAnalyzed == 1
             %%% the images, the mean of all the images should be a good
             %%% estimate of the illumination.
             %%% Image file is read differently if it is a .dib image.
-            TotalImage = im2double(imcpread(char(FileList(1)), handles));
+            TotalImage = imcpread(char(FileList(1)), handles);
             %%% Waitbar shows the percentage of image sets remaining.
             WaitbarHandle = waitbar(0,'');
             set(WaitbarHandle, 'Position', PositionMsgBox)
@@ -247,7 +247,7 @@ if handles.Current.SetBeingAnalyzed == 1
             TimeStart = clock;
             NumberOfImages = length(FileList);
             for i=2:length(FileList)
-                TotalImage = TotalImage + im2double(imcpread(char(FileList(i)), handles));
+                TotalImage = TotalImage + imcpread(char(FileList(i)), handles);
                 CurrentTime = clock;
                 TimeSoFar = etime(CurrentTime,TimeStart);
                 TimePerSet = TimeSoFar/i;

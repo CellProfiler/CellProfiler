@@ -40,7 +40,7 @@ else
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
-    Image = im2double(imcpreadfile(fullfile(Pathname, FileName)));
+    Image = imcpread(fullfile(Pathname, FileName));
     figure; imagesc(Image), colormap(gray)
     pixval
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION

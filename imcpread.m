@@ -30,7 +30,7 @@ if nargin == 2,
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,
             %%% "LoadedImage".
-            LoadedImage = imread(char(CurrentFileName));
+            LoadedImage = im2double(imread(char(CurrentFileName)));
         catch error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd, '" which you specified is in "', FileFormat, '" file format.  The error message was "', lasterr, '"'])
         end
     end
@@ -64,7 +64,7 @@ else
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,
             %%% "LoadedImage".
-            LoadedImage = imread(char(CurrentFileName));
+            LoadedImage = im2double(imread(char(CurrentFileName)));
         catch error(['Unable to open the file, perhaps not a valid Image File.']);
         end
     end

@@ -2,7 +2,7 @@ function handles = AlgRGBToGray(handles)
 
 % Help for the RGB To Gray module: 
 %
-% Takes an RGB image and converts it to grayscale.  Each color’s
+% Takes an RGB image and converts it to grayscale.  Each color's
 % contribution to the final image can be adjusted independently.
 %
 % See also ALGRGBSPLIT, ALGRGBMERGE.

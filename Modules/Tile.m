@@ -5,7 +5,7 @@ function handles = AlgImageTiler(handles)
 % Allows many images to be viewed simultaneously, in a grid layout you
 % specify (e.g. in the actual layout in which the images were
 % collected). This module tiles all images on the first time through
-% the module, so you won’t want to run an image routine afterwards
+% the module, so you won't want to run an image routine afterwards
 % that needs to cycle through the image sets.
 %
 % If you want to view a large number of images, you will generate an
@@ -16,7 +16,7 @@ function handles = AlgImageTiler(handles)
 % gigantic, high resolution file.  Therefore, you can decrease the
 % resolution of each image by entering a fraction where requested.
 % Then, in the window which pops open after ImageTiler finishes, you
-% can use the “Get high res image” button to retrieve the original
+% can use the 'Get high res image' button to retrieve the original
 % high resolution image. (This button is not yet functional).
 %
 % The file name (automatic) and sample info (optional) can be

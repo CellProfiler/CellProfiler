@@ -11,7 +11,7 @@ function handles = AlgIdentifyPrimAdaptThresholdA(handles)
 % and than a simple threshold; still, it is ideal for well-separated
 % nuclei.
 %
-% Module A: the optimal thresholds are determined using Otsu’s
+% Module A: the optimal thresholds are determined using Otsu's
 % algorithm, for distinct blocks across the image.  The resulting
 % thresholds are blurred.
 %

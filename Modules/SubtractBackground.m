@@ -15,7 +15,7 @@ function handles = AlgSubtractBackground(handles)
 % the Apply Threshold and Shift module, except in the Subtract
 % Background module, the threshold is automatically calculated the
 % first time through the module. This will not push any values below
-% zero (therefore, we aren’t losing any information).  It moves the
+% zero (therefore, we aren't losing any information).  It moves the
 % baseline up and looks prettier (improves signal to noise) without
 % any 'ethical' concerns.
 %
@@ -31,7 +31,7 @@ function handles = AlgSubtractBackground(handles)
 % Sort each image's pixel values and pick the 10th lowest pixel value
 % as the minimum.  Our typical images have a million pixels. We are
 % not choosing the lowest pixel value, because it might be zero if
-% it’s a stuck pixel.  We are pretty sure there won’t be 10 stuck
+% it's a stuck pixel.  We are pretty sure there won't be 10 stuck
 % pixels so this should be safe.  Then, take the minimum of these
 % values from all the images.  This scalar value should be subtracted
 % from every pixel in the image.  We are not calculating a different

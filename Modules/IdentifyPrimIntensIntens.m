@@ -5,7 +5,7 @@ function handles = AlgIdentifyPrimIntensIntens(handles)
 % This image analysis module works best for objects that are brighter
 % towards the interior; the objects can be any shape, so they need not
 % be round and uniform in size as would be required for a
-% distance-based algorithm.  The dividing lines between clumped
+% distance-based module.  The dividing lines between clumped
 % objects should be dim. The module is more successful when then
 % objects have a smooth texture, although increasing the blur radius
 % can improve the outcome on lumpy-textured objects.

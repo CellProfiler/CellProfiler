@@ -3,12 +3,12 @@ function handles = AlgIdentifyPrimDistDist(handles)
 % Help for the Identify Primary Distance Distance module: 
 % 
 % This image analysis module identifies and separates clumps of
-% objects in a grayscale input image. The algorithm works best for
+% objects in a grayscale input image. The module works best for
 % objects that are very round-shaped. Separating objects that are
 % clumped and finding the dividing lines between them is based
 % entirely on shape (roundness) rather than intensity gradients of the
 % objects. The cells need not be brighter towards the interior as is
-% required for the intensity-based algorithm, nor do they need to be
+% required for the intensity-based module, nor do they need to be
 % dimmer or brighter along the lines between clumped objects, as is
 % necessary for the Identify Primary Distance Intensity module.
 %

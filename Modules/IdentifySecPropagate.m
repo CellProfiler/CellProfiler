@@ -18,7 +18,7 @@ function handles = AlgIdentifySecPropagate(handles)
 % objects (more stringent). A lower number will result in large
 % objects (less stringent).
 %
-% Regularization factor: This algorithm takes two factors into account
+% Regularization factor: This module takes two factors into account
 % when deciding where to draw the dividing line between two touching
 % secondary objects: the distance to the nearest primary object, and
 % the intensity of the secondary object image.  The regularization

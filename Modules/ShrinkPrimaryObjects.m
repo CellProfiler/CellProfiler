@@ -4,7 +4,7 @@ function handles = AlgShrinkPrimaryObjects(handles)
 %
 % The module shrinks primary objects by removing border pixels. The
 % user can specify a certain number of times the border pixels are
-% removed, or type “Inf” to shrink objects down to a point. Objects
+% removed, or type 'Inf' to shrink objects down to a point. Objects
 % are never lost using this module (shrinking stops when an object
 % becomes a single pixel). Sometimes when identifying secondary
 % objects (e.g. cell edges), it is useful to shrink the primary

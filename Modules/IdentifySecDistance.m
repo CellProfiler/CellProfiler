@@ -2,7 +2,7 @@ function handles = AlgIdentifySecDistance(handles)
 
 % Help for the Identify Secondary Distance module:
 %
-% Based on another module’s identification of primary objects, this
+% Based on another module's identification of primary objects, this
 % module identifies secondary objects when no specific staining is
 % available.  The edges of the primary objects are simply expanded a
 % particular distance to create the secondary objects. For example, if

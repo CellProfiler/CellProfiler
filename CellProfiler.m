@@ -2724,7 +2724,6 @@ else
                 set(handles.ShowPixelDataButton,'enable','off')
                 set(handles.CloseAllFigureWindowsButton,'enable','off')
                 set(handles.AnalyzeImagesButton,'enable','off')
-                set(handles.AnalyzeAllImagesClusterButton,'enable','off')
                 set(handles.ExportDataButton,'enable','off')
                 set(handles.ExportCellByCellButton,'enable','off')
                 set(handles.HistogramButton,'enable','off')
@@ -3188,7 +3187,6 @@ else
                 set(handles.ShowPixelDataButton,'enable','on')
                 set(handles.CloseAllFigureWindowsButton,'enable','on')
                 set(handles.AnalyzeImagesButton,'enable','on')
-                set(handles.AnalyzeAllImagesClusterButton,'enable','on')
                 set(handles.ExportDataButton,'enable','on')
                 set(handles.ExportCellByCellButton,'enable','on')                
                 set(handles.HistogramButton,'enable','on')
@@ -3363,7 +3361,7 @@ end
 pnet_remote(handles.parallel_machines, 'eval', ['addpath ' handles.RemoteCellProfilerPathName]);
 
 % fake a click on the analyze images button
-AnalyzeAllImagesButton_Callback(hObject, eventdata, handles);
+AnalyzeImagesButton_Callback(hObject, eventdata, handles);
 
 % clear the list of parallel machines
 handles = rmfield(handles, 'parallel_machines');

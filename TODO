@@ -1,90 +1,88 @@
-Unclaimed projects/feature requests/bug fixes
+CellProfiler cell image analysis software development 
+November 8, 2004
 
-General:
-- When saving a settings file, it should record the versions of each
-  module it refers to.  These should be checked when the setting are
-  loaded (and warnings put up if the values have changed).
-- For Example Images that are just text, move it into the help for that file, because as it is these images are stretched a lot.
-- Remove TM from CellProfiler's name in the help/manual.
-- Can the manual compiler use the powerpoint file directly, or must it be saved as PNG or JPG first, for the cover pages?
-- Rename HelpHistogram and HelpNormalization now that the buttons have different names.
-- Make Images and Data buttons into icons in a toolbar.
-- 'Fetch new modules from website' button in CP's main GUI.
-- 'Report bug' button in CP's main GUI.
+Infrastructure improvements:
+- Allow running on a cluster in interactive mode
+- Allow running on a cluster in batch mode
+- Change saving of the output file to be faster for large jobs
+- Allow batches of different settings to be run and their results compared
+- Allow automatic selection of settings based on hand-traced images
 - 'Start job midway' module, run image set #XXXX (allow putting in a bunch of comma-delimited numbers to allow random), every 50th.
+- There is no way to save images which are normally calculated for display only when running on the cluster, because the figure windows are not open so the calculations are skipped.
+- Timer: Have the time for first set separate from the time for subsequent sets.
+- Have the save settings function automatically add SET to the name > can't currently do it with uisave.
+- When there are large numbers of images in a folder, the response of uigetfile is really slow.  Can fix?
+- Prevent clicking pause/cancel buttons twice.
+- To aid in interactive selection of settings, allow user to create a figure window where images can be dragged and overlaid and toggled back and forth. See Inca and dragndrop in Matlab Central.
+- Have image windows pay attention to aspect ratio of images.
+
+Image analysis modules - New:
+- Make modules to identify objects in transmitted light/DIC images.
+- Neurite outgrowth module
+- Particle tracking over time module
+- Make a user-scoring module that allows the user to view and annotate each image manually. Show control side by side (1-4 at a time) and add that assessment to the data structure. Maybe allow randomizing (to do blind tests). Allow clicking through.
+- Make a quality-control module that checks for evenness of illumination, linearity of exposure time, lamp flickering, and slide-scale variation.
+- Make a module to expand or shrink secondary objects. (e.g. to define membrane compartment)
+- Binucleate cells: figure out how to identify and count them
+- Align/resize stack of images (like yeast plates). See Matlab demo on image registration. Did Chris already do this?
+
+Image analysis modules - Improvements:
+- Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original.
+- Improve background/cell edge finding - threshold vs. adaptive threshold vs. watershed
+- Make another primary object identification module based on Intensity then distance.
+- Improve cell segmentation (though already it's quite good)
+- Annotate which modules work for grayscale vs color.
 - Spot Identifier: Figure out Excel mac vs Pc problems (Anne has an email from Mathworks describing the issue, thread QW38).  Allow asking if numbers are in rows or columns.  Check offsets, flipping. Display value only when clicking (see email that Anne has: Mathworks tricks for interactive figures). Make manual page. Toggle several images.
 - Image Tiler: Main GUI's error catching is causing problems when sample info is loaded.  Allow zoom in on thumbnail: get filename (GET COORDINATES) and display high res image.  Needs error catching for images to be the same size.  Display window stays open. See tooltips code. Make manual page.  Fails if there are fewer images than the total grid.
-- There is no way to save images which are normally calculated for display only when running on the cluster, because the figure windows are not open so the calculations are skipped.
 - Combine CorrIllumDivideAll with RetrieveImg version.
+
+Data exporting
+- Allow data to be exported to bioinformatics programs like Spotfire or GenePattern.
+- Allow data to be exported in MAGE format to go into databases.
+- Allow data to be exported to Open Microscopy Environment databases.
 - Allow adding sample info post-processing
+
+Data visualization/analysis:
+[[[ Note: We are not sure whether we want to focus on data visualization or leave this to other programs like Spotfire or GenePattern or Open Microscopy Environment.]]]
+- Would like to be able to nicely graph data (Matlab is a bit limiting at this point in time) and click on data points to retrieve the high resolution image.
+- Would like to be able to sort images and data points to generate hit lists meeting certain criteria. - showregions at Matlab Central might be useful for interactivity
+- Would like to be able to transform data; e.g. normalize for slide-scale variation, calculate the percent of cells in each image meeting certain criteria.
+- Allow sample info (e.g. gene names, image-specific identifiers) to be added to an output file after it has been created.
 - Display data on image button: it currently is using global variables to store the numerical data, rather than using UserData.  Thus, the figure cannot be saved with the numerical data still accessible.  See histograms for how to use UserData to store the numbers with the figure.
 - Histograms: allow fewer labels, plus fewer decimals (right now, it's either-or).
 - Plot data button: allow adding error bars reflecting stdev or sem to the single parameter, multiple images bar plot (matlab central has error bar code).
 - Plot data button: allow displaying two parameters vs. each other in a scatter plot.
 - Compressed histograms: Add Y sample labels, allow to show relative brightness, allow to put in order by mean, change # of sig figs.  See hist2 at MC to smooth histograms.  Eventually allow histograms to be interactively updated? See automatic updated plot at MC, and also fancyplot. 
-- Interactive zoom button (within Show Image button):
+- Fix interactive zoom button (within Show Image button):
 (1) It seems to always work OK the first time you click on Interactive Zoom.  The subsequent times you click on it though: sometimes it works just fine and other times there is no change to the image itself - it stays at fully zoomed out and doesn't respond to mouse clicks.  Perhaps related, sometimes lots of errors are spit out at the command line (I think only on subsequent tries to use the functionality).  Actually, maybe it has something to do with having other figure windows open at the same time?
 (2) Once things are working, I would like to add this Interactive Zoom button to several other places: In CellProfiler.m: "Display data on image", "Show pixel data", and all of the figure display windows (for each algorithm - I am not sure whether buttons will stay intact, though, once each algorithm runs. so I am not sure whether it makes more sense to have the button added within each algorithm's code or within the main CellProfiler code when the window is first created). The most important thing is to add the button to "AlgImageTiler.m"; that is why I acquired this code in the first place.- Calculations for display purposes only: surround by an if that is: "If figure window is open OR saveimage = Yes, then do these calculations."
-- Timer: Have the time for first set separate from the time for subsequent sets.
-- Consistent color of helpdlg, warndlg, msgbox: requires getting the handle then setting the color.
+
+Increasing platform usability:
+- Compile CellProfiler to run independently of Matlab
+- Allow importing of images from Open Microscopy Environment databases.
 - ImageJ plugins: allow them to be run through CellProfiler
-- Binucleate cells: figure out how to identify and count them
 
-Modules to begin:
-- Align/resize stack of images (like yeast plates). See Matlab demo on image registration. Did Chris already do this?
+Debugging:
+
+Validation:
+- Write algorithms to compare hand-traced results to CellProfilerTM results quantitatively, then apply them to our hand-traced data sets.
+
+User-friendliness/interface/help:
+- Make "applications" technical notes and automatic settings files to give a good starting place for common applications (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and for common cell types.
+- Design an informational brochure
+- Make a tutorial to demonstrate how CP is used.
+- Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot; Remove TM from CellProfiler's name in the help/manual; Rename HelpHistogram and HelpNormalization now that the buttons have different names; Can the manual compiler use the powerpoint file directly, or must it be saved as PNG or JPG first, for the cover pages?
+- Make Images and Data buttons into icons in a toolbar in CellProfiler's main GUI.
+- 'Fetch new modules from website' button in CellProfiler's main GUI.
+- 'Report bug' button in CellProfiler's main GUI.
+- Make all pop-up windows use the proper background color and come to the center of the CP window (helpdlg, warndlg, msgbox): requires getting the handle then setting the color and position.
 - Make a "send email" module that makes Matlab send an email to you after a user-specified number of algorithms have been processed (e.g. after the first, or last, or every 1000 image sets) (see sendmail: built in matlab function?)  Need to enter an email address and have a flexible way to take in when you want the email sent.  (e.g. BOX1: After first?, BOX2: After last?, BOX3: every X number of sets, BOXES4-9: after image # X, BOX11: email address.)
-- coloc3D: Adapt this code (from Matlab Central) into CellProfiler
-- Adapt all Matlab image functions into modules?
-- "Load images from OME" module.
-- Nuclear intensity module, using distance transform for watershedding.
-- Allow applying a metric to the data after histogramming: e.g. % of cells between range X and Y.
-- Allow user to mark images as interesting or not > show control side by side (1-4 at a time) and add that assessment to the data structure. Maybe allow randomizing (to do blind tests). Allow clicking through.
-- Quality control:  does hardware tests, e.g. check evenness of illumination, linearity of exposure time, lampchecks, etc. (Get code from Ray). Correct periodicity modules.
-- Yeast aggregate classification for Tiago in Lindquist lab.
-- Allow sample info to be added after an output file is created; change the display window to have a scroll bar (maybe), MC has code for "General selection dialogs".
-- Allow restarting a messed up job that is partway through.
 
-Analyze Test Image button: 
-- When test image is chosen using Browse or by typing in, make the selection in the list box match the test image's name.  When typing in, make the list box be reloaded.
-- Adapt from Analyze all Images button: no loop, no cancel function, use the files that the user selected: has to be a set of images rather than a single image.  Need to allow > 1 image to be highlighted in list box.
-- Figure out how to overlay images and toggle back and forth. Maybe try a new GUI that has a toggle button of some kind, that lets you drag images into the window?  See Inca and dragndrop in MC.
-
-Final polishing/minor wishes:
-- Maybe try desGUIDE to eliminate GUIDE .fig file: supposedly faster and less platform dependent?
-- showregions at Matlab Central might be useful for Spotfire-like Interactivity
-- would be nice for save settings button to automatically add SET to the name > can't currently do it with uisave.
-- When there are large numbers of images in a folder, the response of uigetfile is really slow.  Can fix?
-- Annotate which modules work for grayscale vs color.
-- Write out help windows for each module.
-- Website/manuals.  See Matdoc at MC to generate online help.
-- Show example cell types and suggested settings.
-* Make sure Cellprofiler GUI file is understandable; compact & streamline the code. Use M lint feature.
-* Make help windows and error boxes come to the middle of the CellProfiler window.
-* Put drawnows in everywhere
-* PC: Font size too big.
-- Have image windows pay attention to aspect ratio of images.
-- Prevent clicking pause/cancel buttons twice.
-- Add error catching in each module for the type of input expected for the variables (e.g. must be a number, must be a string, must be within a certain range.)
-- Make sure online help matches the manual.
-- Create a developer's template algorithm with all the instructions for how to write new modules.
-
-Testing:
-- Reproducibility: two image scans of the same spot, two spots on the same slide, two spots on different slides prepared the same day, two spots on different slides prepared different days.
-- Dependence of measurements on cell density.
-
-Try other cell segmentation strategies: (?)
-* ESPECIALLY: make watershed for bright lines and watershed for dark lines.
-* Make new one, same as Cell_Segment17 except try method 2 for background marking.
-* Cell_Segment13, I think, has stringent edges because they are based only on the gradient image; does not have second watershedding step.  Should edit and save this as a real algorithm.
-* I think Cell_Segment14-16 are intermediates which can be discarded.
-* Edit and save Cell_Segment9 as a real algorithm.
-* Edit and save Cell_Segment10 as a real algorithm. (background = SKIZ). Try to make a new improved algorithm with SKIZ being smoothed: it seems like it should work better than it did.
-* Cell_Segment11 is just 13 without background being thrown out properly, so it can be discarded I think.
-* Edit and save Cell_Segment12 as a real algorithm (watershed the original image rather than the gradient image.)
-* Should I try a distance transform for the cell segmentation?
-
-Checked Matlab Central for useful code on 9-16-04:
-Biotech/medical
-Graphics (all 3 categories)
-Image Processing
-Utilities - GUI Tools & examples, and Misc.
+Post-release support:
+- Monitor imaging newsgroups and inform people about the software
+- Provide technical support/help desk
+- Fix bugs
+- Maintain for new releases of OS's and Matlab
+- Organize training workshops
+- Present at conferences
+- Check Matlab Central for useful code to incorporate into CellProfilerTM or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities - GUI Tools & examples, and Misc.)

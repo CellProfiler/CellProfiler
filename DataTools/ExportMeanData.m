@@ -109,6 +109,7 @@ else
                     Measurements(NumberOfImages,NumberOfFields) = {[]};
                     %%% Finished preallocating the variable Measurements.
                     TimeStart = clock;
+                    FieldNumber = 0;
                     for imagenumber = 1:NumberOfImages
                         for FileNameFieldNumber = 1:NumberOfFileFieldNames
                             Fieldname = cell2mat(FileFieldNames(FileNameFieldNumber));

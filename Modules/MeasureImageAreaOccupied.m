@@ -47,9 +47,8 @@ IsFormat = imformats(FileFormat);
 if isempty(IsFormat) == 1
     error('The image file type entered in the Area Occupied module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
 end
-%%% Determine the pixel size.
-class(handles.Vpixelsize)
-PixelSize = str2num(handles.Vpixelsize);
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2num(handles.Vpixelsize{1});
 %%% Read (open) the image you want to analyze and assign it to a variable,
 %%% "OrigImageToBeAnalyzed".
 fieldname = ['dOT', ImageName];

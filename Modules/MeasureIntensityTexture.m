@@ -37,9 +37,8 @@ ImageName = handles.(fieldname);
 %textVAR07 = The measurements made by this module will be named after the two boxes above, 
 %textVAR08 = e.g. "OrigRedwithinNuclei".
 
-%%% Reads the pixel size that the user entered in the main window
-%%% (micrometers per pixel) and converts it to a number.
-PixelSize = str2num(handles.Vpixelsize);
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2num(handles.Vpixelsize{1});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

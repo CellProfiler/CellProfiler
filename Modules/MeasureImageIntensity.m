@@ -41,8 +41,9 @@ FileFormat = handles.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines the pixel size.
-PixelSize = str2num(handles.Vpixelsize);
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2num(handles.Vpixelsize{1});
+
 %%% Checks whether the file format the user entered is readable by Matlab.
 IsFormat = imformats(FileFormat);
 if isempty(IsFormat) == 1

@@ -42,8 +42,7 @@ ImageName = handles.(fieldname);
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Reads the pixel size that the user entered in the main window
-%%% (micrometers per pixel).
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2num(handles.Vpixelsize{1});
 
 %%% Retrieves the label matrix image that contains the segmented objects which

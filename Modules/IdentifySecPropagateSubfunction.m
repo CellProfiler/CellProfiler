@@ -1,5 +1,7 @@
 % function LABELS_OUT = AlgSegmentSecPropagateSubfunction(LABELS_IN, IMAGE, MASK, LAMBDA)
 % 
+% Help for the Segment Secondary Propagate Subfunction:
+% 
 % Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
 % limited to MASK.  MASK should be a logical array.  LAMBDA is a
 % regularization paramter, larger being closer to Euclidean distance
@@ -14,7 +16,6 @@
 % different labels (as there would be using, e.g., watershed).  Such
 % boundaries must be added in a postprocess.
 
-
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 
 % the License. You may obtain a copy of the License at 
@@ -26,7 +27,7 @@
 % License.
 % 
 % 
-% The Original Code is the ______________________.
+% The Original Code is the Segment Secondary Propagate Subfunction.
 % 
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research

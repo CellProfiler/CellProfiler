@@ -55,7 +55,7 @@ function handles = AlgIdentifySecPropagate(handles)
 % LAMBDA^2).  Note that there is no separation between adjacent areas
 % with different labels (as there would be using, e.g., watershed).
 % Such boundaries must be added in a postprocess.
-
+%
 % What does Secondary mean?
 % Identify Primary modules identify objects without relying on any
 % information other than a single grayscale input image (e.g. nuclei
@@ -67,6 +67,9 @@ function handles = AlgIdentifySecPropagate(handles)
 % two sets of objects have already been identified (e.g. nuclei and
 % cell regions are used to define the cytoplasm objects, which are
 % tertiary objects).
+%
+% See also ALGIDENTIFYSECPROPAGATESUBFUNCTION, ALGIDENTIFYSECDISTANCE,
+% ALGIDENTIFYSECWATERSHED.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

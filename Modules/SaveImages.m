@@ -12,6 +12,8 @@ function handles = AlgSaveImages(handles)
 % format. 
 % 
 % NEED TO INCLUDE DESCRIPTION OF HOW TO SAVE NON-OBVIOUS IMAGES.
+%
+% See also <nothing relevant>
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -8,7 +8,10 @@ function handles = AlgCorrectIllumDivideAllMeanRetrieveImg(handles)
 % module has not been extensively tested and was written in a quick
 % emergency situation.
 %
-% See also AlgCorrectIllumDivideAllMean.
+% See also ALGCORRECTILLUMDIVIDEALLMEAN,
+% ALGCORRECTILLUMSUBTRACTALLMIN,
+% ALGCORRECTILLUMDIVIDEEACHMIN_9, ALGCORRECTILLUMDIVIDEEACHMIN_10,
+% ALGCORRECTILLUMSUBTRACTEACHMIN.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

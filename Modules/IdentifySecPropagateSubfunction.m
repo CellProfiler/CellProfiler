@@ -15,6 +15,8 @@
 % Note that there is no separation between adjacent areas with
 % different labels (as there would be using, e.g., watershed).  Such
 % boundaries must be added in a postprocess.
+%
+% See also ALGIDENTIFYSECPROPAGATE.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -16,6 +16,8 @@ function handles = AlgAlign(handles)
 % the module's '.m' file and changing the lines after 'FOR DISPLAY
 % PURPOSES ONLY'.  The first line in each set is red, then green, then
 % blue.
+%
+% See also ALGALIGNANDCROP.
 
 % The contents of this file are subject to the Mozilla Public License
 % Version 1.1 (the "License"); you may not use this file except in

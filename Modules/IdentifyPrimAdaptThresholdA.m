@@ -29,6 +29,14 @@ function handles = AlgIdentifyPrimAdaptThresholdA(handles)
 % modules require images where two sets of objects have already been
 % identified (e.g. nuclei and cell regions are used to define the
 % cytoplasm objects, which are tertiary objects).
+%
+% See also ALGIDENTIFYPRIMADAPTTHRESHOLDB,
+% ALGIDENTIFYPRIMADAPTTHRESHOLDC, 
+% ALGIDENTIFYPRIMADAPTTHRESHOLDD,
+% ALGIDENTIFYPRIMTHRESHOLD, 
+% ALGIDENTIFYPRIMDISTDIST,
+% ALGIDENTIFYPRIMDISTINTENS, 
+% ALGIDENTIFYPRIMINTENSINTENS.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

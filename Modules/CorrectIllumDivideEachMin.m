@@ -28,7 +28,10 @@ function handles = AlgCorrectIllumDivideEachMin_10(handles)
 % "Enhancement" category.
 % MATLAB6p5/toolbox/images/imdemos/examples/enhance/ipss003.html
 %
-% See also AlgCorrectIllumDivideEachMin_9
+% See also ALGCORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
+% ALGCORRECTILLUMSUBTRACTALLMIN,
+% ALGCORRECTILLUMDIVIDEEACHMIN_9, ALGCORRECTILLUMDIVIDEALLMEAN,
+% ALGCORRECTILLUMSUBTRACTEACHMIN.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -4,6 +4,8 @@ function handles = AlgFileRenamer(handles)
 %
 % File renaming utility that deletes or adds text anywhere within
 % image file names.
+%
+% See also ALGFILERENUMBER.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

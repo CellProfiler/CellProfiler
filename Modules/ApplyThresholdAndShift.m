@@ -7,7 +7,7 @@ function handles = AlgApplyThresholdAndShift(handles)
 % value is subtracted from the entire image to shift all the
 % intensities lower.  Negative pixel intensities are then set to zero.
 %
-% See also AlgApplyThreshold
+% See also ALGAPPLYTHRESHOLD.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

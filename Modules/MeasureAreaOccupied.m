@@ -14,6 +14,11 @@ function handles = AlgMeasureAreaOccupied(handles)
 % fluorescence.  The threshold is calculated automatically and then
 % adjusted by a user-specified factor. It might be desirable to write
 % a new module where the threshold can be set to a constant value.
+%
+% See also ALGMEASUREAREASHAPEINTENSTXTR,
+% ALGMEASURECORRELATION,
+% ALGMEASUREINTENSITYTEXTURE,
+% ALGMEASURETOTALINTENSITY.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

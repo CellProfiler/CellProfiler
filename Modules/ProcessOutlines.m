@@ -3,6 +3,8 @@ function handles = AlgProcessOutlines(handles)
 % Help for the Process Outlines module:
 % Sorry, help does not yet exist for this module.  We wrote it really
 % quickly for a collaborator.
+%
+% See also <nothing relevant>
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

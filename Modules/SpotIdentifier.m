@@ -22,6 +22,8 @@ function handles = AlgSpotIdentifier(handles)
 % (5) We would like to be able to show several images within the same
 % figure window and toggle between them, so that controls and
 % different wavelength images can be compared.
+%
+% See also ALGIMAGETILER.
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

@@ -7,6 +7,8 @@ function handles = AlgSubtractImages(handles)
 %
 % SPEED OPTIMIZATION: Note that increasing the blur radius increases
 % the processing time exponentially.
+% 
+% See also <nothing relevant>
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

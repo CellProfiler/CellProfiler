@@ -16,6 +16,8 @@ function handles = AlgIdentifyTertiarySubregion(handles)
 % the Measure Area Shape Intensity Texture module because calculations
 % of the perimeter, aspect ratio, solidity, etc. cannot be made for
 % noncontiguous objects.
+%
+% See also <nothing relevant>.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

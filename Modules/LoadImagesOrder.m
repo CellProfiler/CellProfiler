@@ -4,7 +4,7 @@ function handles = AlgLoadImagesOrder(handles)
 %
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
-
+%
 % If more than four images per set must be loaded, more than one Load
 % Images Order module can be run sequentially. Running more than one
 % of these modules also allows images to be retrieved from different
@@ -22,7 +22,7 @@ function handles = AlgLoadImagesOrder(handles)
 % You may have folders within the directory that is being searched;
 % they will be ignored by this module.
 %
-% See also AlgLoadImagesText.
+% See also ALGLOADIMAGESTEXT.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

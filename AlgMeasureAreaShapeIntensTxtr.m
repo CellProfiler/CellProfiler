@@ -15,6 +15,11 @@ function handles = AlgMeasureAreaShapeIntensTxtr(handles)
 % So, if some objects were discarded from the label matrix image, the
 % image should be converted to binary and re-made into a label matrix
 % image before feeding into this module.
+%
+% See also ALGMEASUREAREAOCCUPIED,
+% ALGMEASURECORRELATION,
+% ALGMEASUREINTENSITYTEXTURE,
+% ALGMEASURETOTALINTENSITY.
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

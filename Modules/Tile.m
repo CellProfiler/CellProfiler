@@ -21,6 +21,8 @@ function handles = AlgImageTiler(handles)
 %
 % The file name (automatic) and sample info (optional) can be
 % displayed on each image using buttons in the final figure window.
+%
+% See also ALGSPOTIDENTIFIER.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

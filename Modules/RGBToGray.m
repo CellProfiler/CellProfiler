@@ -4,6 +4,8 @@ function handles = AlgRGBToGray(handles)
 %
 % Takes an RGB image and converts it to grayscale.  Each color’s
 % contribution to the final image can be adjusted independently.
+%
+% See also ALGRGBSPLIT, ALGRGBMERGE.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

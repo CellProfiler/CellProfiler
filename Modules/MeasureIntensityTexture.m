@@ -22,6 +22,11 @@ function handles = AlgMeasureIntensityTexture(handles)
 % discarded from the label matrix image, the image should be converted
 % to binary and re-made into a label matrix image before feeding into
 % this module.
+%
+% See also ALGMEASUREAREAOCCUPIED,
+% ALGMEASUREAREASHAPEINTENSTXTR,
+% ALGMEASURECORRELATION,
+% ALGMEASURETOTALINTENSITY.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

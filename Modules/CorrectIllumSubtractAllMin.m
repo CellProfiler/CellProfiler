@@ -4,7 +4,7 @@ function handles = AlgCorrectIllumSubtractAllMin(handles)
 % 
 % This module corrects for uneven illumination of each image, based on
 % information from a set of images collected at the same time. 
-
+%
 % How it works:
 % First, the minimum pixel value is determined within each "block" of
 % each image, and the values are averaged together for all images.
@@ -26,6 +26,11 @@ function handles = AlgCorrectIllumSubtractAllMin(handles)
 % illumination images and not to correct every image in the directory,
 % simply run the module as usual and use the button on the Timer to
 % stop processing after the first image set.
+%
+% See also ALGCORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
+% ALGCORRECTILLUMDIVIDEALLMEAN,
+% ALGCORRECTILLUMDIVIDEEACHMIN_9, ALGCORRECTILLUMDIVIDEEACHMIN_10,
+% ALGCORRECTILLUMSUBTRACTEACHMIN.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -6,6 +6,11 @@ function handles = AlgMeasureCorrelation(handles)
 % pixel intensities. The correlation can be measured for the entire
 % images, or individual correlation measurements can be made for each
 % individual object, as defined by another module.
+%
+% See also ALGMEASUREAREAOCCUPIED,
+% ALGMEASUREAREASHAPEINTENSTXTR,
+% ALGMEASUREINTENSITYTEXTURE,
+% ALGMEASURETOTALINTENSITY.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

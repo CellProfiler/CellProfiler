@@ -37,6 +37,8 @@ function handles = AlgSubtractBackground(handles)
 % from every pixel in the image.  We are not calculating a different
 % value for each pixel position in the image because in a small image
 % set, that position may always be occupied by real staining.
+%
+% See also ALGAPPLYTHRESHOLDANDSHIFT.
 
 % The contents of this file are subject to the Mozilla Public License Version
 % 1.1 (the "License"); you may not use this file except in compliance with

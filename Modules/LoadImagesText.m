@@ -25,7 +25,7 @@ function handles = AlgLoadImagesText(handles)
 % but these folders must not contain the text you are searching for or
 % an error will result.
 %
-% See also AlgLoadImagesOrder.
+% See also ALGLOADIMAGESORDER.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

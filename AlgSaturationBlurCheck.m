@@ -16,6 +16,8 @@ function handles = AlgSaturationBlurCheck(handles)
 % LeftImage = Image(:,1:end-1)
 % MeanImageValue = mean(Image(:))
 % FocusScore = std(RightImage(:) - LeftImage(:)) / MeanImageValue
+%
+% See also <nothing relevant>
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

@@ -26,6 +26,8 @@ function handles = AlgAlignAndCrop(handles)
 % Note that as long as the input real images of nuclei and of cells
 % are the same dimensions, their output files will have the same
 % dimensions as well.
+%
+% See also ALGALIGN.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

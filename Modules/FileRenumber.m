@@ -7,6 +7,8 @@ function handles = AlgFileRenumber(handles)
 % example:
 % DrosDAPI_1.tif becomes DrosDAPI_001.tif
 % DrosDAPI_10.tif	becomes DrosDAPI_010.tif
+%
+% See also ALGFILERENAMER.
 
 % The contents of this file are subject to the Mozilla Public License Version 
 % 1.1 (the "License"); you may not use this file except in compliance with 

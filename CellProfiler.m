@@ -112,7 +112,20 @@ catch handles.Settings.PixelSize = get(handles.PixelSizeEditBox,'string');
 end
 
 try handles.Current.DefaultModuleDirectory = DefaultModuleDirectory;
-catch handles.Current.DefaultModuleDirectory = pwd; %Use which CellProfiler pathname & modules subdirectory.
+catch 
+    %%% If the Default Module Directory has not been specified or
+    %%% cannot be found, look at where the CellProfiler.m file is
+    %%% located and see whether there is a subdirectory within that
+    %%% directory, called "Modules".  If so, use that subdirectory as
+    %%% the default module directory.
+    try [CellProfilerPathname,FileName,ext,versn] = fileparts(which('CellProfiler'));
+    CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
+    handles.Current.DefaultModuleDirectory = CellProfilerModulePathname;
+    %%% Checks whether that pathname is valid.
+    cd(CellProfilerModulePathname)
+    cd(CurrentDirectory)
+    catch handles.Current.DefaultModuleDirectory = pwd;
+    end
 end
 
 try handles.Current.DefaultOutputDirectory = DefaultOutputDirectory;

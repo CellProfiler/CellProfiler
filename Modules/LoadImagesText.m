@@ -156,7 +156,7 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = Enter the path name to the folder where the images to be loaded are located. Leave a period (.) to retrieve images from the default image directory #LongBox#
 %defaultVAR12 = .
-TypedPathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 02
 % The variables have changed for this module.
@@ -180,9 +180,6 @@ ImageName{1} = ImageName1;
 ImageName{2} = ImageName2;
 ImageName{3} = ImageName3;
 ImageName{4} = ImageName4;
-if strcmp(TypedPathname, '.') == 1
-    TypedPathname = handles.Current.DefaultImageDirectory;
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
@@ -199,23 +196,6 @@ end
 % imwrite(uint8(BlurredImage), FileName, FileFormat);
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
-
-%{
-if strcmp(upper(AnalyzeSubDir), 'Y')
-    pathlist = genpath(TypedPathname);
-    charLocation = 1;
-    numDir = 1;
-    while true
-        pathgenname = strtok(pathlist(charLocation:end), pathsep);
-        TypePathDir{numDir} = pathgenname;
-        numDir = numDir + 1;
-        charLocation = charLocation + length(pathgenname) + 1;
-        if isempty(strfind(pathlist(charLocation:end), pathsep)) break, end;
-    end;
-else
-    TypePathDir{1} = TypedPathname;
-end
-%}
 
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
@@ -239,6 +219,10 @@ if SetBeingAnalyzed == 1
     if strcmp(TextToFind{1}, '/') == 1 || strcmp(ImageName{1}, '/') == 1
         error('Image processing was canceled because the first image slot in the Load Images Text module was left blank.')
     end
+    if strcmp(Pathname, '.') == 1
+        Pathname = handles.Current.DefaultImageDirectory;
+    end
+    SpecifiedPathname = Pathname;
     %%% For all 4 image slots, extracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
@@ -246,23 +230,22 @@ if SetBeingAnalyzed == 1
         if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
             %%% If a directory was typed in, retrieves the filenames
             %%% from the chosen directory.
-            if exist(TypedPathname) ~= 7
-                error('Image processing was canceled because the directory typed into the Load Images Text module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
+            if exist(SpecifiedPathname) ~= 7
+                error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             else
-                Pathname = TypedPathname;
-                FileList{n} = RetrieveImageFileNames(Pathname,char(TextToFind(n)),AnalyzeSubDir);
+                FileList{n} = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir);
                 %%% Checks whether any files are left.
                 if isempty(FileList{n})
-                    errordlg('There are no image files in the chosen directory')
+                    error(['Image processing was canceled because there are no image files with the text "', TextToFind{1}, '" in the chosen directory or subdirectories.'])
                 end
             end % Goes with: if exist
             %%% Saves the File Lists and Path Names to the handles structure.
             fieldname = ['FileList', ImageName{n}];
             handles.Pipeline.(fieldname) = FileList{n};
             fieldname = ['Pathname', ImageName{n}];
-            handles.Pipeline.(fieldname) = Pathname;
+            handles.Pipeline.(fieldname) = SpecifiedPathname;
             %% for reference in saved files
-            handles.Measurements.(fieldname) = Pathname;
+            handles.Measurements.(fieldname) = SpecifiedPathname;
             NumberOfFiles{n} = num2str(length(FileList{n})); %#ok We want to ignore MLint error checking for this line.
         end % Goes with: if isempty
     end  % Goes with: for i = 1:5
@@ -330,7 +313,9 @@ for n = 1:4
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             %%% Switches to the directory
-            cd(Pathname);
+            try cd(Pathname);
+            catch error(['The directory ' Pathname, ' does not exist.  Images could not be loaded from that location.']);
+            end
             %%% Handles a non-Matlab readable file format.
             if isfield(handles.Pipeline, 'DIBwidth') == 1
                 %%% Opens this non-Matlab readable file format.
@@ -523,7 +508,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function FileNames = RetrieveImageFileNames(Pathname, TextToFind, recurse)
-
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
@@ -535,8 +519,7 @@ LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 %%% Eliminates directories from the list of file names.
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 if isempty(FileNamesNoDir) == 1
-    errordlg('There are no files in the chosen directory')
-    handles.Current.FilenamesInImageDir = [];
+    FileNames = [];
 else
     %%% Makes a logical array that marks with a "1" all file names that start
     %%% with a period (hidden files):
@@ -551,28 +534,14 @@ else
     %%% so there is a check to make sure the class is appropriate.  When there
     %%% are very few files in the directory (I think just one), the class is
     %%% not cell for some reason.
-    DiscardLogical2Pre = regexpi(FileNamesNoDir, '.mat$','once');
-    if strcmp(class(DiscardLogical2Pre), 'cell') == 1
-        DiscardLogical2 = cellfun('prodofsize',DiscardLogical2Pre);
-    else DiscardLogical2 = [];
-    end
-    DiscardLogical3Pre = regexpi(FileNamesNoDir, '.m$','once');
-    if strcmp(class(DiscardLogical3Pre), 'cell') == 1
-        DiscardLogical3 = cellfun('prodofsize',DiscardLogical3Pre);
-    else DiscardLogical3 = [];
-    end
-    DiscardLogical4Pre = regexpi(FileNamesNoDir, '.m~$','once');
-    if strcmp(class(DiscardLogical4Pre), 'cell') == 1
-        DiscardLogical4 = cellfun('prodofsize',DiscardLogical4Pre);
-    else DiscardLogical4 = [];
-    end
-    DiscardLogical5Pre = regexpi(FileNamesNoDir, '.frk$','once');
-    if strcmp(class(DiscardLogical5Pre), 'cell') == 1
-        DiscardLogical5 = cellfun('prodofsize',DiscardLogical5Pre);
-    else DiscardLogical5 = [];
+    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|rtf|txt|csv)$', 'once');
+    if strcmp(class(DiscardsByExtension), 'cell')
+        DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
+    else
+        DiscardsByExtension = [];
     end
     %%% Combines all of the DiscardLogical arrays into one.
-    DiscardLogical = DiscardLogical1 | DiscardLogical2 | DiscardLogical3 | DiscardLogical4 | DiscardLogical5;
+    DiscardLogical = DiscardLogical1 | DiscardsByExtension;
     %%% Eliminates filenames to be discarded.
     if isempty(DiscardLogical) == 1
         FileNamesNotMatched = FileNamesNoDir;
@@ -590,24 +559,25 @@ else
             Count = Count + 1;
         end
     end
-    
-    if(strcmp(upper(recurse),'Y'))
-        DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
-        DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
-        DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
-        if (length(DirNames) > 0)
-            for i=1:length(DirNames),
-                MoreFileNames = RetrieveImageFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse);
-                for j = 1:length(MoreFileNames)
-                    MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
-                end
-                FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
+end
+if(strcmp(upper(recurse),'Y'))
+    DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
+    DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
+    DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
+    if (length(DirNames) > 0)
+        for i=1:length(DirNames),
+            MoreFileNames = RetrieveImageFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse);
+            for j = 1:length(MoreFileNames)
+                MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
             end
+            FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
         end
     end
-
 end
-
+%%% Checks whether any files are left.
+if isempty(FileNames) == 1
+    errordlg('There are no image files in the chosen directory, according to the Load Images Text module.')
+end
 
 
 % PROGRAM NOTES THAT ARE UNNECESSARY FOR THIS MODULE:

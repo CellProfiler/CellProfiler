@@ -167,10 +167,6 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%% Determines which set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 ImagesPerSet = str2double(ImagesPerSet);
-if strcmp(Pathname, '.') == 1
-    Pathname = handles.Current.DefaultImageDirectory;
-end
-SpecifiedPathname = Pathname;
 %%% If the user left boxes blank, sets the values to 0.
 if isempty(NumberInSet1) == 1
     NumberInSet1 = '0';
@@ -234,9 +230,13 @@ if SetBeingAnalyzed == 1
             handles.Pipeline.DIBbitdepth = str2double(Answers{3});
             handles.Pipeline.DIBchannels = str2double(Answers{4});
         else
-            error('The image file type entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+            error(['The image file type "', FileFormat , '" entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
         end
     end
+    if strcmp(Pathname, '.') == 1
+        Pathname = handles.Current.DefaultImageDirectory;
+    end
+    SpecifiedPathname = Pathname;
     %%% For all 4 image slots, extracts the file names.
     for n = 1:4
         %%% Checks whether the two variables required have been entered by
@@ -245,30 +245,32 @@ if SetBeingAnalyzed == 1
             %%% If a directory was typed in, retrieves the filenames
             %%% from the chosen directory.
             if exist(SpecifiedPathname) ~= 7
-                error('Image processing was canceled because the directory typed into the Load Images Order module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
+                error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             else
-                [handles, FileNames] = RetrieveImageFileNames(handles, SpecifiedPathname,AnalyzeSubDir);
-                if SetBeingAnalyzed == 1
+                FileNames = RetrieveImageFileNames(SpecifiedPathname,AnalyzeSubDir);
+                %%% Checks whether any files have been specified.
+                if isempty(FileNames) == 1
+                    error(['Image processing was canceled because there are no image files of type "', ImageName{n}, '" in the chosen directory or subdirectories, according to the Load Images Order module.'])
+                else
                     %%% Determines the number of image sets to be analyzed.
                     NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
                     handles.Current.NumberOfImageSets = NumberOfImageSets;
-                else NumberOfImageSets = handles.Current.NumberOfImageSets;
+                    %%% Loops through the names in the FileNames listing,
+                    %%% creating a new list of files.
+                    for i = 1:NumberOfImageSets
+                        Number = (i - 1) .* ImagesPerSet + NumberInSet{n};
+                        FileList(i) = FileNames(Number);
+                    end
+                    %%% Saves the File Lists and Path Names to the handles structure.
+                    fieldname = ['FileList', ImageName{n}];
+                    handles.Pipeline.(fieldname) = FileList;
+                    fieldname = ['Pathname', ImageName{n}];
+                    handles.Pipeline.(fieldname) = SpecifiedPathname;
+                    clear FileList % Prevents confusion when loading this value later, for each image set.
                 end
-                %%% Loops through the names in the FileNames listing,
-                %%% creating a new list of files.
-                for i = 1:NumberOfImageSets
-                    Number = (i - 1) .* ImagesPerSet + NumberInSet{n};
-                    FileList(i) = FileNames(Number);
-                end
-                %%% Saves the File Lists and Path Names to the handles structure.
-                fieldname = ['FileList', ImageName{n}];
-                handles.Pipeline.(fieldname) = FileList;
-                fieldname = ['Pathname', ImageName{n}];
-                handles.Pipeline.(fieldname) = SpecifiedPathname;
-                clear FileList
             end
-        end
-    end  % Goes with: for n = 1:4
+        end  % Goes with: for n = 1:4
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,10 +290,9 @@ for n = 1:4
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             %%% Switches to the directory
-            try
-                cd(Pathname);
+            try cd(Pathname);
             catch error(['The directory ' Pathname, ' does not exist.  Images could not be loaded from that location.']);
-            end;
+            end
             %%% Handles a non-Matlab readable file format.
             if isfield(handles.Pipeline, 'DIBwidth') == 1
                 %%% Opens this non-Matlab readable file format.
@@ -482,7 +483,7 @@ end
 %%% SUBFUNCTION TO RETRIEVE FILE NAMES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [handles, FileNames] = RetrieveImageFileNames(handles, Pathname,recurse)
+function FileNames = RetrieveImageFileNames(Pathname,recurse)
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
@@ -494,8 +495,7 @@ LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 %%% Eliminates directories from the list of file names.
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 if isempty(FileNamesNoDir) == 1
-    errordlg('There are no files in the chosen directory')
-    handles.Current.FilenamesInImageDir = [];
+    FileNames = [];
 else
     %%% Makes a logical array that marks with a "1" all file names that start
     %%% with a period (hidden files):
@@ -510,13 +510,12 @@ else
     %%% so there is a check to make sure the class is appropriate.  When there
     %%% are very few files in the directory (I think just one), the class is
     %%% not cell for some reason.
-    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt|csv)$', 'once');
+    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|rtf|txt|csv)$', 'once');
     if strcmp(class(DiscardsByExtension), 'cell')
         DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
     else
         DiscardsByExtension = [];
     end
-
     %%% Combines all of the DiscardLogical arrays into one.
     DiscardLogical = DiscardLogical1 | DiscardsByExtension;
     %%% Eliminates filenames to be discarded.
@@ -524,25 +523,23 @@ else
         FileNames = FileNamesNoDir;
     else FileNames = FileNamesNoDir(~DiscardLogical);
     end
-
-    if(strcmp(upper(recurse),'Y'))
-        DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
-        DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
-        DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
-        if (length(DirNames) > 0)
-            for i=1:length(DirNames),
-                [handles, MoreFileNames] = RetrieveImageFileNames(handles, fullfile(Pathname,char(DirNames(i))), recurse);
-                for j = 1:length(MoreFileNames)
-                    MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
-                end
+end
+if(strcmp(upper(recurse),'Y'))
+    DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
+    DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
+    DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
+    if (length(DirNames) > 0)
+        for i=1:length(DirNames),
+            MoreFileNames = RetrieveImageFileNames(fullfile(Pathname,char(DirNames(i))), recurse);
+            for j = 1:length(MoreFileNames)
+                MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
+            end
+            if isempty(FileNames) == 1
+                FileNames = MoreFileNames;
+            else
                 FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
             end
         end
-    end
-    
-    %%% Checks whether any files are left.
-    if isempty(FileNames) == 1
-        errordlg('There are no image files in the chosen directory')
     end
 end
 

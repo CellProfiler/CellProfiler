@@ -123,7 +123,7 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = tif
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the pathname to the directory where you want to save the images. Type a period (.) to save images in the default output directory or type I to save images in the default image directory #LongBox#
+%textVAR05 = Enter the pathname to the directory where you want to save the images. Type a period (.) to save images in the default output directory, or type I to save images in the default image directory, or type S to save images in the same Subdirectory where the original files are located. #LongBox#
 %defaultVAR05 = .
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -131,9 +131,13 @@ FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 8
 BitDepth = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Warning! It is possible to overwrite existing files using this module! 
+%textVAR07 = Do you want to always check whether you will be overwriting a file when saving images?
+%defaultVAR07 = Y
+CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 03
+%textVAR08 = Warning! It is possible to overwrite existing files using this module! 
+
+%%%VariableRevisionNumber = 04
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,14 +147,16 @@ drawnow
 
 if strcmp(FileDirectory,'.') == 1
     FileDirectory = handles.Current.DefaultOutputDirectory;
+    %%% Makes sure that the File Directory specified by the user exists.
+    if isdir(FileDirectory) ~= 1
+        error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+    end
 elseif strcmpi(FileDirectory,'I') == 1
     FileDirectory = handles.Current.DefaultImageDirectory;
-else
-end
-%%% Makes sure that the File Directory specified by the user exists.
-if isdir(FileDirectory) == 1
-else
-    error(['Image processing was canceled because the specified directory in the Save Images module does not exist.']);
+    %%% Makes sure that the File Directory specified by the user exists.
+    if isdir(FileDirectory) ~= 1
+        error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+    end
 end
 
 %%% Retrieves the image you want to analyze and assigns it to a variable,
@@ -174,6 +180,13 @@ if isempty(IsFormat) == 1
     error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
 end
 
+%%% Checks whether the appendage is going to result in a name with
+%%% spaces.
+Spaces = isspace(Appendage);
+if any(Spaces) == 1
+    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the image name in the Save Images module.')
+end
+
 %%% Determines the file name.
 if strcmp(upper(ImageFileName), 'N') == 1
     %%% Sets the filename to be sequential numbers.
@@ -187,34 +200,33 @@ else
     %%% Determine the filename of the image to be analyzed.
     fieldname = ['Filename', ImageFileName];
     FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-    %%% Find and remove the file format extension within the original file
-    %%% name, but only if it is at the end. Strip the original file format extension
-    %%% off of the file name, if it is present, otherwise, leave the original
-    %%% name intact.
-    CharFileName = char(FileName);
-    PotentialDot = CharFileName(end-3:end-3);
-    if strcmp(PotentialDot,'.') == 1
-        BareFileName = CharFileName(1:end-4);
-    else BareFileName = CharFileName;
+    %%% If subdirectories are being analyzed, the filename will
+    %%% include subdirectory pathnames.
+    [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
+    if strcmpi(FileDirectory,'S') == 1
+        FileDirectory = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
+        %%% Makes sure that the File Directory specified by the user exists.
+        if isdir(FileDirectory) ~= 1
+            error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+        end
     end
 end
+
 %%% Assembles the new image name.
 if strcmp(upper(Appendage), 'N') == 1
     Appendage = [];
 end
 NewImageName = [BareFileName,Appendage,'.',FileFormat];
-%%% Checks whether the appendage is going to result in a name with
-%%% spaces.
-Spaces = isspace(Appendage);
-if any(Spaces) == 1
-    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the image name in the Save Images module.')
-end
-%%% Checks whether the new image name is going to overwrite the
-%%% original file.
 NewFileAndPathName = fullfile(FileDirectory, NewImageName);
-OldFileAndPathName = fullfile(FileDirectory, CharFileName);
-if strcmpi(OldFileAndPathName, NewFileAndPathName) == 1
-    error('Image processing was canceled because the specifications in the Save Images module will result in the original image being overwritten.')
+if strcmpi(CheckOverwrite,'Y') == 1
+    %%% Checks whether the new image name is going to overwrite the
+    %%% original file.
+    if exist(NewFileAndPathName) == 2
+        Answer = questdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+        if strcmp(Answer,'Cancel') == 1
+            error('Image processing was canceled')
+        end
+    end
 end
 
 % PROGRAMMING NOTE
@@ -238,7 +250,8 @@ fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% The figure window is closed since there is nothing to display.
 if handles.Current.SetBeingAnalyzed == 1;
-    delete(ThisModuleFigureNumber)
+    try close(ThisModuleFigureNumber)
+    end
 end
 drawnow
 

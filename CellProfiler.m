@@ -1592,28 +1592,49 @@ LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 %%% Eliminates directories from the list of file names.
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 
-if isempty(FileNamesNoDir)
+if isempty(FileNamesNoDir) == 1
     handles.Current.FilenamesInImageDir = [];
     %%% Test whether this is during CellProfiler launching, in which case
     %%% the following error is unnecessary.
     if strcmp(get(handles.FilenamesListBox,'String'),'Listbox') ~= 1
-        errordlg('There are no files in the chosen directory');
+        %%% Obtains the screen size and determines where the wait bar
+        %%% will be displayed.
+        ScreenSize = get(0,'ScreenSize');
+        ScreenHeight = ScreenSize(4);
+        PotentialBottom = [0, (ScreenHeight-720)];
+        BottomOfMsgBox = max(PotentialBottom);
+        PositionMsgBox = [500 BottomOfMsgBox 350 100];
+        ErrorDlgHandle = errordlg('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
+        set(ErrorDlgHandle, 'Position', PositionMsgBox)
+        drawnow
     end
 else
-    DiscardsHidden = strncmp(FileNamesNoDir,'.',1);
-    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt|csv)$', 'once');
+    %%% Makes a logical array that marks with a "1" all file names that start
+    %%% with a period (hidden files):
+    DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
+    %%% Makes logical arrays that mark with a "1" all file names that have
+    %%% particular suffixes (mat, m, m~, and frk). The dollar sign indicates
+    %%% that the pattern must be at the end of the string in order to count as
+    %%% matching.  The first line of each set finds the suffix and marks its
+    %%% location in a cell array with the index of where that suffix begins;
+    %%% the third line converts this cell array of numbers into a logical
+    %%% array of 1's and 0's.   cellfun only works on arrays of class 'cell',
+    %%% so there is a check to make sure the class is appropriate.  When there
+    %%% are very few files in the directory (I think just one), the class is
+    %%% not cell for some reason.
+    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|rtf|txt|csv)$', 'once');
     if strcmp(class(DiscardsByExtension), 'cell')
         DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
     else
         DiscardsByExtension = [];
     end
     %%% Combines all of the DiscardLogical arrays into one.
-    Discards = DiscardsHidden | DiscardsByExtension;
+    DiscardLogical = DiscardLogical1 | DiscardsByExtension;
     %%% Eliminates filenames to be discarded.
-    if isempty(Discards)
+    if isempty(DiscardLogical)
         FileNames = FileNamesNoDir;
     else
-        FileNames = FileNamesNoDir(~Discards);
+        FileNames = FileNamesNoDir(~DiscardLogical);
     end
     %%% Checks whether any files are left.
     if isempty(FileNames)
@@ -1621,7 +1642,16 @@ else
         %%% Test whether this is during CellProfiler launching, in which case
         %%% the following error is unnecessary.
         if strcmp(get(handles.FilenamesListBox,'String'),'Listbox') ~= 1
-            errordlg('There are no files in the chosen directory');
+            %%% Obtains the screen size and determines where the wait bar
+            %%% will be displayed.
+            ScreenSize = get(0,'ScreenSize');
+            ScreenHeight = ScreenSize(4);
+            PotentialBottom = [0, (ScreenHeight-720)];
+            BottomOfMsgBox = max(PotentialBottom);
+            PositionMsgBox = [500 BottomOfMsgBox 350 100];
+            ErrorDlgHandle = errordlg('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
+            set(ErrorDlgHandle, 'Position', PositionMsgBox)
+            drawnow
         end
     else
         %%% Stores the final list of file names in the handles structure

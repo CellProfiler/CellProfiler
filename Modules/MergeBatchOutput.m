@@ -14,8 +14,9 @@ function handles = MergeBatchOutput(handles)
 % is a batch output file.  When running batches from different
 % analysis runs, make sure they do not write to the same directory.
 %
-% The combined output is written to the default output file as
-% given to CellProfiler.  
+% The combined output is written to the default output file as given
+% to CellProfiler.  (The output file's handles.Pipeline is a snapshot
+% of the pipeline after the first image set completes.)
 %
 % It does not make sense to run this module in conjunction with other
 % modules.  It should be the only module in the pipeline.

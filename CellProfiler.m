@@ -12,12 +12,7 @@ function varargout = CellProfiler(varargin)
 %
 %  Typing CellProfiler at the command line launches the program.
 %
-%  To run an example image analysis, browse to choose the
-%  ExampleFlyImages folder (downloaded from the CellProfiler website,
-%  in a zipped file separate from the source code and manual), type in
-%  the name of an output file (e.g. 'Temp1') in the appropriate box in
-%  CellProfiler, click 'Load settings', choose 'ExampleFlySettings'
-%  and click 'Analyze images'. An analysis run should begin.
+%
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -27,6 +27,18 @@ helpdlg(help('CPInstallGuide'))
 % creates a file called CellProfilerPreferences.mat in the root directory
 % of Matlab and will make it easier to use CellProfiler.
 % 
+%    To run an example image analysis (very quick & useful!), download
+%    the folder ExampleFlyImages from the CellProfiler website (it is
+%    in a zipped file separate from the source code and manual). Then,
+%    in CellProfiler, click 'Load' pipeline of modules, choose the
+%    'ExampleFlySettings.mat' file from within the ExampleFlyImages
+%    folder and click OK.  Next browse to choose the ExampleFlyImages
+%    folder as the default images directory *and* as the default
+%    output directory. Type in the name of an output file (e.g.
+%    'Temp1') in the appropriate box in CellProfiler, then click
+%    'Analyze images'. An analysis run should begin, producing the
+%    output file Temp1OUT.mat, which you can explore using the Data
+%    Tools.
 % 
 % 
 % CellProfiler was designed for Release 14 of Matlab, although it is

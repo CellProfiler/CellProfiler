@@ -1,18 +1,54 @@
-function handles = AlgMeasureAreaOccupied4(handles)
+function handles = AlgMeasureAreaOccupied(handles)
 
-%%% Reads the current algorithm number, since this is needed to find 
-%%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+% Help for the Measure Area Occupied module: 
+% 
+% This module simply applies a threshold to the incoming image so that
+% any pixels brighter than the specified value are assigned the value 1
+% (white) and the remaining pixels are assigned the value zero (black),
+% producing a binary image.  The number of white pixels are then
+% counted.  This provides a measurement of the area occupied by
+% fluorescence.  The threshold is calculated automatically and then
+% adjusted by a user-specified factor.
+
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the Measure Area Occupied module.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
 
+%%% Reads the current algorithm number, since this is needed to find 
+%%% the variable values that the user entered.
+CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+
 %textVAR01 = What did you call the images you want to process? 
 %defaultVAR01 = OrigGreen
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+
 %textVAR02 = What do you want to call the objects measured by this algorithm?
 %defaultVAR02 = Cells
 ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
@@ -20,31 +56,20 @@ ObjectName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
 %textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
 %defaultVAR04 = 0
 Threshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR05 = 0.75
 ThresholdAdjustmentFactor = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
 
-%textVAR07 = To save the adjusted image, enter text to append to the image name 
-%defaultVAR07 = N
-SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,7});
-%textVAR08 =  Otherwise, leave as "N". To save or display other images, press Help button
-%textVAR09 = In what file format do you want to save images? Do not include a period
-%defaultVAR09 = tif
-FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,9});
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2num(handles.Vpixelsize{1});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Checks whether the file format the user entered is readable by Matlab.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    error('The image file type entered in the Area Occupied module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
-end
-%%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2num(handles.Vpixelsize{1});
-%%% Read (open) the image you want to analyze and assign it to a variable,
+%%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImageToBeAnalyzed".
 fieldname = ['dOT', ImageName];
 %%% Checks whether image has been loaded.
@@ -58,44 +83,11 @@ if isfield(handles, fieldname) == 0
     error(['Image processing was canceled because the Area Occupied module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImageToBeAnalyzed = handles.(fieldname);
-        % figure, imshow(OrigImageToBeAnalyzed), title('OrigImageToBeAnalyzed')
-%%% Update the handles structure.
-%%% Removed for parallel: guidata(gcbo, handles);
-
-%%% Check whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces.
-%%% Determine the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
-%%% Find and remove the file format extension within the original file
-%%% name, but only if it is at the end. Strip the original file format extension 
-%%% off of the file name, if it is present, otherwise, leave the original
-%%% name intact.
-CharFileName = char(FileName);
-PotentialDot = CharFileName(end-3:end-3);
-if strcmp(PotentialDot,'.') == 1
-    BareFileName = CharFileName(1:end-4);
-else BareFileName = CharFileName;
-end
-%%% Assemble the new image name.
-NewImageName = [BareFileName,SaveImage,'.',FileFormat];
-%%% Check whether the new image name is going to result in a name with
-%%% spaces.
-A = isspace(SaveImage);
-if any(A) == 1
-    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the object outlines image name in the CellSegment17 module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
-end
-%%% Check whether the new image name is going to result in overwriting the
-%%% original file.
-B = strcmp(upper(CharFileName), upper(NewImageName));
-if B == 1
-    error('Image processing was canceled because you have not entered text to append to the object outlines image name in the CellSegment17 module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
-end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
@@ -103,10 +95,8 @@ if Threshold == 0
     Threshold = graythresh(OrigImageToBeAnalyzed);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
-%%% Threshold the original image.
+%%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
-         % figure, imshow(ThresholdedOrigImage, []), title('ThresholdedOrigImage')
-          % imwrite(ThresholdedOrigImage, [NewImageName,'TOI','.',FileFormat], FileFormat);
 AreaOccupiedPixels = sum(ThresholdedOrigImage(:));
 AreaOccupied = AreaOccupiedPixels*PixelSize*PixelSize;
 
@@ -115,18 +105,16 @@ AreaOccupied = AreaOccupiedPixels*PixelSize*PixelSize;
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Note: Everything between the "if" and "end" is not carried out if the 
-%%% user has closed
-%%% the figure window, so do not do any important calculations here.
-%%% Otherwise an error message will be produced if the user has closed the
-%%% window but you have attempted to access data that was supposed to be
-%%% produced by this part of the code.
-
 %%% Determines the figure number to display in.
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
-%%% Check whether that figure is open. This checks all the figure handles
+%%% Checks whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
+%%% Note: Everything between the "if" and "end" is not carried out if the
+%%% user has closed the figure window, so do not do any important
+%%% calculations here. Otherwise an error message will be produced if the
+%%% user has closed the window but you have attempted to access data that
+%%% was supposed to be produced by this part of the code.
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows
@@ -165,68 +153,15 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     set(displaytexthandle,'string',displaytext)
     set(ThisAlgFigureNumber,'toolbar','figure')
    end
-%%% Executes pending figure-related commands so that the results are
-%%% displayed.
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 fieldname = ['dMTAreaOccupied', ObjectName];
 handles.(fieldname)(handles.setbeinganalyzed) = {AreaOccupied};
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% Determine whether the user wanted to save the adjusted image
-%%% by comparing their entry "SaveImage" with "N" (after
-%%% converting SaveImage to uppercase).
-if strcmp(upper(SaveImage),'N') ~= 1
-%%% Save the image to the hard drive.    
-imwrite(ThresholdedOrigImage, NewImageName, FileFormat);
-end
-
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
-
-%%%%% Help for the AreaOccupied module: 
-%%%%% .
-%%%%% Note: Images saved using the boxes in the main CellProfiler window
-%%%%% will be saved in the default directory specified in STEP 1.
-%%%%% .
-%%%%% This module simply applies a threshold to the incoming image so that
-%%%%% any pixels brighter than the specified value are assigned the value 1
-%%%%% (white) and the remaining pixels are assigned the value zero (black),
-%%%%% producing a binary image.  The number of white pixels are then
-%%%%% counted.  This provides a measurement of the area occupied by
-%%%%% fluorescence.  The threshold is calculated automatically and then
-%%%%% adjusted by a user-specified factor.
-
-
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the ______________________.
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$
+%%% Saves the Threshold value to the handles structure.
+fieldname = ['dMTAreaOccupiedThreshold', ObjectName];
+handles.(fieldname)(handles.setbeinganalyzed) = {Threshold};

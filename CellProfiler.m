@@ -80,7 +80,7 @@ handles.output = hObject;
 % The Number of Algorithms/Variables hardcoded in
 handles.numAlgorithms = 0;
 handles.numVariables = zeros(1,99);
-handles.MaxAlgorithms = 30;
+handles.MaxAlgorithms = 99;
 handles.MaxVariables = 11;
 handles.AlgorithmHighlighted = '01';
 handles.FigureDisplayString = cell(1,99);
@@ -1006,8 +1006,6 @@ for i=1:handles.numVariables(str2num(AlgorithmNumber));
         handles = rmfield(handles, ConstructedName);
     end;
 end;
-
-
 
 %%% 6. Update the number of algorithms loaded
 handles.numAlgorithms = 0;

@@ -1641,16 +1641,23 @@ elseif strcmp(SelectedTool, NoneLoadedText) == 1
 else
     try eval(['handles = ', SelectedTool,'(handles);'])
     catch 
-        %%% TODO: Would like to display the last error for debugging
-        %%% purposes.  Also, we should implement something where if
+        %%% TODO: We should implement something where if
         %%% the last error was actually just canceling by the user
-        %%% within the function, no error box is opened.
+        %%% within the function, no error box is opened. Maybe this
+        %%% already works automatically; not sure.
         errordlg(['An error occurred while attempting to run the tool you selected.  The error was "' lasterr '"'])
     end
 end
 %%% Resets the display to the first position (so "Data tools" is
 %%% displayed).
+ %%% TODO: Sometimes there is an error here - not sure why.
+%%% handles.DataToolsPopUpMenu returns a numerical handle, but neither
+%% the set line below, nor this line:
+%%% get(handles.DataToolsPopUpMenu,'color')
+%%% works. Both yield ? Invalid handle object errors.
+try
 set(handles.(PopUpMenuHandle),'Value',1)
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% CLOSE WINDOWS BUTTON %%%

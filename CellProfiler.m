@@ -1952,7 +1952,8 @@ else
 
                 while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
                     setbeinganalyzed = handles.Current.SetBeingAnalyzed;
-
+                        a=clock;
+                        begin_set=a(5:6);
                     for SlotNumber = 1:handles.Current.NumberOfModules,
                         %%% Variables for timer, time per module.
                         a=clock;
@@ -2057,7 +2058,7 @@ else
                     time_elapsed = num2str(round(toc*10)/10);
                     %% Add variable to hold time elapsed for each image
                     %% set. 
-                    set_time_elapsed(handles.Current.SetBeingAnalyzed) = str2num(time_elapsed);
+                    %set_time_elapsed(handles.Current.SetBeingAnalyzed) = str2num(time_elapsed);
                     timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
                     number_analyzed = ['Number of image sets analyzed = ',...
                             num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
@@ -2092,6 +2093,12 @@ else
                     if strncmp(CancelWaiting,'Cancel',6) == 1
                         break
                     end
+                    %%% Record time elapsed for each image set.
+                        a=clock;
+                        finish_set=a(5:6);
+                        TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
+                        set_time_elapsed(handles.Current.SetBeingAnalyzed) = TotalSetTime;
+                        
                 end %%% This "end" goes with the "while" loop (going through the image sets).
                 
                 %%% After all the image sets have been processed, the following checks to
@@ -2183,21 +2190,17 @@ else
                 set(timer_handle,'CloseRequestFcn','closereq')
                 
                 %%% Show seperate calcualtion times for each image set.
-                
+                try
+                set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
                 for i=1:handles.Current.NumberOfImageSets;
-                    if i==1
-                        show_time_elapsed_text = ['Time elapsed for image set ' num2str(i) ' = ' num2str(set_time_elapsed(i)) '          .'];                    
-                    else
-                        calc_time_elapsed= set_time_elapsed(i)-set_time_elapsed(i-1);
-                        show_time_elapsed_text = ['Time elapsed for image set ' num2str(i) ' = ' num2str(calc_time_elapsed) '          .'];
-                    end
-                    show_time_elapsed(i)={show_time_elapsed_text};
+                    show_time_elapsed_text = ['Time elapsed for image set ' num2str(i) ' = ' num2str(set_time_elapsed(i)) '            .'];
+                    show_time_elapsed(i) = {show_time_elapsed_text};
                 end
-                show_time_elapsed=char(show_time_elapsed);
-                module_times=char(handles.Current.ModuleTime);
-                split_time_elapsed=strvcat(show_time_elapsed, module_times);
-                handles.Figures.timebox=msgbox(split_time_elapsed);
-                
+                show_time_elapsed = char(show_time_elapsed);
+                module_times = char(handles.Current.ModuleTime);
+                split_time_elapsed = strvcat(show_time_elapsed, module_times);
+                handles.Figures.timebox = msgbox(split_time_elapsed);
+                end
 
                 %%% Re-enable/disable appropriate buttons.
                 set(handles.PipelineOfModulesText,'visible','on')

@@ -171,8 +171,12 @@ LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 
 if isempty(FileNamesNoDir)
-    errordlg('There are no files in the chosen directory')
     handles.Vfilenames = [];
+    %%% Test whether this is during CellProfiler launching, in which case
+    %%% the following error is unnecessary.
+    if strcmp(get(handles.ListBox,'String'),'Listbox') ~= 1
+    errordlg('There are no files in the chosen directory')
+    end
 else
 
 DiscardsHidden = strncmp(FileNamesNoDir,'.',1);
@@ -193,8 +197,12 @@ else
 end
 %%% Checks whether any files are left.
 if isempty(FileNames)
-    errordlg('There are no image files in the chosen directory')
     handles.Vfilenames = [];
+    %%% Test whether this is during CellProfiler launching, in which case
+    %%% the following error is unnecessary.
+    if strcmp(get(handles.ListBox,'String'),'Listbox') ~= 1
+    errordlg('There are no files in the chosen directory')
+    end
 else
 %%% Stores the final list of file names in the handles structure
 handles.Vfilenames = FileNames;

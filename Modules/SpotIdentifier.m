@@ -3,7 +3,9 @@ function handles = SpotIdentifier(handles)
 % Help for the Spot Identifier module:
 % Category: Other
 % 
-% Sorry, this module has not yet been documented.  
+% Sorry, this module has not yet been documented. Its purpose is to
+% label spots of cell microarrays with gene information or sample
+% numbers so that interesting spots can be easily identified.
 %
 % It works for our basic needs right now, but improvements/fixes need
 % to be made:

@@ -254,7 +254,7 @@ if strcmpi(SmoothingMethod,'P') == 1
 else try ArtifactWidth = str2num(SmoothingMethod);
         ArtifactRadius = 0.5*ArtifactWidth;
         StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
- %       MsgBoxHandle = msgbox('Now calculating the illumination function, which may take a long time.');
+ %       MsgBoxHandle = CPmsgbox('Now calculating the illumination function, which may take a long time.');
         SmoothedImage1 = ordfilt2(OrigImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
         SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
  %       MsgBox = 'Calculations for the illumination function are complete.';

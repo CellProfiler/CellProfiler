@@ -82,11 +82,11 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % %%% THIS WAS A VERY SPECIALIZED VERSION OUR LAB USED TO NORMALIZE OUR
 % %%% DATA>>>>
 % function DataLayoutButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-% h = msgbox('Copy your data to the clipboard then press OK');
+% h = CPmsgbox('Copy your data to the clipboard then press OK');
 % waitfor(h)
 % 
 % uiimport('-pastespecial');
-% h = msgbox('After importing your data and pressing "Finish", click OK');
+% h = CPmsgbox('After importing your data and pressing "Finish", click OK');
 % waitfor(h)
 % if exist('clipboarddata','var') == 0
 %     return
@@ -192,14 +192,14 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % CorrFactors = reshape(IlluminationImage2,TotalSamplesToBeGridded,1);
 % CorrectedData = OrigData./CorrFactors %#ok We want to ignore MLint error checking for this line.
 % 
-% msgbox('The original data and the corrected data are now displayed in the Matlab window. You can cut and paste from there.')
+% CPmsgbox('The original data and the corrected data are now displayed in the Matlab window. You can cut and paste from there.')
 % 
 % % %%% Exports the results to the clipboard.
 % % clipboard('copy',CorrFactors);
-% % h = msgbox('The correction factors are now on the clipboard. Paste them where desired and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
+% % h = CPmsgbox('The correction factors are now on the clipboard. Paste them where desired and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
 % % waitfor(h)
 % % clipboard('copy',OrigData);
-% % h = msgbox('The original data used to generate those normalization factors is now on the clipboard. Paste them where desired (if desired) and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
+% % h = CPmsgbox('The original data used to generate those normalization factors is now on the clipboard. Paste them where desired (if desired) and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
 % % waitfor(h)
 
 % Help for NORMALIZATION:

@@ -231,7 +231,7 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
     AngleToRotateRadians = asin(VertLeg/Hypotenuse);
     AngleToRotateDegrees = AngleToRotateRadians*180/pi;
-    PatienceHandle = msgbox('Please be patient; Image rotation in progress');
+    PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
     figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image;
@@ -258,7 +258,7 @@ elseif strncmp(RotateMethod, 'C',1) == 1
     Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
     AngleToRotateRadians = asin(VertLeg/Hypotenuse);
     AngleToRotateDegrees = AngleToRotateRadians*180/pi;
-    PatienceHandle = msgbox('Please be patient; Image rotation in progress');
+    PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
     figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image
@@ -411,7 +411,7 @@ HideGridButtonFunction = 'Handles = findobj(''type'',''line''); set(Handles,''vi
 uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [60 6 45 20], ...
     'Callback', HideGridButtonFunction, 'parent',gcf);
-ChangeGridButtonFunction = 'Handles = findobj(''type'',''line''); try, propedit(Handles), catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; clear Handles';
+ChangeGridButtonFunction = 'Handles = findobj(''type'',''line''); try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; clear Handles';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [110 6 45 20], ...
     'Callback', ChangeGridButtonFunction, 'parent',gcf);
@@ -423,7 +423,7 @@ HideCoordinatesButtonFunction = 'Handles = findobj(''UserData'',''PositionListHa
 uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [220 6 45 20], ...
     'Callback', HideCoordinatesButtonFunction, 'parent',gcf);
-ChangeCoordinatesButtonFunction = 'Handles = findobj(''UserData'',''PositionListHandles''); try, propedit(Handles), catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; clear Handles';
+ChangeCoordinatesButtonFunction = 'Handles = findobj(''UserData'',''PositionListHandles''); try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; clear Handles';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [270 6 45 20], ...
     'Callback', ChangeCoordinatesButtonFunction, 'parent',gcf);
@@ -436,12 +436,12 @@ HideSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotId
 uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [380 6 45 20], ...
     'Callback', HideSpotIdentifyingInfoButtonFunction, 'parent',gcf);
-ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
+ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [430 6 45 20], ...
     'Callback', ChangeSpotIdentifyingInfoButtonFunction, 'parent',gcf);
 
-ChangeColormapButtonFunction = 'ImageHandle = findobj(gca, ''type'',''image''); if strcmp(get(ImageHandle,''UserData''),''Color'') == 1, msgbox(''This image was loaded as a color image, so the colormap cannot be changed. You can use an RGB Split or RGB to Grayscale module to change the format of the image prior to running the Spot Identifier module.''), else propedit(ImageHandle), end';
+ChangeColormapButtonFunction = 'ImageHandle = findobj(gca, ''type'',''image''); if strcmp(get(ImageHandle,''UserData''),''Color'') == 1, CPmsgbox(''This image was loaded as a color image, so the colormap cannot be changed. You can use an RGB Split or RGB to Grayscale module to change the format of the image prior to running the Spot Identifier module.''), else propedit(ImageHandle), end';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [490 6 45 20], ...
     'Callback', ChangeColormapButtonFunction, 'parent',gcf);

@@ -88,13 +88,13 @@ else extension = fname(end-2:end);
                 %%% Saves the new sample info to the handles
                 %%% structure.
                 handles = Newhandles;
-                h = msgbox(['The sample info is successfully stored in memory and will be added to future output files']);
+                h = CPmsgbox(['The sample info is successfully stored in memory and will be added to future output files']);
                 waitfor(h)
             else
                 %%% For existing output files:
                 %%% Saves the output file with this new sample info.
                 save([pOutName,fOutName],'-struct','OutputFile');
-                h = msgbox(['The sample info was successfully added to output file']);
+                h = CPmsgbox(['The sample info was successfully added to output file']);
                 waitfor(h)
             end
         catch lasterr
@@ -124,13 +124,13 @@ else extension = fname(end-2:end);
                 %%% Saves the new sample info to the handles
                 %%% structure.
                 handles = Newhandles;
-                h = msgbox(['The sample info will be added to future output files']);
+                h = CPmsgbox(['The sample info will be added to future output files']);
                 waitfor(h)
             else
                 %%% For existing output files:
                 %%% Saves the output file with this new sample info.
                 save([pOutName,fOutName],'-struct','OutputFile');
-                h = msgbox(['The sample info was successfully added to output file']);
+                h = CPmsgbox(['The sample info was successfully added to output file']);
                 waitfor(h)
             end
         catch lasterr

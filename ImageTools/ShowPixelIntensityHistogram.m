@@ -20,7 +20,7 @@ function handles = ShowPixelIntensityHistogram(handles)
 %
 % $Revision$
 
-MsgboxHandle = msgbox('Click on an image to generate a histogram of its pixel intensities. This window will be closed automatically - do not close it or click OK.');
+MsgboxHandle = CPmsgbox('Click on an image to generate a histogram of its pixel intensities. This window will be closed automatically - do not close it or click OK.');
 %%% TODO: Should allow canceling.
 waitforbuttonpress
 ClickedImage = getimage(gca);

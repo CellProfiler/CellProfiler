@@ -279,7 +279,7 @@ if SetBeingAnalyzed == 1
         end
         PreErrorText = cat(2, CharImageName, SpacesArray);
         ErrorText = cat(2, PreErrorText, CharNumberOfFiles);
-        msgbox(ErrorText)
+        CPmsgbox(ErrorText)
         error('In the Load Images Text module, the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.')
     end
     NumberOfImageSets = str2double(UniqueNumbers{1});

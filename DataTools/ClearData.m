@@ -52,7 +52,7 @@ elseif strcmp(ExistingOrMemory, 'Memory') == 1
             handles.Measurements = rmfield(handles.Measurements,SelectedFieldName);
             %%% Handles structure is updated
             guidata(gcbo,handles)
-            h = msgbox(['The sample info was successfully deleted from memory']);
+            h = CPmsgbox(['The sample info was successfully deleted from memory']);
         end
         %%% This end goes with the error-detecting - "Do you have any sample info
         %%% loaded?"
@@ -90,7 +90,7 @@ elseif strcmp(ExistingOrMemory, 'Existing') == 1
             OutputFile.handles.Measurements = rmfield(OutputFile.handles.Measurements,SelectedFieldName);
             %%% Saves the output file with this new sample info.
             save([pOutName,fOutName],'-struct','OutputFile');
-            h = msgbox(['The sample info was successfully deleted from the output file']);
+            h = CPmsgbox(['The sample info was successfully deleted from the output file']);
         end
         %%% This end goes with the error-detecting - "Do you have any sample info
         %%% loaded?"

@@ -24,7 +24,7 @@ function handles = SaveImageAs(handles)
 %
 % $Revision$
 
-MsgboxHandle = msgbox('Click twice on the image you wish to save. This window will be closed automatically - do not close it or click OK.');
+MsgboxHandle = CPmsgbox('Click twice on the image you wish to save. This window will be closed automatically - do not close it or click OK.');
 %%% TODO: Should allow canceling.
 waitforbuttonpress
 ClickedImage = getimage(gca);
@@ -46,10 +46,10 @@ if isempty(Answers) ~= 1
         Answer = questdlg(['A file with the name ', CompleteFileName, ' already exists at ', handles.Current.DefaultOutputDirectory,'. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
         if strcmp(Answer,'Yes') == 1;
             imwrite(ClickedImage, ProposedFileAndPathname, Extension)
-            msgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
+            CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
         end
     else
         imwrite(ClickedImage, ProposedFileAndPathname, Extension)
-        msgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
+        CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
     end
 end

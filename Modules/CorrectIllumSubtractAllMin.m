@@ -233,7 +233,7 @@ if handles.Current.SetBeingAnalyzed == 1
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
             PositionMsgBox = [500 BottomOfMsgBox 350 100];
-            h = msgbox('Preliminary calculations are under way for the Correct Illumination All Subtract module.  Subsequent image sets will be processed more quickly than the first image set.');
+            h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination All Subtract module.  Subsequent image sets will be processed more quickly than the first image set.');
             set(h, 'Position', PositionMsgBox)
             drawnow
             %%% Retrieves the path where the images are stored from the handles

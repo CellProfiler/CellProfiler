@@ -1520,7 +1520,7 @@ try Current = handles.Current, catch Current = 'Does not exist', end %#ok We wan
 try Settings = handles.Settings, catch Settings = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
 try Pipeline = handles.Pipeline, catch Pipeline = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
 try Measurements = handles.Measurements, catch Measurements = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-msgbox('The handles structure has been printed out at the command line of Matlab.')
+CPmsgbox('The handles structure has been printed out at the command line of Matlab.')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% BROWSE DEFAULT IMAGE DIRECTORY BUTTON %%%
@@ -1585,7 +1585,7 @@ if exist(pathname,'dir') ~= 0
         PotentialBottom = [0, (ScreenHeight-720)];
         BottomOfMsgBox = max(PotentialBottom);
         PositionMsgBox = [500 BottomOfMsgBox 350 100];
-        ErrorDlgHandle = msgbox('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
+        ErrorDlgHandle = CPmsgbox('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
         set(ErrorDlgHandle, 'Position', PositionMsgBox)
         drawnow
     end
@@ -1889,7 +1889,7 @@ if ~isempty(UserEntry)
             outputnumber = max(numbers) + 1;
         end
         set(handles.OutputFileNameEditBox,'string',sprintf('%s__%d.mat',UserEntry,outputnumber))
-        Handle = msgbox('The output file already exists. A new file name has been generated.','Output file name has changed');
+        Handle = CPmsgbox('The output file already exists. A new file name has been generated.','Output file name has changed');
     else
         set(handles.OutputFileNameEditBox,'string',[UserEntry '.mat'])
     end
@@ -2039,7 +2039,7 @@ else
 
                 %%% Sets the functions to be called when the Cancel and Pause buttons
                 %%% within the Timer window are pressed.
-                PauseButtonFunction = 'h = msgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
+                PauseButtonFunction = 'h = CPmsgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
                 set(PauseButton_handle,'Callback', PauseButtonFunction)
                 CancelAfterImageSetButtonFunction = ['deleteme = questdlg(''Paused. Are you sure you want to cancel after this image set? Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current image set to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current image set will not be saved in the output file.''); case ''No''; return; end; clear deleteme'];
                 set(CancelAfterImageSetButton_handle, 'Callback', CancelAfterImageSetButtonFunction)
@@ -2047,7 +2047,7 @@ else
                 set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
                 CancelNowCloseButtonFunction = ['deleteme = questdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''), switch deleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme'];
                 set(CancelNowCloseButton_handle,'Callback', CancelNowCloseButtonFunction)
-                HelpButtonFunction = 'msgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
+                HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
                 %%% HelpButton
                 uicontrol('Style', 'pushbutton', ...
                     'String', '?', 'Position', [460 10 15 30], 'FontName','Times','FontSize', handles.Current.FontSize,...
@@ -2387,7 +2387,7 @@ else
                 show_time_elapsed = char(show_time_elapsed);    
                 module_times = char(ModuleTime);
                 split_time_elapsed = strvcat(show_time_elapsed, show_set_text, module_times);
-                timebox = msgbox(split_time_elapsed);
+                timebox = CPmsgbox(split_time_elapsed);
                 end
 
                 %%% Re-enable/disable appropriate buttons.

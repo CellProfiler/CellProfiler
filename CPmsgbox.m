@@ -1,6 +1,5 @@
-function varargout=msgbox(varargin)
-%  MSGBOX Message box.
-%  
+function varargout = CPmsgbox(varargin)
+
 %  This msgbox function is specially modified to set the correct
 %  fontsize for the CellProfiler software.
 

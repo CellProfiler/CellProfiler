@@ -116,7 +116,7 @@ if RawFileName ~= 0
                         SelectedImageName = char(PotentialImageNames(Selection));
                         ImageFileName = handles.Measurements.(SelectedImageName){SampleNumber};
                         %%% Prompts the user with the image file name.
-                        h = msgbox(['Browse to find the image called ', ImageFileName,'.']);
+                        h = CPmsgbox(['Browse to find the image called ', ImageFileName,'.']);
                         %%% Opens a user interface window which retrieves a file name and path 
                         %%% name for the image to be displayed.
                         [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'*.*'),'Select the image to view');
@@ -142,7 +142,7 @@ if RawFileName ~= 0
                             StdUnit = 'point';
                             StdColor = get(0,'DefaultUIcontrolBackgroundColor');
                             PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');                            
-                            DisplayButtonCallback1 = 'global TextHandles, FigureHandle = gcf; CurrentTextHandles = TextHandles{FigureHandle}; try, propedit(CurrentTextHandles,''v6''); catch, msgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow, clear TextHandles';
+                            DisplayButtonCallback1 = 'global TextHandles, FigureHandle = gcf; CurrentTextHandles = TextHandles{FigureHandle}; try, propedit(CurrentTextHandles,''v6''); catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow, clear TextHandles';
                             uicontrol('Parent',FigureHandle, ...
                                 'Unit',StdUnit, ...
                                 'BackgroundColor',StdColor, ...

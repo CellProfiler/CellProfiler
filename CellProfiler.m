@@ -2029,7 +2029,7 @@ else
                         %%% Finds and records total time to run module.
                         a=clock;
                         finish=a(5:6);
-                        TotalModuleTime = num2str(roundn(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
+                        TotalModuleTime = num2str(round(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
                         while numel(TotalModuleTime) <=4
                             TotalModuleTime = [TotalModuleTime ' '];
                         end

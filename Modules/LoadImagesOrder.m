@@ -460,28 +460,15 @@ else
     %%% so there is a check to make sure the class is appropriate.  When there
     %%% are very few files in the directory (I think just one), the class is
     %%% not cell for some reason.
-    DiscardLogical2Pre = regexpi(FileNamesNoDir, '.mat$','once');
-    if strcmp(class(DiscardLogical2Pre), 'cell') == 1
-        DiscardLogical2 = cellfun('prodofsize',DiscardLogical2Pre);
-    else DiscardLogical2 = [];
+    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|txt|csv)$', 'once');
+    if strcmp(class(DiscardsByExtension), 'cell')
+        DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
+    else
+        DiscardsByExtension = [];
     end
-    DiscardLogical3Pre = regexpi(FileNamesNoDir, '.m$','once');
-    if strcmp(class(DiscardLogical3Pre), 'cell') == 1
-        DiscardLogical3 = cellfun('prodofsize',DiscardLogical3Pre);
-    else DiscardLogical3 = [];
-    end
-    DiscardLogical4Pre = regexpi(FileNamesNoDir, '.m~$','once');
-    if strcmp(class(DiscardLogical4Pre), 'cell') == 1
-        DiscardLogical4 = cellfun('prodofsize',DiscardLogical4Pre);
-    else DiscardLogical4 = [];
-    end
-    DiscardLogical5Pre = regexpi(FileNamesNoDir, '.frk$','once');
-    if strcmp(class(DiscardLogical5Pre), 'cell') == 1
-        DiscardLogical5 = cellfun('prodofsize',DiscardLogical5Pre);
-    else DiscardLogical5 = [];
-    end
+
     %%% Combines all of the DiscardLogical arrays into one.
-    DiscardLogical = DiscardLogical1 | DiscardLogical2 | DiscardLogical3 | DiscardLogical4 | DiscardLogical5;
+    DiscardLogical = DiscardLogical1 | DiscardsByExtension;
     %%% Eliminates filenames to be discarded.
     if isempty(DiscardLogical) == 1
         FileNames = FileNamesNoDir;

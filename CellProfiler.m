@@ -36,7 +36,7 @@ function varargout = CellProfiler(varargin)
 % $Revision$
 
 
-% Last Modified by GUIDE v2.5 17-Dec-2004 09:16:29
+% Last Modified by GUIDE v2.5 19-Dec-2004 02:52:31
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -799,6 +799,13 @@ if (length(ModuleHighlighted) > 0)
         %%% structure and displays in the edit boxes.
         numberExtraLinesOfDescription = 0;
         numberOfLongBoxes = 0;
+        varSpacing = 25;
+        firstBoxLoc = 345;
+        firstDesLoc = 342;
+        pixelSpacing = 2;
+        longBoxLength = 539;
+        normBoxLength = 94;
+        normBoxHeight = 23;
         if (lastVariableCheck < handles.Settings.NumbersOfVariables(ModuleNumber))
             lastVariableCheck = handles.Settings.NumbersOfVariables(ModuleNumber);
         end
@@ -814,7 +821,12 @@ if (length(ModuleHighlighted) > 0)
                 end
                 linesVarDes = length(textwrap(handles.(['VariableDescription' TwoDigitString(i)]),{get(handles.(['VariableDescription' TwoDigitString(i)]),'string')}));
                 numberExtraLinesOfDescription = numberExtraLinesOfDescription + linesVarDes - 1;
-                set(handles.(['VariableDescription' TwoDigitString(i)]), 'Position', [2 346+linesVarDes-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 464 23*(linesVarDes)-3*linesVarDes]);
+                VarDesPosition = get(handles.(['VariableDescription' TwoDigitString(i)]), 'Position');
+                varXPos = VarDesPosition(1);
+                varYPos = firstDesLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(i+numberOfLongBoxes+numberExtraLinesOfDescription);
+                varXSize = VarDesPosition(3);
+                varYSize = (normBoxHeight-pixelSpacing)*linesVarDes;
+                set(handles.(['VariableDescription' TwoDigitString(i)]),'Position', [varXPos varYPos varXSize varYSize]);
             end
 
             if (i <= handles.Settings.NumbersOfVariables(ModuleNumber))
@@ -822,10 +834,17 @@ if (length(ModuleHighlighted) > 0)
                     VariableValuesString = char(handles.Settings.VariableValues{ModuleNumber, i});
                     if ( ( length(VariableValuesString) > 13) | (flagExist) )
                         numberOfLongBoxes = numberOfLongBoxes+1;
-                        set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [25 346-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 539 23]);
+                        varXPos = 25;
+                        varYPos = firstBoxLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(i+numberOfLongBoxes+numberExtraLinesOfDescription);
+                        varXSize = longBoxLength;
+                        varYSize = normBoxHeight;
                     else
-                        set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [470 346-25*(i+numberOfLongBoxes+numberExtraLinesOfDescription) 94 23]);
+                        varXPos = 470;
+                        varYPos = firstBoxLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(i+numberOfLongBoxes+numberExtraLinesOfDescription-(linesVarDes-1)/2.0);
+                        varXSize = normBoxLength;
+                        varYSize = normBoxHeight;
                     end
+                    set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [varXPos varYPos varXSize varYSize]);
                     set(handles.(['VariableBox' TwoDigitString(i)]),'string',VariableValuesString,'visible','on');
                 else
                     set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');

@@ -67,7 +67,6 @@ handles.Settings = struct;
 handles.Pipeline = struct;
 handles.Measurements = struct;
 handles.Preferences = struct;
-handles.Figures = struct;
 handles.Current.NumberOfModules = 0;
 
 global closeFigures openFigures;
@@ -209,6 +208,9 @@ addpath(Pathname)
 catch 
     errordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
 end
+
+%%% Checks figure handles for current open windows.
+handles.Current.CurrentHandles = findobj;
 
 %%% Sets up the main program window (Main GUI window) so that it asks for
 %%% confirmation prior to closing.
@@ -1689,34 +1691,14 @@ Answer = questdlg('Are you sure you want to close all open figure windows, timer
 if strcmp(Answer, 'Yes') == 1
     %%% Lists all of the figure/graphics handles.
     AllHandles = findobj;
-    %%% Checks which handles are integers (remainder after dividing by 1 =
-    %%% zero). The regular figure windows and the Matlab root all have integer
-    %%% handles, whereas the main CellProfiler window and the Timer window have
-    %%% noninteger handles.
-    WhichIntegers = rem(AllHandles,1);
-    RootAndFigureHandles = AllHandles(WhichIntegers ==0);
-    %%% Removes the handle "0" which is the root handle so that the main Matlab
-    %%% window is not attempted to be deleted.
-    FigureHandlesToBeDeleted = RootAndFigureHandles(RootAndFigureHandles ~= 0);
+    %%% Checks which handles were open before 
+    FigureHandlesToBeDeleted = setdiff(AllHandles, handles.Current.CurrentHandles);
     %%% Closes the figure windows.
     delete(FigureHandlesToBeDeleted)
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
     delete(TimerHandles)
-    try
-    delete(handles.Figures.timebox)
-    end
-    %%% Finds and closes the remaining windows.
-    totalmodules=handles.Current.NumberOfModules;
-    for i=1:totalmodules;
-        try
-            eval(['OtherFigures(i)=handles.Figures.window' num2str(i) ';'])
-        end
-    end
-    try
-    OtherFigures=OtherFigures(OtherFigures ~= 0);
-    delete(OtherFigures)
-    end
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2029,18 +2011,18 @@ else
                         %%% Finds and records total time to run module.
                         a=clock;
                         finish=a(5:6);
-                        TotalModuleTime = num2str(round(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
-                        while numel(TotalModuleTime) <=4
+                        TotalModuleTime = num2str(roundn(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
+                        while numel(TotalModuleTime) <=5
                             TotalModuleTime = [TotalModuleTime ' '];
                         end
                         
                         moduletime_text = ['Module' handles.Current.CurrentModuleNumber ': ' TotalModuleTime];
                         if (handles.Current.SetBeingAnalyzed) == 1 %& num2str(handles.Current.CurrentModuleNumber) == 1
                             moduletime_text_all = moduletime_text;
-                        handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)= {moduletime_text_all};
+                       ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)= {moduletime_text_all};
                         else
-                            moduletime_text_all = [char(handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)) ' ' moduletime_text];
-                            handles.Current.ModuleTime(str2num(handles.Current.CurrentModuleNumber), :)= {moduletime_text_all};
+                            moduletime_text_all = [char(ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)) ' ' moduletime_text];
+                            ModuleTime(str2num(handles.Current.CurrentModuleNumber), :)= {moduletime_text_all};
                         end
                         
                     end %%% ends loop over slot number
@@ -2239,12 +2221,11 @@ else
                     show_time_elapsed(i) = {show_time_elapsed_text};
                 end
                 show_time_elapsed = char(show_time_elapsed);    
-                module_times = char(handles.Current.ModuleTime);
+                module_times = char(ModuleTime);
                 split_time_elapsed = strvcat(show_time_elapsed, show_set_text, module_times);
-                handles.Figures.timebox = msgbox(split_time_elapsed);
+                timebox = msgbox(split_time_elapsed);
                 end
-                                
-                clear handles.Current.ModuleTime 
+
                 %%% Re-enable/disable appropriate buttons.
                 set(handles.PipelineOfModulesText,'visible','on')
                 set(handles.LoadPipelineButton,'visible','on')

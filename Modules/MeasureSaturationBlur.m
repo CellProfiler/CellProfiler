@@ -1,6 +1,6 @@
 function handles = MeasureSaturationBlur(handles)
 
-% Help for the Measure Saturation & Blur module:
+% Help for the Measure Saturation & Blur module: 
 % Category: Measurement
 %
 % The percentage of pixels that are saturated (their intensity value
@@ -9,8 +9,8 @@ function handles = MeasureSaturationBlur(handles)
 %
 % The module can also compute and record a focus score (higher =
 % better focus). This calculation takes much longer than the
-% saturation checking, so it is optional.
-%
+% saturation checking, so it is optional. 
+% 
 % How it works:
 % The calculation of the focus score is as follows:
 % RightImage = Image(:,2:end)
@@ -27,10 +27,10 @@ function handles = MeasureSaturationBlur(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-%
+% 
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-%
+% 
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -48,7 +48,7 @@ function handles = MeasureSaturationBlur(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be
+% each, how it works (technical description), info on which images can be 
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -72,7 +72,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT:
+% VARIABLE BOXES AND TEXT: 
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -83,7 +83,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown.
+% also that the capitalization is as shown. 
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -98,7 +98,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find
+%%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -141,9 +141,9 @@ BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
-% figure, imshow(BlurredImage, []), title('BlurredImage')
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
+% figure, imshow(BlurredImage, []), title('BlurredImage') 
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -204,7 +204,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences:
+% handles.Preferences: 
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -232,7 +232,7 @@ drawnow
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects.
+% collected for objects contained within other objects. 
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
@@ -268,14 +268,13 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-
 for ImageNumber = 1:6;
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
     if strcmp(upper(NameImageToCheck{ImageNumber}), 'N') ~= 1
         fieldname = ['', NameImageToCheck{ImageNumber}];
         %%% Checks whether the image to be analyzed exists in the handles structure.
-        if isfield(handles.Pipeline, fieldname)==0,
+if isfield(handles.Pipeline, fieldname)==0,
             %%% If the image is not there, an error message is produced.  The error
             %%% is not displayed: The error function halts the current function and
             %%% returns control to the calling function (the analyze all images
@@ -308,21 +307,39 @@ for ImageNumber = 1:6;
             else
                 FocusScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
             end
-            FocusScoreFeaturenames(ImageNumber) = {['FocusScore ', NameImageToCheck{ImageNumber}]};
+            %%% ABANDONED WAYS TO MEASURE FOCUS:
+%             eval(['ImageToCheck',ImageNumber,' = histeq(eval([''ImageToCheck'',ImageNumber]));'])
+%             if str2num(BlurRadius) == 0
+%                 BlurredImage = eval(['ImageToCheck',ImageNumber]);
+%             else
+%                 %%% Blurs the image.
+%                 %%% Note: using filter2 is much faster than imfilter (e.g. 14.5 sec vs. 99.1 sec).
+%                 FiltSize = max(3,ceil(4*BlurRadius));
+%                 BlurredImage = filter2(fspecial('gaussian',FiltSize, str2num(BlurRadius)), eval(['ImageToCheck',ImageNumber]));
+%                 % figure, imshow(BlurredImage, []), title('BlurredImage')
+%                 % imwrite(BlurredImage, [BareFileName,'BI','.',FileFormat], FileFormat);
+%             end
+%             %%% Subtracts the BlurredImage from the original.
+%             SubtractedImage = imsubtract(eval(['ImageToCheck',ImageNumber]), BlurredImage);
+%             handles.FocusScore(handles.Current.SetBeingAnalyzed) = std(SubtractedImage(:));
+%             handles.FocusScore2(handles.Current.SetBeingAnalyzed) = sum(sum(SubtractedImage.*SubtractedImage));
+%             FocusScore = handles.FocusScore
+%             FocusScore2 = handles.FocusScore2
+% 
+            %%% Saves the Focus Score to the handles.Measurements structure.  The
+            %%% field is named appropriately based on the user's
+            %%% input, with the 'Image' prefix added.
+            fieldname = ['ImageFocusScore', NameImageToCheck{ImageNumber}];
+            handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {FocusScore{ImageNumber}};
         end
-        PercentSaturationFeaturenames(ImageNumber) = {['PercentSaturation ', NameImageToCheck{ImageNumber}]};
+        %%% Saves the Percent Saturation to the handles.Measurements
+        %%% structure.  The field is named appropriately based on the
+        %%% user's input, with the 'Image' prefix added.
+        fieldname = ['ImagePercentSaturation', NameImageToCheck{ImageNumber}];
+        handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {PercentSaturation{ImageNumber}};
     end
+    drawnow
 end
-
-% Remove empty cells, in case there is an 'N' in between two actual images
-FocusScoreFeaturenames = cellstr(strvcat(FocusScoreFeaturenames{:}))';
-PercentSaturationFeaturenames = cellstr(strvcat(PercentSaturationFeaturenames{:}))';
-
-% Store measurements
-handles.Measurements.Image.FocusScoreFeatures = FocusScoreFeaturenames;
-handles.Measurements.Image.FocusScore{handles.Current.SetBeingAnalyzed} = cat(2,FocusScore{:});;
-handles.Measurements.Image.PercentSaturationFeatures = PercentSaturationFeaturenames;
-handles.Measurements.Image.PercentSaturation{handles.Current.SetBeingAnalyzed} = cat(2,PercentSaturation{:});
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -347,26 +364,21 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     if handles.Current.SetBeingAnalyzed == 1
         newsize(3) = originalsize(3)*.5;
         originalsize(3) = originalsize(3)*.5;
-        set(ThisModuleFigureNumber, 'position', originalsize,'color',[1 1 1]);
+        set(ThisModuleFigureNumber, 'position', originalsize);
     end
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position', [0.1 0.1 0.8 0.8],...
-        'fontname','times','fontsize',get(0,'UserData'),'backgroundcolor',[1 1 1],'horizontalalignment','left');
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth');
     DisplayText = strvcat(['    Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
         '      ',...
         'Percent of pixels that are Saturated:');
-    for ImageNumber = 1:length(PercentSaturation)
-        if ~isempty(PercentSaturation{ImageNumber})
-            try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
-                    [NameImageToCheck{ImageNumber}, ':    ', num2str(PercentSaturation{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
-            end
+    for ImageNumber = 1:6
+        try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
+                [NameImageToCheck{ImageNumber}, ':    ', num2str(PercentSaturation{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
         end
     end
     DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
-    for ImageNumber = 1:length(FocusScore)
-        if ~isempty(FocusScore{ImageNumber})
-            try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
-                    [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
-            end
+    for ImageNumber = 1:6
+        try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
+                [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
         end
     end
     set(displaytexthandle,'string',DisplayText)
@@ -389,23 +401,3 @@ end
 % figure which is active is not necessarily the correct one. This
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
-
-%%% ABANDONED WAYS TO MEASURE FOCUS:
-%             eval(['ImageToCheck',ImageNumber,' = histeq(eval([''ImageToCheck'',ImageNumber]));'])
-%             if str2num(BlurRadius) == 0
-%                 BlurredImage = eval(['ImageToCheck',ImageNumber]);
-%             else
-%                 %%% Blurs the image.
-%                 %%% Note: using filter2 is much faster than imfilter (e.g. 14.5 sec vs. 99.1 sec).
-%                 FiltSize = max(3,ceil(4*BlurRadius));
-%                 BlurredImage = filter2(fspecial('gaussian',FiltSize, str2num(BlurRadius)), eval(['ImageToCheck',ImageNumber]));
-%                 % figure, imshow(BlurredImage, []), title('BlurredImage')
-%                 % imwrite(BlurredImage, [BareFileName,'BI','.',FileFormat], FileFormat);
-%             end
-%             %%% Subtracts the BlurredImage from the original.
-%             SubtractedImage = imsubtract(eval(['ImageToCheck',ImageNumber]), BlurredImage);
-%             handles.FocusScore(handles.Current.SetBeingAnalyzed) = std(SubtractedImage(:));
-%             handles.FocusScore2(handles.Current.SetBeingAnalyzed) = sum(sum(SubtractedImage.*SubtractedImage));
-%             FocusScore = handles.FocusScore
-%             FocusScore2 = handles.FocusScore2
-%

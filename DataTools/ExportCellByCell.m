@@ -27,8 +27,10 @@ function handles = ExportCellByCell(handles)
 %%% Ask the user to choose the file from which to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'MATLABBUG11432TP','*.mat'),'Select the raw measurements file');
+    PathToSave = handles.Current.DefaultOutputDirectory;
 else
     [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
+    PathToSave = RawPathname;
 end
 
 if RawFileName == 0
@@ -113,16 +115,16 @@ if strcmp(Answer, 'All images') == 1
         return
     end
     FileName = FileName{1};
-    OutputFileOverwrite = exist([cd,'/',FileName],'file'); %%% TODO: Fix filename construction.
+    OutputFileOverwrite = exist(fullfile(PathToSave,FileName),'file');
     if OutputFileOverwrite ~= 0
-        Answer = CPquestdlg('A file with that name already exists in the default output directory. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+        Answer = CPquestdlg('A file with that name already exists in the directory ', PathToSave, '. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
             return    
         end
     end
     
     %%% Opens the file and names it appropriately.
-    fid = fopen(FileName, 'wt');
+    fid = fopen(fullfile(PathToSave,FileName), 'wt');
     %%% Writes MeasurementToExtract as the heading for the first column/row.
     fwrite(fid, char(MeasurementToExtract), 'char');
     fwrite(fid, sprintf('\n'), 'char');
@@ -182,9 +184,9 @@ if strcmp(Answer, 'All images') == 1
     fclose(fid);
     
     if TooWideForXLS,
-      helpdlg(['The file ', FileName, ' has been written to the default output directory, as specified in the main CellProfiler window.  WARNING: This file contains more than 256 columns, and will not be readable in Excel.'])
+      helpdlg(['The file ', FileName, ' has been created in the directory ', PathToSave, '.  WARNING: This file contains more than 256 columns, and will not be readable in Excel.'])
     else 
-      helpdlg(['The file ', FileName, ' has been written to the default output directory, as specified in the main CellProfiler window.'])
+      helpdlg(['The file ', FileName, ' has been created in the directory ', PathToSave, '.'])
     end
 
     
@@ -260,16 +262,16 @@ elseif strcmp(Answer, 'All measurements') == 1
         return
     end
     FileName = FileName{1};
-    OutputFileOverwrite = exist(fullfile(pwd,FileName),'file');
+    OutputFileOverwrite = exist(fullfile(PathToSave,FileName),'file');
     if OutputFileOverwrite ~= 0
-        Answer = CPquestdlg('A file with that name already exists in the default output directory, as specified in the main CellProfiler window. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
+        Answer = CPquestdlg('A file with that name already exists in the directory ', PathToSave,'. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
         if strcmp(Answer, 'No') == 1
             return    
         end
     end
     
     %%% Opens the file and names it appropriately.
-    fid = fopen(FileName, 'wt');
+    fid = fopen(fullfile(PathToSave,FileName), 'wt');
     %%% Writes ImageNameToDisplay as the heading for the first column/row.
     fwrite(fid, char(ImageNameToDisplay), 'char');
     fwrite(fid, sprintf('\n'), 'char');
@@ -313,5 +315,5 @@ elseif strcmp(Answer, 'All measurements') == 1
 
     %%% Closes the file
     fclose(fid);
-    helpdlg(['The file ', FileName, ' has been written to the default output directory.'])
+    helpdlg(['The file ', FileName, ' has been created in the directory ', PathToSave])
 end

@@ -1,8 +1,9 @@
 % Help for the Segment Secondary Propagate Subfunction:
-%#ok function LABELS_OUT = AlgSegmentSecPropagateSubfunction(LABELS_IN, IMAGE, MASK, LAMBDA) %#ok
-% 
-% Help for the Segment Secondary Propagate Subfunction:
 % Category: Object Identification
+%
+% This is a subfunction implemented in C and MEX to perform the
+% propagate algorithm (somewhat similar to watershed).  This help
+% documents the arguments and behavior of the propagate algorithm.
 % 
 % Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
 % limited to MASK.  MASK should be a logical array.  LAMBDA is a

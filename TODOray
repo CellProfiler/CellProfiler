@@ -1,4 +1,4 @@
-Short-term:
+ Short-term:
    Test "clear functions" in parallel code. [BETA]
 
    Move measurements to handles.Measurements
@@ -17,6 +17,8 @@ Short-term:
    * Have local CP code copied to the cluster ??
 
    * Have lasterr tell us which line number is involved
+
+   * Rewrite cluster code to use batch mode, modules for parallel work.
 
 Long-term:
 Think about statistical analysis/normalization

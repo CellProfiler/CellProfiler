@@ -300,8 +300,11 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 % --- Executes on button press in LoadPipelineButton.
 function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
-clear('handles.Settings');
-clear('handles.Current.NumberOfModules');
+%%% THESE FOLLOWING TWO LINES DON"T DO ANYTHING. WHICH IS A GOOD
+%%% THING< BECAUSE IF THEY DID AND THE USER PRESSES CANCEL AT ANY
+%%% POINT< WE WOULD BE LEFT WITH NO SETTINGS.
+%clear('handles.Settings');
+%clear('handles.Current.NumberOfModules');
 try
 cd(handles.Current.DefaultOutputDirectory)
 end
@@ -309,7 +312,6 @@ end
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
-    cd(handles.Current.StartupDirectory)
     return
 end
 %%% Loads the Settings file.
@@ -317,7 +319,6 @@ LoadedSettings = load([SettingsPathname SettingsFileName]);
 %%% Error Checking for valid settings file.
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     errordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
-    cd(handles.Current.StartupDirectory)
     return
 end
 %%% Figures out whether we loaded a Settings or Output file, and puts
@@ -342,7 +343,7 @@ catch
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;
-ModuleNamedotm = [char(handles.Settings.ModuleNames{1}) '.m'];
+ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
 %%% Checks to make sure that the modules have not changed
 if exist(ModuleNamedotm,'file')
     FullPathname = which(ModuleNamedotm);
@@ -407,7 +408,8 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
 end
 
 if(varChoice == 0),
-    clear handles.Settings.ModuleNames;
+% CLEAR DOESN"T ACTUALLY WORK WHEN USED THIS WAY.
+    %    clear handles.Settings.ModuleNames;
     %%% Update handles structure.
     guidata(hObject,handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
@@ -446,7 +448,19 @@ else
         end
     end
 end
-cd(handles.Current.StartupDirectory)
+
+%%% After everything has been loaded, we make sure that any excess
+%%% modules are removed.  The total number of modules used is
+%%% retrieved from ModuleNum (see loop above).  There may not actually
+%%% be any excess modules, so the following are each enclosed in a
+%%% try/end.
+try handles.Settings.VariableValues(ModuleNum+1:end,:) = [];
+end
+try handles.Settings.NumbersOfVariables(ModuleNum+1:end) = [];
+end
+try handles.Settings.VariableRevisionNumbers(ModuleNum+1:end) = [];
+end
+guidata(hObject,handles);
 
 %%% SUBFUNCTION %%%
 function [VariableValues VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName)

@@ -2055,11 +2055,20 @@ else
                 set(handles.CloseWindowsButton,'enable','on')
                 set(handles.OutputFileNameEditBox,'enable','on','foregroundcolor','black')
                 set(handles.AnalyzeImagesButton,'enable','on')
-                for ModuleNumber=1:handles.Current.NumberOfModules;
-                    for VariableNumber = 1:handles.Settings.NumbersOfVariables(ModuleNumber);
-                        set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
-                    end
+                for VariableNumber = 1:99
+                    set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
                 end
+                %%% The following did not make sense: only some of the
+                %%% variable boxes were re-enabled.  In fact, we want
+                %%% them all to be enabled.  Perhaps this will change
+                %%% if the lines which disabled these boxes changes
+                %%% (see FIXME at the beginning of the AnalyzeImages
+                %%% button).
+%                 for ModuleNumber=1:handles.Current.NumberOfModules;
+%                     for VariableNumber = 1:handles.Settings.NumbersOfVariables(ModuleNumber);
+%                         set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
+%                     end
+%                 end
                 set(handles.CloseFigureButton,'visible','off');
                 set(handles.OpenFigureButton,'visible','off');
                 set(CancelAfterModuleButton_handle,'enable','off')

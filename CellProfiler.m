@@ -392,12 +392,12 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
     if (varChoice == 1),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-        handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-        defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+        handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+        savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
     elseif (varChoice == 2),
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-        defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+        savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
     elseif (varChoice == 0),
         break;
     end
@@ -424,17 +424,6 @@ else
     %%% Update handles structure.
     guidata(hObject,handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
-
-    %%% If the user loaded settings from a settings file, and the user had
-    %%% to confirm changes because of the Variable Revision Numbers are
-    %%% different, then the Settings file is overwritten with new Variable
-    %%% Revision Numbers.  Note: The user is not prompted!
-    if (isfield(LoadedSettings, 'Settings') & revisionConfirm == 1),
-        Settings.VariableValues = handles.Settings.VariableValues;
-        Settings.NumbersOfVariables = handles.Settings.NumbersOfVariables;
-        Settings.VariableRevisionNumbers = defaultVariableRevisionNumbers;
-        save([SettingsPathname SettingsFileName],'Settings')
-    end
     
     
     %%% If the user loaded settings from an output file, prompt them to
@@ -445,9 +434,7 @@ else
             tempSettings = handles.Settings;
             if(revisionConfirm == 1)
                 VersionAnswer = questdlg('How should the settings file be saved?', 'Save Settings File', 'Exactly as found in output', 'As Loaded into CellProfiler window', 'Exactly as found in output');
-                if strcmp(VersionAnswer, 'As Loaded into CellProfiler window')
-                    handles.Settings.VariableRevisionNumbers = defaultVariableRevisionNumbers;
-                else
+                if strcmp(VersionAnswer, 'Exactly as found in output')
                     handles.Settings = Settings;
                 end
             end

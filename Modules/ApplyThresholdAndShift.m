@@ -1,46 +1,65 @@
-function handles = AlgApplyThresholdAndShift_1(handles)
+function handles = AlgApplyThresholdAndShift(handles)
 
-%%% Reads the current algorithm number, since this is needed to find 
-%%% the variable values that the user entered.
-CurrentAlgorithm = handles.currentalgorithm;
-CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+% Help for the Apply Threshold and Shift module: 
+% Sorry, this module has not yet been documented.
+
+% The contents of this file are subject to the Mozilla Public License Version 
+% 1.1 (the "License"); you may not use this file except in compliance with 
+% the License. You may obtain a copy of the License at 
+% http://www.mozilla.org/MPL/
+% 
+% Software distributed under the License is distributed on an "AS IS" basis,
+% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+% for the specific language governing rights and limitations under the
+% License.
+% 
+% 
+% The Original Code is the Apply Threshold and Shift module.
+% 
+% The Initial Developer of the Original Code is
+% Whitehead Institute for Biomedical Research
+% Portions created by the Initial Developer are Copyright (C) 2003,2004
+% the Initial Developer. All Rights Reserved.
+% 
+% Contributor(s):
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
 
+%%% Reads the current algorithm number, since this is needed to find 
+%%% the variable values that the user entered.
+CurrentAlgorithm = handles.currentalgorithm;
+CurrentAlgorithmNum = str2num(handles.currentalgorithm);
+
 %textVAR01 = What did you call the image to be thresholded?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,1});
+
 %textVAR02 = What do you want to call the thresholded image?
 %defaultVAR02 = ThreshBlue
 ThresholdedImageName = char(handles.Settings.Vvariable{CurrentAlgorithmNum,2});
+
 %textVAR04 = Pixels above this value (Range = 0-1) will be set to zero
 %defaultVAR04 = 1
 HighThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,4}));
+
 %textVAR05 = This value will be subtracted from the entire image (Range = 0-1)
 %defaultVAR05 = 0
 LowThreshold = str2num(char(handles.Settings.Vvariable{CurrentAlgorithmNum,5}));
-
-%textVAR08 = To save the thresholded image, enter text to append to the image name 
-%defaultVAR08 = N
-SaveImage = char(handles.Settings.Vvariable{CurrentAlgorithmNum,8});
-%textVAR09 =  Otherwise, leave as "N". To save or display other images, press Help button
-%textVAR10 = In what file format do you want to save images? Do not include a period
-%defaultVAR10 = tif
-FileFormat = char(handles.Settings.Vvariable{CurrentAlgorithmNum,10});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-%%% Checks whether the file format the user entered is readable by Matlab.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    error('The image file type entered in the Apply Threshold and Shift module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.','Error')
-end
-%%% Read (open) the image you want to analyze and assign it to a variable,
+
+%%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
 fieldname = ['dOT', ImageName];
 %%% Check whether the image to be analyzed exists in the handles structure.
@@ -55,41 +74,7 @@ if isfield(handles, fieldname) == 0
 end
 %%% Read the image.
 OrigImage = handles.(fieldname);
-        % figure, imshow(OrigImage), title('OrigImage')
         
-%%% Check whether the appendages to be added to the file names of images
-%%% will result in overwriting the original file, or in a file name that
-%%% contains spaces.
-%%% Determine the filename of the image to be analyzed.
-fieldname = ['dOTFilename', ImageName];
-FileName = handles.(fieldname)(handles.setbeinganalyzed);
-%%% Find and remove the file format extension within the original file
-%%% name, but only if it is at the end. Strip the original file format extension 
-%%% off of the file name, if it is present, otherwise, leave the original
-%%% name intact.
-CharFileName = char(FileName);
-PotentialDot = CharFileName(end-3:end-3);
-if strcmp(PotentialDot,'.') == 1
-    BareFileName = CharFileName(1:end-4);
-else BareFileName = CharFileName;
-end
-%%% Assemble the new image name.
-NewImageName = [BareFileName,SaveImage,'.',FileFormat];
-%%% Check whether the new image name is going to result in a name with
-%%% spaces.
-A = isspace(SaveImage);
-if any(A) == 1
-    error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the object outlines image name in the Apply Threshold and Shift module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
-    return
-end
-%%% Check whether the new image name is going to result in overwriting the
-%%% original file.
-B = strcmp(upper(CharFileName), upper(NewImageName));
-if B == 1
-    error('Image processing was canceled because you have not entered text to append to the object outlines image name in the Apply Threshold and Shift module.  If you do not want to save the object outlines image to the hard drive, type "N" into the appropriate box.')
-    return
-end
-
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
@@ -102,31 +87,25 @@ end
 
 %%% Thresholds the image.
 ThresholdedImage = OrigImage;
-% max(max(ThresholdedImage))
-% min(min(ThresholdedImage))
 ThresholdedImage(ThresholdedImage > HighThreshold) = 0;
 ThresholdedImage = ThresholdedImage - LowThreshold;
 ThresholdedImage(ThresholdedImage < 0) = 0;
-% max(max(ThresholdedImage))
-% min(min(ThresholdedImage))
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Note: Everything between the "if" and "end" is not carried out if the 
-%%% user has closed
-%%% the figure window, so do not do any important calculations here.
-%%% Otherwise an error message will be produced if the user has closed the
-%%% window but you have attempted to access data that was supposed to be
-%%% produced by this part of the code.
-
 %%% Determines the figure number to display in.
 fieldname = ['figurealgorithm',CurrentAlgorithm];
 ThisAlgFigureNumber = handles.(fieldname);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this algorithm.
+%%% Note: Everything between the "if" and "end" is not carried out if the 
+%%% user has closed the figure window, so do not do any important
+%%% calculations here. Otherwise an error message will be produced if the
+%%% user has closed the window but you have attempted to access data that
+%%% was supposed to be produced by this part of the code.
 if any(findobj == ThisAlgFigureNumber) == 1;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows
@@ -159,91 +138,21 @@ if any(findobj == ThisAlgFigureNumber) == 1;
     %%% image.
     subplot(2,1,2); imagesc(ThresholdedImage); title('Thresholded Image');
 end
-%%% Executes pending figure-related commands so that the results are
-%%% displayed.
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% The Thresholded image is saved to the
-%%% handles structure so it can be used by subsequent algorithms.
-fieldname = ['dOT', ThresholdedImageName];
-handles.(fieldname) = ThresholdedImage;
-%%% Removed for parallel: guidata(gcbo, handles);
-%%% The original file name is saved to the handles structure in a
-%%% field named after the Thresholded image name.
-fieldname = ['dOTFilename', ThresholdedImageName];
-handles.(fieldname)(handles.setbeinganalyzed) = FileName;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE PROCESSED IMAGE TO HARD DRIVE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% Determine whether the user wanted to save the Thresholded image
-%%% by comparing their entry "SaveImage" with "N" (after
-%%% converting SaveImage to uppercase).
-if strcmp(upper(SaveImage),'N') ~= 1
-%%% Save the image to the hard drive.    
-imwrite(ThresholdedImage, NewImageName, FileFormat);
-end
-
 drawnow
 
-%%%%%%%%%%%
-%%% HELP %%%
-%%%%%%%%%%%
+%%% Saves the Thresholded image to the handles structure so it can be used
+%%% by subsequent algorithms.
+fieldname = ['dOT', ThresholdedImageName];
+handles.(fieldname) = ThresholdedImage;
 
-%%%%% Help for the Apply Threshold and Shift module: 
-%%%%% .
-%%%%% .
-%%%%% DISPLAYING AND SAVING PROCESSED IMAGES 
-%%%%% PRODUCED BY THIS IMAGE ANALYSIS MODULE:
-%%%%% Note: Images saved using the boxes in the main CellProfiler window
-%%%%% will be saved in the default directory specified in STEP 1.
-%%%%% .
-%%%%% If you want to save other processed images, open the m-file for this 
-%%%%% image analysis module, go to the line in the
-%%%%% m-file where the image is generated, and there should be 2 lines
-%%%%% which have been inactivated.  These are green comment lines that are
-%%%%% indented. To display an image, remove the percent sign before
-%%%%% the line that says "figure, imshow...". This will cause the image to
-%%%%% appear in a fresh display window for every image set. To save an
-%%%%% image to the hard drive, remove the percent sign before the line
-%%%%% that says "imwrite..." and adjust the file type and appendage to the
-%%%%% file name as desired.  When you have finished removing the percent
-%%%%% signs, go to File > Save As and save the m file with a new name.
-%%%%% Then load the new image analysis module into the CellProfiler as
-%%%%% usual.
-%%%%% Please note that not all of these imwrite lines have been checked for
-%%%%% functionality: it may be that you will have to alter the format of
-%%%%% the image before saving.  Try, for example, adding the uint8 command:
-%%%%% uint8(Image) surrounding the image prior to using the imwrite command
-%%%%% if the image is not saved correctly.
-
-
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
-% http://www.mozilla.org/MPL/
-% 
-% Software distributed under the License is distributed on an "AS IS" basis,
-% WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-% for the specific language governing rights and limitations under the
-% License.
-% 
-% 
-% The Original Code is the ______________________.
-% 
-% The Initial Developer of the Original Code is
-% Whitehead Institute for Biomedical Research
-% Portions created by the Initial Developer are Copyright (C) 2003,2004
-% the Initial Developer. All Rights Reserved.
-% 
-% Contributor(s):
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%
-% $Revision$
+%%% Determines the filename of the image analyzed.
+fieldname = ['dOTFilename', ImageName];
+FileName = handles.(fieldname)(handles.setbeinganalyzed);
+%%% Saves the original file name to the handles structure in a field named
+%%% after the Thresholded image name.
+fieldname = ['dOTFilename', ThresholdedImageName];
+handles.(fieldname)(handles.setbeinganalyzed) = FileName;

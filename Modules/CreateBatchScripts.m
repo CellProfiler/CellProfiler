@@ -134,17 +134,21 @@ BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,2}
 %defaultVAR03 = .
 BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What is the path to the directory where you want to save the batch files? Leave a period (.) to use the default output directory.#LongBox#
+%textVAR04 = What is the path to the directory where batch output should be written on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
 %defaultVAR04 = .
-BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+BatchOutputPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What prefix should be added to the batch file names? #LongBox#
-%defaultVAR05 = Batch_
-BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = What is the path to the directory where you want to save the batch files (on the local machine)? Leave a period (.) to use the default output directory.#LongBox#
+%defaultVAR05 = .
+BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = WARNING: This module should be the last one in the analysis pipeline.
+%textVAR06 = What prefix should be added to the batch file names? #LongBox#
+%defaultVAR06 = Batch_
+BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%%%VariableRevisionNumber = 02
+%textVAR07 = WARNING: This module should be the last one in the analysis pipeline.
+
+%%%VariableRevisionNumber = 03
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,6 +161,10 @@ end
 
 if strcmp(BatchImagePath, '.') == 1
     BatchImagePath = handles.Current.DefaultImageDirectory;
+end
+
+if strcmp(BatchOutputPath, '.') == 1
+    BatchOutputPath = handles.Current.DefaultOutputDirectory;
 end
 
 if strcmp(BatchCellProfilerPath, '.') == 1,
@@ -206,10 +214,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);
     fprintf(BatchFile, 'EndImage = %d;\n', EndImage);
-
-    fprintf(BatchFile, 'CurrentDirectory = cd;\n');
     fprintf(BatchFile, 'tic;\n');
-
     fprintf(BatchFile, 'load([BatchFilePrefix ''data.mat'']);\n');
     fprintf(BatchFile, 'for BatchSetBeingAnalyzed = StartImage:EndImage,\n');
     fprintf(BatchFile, '    disp(sprintf(''Analyzing set %%d'', BatchSetBeingAnalyzed));\n');
@@ -237,7 +242,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '        break;\n');
     fprintf(BatchFile, '    end\n');
     fprintf(BatchFile, 'end\n');
-    fprintf(BatchFile, 'cd(CurrentDirectory);\n');
+    fprintf(BatchFile, 'cd(%s);\n', BatchOutputPath);
     fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
     fclose(BatchFile);
 end

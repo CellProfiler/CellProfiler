@@ -304,18 +304,22 @@ function LoadSampleInfo_Callback(hObject, eventdata, handles) %#ok We want to ig
 
 CurrentDirectory = pwd;
 cd(handles.Vworkingdirectory)
-%%% Opens a dialog box to retrieve a file name that contains a list of 
+loadsamp = questdlg('Do you want to load the sample info into an existing output file or to future files?', 'Load Sample Info', 'Future', 'Existing', 'Future');
+if (strcmp(loadsamp, 'Existing'))
+    [fOutName,pOutName] = uigetfile('*.*','Choose existing output file to load from');
+    outputfile = load([pOutName fOutName]);
+end
+
+%%% Opens a dialog box to retrieve a file name that contains a list of
 %%% sample descriptions, like gene names or sample numbers.
-[fname,pname] = uigetfile('*.*','Choose sample info text file');
+[fname,pname] = uigetfile('*.*','Choose sample info text or csv file');
 %%% If the user presses "Cancel", the fname will = 0 and nothing will
 %%% happen.
 if fname == 0
 else
     extension = fname(end-2:end);
     %%% Checks whether the chosen file is a text file.
-    if strcmp(extension,'txt') == 0;
-        errordlg('Sorry, the list of sample descriptions must be in a text file (.txt).');
-    else 
+    if (strcmp(extension,'csv') | strcmp(extension,'txt'))
         %%% Saves the text from the file into a new variable, "SampleNames".  The
         %%% '%s' command tells it to select groups of strings not separated by
         %%% things like carriage returns, and maybe spaces and commas, too. (Not
@@ -324,26 +328,27 @@ else
         NumberSamples = length(SampleNames);
         %%% Displays a warning.  The buttons don't do anything except proceed.
         Warning = {'The next window will show you a preview'; ...
-                'of the sample info you have loaded'; ...
-                ''; ...
-                ['You have ', num2str(NumberSamples), ' lines of sample information.'];...
-                ''; ...
-                'Press either ''OK'' button to continue.';...
-                '-------'; ...
-                'Warning:'; 'Please note that any spaces or weird'; ...
-                '(e.g. punctuation) characters on any line of your'; ...
-                'text file will split the entry into two entries!';...
-                '-------'; ...
-                'Also check that the order of the image files within Matlab is';...
-                'as expected.  For example, If you are running Matlab within';...
-                'X Windows on a Macintosh, the Mac will show the files as: ';...
-                '(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) whereas the X windows ';...
-                'system that Matlab uses will show them as ';...
-                '(1, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9) and so on.  So be sure that ';...
-                'the order of your sample info matches the order that Matlab ';...
-                'is using.  Look in the Current Directory window of Matlab to ';...
-                'see the order.  Go to View > Current Directory to open the ';...
-                'window if it is not already visible.'};
+            'of the sample info you have loaded'; ...
+            ''; ...
+            ['You have ', num2str(NumberSamples), ' lines of sample information.'];...
+            'If you loaded a csv file, first line should be header info.';
+            ''; ...
+            'Press either ''OK'' button to continue.';...
+            '-------'; ...
+            'Warning:'; 'Please note that any spaces or weird'; ...
+            '(e.g. punctuation) characters on any line of your'; ...
+            'text file will split the entry into two entries!';...
+            '-------'; ...
+            'Also check that the order of the image files within Matlab is';...
+            'as expected.  For example, If you are running Matlab within';...
+            'X Windows on a Macintosh, the Mac will show the files as: ';...
+            '(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) whereas the X windows ';...
+            'system that Matlab uses will show them as ';...
+            '(1, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9) and so on.  So be sure that ';...
+            'the order of your sample info matches the order that Matlab ';...
+            'is using.  Look in the Current Directory window of Matlab to ';...
+            'see the order.  Go to View > Current Directory to open the ';...
+            'window if it is not already visible.'};
         listdlg('ListString',Warning,'ListSize', [300 600],'Name','Warning',...
             'PromptString','Press any button to continue.', 'CancelString','Ok',...
             'SelectionMode','single');
@@ -353,40 +358,163 @@ else
             'Name','Preview your sample data',...
             'PromptString','Press any button to continue.','CancelString','Ok',...
             'SelectionMode','single');
-        %%% Retrieves a name for the heading of the sample data just entered.
-        A = inputdlg('Enter the heading for these sample descriptions (e.g. GeneNames                 or SampleNumber). Your entry must be one word with letters and                   numbers only, and must begin with a letter.','Name the Sample Info',1);
-        %%% If the user presses cancel A will be an empty array.  If the user
-        %%% doesn't enter anything in the dialog box but presses "OK" anyway,
-        %%% A is equal to '' (two quote marks).  In either case, skip to the end; 
-        %%% don't save anything. 
-        if (isempty(A)) 
-          ;
-        elseif strcmp(A,'') == 1, 
-            errordlg('Sample info was not saved, because no heading was entered.');
-        elseif isfield(handles, A) == 1
-            errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
-        else
-            %%% Uses the heading the user entered to name the field in the handles
-            %%% structure array and save the SampleNames list there.
-            try    handles.(char(A)) = SampleNames;
-                %%% Also need to add this heading name (field name) to the headings
-                %%% field of the handles structure (if it already exists), in the last position. 
-                if isfield(handles, 'headings') == 1
-                    N = length(handles.headings) + 1;
-                    handles.headings(N)  = A;
-                    %%% If the headings field doesn't yet exist, create it and put the heading 
-                    %%% name in position 1.
-                else handles.headings(1)  = A;
+        if (strcmp(extension,'txt'))
+            if (strcmp(loadsamp, 'Existing'))
+                %%% Retrieves a name for the heading of the sample data just entered.
+                A = inputdlg('Enter the heading for these sample descriptions (e.g. GeneNames                 or SampleNumber). Your entry must be one word with letters and                   numbers only, and must begin with a letter.','Name the Sample Info',1);
+                %%% If the user presses cancel A will be an empty array.  If the user
+                %%% doesn't enter anything in the dialog box but presses "OK" anyway,
+                %%% A is equal to '' (two quote marks).  In either case, skip to the end;
+                %%% don't save anything.
+                if (isempty(A))
+                    ;
+                elseif strcmp(A,'') == 1,
+                    errordlg('Sample info was not saved, because no heading was entered.');
+                elseif isfield(outputfile.handles, A) == 1
+                    errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
+                else
+                    %%% Uses the heading the user entered to name the field in the handles
+                    %%% structure array and save the SampleNames list there.
+                    try
+                        outputfile.handles.(char(A)) = SampleNames;
+                        %%% Also need to add this heading name (field name) to the headings
+                        %%% field of the handles structure (if it already exists), in the last position.
+                        if isfield(outputfile.handles, 'headings') == 1
+                            N = length(outputfile.handles.headings) + 1;
+                            outputfile.handles.headings(N)  = A;
+                            %%% If the headings field doesn't yet exist, create it and put the heading
+                            %%% name in position 1.
+                        else
+                            outputfile.handles.headings(1)  = A;
+                        end
+                        save([pOutName fOutName],'-struct','outputfile');
+                        msgbox('Sample Info added to output file');
+                    catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
+                    end % Goes with catch
                 end
-                guidata(hObject, handles);
-            catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
-            end % Goes with catch
+            else
+                %%% Retrieves a name for the heading of the sample data just entered.
+                A = inputdlg('Enter the heading for these sample descriptions (e.g. GeneNames                 or SampleNumber). Your entry must be one word with letters and                   numbers only, and must begin with a letter.','Name the Sample Info',1);
+                %%% If the user presses cancel A will be an empty array.  If the user
+                %%% doesn't enter anything in the dialog box but presses "OK" anyway,
+                %%% A is equal to '' (two quote marks).  In either case, skip to the end;
+                %%% don't save anything.
+                if (isempty(A))
+                    ;
+                elseif strcmp(A,'') == 1,
+                    errordlg('Sample info was not saved, because no heading was entered.');
+                elseif isfield(handles, A) == 1
+                    errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
+                else
+                    %%% Uses the heading the user entered to name the field in the handles
+                    %%% structure array and save the SampleNames list there.
+                    try    handles.(char(A)) = SampleNames;
+                        %%% Also need to add this heading name (field name) to the headings
+                        %%% field of the handles structure (if it already exists), in the last position.
+                        if isfield(handles, 'headings') == 1
+                            N = length(handles.headings) + 1;
+                            handles.headings(N)  = A;
+                            %%% If the headings field doesn't yet exist, create it and put the heading
+                            %%% name in position 1.
+                        else handles.headings(1)  = A;
+                        end
+                        guidata(hObject, handles);
+                    catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
+                    end % Goes with catch
+                end
+            end
+        elseif (strcmp(extension,'csv'))
+            if (strcmp(loadsamp, 'Existing'))
+                %%% The headings for the sample data entered should be in the first
+                %%% row of the csv file
+                A = SampleNames(1);
+                if (isempty(A))
+                    ;
+                elseif strcmp(A,'') == 1,
+                    errordlg('Sample info was not saved, because no heading was entered.');
+                elseif isfield(outputfile.handles, A) == 1
+                    errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
+                else
+                    %%% Uses the heading the user entered to name the field in the handles
+                    %%% structure array and save the SampleNames list there.
+                    headercount = 1;
+                    while(strcmp(A,'') == 0)
+                        [headernames(headercount), A] = strtok(A, ',');
+                        headercount = headercount+1;
+                    end
+                    try
+                        for columncount = 1:length(headernames),
+                            for samplelength = 2:length(SampleNames),
+                                [handleheadernameinfo(samplelength-1,1), SampleNames(samplelength)] = strtok(SampleNames(samplelength), ',');
+                                samplelength = samplelength + 1;
+                            end
+                            outputfile.handles.(char(headernames(columncount))) = handleheadernameinfo;
+                            %%% Also need to add this heading name (field name) to the headings
+                            %%% field of the handles structure (if it already exists), in the last position.
+                            if isfield(outputfile.handles, 'headings') == 1
+                                N = length(outputfile.handles.headings) + 1;
+                                outputfile.handles.headings(N)  = headernames(columncount);
+                                %%% If the headings field doesn't yet exist, create it and put the heading
+                                %%% name in position 1.
+                            else outputfile.handles.headings(1)  = headernames(columncount);
+                            end
+                            columncount = columncount + 1;
+                        end
+                        save([pOutName fOutName],'-struct','outputfile');
+                        msgbox('Sample Info added to output file');
+                    catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
+                    end % Goes with catch
+                end
+            else
+                %%% The headings for the sample data entered should be in the first
+                %%% row of the csv file
+                A = SampleNames(1);
+                if (isempty(A))
+                    ;
+                elseif strcmp(A,'') == 1,
+                    errordlg('Sample info was not saved, because no heading was entered.');
+                elseif isfield(handles, A) == 1
+                    errordlg('Sample info was not saved, because sample info with that heading has already been stored.');
+                else
+                    %%% Uses the heading the user entered to name the field in the handles
+                    %%% structure array and save the SampleNames list there.
+                    headercount = 1;
+                    while(strcmp(A,'') == 0)
+                        [headernames(headercount), A] = strtok(A, ',');
+                        headercount = headercount+1;
+                    end
+                    try
+                        for columncount = 1:length(headernames),
+                            for samplelength = 2:length(SampleNames),
+                                [handleheadernameinfo(samplelength-1,1), SampleNames(samplelength)] = strtok(SampleNames(samplelength), ',');
+                                samplelength = samplelength + 1;
+                            end
+                            handles.(char(headernames(columncount))) = handleheadernameinfo;
+                            %%% Also need to add this heading name (field name) to the headings
+                            %%% field of the handles structure (if it already exists), in the last position.
+                            if isfield(handles, 'headings') == 1
+                                N = length(handles.headings) + 1;
+                                handles.headings(N)  = headernames(columncount);
+                                %%% If the headings field doesn't yet exist, create it and put the heading
+                                %%% name in position 1.
+                            else handles.headings(1)  = headernames(columncount);
+                            end
+                            guidata(hObject, handles);
+                            columncount = columncount + 1;
+                        end
+                    catch errordlg('Sample info was not saved, because the heading contained illegal characters.');
+                    end % Goes with catch
+                end
+            end
+        else
+            errordlg('Sorry, the list of sample descriptions must be in a text file (.txt) or comma delimited file (.csv).');
         end
+        %%% One of these "end"s goes with the if A is empty, when user presses
+        %%% cancel.
     end
-    %%% One of these "end"s goes with the if A is empty, when user presses
-    %%% cancel. 
-end 
+end
 cd(CurrentDirectory)
+
 % Some random advice from Ganesh:
 % SampleNames is a n x m (n - number of rows, m - 1 column) cell array
 % If you want to make it into a 1x1 cell array where the cell element

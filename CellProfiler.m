@@ -789,10 +789,11 @@ else
   %%% The name of the algorithm is shown in a text box in the GUI (the text
   %%% box is called AlgorithmName1.) and in a text box in the GUI which
   %%% displays the current algorithm (whose settings are shown).
-  %set(handles.(['AlgorithmName' AlgorithmNumber]),'String',AlgorithmName);
+  
 
   %%% 4. Saves the AlgorithmName to the handles structure.
   handles.Settings.Valgorithmname{AlgorithmNums} = AlgorithmName;
+  handles.Settings.Vvariable(AlgorithmNums, 99) = {[]};
   contents = get(handles.AlgorithmBox,'String');
   contents{AlgorithmNums} = AlgorithmName;
   set(handles.AlgorithmBox,'String',contents);
@@ -808,8 +809,6 @@ else
           displayval = output(17:end);
           istr = output(12:13);
           i = str2num(istr);
-          set(handles.(['VariableBox' istr]), 'string', displayval,'visible', 'on');
-          set(handles.(['VariableDescription' istr]), 'visible', 'on');
           handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
           handles.numVariables(str2double(AlgorithmNumber)) = i;
       end

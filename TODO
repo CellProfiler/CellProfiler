@@ -1,13 +1,24 @@
 Anne:
 
 Ray:
-  Test "clear functions" in parallel code. [BETA]
+   Test "clear functions" in parallel code. [BETA]
 
+   Move measurements to handles.Measurements
 
+   Move Settings (other than algorithms and variables) to
+     handles.Settings
+  
+   Move Pipeline and temporary variables to handles.Pipeline
+  
 
 In Han:
+   Move Algorithms and Variables to arrays, and to handles.Settings
+      substructure  (in VariableArrayBranch)
 
 
 Anyone:
-  Fill in blanks in license blocks, describing files: [BETA]
-   % The Original Code is the _______________________.
+   Fill in blanks in license blocks, describing files: [BETA]
+     % The Original Code is the _______________________.
+
+   Parse out Algorithm revision numbers and store them in the output file
+

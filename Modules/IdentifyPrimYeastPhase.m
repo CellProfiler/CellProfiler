@@ -43,9 +43,28 @@ function handles = IdentifyPrimYeastPhase(handles)
 % be used; this is recommended for this module.
 %
 % Minimum possible diameter of a real object: This determines how much
-% objects will be eroded. It should not be set on the low side to
-% avoid overlooking objects that appear to be small during the first
-% thresholding step.
+% objects will be eroded. Keep in mind that this should not be set
+% very stringently (that is, you should set it to a lower value that
+% the real minimum acceptable diameter of an object), because during
+% the first thresholding step sometimes objects appear a bit smaller
+% than their final, actual size.
+%
+% Several other variables are adjustable in the code itself; we may
+% make these easily user-adjustable in the future, but here is some
+% information about them:
+% 
+% CODE: disks=[8 14];
+% These are masks passed over the image to select for objects with a
+% radius in the range of 8-14 pixels. These can be thought of as the
+% smallest and largest feasible radii 
+%
+% CODE:
+% OrigImageToBeAnalyzedMinima = imopen(BWerode,strel('disk', 2));
+% BWsmoothed  = imclose(BW,strel('disk',3));
+% PrelimLabelMatrixImage1 = imopen(WS,strel('disk', 6))
+%   Each of these lines uses an integer at the end. They probably have
+% some relationship to the typical object's diameter, but we haven't
+% characterized them well yet. 
 %
 % How it works:
 % This image analysis module identifies objects by finding peaks in

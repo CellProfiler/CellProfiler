@@ -13,10 +13,11 @@ function varargout = CellProfiler(varargin)
 %  Typing CellProfiler at the command line launches the program.
 %
 %  To run an example image analysis, browse to choose the
-%  ExampleFlyImages folder within CellProfiler/ExampleImages/, type in
-%  the name of an output file (e.g. 'Temp1'), click 'Load settings'
-%  and choose 'ExampleFlySettings' and click 'Analyze all images'. An
-%  analysis run should begin.
+%  ExampleFlyImages folder (downloaded from the CellProfiler website,
+%  in a zipped file separate from the source code and manual), type in
+%  the name of an output file (e.g. 'Temp1') in the appropriate box in
+%  CellProfiler, click 'Load settings', choose 'ExampleFlySettings'
+%  and click 'Analyze all images'. An analysis run should begin.
 %
 %      H = CellProfiler returns the handle to a new CellProfiler or
 %      the handle to the existing singleton*.

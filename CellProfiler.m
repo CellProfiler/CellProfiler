@@ -1645,7 +1645,7 @@ else
         %%% purposes.  Also, we should implement something where if
         %%% the last error was actually just canceling by the user
         %%% within the function, no error box is opened.
-        errordlg(['An error occurred while attempting to run the tool you selected.  The error was ' lasterr])
+        errordlg(['An error occurred while attempting to run the tool you selected.  The error was "' lasterr '"'])
     end
 end
 %%% Resets the display to the first position (so "Data tools" is

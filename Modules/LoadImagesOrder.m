@@ -1,4 +1,4 @@
-function handles = AlgLoadImagesOrder8(handles)
+function handles = AlgLoadImagesOrder(handles)
 
 %%% Reads the current algorithm number, since this is needed to find 
 %%% the variable values that the user entered.
@@ -63,16 +63,16 @@ ImagesPerSet = str2num(ImagesPerSet);
 SpecifiedPathName = PathName;
 %%% If the user left boxes blank, the values are set to 0.
 if isempty(NumberInSet1) == 1
-    NumberInSet1 = 0
+    NumberInSet1 = '0';
 end
 if isempty(NumberInSet2) == 1
-    NumberInSet2 = 0
+    NumberInSet2 = '0';
 end
 if isempty(NumberInSet3) == 1
-    NumberInSet3 = 0
+    NumberInSet3 = '0';
 end
 if isempty(NumberInSet4) == 1
-    NumberInSet4 = 0
+    NumberInSet4 = '0';
 end
 %%% Stores the text the user entered into cell arrays.
 NumberInSet{1} = str2num(NumberInSet1);

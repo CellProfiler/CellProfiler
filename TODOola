@@ -1,3 +1,5 @@
+On the Mac at least, close windows button often causes X windows to freeze up and become unresponsive so that it becomes impossible to properly quit CellProfiler and therefore Matlab. Check the code and see whether the way we are performing this function makes sense or if you can see why it would be causing problems.
+
 Look into font sizes.  What In Han has tried so far is changing the font/handle object units to characters; as recommended on the Mathworks website.  However, this still made the figures look different on different platforms.
 
 Decide whether to incorporate bug fixes from Matt Tudor into AlgIdentifyPrimAdaptThresholdC (see %MT lines in AlgTempMattTudor.m) 
@@ -14,6 +16,8 @@ Decide whether to incorporate bug fixes from Matt Tudor into AlgIdentifyPrimAdap
     circles or some other number for oblong objects.  There is a paper
     somewhere detailing an ellipse-based shape transform (maybe Ray
     has it?).
+
+Also, check through all the IdentifyPrim modules (and maybe IdentifySec too), to determine whether they are streamlines. Right now, for example, there are two compute-intensive watershed steps in IdentifyPrimIntensIntens and I am not entirely certain they are both necessary.
 
    Evaluate and possible incorporate feature measurements from Bob
    Murphy's lab into our Measure modules (Murphy, Velliste, Porreca

@@ -3219,7 +3219,7 @@ else
                                 eval(['handles = Alg',AlgName,'(handles);'])
                             catch
                                 if exist(['Alg',AlgName,'.m'],'file') ~= 2,
-                                    errordlg(['Image processing was canceled because the image analysis module named ', (['Alg',handles.(AlgName),'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
+                                    errordlg(['Image processing was canceled because the image analysis module named ', (['Alg',AlgName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?'])
                                 else
                                     %%% Runs the errorfunction function that catches errors and
                                     %%% describes to the user what to do.

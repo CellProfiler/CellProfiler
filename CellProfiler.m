@@ -684,7 +684,7 @@ if isempty(PixelSize) == 1
 end
 
 %%% (2) GET DEFAULT ALGORITHM DIRECTORY
-try   
+try   %#ok We want to ignore MLint error checking for this line.
   %%% Tries to change to the default algorithm directory, whose name is a variable
   %%% that is stored in the CellProfilerPreferences.mat file.
   cd(DefaultAlgorithmDirectory)
@@ -701,7 +701,7 @@ end
 %%% (3) GET WORKING DIRECTORY
 %%% Tries to change to the working directory, whose name is a variable
 %%% that is stored in the CellProfilerPreferences.mat file.
-try cd(WorkingDirectory)
+try cd(WorkingDirectory) %#ok We want to ignore MLint error checking for this line.
 end
 %%% Open a dialog box to get the directory from the user.
 WorkingDirectory = uigetdir(pwd, 'Which folder should be the default for your output and settings files?'); 
@@ -765,7 +765,7 @@ CurrentDirectory = cd;
 %%% that is stored in that .mat file. It is within a try-end pair because
 %%% the user may have changed the folder names leading up to this directory
 %%% sometime after saving the Preferences.
-try cd(handles.Vdefaultalgorithmdirectory)
+try cd(handles.Vdefaultalgorithmdirectory) %#ok We want to ignore MLint error checking for this line.
 end 
 %%% Now, when the dialog box is opened to retrieve an algorithm, the
 %%% directory will be the default algorithm directory.
@@ -839,7 +839,7 @@ else
         set(handles.(['VariableBox' TwoDigitString(i)]), 'string', displayval,'visible', 'on');
         set(handles.(['VariableDescription' TwoDigitString(i)]), 'visible', 'on');
         handles.Settings.Vvariable(AlgorithmNums, i) = {displayval};
-        handles.numVariables(str2num(AlgorithmNumber)) = i;
+        handles.numVariables(str2double(AlgorithmNumber)) = i;
         break;
       end
     end
@@ -847,8 +847,8 @@ else
   fclose(fid);
 
   %%% 8. Update handles.numAlgorithms
-  if str2num(AlgorithmNumber) > handles.numAlgorithms,
-    handles.numAlgorithms = str2num(AlgorithmNumber);
+  if str2double(AlgorithmNumber) > handles.numAlgorithms,
+    handles.numAlgorithms = str2double(AlgorithmNumber);
   end
   
   %%% 9. Choose Loaded Algorithm in Listbox
@@ -1105,7 +1105,7 @@ function storevariable(AlgorithmNumber, VariableNumber, UserEntry, handles)
 %%% when given the Algorithm Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-handles.Settings.Vvariable(AlgorithmNumber, str2num(VariableNumber)) = {UserEntry};
+handles.Settings.Vvariable(AlgorithmNumber, str2double(VariableNumber)) = {UserEntry};
 guidata(gcbo, handles);
 
 function [AlgorithmNumber] = whichactive(handles)
@@ -1177,7 +1177,7 @@ function ListBox_Callback(hObject, eventdata, handles)
 function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles)
 %%% I am using this button to show the handles structure in the
 %%% main Matlab window.
-handles
+handles %#ok We want to ignore MLint error checking for this line.
 msgbox('The handles structure has been printed out at the command line of Matlab.')
 
 %%%%%%%%%%%%%%%%%
@@ -1261,7 +1261,7 @@ cd(CurrentDirectory)
 function ShowPixelDataButton_Callback(hObject, eventdata, handles)
 FigureNumber = inputdlg('In which figure number would like to see pixel data?','',1);
 if ~isempty(FigureNumber)
-    FigureNumber = str2num(FigureNumber{1});
+    FigureNumber = str2double(FigureNumber{1});
     pixval(FigureNumber,'on')
 end
 
@@ -1345,7 +1345,7 @@ else
         if isempty(NumberOfImages)
         else
             %%% Calculate the appropriate number of image sets.
-            NumberOfImages = str2num(NumberOfImages{1});
+            NumberOfImages = str2double(NumberOfImages{1});
             if NumberOfImages == 0
                 NumberOfImages = length(handles.(char(MeasFieldnames(1))));
             elseif NumberOfImages > length(handles.(char(MeasFieldnames(1))));
@@ -1583,7 +1583,7 @@ elseif strcmp(Answer, 'All measurements') == 1
         cd(CurrentDirectory);
         return
     end
-    try ImageNumber = str2num(Answers{1});
+    try ImageNumber = str2double(Answers{1});
     catch errordlg('The text entered was not a number.')
         cd(CurrentDirectory);
         return
@@ -1852,8 +1852,8 @@ if ok ~= 0
     Defaults = {'1',TextTotalNumberImageSets};
     Answers = inputdlg(Prompts,'Choose samples to display',1,Defaults);
     if isempty(Answers) ~= 1
-        FirstImage = str2num(Answers{1});
-        LastImage = str2num(Answers{2});
+        FirstImage = str2double(Answers{1});
+        LastImage = str2double(Answers{2});
         if isempty(FirstImage)
             errordlg('No number was entered for the first sample number to display.')
             cd(CurrentDirectory);
@@ -1882,7 +1882,7 @@ if ok ~= 0
             cd(CurrentDirectory);
             return
         end
-        try NumberOfBins = str2num(Answers{1});
+        try NumberOfBins = str2double(Answers{1});
         catch errordlg('The text entered for the question "Enter the number of bins you want to be displayed in the histogram" was not a number.')
             cd(CurrentDirectory);
             return
@@ -1945,7 +1945,7 @@ if ok ~= 0
         PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
         PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
         %%% See whether the min and max histogram values were user-entered numbers or should be automatically calculated.
-        if isempty(str2num(MinHistogramValue))
+        if isempty(str2double(MinHistogramValue))
             if strcmp(MinHistogramValue,'automatic') == 1
                 MinHistogramValue = PotentialMinHistogramValue;
             else
@@ -1953,9 +1953,9 @@ if ok ~= 0
                 cd(CurrentDirectory);
                 return
             end
-        else MinHistogramValue = str2num(MinHistogramValue);
+        else MinHistogramValue = str2double(MinHistogramValue);
         end
-        if isempty(str2num(MaxHistogramValue))
+        if isempty(str2double(MaxHistogramValue))
             if strcmp(MaxHistogramValue,'automatic') == 1
                 MaxHistogramValue = PotentialMaxHistogramValue;
             else
@@ -1963,7 +1963,7 @@ if ok ~= 0
                 cd(CurrentDirectory);
                 return
             end
-        else MaxHistogramValue = str2num(MaxHistogramValue);
+        else MaxHistogramValue = str2double(MaxHistogramValue);
         end
         %%% Determine plot bin locations.
         HistogramRange = MaxHistogramValue - MinHistogramValue;
@@ -2404,10 +2404,10 @@ Answers = inputdlg(Prompts,'Describe Array/Slide Format',1,Defaults);
 if isempty(Answers)
     return
 end
-NumberRows = str2num(Answers{1});
-NumberColumns = str2num(Answers{2});
-LowPercentile = str2num(Answers{3});
-HighPercentile = str2num(Answers{4});
+NumberRows = str2double(Answers{1});
+NumberColumns = str2double(Answers{2});
+LowPercentile = str2double(Answers{3});
+HighPercentile = str2double(Answers{4});
 TotalSamplesToBeGridded = NumberRows*NumberColumns;
 NumberSamplesImported = length(IncomingData);
 if TotalSamplesToBeGridded > NumberSamplesImported
@@ -2493,9 +2493,9 @@ subplot(1,3,2), imagesc(ThrownOutDataForDisplay), title('Ignored Samples'),
 subplot(1,3,3), imagesc(IlluminationImage2), title('Correction Factors'), colorbar
 
 %%% Puts the results in a column and displays in the main Matlab window.
-OrigData = reshape(MeanImage,TotalSamplesToBeGridded,1)
+OrigData = reshape(MeanImage,TotalSamplesToBeGridded,1) %#ok We want to ignore MLint error checking for this line.
 CorrFactors = reshape(IlluminationImage2,TotalSamplesToBeGridded,1);
-CorrectedData = OrigData./CorrFactors
+CorrectedData = OrigData./CorrFactors %#ok We want to ignore MLint error checking for this line.
 
 msgbox('The original data and the corrected data are now displayed in the Matlab window. You can cut and paste from there.')
 
@@ -2562,7 +2562,7 @@ if RawFileName ~= 0
                         cd(CurrentDirectory);
                         return
                     end
-                    SampleNumber = str2num(Answer{1});
+                    SampleNumber = str2double(Answer{1});
                     TotalNumberImageSets = length(handles.(MeasurementToExtract));
                     if SampleNumber > TotalNumberImageSets
                         cd(CurrentDirectory);
@@ -3350,7 +3350,7 @@ pnet_remote('closeall');
 handles.parallel_machines = [];
 
 while 1,
-  RemoteMachine = fgetl(fid)
+  RemoteMachine = fgetl(fid) %#ok We want to ignore MLint error checking for this line.
   % We should put up a dialog here with a CANCEL button.  Also need to
   % modify pnet_remote to return after a few retries, rather than just
   % giving up.

@@ -182,24 +182,28 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR06 = No
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above):
+%defaultVAR06 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
-%textVAR07 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR07 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %defaultVAR07 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR08 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR08 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+
+%textVAR09 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR09 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange);  %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
-%%%VariableRevisionNumber = 03
+%%%VariableRevisionNumber = 4
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -313,6 +317,9 @@ elseif strcmp(upper(Threshold), 'EACH') == 1
     Threshold = ThresholdAdjustmentFactor*graythresh(OrigImageToBeAnalyzed);
 else Threshold = str2double(Threshold);
 end
+MinimumThreshold = str2num(MinimumThreshold);
+Threshold = max(MinimumThreshold,Threshold);
+
 ThresholdedImage = im2bw(OrigImageToBeAnalyzed, Threshold);
 drawnow
 %%% Fills holes in the ThresholdedImage image.

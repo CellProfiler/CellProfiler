@@ -181,15 +181,19 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = 0.75
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR06 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
+%defaultVAR06 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
-%textVAR07 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR07 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR07 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
 
-%%%VariableRevisionNumber = 02
+%textVAR08 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR08 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+
+%%%VariableRevisionNumber = 3
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -275,6 +279,8 @@ if Threshold == 0
     %%% Adjusts the threshold by a correction factor.  
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
+MinimumThreshold = str2num(MinimumThreshold);
+Threshold = max(MinimumThreshold,Threshold);
 
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);

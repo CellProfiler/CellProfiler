@@ -201,40 +201,40 @@ SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 0
 Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
+%textVAR05 = If auto threshold, enter an adjustment factor (Positive number, >1 = more stringent, <1 = less stringent, 1 = no adjustment):
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Set the maxima suppression neighborhood (Non-negative integer, Default = 6):
-%defaultVAR06 = 6
-MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above):
+%defaultVAR06 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
-%textVAR07 = Set the blur radius (Lower is faster; Non-negative number; Default = 3):
-%defaultVAR07 = 3
-BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR07 = Set the maxima suppression neighborhood (Non-negative integer, Default = 6):
+%defaultVAR07 = 6
+MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR08 = No
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+%textVAR08 = Set the blur radius (Lower is faster; Non-negative number; Default = 3):
+%defaultVAR08 = 3
+BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR09 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %defaultVAR09 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
-%textVAR10 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR10 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR10 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 
-%textVAR11 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view):
-%defaultVAR11 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%textVAR11 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR11 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
 MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 2
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

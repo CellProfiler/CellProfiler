@@ -185,21 +185,21 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Regularization factor (0 to infinity). Larger=distance,0=intensity
-%defaultVAR06 = 0.05
-RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
+%defaultVAR06 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
-%textVAR07 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR07 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+%textVAR07 = Regularization factor (0 to infinity). Larger=distance,0=intensity
+%defaultVAR07 = 0.05
+RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR08 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR08 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
 
-%textVAR09 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view):
-%defaultVAR09 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+%textVAR09 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR09 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
 %%%VariableRevisionNumber = 3
 % The variables have changed for this module.
@@ -254,7 +254,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
     end
 EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
-
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

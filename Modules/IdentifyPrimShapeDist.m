@@ -207,23 +207,27 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter the Max Suppress N'hood (Non-negative integer ~ the radius of objects)
-%defaultVAR06 = 10
-MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above):
+%defaultVAR06 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
-%textVAR07 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR07 = No
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+%textVAR07 = Enter the maxima suppression neighborhood (Non-negative integer ~ the radius of objects)
+%defaultVAR07 = 10
+MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR08 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %defaultVAR08 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
 
-%textVAR09 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR09 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR09 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
-%%%VariableRevisionNumber = 01
+%textVAR10 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR10 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+
+%%%VariableRevisionNumber = 2
 % The variables have changed for this module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,6 +280,8 @@ if Threshold == 0
     Threshold = graythresh(OrigImageToBeAnalyzed);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
+MinimumThreshold = str2num(MinimumThreshold);
+Threshold = max(MinimumThreshold,Threshold);
 %%% Thresholds the image.
 ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
 %%% Fills holes in the thresholded image so that stray dim pixels within the

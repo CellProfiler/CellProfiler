@@ -114,7 +114,11 @@ ProjectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = L
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%%%VariableRevisionNumber = 1
+%textVAR04 = If the incoming images are binary and you want to dilate each object in the final projection image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0. Note that if you are using a small image set, there will be spaces in the projection image that contain no objects and median filtering is unlikely to work well. 
+%defaultVAR04 = 0
+DilateObjects = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -236,6 +240,21 @@ elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
     end
 else
     error('Image processing was canceled because you must choose either "L" or "P" in the Make Projection module');
+end
+
+%%% Dilates the objects if the user requested.
+if strcmp(ReadyFlag, 'ProjectedImageReady') == 1
+    %%% This filter acts as if we had dilated each object by a certain
+    %%% number of pixels prior to making the projection. It is faster
+    %%% to do this convolution when the entire projection is completed
+    %%% rather than dilating each object as each image is processed.
+    try NumericalDilateObjects = str2num(DilateObjects);
+    catch error('In the Make Projection module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
+    end
+    if  NumericalDilateObjects ~= 0
+        LogicalStructuringElement = getnhood(strel('disk',NumericalDilateObjects,0));
+        ProjectedImage = filter2(LogicalStructuringElement,ProjectedImage,'same');
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

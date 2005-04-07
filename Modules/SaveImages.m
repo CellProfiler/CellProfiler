@@ -171,17 +171,15 @@ drawnow
 if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.Current.SetBeingAnalyzed == 1) | (strncmpi(SaveWhen,'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets)
 
     if strcmp(FileDirectory,'.') == 1
-        FileDirectory = handles.Current.DefaultOutputDirectory;
-        %%% Makes sure that the File Directory specified by the user exists.
-        if isdir(FileDirectory) ~= 1
-            error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
-        end
+        FileDirectoryToSave = handles.Current.DefaultOutputDirectory;
     elseif strcmpi(FileDirectory,'I') == 1
-        FileDirectory = handles.Current.DefaultImageDirectory;
-        %%% Makes sure that the File Directory specified by the user exists.
-        if isdir(FileDirectory) ~= 1
-            error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
-        end
+        FileDirectoryToSave = handles.Current.DefaultImageDirectory;
+    elseif strcmpi(FileDirectory,'S') == 1
+        %%% If 'S', then the directory name will be determined below,
+        %%% when the file name is retrieved.
+    else FileDirectoryToSave = FileDirectory;
+        %%% If none of the above, the user must have typed an actual
+        %%% path, which will be used.
     end
 
     %%% Retrieves the image you want to analyze and assigns it to a variable,
@@ -207,17 +205,12 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
         if strcmpi(FileFormat,'mat') ~= 1
-            error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+            if strcmpi(FileFormat,'avi') ~= 1
+                error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+            end
         end
     end
 
-    
-    
-    
-    
-    
-    
-    
     %%% Creates the file name automatically, if the user requested.
     if strcmpi(OverrideFileName,'A') == 1
         %%% Checks whether the appendage is going to result in a name with
@@ -232,6 +225,52 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             FileName = num2str(handles.Current.SetBeingAnalyzed);
             CharFileName = char(FileName);
             BareFileName = CharFileName;
+            if strcmpi(FileDirectory,'S') == 1
+                %%% Determine the filename of the image to be analyzed, just in order to find the subdirectory.
+                fieldname = ['Filename', ImageFileName];
+                IGNOREFileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
+                %%% If subdirectories are being analyzed, the filename will
+                %%% include subdirectory pathnames.
+                [SubdirectoryPathName,IGNOREBAREFILENAME,ext,versn] = fileparts(IGNOREFileName{1});
+                FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
+            end
+        elseif strcmpi(FileFormat,'avi') == 1
+            %%% If it's a movie, we don't want to use different
+            %%% filenames for each image set.
+
+            %%% If it's coming from a LoadMovies module:
+            try
+                %%% Determine the filename of the image to be analyzed.
+                fieldname = ['FileList', ImageFileName];
+                FileName = handles.Pipeline.(fieldname){1}{handles.Current.SetBeingAnalyzed}
+                %%% If subdirectories are being analyzed, the filename will
+                %%% include subdirectory pathnames.
+                [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName);
+                if strcmpi(FileDirectory,'S') == 1
+                    FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
+                end
+            catch
+                %%% If it's coming from a LoadImages module:
+
+                %%% NEED TO JUST PUT ALL IMAGES INTO ONE MOVIE>
+
+                %%% Determine the filename of the image to be analyzed.
+                fieldname = ['Filename', ImageFileName];
+                %%% Here, note that the first filename is always used;
+                %%% it does not increment by setbeinganalyzed.
+                FileName = handles.Pipeline.(fieldname)(1);
+                %%% If subdirectories are being analyzed, the filename will
+                %%% include subdirectory pathnames.
+                [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
+                if strcmpi(FileDirectory,'S') == 1
+                    FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
+                end
+
+            end
+
+
+
+
         else
             %%% Determine the filename of the image to be analyzed.
             fieldname = ['Filename', ImageFileName];
@@ -240,7 +279,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             %%% include subdirectory pathnames.
             [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
             if strcmpi(FileDirectory,'S') == 1
-                FileDirectory = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
+                FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
             end
         end
         %%% Assembles the new image name.
@@ -258,11 +297,11 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     end
 
     %%% Makes sure that the File Directory specified by the user exists.
-    if isdir(FileDirectory) ~= 1
-        error(['Image processing was canceled because the specified directory "', FileDirectory, '" in the Save Images module does not exist.']);
+    if isdir(FileDirectoryToSave) ~= 1
+        error(['Image processing was canceled because the specified directory "', FileDirectoryToSave, '" in the Save Images module does not exist.']);
     end
 
-    NewFileAndPathName = fullfile(FileDirectory, NewImageName);
+    NewFileAndPathName = fullfile(FileDirectoryToSave, NewImageName);
     if strcmpi(CheckOverwrite,'Y') == 1
         %%% Checks whether the new image name is going to overwrite the
         %%% original file.
@@ -285,7 +324,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     % imwrite(uint8(BlurredImage), FileName, FileFormat);
     % To routinely save images produced by this module, see the help in
     % the SaveImages module.
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% SAVE IMAGE TO HARD DRIVE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -305,6 +344,55 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         catch
             error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
+    elseif strcmpi(FileFormat,'avi') == 1
+        %%% As far as I can tell, there is no way to add a single
+        %%% frame to the end of the movie without opening the entire
+        %%% file and re-saving the whole thing.
+
+        %%% If this movie file already exists, open it.
+        try Movie = aviread(NewFileAndPathName);
+            NumberExistingFrames = size(Movie,2);
+         %%% If the movie does not yet exist, create the colormap
+         %%% field as empty to prevent errors when trying to save as a
+         %%% movie.
+        catch   Movie.colormap = [];
+            NumberExistingFrames = 0;
+        end
+        %%% Adds the image as the last frame in the movie.
+        Movie(1,NumberExistingFrames+1).cdata = Image*256;
+        % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
+        %%% Saves the Movie under the appropriate file name.
+        movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
+
+         % %%% See if this movie file already exists. If so, just
+%         %%% retrieve the AviHandle from handles
+%         SUCCESSFULHANDLERETIREVAL = 0;
+        %         if exist(NewFileAndPathName) ~= 0
+%             try
+%                 fieldname = ['AviHandle', ImageName];
+%                 AviHandle = handles.Current.(fieldname)
+%                 AviHandle = addframe(AviHandle,Image);
+% %                AviHandle = close(AviHandle);
+%                 SUCCESSFULHANDLERETIREVAL = 1;
+%             end
+%         end
+% 
+%         if SUCCESSFULHANDLERETIREVAL == 0
+%             %%% If the movie does not exist already, create it using
+%             %%% the avifile function and put the AviHandle into the handles.
+% 
+%             AviHandle = avifile(NewFileAndPathName);
+%             AviHandle = addframe(AviHandle,Image);
+%             AviHandle = close(AviHandle);
+% 
+%             fieldname = ['AviHandle', ImageName];
+%             handles.Current.(fieldname) =  AviHandle;
+%         end
+% 
+
+
+
+
     else
         try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
         catch

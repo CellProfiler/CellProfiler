@@ -46,6 +46,11 @@ end
 %%% Opens a window that lets the user chose what to export
 ExportInfo = ObjectsToExport(handles,RawFileName);
 
+%%% Indicates that the Cancel button was pressed
+if isempty(ExportInfo.ReportStyle)
+    return
+end
+
 %%% Export process info
 if strcmp(ExportInfo.ExportProcessInfo,'yes')
     WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
@@ -113,8 +118,8 @@ if ~isempty(fields)
 
     % Report style?
     uicontrol(ETh,'style','text','String','Choose report style:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[0.2 1.35 1.5 0.2],'BackgroundColor',get(ETh,'color'))
-    reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 1.2 1.5 0.2],...
+        'HorizontalAlignment','left','units','inches','position',[0.2 1.35 1.5 0.22],'BackgroundColor',get(ETh,'color'))
+    reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 1.2 1.5 0.22],...
         'backgroundcolor',[1 1 1],'String','Full report|Summary report|Both|None');
 
     % Filename
@@ -126,8 +131,8 @@ if ~isempty(fields)
     if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
     ProposedFilename = [ProposedFilename,'_Export'];
     uicontrol(ETh,'style','text','String','Chose base of output filename:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[2 1.35 1.8 0.2],'BackgroundColor',get(ETh,'color'))
-    EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 1.2 1.8 0.2],...
+        'HorizontalAlignment','left','units','inches','position',[2 1.35 1.8 0.22],'BackgroundColor',get(ETh,'color'))
+    EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 1.2 1.8 0.22],...
         'backgroundcolor',[1 1 1],'String',ProposedFilename);
 else  % No measurements found
     uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
@@ -137,8 +142,8 @@ end
 %%% Process info
 % Drop down menu for selecting whether to export process info or not
 uicontrol(ETh,'style','text','String','Export process info:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[0.2 0.85 1.5 0.2],'BackgroundColor',get(ETh,'color'))
-processbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 0.7 1.5 0.2],...
+    'HorizontalAlignment','left','units','inches','position',[0.2 0.85 1.5 0.22],'BackgroundColor',get(ETh,'color'))
+processbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 0.7 1.5 0.22],...
     'backgroundcolor',[1 1 1],'String','Yes|No');
 
 % Propose a filename. Remove 'OUT' and '.mat' extension from filename
@@ -149,8 +154,8 @@ indexMAT = strfind(ProposedFilename,'mat');
 if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
 ProposedFilename = [ProposedFilename,'_ProcessInfo.txt'];
 uicontrol(ETh,'style','text','String','Chose output filename:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[2 0.85 2.2 0.2],'BackgroundColor',get(ETh,'color'))
-EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 0.7 1.8 0.2],...
+    'HorizontalAlignment','left','units','inches','position',[2 0.85 2.2 0.22],'BackgroundColor',get(ETh,'color'))
+EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 0.7 1.8 0.22],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename);
 
 

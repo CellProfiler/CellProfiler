@@ -369,11 +369,13 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    %%% Sets the window to be half as wide as usual.
-    originalsize = get(ThisModuleFigureNumber, 'position');
-    newsize = originalsize;
-    newsize(3) = 250;
-    set(ThisModuleFigureNumber, 'position', newsize);
+    if handles.Current.SetBeingAnalyzed == 1
+        %%% Sets the window to be half as wide as usual.
+        originalsize = get(ThisModuleFigureNumber, 'position');
+        newsize = originalsize;
+        newsize(3) = 250;
+        set(ThisModuleFigureNumber, 'position', newsize);
+    end
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related

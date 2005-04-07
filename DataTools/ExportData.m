@@ -338,41 +338,37 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
         %%% Write comma-separated file that can be imported into Excel
         % Header part
-        fprintf(fid,'%s: Summary\nTotal time: %0.2f s\n', ObjectName,Time{end});
+        fprintf(fid,'%s: Full report\n', ObjectName);
 
         % Write feature names in one row
         % Interleave feature names with commas and write to file
         str = cell(2*length(FeatureNames),1);
-        str(1:2:end) = {','};
+        str(1:2:end) = {'\t'};
         str(2:2:end) = FeatureNames;
-        fprintf(fid,',%s\n',cat(2,str{:}));
+        fprintf(fid,sprintf('\tThreshold%s\n',cat(2,str{:})));
 
         % Loop over the images sets
         for k = 1:length(Measurements)
 
             % Write info about the image set
             fprintf(fid,'Set #%d, %d objects\n',k,NumObjects(k));
-            fprintf(fid,'Filenames: ');
-            for j = 1:length(Filenames)
-                fprintf(fid,'"%s":%s ',Filenames{j}(9:end),handles.Measurements.GeneralInfo.(Filenames{j}){k});
-            end
-
-            % Write segmentation threshold if it exists
-            if exist('Threshold','var')
-                fprintf(fid,',Threshold: %g\n',Threshold{k});
-            else
-                fprintf(fid,'\n');
-            end
-
+            
             % Write measurements
             if ~isempty(Measurements{k})
                 for row = 1:size(Measurements{k},1)                        % Loop over the rows
+                    % Write segmentation threshold if it exists
+                    if exist('Threshold','var')
+                        fprintf(fid,'\t%g',Threshold{k});
+                    else
+                        fprintf(fid,'\t');
+                    end
                     tmp = cellstr(num2str(Measurements{k}(row,:)','%g'));  % Create cell array with measurements
-                    str = cell(2*length(tmp),1);                           % Interleave with commas
-                    str(1:2:end) = {','};
+                    str = cell(2*length(tmp),1);                           % Interleave with tabs
+                    str(1:2:end) = {'\t'};
                     str(2:2:end) = tmp;
-                    fprintf(fid,',%s\n',cat(2,str{:}));                    % Write to file
+                    fprintf(fid,sprintf('%s\n',cat(2,str{:})));            % Write to file
                 end
+                fprintf(fid,'\n');
             end
             fprintf(fid,'\n');                                         % Separate image sets with a blank row
         end % End loop over image sets
@@ -383,14 +379,13 @@ for Object = 1:length(ExportInfo.ObjectNames)
     if ~strcmp(ExportInfo.ReportStyle,'full')                          % The user wants a summary report
 
         % For the summary report, replace the entries in Measurements with
-        % mean, median and standard deviation of the measurements
+        % mean and standard deviation of the measurements
         for k = 1:length(Measurements)
             if ~isempty(Measurements{k})       % Make sure there are some measurements
-                Measurements{k} = [mean(Measurements{k},1);median(Measurements{k},1);std(Measurements{k},0,1)];
+                Measurements{k} = [mean(Measurements{k},1);std(Measurements{k},0,1)];
             end
         end
-        SummaryInfo = {'Mean','Median','Std'};
-
+        
         % Open a file for exporting the measurements
         ExportFileName = [ExportInfo.MeasurementFilename,'_',ObjectName,'_Summary.xls'];
         fid = fopen(fullfile(RawPathname,ExportFileName),'w');
@@ -401,45 +396,64 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
         %%% Write comma-separated file that can be imported into Excel
         % Header part
-        fprintf(fid,'%s: Full report\nTotal time: %0.2f s\n', ObjectName,Time{end});
+        fprintf(fid,'%s: Summary report\n', ObjectName);
 
         % Write feature names in one row
         % Interleave feature names with commas and write to file
         str = cell(2*length(FeatureNames),1);
-        str(1:2:end) = {','};
+        str(1:2:end) = {'\t'};
         str(2:2:end) = FeatureNames;
-        fprintf(fid,',%s\n',cat(2,str{:}));
-
+        
+        %%% Write mean data
+        fprintf(fid,sprintf('Mean\tThreshold\tObject count %s\n',cat(2,str{:})));
         % Loop over the images sets
         for k = 1:length(Measurements)
 
             % Write info about the image set
-            fprintf(fid,'Set #%d, %d objects\n',k,NumObjects(k));
-            fprintf(fid,'Filenames: ');
-            for j = 1:length(Filenames)
-                fprintf(fid,'"%s":%s ',Filenames{j}(9:end),handles.Measurements.GeneralInfo.(Filenames{j}){k});
-            end
-
+            fprintf(fid,'Set #%d\t',k);
             % Write segmentation threshold if it exists
             if exist('Threshold','var')
-                fprintf(fid,',Threshold: %g\n',Threshold{k});
+                fprintf(fid,'%g\t',Threshold{k});
             else
-                fprintf(fid,'\n');
+                fprintf(fid,'\t');
             end
+            % Write number of objects
+            fprintf(fid,'%d',NumObjects(k));
 
             % Write measurements
             if ~isempty(Measurements{k})
-                for row = 1:size(Measurements{k},1)                        % Loop over the rows
-                    fprintf(fid,'%s',SummaryInfo{row});                    % Writes the word "mean", "median" or "std"
-                    tmp = cellstr(num2str(Measurements{k}(row,:)','%g'));  % Create cell array with measurements
-                    str = cell(2*length(tmp),1);                           % Interleave with commas
-                    str(1:2:end) = {','};
-                    str(2:2:end) = tmp;
-                    fprintf(fid,',%s\n',cat(2,str{:}));                    % Write to file
-                end
+                tmp = cellstr(num2str(Measurements{k}(1,:)','%g'));  % Create cell array with measurements
+                str = cell(2*length(tmp),1);                         % Interleave with tabs
+                str(1:2:end) = {'\t'};
+                str(2:2:end) = tmp;
+                fprintf(fid,sprintf('%s',cat(2,str{:})));                    % Write to file
             end
-            fprintf(fid,'\n');                                         % Separate image sets with a blank row
+            fprintf(fid,'\n');
         end % End loop over image sets
+        
+        
+        %%% Write standard deviation data
+        fprintf(fid,'\n');
+        fprintf(fid,'Std\n',cat(2,str{:}));
+        % Loop over the images sets
+        for k = 1:length(Measurements)
+
+            % Write info about the image set
+            fprintf(fid,'Set #%d\t',k);
+            % No std for threshold and object count
+            fprintf(fid,'\t');
+
+            % Write measurements
+            if ~isempty(Measurements{k})
+                tmp = cellstr(num2str(Measurements{k}(2,:)','%g'));  % Create cell array with measurements
+                str = cell(2*length(tmp),1);                         % Interleave with commas
+                str(1:2:end) = {'\t'};
+                str(2:2:end) = tmp;
+                fprintf(fid,sprintf('%s',cat(2,str{:})));                    % Write to file
+            end
+            fprintf(fid,'\n');
+        end % End loop over image sets
+        
         fclose(fid);
     end % End of summary report writing
 

@@ -116,6 +116,7 @@ NumberDigits = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Pathname = handles.Current.DefaultImageDirectory;
 %%% Retrieves all the image file names and the number of
 %%% images per set so they can be used by the module.  
 FileNames = handles.Current.FilenamesInImageDir;
@@ -136,7 +137,7 @@ for n = 1:length(FileNames)
         end
     end
     if strcmp(OldFilename,NewFilename) ~= 1
-        movefile(OldFilename,NewFilename) 
+        movefile(fullfile(Pathname,OldFilename),fullfile(Pathname,NewFilename)) 
     end   
     drawnow
 end

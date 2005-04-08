@@ -311,14 +311,59 @@ for i = 1:3
     ObjectCount = max(LabelMatrixImage(:));
 
     if ObjectCount > 0
-        % Get median size of objects (used for determining size of Gabor
-        % filters below).
-        tmp = regionprops(LabelMatrixImage,'Area');
+        
+        %%% Get Gabor features.
+        %%% The Gabor features are calculated by convolving the entire
+        %%% image with Gabor filters and then extracting the filter output
+        %%% value in the centroids of the objects in LabelMatrixImage
+        
+        % Adjust size of filter to size of objects in the image
+        % The centroids indicate where we should measure the Gabor
+        % filter output
+        tmp = regionprops(LabelMatrixImage,'Area','Centroid');
         MedianArea = median(cat(1,tmp.Area));
+        sigma = sqrt(MedianArea/pi);
+        
+        % Round centroids and find linear index for them.
+        % The centroids are stored in [column,row] order.
+        Centroids = round(cat(1,tmp.Centroid));
+        Centroidsindex = sub2ind(size(LabelMatrixImage),Centroids(:,2),Centroids(:,1));
+        
+        % Use Gabor filters with three different frequencies
+        f = [0.06 0.12 0.24];
 
-        Gabor = zeros(ObjectCount,6);
+        % Angle direction, filter along the x-axis and y-axis
+        theta = [0 pi/2];
+
+        % Create kernel coordinates
+        KernelSize = round(2*sigma);
+        [x,y]=meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
+     
+        % Apply Gabor filters and store filter outputs in the Centroid pixels
+        Fourier_OrigImageToBeAnalyzed = fft2(OrigImageToBeAnalyzed);
+        GaborFeatureNo = 1;
+        Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
+        for m = 1:length(f)
+            for n = 1:length(theta)
+                
+                % Calculate Gabor filter kernel 
+                % Scale by 1000 to get measurements in a convenient range
+                g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
+                
+                
+                % Perform filtering in the Fourier domain
+                q = ifft2(fft2(g,size(OrigImageToBeAnalyzed,1),size(OrigImageToBeAnalyzed,2)).*Fourier_OrigImageToBeAnalyzed);
+              
+                % Store filter output
+                Gabor(:,GaborFeatureNo) = abs(q(Centroidsindex));
+                GaborFeatureNo = GaborFeatureNo + 1;
+            
+            end
+        end
+
+        %%% Get Haralick features.
+        %%% Have to loop over the objects
         Haralick = zeros(ObjectCount,13);
-
         [sr sc] = size(LabelMatrixImage);
         for Object = 1:ObjectCount
 
@@ -330,11 +375,6 @@ for i = 1:3
             cmin = max(1,min(c));
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
-
-            %%% Get Gabor features
-            % Set scale parameter to median radius
-            sigma = sqrt(MedianArea/pi);
-            Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
 
             %%% Get Haralick features
             Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
@@ -411,57 +451,6 @@ for i = 1:3
     end
 end
 drawnow
-
-function G = CalculateGabor(im,mask,sigma,flag)
-%
-% This function calculates Gabor features, which measure
-% the energy in different frequency sub-bands. The Gabor
-% transform is essentially equivalent to a wavelet transform.
-%
-% im    - A grey level image
-% mask  - A binary mask
-% sigma - Scale parameter for the Gaussian weight function
-
-% Use Gabor filters with three different frequencies
-f = [0.06 0.12 0.24];
-
-% Filter along the x-axis and y-axis
-theta = [0 pi/2];
-
-% Match the filter kernel size to the input patch size
-[sr,sc] = size(mask);
-if rem(sr,2) == 0,ty = [-sr/2:sr/2-1];else ty = [-(sr-1)/2:(sr-1)/2];end
-if rem(sc,2) == 0,tx = [-sc/2:sc/2-1];else tx = [-(sc-1)/2:(sc-1)/2];end
-[x,y]=meshgrid(tx,ty);
-
-% Calculate the Gabor features
-G = zeros(length(theta),length(f));
-for m = 1:length(f)
-    for n = 1:length(theta)
-        
-        % Calculate Gabor filter kernel
-        g = 1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-
-        % Use Normalized Convolution to calculate filter responses. This
-        % method only include object pixels for calculating the filter
-        % response and excludes surrounding background pixels.
-        % See Farneback, 2002. "Polynomial Expansion for Orientation and
-        % Motion Estimation". PhD Thesis
-        gr = real(g);
-        gi = imag(g);
-        B = [gr(:) gi(:)];
-        Wc = diag(mask(:));
-        r = inv(B'*Wc*B)*B'*Wc*im(:); 
-        G(n,m) = sqrt(sum(r.^2));
-        
-        % Direct way of calculating filter responses
-        %tmpr = sum(sum(real(g).*im));
-        %tmpi = sum(sum(imag(g).*im));
-        %G(n,m) = sqrt(tmpr.^2+tmpi.^2);
-    end
-end
-G = G(:)';
-
 
 function H = CalculateHaralick(im,mask,area)
 %
@@ -604,3 +593,56 @@ H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 
 
 
+% % This function calculates Gabor features in a different way
+% % It may be better but it's also considerably slower. 
+% % It's called by Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
+% function G = CalculateGabor(im,mask,sigma,flag)
+% %
+% % This function calculates Gabor features, which measure
+% % the energy in different frequency sub-bands. The Gabor
+% % transform is essentially equivalent to a wavelet transform.
+% %
+% % im    - A grey level image
+% % mask  - A binary mask
+% % sigma - Scale parameter for the Gaussian weight function
+% 
+% % Use Gabor filters with three different frequencies
+% f = [0.06 0.12 0.24];
+% 
+% % Filter along the x-axis and y-axis
+% theta = [0 pi/2];
+% 
+% % Match the filter kernel size to the input patch size
+% [sr,sc] = size(mask);
+% if rem(sr,2) == 0,ty = [-sr/2:sr/2-1];else ty = [-(sr-1)/2:(sr-1)/2];end
+% if rem(sc,2) == 0,tx = [-sc/2:sc/2-1];else tx = [-(sc-1)/2:(sc-1)/2];end
+% [x,y]=meshgrid(tx,ty);
+% 
+% % Calculate the Gabor features
+% G = zeros(length(theta),length(f));
+% for m = 1:length(f)
+%     for n = 1:length(theta)
+%         
+%         % Calculate Gabor filter kernel
+%         g = 1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
+% 
+%         % Use Normalized Convolution to calculate filter responses. This
+%         % method only include object pixels for calculating the filter
+%         % response and excludes surrounding background pixels.
+%         % See Farneback, 2002. "Polynomial Expansion for Orientation and
+%         % Motion Estimation". PhD Thesis
+%         gr = real(g);
+%         gi = imag(g);
+%         B = [gr(:) gi(:)];
+%         Wc = diag(mask(:));
+%         r = inv(B'*Wc*B)*B'*Wc*im(:); 
+%         G(n,m) = sqrt(sum(r.^2));
+%         
+%         % Direct way of calculating filter responses
+%         %tmpr = sum(sum(real(g).*im));
+%         %tmpi = sum(sum(imag(g).*im));
+%         %G(n,m) = sqrt(tmpr.^2+tmpi.^2);
+%     end
+% end
+% G = G(:)';
+% 

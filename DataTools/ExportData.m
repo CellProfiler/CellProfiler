@@ -98,9 +98,16 @@ end
 % Create Export window
 ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
+
+% Some variables controling the sizes of uicontrols
+uiheight = 0.25;
+
+
+% Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
-Height = 2.2+length(fields)*0.25;                       % Window height in inches, depends on the number of objects
-set(ETh,'position',[pos(1) pos(2) 4 Height]);
+Height = 2.2+length(fields)*uiheight;
+Width  = 6; 
+set(ETh,'position',[pos(1)+1 pos(2) Width Height]);
 
 if ~isempty(fields)
     % Top text
@@ -112,38 +119,43 @@ if ~isempty(fields)
     for k = 1:length(fields)
         uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
             'units','inches','position',[0.6 Height-0.35-0.2*k 3 0.15],'BackgroundColor',get(ETh,'color'))
-        h(k) = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 Height-0.35-0.2*k 0.2 0.2],...
+        h(k) = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 Height-0.35-0.2*k uiheight uiheight],...
             'BackgroundColor',get(ETh,'color'),'Value',1);
     end
 
-    % Report style?
+    %%% Report style
+    basey = 1.2;
     uicontrol(ETh,'style','text','String','Choose report style:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[0.2 1.35 1.5 0.22],'BackgroundColor',get(ETh,'color'))
-    reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 1.2 1.5 0.22],...
+        'HorizontalAlignment','left','units','inches','position',[0.2 1.4 1.5 uiheight],'BackgroundColor',get(ETh,'color'))
+    reportbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 basey 1.5 uiheight],...
         'backgroundcolor',[1 1 1],'String','Full report|Summary report|Both|None');
-
-    % Filename
-    % Remove 'OUT' and '.mat' extension from filename
+    % Filename, remove 'OUT' and '.mat' extension from filename
     ProposedFilename = RawFileName;
     indexOUT = strfind(ProposedFilename,'OUT');
     if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];end
     indexMAT = strfind(ProposedFilename,'mat');
     if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
     ProposedFilename = [ProposedFilename,'_Export'];
-    uicontrol(ETh,'style','text','String','Chose base of output filename:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[2 1.35 1.8 0.22],'BackgroundColor',get(ETh,'color'))
-    EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 1.2 1.8 0.22],...
+    uicontrol(ETh,'style','text','String','Choose base of output filename:','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[2 basey+0.2 1.8 uiheight],'BackgroundColor',get(ETh,'color'))
+    EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 basey 2.5 uiheight],...
         'backgroundcolor',[1 1 1],'String',ProposedFilename);
+    uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[4.7 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
+    EditMeasurementExtension = uicontrol(ETh,'Style','edit','units','inches','position',[4.7 basey 0.7 uiheight],...
+        'backgroundcolor',[1 1 1],'String','.xls');
+
 else  % No measurements found
     uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
-        'units','inches','position',[0 Height-0.5 4 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+        'units','inches','position',[0 Height-0.5 6 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 end
 
 %%% Process info
+basey = 0.65;
 % Drop down menu for selecting whether to export process info or not
 uicontrol(ETh,'style','text','String','Export process info:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[0.2 0.85 1.5 0.22],'BackgroundColor',get(ETh,'color'))
-processbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 0.7 1.5 0.22],...
+    'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.2 1.5 0.22],'BackgroundColor',get(ETh,'color'))
+processbutton = uicontrol(ETh,'Style','popup','units','inches','position',[0.2 basey 1.5 uiheight],...
     'backgroundcolor',[1 1 1],'String','Yes|No');
 
 % Propose a filename. Remove 'OUT' and '.mat' extension from filename
@@ -152,18 +164,23 @@ indexOUT = strfind(ProposedFilename,'OUT');
 if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];end
 indexMAT = strfind(ProposedFilename,'mat');
 if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
-ProposedFilename = [ProposedFilename,'_ProcessInfo.txt'];
-uicontrol(ETh,'style','text','String','Chose output filename:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[2 0.85 2.2 0.22],'BackgroundColor',get(ETh,'color'))
-EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 0.7 1.8 0.22],...
+ProposedFilename = [ProposedFilename,'_ProcessInfo'];
+uicontrol(ETh,'style','text','String','Choose base of output filename:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[2 basey+0.2 2.2 uiheight],'BackgroundColor',get(ETh,'color'))
+EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 basey 2.5 uiheight],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename);
+uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[4.7 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
+EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[4.7 basey 0.7 uiheight],...
+        'backgroundcolor',[1 1 1],'String','.txt');
 
 
 % Export and Cancel pushbuttons
+posx = (Width - 1.7)/2;               % Centers buttons horizontally
 exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[1.15 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)');
+    'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)');
 cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[2.1 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)');
+    'position',[posx+0.95 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)');
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
 
@@ -189,8 +206,10 @@ elseif get(ETh,'Userdata') == 1     % The user pressed the Export button
     % File names
     if ~isempty(fields)
         ExportInfo.MeasurementFilename = get(EditMeasurementFilename,'String');
+        ExportInfo.MeasurementExtension = get(EditMeasurementExtension,'String');
     end
     ExportInfo.ProcessInfoFilename = get(EditProcessInfoFilename,'String');
+    ExportInfo.ProcessInfoExtension = get(EditProcessInfoExtension,'String');
 
     % Get measurements to export
     if ~isempty(fields)
@@ -211,9 +230,14 @@ function WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname)
 %%% CellProfiler output file, and writes this info to a textfile.
 
 %%% Open file for writing
-fid = fopen(fullfile(RawPathname,ExportInfo.ProcessInfoFilename),'w');
+% Add dot in extension if it's not there
+if ExportInfo.ProcessInfoExtension(1) ~= '.';
+    ExportInfo.ProcessInfoExtension = ['.',ExportInfo.ProcessInfoExtension];
+end
+filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
+fid = fopen(fullfile(RawPathname,filename),'w');
 if fid == -1
-    errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',ExportInfo.ProcessInfoFilename));
+    errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
     return
 end
 
@@ -331,13 +355,16 @@ for Object = 1:length(ExportInfo.ObjectNames)
     Time = handles.Measurements.GeneralInfo.TimeElapsed;
 
     if ~strcmp(ExportInfo.ReportStyle,'summary')                          % The user wants a full report
-
+        
         % Open a file for exporting the measurements
-        ExportFileName = [ExportInfo.MeasurementFilename,'_',ObjectName,'.xls'];
-
-        fid = fopen(fullfile(RawPathname,ExportFileName),'w');
+        % Add dot in extension if it's not there
+        if ExportInfo.MeasurementExtension(1) ~= '.';
+            ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
+        end
+        filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
+        fid = fopen(fullfile(RawPathname,filename),'w');
         if fid == -1
-            errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',ExportFileName));
+            errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
             return
         end
 
@@ -392,10 +419,14 @@ for Object = 1:length(ExportInfo.ObjectNames)
         end
         
         % Open a file for exporting the measurements
-        ExportFileName = [ExportInfo.MeasurementFilename,'_',ObjectName,'_Summary.xls'];
-        fid = fopen(fullfile(RawPathname,ExportFileName),'w');
+        % Add dot in extension if it's not there
+        if ExportInfo.MeasurementExtension(1) ~= '.';
+            ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
+        end
+        filename = [ExportInfo.MeasurementFilename,'_',ObjectName,'_Summary',ExportInfo.MeasurementExtension];
+        fid = fopen(fullfile(RawPathname,filename),'w');
         if fid == -1
-            errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',ExportFileName));
+            errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
             return
         end
 

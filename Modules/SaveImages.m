@@ -135,7 +135,7 @@ BitDepth = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = Y
 CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = At what point in the pipeline do you want to save the image? Enter E for every time through the pipeline (every image set), F for first, and L for last.
+%textVAR08 = At what point in the pipeline do you want to save the image? Enter E for every time through the pipeline (every image set), F for first, and L for last. When saving in movie format, set this option as E.
 %defaultVAR08 = E
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -143,9 +143,13 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = A
 OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Warning! It is possible to overwrite existing files using this module!
+%textVAR10 = If saving a movie, the options are to save the movie file once, after the last image set (enter L for last), or after every Nth image set (enter a number). For example, entering a 1 will save the movie after every image set, so that if image analysis is aborted, the movie up to that point will be saved.  Saving large movie files is time-consuming, so it may be better to save after every 10th image set, for example. If you are processing multiple movies, especially movies in subdirectories, you should save after every image set (and also, be aware that this module has not been thoroughly tested under those conditions).
+%defaultVAR10 = L
+SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%%%VariableRevisionNumber = 5
+%textVAR11 = Warning! It is possible to overwrite existing files using this module!
+
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -302,9 +306,11 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     end
 
     NewFileAndPathName = fullfile(FileDirectoryToSave, NewImageName);
-    if strcmpi(CheckOverwrite,'Y') == 1
+    if strcmpi(CheckOverwrite,'Y') == 1 && strcmpi(FileFormat,'avi') ~= 1
         %%% Checks whether the new image name is going to overwrite the
-        %%% original file.
+        %%% original file. This check is not done here if this is an avi
+        %%% (movie) file, because otherwise the check would be done on each
+        %%% frame of the movie.
         if exist(NewFileAndPathName) == 2
             Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
             if strcmp(Answer,'Cancel') == 1
@@ -345,29 +351,111 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi') == 1
-        %%% As far as I can tell, there is no way to add a single
-        %%% frame to the end of the movie without opening the entire
-        %%% file and re-saving the whole thing.
-
-        %%% If this movie file already exists, open it.
-        try Movie = aviread(NewFileAndPathName);
-            NumberExistingFrames = size(Movie,2);
-         %%% If the movie does not yet exist, create the colormap
-         %%% field as empty to prevent errors when trying to save as a
-         %%% movie.
-        catch   Movie.colormap = [];
+        if handles.Current.SetBeingAnalyzed == 1
+            if strcmpi(CheckOverwrite,'Y') == 1
+                %%% Checks whether the new image name is going to overwrite
+                %%% the original file, but only on the first image set,
+                %%% because otherwise the check would be done on each frame
+                %%% of the movie.
+                if exist(NewFileAndPathName) == 2
+                    Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+                    if strcmp(Answer,'Cancel') == 1
+                        error('Image processing was canceled')
+                    end
+                end
+            end
+        end
+        fieldname = ['Movie', ImageName];
+        if handles.Current.SetBeingAnalyzed == 1
+            %%% If the movie does not yet exist, create the colormap
+            %%% field as empty to prevent errors when trying to save as a
+            %%% movie.
+            Movie.colormap = [];
             NumberExistingFrames = 0;
+        else
+            Movie = handles.Current.(fieldname);
+            NumberExistingFrames = size(Movie,2);
         end
         %%% Adds the image as the last frame in the movie.
         Movie(1,NumberExistingFrames+1).cdata = Image*256;
-        % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
-        %%% Saves the Movie under the appropriate file name.
-        movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
+        %%% Saves the movie to the handles structure.
+        handles.Current.(fieldname) = Movie;
+        
+        %%% Saves the Movie under the appropriate file name after the
+        %%% appropriate image set.
+        try MovieSavingIncrement = str2double(SaveMovieWhen);
+            MovieIsNumber = 1;
+        catch MovieIsNumber = 0;
+        end
+        if MovieIsNumber == 1
+            if rem(handles.Current.SetBeingAnalyzed,MovieSavingIncrement) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                try movie2avi(Movie,NewFileAndPathName)
+                catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
+                end
+            end
+        else
+            if strncmpi(SaveMovieWhen,'L',1) == 1
+                if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                    try movie2avi(Movie,NewFileAndPathName)
+                    catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
+                    end
+                end
+            end
+        end
 
-         % %%% See if this movie file already exists. If so, just
+
+        
+
+%%%%%%% THIS IS FUNCTIONAL, BUT SLOW >>>>>>>>>>>
+%%% It opens the entire file from the hard drive and re-saves the whole
+%%% thing.
+%         %%% If this movie file already exists, open it.
+%         try 
+%             
+%             Movie = aviread(NewFileAndPathName);
+%             NumberExistingFrames = size(Movie,2);
+%          %%% If the movie does not yet exist, create the colormap
+%          %%% field as empty to prevent errors when trying to save as a
+%          %%% movie.
+%          
+%          
+%         catch   Movie.colormap = [];
+%             NumberExistingFrames = 0;
+%         end
+%         %%% Adds the image as the last frame in the movie.
+%         Movie(1,NumberExistingFrames+1).cdata = Image*256;
+%         % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
+%         %%% Saves the Movie under the appropriate file name.
+%         movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
+
+% %%% ATTEMPT TO ONLY SAVE AT THE END>>>
+% %%% RIGHT NOW IT WON"T WORK IF WE ARE TRYING TO OVERWRITE AN OLD FILE.
+% 
+% %%% See if this movie file already exists. If so, 
+% %%% retrieve the movie data accumulated so far from handles.
+% 
+% if handles.Current.SetBeingAnalyzed == 1
+%     Movie = avifile(NewFileAndPathName);
+%     fieldname = ['Movie', ImageName];
+%     handles.Current.(fieldname) =  Movie;
+% end
+% 
+% %%% Add the frame to the movie.
+% fieldname = ['Movie', ImageName];
+% Movie = handles.Current.(fieldname);
+% Movie = addframe(Movie,Image);
+% 
+% %%% Closes the file.
+% if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+%     Movie = close(Movie);
+% end
+
+
+%%% FAILED ATTEMPT TO USE ADDFRAME.
+% %%% See if this movie file already exists. If so, just
 %         %%% retrieve the AviHandle from handles
 %         SUCCESSFULHANDLERETIREVAL = 0;
-        %         if exist(NewFileAndPathName) ~= 0
+%         if exist(NewFileAndPathName) ~= 0
 %             try
 %                 fieldname = ['AviHandle', ImageName];
 %                 AviHandle = handles.Current.(fieldname)
@@ -389,9 +477,6 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 %             handles.Current.(fieldname) =  AviHandle;
 %         end
 % 
-
-
-
 
     else
         try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);

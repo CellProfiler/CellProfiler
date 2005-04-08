@@ -124,6 +124,7 @@ end
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:3
+    
     ObjectName = ObjectNameList{i};
     if strcmp(ObjectName,'/') == 1
         break
@@ -306,6 +307,7 @@ for i = 1:3
 
             %%% Measure basic set of texture features
             [r,c] = find(LabelMatrixImage == Object);
+            index = sub2ind(size(LabelMatrixImage),r,c);
             Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
             Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
             Basic(Object,3) = std(OrigImageToBeAnalyzed(index));

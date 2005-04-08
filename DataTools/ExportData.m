@@ -52,9 +52,9 @@ if isempty(ExportInfo.ReportStyle)
 end
 
 %%% Export process info
-if strcmp(ExportInfo.ExportProcessInfo,'yes')
-    WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
-end
+%if strcmp(ExportInfo.ExportProcessInfo,'yes')
+%    WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
+%end
 
 %%% Export measurements
 if ~strcmp(ExportInfo.ReportStyle,'none')
@@ -273,8 +273,9 @@ else
     ObjectNames = [];
 end
 
+
 % Report info for each image set
-for imageset = 1:handles.Current.NumberOfImageSets
+for imageset = 1:length(VariableNames)
     fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
     fprintf(fid,'\tVariables:\n');
     for k = 1:length(VariableNames)

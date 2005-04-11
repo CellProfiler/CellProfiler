@@ -173,7 +173,7 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = A
 OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving mocies is time-consuming. See the help for this module for more details.
+%textVAR10 = If you are saving in movie format, do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving mocies is time-consuming. See the help for this module for more details.
 %defaultVAR10 = L
 SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 

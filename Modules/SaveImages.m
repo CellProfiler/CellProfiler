@@ -403,13 +403,13 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             Movie.colormap = [];
             NumberExistingFrames = 0;
         else
-            Movie = handles.Current.(fieldname);
+            Movie = handles.Pipeline.(fieldname);
             NumberExistingFrames = size(Movie,2);
         end
         %%% Adds the image as the last frame in the movie.
         Movie(1,NumberExistingFrames+1).cdata = Image*256;
         %%% Saves the movie to the handles structure.
-        handles.Current.(fieldname) = Movie;
+        handles.Pipeline.(fieldname) = Movie;
         
         %%% Saves the Movie under the appropriate file name after the
         %%% appropriate image set.
@@ -467,12 +467,12 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 % if handles.Current.SetBeingAnalyzed == 1
 %     Movie = avifile(NewFileAndPathName);
 %     fieldname = ['Movie', ImageName];
-%     handles.Current.(fieldname) =  Movie;
+%     handles.Pipeline.(fieldname) =  Movie;
 % end
 % 
 % %%% Add the frame to the movie.
 % fieldname = ['Movie', ImageName];
-% Movie = handles.Current.(fieldname);
+% Movie = handles.Pipeline.(fieldname);
 % Movie = addframe(Movie,Image);
 % 
 % %%% Closes the file.
@@ -488,7 +488,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 %         if exist(NewFileAndPathName) ~= 0
 %             try
 %                 fieldname = ['AviHandle', ImageName];
-%                 AviHandle = handles.Current.(fieldname)
+%                 AviHandle = handles.Pipeline.(fieldname)
 %                 AviHandle = addframe(AviHandle,Image);
 % %                AviHandle = close(AviHandle);
 %                 SUCCESSFULHANDLERETIREVAL = 1;
@@ -504,7 +504,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 %             AviHandle = close(AviHandle);
 % 
 %             fieldname = ['AviHandle', ImageName];
-%             handles.Current.(fieldname) =  AviHandle;
+%             handles.Pipeline.(fieldname) =  AviHandle;
 %         end
 % 
 

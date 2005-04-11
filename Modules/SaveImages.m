@@ -27,10 +27,35 @@ function handles = SaveImages(handles)
 % fieldname = CroppedImageName;
 % handles.Pipeline.(fieldname) = CroppedImage;
 %
-% Special notes for saving movies: This module has not been
+% Special notes for saving in movie format (avi): 
+% The movie will be saved after the last image set is processed. You
+% have the option to also save the movie periodically during image
+% processing, so that the partial movie will be available in case
+% image processing is canceled partway through. Saving movies in avi
+% format is quite slow, so you can enter a number to save the movie
+% after every Nth image set. For example, entering a 1 will save the
+% movie after every image set, so that if image analysis is aborted,
+% the movie up to that point will be saved. Saving large movie files
+% is time-consuming, so it may be better to save after every 10th
+% image set, for example. If you are processing multiple movies,
+% especially movies in subdirectories, you should save after every
+% image set (and also, be aware that this module has not been
+% thoroughly tested under those conditions). Note also that the movie
+% data is stored in the handles.Pipeline.Movie structure of the output
+% file, so you can retrieve the movie data there in case image
+% processing is aborted. When working with very large movies, you may
+% also want to save the CellProfiler output file every Nth image set
+% to save time, because the entire movie is stored in the output file.
+% See the SpeedUpCellProfiler module. This module has not been
 % extensively tested, particularly for how it handles color images and
-% how it handles images coming from subdirectories, or filenames made
-% by numerical increments.
+% how it handles images coming from subdirectories, multiple incoming
+% movie files, or filenames made by numerical increments. At the time
+% this module was written, Matlab was only capable of saving in
+% uncompressed avi format (at least on the UNIX platform), which is
+% time and space-consuming. You should convert the results to a
+% compressed movie format, like .mov using third-party software. For
+% suggested third-party software, see the help for the LoadMovies
+% modules.
 %
 % See also <nothing relevant>
 
@@ -148,7 +173,7 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = A
 OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = If saving a movie, the options are to save the movie file once, after the last image set (enter L for last), or after every Nth image set (enter a number). For example, entering a 1 will save the movie after every image set, so that if image analysis is aborted, the movie up to that point will be saved.  Saving large movie files is time-consuming, so it may be better to save after every 10th image set, for example. If you are processing multiple movies, especially movies in subdirectories, you should save after every image set (and also, be aware that this module has not been thoroughly tested under those conditions).
+%textVAR10 = Do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving mocies is time-consuming. See the help for this module for more details.
 %defaultVAR10 = L
 SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 

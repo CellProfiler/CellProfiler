@@ -5,12 +5,12 @@ function handles = SpeedUpCellProfiler(handles)
 % 
 % Allows faster image processing by refraining from saving the output
 % file after every image set is processed. Instead, the output file is
-% saved after every Nth image set (and in addition, always after the
-% last image set). For large output files, this can result in
-% substantial time savings. The only disadvantage is that if
-% processing is canceled prematurely, the output file will contain
-% only data up to the last multiple of N, even if several image sets
-% have been processed since then.
+% saved after every Nth image set (and always after the first and last
+% image sets). For large output files, this can result in substantial
+% time savings. The only disadvantage is that if processing is
+% canceled prematurely, the output file will contain only data up to
+% the last multiple of N, even if several image sets have been
+% processed since then.
 %
 % See also <nothing relevant>.
 

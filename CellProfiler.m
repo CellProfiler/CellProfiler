@@ -2211,7 +2211,7 @@ else
                     %%% handles.Current.SaveOutputHowOften is the
                     %%% number 1, so the output file will be saved
                     %%% every time.
-                    if rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                    if rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets | handles.Current.SetBeingAnalyzed == 1
                         eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
                             get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
                     end

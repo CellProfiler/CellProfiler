@@ -27,6 +27,11 @@ function handles = SaveImages(handles)
 % fieldname = CroppedImageName;
 % handles.Pipeline.(fieldname) = CroppedImage;
 %
+% Special notes for saving movies: This module has not been
+% extensively tested, particularly for how it handles color images and
+% how it handles images coming from subdirectories, or filenames made
+% by numerical increments.
+%
 % See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.

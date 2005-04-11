@@ -146,6 +146,8 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
 - Possibly add DataTools to the same toolbar, just have it divided in half?
 ************
 
+- OpenNewImageFile (one of the ImageTools) has a uigetfile command at the beginning which on the mac platform filters the directory's contents for All Matlab files, rather than all files.  This is sort of a buggy feature of matlab, so we'd like to figure out a workaround that allows us to use the uigetfile command with the filter turned off so that all files are visible/selectable.
+
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
 
 STEVE IS WORKING ON THIS >>> 

@@ -1793,18 +1793,17 @@ end
 function CloseWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Requests confirmation to really delete all the figure windows.
-Answer = CPquestdlg('Are you sure you want to close all open figure windows, timers, and message boxes?','Confirm','Yes','No','Yes');
+Answer = CPquestdlg('Are you sure you want to close all figure windows, timers, and message boxes that CellProfiler created?','Confirm','Yes','No','Yes');
 if strcmp(Answer, 'Yes') == 1
     %%% Lists all of the figure/graphics handles.
     AllHandles = findobj;
     %%% Checks which handles were open before 
     FigureHandlesToBeDeleted = setdiff(AllHandles, handles.Current.CurrentHandles);
     %%% Closes the figure windows.
-    delete(FigureHandlesToBeDeleted);
+    try delete(FigureHandlesToBeDeleted); end
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
-    delete(TimerHandles)
-    
+    try delete(TimerHandles); end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2038,6 +2037,7 @@ else
                 %%% image sets is set temporarily.
                 handles.Current.NumberOfImageSets = 1;
                 handles.Current.SetBeingAnalyzed = 1;
+                handles.Current.SaveOutputHowOften = 1;
                 %%% Marks the time that analysis was begun.
                 handles.Current.TimeStarted = datestr(now);
                 %%% Clear the buffers (Pipeline and Measurements)
@@ -2201,10 +2201,20 @@ else
                         guidata(gcbo, handles)
                     end
                     %%% Save all data that is in the handles structure to the output file 
-                    %%% name specified by the user.
-                    
-                    eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
-                        get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    %%% name specified by the user, but only save it
+                    %%% in the increments that the user has specified
+                    %%% (e.g. every 5th image set, every 10th image
+                    %%% set, as set by the SpeedUpCellProfiler
+                    %%% module), or if it is the last image set.  If
+                    %%% the user has not used the SpeedUpCellProfiler
+                    %%% module, then
+                    %%% handles.Current.SaveOutputHowOften is the
+                    %%% number 1, so the output file will be saved
+                    %%% every time.
+                    if rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                        eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                            get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    end
                     %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                     setbeinganalyzed = setbeinganalyzed + 1;
                     handles.Current.SetBeingAnalyzed = setbeinganalyzed;

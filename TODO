@@ -473,3 +473,7 @@ In PlotOrExportHistograms, fixed problem that filenames containing underscores w
 *Flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images. Now have option to display in either orientation.
 * Update help for this tool.
 
+4/12/05
+- Created new module IdentifyPrimLaplacianOfGaussian. Functions, but need to verify that it is doing as well as Perlman and Mitcheson's work.
+- Added ability to restart a partially completed run, using module Restart.m. TODO: small mods to 45 modules that check SetBeingAnalyzed == 1 and take some global action, some of these may need to be changed to SetBeingAnalyzed == StartingImageSet.
+-Made "Close Windows" button work better by labeling figures that CellProfiler creates.

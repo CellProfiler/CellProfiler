@@ -299,8 +299,10 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in LoadPipelineButton.
-function LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
+    LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
+errFlg = 0;
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
 else
@@ -317,6 +319,7 @@ LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
 %%% Error Checking for valid settings file.
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     errordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
+    errFlg = 1;
     return
 end
 %%% Figures out whether we loaded a Settings or Output file, and puts
@@ -333,11 +336,13 @@ try
     [NumberOfModules, MaxNumberVariables] = size(Settings.VariableValues);
     if (size(Settings.ModuleNames,2) ~= NumberOfModules)||(size(Settings.NumbersOfVariables,2) ~= NumberOfModules);
         errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+        errFlg = 1;
         return
     end
 catch
     errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
-        return
+    errFlg = 1;
+    return
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;
@@ -1793,17 +1798,18 @@ end
 function CloseWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Requests confirmation to really delete all the figure windows.
-Answer = CPquestdlg('Are you sure you want to close all figure windows, timers, and message boxes that CellProfiler created?','Confirm','Yes','No','Yes');
+Answer = CPquestdlg('Are you sure you want to close all open figure windows, timers, and message boxes?','Confirm','Yes','No','Yes');
 if strcmp(Answer, 'Yes') == 1
     %%% Lists all of the figure/graphics handles.
     AllHandles = findobj;
     %%% Checks which handles were open before 
     FigureHandlesToBeDeleted = setdiff(AllHandles, handles.Current.CurrentHandles);
     %%% Closes the figure windows.
-    try delete(FigureHandlesToBeDeleted); end
+    delete(FigureHandlesToBeDeleted);
     %%% Finds and closes timer windows.
     TimerHandles = findall(findobj, 'Name', 'Timer');
-    try delete(TimerHandles); end
+    delete(TimerHandles)
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2037,7 +2043,6 @@ else
                 %%% image sets is set temporarily.
                 handles.Current.NumberOfImageSets = 1;
                 handles.Current.SetBeingAnalyzed = 1;
-                handles.Current.SaveOutputHowOften = 1;
                 %%% Marks the time that analysis was begun.
                 handles.Current.TimeStarted = datestr(now);
                 %%% Clear the buffers (Pipeline and Measurements)
@@ -2055,6 +2060,8 @@ else
                 %%% This variable allows breaking out of nested loops.
                 break_outer_loop = 0;
 
+                startingImageSet = 1;
+                handles.Current.StartingImageSet = startingImageSet;
                 while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
                     setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                         a=clock;
@@ -2098,7 +2105,19 @@ else
                                 break
                             end
                         end
-                                            
+                                           
+                        %%% If the module passed out a new value for
+                        %%% StartingImageSet, then we set startingImageSet
+                        %%% to be that value and break all the way our to
+                        %%% the image set loop. The RestartImageSet in
+                        %%% handles is deleted because we never want it in
+                        %%% the output file.
+                        startingImageSet = handles.Current.StartingImageSet;
+                        if (setbeinganalyzed < startingImageSet)
+                            handles.Current.SetBeingAnalyzed = startingImageSet;
+                            guidata(gcbo,handles);
+                            break;  %% break out of SlotNumber loop
+                        end;
                         openFig = openFigures;
                         openFigures = [];
                         for i=1:length(openFig),
@@ -2124,7 +2143,7 @@ else
                         end
                         
                         moduletime_text = ['Module' handles.Current.CurrentModuleNumber ': ' TotalModuleTime];
-                        if (handles.Current.SetBeingAnalyzed) == 1 %& num2str(handles.Current.CurrentModuleNumber) == 1
+                        if (setbeinganalyzed) == startingImageSet %& num2str(handles.Current.CurrentModuleNumber) == 1
                             moduletime_text_all = moduletime_text;
                        ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)= {moduletime_text_all};
                         else
@@ -2134,6 +2153,11 @@ else
                         
                     end %%% ends loop over slot number
 
+                    %%% Completes the breakout to the image loop.
+                    if (setbeinganalyzed < startingImageSet)
+                        continue;
+                    end;
+                    
                     closeFig = closeFigures;
                     closeFigures = [];
                     for i=1:length(closeFig),
@@ -2167,8 +2191,8 @@ else
                     end
 
                     CancelWaiting = get(handles.timertexthandle,'string');
-
-
+                    
+                    
                     %%% Make calculations for the Timer window. Round to
                     %%% 1/10:th of seconds
                     time_elapsed = num2str(round(toc*10)/10);
@@ -2183,9 +2207,9 @@ else
                                 num2str(round(10*toc/setbeinganalyzed)/10)];
                     else time_per_set = 'Time per image set (seconds) = none completed'; 
                     end
-                    if setbeinganalyzed == 2
+                    if setbeinganalyzed == startingImageSet+1
                     time_set1 = ['Time for first image set = ' num2str(TotalSetTime)];
-                    elseif setbeinganalyzed <=2
+                    elseif setbeinganalyzed <=startingImageSet+1
                         time_set1 = '  ';
                     end
                     timertext = {timer_elapsed_text; number_analyzed; time_per_set; time_set1};
@@ -2201,20 +2225,16 @@ else
                         guidata(gcbo, handles)
                     end
                     %%% Save all data that is in the handles structure to the output file 
-                    %%% name specified by the user, but only save it
-                    %%% in the increments that the user has specified
-                    %%% (e.g. every 5th image set, every 10th image
-                    %%% set, as set by the SpeedUpCellProfiler
-                    %%% module), or if it is the last image set.  If
-                    %%% the user has not used the SpeedUpCellProfiler
-                    %%% module, then
-                    %%% handles.Current.SaveOutputHowOften is the
-                    %%% number 1, so the output file will be saved
-                    %%% every time.
-                    if rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets | handles.Current.SetBeingAnalyzed == 1
-                        eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
-                            get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
-                    end
+                    %%% name specified by the user.
+                    
+                    %%% Save everything, but don't want to write out
+                    %%% StartingImageSet field.
+                    handles.Current = rmfield(handles.Current,'StartingImageSet');
+                    eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                        get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    %%% Restore StartingImageSet for those modules that
+                    %%% need it.
+                    handles.Current.StartingImageSet = startingImageSet;
                     %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                     setbeinganalyzed = setbeinganalyzed + 1;
                     handles.Current.SetBeingAnalyzed = setbeinganalyzed;
@@ -2232,7 +2252,7 @@ else
                         TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
                         set_time_elapsed(handles.Current.SetBeingAnalyzed) = TotalSetTime;
                         ThisSet = handles.Current.SetBeingAnalyzed - 1;
-                        if handles.Current.SetBeingAnalyzed-1 == 1
+                        if handles.Current.SetBeingAnalyzed-1 == startingImageSet
                             set_text = ['        Set' num2str(handles.Current.SetBeingAnalyzed-1) '           '];
                             show_set_text = set_text;
                         else

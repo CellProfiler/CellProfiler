@@ -173,13 +173,21 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = A
 OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = If you are saving in movie format, do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving mocies is time-consuming. See the help for this module for more details.
+%textVAR10 = If you are saving in movie format, do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving movies is time-consuming. See the help for this module for more details.
 %defaultVAR10 = L
 SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = Warning! It is possible to overwrite existing files using this module!
+%textVAR11 = Do you want to rescale the images to use a full 8 bit (256 graylevel) dynamic range (Y or N)?
+%defaultVAR11 = N
+RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%%%VariableRevisionNumber = 6
+%textVAR12 = Specify the colormap to use (e.g. gray, jet, bone) for movie (avi) files
+%defaultVAR12 = gray
+ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+
+%textVAR13 = Warning! It is possible to overwrite existing files using this module!
+
+%%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -234,7 +242,12 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
     end
     Image = handles.Pipeline.(ImageName);
-
+    
+    if strncmpi(RescaleImage,'Y',1) == 1
+        LOW_HIGH = stretchlim(Image,0);
+        Image = imadjust(Image,LOW_HIGH,[0 1]);
+    end
+    
     %%% Checks whether the file format the user entered is readable by Matlab.
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
@@ -397,8 +410,8 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
         fieldname = ['Movie', ImageName];
         if handles.Current.SetBeingAnalyzed == 1
-            %%% If the movie does not yet exist, create the colormap
-            %%% field as empty to prevent errors when trying to save as a
+            %%% If the movie does not yet exist, creates the colormap
+            %%% field to prevent errors when trying to save as a
             %%% movie.
             Movie.colormap = [];
             NumberExistingFrames = 0;
@@ -419,14 +432,22 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
         if MovieIsNumber == 1
             if rem(handles.Current.SetBeingAnalyzed,MovieSavingIncrement) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-                try movie2avi(Movie,NewFileAndPathName)
+                %%% Specifying the size of the colormap is critical
+                %%% to prevent a bunch of annoying weird errors. I assume
+                %%% the avi format is always 8-bit (=256 levels).
+                eval(['ChosenColormap = colormap(',ColorMap,'(256))']);
+                try movie2avi(Movie,NewFileAndPathName,'colormap',ChosenColormap)
                 catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
                 end
             end
         else
             if strncmpi(SaveMovieWhen,'L',1) == 1
                 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-                    try movie2avi(Movie,NewFileAndPathName)
+                  %%% Specifying the size of the colormap is critical
+                %%% to prevent a bunch of annoying weird errors. I assume
+                %%% the avi format is always 8-bit (=256 levels).
+              eval(['ChosenColormap = colormap(',ColorMap,'(256))']);
+                    try movie2avi(Movie,NewFileAndPathName,'colormap',ChosenColormap)
                     catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
                     end
                 end

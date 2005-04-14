@@ -181,7 +181,7 @@ SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %defaultVAR11 = N
 RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Specify the colormap to use (e.g. gray, jet, bone) for movie (avi) files
+%textVAR12 = Specify the colormap to use (e.g. gray, jet, bone) for movie (avi) files. Note: the gray colormap may be appropriate even for color images.
 %defaultVAR12 = gray
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
@@ -410,28 +410,58 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
         fieldname = ['Movie', ImageName];
         if handles.Current.SetBeingAnalyzed == 1
-            %%% If the movie does not yet exist, creates the colormap
-            %%% field to prevent errors when trying to save as a
-            %%% movie.
-            Movie.colormap = [];
             NumberExistingFrames = 0;
         else
             Movie = handles.Pipeline.(fieldname);
-            NumberExistingFrames = size(Movie,2);
+            NumberExistingFrames = size(Movie,2)
         end
-        %%% Adds the image as the last frame in the movie.
-        Movie(1,NumberExistingFrames+1).cdata = Image*256;
+        %%% Determines whether the image is RGB.
+        if size(Image,3) == 3
+            IsRGB = 1;
+        else IsRGB = 0;
+        end
+        if IsRGB == 1
+            Movie(NumberExistingFrames+1) = im2frame(Image);
+        else
+            %%% For non-RGB images, the colormap will be specified all
+            %%% at once later, when the file is saved.
+            Movie(NumberExistingFrames+1).colormap = [];
+            %%% Adds the image as the last frame in the movie.
+            Movie(NumberExistingFrames+1).cdata = Image*256;
+        end
         %%% Saves the movie to the handles structure.
         handles.Pipeline.(fieldname) = Movie;
-        
+
         %%% Saves the Movie under the appropriate file name after the
         %%% appropriate image set.
         try MovieSavingIncrement = str2double(SaveMovieWhen);
             MovieIsNumber = 1;
         catch MovieIsNumber = 0;
         end
+        %%% Initializes this value in order to determine whether it's
+        %%% time to save the movie file.
+        TimeToSave = 0;
         if MovieIsNumber == 1
             if rem(handles.Current.SetBeingAnalyzed,MovieSavingIncrement) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                TimeToSave = 1;
+            end
+        else
+            if strncmpi(SaveMovieWhen,'L',1) == 1
+                if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                    TimeToSave = 1;
+                end
+            end
+        end
+
+        if TimeToSave == 1
+            %%% If the image is an RGB image (3-d), the colormaps
+            %%% have been calculated for each frame and are
+            %%% already stored in Movie.colormap.
+            if IsRGB == 1
+                try movie2avi(Movie,NewFileAndPathName)
+                catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
+                end
+            else
                 %%% Specifying the size of the colormap is critical
                 %%% to prevent a bunch of annoying weird errors. I assume
                 %%% the avi format is always 8-bit (=256 levels).
@@ -440,22 +470,8 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
                 catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
                 end
             end
-        else
-            if strncmpi(SaveMovieWhen,'L',1) == 1
-                if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-                  %%% Specifying the size of the colormap is critical
-                %%% to prevent a bunch of annoying weird errors. I assume
-                %%% the avi format is always 8-bit (=256 levels).
-              eval(['ChosenColormap = colormap(',ColorMap,'(256))']);
-                    try movie2avi(Movie,NewFileAndPathName,'colormap',ChosenColormap)
-                    catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
-                    end
-                end
-            end
         end
 
-
-        
 
 %%%%%%% THIS IS FUNCTIONAL, BUT SLOW >>>>>>>>>>>
 %%% It opens the entire file from the hard drive and re-saves the whole
@@ -478,6 +494,27 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 %         % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
 %         %%% Saves the Movie under the appropriate file name.
 %         movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
+
+%%% TRYING TO FIGURE OUT HOW TO ADD COLORMAP INFO TO RGB IMAGES>>>
+            %%% If the image is an RGB image (3-d), convert it to an
+            %%% indexed image plus a colormap to allow saving as a
+            %%% movie.
+            %%% I THINK ONLY ONE COLORMAP IS ALLOWED FOR THE WHOLE
+            %%% MOVIE.>>>>>>>>>>>>> MAYBE NEED TO SPECIFY A SINGLE COLORMAP 
+            %%% HERE RATHER THAN HAVING IT AUTO CALCULATED.
+%             [Image,map] = rgb2ind(Image,256,'nodither');
+%             Movie(NumberExistingFrames+1).colormap = map;
+%             %%% Adds the image as the last frame in the movie.
+%             %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
+%             %%% 
+%             Movie(NumberExistingFrames+1).cdata = Image;
+          %   [Image,map] = rgb2ind(Image,256,'nodither');
+            %%% Adds the image as the last frame in the movie.
+            %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
+            %%% 
+           % Movie(NumberExistingFrames+1).cdata = Image;
+
+
 
 % %%% ATTEMPT TO ONLY SAVE AT THE END>>>
 % %%% RIGHT NOW IT WON"T WORK IF WE ARE TRYING TO OVERWRITE AN OLD FILE.

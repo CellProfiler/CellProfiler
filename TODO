@@ -224,8 +224,6 @@ Also, ask Ola whether we should take out the old method of finding the preferred
          use of "while" in the PreviewAndSaveColumnOfSampleInfo
          subfunction in CellProfiler.m
 
-- Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
-
 JAMES MIGHT HAVE DONE SOME OF THIS >>>> - Plot data button: allow adding error bars reflecting stdev or
        sem to the single parameter, multiple images bar plot (matlab
        central has error bar code). 
@@ -266,11 +264,11 @@ JAMES MIGHT HAVE DONE SOME OF THIS >>>> - Plot data button: allow adding error b
 
 - There is no way to save images which are normally calculated
        for display only when running on the cluster, because the
-       figure windows are not open so the calculations are skipped. 
+       figure windows are not open so the calculations are skipped. (maybe this won't be used often enough to matter.)
 
 - Many modules that load images from the hard drive use a subfunction called RetrieveImageFileNames, but it's slightly different when used in different contexts. It would be nice to consolidate at least part of this function into a standalone subfunction.  This allows people to change something like which file extensions are ignored in the one subfunction rather than every individual module.
 
-- Not certain whether to do this: we could change the Identify modules and the SaveImages module so that if the user has chosen to save a label matrix image, the user has a choice between saving the grayscale label matrix (in which case they should be warned if they have more than 256 objects and if saving in 8 bit format), or a colored version, created using label2rgb on the spot in the SaveImages module rather than having the colored version saved to the handles structure by the Identify modules, which requires Variables in the Identify modules asking the user if they might want to save the images later in order to save processing time.
+- We should change the Identify modules and the SaveImages module so that if the user has chosen to save a label matrix image, the user has a choice between saving the grayscale label matrix (in which case they should be warned if they have more than 256 objects and if saving in 8 bit format), or a colored version, created using label2rgb on the spot in the SaveImages module rather than having the colored version saved to the handles structure by the Identify modules, which requires Variables in the Identify modules asking the user if they might want to save the images later in order to save processing time.
 
 - Fix interactive zoom button (within Show Image button):
          (1) It seems to always work OK the first time you click on
@@ -311,7 +309,7 @@ JAMES MIGHT HAVE DONE SOME OF THIS >>>> - Plot data button: allow adding error b
 
 - Would like to be able to transform data; e.g. normalize for
        slide-scale variation, calculate the percent of cells in each
-       image meeting certain criteria. 
+       image meeting certain criteria.
 
 - Make an image sorter to take an incoming image and break the
        loop if the image does not meet particular conditions
@@ -321,7 +319,7 @@ JAMES MIGHT HAVE DONE SOME OF THIS >>>> - Plot data button: allow adding error b
 
 - Make a module using code from ImageJ
        http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
-       k-means clustering. 
+       k-means clustering.
 
 [Do the following prior to releasing the public version:
 - Make reference sheet with short descriptions of the modules.
@@ -452,6 +450,8 @@ Done (James and Anne) - Remove all 'cd' commands from modules and use full pathn
 Done (Anne, with Kyle writing the Help) - Load movies module, with ability to load each frame of a .avi file.  (Look at AvitoImageSlices.m)
 
 - DONE, Delimiter was not functioning on anne's computer, but it seems to work now.- Allow the user to 'export' the current settings into some nice, person-readable text file so they have a permanent record. 
+
+DONE (Anne - SpeedUpCellProfiler module): - Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
 
 Steve Lowe fixed the following:
 2/25/05

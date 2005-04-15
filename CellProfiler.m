@@ -73,8 +73,6 @@ global closeFigures openFigures;
 closeFigures = [];
 openFigures = [];
 
-%%% Label we attach to figures (as UserData) so we know they are ours
-CellProfilerFigureLabel.Application = 'CellProfiler';
 %%% Determines the startup directory.
 handles.Current.StartupDirectory = pwd;
 addpath(pwd);
@@ -526,6 +524,8 @@ cancelbuttoncallback = 'LoadSavedWindowHandle = findobj(''name'',''LoadSavedWind
 MainWinPos = get(handles.figure1,'Position');
 Color = [0.925490196078431 0.913725490196078 0.847058823529412];
 
+%%% Label we attach to figures (as UserData) so we know they are ours
+userData.Application = 'CellProfiler';
 LoadSavedWindowHandle = figure(...
 'Units','pixels',...
 'Color',Color,...
@@ -536,7 +536,8 @@ LoadSavedWindowHandle = figure(...
 'Position',[MainWinPos(1)+MainWinPos(3)/3 MainWinPos(2) MainWinPos(3)*4/5 MainWinPos(4)],...
 'Resize','off',...
 'HandleVisibility','on',...
-'Tag','figure1');
+'Tag','figure1',...
+'UserData',userData);
 
 savedbox = uicontrol(...
 'Parent',LoadSavedWindowHandle,...
@@ -1268,6 +1269,8 @@ CancelButtonCallback = 'delete(gcf)';
 MainWinPos = get(handles.figure1,'Position');
 Color = [0.7 0.7 0.7];
 
+%%% Label we attach to figures (as UserData) so we know they are ours
+userData.Application = 'CellProfiler';
 SetPreferencesWindowHandle = figure(...
 'Units','pixels',...
 'Color',Color,...
@@ -1278,7 +1281,8 @@ SetPreferencesWindowHandle = figure(...
 'Position',[MainWinPos(1)+MainWinPos(3)/3 MainWinPos(2) MainWinPos(3)*2/3 MainWinPos(4)],...
 'Resize','off',...
 'HandleVisibility','on',...
-'Tag','figure1');
+'Tag','figure1',...
+'UserData',userData);
 
 InfoText = uicontrol(...
 'Parent',SetPreferencesWindowHandle,...
@@ -1802,22 +1806,30 @@ function CloseWindowsButton_Callback(hObject, eventdata, handles) %#ok We want t
 %%% Requests confirmation to really delete all the figure windows.
 Answer = CPquestdlg('Are you sure you want to close all open figure windows, timers, and message boxes?','Confirm','Yes','No','Yes');
 if strcmp(Answer, 'Yes') == 1
-    %%% Lists all of the figure/graphics handles.
-    AllHandles = findobj;
-    %%% Checks which handles were open before 
+    %%% All CellProfiler windows are now marked with 
+    %%%      UserData.Application = 'CellProfiler'
+    %%% so they can be found and deleted. This will get rid both windows
+    %%% from current CP session and leftover windows from previous CP runs
+    %%% (e.g., if just close CP with windows still open)
     GraphicsHandles = findobj('-property','UserData');
     for k=1:length(GraphicsHandles)
         if (ishandle(GraphicsHandles(k)))
             userData = get(GraphicsHandles(k),'UserData');
-            if (isfield(userData,'Application') && strcmp(userData.Application, 'CellProfiler'))
+            if (isfield(userData,'Application') && ...
+                isstr(userData.Application) && ...
+                strcmp(userData.Application, 'CellProfiler'))
                 %%% Closes the figure windows.
-                delete(GraphicsHandles(k));
+                try
+                    delete(GraphicsHandles(k));
+                end
             end
         end
     end
-    %%% Finds and closes timer windows.
+    %%% Finds and closes timer windows, which have HandleVisibility off.
     TimerHandles = findall(findobj, 'Name', 'Timer');
-    delete(TimerHandles)
+    try
+        delete(TimerHandles)
+    end
     
 end
 
@@ -1968,9 +1980,11 @@ else
                 PotentialBottom = [0, (ScreenHeight-720)];
                 BottomOfTimer = max(PotentialBottom);
                 %%% Creates the Timer window.
+                %%% Label we attach to figures (as UserData) so we know they are ours
+                userData.Application = 'CellProfiler';
                 timer_handle = figure('name','Timer','position',[0 BottomOfTimer 495 120],...
                     'menubar','none','NumberTitle','off','IntegerHandle','off', 'HandleVisibility', 'off', ...
-                    'color',[0.7,0.7,0.9]);
+                    'color',[0.7,0.7,0.9],'UserData',userData);
                 %%% Sets initial text to be displayed in the text box within the timer window.
                 timertext = 'First image set is being processed';
                 %%% Creates the text box within the timer window which will display the
@@ -2040,7 +2054,7 @@ else
                 set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
 
-                userData = [];
+                %%% Label we attach to figures (as UserData) so we know they are ours
                 userData.Application = 'CellProfiler';
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
@@ -2544,23 +2558,20 @@ ToolsCellArray(1) = [];
 okbuttoncallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
 cancelbuttoncallback = 'ToolsHelpWindowHandle = findobj(''name'',''ToolsHelpWindow''); global toolsChoice; toolsChoice = 0; close(ToolsHelpWindowHandle), clear ToolsHelpWindowHandle';
 
-userData.Application = 'CellProfiler';
 MainWinPos = get(handles.figure1,'Position');
 Color = [0.7 0.7 0.9];
-% ToolsHelpWindowHandle = figure(...
-% 'Units','pixels',...
-% 'Color',Color,...
-% 'DockControls','off',...
-% 'MenuBar','none',...
-% 'Name','ToolsHelpWindow',...
-% 'NumberTitle','off',...
-% 'Position',[MainWinPos(1)+MainWinPos(3)/3 MainWinPos(2) MainWinPos(3)/2 MainWinPos(4)*2/3],...
-% 'Resize','off',...
-% 'HandleVisibility','on',...
-% 'Tag','ToolsHelpWindowHandle',...
-% 'UserData',CellProfilerFigureLabel);
 
-%%% Remove the UserData line because it was causing errors.
+%%% If there is a (are) ToolsHelpWindow(s) open, close it (them);
+%%% otherwise, ok/cancel callbacks can get confused
+ToolsHelpWindowHandles = findobj('name','ToolsHelpWindow');
+if ~isempty(ToolsHelpWindowHandles)
+    try
+        close(ToolsHelpWindowHandles);
+    end
+end
+
+%%% Label we attach to figures (as UserData) so we know they are ours
+userData.Application = 'CellProfiler';
 ToolsHelpWindowHandle = figure(...
 'Units','pixels',...
 'Color',Color,...
@@ -2571,7 +2582,8 @@ ToolsHelpWindowHandle = figure(...
 'Position',[MainWinPos(1)+MainWinPos(3)/3 MainWinPos(2) MainWinPos(3)/2 MainWinPos(4)*2/3],...
 'Resize','off',...
 'HandleVisibility','on',...
-'Tag','ToolsHelpWindowHandle');
+'Tag','ToolsHelpWindowHandle',...
+'UserData',userData);
 
 choosetext = uicontrol(...
 'Parent',ToolsHelpWindowHandle,...
@@ -2612,6 +2624,8 @@ cancelbutton = uicontrol(...
 'String','Cancel',...
 'Tag','cancelbutton');
 
+toolsChoice = 0; %%% Makes sure toolsChoice indicates no selection
+                 %%% in case user closes window using x icon or Close Windows button
 uiwait(ToolsHelpWindowHandle);
 
 if(toolsChoice ~= 0)

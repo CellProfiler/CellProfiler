@@ -9,6 +9,9 @@ set(helpFig,'name', title);
 set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
 helpFigPos = get(helpFig,'position');
 set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
+%%% Label we attach to figures (as UserData) so we know they are ours
+userData.Application = 'CellProfiler';
+set(helpFig,'UserData',userData);
 
 helpUI = uicontrol(...
     'Parent',helpFig,...

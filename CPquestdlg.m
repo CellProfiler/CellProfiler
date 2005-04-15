@@ -113,6 +113,9 @@ QuestFig=dialog(                                    ...
     'HandleVisibility','callback'                 , ...
     'Tag'             ,Title                        ...
     );
+%%% Label we attach to figures (as UserData) so we know they are ours
+userData.Application = 'CellProfiler';
+set(QuestFig,'UserData',userData);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% Set Positions %%%

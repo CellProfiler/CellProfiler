@@ -61,7 +61,7 @@ if ~strcmp(ExportInfo.ReportStyle,'none')
     WriteMeasurements(handles,ExportInfo,RawPathname);
 end
 
-msgbox('','Exportation completed')
+msgbox('          ','Exportation completed')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,7 +264,7 @@ VariableNames = fieldnames(handles.Pipeline);
 Variableindex = find(cellfun('isempty',strfind(VariableNames,'FileList'))==0);
 VariableNames = VariableNames(Variableindex);
 
-% Get objects segmented
+% Get segmented objects 
 if isfield(handles,'Measurements') && isfield(handles.Measurements,'GeneralInfo')
     ObjectNames   = fieldnames(handles.Measurements.GeneralInfo);
     Thresholdindex = find(cellfun('isempty',strfind(ObjectNames,'ImageThreshold'))==0);
@@ -275,11 +275,21 @@ end
 
 
 % Report info for each image set
-for imageset = 1:length(VariableNames)
+for imageset = 1:handles.Current.NumberOfImageSets
     fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
     fprintf(fid,'\tVariables:\n');
     for k = 1:length(VariableNames)
-        fprintf(fid,'\t\t%s: %s\n',VariableNames{k}(9:end),handles.Pipeline.(VariableNames{k}){imageset});
+        
+        % Construct a image filename, the input images may be from a movie file
+        ImageName = handles.Pipeline.(VariableNames{k})(:,imageset);
+        if length(ImageName) == 1
+            ImageName = ImageName{1};
+        elseif length(ImageName) == 2
+            ImageName = sprintf('%s %d',ImageName{1},ImageName{2});
+        else
+            errordlg('Unrecognized filename convention in handles.Pipeline');
+        end
+        fprintf(fid,'\t\t%s: %s\n',VariableNames{k}(9:end),ImageName);
     end
     fprintf(fid,'\n');
     fprintf(fid,'\tObjects:\n');
@@ -323,7 +333,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 Measurements = tmp;
             else
                 for j = 1:length(tmp)
-                    Measurements(j) = {cat(2,Measurements{j},tmp{j})};
+                    Measurements(j) = {cat(2,Measurements{j},real(tmp{j}))};   % The real should be removed, it's a quick fix to protect from imaginary measurements
                 end
             end
 

@@ -573,7 +573,7 @@ H11 = - sum(p_xminusy.*log(p_xminusy+eps));
 H12 = (HXY-HXY1)/max(HX,HY);
 
 % H13. Information Measure of Correlation 2
-H13 = sqrt(1-exp(-2*(HXY2-HXY)));
+H13 = real(sqrt(1-exp(-2*(HXY2-HXY))));             % An imaginary result has been encountered once, reason unclear
 
 % H14. Max correlation coefficient (not currently used)
 % Q = zeros(Levels);

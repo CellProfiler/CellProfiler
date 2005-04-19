@@ -328,8 +328,9 @@ end
 if (isfield(LoadedSettings, 'Settings')),
     Settings = LoadedSettings.Settings;
 else
-    Settings = LoadedSettings.handles.Settings;
+    try Settings = LoadedSettings.handles.Settings;
     Settings.NumbersOfVariables = LoadedSettings.handles.Settings.NumbersOfVariables;
+    end
 end
 
 try

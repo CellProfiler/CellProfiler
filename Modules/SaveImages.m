@@ -181,7 +181,7 @@ SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %defaultVAR11 = N
 RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Specify the colormap to use (e.g. gray, jet, bone) for movie (avi) files. Note: the gray colormap may be appropriate even for color images.
+%textVAR12 = For grayscale images, specify the colormap to use (e.g. gray, jet, bone) if you are saving movie (avi) files.
 %defaultVAR12 = gray
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 

@@ -24,7 +24,7 @@ function varargout = CellProfiler(varargin)
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
 %   In Han Kang    <inthek@mit.edu>
-%confi
+%
 % $Revision$
 
 
@@ -1805,7 +1805,7 @@ end
 function CloseWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Requests confirmation to really delete all the figure windows.
-Answer = CPquestdlg('Are you sure you want to close all open figure windows, timers, and message boxes?','Confirm','Yes','No','Yes');
+Answer = CPquestdlg('Are you sure you want to close all figure windows, timers, and message boxes that CellProfiler created?','Confirm','Yes','No','Yes');
 if strcmp(Answer, 'Yes') == 1
     %%% All CellProfiler windows are now marked with 
     %%%      UserData.Application = 'CellProfiler'
@@ -2071,6 +2071,7 @@ else
                 %%% image sets is set temporarily.
                 handles.Current.NumberOfImageSets = 1;
                 handles.Current.SetBeingAnalyzed = 1;
+                handles.Current.SaveOutputHowOften = 1;
                 %%% Marks the time that analysis was begun.
                 handles.Current.TimeStarted = datestr(now);
                 %%% Clear the buffers (Pipeline and Measurements)
@@ -2253,13 +2254,23 @@ else
                         guidata(gcbo, handles)
                     end
                     %%% Save all data that is in the handles structure to the output file 
-                    %%% name specified by the user.
-                    
-                    %%% Save everything, but don't want to write out
+                     %%% name specified by the user, but only save it
+                     %%% in the increments that the user has specified
+                     %%% (e.g. every 5th image set, every 10th image
+                     %%% set, as set by the SpeedUpCellProfiler
+                     %%% module), or if it is the last image set.  If
+                     %%% the user has not used the SpeedUpCellProfiler
+                     %%% module, then
+                     %%% handles.Current.SaveOutputHowOften is the
+                     %%% number 1, so the output file will be saved
+                     %%% every time.
+                     %%% Save everything, but don't want to write out
                     %%% StartingImageSet field.
                     handles.Current = rmfield(handles.Current,'StartingImageSet');
-                    eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
-                        get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    if rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets | handles.Current.SetBeingAnalyzed == 1
+                         eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                             get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                     end
                     %%% Restore StartingImageSet for those modules that
                     %%% need it.
                     handles.Current.StartingImageSet = startingImageSet;

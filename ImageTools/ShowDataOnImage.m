@@ -51,7 +51,8 @@ function handles = ShowDataOnImage(handles)
 % $Revision$
 
 %%% Asks the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
+
 if RawFileName == 0,return,end
 
 load(fullfile(RawPathname,RawFileName));
@@ -94,8 +95,8 @@ ImageFileName = handles.Measurements.GeneralInfo.(SelectedImageName){SampleNumbe
 h = CPmsgbox(['Browse to find the image called ', ImageFileName,'.']);
 %%% Opens a user interface window which retrieves a file name and path
 %%% name for the image to be displayed.
-[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'*.*'),'Select the image to view');
-delete(h)
+[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+try delete(h), end
 
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
 if FileName == 0,return,end
@@ -177,7 +178,7 @@ uicontrol('Parent',FigureHandle, ...
 %%% image.
 global TextHandles
 TextHandles{FigureHandle} = text(Xlocations(:,FigureHandle) , Ylocations(:,FigureHandle) , StringListOfMeasurements,...
-    'HorizontalAlignment','center', 'color', 'white');
+    'HorizontalAlignment','center', 'color', 'blue');
 %%% Puts the menu and tool bar in the figure window.
 set(FigureHandle,'toolbar', 'figure')
 

@@ -60,7 +60,7 @@ end
 if ~strcmp(ExportInfo.ReportStyle,'none')
     WriteMeasurements(handles,ExportInfo,RawPathname);
 end
-msgbox('                                 ','Exportation completed')
+CPmsgbox('Exporting is completed.')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

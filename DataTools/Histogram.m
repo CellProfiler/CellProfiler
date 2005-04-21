@@ -89,7 +89,7 @@ function handles = PlotOrExportHistogrs(handles)
 
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.
-[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'),'Select the raw measurements file');
+[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
 %%% Allows canceling.
 if RawFileName == 0
     return

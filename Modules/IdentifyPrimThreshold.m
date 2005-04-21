@@ -307,7 +307,10 @@ if strcmp(upper(Threshold), 'ALL') == 1
         Threshold = handles.Pipeline.(fieldname);
     end
 elseif strcmp(upper(Threshold), 'EACH') == 1
-    Threshold = ThresholdAdjustmentFactor*CPgraythresh(OrigImageToBeAnalyzed);
+    Threshold = ThresholdAdjustmentFactor*CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
+    %%% Replaced the following line to accomodate calculating the
+    %%% threshold for images that have been masked.
+    %    Threshold = ThresholdAdjustmentFactor*CPgraythresh(OrigImageToBeAnalyzed);
 else Threshold = str2double(Threshold);
 end
 MinimumThreshold = str2num(MinimumThreshold);

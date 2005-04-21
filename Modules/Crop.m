@@ -146,11 +146,11 @@ CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = R
 Shape = upper(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma)
+%textVAR04 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma).
 %defaultVAR04 = 1,1
 LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma)
+%textVAR05 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma). Enter 'end' for a position if you want to use the maximal bottom or right-most pixel.
 %defaultVAR05 = 100,100
 RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -164,16 +164,6 @@ BinaryCropImageName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-%%% Reads (opens) the image to be used for cropping and assigns it to a
-%%% variable. There is an error catching mechanism in case the image cannot
-%%% be found or opened.
-if Shape == 'F'
-    try
-    BinaryCropImage = CPimread(BinaryCropImageName, handles);
-    catch error(['Image processing was canceled because the Crop module could not find the binary cropping image.  It was supposed to be here: ', BinaryCropImageName, ', but a readable image does not exist at that location or with that name.  Perhaps there is a typo.'])
-    end
-end
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
@@ -190,15 +180,6 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
-
-        
-%%% For cropping from a file image, checks whether the crop image is the
-%%% same size as the image to be processed.
-if Shape == 'F'
-    if size(OrigImage(:,:,1)) ~= size(BinaryCropImage)
-        error('Image processing was canceled because the binary image selected for cropping in the Crop module is not the same size as the image to be cropped.  The pixel dimensions must be identical.')
-    end 
-end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -218,6 +199,26 @@ drawnow
 % the SaveImages module.
 
 if Shape == 'F'
+    if handles.Current.SetBeingAnalyzed == 1
+        %%% Reads (opens) the image to be used for cropping and assigns it to a
+        %%% variable. There is an error catching mechanism in case the image cannot
+        %%% be found or opened.
+        try BinaryCropImage = CPimread(BinaryCropImageName, handles);
+        catch error(['Image processing was canceled because the Crop module could not find the binary cropping image.  It was supposed to be here: ', BinaryCropImageName, ', but a readable image does not exist at that location or with that name.  Perhaps there is a typo.'])
+        end
+        %%% Checks whether the crop image is the
+        %%% same size as the image to be processed.
+        if size(OrigImage(:,:,1)) ~= size(BinaryCropImage)
+            error('Image processing was canceled because the binary image selected for cropping in the Crop module is not the same size as the image to be cropped.  The pixel dimensions must be identical.')
+        end
+        %%% The Binary Crop image is saved to the handles
+        %%% structure so it can be used to crop subsequent image sets.
+        fieldname = ['Cropping', CroppedImageName];
+        handles.Pipeline.(fieldname) = BinaryCropImage;
+    end
+    %%% Retrieves the Cropping image from the handles structure.
+    fieldname = ['Cropping', CroppedImageName];
+    BinaryCropImage = handles.Pipeline.(fieldname);
     %%% Sets pixels in the original image to zero if those pixels are zero in
     %%% the binary image file.
     PrelimCroppedImage = OrigImage;
@@ -237,6 +238,15 @@ if Shape == 'F'
     CroppedImage = PrelimCroppedImage;
     CroppedImage(:,ColumnsToDelete,:) = [];
     CroppedImage(RowsToDelete,:,:) = [];
+    %%% The Binary Crop Mask image is saved to the handles
+    %%% structure so it can be used in subsequent image sets to
+    %%% show which parts of the image were cropped (this will be used
+    %%% by CPgraythresh).
+    BinaryCropMaskImage = BinaryCropImage;
+    BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
+    BinaryCropMaskImage(RowsToDelete,:,:) = [];
+    fieldname = ['CropMask', CroppedImageName];
+    handles.Pipeline.(fieldname) = BinaryCropMaskImage;
 
 elseif Shape == 'R'
     %%% Extracts the top, left, bottom, right pixel positions from the user's
@@ -244,9 +254,21 @@ elseif Shape == 'R'
     LeftTopNumerical = str2num(LeftTop); %#ok We want MLint error checking to ignore this line.
     Left = LeftTopNumerical(1);
     Top = LeftTopNumerical(2);
-    RightBottomNumerical = str2num(RightBottom); %#ok We want MLint error checking to ignore this line.
-    Right = RightBottomNumerical(1);
-    Bottom = RightBottomNumerical(2);
+
+    try Right = str2num(RightBottom{1}); %#ok We want MLint error checking to ignore this line.
+    %%% If the value is not numerical, then the user selected 'end',
+    %%% so we should select the maximal right-most pixel value.
+    catch Size = size(OrigImage(:,:,1));
+        Right = Size(2);
+    end
+    try Bottom = str2num(RightBottom{2}); %#ok We want MLint error checking to ignore this line.
+    %%% If the value is not numerical, then the user selected 'end',
+    %%% so we should select the maximal right-most pixel value.
+    catch Size = size(OrigImage(:,:,1));
+        Bottom = Size(1);
+    end
+
+    
     if Left == 0 || Right == 0 || Bottom == 0 || Top ==0
         error('There was a problem in the Cropping module. One of the values entered for the rectangular cropping pixel positions was zero: all values must be integers greater than zero.')
     end
@@ -283,7 +305,7 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         %%% ellipse.
         CroppingFigureHandle = figure;
         imshow(ImageToBeCropped), colormap('gray');pixval
-        title('Click on 5 or more points to be used to create a cropping ellipse & then press Enter.')
+        title('Click on 5 or more points to be used to create a cropping ellipse & then press Enter. Press delete to erase the most recently clicked point.')
         [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
         close(CroppingFigureHandle)
         x = Pre_y;
@@ -313,12 +335,12 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         %%% Need to flip X and Y.
         BinaryCropImage = BinaryCropImage';
         %%% Displays the result in a new figure window.
-        figure;
-        imagesc(BinaryCropImage);title('Cropping Mask')
-        colormap(gray)
-        hold on
-        plot(Pre_x,Pre_y, 'r.')
-        drawnow
+        % figure;
+        % imagesc(BinaryCropImage);title('Cropping Mask')
+        % colormap(gray)
+        % hold on
+        % plot(Pre_x,Pre_y, 'r.')
+        % drawnow
         %%% The Binary Crop image is saved to the handles
         %%% structure so it can be used to crop subsequent image sets.
         fieldname = ['Cropping', CroppedImageName];
@@ -350,6 +372,15 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
     CroppedImage(:,ColumnsToDelete,:) = [];
     drawnow
     CroppedImage(RowsToDelete,:,:) = [];
+    %%% The Binary Crop Mask image is saved to the handles
+    %%% structure so it can be used in subsequent image sets to
+    %%% show which parts of the image were cropped (this will be used
+    %%% by CPgraythresh).
+    BinaryCropMaskImage = BinaryCropImage;
+    BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
+    BinaryCropMaskImage(RowsToDelete,:,:) = [];
+    fieldname = ['CropMask', CroppedImageName];
+    handles.Pipeline.(fieldname) = BinaryCropMaskImage;
 else error('You must choose rectangular cropping (R) or cropping from a file (F) or drawing an ellipse (EE or EA) to use the Crop module.')
 end
 

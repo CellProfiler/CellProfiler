@@ -276,7 +276,7 @@ drawnow
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if Threshold == 0
-    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
+    Threshold = CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
 MinimumThreshold = str2num(MinimumThreshold);

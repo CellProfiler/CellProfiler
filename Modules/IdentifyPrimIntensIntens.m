@@ -305,7 +305,11 @@ MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(sum(getnhood(MaximaMask))),
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if Threshold == 0
-    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
+    Threshold = CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
+    %%% Replaced the following line to accomodate calculating the
+    %%% threshold for images that have been masked.
+    % Threshold = CPgraythresh(OriginalImage);
+    %    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
 MinimumThreshold = str2num(MinimumThreshold);

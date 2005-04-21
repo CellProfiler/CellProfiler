@@ -107,7 +107,12 @@ MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask))
 
 
 %%% Thresholds the image to eliminate dim maxima.
-if Threshold == '-', Threshold = CPgraythresh(OriginalImage); end
+if Threshold == '-',
+    Threshold = CPgraythresh(OriginalImage,handles,ImageName);
+    %%% Replaced the following line to accomodate calculating the
+    %%% threshold for images that have been masked.
+    % Threshold = CPgraythresh(OriginalImage);
+end
 MaximaImage = MaximaImage > Threshold;
 
 %%% Overlays the nuclear markers (maxima) on the inverted original image so

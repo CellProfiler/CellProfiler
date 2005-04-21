@@ -274,8 +274,11 @@ drawnow
 drawnow
 %%% Determines the threshold to use. 
 if Threshold == 0
-    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
-    %%% Adjusts the threshold by a correction factor.  
+    Threshold = CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
+    %%% Replaced the following line to accomodate calculating the
+    %%% threshold for images that have been masked.
+    %    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
+    %%% Adjusts the threshold by a correction factor.
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
 MinimumThreshold = str2num(MinimumThreshold);

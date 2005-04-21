@@ -305,7 +305,10 @@ end
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if Threshold == 0
-    Threshold = CPgraythresh(EnhancedInvertedImage);
+    Threshold = CPgraythresh(EnhancedInvertedImage,handles,ImageName);
+    %%% Replaced the following line to accomodate calculating the
+    %%% threshold for images that have been masked.
+    %    Threshold = CPgraythresh(EnhancedInvertedImage);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 else
 end

@@ -117,6 +117,8 @@ Settings =      ModuleNames: {1x6 cell}
 
 WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 
+- Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
+
 - Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
 
 ***********

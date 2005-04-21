@@ -5,11 +5,19 @@ function handles = AreaImage(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the segmented objects ?
+%textVAR01 = What did you call the segmented objects?
 %defaultVAR01 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%%%VariableRevisionNumber = 01
+%textVAR02 = Enter the largest size (in micrometers) for the small bin
+%defaultVAR02 = 0.6724
+SmallBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
+
+%textVAR03 = Enter the smallest size (in micrometers) for the large bin
+%defaultVAR03 = 1.519625
+LargeBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+
+%%%VariableRevisionNumber = 1
 
 %%% Retrieves the label matrix image that contains the segmented objects
 fieldname = ['Segmented', ObjectName];
@@ -20,6 +28,10 @@ if isfield(handles.Pipeline, fieldname) == 0,
 end
 LabelMatrixImage = handles.Pipeline.(fieldname);
 
+if SmallBinMax > LargeBinMin
+    error('Image processing has been canceled because the value you entered in the Area Image module for the largest size for the small bin is greater than the smallest size for the large bin.')
+end
+
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
@@ -28,8 +40,8 @@ props = regionprops(LabelMatrixImage,'Area');              % Area in pixels
 area  = cat(1,props.Area)*PixelSize^2;                                 
 
 % Quantize areas
-index1 = find(area < 100);
-index3 = find(area > 225);
+index1 = find(area < SmallBinMax);
+index3 = find(area > LargeBinMin);
 index2 = setdiff(1:length(area),[index1;index3]);
 qarea = zeros(size(area));
 qarea(index1) = 1;qarea(index2) = 2;qarea(index3) = 3;
@@ -44,7 +56,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 figure(ThisModuleFigureNumber);
 image(areamap+1)
 cmap = [0 0 0;              % RGB color for background
-        1 0 0;              % RGB color for objects with area < 100
-        0 1 0;              % RGB color for objects with 100 < area < 225
-        0 0 1];             % RGB color for objects with area > 225
+        1 0 0;              % RGB color for objects with area < SmallBinMax
+        0 1 0;              % RGB color for objects with SmallBinMax < area < LargeBinMin
+        0 0 1];             % RGB color for objects with area > LargeBinMin
 colormap(cmap)

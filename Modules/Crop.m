@@ -304,7 +304,7 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         %%% Displays the image and asks the user to choose points for the
         %%% ellipse.
         CroppingFigureHandle = figure;
-        imshow(ImageToBeCropped), colormap('gray');pixval
+        imagesc(ImageToBeCropped), colormap('gray');pixval
         title('Click on 5 or more points to be used to create a cropping ellipse & then press Enter. Press delete to erase the most recently clicked point.')
         [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
         close(CroppingFigureHandle)

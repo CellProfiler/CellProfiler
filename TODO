@@ -5,7 +5,6 @@ REARRANGED JANUARY 27th, 2005  IN ORDER OF PRIORITY
 ---------------------------------------------------
 
 WANT IT NOW:
-
 - Change File Renamer to work with a load images module rather than independently, so that we can rename every third file, for example, or rename based on existing text.
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
@@ -117,6 +116,8 @@ Settings =      ModuleNames: {1x6 cell}
 ---------------------------------------------------
 
 WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
+
+- Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
 
 ***********
 +++ Make image tools more accessible/intuitive:

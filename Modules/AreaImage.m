@@ -20,9 +20,12 @@ if isfield(handles.Pipeline, fieldname) == 0,
 end
 LabelMatrixImage = handles.Pipeline.(fieldname);
 
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2double(handles.Settings.PixelSize);
+
 % Get areas
-props = regionprops(LabelMatrixImage,'Area');
-area  = cat(1,props.Area);
+props = regionprops(LabelMatrixImage,'Area');              % Area in pixels
+area  = cat(1,props.Area)*PixelSize^2;                                 
 
 % Quantize areas
 index1 = find(area < 100);
@@ -39,8 +42,9 @@ areamap = qarea(LabelMatrixImage+1);
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 figure(ThisModuleFigureNumber);
-imagesc(areamap)
-
-
-
-
+image(areamap+1)
+cmap = [0 0 0;              % RGB color for background
+        1 0 0;              % RGB color for objects with area < 100
+        0 1 0;              % RGB color for objects with 100 < area < 225
+        0 0 1];             % RGB color for objects with area > 225
+colormap(cmap)

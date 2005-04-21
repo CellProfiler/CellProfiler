@@ -285,7 +285,9 @@ Threshold = max(MinimumThreshold,Threshold);
 ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
 %%% Fills holes in the thresholded image so that stray dim pixels within the
 %%% objects do not count as edges of the objects.
-FilledThresholdedImage = imfill(ThresholdedOrigImage, 'holes');
+FilledThresholdedImage = imfill(double(ThresholdedOrigImage), 'holes');
+
+
 %%% Computes distance transform.
 DistanceTransformedImage = bwdist(~FilledThresholdedImage);
 %%% Essentially thresholds again to get rid of background pixels.
@@ -338,7 +340,7 @@ BinaryObjectsImage = im2bw(WhiteWatershedOnInvertedOrig,InvertedThreshold);
 %%% Inverts the BinaryObjectsImage.
 InvertedBinaryImage = imcomplement(BinaryObjectsImage);
 %%% Fills holes, then identifies objects in the binary image.
-PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
+PrelimLabelMatrixImage1 = bwlabel(imfill(double(InvertedBinaryImage),'holes'));
 %%% Finds objects larger and smaller than the user-specified size.
 %%% Finds the locations and labels for the pixels that are part of an object.
 AreaLocations = find(PrelimLabelMatrixImage1);
@@ -374,7 +376,7 @@ drawnow
 %%% Converts PrelimLabelMatrixImage4 to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,.5);
 %%% Fills in holes in the FinalBinaryPre image.
-FinalBinary = imfill(FinalBinaryPre, 'holes');
+FinalBinary = imfill(double(FinalBinaryPre), 'holes');
 drawnow
 %%% Converts the image to label matrix format. Even if the above step
 %%% is excluded (filling holes), it is still necessary to do this in order

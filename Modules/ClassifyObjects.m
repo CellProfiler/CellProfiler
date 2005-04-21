@@ -351,8 +351,8 @@ handles.Pipeline.(fieldname) = RGBimage;
 
 %%% Saves the number in each class to the handles structure.
 fieldname = ['NumberSmall',ObjectName];
-handles.Measurements.Classify.(fieldname) = NumberSmall;
+handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = NumberSmall;
 fieldname = ['NumberMedium',ObjectName];
-handles.Measurements.Classify.(fieldname) = NumberMedium;
+handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = NumberMedium;
 fieldname = ['NumberLarge',ObjectName];
-handles.Measurements.Classify.(fieldname) = NumberLarge;
+handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = NumberLarge;

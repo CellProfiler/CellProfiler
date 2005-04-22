@@ -182,7 +182,6 @@ else
     error(['Your response to the question "Are you using this module to smooth a projection image?" was not recognized. Please enter Y or N.'])
 end
 
-
 %%% If we make it to this point, it is OK to proceed to calculating the smooth
 %%% image, etc.
 

@@ -159,9 +159,9 @@ qarea = zeros(size(area));
 qarea(index1) = 1;qarea(index2) = 2;qarea(index3) = 3;
 qarea = [0;qarea];
 
-NumberSmall = length(index1)
-NumberMedium = length(index2)
-NumberLarge =  length(index3)
+NumberSmall = length(index1);
+NumberMedium = length(index2);
+NumberLarge =  length(index3);
 
 % Generate area map
 areamap = qarea(LabelMatrixImage+1);
@@ -351,8 +351,8 @@ handles.Pipeline.(fieldname) = RGBimage;
 
 %%% Saves the number in each class to the handles structure.
 fieldname = ['NumberSmall',ObjectName];
-handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = NumberSmall;
+handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberSmall};
 fieldname = ['NumberMedium',ObjectName];
-handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = NumberMedium;
+handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberMedium};
 fieldname = ['NumberLarge',ObjectName];
-handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = NumberLarge;
+handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberLarge};

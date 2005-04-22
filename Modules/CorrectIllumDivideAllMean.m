@@ -320,7 +320,8 @@ if handles.Current.SetBeingAnalyzed == 1
                         IllumCorrectPathName = handles.Current.DefaultOutputDirectory;
                     end
                     PathAndFileName = fullfile(IllumCorrectPathName,IllumCorrectFileName);
-                    save(PathAndFileName, 'IlluminationImage')
+                    Image = IlluminationImage;
+                    save(PathAndFileName, 'Image')
                 catch error(['There was a problem saving the illumination correction image to the hard drive. The attempted filename was ', IllumCorrectFileName, '.'])
                 end
             end

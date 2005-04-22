@@ -1,4 +1,4 @@
-defunction handles = Crop(handles)
+function handles = Crop(handles)
 
 % Help for the Crop module: 
 % Category: Pre-processing
@@ -255,20 +255,29 @@ elseif Shape == 'R'
     Left = LeftTopNumerical(1);
     Top = LeftTopNumerical(2);
 
-    try Right = str2num(RightBottom{1}); %#ok We want MLint error checking to ignore this line.
-    %%% If the value is not numerical, then the user selected 'end',
-    %%% so we should select the maximal right-most pixel value.
+    try RightBottomNumerical = str2num(RightBottom); %#ok We want MLint error checking to ignore this line.
+        try
+            Right = RightBottomNumerical(1); %#ok We want MLint error checking to ignore this line.
+            %%% If the value is not numerical, then the user selected 'end',
+            %%% so we should select the maximal right-most pixel value.
+        catch Size = size(OrigImage(:,:,1));
+            Right = Size(2);
+        end
     catch Size = size(OrigImage(:,:,1));
         Right = Size(2);
     end
-    try Bottom = str2num(RightBottom{2}); %#ok We want MLint error checking to ignore this line.
-    %%% If the value is not numerical, then the user selected 'end',
-    %%% so we should select the maximal right-most pixel value.
+    try RightBottomNumerical = str2num(RightBottom); %#ok We want MLint error checking to ignore this line.
+        try Bottom = RightBottomNumerical(2); %#ok We want MLint error checking to ignore this line.
+            %%% If the value is not numerical, then the user selected 'end',
+            %%% so we should select the maximal right-most pixel value.
+        catch Size = size(OrigImage(:,:,1));
+            Bottom = Size(1);
+        end
     catch Size = size(OrigImage(:,:,1));
         Bottom = Size(1);
     end
 
-    
+
     if Left == 0 || Right == 0 || Bottom == 0 || Top ==0
         error('There was a problem in the Cropping module. One of the values entered for the rectangular cropping pixel positions was zero: all values must be integers greater than zero.')
     end
@@ -286,17 +295,36 @@ elseif Shape == 'R'
 elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
     if handles.Current.SetBeingAnalyzed == 1 || strcmp(Shape, 'EE') == 1
         if strcmp(Shape, 'EA') == 1
-            %%% Asks the user to open an image file upon which to draw the
-            %%% ellipse.
-            %%% Opens a user interface window which retrieves a file name and path
-            %%% name for the image to be used as a test image.
-            [CroppingFileName,CroppingPathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*'),'Select the image to use for cropping');
-            %%% If the user presses "Cancel", the FileName will = 0 and an error
-            %%% message results.
-            if CroppingFileName == 0
-                error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
-            else
-                ImageToBeCropped = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
+            %%% The user can choose an image from the pipeline or from the hard drive to use for
+            %%% cropping.
+            Answer = CPquestdlg('Choose an image to be used for cropping...','Select image','Image file from hard drive','Image from this image set','Image from this image set');
+            if strcmp(Answer,'Cancel') == 1
+                error('Image processing was canceled by the user in the Crop module.')
+            elseif strcmp(Answer,'Image from this image set') == 1
+                
+     %           SelectedImageName = inputdlg('Enter the name of an image created by a previous module to be used for cropping', 'Select image',1,{ImageName},'on')            
+                
+                try ImageToBeCropped = OrigImage;
+                    
+                catch 
+                    error('Image processing was canceled because you did not select a valid image to use for cropping in the Crop module.')
+                end
+                
+                
+                
+            elseif strcmp(Answer,'Image file from hard drive') == 1
+                %%% Asks the user to open an image file upon which to draw the
+                %%% ellipse.
+                %%% Opens a user interface window which retrieves a file name and path
+                %%% name for the image to be used as a test image.
+                [CroppingFileName,CroppingPathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*'),'Select the image to use for cropping');
+                %%% If the user presses "Cancel", the FileName will = 0 and an error
+                %%% message results.
+                if CroppingFileName == 0
+                    error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
+                else
+                    ImageToBeCropped = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
+                end
             end
         else ImageToBeCropped = OrigImage;
         end
@@ -306,7 +334,8 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         CroppingImageHandle = imagesc(ImageToBeCropped);
         colormap('gray'); pixval
         title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
-        imcontrast(CroppingImageHandle);
+        try imcontrast(CroppingImageHandle); end
+        try imcontrast(CroppingImageHandle); end
         [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
         close(CroppingFigureHandle)
         x = Pre_y;

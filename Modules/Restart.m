@@ -139,10 +139,13 @@ handles.Current.StartingImageSet = handles.Current.SetBeingAnalyzed + 1;
 handles.Current.CurrentModuleNumber = '01';
 
 %%% Reassign figures handles and open figure windows
+userData.Application = 'CellProfiler';
 for i=1:handles.Current.NumberOfModules;
     if iscellstr(handles.Settings.ModuleNames(i)) == 1
         handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
-            figure('name',[char(handles.Settings.ModuleNames(i)), ' Display'], 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],'color',RestartFigColor);
+            figure('name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
+            'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
+            'color',RestartFigColor,'UserData',userData);
     end
 end
 guidata(gcbo,handles);

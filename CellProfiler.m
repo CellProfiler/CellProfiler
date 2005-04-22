@@ -2172,7 +2172,7 @@ else
                         end
                         
                         moduletime_text = ['Module' handles.Current.CurrentModuleNumber ': ' TotalModuleTime];
-                        if (setbeinganalyzed) == startingImageSet %& num2str(handles.Current.CurrentModuleNumber) == 1
+                        if (setbeinganalyzed) == startingImageSet
                             moduletime_text_all = moduletime_text;
                        ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)= {moduletime_text_all};
                         else

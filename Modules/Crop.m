@@ -288,10 +288,9 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         if strcmp(Shape, 'EA') == 1
             %%% Asks the user to open an image file upon which to draw the
             %%% ellipse.
-            Pathname = fullfile(handles.Current.DefaultImageDirectory,'*')
             %%% Opens a user interface window which retrieves a file name and path
             %%% name for the image to be used as a test image.
-            [CroppingFileName,CroppingPathname] = uigetfile('*.*','Select the image to use for cropping',Pathname);
+            [CroppingFileName,CroppingPathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*'),'Select the image to use for cropping');
             %%% If the user presses "Cancel", the FileName will = 0 and an error
             %%% message results.
             if CroppingFileName == 0
@@ -304,8 +303,10 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         %%% Displays the image and asks the user to choose points for the
         %%% ellipse.
         CroppingFigureHandle = figure;
-        imagesc(ImageToBeCropped), colormap('gray');pixval
+        CroppingImageHandle = imagesc(ImageToBeCropped);
+        colormap('gray'); pixval
         title('Click on 5 or more points to be used to create a cropping ellipse & then press Enter. Press delete to erase the most recently clicked point.')
+        imcontrast(CroppingImageHandle);
         [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
         close(CroppingFigureHandle)
         x = Pre_y;

@@ -132,7 +132,11 @@ CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 60
 BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%%%VariableRevisionNumber = 01
+%textVAR04 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
+%defaultVAR04 = 50
+SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -155,7 +159,6 @@ end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
 
-        
 %%% Checks whether the chosen block size is larger than the image itself.
 [m,n] = size(OrigImage);
 MinLengthWidth = min(m,n);
@@ -194,36 +197,83 @@ MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'max([min(x(:));
 %%% size as the original image. Bilinear interpolation is used to ensure the
 %%% values do not dip below zero.
 IlluminationImage1 = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
-%%% The following is used to fit a low-dimensional polynomial to the mean image.
-%%% The result, IlluminationImage, is an image of the smooth illumination function.
-[x,y] = meshgrid(1:size(IlluminationImage1,2), 1:size(IlluminationImage1,1));
-x2 = x.*x;
-y2 = y.*y;
-xy = x.*y;
-o = ones(size(IlluminationImage1));
-Ind = find(IlluminationImage1 > 0);
-Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(IlluminationImage1(Ind));
-IlluminationImage2 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(IlluminationImage1));
 
-%%% Corrects if the illumination function dips below .005.
-MinimumValue = min(min(IlluminationImage2));
-if MinimumValue <= 0.005
-    IlluminationImage3 = IlluminationImage2;
-    IlluminationImage3(IlluminationImage3 <= 0.005) = .005;
-elseif MinimumValue < 0
-    IlluminationImage3 = IlluminationImage2 - MinimumValue + .005;
-else IlluminationImage3 = IlluminationImage2;
+%%%%%%%%%%%%%%%%%
+%%% THIS IS FROM THE SMOOTHIMAGEFORILLUMCORRECTION MODULE>>>>>
+
+%%% Smooths the OrigImage according to the user's specifications.
+if strcmpi(SmoothingMethod,'P') == 1
+    %%% The following is used to fit a low-dimensional polynomial to the original image.
+    [x,y] = meshgrid(1:size(OrigImage,2), 1:size(OrigImage,1));
+    x2 = x.*x;
+    y2 = y.*y;
+    xy = x.*y;
+    o = ones(size(OrigImage));
+    Ind = find(OrigImage > 0);
+    Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
+    drawnow
+    SmoothedImage1 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
+    %%% The final SmoothedImage is produced by dividing each
+    %%% pixel of the smoothed image by a scalar: the minimum
+    %%% pixel value anywhere in the smoothed image. (If the
+    %%% minimum value is zero, .00000001 is substituted instead.)
+    %%% This rescales the SmoothedImage from 1 to some number.
+    %%% This ensures that the final, corrected image will be in a
+    %%% reasonable range, from zero to 1.
+    drawnow
+    SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
+    %%% Note: the following "imwrite" saves the illumination
+    %%% correction image in TIF format, but the image is compressed
+    %%% so it is not as smooth as the image that is saved using the
+    %%% "save" function below, which is stored in matlab ".mat"
+    %%% format.
+    % imwrite(SmoothedImage, 'SmoothedImage.tif', 'tif')
+else try ArtifactWidth = str2num(SmoothingMethod);
+        ArtifactRadius = 0.5*ArtifactWidth;
+        StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
+ %       MsgBoxHandle = CPmsgbox('Now calculating the illumination function, which may take a long time.');
+        SmoothedImage1 = ordfilt2(IlluminationImage1, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
+        SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
+ %       MsgBox = 'Calculations for the illumination function are complete.';
+    catch
+        error(['The text you entered for the smoothing method in the Smooth Image For Illum Correction module is unrecognizable for some reason. You must enter a positive, even number or the letter P.  Your entry was ',SmoothingMethod])
+    end
 end
 
-%%% Produces the final IlluminationImage by dividing each pixel of the
-%%% illumination image by a scalar: the minimum pixel value anywhere in the
-%%% illumination image. This rescales the IlluminationImage from 1 to some
-%%% number. This ensures that the final, corrected image will be in a
-%%% reasonable range, from zero to 1.
-IlluminationImage = IlluminationImage3 ./ min(min(IlluminationImage3));
+%%% <<< THIS IS FROM THE SMOOTHIMAGEFORILLUMCORRECTION MODULE
+%%%%%%%%%%%%%%%%%
+
+% OLD >>>>
+% %%% The following is used to fit a low-dimensional polynomial to the mean image.
+% %%% The result, IlluminationImage, is an image of the smooth illumination function.
+% [x,y] = meshgrid(1:size(IlluminationImage1,2), 1:size(IlluminationImage1,1));
+% x2 = x.*x;
+% y2 = y.*y;
+% xy = x.*y;
+% o = ones(size(IlluminationImage1));
+% Ind = find(IlluminationImage1 > 0);
+% Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(IlluminationImage1(Ind));
+% IlluminationImage2 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(IlluminationImage1));
+% 
+% %%% Corrects if the illumination function dips below .005.
+% MinimumValue = min(min(IlluminationImage2));
+% if MinimumValue <= 0.005
+%     IlluminationImage3 = IlluminationImage2;
+%     IlluminationImage3(IlluminationImage3 <= 0.005) = .005;
+% elseif MinimumValue < 0
+%     IlluminationImage3 = IlluminationImage2 - MinimumValue + .005;
+% else IlluminationImage3 = IlluminationImage2;
+% end
+% %%% Produces the final IlluminationImage by dividing each pixel of the
+% %%% illumination image by a scalar: the minimum pixel value anywhere in the
+% %%% illumination image. This rescales the IlluminationImage from 1 to some
+% %%% number. This ensures that the final, corrected image will be in a
+% %%% reasonable range, from zero to 1.
+% IlluminationImage = IlluminationImage3 ./ min(min(IlluminationImage3));
+
 %%% The original image is corrected based on the IlluminationImage,
 %%% by dividing each pixel by the value in the IlluminationImage.
-CorrectedImage1 = OrigImage ./ IlluminationImage;
+CorrectedImage1 = OrigImage ./ SmoothedImage;
 %%% Rescales the corrected image so the max equals the max of the original
 %%% image.
 CorrectedImage2 = CorrectedImage1 ./ max(max(CorrectedImage1));
@@ -272,7 +322,7 @@ drawnow
     subplot(2,2,2); imagesc(CorrectedImage); title('Illumination Corrected Image');
     %%% A subplot of the figure window is set to display the illumination
     %%% function image.
-    subplot(2,2,3); imagesc(IlluminationImage); title('Illumination Function');
+    subplot(2,2,3); imagesc(SmoothedImage); title('Illumination Function');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

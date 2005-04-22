@@ -350,9 +350,14 @@ fieldname = ['ColorClassified',ObjectName];
 handles.Pipeline.(fieldname) = RGBimage;
 
 %%% Saves the number in each class to the handles structure.
-fieldname = ['NumberSmall',ObjectName];
-handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberSmall};
-fieldname = ['NumberMedium',ObjectName];
-handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberMedium};
-fieldname = ['NumberLarge',ObjectName];
-handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberLarge};
+%fieldname = ['NumberSmall',ObjectName];
+%handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberSmall};
+%fieldname = ['NumberMedium',ObjectName];
+%handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberMedium};
+%fieldname = ['NumberLarge',ObjectName];
+%handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberLarge};
+
+handles.Measurements.Classify.NumberOfCellsFeatures = {'Number of small cells','Number of medium cells','Number of large cells'};
+handles.Measurements.Classify.NumberOfCells(handles.Current.SetBeingAnalyzed) = {[NumberSmall NumberMedium NumberLarge]};
+
+

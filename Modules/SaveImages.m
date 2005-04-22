@@ -198,7 +198,7 @@ drawnow
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
-if handles.Current.SetBeingAnalyzed == 1;
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);

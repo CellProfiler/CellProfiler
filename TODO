@@ -117,6 +117,14 @@ Settings =      ModuleNames: {1x6 cell}
 
 WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 
+- Add a new line to the variable descriptions for CorrIllumDivideEachMin (and probably other CorrectIllum modules) describing that you can save the illumination function using the SaveImages module with '.mat' format. For CorrectIllum*All* modules, I think you also might want to save the projection image, which we should tell the user is also available for saving using the SaveImages module with '.mat' format. For Crop module, add the line saying that the two Crop Masks can be saved for non-rectangular cropping (describe each one).
+
+- There used to be two functions: CorrectIllumDivideEachMin_9 and _10. Now there's one function without a number on the end, so we need to find any references in the other modules (esp. their help cross-referencing) and make sure the name is up to date.
+
+- Make the part of the SmoothImageForIlluminationCorrection module that is copied into the CorrectIllumDivideEachMin module a subfunction and then have each module call it, rather than having the same code copied twice. This subfunction should also then likely be called by the other CorrectIllum modules.
+
+- We have modified several built in matlab functions and produced new functions with the CP prefix (they are all in the main CellProfiler folder). It's unclear which lines we have modified, so use the Matlab tool 'FileComparison Report' to show how the modified functions differ from the original and mark those lines in the code with comments so that we are aware of the differences.
+
 - Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
 
 - Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.

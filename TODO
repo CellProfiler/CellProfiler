@@ -353,6 +353,17 @@ POST-PUBLIC RELEASE SUPPORT:
 
 WANT IT SOMEDAY:
 
+- Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
+The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
+Segment cells
+Estimate illumination variation from the background and correct the original image
+Re-segment cells
+Re-estimate illumination variation from the background and correct the original image
+Re-segment cells
+....
+until convergence.
+The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
+
 - All modules: look for speed improvements (esp. imresize?)
 
 +++ To aid in interactive selection of settings, allow user to

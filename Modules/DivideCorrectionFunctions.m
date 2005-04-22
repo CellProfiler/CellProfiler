@@ -242,7 +242,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         title('Input Identified Object Projection Image');
         subplot(2,2,3); imagesc(IlluminationFunctionImage);
         title('Resulting Illumination Function Image');
-    elseif handles.Current.SetBeingAnalyzed == 1
+    elseif handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Activates the appropriate figure window.
         figure(ThisModuleFigureNumber);
         title({'Waiting for projection images to be calculated.';'The results of this module will be shown when the last image set is processed.'});

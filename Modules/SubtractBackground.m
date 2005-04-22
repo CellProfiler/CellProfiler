@@ -301,7 +301,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
         %%% Sets the figure window to half width the first time through.
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
-        if handles.Current.SetBeingAnalyzed == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             newsize(3) = originalsize(3)*.5;
             set(ThisModuleFigureNumber, 'position', newsize);
         end

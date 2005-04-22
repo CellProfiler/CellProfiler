@@ -465,7 +465,7 @@ for i = 1:5
         newsize = originalsize;
         newsize(1) = 0;
         newsize(2) = 0;
-        if handles.Current.SetBeingAnalyzed == 1 && i == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet && i == 1
             newsize(3) = originalsize(3)*.5;
             originalsize(3) = originalsize(3)*.5;
             set(ThisModuleFigureNumber, 'position', originalsize);

@@ -296,7 +296,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % window or in the wrong figure window, or in help dialog boxes.
     %%% Sets the width of the figure window to be appropriate (half width),
     %%% the first time through the set.
-    if handles.Current.SetBeingAnalyzed == 1 | strncmpi(ProjectionImageOrNot,'Y',1) == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet...
+            | strncmpi(ProjectionImageOrNot,'Y',1) == 1
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(3) = originalsize(3)/2;

@@ -153,8 +153,11 @@ while isempty(AddressEmail) == 0
     [AddressTo{numAddresses} AddressEmail] = strtok(AddressEmail, ',');
 end
 
-if strcmp(FirstImageEmail, 'Y') == 1 & SetBeingAnalyzed == 1
+if strcmp(FirstImageEmail, 'Y') == 1 & SetBeingAnalyzed == handles.Current.StartingImageSet
     subject = 'CellProfiler:  First image set has been completed';
+    if (SetBeingAnalyzed > 1)
+        subject = [subject,' after Restart, image number ',num2str(SetBeingAnalyzed)];
+    end
     sendmail(AddressTo,subject,subject);
 elseif strcmp(LastImageEmail, 'Y') == 1 & SetBeingAnalyzed == handles.Current.NumberOfImageSets
     subject = 'CellProfiler:  Last image set has been completed';
@@ -172,7 +175,7 @@ end
 %%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if SetBeingAnalyzed == 1
+if SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure
     %%% window is closed the first time through the module.
     %%% Determines the figure number.

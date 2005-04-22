@@ -401,7 +401,7 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Sets the window to be half as wide as usual.
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;

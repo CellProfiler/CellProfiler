@@ -205,7 +205,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Sets the width of the figure window to be appropriate (half width).
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(3) = 0.5*originalsize(3);

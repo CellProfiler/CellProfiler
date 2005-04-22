@@ -247,7 +247,7 @@ guidata(gcbo, handles);
 %%% FIGURE WINDOW %%%
 %%%%%%%%%%%%%%%%%%%%
 
-if SetBeingAnalyzed == 1
+if SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure
     %%% window is closed the first time through the module.
     %%% Determines the figure number.

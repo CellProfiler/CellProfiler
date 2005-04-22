@@ -344,7 +344,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     newsize = originalsize;
     newsize(1) = 0;
     newsize(2) = 0;
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         newsize(3) = originalsize(3)*.5;
         originalsize(3) = originalsize(3)*.5;
         set(ThisModuleFigureNumber, 'position', originalsize,'color',[1 1 1]);

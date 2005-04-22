@@ -591,7 +591,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     figure(ThisModuleFigureNumber);
     originalsize = get(ThisModuleFigureNumber, 'position');
     newsize = originalsize;
-    if handles.Current.SetBeingAnalyzed == 1 && i == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet && i == 1
         newsize(3) = originalsize(3)*.5;
         set(ThisModuleFigureNumber, 'position', newsize);
     end

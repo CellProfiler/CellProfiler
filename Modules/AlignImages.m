@@ -252,7 +252,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
             AlignedRGB(:,:,3) = AlignedImage1;
         end
     end
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Sets the window to be only 250 pixels wide.
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;

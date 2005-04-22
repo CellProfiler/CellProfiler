@@ -296,7 +296,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % window or in the wrong figure window, or in help dialog boxes.
     %%% Sets the width of the figure window to be appropriate (half width and height),
     %%% the first time through the set.
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(2) = originalsize(2) + originalsize(4)/2;
@@ -306,7 +306,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
     end
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
-        if handles.Current.SetBeingAnalyzed == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             %%% The projection image is displayed the first time through
             %%% the set. For subsequent image sets, this figure is not
             %%% updated at all, to prevent the need to load the projection

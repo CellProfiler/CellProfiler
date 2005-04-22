@@ -393,7 +393,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
-    if handles.Current.SetBeingAnalyzed == 1;
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
         %%% Sets the width of the figure window to be appropriate (half width).
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;

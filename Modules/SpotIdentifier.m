@@ -201,12 +201,19 @@ if isfield(handles.Pipeline, ImageName) == 0
 end
 OriginalImage = handles.Pipeline.(ImageName);
 
-if handles.Current.SetBeingAnalyzed == 1
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number to display in.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
     FigureHandle = figure(ThisModuleFigureNumber); ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
-else FigureHandle = figure; ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+else
+    %%% A new figure is opened each time through the pipeline so that the
+    %%% resulting labeled figures are all available to the user for
+    %%% viewing.
+    FigureHandle = figure; ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+    %%% Tag new figure so "Close Windows" knows to delete it.
+    userData.Application = 'CellProfiler';
+    set(FigureHandle,'UserData',userData);
 end
 drawnow
 RotateMethod = upper(RotateMethod);

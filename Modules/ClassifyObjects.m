@@ -99,12 +99,12 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Enter the largest size (in micrometers) for the small bin
-%defaultVAR02 = 0.6724
+%textVAR02 = Enter the largest size (in square micrometers) for the small bin
+%defaultVAR02 = 0.67
 SmallBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
 
-%textVAR03 = Enter the smallest size (in micrometers) for the large bin
-%defaultVAR03 = 1.519625
+%textVAR03 = Enter the smallest size (in square micrometers) for the large bin
+%defaultVAR03 = 1.5
 LargeBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
 %%%VariableRevisionNumber = 1

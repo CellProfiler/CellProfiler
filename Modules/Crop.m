@@ -1,4 +1,4 @@
-function handles = Crop(handles)
+defunction handles = Crop(handles)
 
 % Help for the Crop module: 
 % Category: Pre-processing
@@ -305,7 +305,7 @@ elseif strcmp(Shape, 'EA') == 1 || strcmp(Shape, 'EE') == 1
         CroppingFigureHandle = figure;
         CroppingImageHandle = imagesc(ImageToBeCropped);
         colormap('gray'); pixval
-        title('Click on 5 or more points to be used to create a cropping ellipse & then press Enter. Press delete to erase the most recently clicked point.')
+        title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
         imcontrast(CroppingImageHandle);
         [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
         close(CroppingFigureHandle)

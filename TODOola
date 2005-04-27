@@ -1,36 +1,16 @@
-On the Mac at least, close windows button often causes X windows to freeze up and become unresponsive so that it becomes impossible to properly quit CellProfiler and therefore Matlab. Check the code and see whether the way we are performing this function makes sense or if you can see why it would be causing problems.
+Getting the SQL conversion working. We are really starting to process large data sets routinely so
+we are likely to need this sometime in the next week.
 
-Look into font sizes.  What In Han has tried so far is changing the font/handle object units to characters; as recommended on the Mathworks website.  However, this still made the figures look different on different platforms.
+Modify segmentation algorithms so that they store number of objects and location.
 
-Decide whether to incorporate bug fixes from Matt Tudor into AlgIdentifyPrimAdaptThresholdC (see %MT lines in AlgTempMattTudor.m) 
+Check that importing gene names still works and that their output is exportable. This is something
+I have not used in a while, so there may be latent bugs already.  It is not something we are using
+routinely right now, because mostly we are doing huge jobs where Ray manually imports gene names
+and id's into the database, but it should be nearly functional and it's worth keeping its format up
+with the rest of CP.
 
-    Make a module to identify and count and measure objects within
-    previously identified objects (e.g. nucleoli or organelles or
-    speckles within nuclei or cells).  Not sure how to save the
-    individual measurements for each sub-object.
+And after *that*, polishing up IdentifyEasy so that it is consistent with the other IdentifyPrim
+modules (e.g. compatible with downstream modules)
 
-    Make a shape-based IdentifyPrim module which recognizes
-    oblong/elliptical objects rather than perfectly round
-    objects. Actually, adopt the current IdentifyPrimShapeIntens to
-    take in an ellipticity factor which can be set to 1 for perfect
-    circles or some other number for oblong objects.  There is a paper
-    somewhere detailing an ellipse-based shape transform (maybe Ray
-    has it?).
-
-Also, check through all the IdentifyPrim modules (and maybe IdentifySec too), to determine whether they are streamlines. Right now, for example, there are two compute-intensive watershed steps in IdentifyPrimIntensIntens and I am not entirely certain they are both necessary.
-
-   Evaluate and possible incorporate feature measurements from Bob
-   Murphy's lab into our Measure modules (Murphy, Velliste, Porreca
-   2003 etc).
-
-    Add more texture measurements to the MeasureIntensityTexture
-    module. Perhaps use texture measurements from Murphy, Velliste,
-    and Porreca 2003.  The image processing toolbox 5.0.1 has new
-    texture analysis tools, though they would need to be adapted to
-    deal with individual objects rather than entire images:
-       entropy -- Calculates the entropy of an intensity image
-       entropyfilt -- Calculates the local entropy of an intensity image
-       graycomatrix -- Computes the gray-level co-occurrence matrix from an image
-       graycoprops -- Extracts properties from a gray-level co-occurrence matrix
-       rangefilt -- Calculates the local range of an image
-       stdfilt -- Calculates the standard deviation of an image
+And after *that*, probably getting through many of the simple user-interface things on the main
+TODO list.

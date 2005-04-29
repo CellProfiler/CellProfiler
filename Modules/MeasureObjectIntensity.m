@@ -280,7 +280,7 @@ for i = 1:3
     % the last image set, which was left in handles.Pipeline.
 
 
-    %%% Initilize measurement structure
+    %%% Initialize measurement structure
     Basic = [];
     BasicFeatures    = {'IntegratedIntensity',...
         'MeanIntensity',...

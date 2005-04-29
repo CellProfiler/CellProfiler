@@ -93,7 +93,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = Enter the measurement name
-%defaultVAR01 = MeanIntensityofMvh
+%defaultVAR01 = Area
 MeasurementName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = For which objects do you want to measure ratios (numerator)?
 %defaultVAR02 = Cytoplasm
@@ -110,12 +110,41 @@ DenominatorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3}
 drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-NumeratorFieldName = ['Object',MeasurementName,'within',NumeratorObjectName];
-DenominatorFieldName = ['Object',MeasurementName,'within',DenominatorObjectName];
-NumeratorMeasurements = handles.Measurements.(NumeratorFieldName){SetBeingAnalyzed};
-DenominatorMeasurements = handles.Measurements.(DenominatorFieldName){SetBeingAnalyzed};
-NewFieldName = ['Object',MeasurementName,NumeratorObjectName,'_dividedby_',DenominatorObjectName];
-handles.Measurements.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
+
+% Get index for the given Measurement name by searching
+% all extracted features
+fn = fieldnames(handles.Measurements.(NumeratorObjectName));
+FeatureNo = [];
+MeasurementType =[];                                         % E.g. Shape, Intensity, Texture....
+for k = 1:length(fn)
+    if strfind(fn{k},'Features')
+        features = handles.Measurements.(NumeratorObjectName).(fn{k});             % Cell array with feature names
+        for j = 1:length(features)
+            if strcmp(features{j},MeasurementName)
+                MeasurementType = fn{k}(1:end-8);
+                FeatureNo = j;
+            end
+        end
+    end
+end
+
+% Didn't find a matching feature -> error message
+if isempty(FeatureNo)
+    errordlg(sprintf('Did not find the specified measurement %s in the MeasureRatios module',MeasurementName));
+end
+
+% Get measurements
+NumeratorMeasurements = handles.Measurements.(NumeratorObjectName).(MeasurementType){SetBeingAnalyzed};
+NumeratorMeasurements = NumeratorMeasurements(:,FeatureNo);
+DenominatorMeasurements = handles.Measurements.(DenominatorObjectName).(MeasurementType){SetBeingAnalyzed};
+DenominatorMeasurements = DenominatorMeasurements(:,FeatureNo);
+
+if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
+    errordlg(sprintf('The specified object names %s and %s in the MeasureRatios do not have the same object count.',NumeratorObjectName,DenominatorObjectName));
+end
+
+NewFieldName = [MeasurementName,NumeratorObjectName,'_dividedby_',DenominatorObjectName];
+handles.Measurements.UserDefined.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:

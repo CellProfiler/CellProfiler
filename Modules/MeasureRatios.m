@@ -144,7 +144,9 @@ if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
 end
 
 NewFieldName = [MeasurementName,NumeratorObjectName,'_dividedby_',DenominatorObjectName];
+NewFieldNameFeatures = [MeasurementName,NumeratorObjectName,'_dividedby_',DenominatorObjectName,'Features'];
 handles.Measurements.UserDefined.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
+handles.Measurements.UserDefined.(NewFieldNameFeatures) = {NewFieldName};
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:

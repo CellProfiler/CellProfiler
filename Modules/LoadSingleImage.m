@@ -230,7 +230,7 @@ for n = 1:4
             
             FileAndPathname = fullfile(Pathname, CurrentFileName);
             if strcmpi(FileFormat,'mat') == 1
-                StructureLoadedImage = load(CurrentFileName);
+                StructureLoadedImage = load(FileAndPathname);
                 LoadedImage = StructureLoadedImage.Image;                
             else LoadedImage = CPimread(FileAndPathname,handles);
             end

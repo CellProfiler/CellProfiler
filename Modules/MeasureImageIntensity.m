@@ -370,11 +370,13 @@ drawnow
 % the last image set, which was left in handles.Pipeline.
 
 %%% Saves measurements to the handles structure.
-fieldname = ['ImageTotalIntensity', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalIntensity};
+%fieldname = ['ImageTotalIntensity', ObjectName];
+%handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalIntensity};
+%fieldname = ['ImageMeanIntensity', ObjectName];
+%handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {MeanIntensity};
+%fieldname = ['ImageTotalArea', ObjectName];
+%handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalArea};
 
-fieldname = ['ImageMeanIntensity', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {MeanIntensity};
+handles.Measurements.Image.IntensityFeatures = {'Total intensity','Mean intensity','Total area'};
+handles.Measurements.Image.Intensity(handles.Current.SetBeingAnalyzed) = {[TotalIntensity MeanIntensity TotalArea]};
 
-fieldname = ['ImageTotalArea', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalArea};

@@ -102,7 +102,7 @@ NumeratorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = Nuclei
 DenominatorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%%%VariableRevisionNumber = 00
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
@@ -117,7 +117,7 @@ fn = fieldnames(handles.Measurements.(NumeratorObjectName));
 FeatureNo = [];
 MeasurementType =[];                                         % E.g. Shape, Intensity, Texture....
 for k = 1:length(fn)
-    if strfind(fn{k},'Features')
+    if strfind(fn{k},'CorrBlueFeatures')
         features = handles.Measurements.(NumeratorObjectName).(fn{k});             % Cell array with feature names
         for j = 1:length(features)
             if strcmp(features{j},MeasurementName)
@@ -142,11 +142,93 @@ DenominatorMeasurements = DenominatorMeasurements(:,FeatureNo);
 if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
     errordlg(sprintf('The specified object names %s and %s in the MeasureRatios do not have the same object count.',NumeratorObjectName,DenominatorObjectName));
 end
-
-NewFieldName = [MeasurementName,NumeratorObjectName,'_dividedby_',DenominatorObjectName];
-NewFieldNameFeatures = [MeasurementName,NumeratorObjectName,'_dividedby_',DenominatorObjectName,'Features'];
+try
+NewFieldName = [MeasurementName,'CorrBlue',NumeratorObjectName,'_dividedby_',DenominatorObjectName];
+NewFieldNameFeatures = [MeasurementName,'CorrBlue',NumeratorObjectName,'_dividedby_',DenominatorObjectName,'Features'];
 handles.Measurements.UserDefined.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
 handles.Measurements.UserDefined.(NewFieldNameFeatures) = {NewFieldName};
+end
+
+
+% REPEAT FOR OTHER INTENSITY MEASURES ----------------
+% Get index for the given Measurement name by searching
+% all extracted features
+fn = fieldnames(handles.Measurements.(NumeratorObjectName));
+FeatureNo = [];
+MeasurementType =[];                                         % E.g. Shape, Intensity, Texture....
+for k = 1:length(fn)
+    if strfind(fn{k},'CorrGreenFeatures')
+        features = handles.Measurements.(NumeratorObjectName).(fn{k});             % Cell array with feature names
+        for j = 1:length(features)
+            if strcmp(features{j},MeasurementName)
+                MeasurementType = fn{k}(1:end-8);
+                FeatureNo = j;
+            end
+        end
+    end
+end
+
+% Didn't find a matching feature -> error message
+if isempty(FeatureNo)
+    errordlg(sprintf('Did not find the specified measurement %s in the MeasureRatios module',MeasurementName));
+end
+
+% Get measurements
+NumeratorMeasurements = handles.Measurements.(NumeratorObjectName).(MeasurementType){SetBeingAnalyzed};
+NumeratorMeasurements = NumeratorMeasurements(:,FeatureNo);
+DenominatorMeasurements = handles.Measurements.(DenominatorObjectName).(MeasurementType){SetBeingAnalyzed};
+DenominatorMeasurements = DenominatorMeasurements(:,FeatureNo);
+
+if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
+    errordlg(sprintf('The specified object names %s and %s in the MeasureRatios do not have the same object count.',NumeratorObjectName,DenominatorObjectName));
+end
+try
+NewFieldName = [MeasurementName,'CorrGreen',NumeratorObjectName,'_dividedby_',DenominatorObjectName];
+NewFieldNameFeatures = [MeasurementName,'CorrGreen',NumeratorObjectName,'_dividedby_',DenominatorObjectName,'Features'];
+handles.Measurements.UserDefined.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
+handles.Measurements.UserDefined.(NewFieldNameFeatures) = {NewFieldName};
+end
+
+% REPEAT FOR OTHER INTENSITY MEASURES ----------------
+% Get index for the given Measurement name by searching
+% all extracted features
+fn = fieldnames(handles.Measurements.(NumeratorObjectName));
+FeatureNo = [];
+MeasurementType =[];                                         % E.g. Shape, Intensity, Texture....
+for k = 1:length(fn)
+    if strfind(fn{k},'CorrRedFeatures')
+        features = handles.Measurements.(NumeratorObjectName).(fn{k});             % Cell array with feature names
+        for j = 1:length(features)
+            if strcmp(features{j},MeasurementName)
+                MeasurementType = fn{k}(1:end-8);
+                FeatureNo = j;
+            end
+        end
+    end
+end
+
+% Didn't find a matching feature -> error message
+if isempty(FeatureNo)
+    errordlg(sprintf('Did not find the specified measurement %s in the MeasureRatios module',MeasurementName));
+end
+
+% Get measurements
+NumeratorMeasurements = handles.Measurements.(NumeratorObjectName).(MeasurementType){SetBeingAnalyzed};
+NumeratorMeasurements = NumeratorMeasurements(:,FeatureNo);
+DenominatorMeasurements = handles.Measurements.(DenominatorObjectName).(MeasurementType){SetBeingAnalyzed};
+DenominatorMeasurements = DenominatorMeasurements(:,FeatureNo);
+
+if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
+    errordlg(sprintf('The specified object names %s and %s in the MeasureRatios do not have the same object count.',NumeratorObjectName,DenominatorObjectName));
+end
+try
+NewFieldName = [MeasurementName,'CorrRed',NumeratorObjectName,'_dividedby_',DenominatorObjectName];
+NewFieldNameFeatures = [MeasurementName,'CorrRed',NumeratorObjectName,'_dividedby_',DenominatorObjectName,'Features'];
+handles.Measurements.UserDefined.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
+handles.Measurements.UserDefined.(NewFieldNameFeatures) = {NewFieldName};
+end
+
+
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:

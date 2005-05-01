@@ -1,11 +1,11 @@
 function handles = ExportData(handles)
 
-% Help for the Export Mean Data tool:
+% Help for the Export Data tool:
 % Category: Data Tools
 %
 % Once image analysis is complete, use this tool to select the
 % output file to extract the measurements and other information about
-% the analysis.  The data will be converted to a comma-delimited text file
+% the analysis.  The data will be converted to a tab-delimited text file
 % which can be read by for example Excel or in a text editor.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -51,6 +51,10 @@ if isempty(ExportInfo.ReportStyle)
     return
 end
 
+%%% Create a waitbarhandle that can be accessed from the functions below
+global waitbarhandle
+waitbarhandle = waitbar(0,'');
+
 %%% Export process info
 if strcmp(ExportInfo.ExportProcessInfo,'yes')
     WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
@@ -60,6 +64,9 @@ end
 if ~strcmp(ExportInfo.ReportStyle,'none')
     WriteMeasurements(handles,ExportInfo,RawPathname);
 end
+
+%%% Done!
+close(waitbarhandle)
 CPmsgbox('Exporting is completed.')
 
 
@@ -68,8 +75,12 @@ function WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname)
 %%% This function extracts info about the process that generated a
 %%% CellProfiler output file, and writes this info to a textfile.
 
+%%% Get the handle to the waitbar and update the text in the waitbar
+global waitbarhandle
+waitbar(0,waitbarhandle,'Exporting process info')
+
 %%% Open file for writing
-% Add dot in extension if it's not there
+%%% Add dot in extension if it's not there
 if ExportInfo.ProcessInfoExtension(1) ~= '.';
     ExportInfo.ProcessInfoExtension = ['.',ExportInfo.ProcessInfoExtension];
 end
@@ -98,11 +109,11 @@ end
 fprintf(fid,'\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
 
 % Get variable names used
-VariableNames = fieldnames(handles.Pipeline);
-Variableindex = find(cellfun('isempty',strfind(VariableNames,'FileList'))==0);
+VariableNames = fieldnames(handles.Measurements.GeneralInfo);
+Variableindex = find(cellfun('isempty',strfind(VariableNames,'Filename'))==0);
 VariableNames = VariableNames(Variableindex);
 
-% Get segmented objects 
+%%% Get segmented objects 
 if isfield(handles,'Measurements') && isfield(handles.Measurements,'GeneralInfo')
     ObjectNames   = fieldnames(handles.Measurements.GeneralInfo);
     Thresholdindex = find(cellfun('isempty',strfind(ObjectNames,'ImageThreshold'))==0);
@@ -111,24 +122,25 @@ else
     ObjectNames = [];
 end
 
-fprintf(fid,'Number of image sets: %d\n',handles.Current.NumberOfImageSets);
-fprintf(fid,'Number of processed image sets: %d\n\n',length(handles.Measurements.GeneralInfo.TimeElapsed));
+%%% Get number of processed sets
+if ~isempty(ObjectNames)
+    NbrOfProcessedSets = length(handles.Measurements.GeneralInfo.(ObjectNames{1}));
+else
+    NbrOfProcessedSets = 0;
+end
+fprintf(fid,'Number of processed image sets: %d\n\n',NbrOfProcessedSets);
 
-% Report info for each image set
-for imageset = 1:length(handles.Measurements.GeneralInfo.TimeElapsed)
+%%% Report info for each image set
+for imageset = 1:NbrOfProcessedSets
+    
+    % Update waitbar handle
+    waitbar(imageset/NbrOfProcessedSets,waitbarhandle)
+    
+    % Write info about image set
     fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
     fprintf(fid,'\tVariables:\n');
     for k = 1:length(VariableNames)
-        
-        % Construct a image filename, the input images may be from a movie file
-        ImageName = handles.Pipeline.(VariableNames{k})(:,imageset);
-        if length(ImageName) == 1
-            ImageName = ImageName{1};
-        elseif length(ImageName) == 2
-            ImageName = sprintf('%s %d',ImageName{1},ImageName{2});
-        else
-            errordlg('Unrecognized filename convention in handles.Pipeline');
-        end
+        ImageName = handles.Measurements.GeneralInfo.(VariableNames{k}){imageset};
         fprintf(fid,'\t\t%s: %s\n',VariableNames{k}(9:end),ImageName);
     end
     fprintf(fid,'\n');
@@ -145,6 +157,11 @@ fclose(fid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function WriteMeasurements(handles,ExportInfo,RawPathname)
 %%% This function exports full and summary measurement reports
+
+%%% Get the handle to the waitbar and update the text in the waitbar
+global waitbarhandle
+waitbar(0,waitbarhandle,'')
+
 
 for Object = 1:length(ExportInfo.ObjectNames)
     ObjectName = ExportInfo.ObjectNames{Object};
@@ -203,8 +220,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
         end
     end
-    Time = handles.Measurements.GeneralInfo.TimeElapsed;
-
+    
     if ~strcmp(ExportInfo.ReportStyle,'summary')                          % The user wants a full report
         
         % Open a file for exporting the measurements
@@ -233,6 +249,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
         % Loop over the images sets
         for k = 1:length(Measurements)
 
+            % Update waitbar
+            waitbar(k/length(Measurements),waitbarhandle,sprintf('Exporting %s',ObjectName));
+            
             % Write info about the image set
             fprintf(fid,'Set #%d, %d objects, ',k,NumObjects(k));
             

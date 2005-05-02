@@ -4,16 +4,16 @@ function handles = ExportSQL(handles)
 % Category: Data Tools
 %
 % This tool exports measurements from one or several CellProfiler
-% output files to delimited text files. It also creates an SQL 
+% output files to delimited text files. It also creates an SQL
 % script that puts the measurements into an SQL database.
-%  
+%
 % Current known limitations and things to consider:
-% 
-% - No check is performed that the selected files actually are CellProfiler 
+%
+% - No check is performed that the selected files actually are CellProfiler
 %   output files. .
 %
 % - No check is performed that the selected files are compatible, i.e.
-%   were produced with the same pipeline of modules. 
+%   were produced with the same pipeline of modules.
 %
 % - The tool only works with standard CellProfiler output files, not
 %   batch output files.
@@ -41,7 +41,7 @@ function handles = ExportSQL(handles)
 
 
 %%% Clear the handles structure that is sent to this function.
-oldhandles = handles;  
+oldhandles = handles;
 clear handles
 
 
@@ -50,7 +50,7 @@ clear handles
 %%% ---------------------------------------------------------------------- %%%
 %%% Let the user select one output file to indicate the directory
 [ExampleFile, DataPath] = uigetfile('*.mat','Select one CellProfiler output file');
-if ~DataPath;handles = oldhandles;return;end                                     % CellProfiler expects a handles structure as output 
+if ~DataPath;handles = oldhandles;return;end                                     % CellProfiler expects a handles structure as output
 
 %%% Get all files with .mat extension in the chosen directory.
 %%% If the selected file name contains an 'OUT', it is assumed
@@ -79,10 +79,13 @@ if isempty(DatabaseName) | isempty(SQLScriptFileName)
     return
 end
 
-%%% ---------------------------------------------------------------------- %%%
-%%% Get list of measurements names (from the first CellProfiler data file) %%%
-%%% ---------------------------------------------------------------------- %%%
+%%% ------------------------------------------------------------------------------ %%%
+%%% Get list of measurement and file names (from the first CellProfiler data file) %%%
+%%% ------------------------------------------------------------------------------ %%%
 load(fullfile(DataPath,CellProfilerDataFileNames{1}));                            % Load handles structure from the first data file
+FilenameFields = fieldnames(handles.Measurements.GeneralInfo);                    % Get the fields where the filenames are stored
+FilenameFields = FilenameFields(~cellfun('isempty',strfind(FilenameFields,'Filename')));            %                       .
+
 handles.Measurements = rmfield(handles.Measurements,'GeneralInfo');               % Remove the GeneralInfo field, only interested in the measurements
 MeasurementNames = {};                                                            % Initialize cell array with measurement names
 NbrOfDataBlocks = 0;
@@ -104,7 +107,7 @@ for i = 1:length(ObjectNames)                                                   
 end
 
 %%% ------------------------------------------------------------------------------------ %%%
-%%% Generate SQL data filenames by removing a potential 'OUT' and appending '_SQLData.SQL'.                             
+%%% Generate SQL data filenames by removing a potential 'OUT' and appending '_SQLData.SQL'.
 %%% ------------------------------------------------------------------------------------ %%%
 SQLDataFileNames = cell(length(CellProfilerDataFileNames),1);
 SQLMeanDataFileNames = cell(length(CellProfilerDataFileNames),1);
@@ -133,6 +136,9 @@ fprintf(SQLScriptFid, 'CREATE TABLE MeanData (ImageSetNo INTEGER PRIMARY KEY'); 
 for i = 1:length(MeasurementNames),
     fprintf(SQLScriptFid, ', %s FLOAT', MeasurementNames{i});                                    % Write the measurement names
 end
+for i = 1:length(FilenameFields),
+    fprintf(SQLScriptFid, ', %s CHAR(50)', FilenameFields{i});                                   % Write the filename fields names
+end
 fprintf(SQLScriptFid,');\n');
 for i = 1:length(SQLDataFileNames)
     fprintf(SQLScriptFid, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE MeanData FIELDS TERMINATED BY ''|'';\n', fullfile(DataPath,SQLDataFileNames{i}));
@@ -156,9 +162,9 @@ fclose(SQLScriptFid);
 %%% each CellProfiler output file.                                   %%%
 %%% ---------------------------------------------------------------- %%%
 waitbarhandle = waitbar(0,'Exporting SQL files');drawnow
-GlobalImageSetNo = 0;                              % This variable keeps track of the total number of image sets over all files          
+GlobalImageSetNo = 0;                              % This variable keeps track of the total number of image sets over all files
 for fileno = 1:length(CellProfilerDataFileNames)
-    
+
     %%% Open SQL files for writing
     SQLDataFid = fopen(fullfile(DataPath,SQLDataFileNames{fileno}), 'wt');
     if SQLDataFid == -1, fclose(SQLScriptFid); error(['Could not open ' SQLDataFileNames{fileno} ' for writing.']);end
@@ -173,30 +179,27 @@ for fileno = 1:length(CellProfilerDataFileNames)
     index = find(~cellfun('isempty',strfind(fields,'Threshold')));
     NbrOfImageSets = length(handles.Measurements.GeneralInfo.(fields{index(1)}));
 
-    %%% Remove the GeneralInfo field, from now on we are only interested in the measurements
-    handles.Measurements = rmfield(handles.Measurements,'GeneralInfo');
-
     %%% Loop over the image sets and write the data into the SQL data files
-    %%% Get the measurements, i
     for ImageSetNo = 1:NbrOfImageSets
 
         %%% Update the total number of image sets than have been exported
         %%% ImageSetNo is the image set number in the current CellProfiler
         %%% output file.
         GlobalImageSetNo = GlobalImageSetNo + 1;
-        
+
         %%% Get the measurements. It's important that this is done in the
         %%% same way as for the measurement names above to get the
-        %%% measurements in the same order. The Measurements variable will 
-        %%% be a cell array with measurement blocks. 
-        MaxNbrOfObjects = 0;                                                    % Variable to keep track of max number of measurements
-        BlockNo = 1;                                                            % Block counter
-        Measurements = cell(1,NbrOfDataBlocks);                                 % Initialize cell array with measurements
-        ObjectNames = fieldnames(handles.Measurements);                         % Get object names, e.g. Nuclei, Cells, Cytoplasm,...
-        for i = 1:length(ObjectNames)                                           % Loop over the objects
-            AllFields = fieldnames(handles.Measurements.(ObjectNames{i}));      % Get all existing fields for this object
-            index = ~cellfun('isempty',strfind(AllFields,'Features'));          % The fields with 'Features' in the name contain the measurement names
-            FeatureFields = AllFields(index);                                   % Get them ...
+        %%% measurements in the same order. The Measurements variable will
+        %%% be a cell array with measurement blocks.
+        MaxNbrOfObjects = 0;                                                              % Variable to keep track of max number of measurements
+        BlockNo = 1;                                                                      % Block counter
+        Measurements = cell(1,NbrOfDataBlocks);                                           % Initialize cell array with measurements
+        ObjectNames = fieldnames(handles.Measurements);                                   % Get object names, e.g. Nuclei, Cells, Cytoplasm,...
+        ObjectNames = ObjectNames(cellfun('isempty',strfind(ObjectNames,'GeneralInfo'))); % Remove GeneralInfo field
+        for i = 1:length(ObjectNames)                                                     % Loop over the objects
+            AllFields = fieldnames(handles.Measurements.(ObjectNames{i}));                % Get all existing fields for this object
+            index = ~cellfun('isempty',strfind(AllFields,'Features'));                    % The fields with 'Features' in the name contain the measurement names
+            FeatureFields = AllFields(index);                                             % Get them ...
             for j = 1:length(FeatureFields)
                 Measurements(BlockNo) = handles.Measurements.(ObjectNames{i}).(FeatureFields{j}(1:end-8))(ImageSetNo);
                 if size(Measurements{BlockNo},1) > MaxNbrOfObjects              % Check for max number of measurements
@@ -216,11 +219,14 @@ for fileno = 1:length(CellProfilerDataFileNames)
         end
         str = cell(2*length(MeasurementNames),1);
         str(1:2:end) = {'|'};                                             % Interleave with delimiters
-        str(2:2:end) = tmp;  
+        str(2:2:end) = tmp;
         fprintf(SQLMeanDataFid,'%d',GlobalImageSetNo);                    % Write the image set number
-        fprintf(SQLMeanDataFid,sprintf('%s\n',cat(2,str{:})));            % Write mean measurements
-        
-        
+        fprintf(SQLMeanDataFid,sprintf('%s',cat(2,str{:})));              % Write mean measurements
+        for i = 1:length(FilenameFields)                                  % Write image file names
+            fprintf(SQLMeanDataFid,'|%s',handles.Measurements.GeneralInfo.(FilenameFields{i}){ImageSetNo});
+        end
+        fprintf(SQLMeanDataFid,'\n');
+
         %%% Write object measurements to SQL file. The procedure is similar to the one
         %%% above, but now we have to write one row per object. Also, it might for example happen
         %%% that there is a different number of Nuclei objects and Cell objects. In such case blanks

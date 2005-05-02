@@ -214,10 +214,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.
     subplot(2,1,2);
-    cmap = [0 0 0;              % RGB color for background
-        0 0 1;              % RGB color for objects with area < SmallBinMax
-        1 0 0;              % RGB color for objects with SmallBinMax < area < LargeBinMin
-        1 1 0];             % RGB color for objects with area > LargeBinMin
+    cmap = [0 0 0;           % RGB color for background
+        0.25 0.25 1;           % light blue RGB color for objects with area < SmallBinMax
+        1 0 0;               % red RGB color for objects with SmallBinMax < area < LargeBinMin
+        1 1 0];              % yellow RGB color for objects with area > LargeBinMin
     RGBimage = ind2rgb(areamap+1,cmap);
     imagesc(RGBimage)
     title(['Classified ', ObjectName]);

@@ -1,1 +1,1 @@
-Directory,'.','*.
+Ready

@@ -1,1 +1,1 @@
-CPgraythresh
+ProjectedImageReady

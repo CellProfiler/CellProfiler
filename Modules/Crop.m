@@ -142,7 +142,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CropBlue
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For rectangular cropping, type R. For any shape (based on an image File), type F. To use the same cropping shape defined by another Crop module in the pipeline, type the name of the image that has been cropped. To draw an ellipse on each image, type EE; draw one ellipse for all images: EA
+%textVAR03 = For rectangular cropping, type R.  To draw an ellipse on each image, type EE. To draw one ellipse for all images: EA. For any shape (based on an image file), load the shape using the LoadSingleImage module and enter the name you gave the image here. To use the same cropping shape defined by another Crop module within this analysis run, type the name of the other image that was cropped, with the word 'Cropping' prefixed.
 %defaultVAR03 = R
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -154,11 +154,7 @@ LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 100,100
 RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = File-based cropping: To crop to another shape, type the location and file name of the binary image to guide the cropping (Zero values will be removed).  Type carefully! #LongBox#
-%defaultVAR06 = .
-BinaryCropImageName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -198,23 +194,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strcmpi(Shape, 'F') == 1
-    if handles.Current.SetBeingAnalyzed == 1
-        %%% Reads (opens) the image to be used for cropping and assigns it to a
-        %%% variable. There is an error catching mechanism in case the image cannot
-        %%% be found or opened.
-        try BinaryCropImage = CPimread(BinaryCropImageName, handles);
-        catch error(['Image processing was canceled because the Crop module could not find the binary cropping image.  It was supposed to be here: ', BinaryCropImageName, ', but a readable image does not exist at that location or with that name.  Perhaps there is a typo.'])
-        end
-        %%% The Binary Crop image is saved to the handles
-        %%% structure so it can be used to crop subsequent image sets.
-        fieldname = ['Cropping', CroppedImageName];
-        handles.Pipeline.(fieldname) = BinaryCropImage;
-    end
-    %%% See subfunction below.
-    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName);
-
-elseif strcmpi(Shape, 'EA') == 1 || strcmpi(Shape, 'EE') == 1
+if strcmpi(Shape, 'EA') == 1 || strcmpi(Shape, 'EE') == 1
     if handles.Current.SetBeingAnalyzed == 1 || strcmp(Shape, 'EE') == 1
         if strcmp(Shape, 'EA') == 1
             %%% The user can choose an image from the pipeline or from the hard drive to use for
@@ -292,7 +272,7 @@ elseif strcmpi(Shape, 'EA') == 1 || strcmpi(Shape, 'EE') == 1
         handles.Pipeline.(fieldname) = BinaryCropImage;
     end
     %%% See subfunction below.
-    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName);
+    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
 
 elseif strcmpi(Shape,'R') == 1
     %%% Extracts the top, left, bottom, right pixel positions from the user's
@@ -338,12 +318,9 @@ elseif strcmpi(Shape,'R') == 1
     end
 
 else
-    try 
     %%% See subfunction below; will work if the user has entered a
     %%% valid image name in the variable box for 'Shape'.
     [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, Shape);
-    catch error(['You must choose rectangular cropping (R) or cropping from a file (F) or drawing an ellipse (EE or EA), or you must type the name of an image that resulted from a cropping module elsewhere in the image analysis pipeline. Your entry was ', Shape])
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -523,8 +500,10 @@ handles.Pipeline.(CroppedImageName) = CroppedImage;
 
 function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName)
 %%% Retrieves the Cropping image from the handles structure.
-fieldname = ['Cropping', CroppedImageName];
-BinaryCropImage = handles.Pipeline.(fieldname);
+fieldname = [CroppedImageName];
+try BinaryCropImage = handles.Pipeline.(fieldname);
+    catch error(['You must choose rectangular cropping (R) or cropping from a file (F) or drawing an ellipse (EE or EA), or you must type the name of an image that resulted from a cropping module elsewhere in the image analysis pipeline. Your entry was ', Shape])
+end
 if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))
     error('Image processing was canceled because an image you wanted to analyze is not the same size as the image used for cropping in the Crop module.  The pixel dimensions must be identical.')
 end

@@ -231,9 +231,11 @@ end
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-RGBImage(:,:,1) = immultiply(RedImage,str2double(RedAdjustmentFactor));
-RGBImage(:,:,2) = immultiply(GreenImage,str2double(GreenAdjustmentFactor));
-RGBImage(:,:,3) = immultiply(BlueImage,str2double(BlueAdjustmentFactor));
+%%% If any of the images are binary/logical format, they must be
+%%% converted to a double first before immultiply.
+RGBImage(:,:,1) = immultiply(double(RedImage),str2double(RedAdjustmentFactor));
+RGBImage(:,:,2) = immultiply(double(GreenImage),str2double(GreenAdjustmentFactor));
+RGBImage(:,:,3) = immultiply(double(BlueImage),str2double(BlueAdjustmentFactor));
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

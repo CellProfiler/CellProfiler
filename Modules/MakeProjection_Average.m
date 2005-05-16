@@ -1,24 +1,27 @@
-function handles = CorrectIllumDivide(handles)
+function handles = MakeProjection_AverageImages(handles)
 
-% Help for the Correct Illumination Divide module:
+% Help for the Make Projection/Average Images module:
 % Category: Pre-processing
 %
-% This module corrects for uneven illumination of each image, based on
-% an illumination function calculated by another module.
+% This module makes a projection of a set of images (e.g. a Z-stack)
+% by averaging the pixel intensities at each pixel position. The first
+% time through the pipeline (i.e. for image set 1), the whole set of
+% images (as defined by a Load Images module) is used to calculate one
+% projected image. Subsequent runs through the pipeline (i.e. for
+% image set 2 through the end) produce no new results, but processing
+% is not aborted in case other modules are being run for some reason.
+% The projection image calculated the first time through the pipeline
+% is still available to other modules during subsequent runs through
+% the pipeline.
 %
 % How it works:
-% An image that represents the variation in illumination across the
-% field of view is loaded from the pipeline.  Each image is divided by
-% this illumination image to produce the corrected image.  Be sure
-% that the illumination correction function is in a reasonable range
-% (e.g. 1 to some number), so that the resulting image is in a
-% reasonable range (0 to 1).
+% This module works by averaging together all of the images.
 %
-% SAVING IMAGES: The illumination corrected images produced by this
+% SAVING IMAGES: The image produced by this
 % module can be easily saved using the Save Images module, using the
 % name you assign.
 %
-% See also MAKEPROJECTION, SMOOTHIMAGEFORILLUMCORRECTION.
+% See also CORRECTILLUMDIVIDEALLMEAN.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -99,66 +102,19 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be corrected?
+%textVAR01 = What did you call the images to be averaged to make the projection?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the corrected image?
-%defaultVAR02 = CorrBlue
-CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the resulting projection image?
+%defaultVAR02 = ProjectedBlue
+ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using LoadSingleImage)?
-%defaultVAR03 = IllumCorrImgBlue
-IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Are the images you want to use to make the projection to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? If you choose L, the module will calculate the single, averaged projection image the first time through the pipeline by loading every image of the type specified in the Load Images module. It is then acceptable to use the resulting image later in the pipeline. If you choose P, the module will allow the pipeline to cycle through all of the image sets.  With this option, the module does not need to follow a Load Images module; it is acceptable to make the single, averaged projection from images resulting from other image processing steps in the pipeline. However, the resulting projection image will not be available until the last image set has been processed, so it cannot be used in subsequent modules.
+%defaultVAR03 = L
+SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 1
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-%%% Reads (opens) the image you want to analyze and assigns it to a
-%%% variable.
-fieldname = ['', ImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-%%% Reads the image.
-OrigImage = handles.Pipeline.(fieldname);
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-end
-
-%%% Reads (opens) the image you want to analyze and assigns it to a
-%%% variable.
-fieldname = ['', IllumCorrectFunctionImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', IllumCorrectFunctionImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-%%% Reads the image.
-IllumCorrectFunctionImage = handles.Pipeline.(fieldname);
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(IllumCorrectFunctionImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded of the illumination correction function does not fit this requirement.  This may be because the image is a color image.')
-end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -177,9 +133,20 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Corrects the original image based on the IlluminationImage,
-%%% by dividing each pixel by the value in the IlluminationImage.
-CorrectedImage = OrigImage ./ IllumCorrectFunctionImage;
+ReadyFlag = 'Not Ready';
+try
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
+        %%% The first time the module is run, the projection image is
+        %%% calculated.
+        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName);
+    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName);
+    else
+        error('Image processing was canceled because you must choose either "L" or "P" in the Make Projection/Average Images module');
+    end
+catch [ErrorMessage, ErrorMessage2] = lasterr;
+    error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -193,7 +160,6 @@ drawnow
 % modules. To speed processing, these calculations are omitted if the
 % figure window is closed and the user does not want to save the
 % images.
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
@@ -203,7 +169,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % commands.  In general, Matlab does not update figure windows until
     % breaks between image analysis modules, or when a few select commands
     % are used. "figure" and "drawnow" are two of the commands that allow
-    % Matlab to psause and carry out any pending figure window- related
+    % Matlab to pause and carry out any pending figure window- related
     % commands (like zooming, or pressing timer pause or cancel buttons or
     % pressing a help button.)  If the drawnow command is not used
     % immediately prior to the figure(ThisModuleFigureNumber) line, then
@@ -213,24 +179,36 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % figure which is active is not necessarily the correct one. This
     % results in strange things like the subplots appearing in the timer
     % window or in the wrong figure window, or in help dialog boxes.
-    drawnow
-    %%% Activates the appropriate figure window.
-    figure(ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original
-    %%% image, some intermediate images, and the final corrected image.
-    subplot(2,2,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    colormap(gray)
-    %%% The mean image does not absolutely have to be present in order to
-    %%% carry out the calculations if the illumination image is provided,
-    %%% so the following subplot is only shown if MeanImage exists in the
-    %%% workspace.
-    subplot(2,2,2); imagesc(CorrectedImage);
-    title('Illumination Corrected Image');
-    colormap(gray)
-    subplot(2,2,3); imagesc(IllumCorrectFunctionImage);
-    title(['Illumination Correction Function Image']);
-    colormap(gray)
+    %%% Sets the width of the figure window to be appropriate (half width and height),
+    %%% the first time through the set.
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        originalsize = get(ThisModuleFigureNumber, 'position');
+        newsize = originalsize;
+        newsize(2) = originalsize(2) + originalsize(4)/2;
+        newsize(3) = originalsize(3)/2;
+        newsize(4) = originalsize(4)/2;
+        set(ThisModuleFigureNumber, 'position', newsize);
+        drawnow
+    end
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        %%% The projection image is displayed the first time through
+        %%% the set. For subsequent image sets, this figure is not
+        %%% updated at all, to prevent the need to load the projection
+        %%% image from the handles structure.
+        %%% Activates the appropriate figure window.
+        figure(ThisModuleFigureNumber);
+        imagesc(ProjectionImage);
+        title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']);
+        colormap(gray)
+    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+        %%% The accumulated projection image so far is displayed each time through
+        %%% the pipeline.
+        %%% Activates the appropriate figure window.
+        figure(ThisModuleFigureNumber);
+        imagesc(ProjectionImage);
+        title(['Projection Image so far, based on Image set # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
+        colormap(gray)
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -305,7 +283,7 @@ drawnow
 %
 % handles.Measurements:
 %       Everything in handles.Measurements contains data specific to each
-% image set analyzed for exporting. It is used by the ExportMeanImage
+% image set analyzed for exporting. It is used by the ExportProjectionImage
 % and ExportCellByCell data tools. This substructure is deleted at the
 % beginning of the analysis run (see 'Which substructures are deleted
 % prior to an analysis run?' below).
@@ -354,6 +332,18 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% Saves the corrected image to the
-%%% handles structure so it can be used by subsequent modules.
-handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+%%% If running in non-cycling mode (straight from the hard drive using
+%%% a LoadImages module), the projection image and its flag need only
+%%% be saved to the handles structure after the first image set is
+%%% processed. If running in cycling mode (Pipeline mode), the
+%%% projection image and its flag are saved to the handles structure
+%%% after every image set is processed.
+if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
+    %%% Saves the projected image to the handles structure so it can be used by
+    %%% subsequent modules.
+    handles.Pipeline.(ProjectionImageName) = ProjectionImage;
+    %%% Saves the ready flag to the handles structure so it can be used by
+    %%% subsequent modules.
+    fieldname = [ProjectionImageName,'ReadyFlag'];
+    handles.Pipeline.(fieldname) = ReadyFlag;
+end

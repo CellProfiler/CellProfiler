@@ -1,17 +1,47 @@
-function handles = DivideCorrectionFunctions(handles)
+function handles = SmoothImage(handles)
 
-% Help for the Divide Correction Functions module:
+% Help for the Smooth Image module:
 % Category: Pre-processing
 %
-% Sorry, this module has not yet been documented.
+% This module applies a smoothing function to the incoming image. The most
+% common use for the module is to smooth a projection image prior to using
+% it to correct for uneven illumination of each image.
 %
-% SAVING IMAGES: The illumination correction function image produced by
-% this module can be easily saved using the Save Images module, using the
-% name you assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure (see
-% the SaveImages module help) and then use the Save Images module.
+% How it works:
+% This module works by smoothing an image and rescaling it to an
+% appropriate range to be used for illumination correction.  This
+% produces an image that represents the variation in illumination
+% across the field of view. If the user specifies that the module is to be
+% run on a projection image produced by another module, the module waits
+% for the make projection module to produce a flag telling this module that
+% the projection image is ready. This is because projection image modules
+% can be run in two modes: one where the projection image is produced
+% during the first image set's processing (non-cycling, LoadImages mode)
+% and the other where the projection image is produced only at the end of
+% the last image set's processing (cycling, Pipeline mode).
 %
-% See also MAKEPROJECTION and SMOOTHIMAGEFORILLUMCORRECTION.
+% The smoothing can be done by fitting a low-order polynomial to the mean
+% (projection) image (option = P), or by applying a median filter to the
+% image (option = a number). In filtering mode, the user enters an even
+% number for the artifact width, and this number is divided by two to
+% obtain the radius of a disk shaped structuring element which is used for
+% filtering. Note that with either mode of calculation, the illumination
+% function is scaled from 1 to infinity, so that if there is substantial
+% variation across the field of view, the rescaling of each image might be
+% dramatic, causing the image to appear darker.
+%
+% SAVING IMAGES: The illumination corrected
+% images produced by this module can be easily saved using the Save Images
+% module, using the name you assign. If
+% you want to save the smoothed image to use it in a later analysis,
+% you should save the
+% smoothed image in '.mat' format to prevent degradation of the data. 
+%
+% See also MAKEPROJECTION, CORRECTILLUMDIVIDEALLMEAN,
+% CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
+% CORRECTILLUMSUBTRACTALLMIN,
+% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEEACHMIN_10,
+% CORRECTILLUMSUBTRACTEACHMIN.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -92,17 +122,21 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the projection of intensity images?
+%textVAR01 = What did you call the image to be smoothed?
 %defaultVAR01 = OrigBlue
-IntensityProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What did you call the projection of the images in which objects were identified?
-%defaultVAR02 = ThreshBlue
-MaskedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the smoothed image?
+%defaultVAR02 = CorrBlue
+SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the resulting illumination function image?
-%defaultVAR03 = IllumCorrImgBlue
-IlluminationFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Are you using this module to smooth an image that results from processing multiple images?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
+%defaultVAR03 = Y
+WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%textVAR04 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
+%defaultVAR04 = 50
+SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
@@ -111,93 +145,77 @@ IlluminationFunctionImageName = char(handles.Settings.VariableValues{CurrentModu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% None of the following code is performed until the last set of images
-%%% has been analyzed, since that is when the projection images will
-%%% typically be ready.
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    %%% POSSIBLE IMPROVEMENT: We are always going to use this module when
-    %%% the last image set is being analyzed, because that's when the projection images are
-    %%% ready to be run. It is possible someone else might want to run it after
-    %%% the first image set, if both projection images are being calculated in
-    %%% LoadImages mode (see the MakeProjection module for an explanation), but
-    %%% currently we do not have support for that because I don't know whether
-    %%% anyone will ever need it.
-
-    %%% Reads (opens) the image to be analyzed and assigns it to a variable.
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, IntensityProjectionImageName)==0,
-        %%% If the image is not there, an error message is produced.  The error
-        %%% is not displayed: The error function halts the current function and
-        %%% returns control to the calling function (the analyze all images
-        %%% button callback.)  That callback recognizes that an error was
-        %%% produced because of its try/catch loop and breaks out of the image
-        %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled because the Divide Correction Functions module could not find the input image.  It was supposed to be named ', IntensityProjectionImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+%%% The following checks to see whether it is appropriate to calculate the
+%%% smooth image at this time or not.  If not, the return function abandons
+%%% the remainder of the code, which will otherwise calculate the smooth
+%%% image, save it to the handles, and display the results.
+if strncmpi(WaitForFlag,'Y',1) == 1
+    fieldname = [OrigImageName,'ReadyFlag'];
+    ReadyFlag = handles.Pipeline.(fieldname);
+    if strcmp(ReadyFlag, 'NotReady') == 1
+        %%% If the projection image is not ready, the module aborts until
+        %%% the next cycle.
+        return
+    elseif strcmp(ReadyFlag, 'Ready') == 1
+        %%% If the smoothed image has already been calculated, the module
+        %%% aborts until the next cycle.
+        if isfield(handles.Pipeline, SmoothedImageName) == 1
+            return
+        end
+        %%% If we make it to this point, it is OK to proceed to calculating the smooth
+        %%% image, etc.
+    else error(['There is a programming error of some kind. The Smooth Image module was expecting to find the text Ready or NotReady in the field called ', fieldname, ' but that text was not matched for some reason.'])
     end
-    %%% Reads the image.
-    IntensityProjectionImage = handles.Pipeline.(IntensityProjectionImageName);
-
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, MaskedProjectionImageName)==0,
-        error(['Image processing was canceled because the Divide Correction Functions module could not find the input image.  It was supposed to be named ', MaskedProjectionImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    %%% Reads the image.
-    MaskedProjectionImage = handles.Pipeline.(MaskedProjectionImageName);
-
-    %%%%%%%%%%%%%%%%%%%%%
-    %%% IMAGE ANALYSIS %%%
-    %%%%%%%%%%%%%%%%%%%%%
-    drawnow
-
-    % PROGRAMMING NOTE
-    % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
-    % figure, imshow(BlurredImage, []), title('BlurredImage')
-    % TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
-    % imwrite(BlurredImage, FileName, FileFormat);
-    % Note that you may have to alter the format of the image before
-    % saving.  If the image is not saved correctly, for example, try
-    % adding the uint8 command:
-    % imwrite(uint8(BlurredImage), FileName, FileFormat);
-    % To routinely save images produced by this module, see the help in
-    % the SaveImages module.
-
-    %%% Checks to be sure the two images are the same size.
-    if size(IntensityProjectionImage) ~= size(MaskedProjectionImage)
-        error('Image processing was canceled because the two input images into the Divide Correction Functions module are not the same size')
-    end
-    %%% Makes sure neither projection image has zeros to prevent
-    %%% errors when dividing.
-    PixelIntensities = unique(IntensityProjectionImage(:,:));
-    if PixelIntensities(1) == 0
-        %%% The minimum acceptable value is set to 0.01, or the lowest
-        %%% non-zero pixel intensity in the image.
-        MinimumAcceptableValue = min(.01, PixelIntensities(2));
-        IntensityProjectionImage(IntensityProjectionImage == 0) = MinimumAcceptableValue;
-    end
-    %%% Makes sure neither projection image has zeros to prevent
-    %%% errors when dividing.
-    PixelIntensities2 = unique(MaskedProjectionImage(:,:));
-    if PixelIntensities2(1) == 0
-        %%% The minimum acceptable value is set to 0.01, or the lowest
-        %%% non-zero pixel intensity in the image.
-        MinimumAcceptableValue2 = min(.01, PixelIntensities2(2));
-        MaskedProjectionImage(MaskedProjectionImage == 0) = MinimumAcceptableValue2;
-    end
-    %%% Divides the Intensity projection image by the masked projection image.
-    IlluminationImage = IntensityProjectionImage./MaskedProjectionImage;
-    drawnow
-    %%% The final IlluminationImage is produced by dividing each
-    %%% pixel of the illumination image by a scalar: the minimum
-    %%% pixel value anywhere in the illumination image. (If the
-    %%% minimum value is zero, .00000001 is substituted instead.)
-    %%% This rescales the IlluminationImage from 1 to some number.
-    %%% This ensures that the final, corrected image will be in a
-    %%% reasonable range, from zero to 1.
-    IlluminationFunctionImage = IlluminationImage ./ max([min(min(IlluminationImage)); .00000001]);
-    ReadyFlag = 1;
+elseif strncmpi(WaitForFlag,'N',1) == 1
+    %%% If we make it to this point, it is OK to proceed to calculating the smooth
+    %%% image, etc.
 else
-    ReadyFlag = 0;
+    error(['Your response to the question "Are you using this module to smooth a projection image?" was not recognized. Please enter Y or N.'])
 end
+
+%%% If we make it to this point, it is OK to proceed to calculating the smooth
+%%% image, etc.
+
+%%% Reads (opens) the image you want to analyze and assigns it to a
+%%% variable.
+%%% Checks whether the image to be analyzed exists in the handles structure.
+if isfield(handles.Pipeline, OrigImageName)==0,
+    %%% If the image is not there, an error message is produced.  The error
+    %%% is not displayed: The error function halts the current function and
+    %%% returns control to the calling function (the analyze all images
+    %%% button callback.)  That callback recognizes that an error was
+    %%% produced because of its try/catch loop and breaks out of the image
+    %%% analysis loop without attempting further modules.
+    error(['Image processing was canceled because the Smooth Image module could not find the input image.  It was supposed to be named ', OrigImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+end
+%%% Reads the image.
+OrigImage = handles.Pipeline.(OrigImageName);
+
+%%% Checks that the original image is two-dimensional (i.e. not a color
+%%% image), which would disrupt several of the image functions.
+if ndims(OrigImage) ~= 2
+    error('Image processing was canceled because the Smooth Image module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+end
+
+%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+% PROGRAMMING NOTE
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
+% imwrite(BlurredImage, FileName, FileFormat);
+% Note that you may have to alter the format of the image before
+% saving.  If the image is not saved correctly, for example, try
+% adding the uint8 command:
+% imwrite(uint8(BlurredImage), FileName, FileFormat);
+% To routinely save images produced by this module, see the help in
+% the SaveImages module.
+
+%%% Smooths the OrigImage according to the user's specifications.
+SmoothedImage = CPsmooth(OrigImage,SmoothingMethod);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -221,7 +239,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % commands.  In general, Matlab does not update figure windows until
     % breaks between image analysis modules, or when a few select commands
     % are used. "figure" and "drawnow" are two of the commands that allow
-    % Matlab to pause and carry out any pending figure window- related
+    % Matlab to psause and carry out any pending figure window- related
     % commands (like zooming, or pressing timer pause or cancel buttons or
     % pressing a help button.)  If the drawnow command is not used
     % immediately prior to the figure(ThisModuleFigureNumber) line, then
@@ -231,22 +249,27 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % figure which is active is not necessarily the correct one. This
     % results in strange things like the subplots appearing in the timer
     % window or in the wrong figure window, or in help dialog boxes.
-    drawnow
-    if ReadyFlag == 1
-        %%% Activates the appropriate figure window.
-        figure(ThisModuleFigureNumber);
-        %%% A subplot of the figure window is set to display the original image.
-        subplot(2,2,1); imagesc(IntensityProjectionImage);colormap(gray);
-        title('Input Intensity Projection Image');
-        subplot(2,2,2); imagesc(MaskedProjectionImage);
-        title('Input Identified Object Projection Image');
-        subplot(2,2,3); imagesc(IlluminationFunctionImage);
-        title('Resulting Illumination Function Image');
-    elseif handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        %%% Activates the appropriate figure window.
-        figure(ThisModuleFigureNumber);
-        title({'Waiting for projection images to be calculated.';'The results of this module will be shown when the last image set is processed.'});
+    %%% Sets the width of the figure window to be appropriate (half width),
+    %%% the first time through the set.
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet...
+            | strncmpi(WaitForFlag,'Y',1) == 1
+        originalsize = get(ThisModuleFigureNumber, 'position');
+        newsize = originalsize;
+        newsize(3) = originalsize(3)/2;
+        set(ThisModuleFigureNumber, 'position', newsize);
+        drawnow
     end
+    drawnow
+    %%% Activates the appropriate figure window.
+    figure(ThisModuleFigureNumber);
+    %%% A subplot of the figure window is set to display the original
+    %%% image and the smoothed image.
+    subplot(2,1,1); imagesc(OrigImage);
+    colormap(gray)
+    title('Input Image');
+    subplot(2,1,2); imagesc(SmoothedImage);
+    colormap(gray)
+    title('Smoothed Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,8 +393,6 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-if ReadyFlag == 1
-    %%% The IlluminationFunctionImage is saved to the handles structure so
-    %%% it can be used by subsequent modules.
-    handles.Pipeline.(IlluminationFunctionImageName) = IlluminationFunctionImage;
-end
+%%% Saves the corrected image to the
+%%% handles structure so it can be used by subsequent modules.
+handles.Pipeline.(SmoothedImageName) = SmoothedImage;

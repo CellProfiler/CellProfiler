@@ -1,61 +1,33 @@
-function handles = CorrectIllumSubtractAllMin(handles)
+function handles = CorrectIllumination_Apply(handles)
 
-% Help for the Correct Illumination Subtract All Min module: 
+% Help for the CorrectIllumination_Apply module:
 % Category: Pre-processing
-% 
+%
 % This module corrects for uneven illumination of each image, based on
-% information from a set of images collected at the same time. 
+% an illumination correction function calculated by another module.
 %
 % How it works:
-% First, the minimum pixel value is determined within each "block" of
-% each image, and the values are averaged together for all images.
-% The block dimensions are entered by the user, and should be large
-% enough that every block is likely to contain some "background"
-% pixels, where no cells are located. Theoretically, the intensity
-% values of these background pixels should always be the same number.
-% With uneven illumination, the background pixels will vary across the
-% image, and this yields a function that presumably affects the
-% intensity of the "real" pixels, those that comprise cells.
-% Therefore, once the average minimums are determined across the
-% images, the minimums are smoothed out. This produces an image that
-% represents the variation in illumination across the field of view.
-% This process is carried out before the first image set is processed.
-% This image is then subtracted from each original image to produce
-% the corrected image.
-% 
-% If you want to run this module only to calculate the mean and
-% illumination images and not to correct every image in the directory,
-% simply run the module as usual and use the button on the Timer to
-% stop processing after the first image set.
+% An illumination correction function image that represents the
+% variation in illumination across the field of view is loaded from
+% the pipeline.  Each image is divided by the illumination correction
+% function image, or the illumination correction function image is
+% subtracted from each image, to produce the corrected image.  Be sure
+% that the illumination correction function is in a reasonable range
+% (e.g. 1 to some number), so that the resulting image is in a
+% reasonable range (0 to 1).
 %
 % SAVING IMAGES: The illumination corrected images produced by this
 % module can be easily saved using the Save Images module, using the
-% name you assign. The mean image can be saved using the name
-% MeanIlluminationImageAS plus whatever you called the corrected image
-% (e.g. MeanIlluminationImageASCorrBlue). The Illumination correction
-% image can be saved using the name IllumImageAS plus whatever you
-% called the corrected image (e.g. IllumImageASCorrBlue).  Note that
-% using the Save Images module saves a copy of the image in an image
-% file format, which has lost some of the detail that a matlab file
-% format would contain.  In other words, if you want to save the
-% illumination image to use it in a later analysis, you should use the
-% settings boxes within this module to save the illumination image in
-% '.mat' format. If you want to save other intermediate images, alter
-% the code for this module to save those images to the handles
-% structure (see the SaveImages module help) and then use the Save
-% Images module.
+% name you assign.
 %
-% See also CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
-% CORRECTILLUMDIVIDEALLMEAN,
-% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEEACHMIN_10,
-% CORRECTILLUMSUBTRACTEACHMIN.
+% See also MAKEPROJECTION, SMOOTHIMAGEFORILLUMCORRECTION.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -73,7 +45,7 @@ function handles = CorrectIllumSubtractAllMin(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -98,7 +70,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -109,7 +81,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -124,7 +96,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -137,23 +109,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Block size. This should be set large enough that every square block of pixels is likely to contain some background.
-%defaultVAR03 = 60
-BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module)?
+%defaultVAR03 = IllumBlue
+IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = If you have already created an illumination correction image to be used, enter the path & file name of the image below. To calculate the illumination correction image from all the images of this color that will be processed, leave a period in the box.#LongBox#
-%defaultVAR04 = .
-IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = How do you want to apply the illumination correction function?  Enter D for Divide or S for subtract.
+%defaultVAR04 = D
+DivideOrSubtract = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
+%textVAR05 = If you chose division, do you want to rescale the final image? N = no, S = stretch to fit 0 to 1 range, M = match the maximum of the final image to the maximum of the original.
 %defaultVAR05 = N
-IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
-%defaultVAR06 = .
-IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -175,29 +143,42 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
-
-
-%%% Checks whether the chosen block size is larger than the image itself.
-[m,n] = size(OrigImage);
-MinLengthWidth = min(m,n);
-if BlockSize >= MinLengthWidth
-        error('Image processing was canceled because in the Correct Illumination module the selected block size is greater than or equal to the image size itself.')
-end
-
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
+%%% Reads (opens) the image you want to analyze and assigns it to a
+%%% variable.
+fieldname = ['', IllumCorrectFunctionImageName];
+%%% Checks whether the image to be analyzed exists in the handles structure.
+if isfield(handles.Pipeline, fieldname)==0,
+    %%% If the image is not there, an error message is produced.  The error
+    %%% is not displayed: The error function halts the current function and
+    %%% returns control to the calling function (the analyze all images
+    %%% button callback.)  That callback recognizes that an error was
+    %%% produced because of its try/catch loop and breaks out of the image
+    %%% analysis loop without attempting further modules.
+    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', IllumCorrectFunctionImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+end
+%%% Reads the image.
+IllumCorrectFunctionImage = handles.Pipeline.(fieldname);
+%%% Checks that the original image is two-dimensional (i.e. not a color
+%%% image), which would disrupt several of the image functions.
+if ndims(IllumCorrectFunctionImage) ~= 2
+    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded of the illumination correction function does not fit this requirement.  This may be because the image is a color image.')
+end
+
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -206,135 +187,37 @@ end
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% The first time the module is run, calculates or retrieves the image to
-%%% be used for correction.
-if handles.Current.SetBeingAnalyzed == 1
-    %%% If the user has specified a path and file name of an illumination
-    %%% correction image that has already been created, the image is
-    %%% loaded.
-    if strcmp(IllumCorrectPathAndFileName, '.') ~= 1
-        try StructureIlluminationImage = load(IllumCorrectPathAndFileName);
-            IlluminationImage = StructureIlluminationImage.IlluminationImage;
-        catch error(['Image processing was canceled because there was a problem loading the image ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.'])
-        end
-        %%% Otherwise, calculates the illumination correction image is based on all
-        %%% the images of this type that will be processed.
-    else 
-        try
-            %%% Notifies the user that the first image set will take much longer than
-            %%% subsequent sets. 
-            %%% Obtains the screen size.
-            ScreenSize = get(0,'ScreenSize');
-            ScreenHeight = ScreenSize(4);
-            PotentialBottom = [0, (ScreenHeight-720)];
-            BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 100];
-            h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination All Subtract module.  Subsequent image sets will be processed more quickly than the first image set.');
-            set(h, 'Position', PositionMsgBox)
-            drawnow
-            %%% Retrieves the path where the images are stored from the handles
-            %%% structure.
-            fieldname = ['Pathname', ImageName];
-            try Pathname = handles.Pipeline.(fieldname);
-            catch error('Image processing was canceled because the Correct Illumination module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first image set through the pipeline. In other words, the Correct Illumination module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination module onward.')
-            end
-            %%% Retrieves the list of filenames where the images are stored from the
-            %%% handles structure.
-            fieldname = ['FileList', ImageName];
-            FileList = handles.Pipeline.(fieldname);
-            
-            %%% Calculates the best block size that minimizes padding with
-            %%% zeros, so that the illumination function will not have dim
-            %%% artifacts at the right and bottom edges. (Based on Matlab's
-            %%% bestblk function, but changing the minimum of the range 
-            %%% searched to be 75% of the suggested block size rather than
-            %%% 50%.   
-            %%% Defines acceptable block sizes.  m and n were
-            %%% calculated above as the size of the original image.
-            MM = floor(BlockSize):-1:floor(min(ceil(m/10),ceil(BlockSize*3/4)));
-            NN = floor(BlockSize):-1:floor(min(ceil(n/10),ceil(BlockSize*3/4)));
-            %%% Chooses the acceptable block that has the minimum padding.
-            [dum,ndx] = min(ceil(m./MM).*MM-m); %#ok We want to ignore MLint error checking for this line.
-            BestBlockSize(1) = MM(ndx);
-            [dum,ndx] = min(ceil(n./NN).*NN-n); %#ok We want to ignore MLint error checking for this line.
-            BestBlockSize(2) = NN(ndx);
-            BestRows = BestBlockSize(1)*ceil(m/BestBlockSize(1));
-            BestColumns = BestBlockSize(2)*ceil(n/BestBlockSize(2));
-            RowsToAdd = BestRows - m;
-            ColumnsToAdd = BestColumns - n;
-            
-            %%% Calculates a coarse estimate of the background illumination by
-            %%% determining the minimum of each block in the image.
-            MiniIlluminationImage = blkproc(padarray(CPimread(fullfile(Pathname,char(FileList(1))),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
-            for i=2:length(FileList)
-                MiniIlluminationImage = MiniIlluminationImage + blkproc(padarray(CPimread(fullfile(Pathname,char(FileList(i))),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(:))');
-            end
-            MeanMiniIlluminationImage = MiniIlluminationImage / length(FileList);
-            %%% Expands the coarse estimate in size so that it is the same
-            %%% size as the original image. Bicubic 
-            %%% interpolation is used to ensure that the data is smooth.
-            MeanIlluminationImage = imresize(MeanMiniIlluminationImage, size(CPimread(fullfile(Pathname,char(FileList(1))),handles)), 'bicubic');
-            %%% Fits a low-dimensional polynomial to the mean image.
-            %%% The result, IlluminationImage, is an image of the smooth illumination function.
-            [x,y] = meshgrid(1:size(MeanIlluminationImage,2), 1:size(MeanIlluminationImage,1));
-            x2 = x.*x;
-            y2 = y.*y;
-            xy = x.*y;
-            o = ones(size(MeanIlluminationImage));
-            Ind = find(MeanIlluminationImage > 0);
-            Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(MeanIlluminationImage(Ind));
-            IlluminationImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(MeanIlluminationImage));
-            %%% Note: the following "imwrite" saves the illumination
-            %%% correction image in TIF format, but the image is compressed
-            %%% so it is not as smooth as the image that is saved using the
-            %%% "save" function below, which is stored in matlab ".mat"
-            %%% format.
-            % imwrite(IlluminationImage, 'IlluminationImage.tif', 'tif')
-            
-            %%% Saves the illumination correction image to the hard
-            %%% drive if requested.
-            if strcmp(IllumCorrectFileName, 'N') == 0
-                try if strcmp(IllumCorrectPathName,'.') == 1
-                    IllumCorrectPathName = handles.Current.DefaultOutputDirectory;
-                    end
-                    PathAndFileName = fullfile(IllumCorrectPathName,IllumCorrectFileName);
-                    save(PathAndFileName, 'IlluminationImage')
-                catch error(['There was a problem saving the illumination correction image to the hard drive. The attempted filename was ', IllumCorrectFileName, '.'])
-                end
-            end
-        catch [ErrorMessage, ErrorMessage2] = lasterr;
-            error(['An error occurred in the Correct Illumination module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
-        end
-    end    
-    %%% Stores the mean image and the Illumination image to the handles
-    %%% structure.
-    if exist('MeanIlluminationImage','var') == 1
-        fieldname = ['MeanIlluminationImageAS', CorrectedImageName];
-        handles.Pipeline.(fieldname) = MeanIlluminationImage;        
+if strcmpi(DivideOrSubtract,'D') == 1
+    %%% Corrects the original image based on the IlluminationImage,
+    %%% by dividing each pixel by the value in the IlluminationImage.
+    CorrectedImage1 = OrigImage ./ IllumCorrectFunctionImage;
+    if strcmpi(RescaleOption,'N') == 1
+        CorrectedImage = CorrectedImage1;
+    elseif strcmpi(RescaleOption,'S') == 1
+        %%% The minimum of the image is brought to zero, whether it
+        %%% was originally positive or negative.
+        CorrectedImage2 = CorrectedImage1 - min(min(CorrectedImage1));
+        %%% The maximum of the image is brought to 1.
+        CorrectedImage = CorrectedImage2 ./ max(max(CorrectedImage2));
+    elseif strcmpi(RescaleOption,'M') == 1
+        %%% Rescales the corrected image so the max equals the max of
+        %%% the original image.
+        CorrectedImage2 = CorrectedImage1 ./ max(max(CorrectedImage1));
+        CorrectedImage = CorrectedImage2 .* max(max(OrigImage));
+    else error('In the Correct Illumination_Apply module, you must enter N, S, or M for the method by which to rescale the final corrected image.')
     end
-    fieldname = ['IllumImageAS', CorrectedImageName];
-    handles.Pipeline.(fieldname) = IlluminationImage;
+
+elseif strcmpi(DivideOrSubtract,'S') == 1
+    %%% Corrects the original image based on the IlluminationImage,
+    %%% by subtracting each pixel by the value in the IlluminationImage.
+    CorrectedImage = imsubtract(OrigImage, IllumCorrectFunctionImage);
+    %%% Converts negative values to zero.  I have essentially truncated the
+    %%% data at zero rather than trying to rescale the data, because negative
+    %%% values should be fairly rare (and minor), since the minimum is used to
+    %%% calculate the IlluminationImage.
+    CorrectedImage(CorrectedImage < 0) = 0;
+else error('In the Correct Illumination_Apply module, you must enter D or S for the method by which to apply the illumination correction.')
 end
-
-%%% The following is run for every image set. Retrieves the mean image
-%%% and illumination image from the handles structure.  The mean image is
-%%% retrieved just for display purposes.
-fieldname = ['MeanIlluminationImageAS', CorrectedImageName];
-if isfield(handles.Pipeline, fieldname) == 1
-    MeanIlluminationImage = handles.Pipeline.(fieldname);
-end
-fieldname = ['IllumImageAS', CorrectedImageName];
-IlluminationImage = handles.Pipeline.(fieldname);
-%%% Corrects the original image based on the IlluminationImage,
-%%% by subtracting each pixel by the value in the IlluminationImage.
-CorrectedImage = imsubtract(OrigImage, IlluminationImage);
-
-%%% Converts negative values to zero.  I have essentially truncated the
-%%% data at zero rather than trying to rescale the data, because negative
-%%% values should be fairly rare (and minor), since the minimum is used to
-%%% calculate the IlluminationImage.
-CorrectedImage(CorrectedImage < 0) = 0;
-
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -352,22 +235,22 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to psause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
@@ -375,18 +258,17 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% image, some intermediate images, and the final corrected image.
     subplot(2,2,1); imagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    colormap(gray)
     %%% The mean image does not absolutely have to be present in order to
     %%% carry out the calculations if the illumination image is provided,
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
-    subplot(2,2,2); imagesc(CorrectedImage); 
+    subplot(2,2,2); imagesc(CorrectedImage);
     title('Illumination Corrected Image');
-    if exist('MeanIlluminationImage','var') == 1
-        subplot(2,2,3); imagesc(MeanIlluminationImage); 
-        title(['Mean Illumination in all ', ImageName, ' images']);
-    end
-    subplot(2,2,4); imagesc(IlluminationImage); 
-    title('Illumination Function'); colormap(gray)
+    colormap(gray)
+    subplot(2,2,3); imagesc(IllumCorrectFunctionImage);
+    title(['Illumination Correction Function Image']);
+    colormap(gray)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -446,7 +328,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -474,7 +356,7 @@ drawnow
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
@@ -510,6 +392,6 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% Saves the corrected image to the handles structure so it can be used by
-%%% subsequent modules.
+%%% Saves the corrected image to the
+%%% handles structure so it can be used by subsequent modules.
 handles.Pipeline.(CorrectedImageName) = CorrectedImage;

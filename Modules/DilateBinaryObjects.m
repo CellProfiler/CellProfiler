@@ -1,45 +1,34 @@
-function handles = CorrectIllumDivideEachMin_10(handles)
+function handles = DilateBinaryObjects(handles)
 
-% Help for the Correct Illumination Divide Each by Minimum 10 module: 
-% Category: Pre-processing
+% Help for the Dilate Binary Objects module: 
+% Category: Object Identification
 %
-% This module is still under development!
-% This module corrects for uneven illumination of each image, based on
-% information contained only within that image.  It is preferable to
-% use a correct illumination module that corrects for illumination
-% based on all images acquired at the same time.
+% Sorry, this module is not yet documented!
 %
-% How it works:
-% First, the minimum pixel value is determined within each "block" of
-% the image.  The block dimensions are entered by the user, and should
-% be large enough that every block is likely to contain some
-% "background" pixels, where no cells are located. Theoretically, the
-% intensity values of these background pixels should always be the
-% same number.  With uneven illumination, the background pixels will
-% vary across the image, and this yields a function that presumably
-% affects the intensity of the "real" pixels, those that comprise
-% cells. Therefore, once the minimums are determined across the image,
-% the minimums are smoothed out. This produces an image that
-% represents the variation in illumination across the field of view.
-% The original image is *divided* by this image to produce the
-% corrected image.
+% SAVING IMAGES: In addition to the object outlines and the
+% pseudo-colored object images that can be saved using the
+% instructions in the main CellProfiler window for this module,
+% this module produces several additional images which can be
+% easily saved using the Save Images module. These will be grayscale
+% images where each object is a different intensity. (1) The
+% preliminary segmented image, which includes objects on the edge of
+% the image and objects that are outside the size range can be saved
+% using the name: PrelimSegmented + whatever you called the objects
+% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% which excludes objects smaller than your selected size range can be
+% saved using the name: PrelimSmallSegmented + whatever you called the
+% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% image which excludes objects on the edge of the image and excludes
+% objects outside the size range can be saved using the name:
+% Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 % 
-% This module is loosely based on the Matlab demo "Correction of
-% non-uniform illumination" in the Image Processing Toolbox demos
-% "Enhancement" category.
-% MATLAB6p5/toolbox/images/imdemos/examples/enhance/ipss003.html
+% Additional image(s) are normally calculated for display only,
+% including the object outlines alone. These images can be saved by
+% altering the code for this module to save those images to the
+% handles structure (see the SaveImages module help) and then using
+% the Save Images module.
 %
-% SAVING IMAGES: The illumination corrected images produced by this
-% module can be easily saved using the Save Images module, using the
-% name you assign. If you want to save other intermediate images,
-% alter the code for this module to save those images to the handles
-% structure (see the SaveImages module help) and then use the Save
-% Images module.
-%
-% See also CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
-% CORRECTILLUMSUBTRACTALLMIN,
-% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEALLMEAN,
-% CORRECTILLUMSUBTRACTEACHMIN.
+% See also any identify primary module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -86,7 +75,6 @@ drawnow
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow
 
 % PROGRAMMING NOTE
 % VARIABLE BOXES AND TEXT: 
@@ -120,56 +108,42 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be corrected?
-%defaultVAR01 = OrigBlue
+%textVAR01 = What did you call the image with the binary objects to be dilated?
+%defaultVAR01 = BinaryObjects
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the corrected image?
-%defaultVAR02 = CorrBlue
-CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the image with the dilated objects?
+%defaultVAR02 = DilatedObjects
+DilatedObjectsImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Block size. This should be set large enough that every square block of pixels is likely to contain some background.
-%defaultVAR03 = 60
-BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = Enter the radius to use for dilation (roughly equal to the original radius of the objects). 
+%defaultVAR03 = 0
+ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
-%defaultVAR04 = 50
-SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opes) the image you want to analyze and assigns it to a variable,
-%%% "OrigImage".
-fieldname = ['', ImageName];
+fieldname = ImageName;
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled because the Dilate Binary Objects module could not find the input image.  It was supposed to be called ', ImageName, '.  Perhaps there is a typo in the name.'])
 end
-%%% Reads the image.
+%%% Retrieves the current image.
 OrigImage = handles.Pipeline.(fieldname);
 
-%%% Checks whether the chosen block size is larger than the image itself.
-[m,n] = size(OrigImage);
-MinLengthWidth = min(m,n);
-if BlockSize >= MinLengthWidth
-        error('Image processing was canceled because in the Correct Illumination module the selected block size is greater than or equal to the image size itself.')
+%%% Checks that the original image is two-dimensional (i.e. not a
+%%% color image), which would disrupt several of the image
+%%% functions.
+if ndims(OrigImage) ~= 2
+    error('Image processing was canceled because the Dilate Binary Objects module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
+catch error('In the Dilate Binary Objects module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -189,95 +163,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% Calculates a coarse estimate of the background illumination by
-%%% determining the minimum of each block in the image.  If the minimum is
-%%% zero, it is recorded as .001 to prevent divide by zero errors later.
-MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'max([min(x(:)); .001])');
-%%% The coarse estimate is then expanded in size so that it is the same
-%%% size as the original image. Bilinear interpolation is used to ensure the
-%%% values do not dip below zero.
-IlluminationImage1 = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
-
-%%%%%%%%%%%%%%%%%
-%%% THIS IS FROM THE SMOOTHIMAGEFORILLUMCORRECTION MODULE>>>>>
-
-%%% Smooths the OrigImage according to the user's specifications.
-if strcmpi(SmoothingMethod,'P') == 1
-    %%% The following is used to fit a low-dimensional polynomial to the original image.
-    [x,y] = meshgrid(1:size(OrigImage,2), 1:size(OrigImage,1));
-    x2 = x.*x;
-    y2 = y.*y;
-    xy = x.*y;
-    o = ones(size(OrigImage));
-    Ind = find(OrigImage > 0);
-    Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
-    drawnow
-    SmoothedImage1 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
-    %%% The final SmoothedImage is produced by dividing each
-    %%% pixel of the smoothed image by a scalar: the minimum
-    %%% pixel value anywhere in the smoothed image. (If the
-    %%% minimum value is zero, .00000001 is substituted instead.)
-    %%% This rescales the SmoothedImage from 1 to some number.
-    %%% This ensures that the final, corrected image will be in a
-    %%% reasonable range, from zero to 1.
-    drawnow
-    SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
-    %%% Note: the following "imwrite" saves the illumination
-    %%% correction image in TIF format, but the image is compressed
-    %%% so it is not as smooth as the image that is saved using the
-    %%% "save" function below, which is stored in matlab ".mat"
-    %%% format.
-    % imwrite(SmoothedImage, 'SmoothedImage.tif', 'tif')
-else try ArtifactWidth = str2num(SmoothingMethod);
-        ArtifactRadius = 0.5*ArtifactWidth;
-        StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
- %       MsgBoxHandle = CPmsgbox('Now calculating the illumination function, which may take a long time.');
-        SmoothedImage1 = ordfilt2(IlluminationImage1, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
-        SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
- %       MsgBox = 'Calculations for the illumination function are complete.';
-    catch
-        error(['The text you entered for the smoothing method in the Smooth Image For Illum Correction module is unrecognizable for some reason. You must enter a positive, even number or the letter P.  Your entry was ',SmoothingMethod])
-    end
-end
-
-%%% <<< THIS IS FROM THE SMOOTHIMAGEFORILLUMCORRECTION MODULE
-%%%%%%%%%%%%%%%%%
-
-% OLD >>>>
-% %%% The following is used to fit a low-dimensional polynomial to the mean image.
-% %%% The result, IlluminationImage, is an image of the smooth illumination function.
-% [x,y] = meshgrid(1:size(IlluminationImage1,2), 1:size(IlluminationImage1,1));
-% x2 = x.*x;
-% y2 = y.*y;
-% xy = x.*y;
-% o = ones(size(IlluminationImage1));
-% Ind = find(IlluminationImage1 > 0);
-% Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(IlluminationImage1(Ind));
-% IlluminationImage2 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(IlluminationImage1));
-% 
-% %%% Corrects if the illumination function dips below .005.
-% MinimumValue = min(min(IlluminationImage2));
-% if MinimumValue <= 0.005
-%     IlluminationImage3 = IlluminationImage2;
-%     IlluminationImage3(IlluminationImage3 <= 0.005) = .005;
-% elseif MinimumValue < 0
-%     IlluminationImage3 = IlluminationImage2 - MinimumValue + .005;
-% else IlluminationImage3 = IlluminationImage2;
-% end
-% %%% Produces the final IlluminationImage by dividing each pixel of the
-% %%% illumination image by a scalar: the minimum pixel value anywhere in the
-% %%% illumination image. This rescales the IlluminationImage from 1 to some
-% %%% number. This ensures that the final, corrected image will be in a
-% %%% reasonable range, from zero to 1.
-% IlluminationImage = IlluminationImage3 ./ min(min(IlluminationImage3));
-
-%%% The original image is corrected based on the IlluminationImage,
-%%% by dividing each pixel by the value in the IlluminationImage.
-CorrectedImage1 = OrigImage ./ SmoothedImage;
-%%% Rescales the corrected image so the max equals the max of the original
-%%% image.
-CorrectedImage2 = CorrectedImage1 ./ max(max(CorrectedImage1));
-CorrectedImage = CorrectedImage2 .* max(max(OrigImage));
+DilatedObjectsImage = CPdilatebinaryobjects(OrigImage, NumericalObjectDilationRadius);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -311,18 +197,21 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % figure which is active is not necessarily the correct one. This
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
-drawnow
+    drawnow
+    %%% Sets the width of the figure window to be appropriate (half width).
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        originalsize = get(ThisModuleFigureNumber, 'position');
+        newsize = originalsize;
+        newsize(3) = 0.5*originalsize(3);
+        set(ThisModuleFigureNumber, 'position', newsize);
+    end
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the corrected
-    %%%  image.
-    subplot(2,2,2); imagesc(CorrectedImage); title('Illumination Corrected Image');
-    %%% A subplot of the figure window is set to display the illumination
-    %%% function image.
-    subplot(2,2,3); imagesc(SmoothedImage); title('Illumination Function');
+    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
+    title(['Input image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,1,2); imagesc(DilatedObjectsImage); colormap(gray);
+    title('Image of dilated objects');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -446,6 +335,6 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% Saves the corrected image to the handles structure so it can be used by
-%%% subsequent modules.
-handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+%%% Saves the resulting image to the handles structure.
+fieldname = [DilatedObjectsImageName];
+handles.Pipeline.(fieldname) = DilatedObjectsImage;

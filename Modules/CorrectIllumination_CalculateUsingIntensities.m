@@ -1,10 +1,12 @@
-function handles = CorrectIllumDivideAllMean(handles)
+function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 
-% Help for the Correct Illumination Divide All Mean module: 
+% Help for the Correct Illumination_Calculate Using Intensities module: 
 % Category: Pre-processing
 %
 % This module corrects for uneven illumination of each image, based on
-% information from a set of images collected at the same time. 
+% information from a set of images collected at the same time.   If
+% cells are distributed uniformly in the images, the mean of all the
+% images should be a good estimate of the illumination.
 %
 % How it works:
 % This module works by averaging together all of the images (making a
@@ -33,8 +35,8 @@ function handles = CorrectIllumDivideAllMean(handles)
 % SAVING IMAGES: The illumination corrected images produced by this
 % module can be easily saved using the Save Images module, using the
 % name you assign. The mean image can be saved using the name
-% MeanImageAD plus whatever you called the corrected image (e.g.
-% MeanImageADCorrBlue). The Illumination correction image can be saved
+% ProjectionImageAD plus whatever you called the corrected image (e.g.
+% ProjectionImageADCorrBlue). The Illumination correction image can be saved
 % using the name IllumImageAD plus whatever you called the corrected
 % image (e.g. IllumImageADCorrBlue).  Note that using the Save Images
 % module saves a copy of the image in an image file format, which has
@@ -130,66 +132,55 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be corrected?
+%textVAR01 = What did you call the image to be used to calculate the illumination correction function?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the corrected image?
-%defaultVAR02 = CorrBlue
-CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the final illumination correction function?
+%defaultVAR02 = IllumBlue
+IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = If you have already created an illumination correction image to be used, enter the path & file name of the image below. To calculate the illumination correction image from all the images of this color that will be processed, leave a period in the box below.#LongBox#
-%defaultVAR03 = .
-IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = (Optional) What do you want to call the raw projection image prior to dilation or smoothing? (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%defaultVAR03 = ProjectedBlue
+ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = To save the illumination correction function to use later, type a file name + .mat. Else, 'N'
-%defaultVAR04 = N
-IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = (Optional) What do you want to call the projection image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%defaultVAR04 = DilatedProjectedBlue
+DilatedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
-%defaultVAR05 = .
-IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = Enter E to calculate an illumination function for each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on all the specified images to be corrected. Note that applying illumination correction on each image individually may make intensity measures not directly comparable across different images. Using illumination correction based on all images makes the assumption that the illumination anomalies are consistent across all the images in the set.
+%defaultVAR05 = A
+EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = To save the projection (mean) image to use later, type a file name + .mat. Else, 'N'
-%defaultVAR06 = N
-ProjectionFileName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? If you choose L, the module will calculate the single, averaged projection image the first time through the pipeline by loading every image of the type specified in the Load Images module. It is then acceptable to use the resulting image later in the pipeline. If you choose P, the module will allow the pipeline to cycle through all of the image sets.  With this option, the module does not need to follow a Load Images module; it is acceptable to make the single, averaged projection from images resulting from other image processing steps in the pipeline. However, the resulting projection image will not be available until the last image set has been processed, so it cannot be used in subsequent modules.
+%defaultVAR06 = L
+SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
-%defaultVAR07 = .
-ProjectionPathName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = If the incoming images are binary and you want to dilate each object in the final projection image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0. Note that if you are using a small image set, there will be spaces in the projection image that contain no objects and median filtering is unlikely to work well. 
+%defaultVAR07 = 0
+ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
-%defaultVAR08 = 50
+%textVAR08 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead. For no smoothing, enter N. Note that smoothing is a time-consuming process.
+%defaultVAR08 = N
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 4
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a
-%%% variable.
-fieldname = ['', ImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+%%% If the illumination correction function was to be calculated using
+%%% all of the incoming images from a LoadImages module, it will already have been calculated
+%%% the first time through the image set. No further calculations are
+%%% necessary.
+if (strcmpi(EachOrAll,'A') == 1 && handles.Current.SetBeingAnalyzed ~= 1 && strcmpi(SourceIsLoadedOrPipeline,'L') == 1)
+    return
 end
-%%% Reads the image.
-OrigImage = handles.Pipeline.(fieldname);
 
-        
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
+catch error('In the Correct Illumination_Calculate Using Intensities module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -209,160 +200,49 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% The first time the module is run, the image to be used for
-%%% correction must be retrieved from a file or calculated.
-if handles.Current.SetBeingAnalyzed == 1
-    %%% If the user has specified a path and file name of an illumination
-    %%% correction image that has already been created, the image is
-    %%% loaded.
-    if strcmp(IllumCorrectPathAndFileName, '.') ~= 1
-        try StructureIlluminationImage = load(IllumCorrectPathAndFileName);
-             IlluminationImage = StructureIlluminationImage.IlluminationImage;
-        catch error(['Image processing was canceled because there was a problem loading the image ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.'])
+ReadyFlag = 'Not Ready';
+if strcmpi(EachOrAll,'A') == 1
+    try
+        if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
+            %%% The first time the module is run, the projection image is
+            %%% calculated.
+            [IlluminationImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName);
+        elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+            [IlluminationImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName);
+        else
+            error('Image processing was canceled because you must choose either "L" or "P" in answer to the question "Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)" in the Correct Illumination_Calculate Using Intensities module.');
         end
-        %%% Otherwise, the illumination correction image is calculated based on all
-        %%% the images of this type that will be processed.
-    else 
-        try
-            %%% Obtains the screen size and determines where the wait bar
-            %%% will be displayed.
-            ScreenSize = get(0,'ScreenSize');
-            ScreenHeight = ScreenSize(4);
-            PotentialBottom = [0, (ScreenHeight-720)];
-            BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 150];
-            %%% Retrieves the path where the images are stored from the handles
-            %%% structure.
-            fieldname = ['Pathname', ImageName];
-            try Pathname = handles.Pipeline.(fieldname);
-            catch error('Image processing was canceled because the Correct Illumination module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first image set through the pipeline. In other words, the Correct Illumination module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination module onward.')
-            end
-            %%% Retrieves the list of filenames where the images are stored from the
-            %%% handles structure.
-            fieldname = ['FileList', ImageName];
-            FileList = handles.Pipeline.(fieldname);
-            %%% Calculates the mean image.  If cells are distributed uniformly in
-            %%% the images, the mean of all the images should be a good
-            %%% estimate of the illumination.
-            %%% Image file is read differently if it is a .dib image.
-            TotalImage = CPimread(fullfile(Pathname,char(FileList(1))), handles);
-            %%% Waitbar shows the percentage of image sets remaining.
-            WaitbarHandle = waitbar(0,'');
-            set(WaitbarHandle, 'Position', PositionMsgBox)
-            drawnow
-            TimeStart = clock;
-            NumberOfImages = length(FileList);
-            for i=2:length(FileList)
-                TotalImage = TotalImage + CPimread(fullfile(Pathname,char(FileList(i))), handles);
-                CurrentTime = clock;
-                TimeSoFar = etime(CurrentTime,TimeStart);
-                TimePerSet = TimeSoFar/i;
-                ImagesRemaining = NumberOfImages - i;
-                TimeRemaining = round(TimePerSet*ImagesRemaining);
-                WaitbarText = {'Calculating the projection image for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
-                WaitbarText = char(WaitbarText);
-                waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
-                drawnow
-            end
-            if length(FileList) == 1
-                CurrentTime = clock;
-                TimeSoFar = etime(CurrentTime,TimeStart);
-            end
-            WaitbarText = {'Calculations of the projection image are finished for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.';['Seconds consumed: ',num2str(TimeSoFar),]};
-            WaitbarText = char(WaitbarText);
-            waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
-            MeanImage = TotalImage / length(FileList);
-
-            if strcmpi(SmoothingMethod,'P') == 1
-                %%% The following is used to fit a low-dimensional polynomial to the mean image.
-                %%% The result, IlluminationImage, is an image of the smooth illumination function.
-                [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
-                x2 = x.*x;
-                y2 = y.*y;
-                xy = x.*y;
-                o = ones(size(MeanImage));
-                Ind = find(MeanImage > 0);
-                Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(MeanImage(Ind));
-                drawnow
-                IlluminationImage1 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(MeanImage));
-                %%% The final IlluminationImage is produced by dividing each
-                %%% pixel of the illumination image by a scalar: the minimum
-                %%% pixel value anywhere in the illumination image. (If the
-                %%% minimum value is zero, .00000001 is substituted instead.)
-                %%% This rescales the IlluminationImage from 1 to some number.
-                %%% This ensures that the final, corrected image will be in a
-                %%% reasonable range, from zero to 1.
-                drawnow
-                IlluminationImage = IlluminationImage1 ./ max([min(min(IlluminationImage1)); .00000001]);
-                %%% Note: the following "imwrite" saves the illumination
-                %%% correction image in TIF format, but the image is compressed
-                %%% so it is not as smooth as the image that is saved using the
-                %%% "save" function below, which is stored in matlab ".mat"
-                %%% format.
-                % imwrite(IlluminationImage, 'IlluminationImage.tif', 'tif')
-            else try ArtifactWidth = str2num(SmoothingMethod);
-                    ArtifactRadius = 0.5*ArtifactWidth;
-                    StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
-                    WaitbarText2 = {WaitbarText; ;'Now calculating the illumination function, which may take a long time.'};
-                    waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText2)
-                    IlluminationImage1 = ordfilt2(MeanImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
-                    IlluminationImage = IlluminationImage1 ./ max([min(min(IlluminationImage1)); .00000001]);
-                    WaitbarText3 = {WaitbarText;'Calculations for the illumination function are complete.'};
-                    waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText3)
-                catch
-                    error(['The text you entered for the smoothing method in the Correct Illumination Divide All Mean module is unrecognizable for some reason. You must enter a positive, even number or the letter P.  Your entry was ',SmoothingMethod])
-                end
-            end
-            %%% Saves the illumination correction image to the hard
-            %%% drive if requested.
-            if strcmp(upper(IllumCorrectFileName), 'N') == 0
-                try if strcmp(IllumCorrectPathName,'.') == 1
-                        IllumCorrectPathName = handles.Current.DefaultOutputDirectory;
-                    end
-                    PathAndFileName = fullfile(IllumCorrectPathName,IllumCorrectFileName);
-                    Image = IlluminationImage;
-                    save(PathAndFileName, 'Image')
-                catch error(['There was a problem saving the illumination correction image to the hard drive. The attempted filename was ', IllumCorrectFileName, '.'])
-                end
-            end
-            %%% Saves the projection image to the hard
-            %%% drive if requested.
-            if strcmp(upper(ProjectionFileName), 'N') == 0
-                try if strcmp(ProjectionPathName,'.') == 1
-                    ProjectionPathName = handles.Current.DefaultOutputDirectory;
-                    end
-                    PathAndFileName = fullfile(ProjectionPathName,ProjectionFileName);
-                    save(PathAndFileName, 'MeanImage')
-                catch error(['There was a problem saving the projection (mean) image to the hard drive. The attempted filename was ', ProjectionFileName, '.'])
-                end
-            end
-        catch [ErrorMessage, ErrorMessage2] = lasterr;
-            error(['An error occurred in the Correct Illumination module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
-        end
-    end    
-    %%% Stores the mean image and the Illumination image to the handles
-    %%% structure.
-    if exist('MeanImage','var') == 1
-        fieldname = ['MeanImageAD', CorrectedImageName];
-        handles.Pipeline.(fieldname) = MeanImage;        
+    catch [ErrorMessage, ErrorMessage2] = lasterr;
+        error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
-    fieldname = ['IllumImageAD', CorrectedImageName];
-    handles.Pipeline.(fieldname) = IlluminationImage;
+elseif strcmpi(EachOrAll,'E') == 1
+    %%% Retrieves the current image.
+    OrigImage = handles.Pipeline.(ImageName);
+    %%% Checks that the original image is two-dimensional (i.e. not a
+    %%% color image), which would disrupt several of the image
+    %%% functions.
+    if ndims(OrigImage) ~= 2
+        error('Image processing was canceled because the Correct Illumination_Calculate Using Intensities module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    end
+    IlluminationImage = OrigImage;
+    ReadyFlag = 'Ready';
+else error('Image processing was canceled because you must choose either "E" or "A" in answer to the question "Enter E to calculate an illumination function for each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on all the specified images to be corrected" in the Correct Illumination_Calculate Using Intensities module.');
 end
 
-%%% The following is run for every image set. Retrieves the mean image
-%%% and illumination image from the handles structure.  The mean image is
-%%% retrieved just for display purposes.
-fieldname = ['MeanImageAD', CorrectedImageName];
-if isfield(handles.Pipeline, fieldname) == 1
-    MeanImage = handles.Pipeline.(fieldname);
+%%% Dilates the objects, and/or smooths the ProjectedImage if the user requested.
+if strcmp(ReadyFlag, 'Ready') == 1
+    if NumericalObjectDilationRadius ~= 0
+        ProjectionImage = IlluminationImage;
+        IlluminationImage = CPdilatebinaryobjects(IlluminationImage, NumericalObjectDilationRadius);
+    end
+    if strcmpi(SmoothingMethod,'N') ~= 1
+        %%% Smooths the projection image, if requested, but saves a raw copy
+        %%% first.
+        DilatedProjectionImage = IlluminationImage;
+        IlluminationImage = CPsmooth(IlluminationImage,SmoothingMethod);
+    end
+    drawnow
 end
-fieldname = ['IllumImageAD', CorrectedImageName];
-IlluminationImage = handles.Pipeline.(fieldname);
-%%% Corrects the original image based on the IlluminationImage,
-%%% by dividing each pixel by the value in the IlluminationImage.
-CorrectedImage = OrigImage ./ IlluminationImage;
-
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -401,20 +281,29 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
-    subplot(2,2,1); imagesc(OrigImage);
+    if exist('OrigImage','var') == 1
+    subplot(2,2,1); imagesc(OrigImage); colormap(gray)
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% The mean image does not absolutely have to be present in order to
-    %%% carry out the calculations if the illumination image is provided,
-    %%% so the following subplot is only shown if MeanImage exists in the
-    %%% workspace.
-    subplot(2,2,2); imagesc(CorrectedImage); 
-    title('Illumination Corrected Image');
-    if exist('MeanImage','var') == 1
-        subplot(2,2,3); imagesc(MeanImage); 
-        title(['Mean of all ', ImageName, ' images']);
     end
-    subplot(2,2,4); imagesc(IlluminationImage); 
-    title('Illumination Function'); colormap(gray)
+    %%% Whether these images exist depends on whether the images have
+    %%% been calculated yet (if running in pipeline mode, this won't occur
+    %%% until the last image set is processed).  It also depends on
+    %%% whether the user has chosen to dilate or smooth the projection
+    %%% image.
+    if exist('ProjectionImage','var') == 1
+        subplot(2,2,2); imagesc(ProjectionImage); colormap(gray)
+        title('Raw projection image prior to dilation or smoothing');
+    end
+    if exist('DilatedProjectionImage','var') == 1
+        subplot(2,2,3); imagesc(DilatedProjectionImage); colormap(gray)
+        title('Projection image after dilation but prior to smoothing');
+    end
+    if exist('IlluminationImage','var') == 1
+        subplot(2,2,4); imagesc(IlluminationImage); colormap(gray)
+        title('Final illumination correction function');
+    else subplot(2,2,4);
+        title('Illumination correction function is not yet calculated');
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -489,7 +378,7 @@ drawnow
 %
 % handles.Measurements:
 %       Everything in handles.Measurements contains data specific to each
-% image set analyzed for exporting. It is used by the ExportMeanImage
+% image set analyzed for exporting. It is used by the ExportProjectionImage
 % and ExportCellByCell data tools. This substructure is deleted at the
 % beginning of the analysis run (see 'Which substructures are deleted
 % prior to an analysis run?' below).
@@ -538,6 +427,28 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% Saves the corrected image to the
-%%% handles structure so it can be used by subsequent modules.
-handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+%%% Saves images to the handles structure.
+%%% If running in non-cycling mode (straight from the hard drive using
+%%% a LoadImages module), the projection image and its flag need only
+%%% be saved to the handles structure after the first image set is
+%%% processed. If running in cycling mode (Pipeline mode), the
+%%% projection image and its flag are saved to the handles structure
+%%% after every image set is processed.
+if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
+    fieldname = [IlluminationImageName];
+    handles.Pipeline.(fieldname) = IlluminationImage;
+    %%% Whether these images exist depends on whether the user has chosen
+    %%% to dilate or smooth the projection image.
+    if exist('ProjectionImage','var') == 1
+        fieldname = [ProjectionImageName];
+        handles.Pipeline.(fieldname) = ProjectionImage;
+    end
+    if exist('DilatedProjectionImage','var') == 1
+        fieldname = [DilatedProjectionImageName];
+        handles.Pipeline.(fieldname) = DilatedProjectionImage;
+    end
+    %%% Saves the ready flag to the handles structure so it can be used by
+    %%% subsequent modules.
+    fieldname = [ProjectionImageName,'ReadyFlag'];
+    handles.Pipeline.(fieldname) = ReadyFlag;
+end

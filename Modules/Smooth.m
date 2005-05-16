@@ -1,6 +1,6 @@
-function handles = SmoothImageForIllumCorrection(handles)
+function handles = SmoothImage(handles)
 
-% Help for the Smooth Image For Illum Correction module:
+% Help for the Smooth Image module:
 % Category: Pre-processing
 %
 % This module applies a smoothing function to the incoming image. The most
@@ -30,21 +30,12 @@ function handles = SmoothImageForIllumCorrection(handles)
 % variation across the field of view, the rescaling of each image might be
 % dramatic, causing the image to appear darker.
 %
-% THIS PART MAY BE OUTDATED >>> SAVING IMAGES: The illumination corrected
+% SAVING IMAGES: The illumination corrected
 % images produced by this module can be easily saved using the Save Images
-% module, using the name you assign. The mean image can be saved using the
-% name MeanImageAD plus whatever you called the corrected image (e.g.
-% MeanImageADCorrBlue). The Illumination correction image can be saved
-% using the name IllumImageAD plus whatever you called the corrected image
-% (e.g. IllumImageADCorrBlue).  Note that using the Save Images module
-% saves a copy of the image in an image file format, which has lost some of
-% the detail that a matlab file format would contain.  In other words, if
+% module, using the name you assign. If
 % you want to save the smoothed image to use it in a later analysis,
-% you should use the settings boxes within this module to save the
-% smoothed image in '.mat' format. If you want to save other
-% intermediate images, alter the code for this module to save those images
-% to the handles structure (see the SaveImages module help) and then use
-% the Save Images module.
+% you should save the
+% smoothed image in '.mat' format to prevent degradation of the data. 
 %
 % See also MAKEPROJECTION, CORRECTILLUMDIVIDEALLMEAN,
 % CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
@@ -139,15 +130,15 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are you using this module to smooth a projection image?
+%textVAR03 = Are you using this module to smooth an image that results from processing multiple images?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
 %defaultVAR03 = Y
-ProjectionImageOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
 %defaultVAR04 = 50
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 0
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -158,14 +149,14 @@ drawnow
 %%% smooth image at this time or not.  If not, the return function abandons
 %%% the remainder of the code, which will otherwise calculate the smooth
 %%% image, save it to the handles, and display the results.
-if strncmpi(ProjectionImageOrNot,'Y',1) == 1
+if strncmpi(WaitForFlag,'Y',1) == 1
     fieldname = [OrigImageName,'ReadyFlag'];
     ReadyFlag = handles.Pipeline.(fieldname);
-    if strcmp(ReadyFlag, 'ProjectedImageNotReady') == 1
+    if strcmp(ReadyFlag, 'NotReady') == 1
         %%% If the projection image is not ready, the module aborts until
         %%% the next cycle.
         return
-    elseif strcmp(ReadyFlag, 'ProjectedImageReady') == 1
+    elseif strcmp(ReadyFlag, 'Ready') == 1
         %%% If the smoothed image has already been calculated, the module
         %%% aborts until the next cycle.
         if isfield(handles.Pipeline, SmoothedImageName) == 1
@@ -173,9 +164,9 @@ if strncmpi(ProjectionImageOrNot,'Y',1) == 1
         end
         %%% If we make it to this point, it is OK to proceed to calculating the smooth
         %%% image, etc.
-    else error(['There is a programming error of some kind. The Smooth Image For Illum Correction module was expecting to find the text ProjectedImageReady or ProjectedImageNotReady in the field called ', fieldname, ' but that text was not matched for some reason.'])
+    else error(['There is a programming error of some kind. The Smooth Image module was expecting to find the text Ready or NotReady in the field called ', fieldname, ' but that text was not matched for some reason.'])
     end
-elseif strncmpi(ProjectionImageOrNot,'N',1) == 1
+elseif strncmpi(WaitForFlag,'N',1) == 1
     %%% If we make it to this point, it is OK to proceed to calculating the smooth
     %%% image, etc.
 else
@@ -195,7 +186,7 @@ if isfield(handles.Pipeline, OrigImageName)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Smooth Image For Illum Correction module could not find the input image.  It was supposed to be named ', OrigImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled because the Smooth Image module could not find the input image.  It was supposed to be named ', OrigImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(OrigImageName);
@@ -203,7 +194,7 @@ OrigImage = handles.Pipeline.(OrigImageName);
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Smooth Image For Illum Correction module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error('Image processing was canceled because the Smooth Image module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -224,43 +215,7 @@ drawnow
 % the SaveImages module.
 
 %%% Smooths the OrigImage according to the user's specifications.
-if strcmpi(SmoothingMethod,'P') == 1
-    %%% The following is used to fit a low-dimensional polynomial to the original image.
-    [x,y] = meshgrid(1:size(OrigImage,2), 1:size(OrigImage,1));
-    x2 = x.*x;
-    y2 = y.*y;
-    xy = x.*y;
-    o = ones(size(OrigImage));
-    Ind = find(OrigImage > 0);
-    Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
-    drawnow
-    SmoothedImage1 = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
-    %%% The final SmoothedImage is produced by dividing each
-    %%% pixel of the smoothed image by a scalar: the minimum
-    %%% pixel value anywhere in the smoothed image. (If the
-    %%% minimum value is zero, .00000001 is substituted instead.)
-    %%% This rescales the SmoothedImage from 1 to some number.
-    %%% This ensures that the final, corrected image will be in a
-    %%% reasonable range, from zero to 1.
-    drawnow
-    SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
-    %%% Note: the following "imwrite" saves the illumination
-    %%% correction image in TIF format, but the image is compressed
-    %%% so it is not as smooth as the image that is saved using the
-    %%% "save" function below, which is stored in matlab ".mat"
-    %%% format.
-    % imwrite(SmoothedImage, 'SmoothedImage.tif', 'tif')
-else try ArtifactWidth = str2num(SmoothingMethod);
-        ArtifactRadius = 0.5*ArtifactWidth;
-        StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
- %       MsgBoxHandle = CPmsgbox('Now calculating the illumination function, which may take a long time.');
-        SmoothedImage1 = ordfilt2(OrigImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
-        SmoothedImage = SmoothedImage1 ./ max([min(min(SmoothedImage1)); .00000001]);
- %       MsgBox = 'Calculations for the illumination function are complete.';
-    catch
-        error(['The text you entered for the smoothing method in the Smooth Image For Illum Correction module is unrecognizable for some reason. You must enter a positive, even number or the letter P.  Your entry was ',SmoothingMethod])
-    end
-end
+SmoothedImage = CPsmooth(OrigImage,SmoothingMethod);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -297,7 +252,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Sets the width of the figure window to be appropriate (half width),
     %%% the first time through the set.
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet...
-            | strncmpi(ProjectionImageOrNot,'Y',1) == 1
+            | strncmpi(WaitForFlag,'Y',1) == 1
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(3) = originalsize(3)/2;

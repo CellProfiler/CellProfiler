@@ -1,35 +1,34 @@
-function handles = CorrectIllumDivideAllMeanRetrieveImg(handles)
+function handles = DilateBinaryObjects(handles)
 
-% Help for the Correct Illumination Divide All Mean Retrieve Image module: 
-% Category: Pre-processing
+% Help for the Dilate Binary Objects module: 
+% Category: Object Identification
 %
-% This module is like the Correct Illumination Divide All Mean module,
-% except it allows retrieval of an already calculated illumination
-% correction image, from a previously run output file or from a
-% previously saved illumination correction image, in .mat format.
-% This module has not been extensively tested and was written in a
-% quick emergency situation.
+% Sorry, this module is not yet documented!
 %
-% SAVING IMAGES: The illumination corrected images produced by this
-% module can be easily saved using the Save Images module, using the
-% name you assign. The mean image can be saved using the name
-% MeanImageAD plus whatever you called the corrected image (e.g.
-% MeanImageADCorrBlue). The Illumination correction image can be saved
-% using the name IllumImageAD plus whatever you called the corrected
-% image (e.g. IllumImageADCorrBlue).  Note that using the Save Images
-% module saves a copy of the image in an image file format, which has
-% lost some of the detail that a matlab file format would contain.  In
-% other words, if you want to save the illumination image to use it in
-% a later analysis, you should use the settings boxes within this
-% module to save the illumination image in '.mat' format. If you want
-% to save other intermediate images, alter the code for this module to
-% save those images to the handles structure (see the SaveImages
-% module help) and then use the Save Images module.
+% SAVING IMAGES: In addition to the object outlines and the
+% pseudo-colored object images that can be saved using the
+% instructions in the main CellProfiler window for this module,
+% this module produces several additional images which can be
+% easily saved using the Save Images module. These will be grayscale
+% images where each object is a different intensity. (1) The
+% preliminary segmented image, which includes objects on the edge of
+% the image and objects that are outside the size range can be saved
+% using the name: PrelimSegmented + whatever you called the objects
+% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% which excludes objects smaller than your selected size range can be
+% saved using the name: PrelimSmallSegmented + whatever you called the
+% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% image which excludes objects on the edge of the image and excludes
+% objects outside the size range can be saved using the name:
+% Segmented + whatever you called the objects (e.g. SegmentedNuclei)
+% 
+% Additional image(s) are normally calculated for display only,
+% including the object outlines alone. These images can be saved by
+% altering the code for this module to save those images to the
+% handles structure (see the SaveImages module help) and then using
+% the Save Images module.
 %
-% See also CORRECTILLUMDIVIDEALLMEAN,
-% CORRECTILLUMSUBTRACTALLMIN,
-% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEEACHMIN_10,
-% CORRECTILLUMSUBTRACTEACHMIN.
+% See also any identify primary module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -76,7 +75,6 @@ drawnow
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow
 
 % PROGRAMMING NOTE
 % VARIABLE BOXES AND TEXT: 
@@ -110,59 +108,48 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be corrected?
-%defaultVAR01 = OrigBlue
+%textVAR01 = What did you call the image with the binary objects to be dilated?
+%defaultVAR01 = BinaryObjects
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the corrected image?
-%defaultVAR02 = CorrBlue
-CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the image with the dilated objects?
+%defaultVAR02 = DilatedObjects
+DilatedObjectsImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = If you have already created an illumination correction image to be used, enter the path & file name of the image below. To calculate the illumination correction image from all the images of this color that will be processed, leave a period in the box below.#LongBox#
-%defaultVAR03 = .
-IllumCorrectPathAndFileName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Enter the radius to use for dilation (roughly equal to the original radius of the objects). 
+%defaultVAR03 = 0
+ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = To save the illum. corr. image to use later, type a file name + .mat. Else, 'N'
-%defaultVAR04 = N
-IllumCorrectFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%textVAR05 = Enter the pathname to the directory where you want to save that image. Leave a period (.) to save it to the default output directory #LongBox#
-%defaultVAR05 = .
-IllumCorrectPathName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a
-%%% variable.
-fieldname = ['', ImageName];
+fieldname = ImageName;
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled because the Dilate Binary Objects module could not find the input image.  It was supposed to be called ', ImageName, '.  Perhaps there is a typo in the name.'])
 end
-%%% Reads the image.
+%%% Retrieves the current image.
 OrigImage = handles.Pipeline.(fieldname);
 
-        
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
+%%% Checks that the original image is two-dimensional (i.e. not a
+%%% color image), which would disrupt several of the image
+%%% functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error('Image processing was canceled because the Dilate Binary Objects module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+end
+
+try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
+catch error('In the Dilate Binary Objects module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 % PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
@@ -176,55 +163,7 @@ end
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% The first time the module is run, retrieves the image to be used for
-%%% correction from a file.
-if handles.Current.SetBeingAnalyzed == 1
-    if strcmp(IllumCorrectPathAndFileName, '.') ~= 1
-        %%% Tries loading from an output file.
-        try StructureIlluminationImage = load(IllumCorrectPathAndFileName);
-        catch error(['Image processing was canceled because there was a problem loading the file ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.'])
-        end
-        try fieldname = ['IllumImageAD', CorrectedImageName];
-            IlluminationImage = StructureIlluminationImage.handles.Pipeline.(fieldname);
-        catch
-            try IlluminationImage = StructureIlluminationImage.IlluminationImage;
-            catch error(['Image processing was canceled because an illumination image could not be found in the file you selected: ', IllumCorrectPathAndFileName, '. Check that the full path and file name has been typed correctly.  If the file you selected is an output file, the name entered in the CorrectIllumDivideAllMeanRetrieveImg module must match the corrected image name in the output file.'])
-            end
-        end
-    end
-    %%% Stores the mean image and the Illumination image to the handles
-    %%% structure.
-    if exist('MeanImage','var') == 1
-        fieldname = ['MeanImageAD', CorrectedImageName];
-        handles.Pipeline.(fieldname) = MeanImage;        
-    end
-    fieldname = ['IllumImageAD', CorrectedImageName];
-    handles.Pipeline.(fieldname) = IlluminationImage;
-    %%% Saves the illumination correction image to the hard
-    %%% drive if requested.
-    if strcmp(upper(IllumCorrectFileName), 'N') == 0
-        try if strcmp(IllumCorrectPathName,'.') == 1
-                IllumCorrectPathName = handles.Current.DefaultOutputDirectory;
-            end
-            PathAndFileName = fullfile(IllumCorrectPathName,IllumCorrectFileName);
-            save(PathAndFileName, 'IlluminationImage')
-        catch error(['There was a problem saving the illumination correction image to the hard drive. The attempted filename was ', IllumCorrectFileName, '.'])
-        end
-    end
-end
-
-%%% The following is run for every image set. Retrieves the mean image
-%%% and illumination image from the handles structure.  The mean image is
-%%% retrieved just for display purposes.
-fieldname = ['MeanImageAD', CorrectedImageName];
-if isfield(handles.Pipeline, fieldname) == 1
-    MeanImage = handles.Pipeline.(fieldname);
-end
-fieldname = ['IllumImageAD', CorrectedImageName];
-IlluminationImage = handles.Pipeline.(fieldname);
-%%% Corrects the original image based on the IlluminationImage,
-%%% by dividing each pixel by the value in the IlluminationImage.
-CorrectedImage = OrigImage ./ IlluminationImage;
+DilatedObjectsImage = CPdilatebinaryobjects(OrigImage, NumericalObjectDilationRadius);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -259,24 +198,20 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
+    %%% Sets the width of the figure window to be appropriate (half width).
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        originalsize = get(ThisModuleFigureNumber, 'position');
+        newsize = originalsize;
+        newsize(3) = 0.5*originalsize(3);
+        set(ThisModuleFigureNumber, 'position', newsize);
+    end
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original
-    %%% image, some intermediate images, and the final corrected image.
-    subplot(2,2,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% The mean image does not absolutely have to be present in order to
-    %%% carry out the calculations if the illumination image is provided,
-    %%% so the following subplot is only shown if MeanImage exists in the
-    %%% workspace.
-    subplot(2,2,2); imagesc(CorrectedImage); 
-    title('Illumination Corrected Image');
-    if exist('MeanImage','var') == 1
-        subplot(2,2,3); imagesc(MeanImage); 
-        title(['Mean of all ', ImageName, ' images']);
-    end
-    subplot(2,2,4); imagesc(IlluminationImage); 
-    title('Illumination Function'); colormap(gray)
+    %%% A subplot of the figure window is set to display the original image.
+    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
+    title(['Input image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,1,2); imagesc(DilatedObjectsImage); colormap(gray);
+    title('Image of dilated objects');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,6 +335,6 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% Saves the corrected image to the handles structure so it can be
-%%% used by subsequent modules.
-handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+%%% Saves the resulting image to the handles structure.
+fieldname = [DilatedObjectsImageName];
+handles.Pipeline.(fieldname) = DilatedObjectsImage;

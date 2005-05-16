@@ -1,6 +1,6 @@
-function handles = MakeProjection(handles)
+function handles = MakeProjection_AverageImages(handles)
 
-% Help for the Make Projection module:
+% Help for the Make Projection/Average Images module:
 % Category: Pre-processing
 %
 % This module makes a projection of a set of images (e.g. a Z-stack)
@@ -108,17 +108,13 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the resulting projection image?
 %defaultVAR02 = ProjectedBlue
-ProjectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Are the images you want to use to make the projection to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? If you choose L, the module will calculate the single, averaged projection image the first time through the pipeline by loading every image of the type specified in the Load Images module. It is then acceptable to use the resulting image later in the pipeline. If you choose P, the module will allow the pipeline to cycle through all of the image sets.  With this option, the module does not need to follow a Load Images module; it is acceptable to make the single, averaged projection from images resulting from other image processing steps in the pipeline. However, the resulting projection image will not be available until the last image set has been processed, so it cannot be used in subsequent modules.
 %defaultVAR03 = L
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = If the incoming images are binary and you want to dilate each object in the final projection image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0. Note that if you are using a small image set, there will be spaces in the projection image that contain no objects and median filtering is unlikely to work well. 
-%defaultVAR04 = 0
-DilateObjects = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -137,130 +133,19 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
-    if handles.Current.SetBeingAnalyzed == 1
-        %%% The first time the module is run, the projection image is calculated.
-        %%% Obtains the screen size and determines where the wait bar
-        %%% will be displayed.
-        ScreenSize = get(0,'ScreenSize');
-        ScreenHeight = ScreenSize(4);
-        PotentialBottom = [0, (ScreenHeight-720)];
-        BottomOfMsgBox = max(PotentialBottom);
-        PositionMsgBox = [500 BottomOfMsgBox 350 100];
-        %%% Retrieves the path where the images are stored from the handles
-        %%% structure.
-        fieldname = ['Pathname', ImageName];
-        try Pathname = handles.Pipeline.(fieldname);
-        catch error('Image processing was canceled because the Make Projection module uses all the images in a set to calculate the projection image. Therefore, the entire image set to be projected must exist prior to processing the first image set through the pipeline. In other words, the Make Projection module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to use the Make Projection module in Pipeline mode (P). Another option is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Make Projection module onward.')
-        end
-        %%% Retrieves the list of filenames where the images are stored from the
-        %%% handles structure.
-        fieldname = ['FileList', ImageName];
-        FileList = handles.Pipeline.(fieldname);
-        %%% Calculates the projection image.
-        %%% Image file is read differently if it is a .dib image.
-        TotalImage = CPimread(fullfile(Pathname, char(FileList(1))), handles);
-        %%% Does some error checking on the first image in the set.
-        %%% Checks that the original image is two-dimensional (i.e. not a color
-        %%% image), which would disrupt several of the image functions.
-        if ndims(TotalImage) ~= 2
-            error('Image processing was canceled because the Make Projection module requires input images that are two-dimensional (i.e. X vs Y), but the first image loaded does not fit this requirement.  This may be because the image is a color image.')
-        end
-        %%% Waitbar shows the percentage of image sets remaining.
-        WaitbarHandle = waitbar(0,'');
-        set(WaitbarHandle, 'Position', PositionMsgBox)
-        drawnow
-        TimeStart = clock;
-        NumberOfImages = length(FileList);
-        for i=2:length(FileList)
-            TotalImage = TotalImage + CPimread(fullfile(Pathname, char(FileList(i))), handles);
-            CurrentTime = clock;
-            TimeSoFar = etime(CurrentTime,TimeStart);
-            TimePerSet = TimeSoFar/i;
-            ImagesRemaining = NumberOfImages - i;
-            TimeRemaining = round(TimePerSet*ImagesRemaining);
-            WaitbarText = {'Calculating the projection image for the Make Projection module.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
-            WaitbarText = char(WaitbarText);
-            waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
-            drawnow
-        end
-        if length(FileList) == 1
-            CurrentTime = clock;
-            TimeSoFar = etime(CurrentTime,TimeStart);
-        end
-        WaitbarText = {'Calculations of the projection image are finished for the Make Projection module.';['Seconds consumed: ',num2str(TimeSoFar),]};
-        WaitbarText = char(WaitbarText);
-        waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
-        ProjectedImage = TotalImage / length(FileList);
+ReadyFlag = 'Not Ready';
+try
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
+        %%% The first time the module is run, the projection image is
+        %%% calculated.
+        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName);
+    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName);
+    else
+        error('Image processing was canceled because you must choose either "L" or "P" in the Make Projection/Average Images module');
     end
-    %%% Indicate that the projection image is ready.
-    ReadyFlag = 'ProjectedImageReady';
-
-elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
-    %%% In Pipeline (cycling) mode, each time through the image sets, the
-    %%% image is added to the existing cumulative image.
-    %%% Reads (opens) the image you want to analyze and assigns it to a
-    %%% variable.
-    fieldname = ['', ImageName];
-    %%% Performs certain error-checking and initializing functions the
-    %%% first time throught the image set.
-    if handles.Current.SetBeingAnalyzed == 1
-        %%% Checks whether the image to be analyzed exists in the handles structure.
-        if isfield(handles.Pipeline, ImageName)==0,
-            %%% If the image is not there, an error message is produced.  The error
-            %%% is not displayed: The error function halts the current function and
-            %%% returns control to the calling function (the analyze all images
-            %%% button callback.)  That callback recognizes that an error was
-            %%% produced because of its try/catch loop and breaks out of the image
-            %%% analysis loop without attempting further modules.
-            error(['Image processing was canceled because the Make Projection module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-        end
-        %%% Retrieves the current image.
-        OrigImage = handles.Pipeline.(fieldname);
-        %%% Creates the empty variable so it can be retrieved later without
-        %%% causing an error on the first image set.
-        handles.Pipeline.(ProjectedImageName) = zeros(size(OrigImage));
-    end
-    %%% Retrieves the current image.
-    OrigImage = handles.Pipeline.(fieldname);
-    %%% Checks that the original image is two-dimensional (i.e. not a color
-    %%% image), which would disrupt several of the image functions.
-    if ndims(OrigImage) ~= 2
-        error('Image processing was canceled because the Make Projection module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-    end
-    %%% Retrieves the existing projection image, as accumulated so far.
-    ProjectedImage = handles.Pipeline.(ProjectedImageName);
-    %%% Adds the current image to it.
-    ProjectedImage = ProjectedImage + OrigImage;
-    %%% If the last image set has just been processed, indicate that the
-    %%% projection image is ready.
-    if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-	%%% Divides by the total number of images in order to average.
-	ProjectedImage = ProjectedImage/handles.Current.NumberOfImageSets;
-        ReadyFlag = 'ProjectedImageReady';
-        %%% The following line is somewhat temporary so we can retrieve
-        %%% this image if necessary (pre-dilation).
- 	FinalRawProjectedImage = ProjectedImage;
-    else ReadyFlag = 'ProjectedImageNotReady';
-    end
-else
-    error('Image processing was canceled because you must choose either "L" or "P" in the Make Projection module');
-end
-
-%%% Dilates the objects if the user requested.
-if strcmp(ReadyFlag, 'ProjectedImageReady') == 1
-    %%% This filter acts as if we had dilated each object by a certain
-    %%% number of pixels prior to making the projection. It is faster
-    %%% to do this convolution when the entire projection is completed
-    %%% rather than dilating each object as each image is processed.
-    try NumericalDilateObjects = str2num(DilateObjects);
-    catch error('In the Make Projection module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
-    end
-    if  NumericalDilateObjects ~= 0
-%        LogicalStructuringElement = getnhood(strel('disk',NumericalDilateObjects,0));
-        StructuringElement = fspecial('gaussian',3*NumericalDilateObjects,NumericalDilateObjects);
-        ProjectedImage = filter2(StructuringElement,ProjectedImage,'same');
-    end
+catch [ErrorMessage, ErrorMessage2] = lasterr;
+    error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -305,24 +190,22 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
         drawnow
     end
-    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            %%% The projection image is displayed the first time through
-            %%% the set. For subsequent image sets, this figure is not
-            %%% updated at all, to prevent the need to load the projection
-            %%% image from the handles structure.
-            %%% Activates the appropriate figure window.
-            figure(ThisModuleFigureNumber);
-            imagesc(ProjectedImage);
-            title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']);
-            colormap(gray)
-        end
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        %%% The projection image is displayed the first time through
+        %%% the set. For subsequent image sets, this figure is not
+        %%% updated at all, to prevent the need to load the projection
+        %%% image from the handles structure.
+        %%% Activates the appropriate figure window.
+        figure(ThisModuleFigureNumber);
+        imagesc(ProjectionImage);
+        title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']);
+        colormap(gray)
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated projection image so far is displayed each time through
         %%% the pipeline.
         %%% Activates the appropriate figure window.
         figure(ThisModuleFigureNumber);
-        imagesc(ProjectedImage);
+        imagesc(ProjectionImage);
         title(['Projection Image so far, based on Image set # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
         colormap(gray)
     end
@@ -400,7 +283,7 @@ drawnow
 %
 % handles.Measurements:
 %       Everything in handles.Measurements contains data specific to each
-% image set analyzed for exporting. It is used by the ExportProjectedImage
+% image set analyzed for exporting. It is used by the ExportProjectionImage
 % and ExportCellByCell data tools. This substructure is deleted at the
 % beginning of the analysis run (see 'Which substructures are deleted
 % prior to an analysis run?' below).
@@ -449,33 +332,18 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-%%% If running in non-cycling mode (straight from LoadImages), the
-%%% projection image and its flag need only be saved to the handles
-%%% structure after the first image set is processed.
-if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
-    if handles.Current.SetBeingAnalyzed == 1
-        %%% Saves the projected image to the handles structure so it can be used by
-        %%% subsequent modules.
-        handles.Pipeline.(ProjectedImageName) = ProjectedImage;
-        %%% Saves the ready flag to the handles structure so it can be used by
-        %%% subsequent modules.
-        fieldname = [ProjectedImageName,'ReadyFlag'];
-        handles.Pipeline.(fieldname) = ReadyFlag;
-    end
-    %%% If running in cycling mode (Pipeline mode), the projection image and
-    %%% its flag are saved to the handles structure after every image set is
-    %%% processed.
-elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+%%% If running in non-cycling mode (straight from the hard drive using
+%%% a LoadImages module), the projection image and its flag need only
+%%% be saved to the handles structure after the first image set is
+%%% processed. If running in cycling mode (Pipeline mode), the
+%%% projection image and its flag are saved to the handles structure
+%%% after every image set is processed.
+if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
     %%% Saves the projected image to the handles structure so it can be used by
     %%% subsequent modules.
-    handles.Pipeline.(ProjectedImageName) = ProjectedImage;
-    if strcmp(ReadyFlag, 'ProjectedImageReady') == 1
-        %%% This is somewhat temporary, so we can retrieve the image for
-        %%% diagnostic purposes.
-        handles.Pipeline.(['Raw',ProjectedImageName]) = FinalRawProjectedImage;
-    end
+    handles.Pipeline.(ProjectionImageName) = ProjectionImage;
     %%% Saves the ready flag to the handles structure so it can be used by
     %%% subsequent modules.
-    fieldname = [ProjectedImageName,'ReadyFlag'];
+    fieldname = [ProjectionImageName,'ReadyFlag'];
     handles.Pipeline.(fieldname) = ReadyFlag;
 end

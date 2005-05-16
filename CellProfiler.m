@@ -621,6 +621,9 @@ end
 
 % --- Executes on button press in SavePipelineButton.
 function SavePipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+
+
+
 %%% The "Settings" variable is saved to the file name the user chooses.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [FileName,Pathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'), 'Save Settings As...');
@@ -666,7 +669,7 @@ if FileName ~= 0
             %%% found, so ask the user where the modules are.
             PathnameModules = uigetdir('','Please select directory where modules are located');
         end
-        [filename,SavePathname] = uiputfile('*.txt', 'Save Settings As...');
+        [filename,SavePathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.txt'), 'Save Settings As...');
         % make sure # of modules equals number of variable rows.
         VariableSize = size(VariableValues);
         if VariableSize(1) ~= max(size(ModuleNames))

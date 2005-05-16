@@ -212,14 +212,7 @@ if SetBeingAnalyzed == 1
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
         %%% Checks if the image is a DIB image file.
-        if strcmpi(FileFormat,'DIB') == 1
-            Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
-            handles.Pipeline.DIBwidth = str2double(Answers{1});
-            handles.Pipeline.DIBheight = str2double(Answers{2});
-            handles.Pipeline.DIBbitdepth = str2double(Answers{3});
-            handles.Pipeline.DIBchannels = str2double(Answers{4});
-        elseif strcmpi(FileFormat,'mat') == 1
-        else
+        if (strcmpi(FileFormat,'DIB') == 0)&(strcmpi(FileFormat,'mat') == 0)
             error(['The image file type "', FileFormat , '" entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
         end
     end

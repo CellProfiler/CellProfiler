@@ -414,6 +414,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     set(Displaytexthandle,'string',TextToDisplay)
     set(ThisModuleFigureNumber,'toolbar','figure')
+    if strcmp(ObjectName,'/') == 1
+        title('Overall')
+    else
+        title(ObjectName)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

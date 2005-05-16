@@ -313,6 +313,8 @@ JAMES MIGHT HAVE DONE SOME OF THIS >>>> - Plot data button: allow adding error b
 
 - 'Report bug' button in CellProfiler's main GUI.
 
+- Allow the user to launch CellProfiler without separately launching Matlab (Have Matlab be automatically launched).
+
 - Have the save settings function automatically add SET to the
        name > can't currently do it with uisave. 
 

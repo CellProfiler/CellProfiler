@@ -5,6 +5,13 @@ REARRANGED JANUARY 27th, 2005  IN ORDER OF PRIORITY
 ---------------------------------------------------
 
 WANT IT NOW:
+
+- for the SpeedUpCellProfiler module, the variable text says it's always saved after the first image set. It's also saved after the last image set, too right? If so, add this to the variable description to reassure the user.
+
+- Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules.
+
+- Is it possible to combine the identifyPrim AdaptiveThreshold modules all together?
+
 - In the Load pipeline button callback, when you choose to save extracted settings as a text file, it goes to the wrong directory - it should go to the default output directory for saving this file.
 
 - Change File Renamer to work with a load images module rather than independently, so that we can rename every third file, for example, or rename based on existing text.

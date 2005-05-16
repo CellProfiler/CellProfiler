@@ -10,7 +10,7 @@ function handles = SaveImages(handles)
 % alternate format.  Please note that this module works for the few
 % cases we have tried, but you may run into difficulties when dealing
 % with images that are not 8 bit.  For example, you may wish to alter
-% the code to handle 16 bit images.  These features will hopefully be
+% the code to handle 16 brecit images.  These features will hopefully be
 % added soon.
 %
 % If you want to save images that are produced by other modules but
@@ -411,6 +411,9 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         fieldname = ['Movie', ImageName];
         if handles.Current.SetBeingAnalyzed == 1
             NumberExistingFrames = 0;
+            %%% Preallocates the variable which signficantly speeds processing
+            %%% time.
+            handles.Pipeline.(fieldname)(handles.Current.NumberOfImageSets) = struct('colormap',[],'cdata',[]);
         else
             Movie = handles.Pipeline.(fieldname);
             NumberExistingFrames = size(Movie,2)

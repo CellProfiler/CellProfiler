@@ -113,7 +113,7 @@ CurrentModuleNum = str2double(CurrentModule);
 TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call that image?
-%defaultVAR02 = IllumCorrImgBlue
+%defaultVAR02 = IllumBlue
 ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Type the name of the image file you want to load (include the extension, like .tif)

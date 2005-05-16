@@ -24,7 +24,12 @@ function handles = OpenNewImageFile(handles)
 
 %%% Opens a user interface window which retrieves a file name and path 
 %%% name for the image to be shown.
-[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.', '*'),'Select the image to view');
+%%% Current directory temporarily changed to default image directory 
+%%% for image selection and then immediately restored
+TempCD=cd;
+cd(handles.Current.DefaultImageDirectory);
+[FileName,Pathname] = uigetfile({'*.bmp;*.cur;*.fts;*.fits;*.gif;*.hdf;*.ico;*.jpg;*.jpeg;*.pbm;*.pcx;*.pgm;*.png;*.pnm;*.ppm;*.ras;*.tif;*.tiff;*.xwd;*.dib', 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');
+cd(TempCD);
     %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
 if FileName == 0
@@ -42,6 +47,7 @@ else
     Image = CPimread(fullfile(Pathname, FileName));
     figure; imagesc(Image), colormap(gray)
     pixval
+    title(FileName)
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
 %%% SHOULD CONSIDER ADDING IT BACK.
 %     %%% The following adds the Interactive Zoom button, which relies

@@ -1,6 +1,6 @@
-function handles = PlotOrExportHistogrs(handles)
+function handles = Histogram(handles)
 
-% Help for the Plot Or Export Histograms tool:
+% Help for the Histogram tool:
 % Category: Data Tools
 %
 % The individual object measurements can be displayed in histogram
@@ -97,12 +97,12 @@ end
 load(fullfile(RawPathname, RawFileName));
 
 
-%%% Call the function GetFeature(), which opens a series of list dialogs and
+%%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles);
+[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
 if isempty(ObjectTypename),return,end
-MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' for ', ObjectTypename];
+MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
 %%% Put the measurements for this feature in a cell array, one
 %%% cell for each image set.
@@ -148,7 +148,7 @@ Prompts{8} = 'Threshold value, if applicable';
 Prompts{9} = 'Do you want the Y-axis (number of objects) to be absolute or relative?';
 Prompts{10} = 'Display as a compressed histogram (heatmap)?';
 Prompts{11} = 'Do you want the histogram data to be exported? To export the histogram data, enter a filename (with ".xls" to open easily in Excel), or type "no" if you do not want to export the data.';
-Prompts{12} = 'If exporting histograms, is each row to be one image or one histogram bin? Enter "image" or "bin".';
+Prompts{12} = 'If exporting histograms or displaying as a compressed histogram (heatmap), is each row to be one image or one histogram bin? Enter "image" or "bin".';
 Prompts{13} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
 AcceptableAnswers = 0;
 global Answers
@@ -290,7 +290,7 @@ while AcceptableAnswers == 0
 
     %%% If the user selected A for all, the measurements are not thresholded on some other measurement.
     if ~strcmpi(GreaterOrLessThan,'A')
-        [ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles);
+        [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
         MeasurementToThresholdValueOnName = handles.Measurements.(ObjectTypename).([FeatureType,'Features'])(FeatureNo);
         tmp = handles.Measurements.(ObjectTypename).(FeatureType);
         MeasurementToThresholdValueOn = cell(length(tmp),1);
@@ -714,16 +714,40 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     %%% Displays histogram data for compressed histograms %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
+    FinalHistogramData = FinalHistogramData';
     FigureHandle = figure;
-    imagesc(FinalHistogramData'),
-    colormap(gray), colorbar,
-    %title(['Title goes here'])
-    AxisHandle = gca;
-    set(get(AxisHandle,'XLabel'),'String',MeasurementToExtract)
-    set(AxisHandle,'XTickLabel',XTickLabels)
-    NewPlotBinLocations = 1:length(FinalHistogramData');
-    set(AxisHandle,'XTick',NewPlotBinLocations)
+    set(FigureHandle,'Color',[1 1 1])
+    if strcmpi(RowImageOrBin,'image') == 1
+        imagesc(FinalHistogramData),
+        AxisHandle = gca;
+        set(get(AxisHandle,'XLabel'),'String',MeasurementToExtract)
+        set(AxisHandle,'XTickLabel',XTickLabels)
+        NewPlotBinLocations = 1:2:length(FinalHistogramData');
+        set(AxisHandle,'XTick',NewPlotBinLocations)
+    elseif strcmpi(RowImageOrBin,'bin') == 1
+        imagesc(flipud(FinalHistogramData')),
+        AxisHandle = gca;
+        EveryNthLabel = 3;
+        XTickLabels = flipud(XTickLabels');
+        YTickLabels{1} = XTickLabels{1};
+        YTickLabels{length(XTickLabels)} = XTickLabels{end};
+        for n = 2:length(XTickLabels) - 1
+            YTickLabels{n} = round(XTickLabels{n});
+        end
+        YTickLabels = YTickLabels(1:EveryNthLabel:length(YTickLabels));
+        set(AxisHandle,'YTickLabel',YTickLabels)
+        NewPlotBinLocations = 1:EveryNthLabel:length(flipud(XTickLabels'));
+        set(AxisHandle,'YTick',NewPlotBinLocations)
+        set(AxisHandle,'XTick',0:100:size(FinalHistogramData,1))
+    end
+    NewColormap = 1 - colormap(gray);
+    colormap(NewColormap), colorbar,
     set(FigureHandle,'UserData',FigureSettings)
+    FontSize = get(0,'UserData');
+    set(gca,'fontname','times','fontsize',FontSize)
+    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
+    ylabel(gca,'Histogram bins','fontname','times','fontsize',FontSize+2)
+    title(MeasurementToExtract,'Fontname','times','fontsize',FontSize+2)
 end
 
 function WriteHistToExcel(FileName, FirstImage, LastImage, XTickLabels,...
@@ -864,81 +888,4 @@ catch
     h = errordlg(['Unable to close file ',FileName,'.']);
     waitfor(h);
     return;
-end
-
-function [ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles)
-%
-%   This function takes the user through three list dialogs where a
-%   specific feature is chosen. It is possible to go back and forth
-%   between the list dialogs. The chosen feature can be identified
-%   via the output variables
-%
-
-
-%%% Extract the fieldnames of measurements from the handles structure.
-MeasFieldnames = fieldnames(handles.Measurements);
-
-% Remove the 'GeneralInfo' field
-index = setdiff(1:length(MeasFieldnames),strmatch('GeneralInfo',MeasFieldnames));
-MeasFieldnames = MeasFieldnames(index);
-
-%%% Error detection.
-if isempty(MeasFieldnames)
-    errordlg('No measurements were found.')
-    ObjectTypename = [];FeatureType = [];FeatureNo = [];
-    return
-end
-
-dlgno = 1;                            % This variable keeps track of which list dialog is shown
-while dlgno < 4
-    switch dlgno
-        case 1
-            [Selection, ok] = listdlg('ListString',MeasFieldnames, 'ListSize', [300 400],...
-                'Name','Select measurement',...
-                'PromptString','Choose an object type',...
-                'CancelString','Cancel',...
-                'SelectionMode','single');
-            if ok == 0
-                ObjectTypename = [];FeatureType = [];FeatureNo = [];
-                return
-            end
-            ObjectTypename = MeasFieldnames{Selection};
-
-            % Get the feature types, remove all fields that contain
-            % 'Features' in the name
-            FeatureTypes = fieldnames(handles.Measurements.(ObjectTypename));
-            tmp = {};
-            for k = 1:length(FeatureTypes)
-                if isempty(strfind(FeatureTypes{k},'Features'))
-                    tmp = cat(1,tmp,FeatureTypes(k));
-                end
-            end
-            FeatureTypes = tmp;
-            dlgno = 2;                      % Indicates that the next dialog box is to be shown next
-        case 2
-            [Selection, ok] = listdlg('ListString',FeatureTypes, 'ListSize', [300 400],...
-                'Name','Select measurement',...
-                'PromptString',['Choose a feature type for ', ObjectTypename],...
-                'CancelString','Back',...
-                'SelectionMode','single');
-            if ok == 0
-                dlgno = 1;                  % Back button pressed, go back one step in the menu system
-            else
-                FeatureType = FeatureTypes{Selection};
-                Features = handles.Measurements.(ObjectTypename).([FeatureType 'Features']);
-                dlgno = 3;                  % Indicates that the next dialog box is to be shown next
-            end
-        case 3
-            [Selection, ok] = listdlg('ListString',Features, 'ListSize', [300 400],...
-                'Name','Select measurement',...
-                'PromptString',['Choose a ',FeatureType,' feature for ', ObjectTypename],...
-                'CancelString','Back',...
-                'SelectionMode','single');
-            if ok == 0
-                dlgno = 2;                  % Back button pressed, go back one step in the menu system
-            else
-                FeatureNo = Selection;
-                dlgno = 4;                  % dlgno = 4 will exit the while-loop
-            end
-    end
 end

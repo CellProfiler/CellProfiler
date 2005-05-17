@@ -729,10 +729,15 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
         AxisHandle = gca;
         EveryNthLabel = 3;
         XTickLabels = flipud(XTickLabels');
-        YTickLabels{1} = XTickLabels{1};
-        YTickLabels{length(XTickLabels)} = XTickLabels{end};
-        for n = 2:length(XTickLabels) - 1
-            YTickLabels{n} = round(XTickLabels{n});
+        %%% Checks the spread of the data to decide whether to round
+        %%% it off.
+        if XTickLabels{2} - XTickLabels{end-1} > NumberOfBins
+            YTickLabels{1} = XTickLabels{1};
+            YTickLabels{length(XTickLabels)} = XTickLabels{end};
+            for n = 2:length(XTickLabels) - 1
+                YTickLabels{n} = round(XTickLabels{n});
+            end
+        else YTickLabels = XTickLabels;
         end
         YTickLabels = YTickLabels(1:EveryNthLabel:length(YTickLabels));
         set(AxisHandle,'YTickLabel',YTickLabels)

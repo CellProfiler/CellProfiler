@@ -6,6 +6,12 @@ REARRANGED JANUARY 27th, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- Disable the 'analyze images' button when it's pressed so that the user doesn't click it more than once by mistake
+
+- After renaming is complete, the list of image names does not update itself automatically
+
+- In the Save pipeline button callback, when you choose to save as text and then cancel, MATLAB outputs a bunch of error messages.
+
 - The help for the image tools is currently working fine, but for some reason the help button for the data tools just yields a blank figure window.
 
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
@@ -15,10 +21,6 @@ WANT IT NOW:
 - Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules.
 
 - Is it possible to combine the identifyPrim AdaptiveThreshold modules all together?
-
-- In the Load pipeline button callback, when you choose to save extracted settings as a text file, it goes to the wrong directory - it should go to the default output directory for saving this file.
-
-- Change File Renamer to work with a load images module rather than independently, so that we can rename every third file, for example, or rename based on existing text.
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
@@ -32,11 +34,7 @@ WANT IT NOW:
        paper somewhere detailing an ellipse-based shape transform
        (maybe Ray has it?). 
 
-- Surrounding many uses of CPimread in various modules and tools is some code asking about the specifications of DIB images, if that is the file format the user specified.  We should change CPimread to take in the file format of images as an optional argument.  If the file format = DIB, then CPimread should look in the handles structure to see whether the user already specified the length, width, channels, etc.  If so, it uses those values and tries to open the image (try/catch). If there is an error, it can ask the user to enter the values in the specifications dialog box and try again.  This will move the code asking about specifications out of each module or data tool and put it all in one place.  This will prevent the user from having to confirm the specifications every time the function is called and will remove the specifications dialog box code from each instance of the function being used.
-
 - For the data/image tools: ShowDataOnImage and PlotOrExportHistograms (and possibly other tools and modules) there is a bug in matlab that prevents certain handles from properly being edited, I think only on the mac platform.  Right now if there a try/catch which yields an error message referring to Service Request 1-RR6M1 if the propedit command fails.  However, even *trying* propedit seems to cause CellProfiler to become unstable, and it seems to have to do with its interaction with X11. So we should somehow check to see what platform is running, and if it's X11 (or maybe just mac), not even try the propedit command. The best way to find all functions with this problem is to search for the service request number and/or for the propedit command.
-
-- For the image tool OpenNewImageFile, the resulting figure should have the filename as its title.
 
 ---------------------------------------------------
 
@@ -86,12 +84,6 @@ Settings =      ModuleNames: {1x6 cell}
        this case.
 
 - If there are no modules loaded in the main CellProfiler window pipeline, the Save Settings button should realize this and refuse to save a settings file: warndlg('There are no modules currently loaded, so the pipeline will not be saved.').
-
-- For LoadImagesText module, make the error catching more descriptive.
-       If there are no image files matching the specified text, right
-       now it just says "there are no image files in the directory." when
-       it ought to say "there are no image files in the directory that
-       contain the text XXX."
 
 - In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
 

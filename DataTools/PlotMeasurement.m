@@ -1,6 +1,6 @@
 function handles = PlotMeasurement(handles)
 
-% Help for the Plot Measurements tool:
+% Help for the Plot Measurement tool:
 % Category: Data Tools
 %
 % This tool makes a bar plot of the mean and standard deviation of a measurement.

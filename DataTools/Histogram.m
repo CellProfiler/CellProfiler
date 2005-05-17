@@ -150,6 +150,8 @@ Prompts{10} = 'Display as a compressed histogram (heatmap)?';
 Prompts{11} = 'Do you want the histogram data to be exported? To export the histogram data, enter a filename (with ".xls" to open easily in Excel), or type "no" if you do not want to export the data.';
 Prompts{12} = 'If exporting histograms or displaying as a compressed histogram (heatmap), is each row to be one image or one histogram bin? Enter "image" or "bin".';
 Prompts{13} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
+Prompts{14} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
+
 AcceptableAnswers = 0;
 global Answers
 while AcceptableAnswers == 0
@@ -166,6 +168,7 @@ while AcceptableAnswers == 0
     Defaults{11} = 'no';
     Defaults{12} = 'image';
     Defaults{13} = 'yes';
+    Defaults{14} = 'N';
     %%% Loads the Defaults from the global workspace (i.e. from the
     %%% previous time the user ran this tool) if possible.
     for i = 1: length(Prompts)
@@ -178,13 +181,13 @@ while AcceptableAnswers == 0
     % Workaround because input dialog box is too tall. Break questions up
     % into two sets. We could create a custom version of inputdlg with a
     % vertical slider, but that would be more complicated.
-    Answers1 = inputdlg(Prompts(1:6),'Choose histogram settings - page 1',1,Defaults(1:6),'on');
+    Answers1 = inputdlg(Prompts(1:7),'Choose histogram settings - page 1',1,Defaults(1:7),'on');
 
     %%% If user clicks cancel button Answers1 will be empty.
     if isempty(Answers1)
         return
     end
-    Answers2 = inputdlg(Prompts(7:13),'Choose histogram settings - page 2',1,Defaults(7:13),'on');
+    Answers2 = inputdlg(Prompts(8:14),'Choose histogram settings - page 2',1,Defaults(8:14),'on');
 
     %%% If user clicks cancel button Answers2 will be empty.
     if isempty(Answers2)
@@ -285,6 +288,13 @@ while AcceptableAnswers == 0
     if strncmpi(ShowDisplay,'N',1) == 1 | strncmpi(ShowDisplay,'Y',1) == 1
     else
         errordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{13}, '.']);
+        continue
+    end
+
+    NumberOrPercent = Answers{14};
+    if strncmpi(NumberOrPercent,'N',1) == 1 | strncmpi(NumberOrPercent,'P',1) == 1
+    else
+        errordlg(['You must enter "N" or "P" in answer to the question: ', Prompts{14}, '.']);
         continue
     end
 
@@ -392,28 +402,11 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     %%% that match + inf).
     HistogramData(n+1) = [];
     FinalHistogramData(:,1) = HistogramData;
-    %%% Saves this info in a variable, FigureSettings, which
-    %%% will be stored later with the figure.
-    FigureSettings{3} = FinalHistogramData;
     HistogramTitles{1} = ['Histogram of data from Image #', num2str(FirstImage), ' to #', num2str(LastImage)];
     FirstImage = 1;
     LastImage = 1;
     NumberOfImages = 1;
 
-    if strcmpi(GreaterOrLessThan,'A') ~= 1
-        try
-            AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
-            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
-        catch errordlg('oops, saving did not work')
-        end
-    end
-
-    %%% Saves the data to an excel file if desired.
-    if strcmpi(SaveData,'No') ~= 1
-        WriteHistToExcel(SaveData, FirstImage, LastImage, XTickLabels,...
-            FinalHistogramData, MeasurementToExtract, AdditionalInfoForTitle,...
-            HistogramTitles, RowImageOrBin);
-    end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% Calculates histogram data for non-cumulative histogram %%%
@@ -470,24 +463,42 @@ else
         %%% Increments the CompressedImageNumber.
         CompressedImageNumber = CompressedImageNumber + 1;
     end
-    %%% Saves this info in a variable, FigureSettings, which
-    %%% will be stored later with the figure.
-    FigureSettings{3} = FinalHistogramData;
-    if strcmpi(GreaterOrLessThan,'A') ~= 1
-        AnswerFileName = inputdlg({'Name the file'},'Name the file with the subset of measurements',1,{'temp.mat'},'on');
-        try
-            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
-        catch errordlg('oops, saving did not work.')
-        end
-    end
+end
 
-    %%% Saves the data to an excel file if desired.
-    if strcmpi(SaveData,'No') ~= 1
-        WriteHistToExcel(SaveData, FirstImage, LastImage, XTickLabels,...
-            FinalHistogramData, MeasurementToExtract, AdditionalInfoForTitle,...
-            HistogramTitles, RowImageOrBin);
+
+if strncmpi(NumberOrPercent,'P',1) == 1
+    for i = 1: size(FinalHistogramData,2)
+        SumForThatColumn = sum(FinalHistogramData(:,i));
+        FinalHistogramData(:,i) = FinalHistogramData(:,i)/SumForThatColumn;
     end
 end
+
+
+%%% Saves this info in a variable, FigureSettings, which
+%%% will be stored later with the figure.
+FigureSettings{3} = FinalHistogramData;
+
+if strcmpi(GreaterOrLessThan,'A') ~= 1
+    AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
+    try
+        save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
+    catch errordlg('oops, saving did not work.')
+    end
+end
+
+%%% Saves the data to an excel file if desired.
+if strcmpi(SaveData,'No') ~= 1
+    WriteHistToExcel(SaveData, FirstImage, LastImage, XTickLabels,...
+        FinalHistogramData, MeasurementToExtract, AdditionalInfoForTitle,...
+        HistogramTitles, RowImageOrBin);
+end
+
+
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Displays histogram data for non-compressed histograms %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -746,10 +757,17 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
         set(AxisHandle,'XTick',0:100:size(FinalHistogramData,1))
     end
     NewColormap = 1 - colormap(gray);
-    colormap(NewColormap), colorbar,
+    colormap(NewColormap), 
+    ColorbarHandle = colorbar,
+    %%% Labels the colorbar's units.
+    if strncmpi(NumberOrPercent,'P',1) == 1
+        ylabel(ColorbarHandle, ['Percentage of ', ObjectTypename, ' in each image'])
+    else ylabel(ColorbarHandle, ['Number of ', ObjectTypename])
+    end
     set(FigureHandle,'UserData',FigureSettings)
     FontSize = get(0,'UserData');
     set(gca,'fontname','times','fontsize',FontSize)
+    set(get(ColorbarHandle,'title'),'fontname','times','fontsize',FontSize+2)
     xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
     ylabel(gca,'Histogram bins','fontname','times','fontsize',FontSize+2)
     title(MeasurementToExtract,'Fontname','times','fontsize',FontSize+2)

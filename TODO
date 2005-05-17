@@ -6,6 +6,8 @@ REARRANGED JANUARY 27th, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- The help for the image tools is currently working fine, but for some reason the help button for the data tools just yields a blank figure window.
+
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
 
 - for the SpeedUpCellProfiler module, the variable text says it's always saved after the first image set. It's also saved after the last image set, too right? If so, add this to the variable description to reassure the user.

@@ -3,7 +3,8 @@ function handles = DataLayout(handles)
 % Help for the Data Layout tool:
 % Category: Data Tools
 %
-% This module has not yet been documented.
+% This module produces an image of mean values
+% of an feature. 
 %
 % See also <nothing relevant>.
 
@@ -29,55 +30,146 @@ end
 if RawFileName == 0
     return
 end
-    load(fullfile(RawPathname, RawFileName));
-%%% Extract the fieldnames of measurements from the handles structure.
-Fieldnames = fieldnames(handles.Measurements);
-MeasFieldnames = Fieldnames(strncmp(Fieldnames,'Image',5)==1);
-%%% Error detection.
-if isempty(MeasFieldnames)
-    errordlg('No measurements were found in the file you selected.  They would be found within the output file''s handles.Measurements structure preceded by ''Image''.')
-    return
-end
-%%% Removes the 'Object' prefix from each name for display purposes.
-for Number = 1:length(MeasFieldnames)
-    EditedMeasFieldnames{Number} = MeasFieldnames{Number}(6:end);
-end
-%%% Allows the user to select a measurement from the list.
-[Selection, ok] = listdlg('ListString',EditedMeasFieldnames, 'ListSize', [300 600],...
-    'Name','Select measurement',...
-    'PromptString','Choose a measurement to display','CancelString','Cancel',...
-    'SelectionMode','single');
-if ok == 0
-    return
-end
-EditedMeasurementToExtract = char(EditedMeasFieldnames(Selection));
-MeasurementToExtract = ['Image', EditedMeasurementToExtract];
+load(fullfile(RawPathname, RawFileName));
 
-AllMeasurementsCellArray = handles.Measurements.(MeasurementToExtract);
+% Ask the user for the feature
+[ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles)
 
+% Get the measurements cell array
+CellArray = handles.Measurements.(ObjectTypename).(FeatureType);
+
+% Extract the selected feature and calculate the mean
+Measurements = zeros(length(CellArray),1);
+for k = 1:length(CellArray)
+    Measurements(k) = mean(CellArray{k}(:,FeatureNo));
+end
+
+% Ask for the dimensions of the image
 Prompts = {'Enter the number of rows','Enter the number of columns'};
 Defaults = {'24','16'};
 Answers = inputdlg(Prompts,'Describe Array/Slide Format',1,Defaults);
 if isempty(Answers)
     return
 end
+
+% Pad or remove measurements to fit the entered image size
 NumberRows = str2double(Answers{1});
 NumberColumns = str2double(Answers{2});
 TotalSamplesToBeGridded = NumberRows*NumberColumns;
-NumberSamplesImported = length(AllMeasurementsCellArray);
+NumberSamplesImported = length(Measurements);
 if TotalSamplesToBeGridded > NumberSamplesImported
     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
     waitfor(h)
-    AllMeasurementsCellArray(NumberSamplesImported+1:TotalSamplesToBeGridded) = AllMeasurementsCellArray(NumberSamplesImported);
+    Measurements(NumberSamplesImported+1:TotalSamplesToBeGridded) = Measurements(NumberSamplesImported);
 elseif TotalSamplesToBeGridded < NumberSamplesImported
     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
     waitfor(h)
-    AllMeasurementsCellArray(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
+    Measurements(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
 end
-MeanImage = reshape(cell2mat(AllMeasurementsCellArray),NumberRows,NumberColumns);
+
+% Produce the image
+MeanImage = reshape(Measurements,NumberRows,NumberColumns);
 
 %%% Shows the results.
-figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
+TitleString = sprintf('Objects: %s, Feauture classification: %s, Feature: %s',ObjectTypename, FeatureType, handles.Measurements.(ObjectTypename).([FeatureType ,'Features']){FeatureNo});
+figure, imagesc(MeanImage), title(TitleString,'fontsize',8), colorbar
+
+
+function [ObjectTypename,FeatureType,FeatureNo] = GetFeature(handles)
+%
+%   This function takes the user through three list dialogs where a
+%   specific feature is chosen. It is possible to go back and forth
+%   between the list dialogs. The chosen feature can be identified
+%   via the output variables
+%
+
+
+%%% Extract the fieldnames of measurements from the handles structure.
+MeasFieldnames = fieldnames(handles.Measurements);
+
+% Remove the 'GeneralInfo' field
+index = setdiff(1:length(MeasFieldnames),strmatch('GeneralInfo',MeasFieldnames));
+MeasFieldnames = MeasFieldnames(index);
+
+%%% Error detection.
+if isempty(MeasFieldnames)
+    errordlg('No measurements were found.')
+    ObjectTypename = [];FeatureType = [];FeatureNo = [];
+    return
+end
+
+dlgno = 1;                            % This variable keeps track of which list dialog is shown
+while dlgno < 4
+    switch dlgno
+        case 1
+            [Selection, ok] = listdlg('ListString',MeasFieldnames, 'ListSize', [300 400],...
+                'Name','Select measurement',...
+                'PromptString','Choose an object type',...
+                'CancelString','Cancel',...
+                'SelectionMode','single');
+            if ok == 0
+                ObjectTypename = [];FeatureType = [];FeatureNo = [];
+                return
+            end
+            ObjectTypename = MeasFieldnames{Selection};
+
+            % Get the feature types, remove all fields that contain
+            % 'Features' in the name
+            FeatureTypes = fieldnames(handles.Measurements.(ObjectTypename));
+            tmp = {};
+            for k = 1:length(FeatureTypes)
+                if isempty(strfind(FeatureTypes{k},'Features'))
+                    tmp = cat(1,tmp,FeatureTypes(k));
+                end
+            end
+            FeatureTypes = tmp;
+            dlgno = 2;                      % Indicates that the next dialog box is to be shown next
+        case 2
+            [Selection, ok] = listdlg('ListString',FeatureTypes, 'ListSize', [300 400],...
+                'Name','Select measurement',...
+                'PromptString',['Choose a feature type for ', ObjectTypename],...
+                'CancelString','Back',...
+                'SelectionMode','single');
+            if ok == 0
+                dlgno = 1;                  % Back button pressed, go back one step in the menu system
+            else
+                FeatureType = FeatureTypes{Selection};
+                Features = handles.Measurements.(ObjectTypename).([FeatureType 'Features']);
+                dlgno = 3;                  % Indicates that the next dialog box is to be shown next
+            end
+        case 3
+            [Selection, ok] = listdlg('ListString',Features, 'ListSize', [300 400],...
+                'Name','Select measurement',...
+                'PromptString',['Choose a ',FeatureType,' feature for ', ObjectTypename],...
+                'CancelString','Back',...
+                'SelectionMode','single');
+            if ok == 0
+                dlgno = 2;                  % Back button pressed, go back one step in the menu system
+            else
+                FeatureNo = Selection;
+                dlgno = 4;                  % dlgno = 4 will exit the while-loop
+            end
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 % % --- Executes on button press in DataLayoutButton.
 % %%% THIS WAS A VERY SPECIALIZED VERSION OUR LAB USED TO NORMALIZE OUR
@@ -85,7 +177,7 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % function DataLayoutButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 % h = CPmsgbox('Copy your data to the clipboard then press OK');
 % waitfor(h)
-% 
+%
 % uiimport('-pastespecial');
 % h = CPmsgbox('After importing your data and pressing "Finish", click OK');
 % waitfor(h)
@@ -93,7 +185,7 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 %     return
 % end
 % IncomingData = clipboarddata;
-% 
+%
 % Prompts = {'Enter the number of rows','Enter the number of columns','Enter the percentile below which values will be excluded from fitting the normalization function.','Enter the percentile above which values will be excluded from fitting the normalization function.'};
 % Defaults = {'24','16','.05','.95'};
 % Answers = inputdlg(Prompts,'Describe Array/Slide Format',1,Defaults);
@@ -107,21 +199,21 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % TotalSamplesToBeGridded = NumberRows*NumberColumns;
 % NumberSamplesImported = length(IncomingData);
 % if TotalSamplesToBeGridded > NumberSamplesImported
-%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']); 
+%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
 %     waitfor(h)
 %     IncomingData(NumberSamplesImported+1:TotalSamplesToBeGridded) = IncomingData(NumberSamplesImported);
 % elseif TotalSamplesToBeGridded < NumberSamplesImported
-%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']); 
+%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
 %     waitfor(h)
 %     IncomingData(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
 % end
-% 
+%
 % %%% The data is shaped into the appropriate grid.
 % MeanImage = reshape(IncomingData,NumberRows,NumberColumns);
-% 
+%
 % %%% The data are listed in ascending order.
 % AscendingData = sort(IncomingData);
-% 
+%
 % %%% The percentiles are calculated. (Statistics Toolbox has a percentile
 % %%% function, but many users may not have that function.)
 % %%% The values to be ignored are set to zero in the mask.
@@ -138,8 +230,8 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % end
 % ThrownOutDataForDisplay = mask;
 % ThrownOutDataForDisplay(mask > 0) = 1;
-% 
-% %%% Fits the data to a third-dimensional polynomial 
+%
+% %%% Fits the data to a third-dimensional polynomial
 % % [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
 % % x2 = x.*x;
 % % y2 = y.*y;
@@ -152,9 +244,9 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % % ind = find((MeanImage > 0) & (mask > 0));
 % % coeffs = [x3(ind) x2y(ind) xy2(ind) y3(ind) x2(ind) y2(ind) xy(ind) x(ind) y(ind) o(ind)] \ double(MeanImage(ind));
 % % IlluminationImage = reshape([x3(:) x2y(:) xy2(:) y3(:) x2(:) y2(:) xy(:) x(:) y(:) o(:)] * coeffs, size(MeanImage));
-% % 
-% 
-% %%% Fits the data to a fourth-dimensional polynomial 
+% %
+%
+% %%% Fits the data to a fourth-dimensional polynomial
 % [x,y] = meshgrid(1:size(MeanImage,2), 1:size(MeanImage,1));
 % x2 = x.*x;
 % y2 = y.*y;
@@ -182,19 +274,19 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 %           o(:)] * coeffs, size(MeanImage));
 % CorrFactorsRaw = reshape(IlluminationImage,TotalSamplesToBeGridded,1);
 % IlluminationImage2 = IlluminationImage ./ mean(CorrFactorsRaw);
-%   
+%
 % %%% Shows the results.
 % figure, subplot(1,3,1), imagesc(MeanImage), title('Imported Data'), colorbar
 % subplot(1,3,2), imagesc(ThrownOutDataForDisplay), title('Ignored Samples'),
 % subplot(1,3,3), imagesc(IlluminationImage2), title('Correction Factors'), colorbar
-% 
+%
 % %%% Puts the results in a column and displays in the main Matlab window.
 % OrigData = reshape(MeanImage,TotalSamplesToBeGridded,1) %#ok We want to ignore MLint error checking for this line.
 % CorrFactors = reshape(IlluminationImage2,TotalSamplesToBeGridded,1);
 % CorrectedData = OrigData./CorrFactors %#ok We want to ignore MLint error checking for this line.
-% 
+%
 % CPmsgbox('The original data and the corrected data are now displayed in the Matlab window. You can cut and paste from there.')
-% 
+%
 % % %%% Exports the results to the clipboard.
 % % clipboard('copy',CorrFactors);
 % % h = CPmsgbox('The correction factors are now on the clipboard. Paste them where desired and press OK.  The data is also displayed in column format in the main Matlab window, so you can copy and paste from there as well.');
@@ -220,7 +312,7 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % will be excluded from the normalization correction.  This should
 % basically exclude the percentage of samples that are likely to be
 % real hits.
-% 
+%
 % The results of the calculation are displayed in an output window.
 % The imported data is shown on the left: the range of colors
 % indicates the range of values, as indicated by the bar immediately
@@ -236,7 +328,7 @@ figure, imagesc(MeanImage), title(EditedMeasurementToExtract), colorbar
 % 'NormalizationButton'. (Save a backup elsewhere first, and do not
 % change the name of the main CellProfiler program file or problems
 % will ensue.)
-% 
+%
 % The correction factors (or, normalization factors) are placed onto
 % the clipboard for you to paste next to the original data (e.g. in
 % Excel). You can then divide the input values by these correction

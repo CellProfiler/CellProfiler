@@ -1,6 +1,6 @@
-function handles = FileRenamer(handles)
+function handles = RenameOrRenumberFile(handles)
 
-% Help for the File Renamer module:
+% Help for the RenameOrRenumberFile module:
 % Category: File Handling
 %
 % File renaming utility that deletes or adds text anywhere 

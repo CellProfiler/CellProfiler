@@ -92,7 +92,7 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Output files should be saved every Nth image set (1,2,3,...  Default = 1). Note: the output file is always saved after the first image set is processed, no matter what is entered here.
+%textVAR01 = Output files should be saved every Nth image set (1,2,3,...  Default = 1). Note: the output file is always saved after the first or last image set is processed, no matter what is entered here.
 %defaultVAR01 = 1
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 

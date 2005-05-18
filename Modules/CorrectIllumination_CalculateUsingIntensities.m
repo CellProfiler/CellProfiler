@@ -208,8 +208,6 @@ if strcmpi(EachOrAll,'A') == 1
             %%% calculated.
             [handles, IlluminationImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
         elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
-            who
-            handles.Pipeline
             [handles, IlluminationImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, ProjectionImageName);
         else
             error('Image processing was canceled because you must choose either "L" or "P" in answer to the question "Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)" in the Correct Illumination_Calculate Using Intensities module.');
@@ -294,11 +292,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% image.
     if exist('ProjectionImage','var') == 1
         subplot(2,2,2); imagesc(ProjectionImage); colormap(gray)
-        title('Raw projection image prior to dilation or smoothing');
+        title('Raw projection image prior to dilation');
     end
     if exist('DilatedProjectionImage','var') == 1
         subplot(2,2,3); imagesc(DilatedProjectionImage); colormap(gray)
-        title('Projection image after dilation but prior to smoothing');
+        title('Projection image prior to smoothing');
     end
     subplot(2,2,4); imagesc(IlluminationImage); colormap(gray)
     if strcmp(ReadyFlag, 'Ready') == 1

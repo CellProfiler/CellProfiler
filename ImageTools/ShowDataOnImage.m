@@ -76,7 +76,7 @@ SampleNumber = str2double(Answer{1});
 %end
 
 %%% Looks up the corresponding image file name.
-Fieldnames = fieldnames(handles.Measurements.GeneralInfo);
+Fieldnames = fieldnames(handles.Measurements.Image);
 PotentialImageNames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
 %%% Error detection.
 if isempty(PotentialImageNames)
@@ -90,7 +90,7 @@ end
 if ok == 0,return,end
 
 SelectedImageName = char(PotentialImageNames(Selection));
-ImageFileName = handles.Measurements.GeneralInfo.(SelectedImageName){SampleNumber};
+ImageFileName = handles.Measurements.Image.(SelectedImageName){SampleNumber};
 %%% Prompts the user with the image file name.
 h = CPmsgbox(['Browse to find the image called ', ImageFileName,'.']);
 %%% Opens a user interface window which retrieves a file name and path

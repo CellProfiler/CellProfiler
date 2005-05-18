@@ -123,7 +123,7 @@ for fileno = 2:length(files)
     %%% OK, it looks like we can merge the files
     %%% Note that only the fields under handles.Measurements are merged
     %%% There should be two levels under handles.Measurements
-    firstfields = fieldnames(handles.Measurements);                                         % The first level contains for example GeneralInfo, Cells, Nuclei,...
+    firstfields = fieldnames(handles.Measurements);                                         % The first level contains for example Image, Cells, Nuclei,...
     for i = 1:length(firstfields)
         secondfields = fieldnames(handles.Measurements.(firstfields{i}));
         

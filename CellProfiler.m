@@ -2253,7 +2253,7 @@ else
                     %%% Check first to see that the set being analyzed is not zero, or else an
                     %%% error will be produced when trying to do this.
                     if setbeinganalyzed ~= 0
-                        handles.Measurements.GeneralInfo.TimeElapsed{setbeinganalyzed} = toc;
+                        handles.Measurements.Image.TimeElapsed{setbeinganalyzed} = toc;
                         guidata(gcbo, handles)
                     end
                     %%% Save all data that is in the handles structure to the output file 
@@ -2335,13 +2335,13 @@ else
                 
                 %%% Create a vector that contains the length of each headings field.  In other
                 %%% words, determine the number of entries for each column of Sample Info.
-                if isfield(handles.Measurements,'GeneralInfo') == 1
-                    Fieldnames = fieldnames(handles.Measurements.GeneralInfo);
+                if isfield(handles.Measurements,'Image') == 1
+                    Fieldnames = fieldnames(handles.Measurements.Image);
                     ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
                     if isempty(ImportedFieldnames) == 0
                         for i = 1:length(ImportedFieldnames);
                             fieldname = char(ImportedFieldnames{i});
-                            Lengths(i) = length(handles.Measurements.GeneralInfo.(fieldname));
+                            Lengths(i) = length(handles.Measurements.Image.(fieldname));
                         end
                         %%% Create a logical array that indicates which headings do not have the
                         %%% same number of entries as the number of image sets analyzed.
@@ -2351,7 +2351,7 @@ else
                         %%% Remove headings names from handles.headings and remove the sample
                         %%% info from the field named after the heading.
                         if isempty(HeadingsToBeRemoved) == 0
-                            handles.Measurements.GeneralInfo = rmfield(handles.Measurements.GeneralInfo, HeadingsToBeRemoved);
+                            handles.Measurements.Image = rmfield(handles.Measurements.Image, HeadingsToBeRemoved);
                             %%% Tell the user that fields have been removed.
                             HeadingsErrorMessage(1) = {'Some of the sample info you'};
                             HeadingsErrorMessage(2) = {'loaded does not have the'};

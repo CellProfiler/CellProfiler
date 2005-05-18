@@ -338,7 +338,7 @@ if SetBeingAnalyzed == 1
             fieldname = ['Pathname', MovieName{n}];
             handles.Pipeline.(fieldname) = SpecifiedPathname;
             %% for reference in saved files
-            handles.Measurements.GeneralInfo.(fieldname) = SpecifiedPathname;
+            handles.Measurements.Image.(fieldname) = SpecifiedPathname;
             NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
             clear FileList % Prevents confusion when loading this value later, for each movie set.
         end
@@ -421,8 +421,8 @@ for n = 1:4
             [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(char(CurrentFileName(1)));
             CurrentFileNameWithFrame = [BareFileName, '_', num2str(cell2mat(CurrentFileName(2))),ext];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
-            %%% Also saved to the handles.Measurements.GeneralInfo structure for reference in output files.
-            handles.Measurements.GeneralInfo.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
+            %%% Also saved to the handles.Measurements.Image structure for reference in output files.
+            handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
             %%% Saves the loaded image to the handles structure.  The field is named
             %%% appropriately based on the user's input, and put into the Pipeline
             %%% substructure so it will be deleted at the end of the analysis batch.

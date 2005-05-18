@@ -11,8 +11,10 @@ function [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles)
 MeasFieldnames = fieldnames(handles.Measurements);
 
 % Remove the 'GeneralInfo' field
-index = setdiff(1:length(MeasFieldnames),strmatch('GeneralInfo',MeasFieldnames));
-MeasFieldnames = MeasFieldnames(index);
+%%% I think we do not need to do this anymore; we have removed the
+%%% GeneralInfo field.
+% index = setdiff(1:length(MeasFieldnames),strmatch('GeneralInfo',MeasFieldnames));
+% MeasFieldnames = MeasFieldnames(index);
 
 %%% Error detection.
 if isempty(MeasFieldnames)

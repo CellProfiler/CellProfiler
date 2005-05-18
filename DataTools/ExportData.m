@@ -109,13 +109,13 @@ end
 fprintf(fid,'\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
 
 % Get variable names used
-VariableNames = fieldnames(handles.Measurements.GeneralInfo);
+VariableNames = fieldnames(handles.Measurements.Image);
 Variableindex = find(cellfun('isempty',strfind(VariableNames,'Filename'))==0);
 VariableNames = VariableNames(Variableindex);
 
 %%% Get segmented objects 
-if isfield(handles,'Measurements') && isfield(handles.Measurements,'GeneralInfo')
-    ObjectNames   = fieldnames(handles.Measurements.GeneralInfo);
+if isfield(handles,'Measurements') && isfield(handles.Measurements,'Image')
+    ObjectNames   = fieldnames(handles.Measurements.Image);
     Thresholdindex = find(cellfun('isempty',strfind(ObjectNames,'ImageThreshold'))==0);
     ObjectNames = ObjectNames(Thresholdindex);
 else
@@ -124,7 +124,7 @@ end
 
 %%% Get number of processed sets
 if ~isempty(ObjectNames)
-    NbrOfProcessedSets = length(handles.Measurements.GeneralInfo.(ObjectNames{1}));
+    NbrOfProcessedSets = length(handles.Measurements.Image.(ObjectNames{1}));
 else
     NbrOfProcessedSets = 0;
 end
@@ -140,14 +140,14 @@ for imageset = 1:NbrOfProcessedSets
     fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
     fprintf(fid,'\tVariables:\n');
     for k = 1:length(VariableNames)
-        ImageName = handles.Measurements.GeneralInfo.(VariableNames{k}){imageset};
+        ImageName = handles.Measurements.Image.(VariableNames{k}){imageset};
         fprintf(fid,'\t\t%s: %s\n',VariableNames{k}(9:end),ImageName);
     end
     fprintf(fid,'\n');
     fprintf(fid,'\tObjects:\n');
     for k = 1:length(ObjectNames)
         fprintf(fid,'\t\t%s',ObjectNames{k}(15:end));
-        fprintf(fid,'\t Threshold: %g\n',handles.Measurements.GeneralInfo.(ObjectNames{k}){imageset});
+        fprintf(fid,'\t Threshold: %g\n',handles.Measurements.Image.(ObjectNames{k}){imageset});
     end
     fprintf(fid,'\n');
 end
@@ -209,14 +209,14 @@ for Object = 1:length(ExportInfo.ObjectNames)
         NumObjects(k) = size(Measurements{k},1);
     end
 
-    % Get general information from handles.Measurements.GeneralInfo
-    InfoFields = fieldnames(handles.Measurements.GeneralInfo);
+    % Get general information from handles.Measurements.Image
+    InfoFields = fieldnames(handles.Measurements.Image);
     Filenames  = InfoFields(strmatch('Filename',InfoFields));
     if ~isempty(strmatch('ImageThreshold',InfoFields))                         % Some measurement do not require a segmentation/thresholding, e.g. MeasureCorrelation
         Thresholds = InfoFields(strmatch('ImageThreshold',InfoFields));
         for k = 1:length(Thresholds)
             if strcmp(Thresholds{k}(15:end),ObjectName)
-                Threshold = handles.Measurements.GeneralInfo.(Thresholds{k});
+                Threshold = handles.Measurements.Image.(Thresholds{k});
             end
         end
     end
@@ -256,7 +256,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             fprintf(fid,'Set #%d, %d objects, ',k,NumObjects(k));
             
             % Construct and write image filename 
-            ImageName = handles.Measurements.GeneralInfo.(Filenames{1})(:,k);
+            ImageName = handles.Measurements.Image.(Filenames{1})(:,k);
             if length(ImageName) == 1
                 ImageName = ImageName{1};
             else
@@ -328,7 +328,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             fprintf(fid,'Set #%d, ',k);
             
             % Construct and write image filename 
-            ImageName = handles.Measurements.GeneralInfo.(Filenames{1})(:,k);
+            ImageName = handles.Measurements.Image.(Filenames{1})(:,k);
             if length(ImageName) == 1
                 ImageName = ImageName{1};
             else
@@ -367,7 +367,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             fprintf(fid,'Set #%d, ',k);
             
             % Construct and write image filename 
-            ImageName = handles.Measurements.GeneralInfo.(Filenames{1})(:,k);
+            ImageName = handles.Measurements.Image.(Filenames{1})(:,k);
             if length(ImageName) == 1
                 ImageName = ImageName{1};
             else
@@ -418,8 +418,11 @@ FontSize = get(0,'UserData');
 fields = fieldnames(handles.Measurements);
 
 % Remove the 'GeneralInfo' field
-index = setdiff(1:length(fields),strmatch('GeneralInfo',fields));
-fields = fields(index);
+%%% ANNE: I don't think we really want to change the following lines
+%%% to "Image" rather than GeneralInfo, so I am commenting it out for
+%%% now.
+% index = setdiff(1:length(fields),strmatch('GeneralInfo',fields));
+% fields = fields(index);
 
 if length(fields) > 20
     errordlg('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')

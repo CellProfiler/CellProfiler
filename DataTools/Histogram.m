@@ -114,7 +114,7 @@ end
 
 %%% Determines whether any sample info has been loaded.  If sample
 %%% info is present, the fieldnames for those are extracted.
-ImportedFieldnames = fieldnames(handles.Measurements.GeneralInfo);
+ImportedFieldnames = fieldnames(handles.Measurements.Image);
 ImportedFieldnames = ImportedFieldnames(strncmp(ImportedFieldnames,'Imported',8) == 1 | strncmp(ImportedFieldnames,'Filename',8) == 1);
 if ~isempty(ImportedFieldnames)
     %%% Allows the user to select a heading from the list.
@@ -124,7 +124,7 @@ if ~isempty(ImportedFieldnames)
         'SelectionMode','single');
     if ok ~= 0
         HeadingName = char(ImportedFieldnames(Selection));
-        try SampleNames = handles.Measurements.GeneralInfo.(HeadingName);
+        try SampleNames = handles.Measurements.Image.(HeadingName);
         catch SampleNames = handles.Pipeline.(HeadingName);
         end
     else

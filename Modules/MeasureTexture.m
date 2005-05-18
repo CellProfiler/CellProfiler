@@ -132,11 +132,11 @@ for i = 1:3
     if strcmp(ObjectName,'/') == 1
         break
     end
-
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImageToBeAnalyzed".
     fieldname = ['', ImageName];
@@ -165,7 +165,7 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
 
     % PROGRAMMING NOTE
     % HANDLES STRUCTURE:
@@ -283,22 +283,22 @@ for i = 1:3
     % will just repeatedly use the processed image of nuclei leftover from
     % the last image set, which was left in handles.Pipeline.
 
-  
+
     %%% Initilize measurement structure
     Haralick = [];
-    HaralickFeatures = {'H1. AngularSecondMoment',...
-        'H2. Contrast',...
-        'H3. Correlation',...
-        'H4. Variance',...
-        'H5. InverseDifferenceMoment',...
-        'H6. SumAverage',...
-        'H7. SumVariance',...
-        'H8. SumEntropy',...
-        'H9. Entropy',...
-        'H10. DifferenceVariance',...
-        'H11. DifferenceEntropy',...
-        'H12. InformationMeasure1',...
-        'H13. InformationMeasure2'};
+    HaralickFeatures = {'AngularSecondMoment',...
+        'Contrast',...
+        'Correlation',...
+        'Variance',...
+        'InverseDifferenceMoment',...
+        'SumAverage',...
+        'SumVariance',...
+        'SumEntropy',...
+        'Entropy',...
+        'DifferenceVariance',...
+        'DifferenceEntropy',...
+        'InformationMeasure1',...
+        'InformationMeasure2'};
 
     Gabor = [];
     GaborFeatures    = {'Gabor1x',...
@@ -311,24 +311,24 @@ for i = 1:3
     ObjectCount = max(LabelMatrixImage(:));
 
     if ObjectCount > 0
-        
+
         %%% Get Gabor features.
         %%% The Gabor features are calculated by convolving the entire
         %%% image with Gabor filters and then extracting the filter output
         %%% value in the centroids of the objects in LabelMatrixImage
-        
+
         % Adjust size of filter to size of objects in the image
         % The centroids indicate where we should measure the Gabor
         % filter output
         tmp = regionprops(LabelMatrixImage,'Area','Centroid');
         MedianArea = median(cat(1,tmp.Area));
         sigma = sqrt(MedianArea/pi);
-        
+
         % Round centroids and find linear index for them.
         % The centroids are stored in [column,row] order.
         Centroids = round(cat(1,tmp.Centroid));
         Centroidsindex = sub2ind(size(LabelMatrixImage),Centroids(:,2),Centroids(:,1));
-        
+
         % Use Gabor filters with three different frequencies
         f = [0.06 0.12 0.24];
 
@@ -338,26 +338,26 @@ for i = 1:3
         % Create kernel coordinates
         KernelSize = round(2*sigma);
         [x,y]=meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
-     
+
         % Apply Gabor filters and store filter outputs in the Centroid pixels
         Fourier_OrigImageToBeAnalyzed = fft2(OrigImageToBeAnalyzed);
         GaborFeatureNo = 1;
         Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
         for m = 1:length(f)
             for n = 1:length(theta)
-                
-                % Calculate Gabor filter kernel 
+
+                % Calculate Gabor filter kernel
                 % Scale by 1000 to get measurements in a convenient range
                 g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-                
-                
+
+
                 % Perform filtering in the Fourier domain
                 q = ifft2(fft2(g,size(OrigImageToBeAnalyzed,1),size(OrigImageToBeAnalyzed,2)).*Fourier_OrigImageToBeAnalyzed);
-              
+
                 % Store filter output
                 Gabor(:,GaborFeatureNo) = abs(q(Centroidsindex));
                 GaborFeatureNo = GaborFeatureNo + 1;
-            
+
             end
         end
 
@@ -375,7 +375,7 @@ for i = 1:3
             cmin = max(1,min(c));
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
-
+            
             %%% Get Haralick features
             Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
         end
@@ -452,7 +452,7 @@ for i = 1:3
 end
 drawnow
 
-function H = CalculateHaralick(im,mask,area)
+function H = CalculateHaralick(im,mask)
 %
 % This function calculates so-called Haralick features, which are
 % based on the co-occurence matrix. The function takes two inputs:
@@ -477,11 +477,17 @@ function H = CalculateHaralick(im,mask,area)
 % Number of greylevels to use
 Levels = 8;
 
-% Quantize the image into a lower number
-% of grey levels (specified by Levels)
+% Quantize the image into a lower number of grey levels (specified by Levels)
 BinEdges = linspace(0,1,Levels+1);
-im = im - min(im(:));
-im = im/max(im(:));
+
+% Find the max and min values within the mask and normalize so that the
+% intenisties within the mask are between 0 and 1.
+intensities = im(mask);
+Imax = max(intensities);
+Imin = min(intensities);
+im = (im - Imin)/(Imax-Imin);
+
+% Do the quantization
 qim = zeros(size(im));
 for k = 1:Levels
     qim(find(im > BinEdges(k))) = k;
@@ -594,7 +600,7 @@ H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 
 
 % % This function calculates Gabor features in a different way
-% % It may be better but it's also considerably slower. 
+% % It may be better but it's also considerably slower.
 % % It's called by Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
 % function G = CalculateGabor(im,mask,sigma,flag)
 % %
@@ -605,27 +611,27 @@ H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 % % im    - A grey level image
 % % mask  - A binary mask
 % % sigma - Scale parameter for the Gaussian weight function
-% 
+%
 % % Use Gabor filters with three different frequencies
 % f = [0.06 0.12 0.24];
-% 
+%
 % % Filter along the x-axis and y-axis
 % theta = [0 pi/2];
-% 
+%
 % % Match the filter kernel size to the input patch size
 % [sr,sc] = size(mask);
 % if rem(sr,2) == 0,ty = [-sr/2:sr/2-1];else ty = [-(sr-1)/2:(sr-1)/2];end
 % if rem(sc,2) == 0,tx = [-sc/2:sc/2-1];else tx = [-(sc-1)/2:(sc-1)/2];end
 % [x,y]=meshgrid(tx,ty);
-% 
+%
 % % Calculate the Gabor features
 % G = zeros(length(theta),length(f));
 % for m = 1:length(f)
 %     for n = 1:length(theta)
-%         
+%
 %         % Calculate Gabor filter kernel
 %         g = 1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-% 
+%
 %         % Use Normalized Convolution to calculate filter responses. This
 %         % method only include object pixels for calculating the filter
 %         % response and excludes surrounding background pixels.
@@ -635,9 +641,9 @@ H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 %         gi = imag(g);
 %         B = [gr(:) gi(:)];
 %         Wc = diag(mask(:));
-%         r = inv(B'*Wc*B)*B'*Wc*im(:); 
+%         r = inv(B'*Wc*B)*B'*Wc*im(:);
 %         G(n,m) = sqrt(sum(r.^2));
-%         
+%
 %         % Direct way of calculating filter responses
 %         %tmpr = sum(sum(real(g).*im));
 %         %tmpi = sum(sum(imag(g).*im));
@@ -645,4 +651,4 @@ H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 %     end
 % end
 % G = G(:)';
-% 
+%

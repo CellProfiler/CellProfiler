@@ -138,9 +138,9 @@ try
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
         %%% The first time the module is run, the projection image is
         %%% calculated.
-        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName);
+        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
-        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName);
+        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, ProjectionImageName);
     else
         error('Image processing was canceled because you must choose either "L" or "P" in the Make Projection/Average Images module');
     end

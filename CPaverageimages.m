@@ -1,4 +1,4 @@
-function [OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, ImageName)
+function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, ImageName, ProjectionImageName)
 
 %%% Note: Mode can be Accumulate or DoNow.
 
@@ -87,7 +87,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
         OrigImage = handles.Pipeline.(fieldname);
         %%% Creates the empty variable so it can be retrieved later
         %%% without causing an error on the first image set.
-        handles.Pipeline.(ProjectedImageName) = zeros(size(OrigImage));
+        handles.Pipeline.(ProjectionImageName) = zeros(size(OrigImage));
     end
     %%% Retrieves the current image.
     OrigImage = handles.Pipeline.(fieldname);
@@ -99,9 +99,11 @@ elseif strcmpi(Mode,'Accumulate') == 1
     end
     %%% Retrieves the existing projection image, as accumulated so
     %%% far.
-    ProjectedImage = handles.Pipeline.(ProjectedImageName);
+    ProjectedImage = handles.Pipeline.(ProjectionImageName);
     %%% Adds the current image to it.
     OutputImage = ProjectedImage + OrigImage;
+    %%% Saves the updated projection image to the handles structure.
+    handles.Pipeline.(ProjectionImageName) = OutputImage;
     %%% If the last image set has just been processed, indicate that
     %%% the projection image is ready.
     if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets

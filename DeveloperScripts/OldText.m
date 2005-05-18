@@ -1,1 +1,1 @@
-GetFeature
+CPaverageimages

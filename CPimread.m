@@ -35,6 +35,7 @@ if nargin == 2,
                 handles.Pipeline.DIBheight = str2double(Answers{2});
                 handles.Pipeline.DIBbitdepth = str2double(Answers{3});
                 handles.Pipeline.DIBchannels = str2double(Answers{4});
+                guidata(gcbo,handles);
             end
         end
     else

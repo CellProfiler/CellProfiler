@@ -159,10 +159,30 @@ if strcmpi(HorizontalOrVertical,'H') == 1
     if size(OrigImage1,1) ~= size(OrigImage2,1)
         error('Image processing was canceled because the two input images must have the same height if they are to be placed horizontally adjacent to each other.')
     end
+    %%% If one of the images is multidimensional (color), the other
+    %%% one is replicated to match its dimensions.
+    if size(OrigImage1,3) ~= size(OrigImage2,3)
+        DesiredLayers = max(size(OrigImage1,3),size(OrigImage2,3));
+        if size(OrigImage1,3) > size(OrigImage2,3)
+            for i = 1:DesiredLayers, OrigImage2(:,:,i) = OrigImage2(:,:,1); end
+        else
+            for i = 1:DesiredLayers, OrigImage1(:,:,i) = OrigImage1(:,:,1); end
+        end
+    end
     AdjacentImage = cat(2,OrigImage1,OrigImage2);
 elseif strcmpi(HorizontalOrVertical,'V') == 1
     if size(OrigImage1,2) ~= size(OrigImage2,2)
         error('Image processing was canceled because the two input images must have the same height if they are to be placed horizontally adjacent to each other.')
+    end
+    %%% If one of the images is multidimensional (color), the other
+    %%% one is replicated to match its dimensions.
+    if size(OrigImage1,3) ~= size(OrigImage2,3)
+        DesiredLayers = max(size(OrigImage1,3),size(OrigImage2,3));
+        if size(OrigImage1,3) > size(OrigImage2,3)
+            for i = 1:DesiredLayers, OrigImage2(:,:,i) = OrigImage2(:,:,1); end
+        else
+            for i = 1:DesiredLayers, OrigImage1(:,:,i) = OrigImage1(:,:,1); end
+        end
     end
     AdjacentImage = cat(1,OrigImage1,OrigImage2);
 else

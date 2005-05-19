@@ -2,7 +2,7 @@ function handles = MeasureCorrelation(handles)
 
 % Help for the Measure Correlation module:
 % Category: Measurement
-% 
+%
 % Given two or more images, calculates the correlation between the
 % pixel intensities. The correlation can be measured for the entire
 % images, or individual correlation measurements can be made for each
@@ -15,10 +15,10 @@ function handles = MeasureCorrelation(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -36,7 +36,7 @@ function handles = MeasureCorrelation(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -60,7 +60,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -71,7 +71,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -99,31 +99,31 @@ Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = OrigGreen
 Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = 
+%textVAR03 =
 %defaultVAR03 = OrigRed
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = 
+%textVAR04 =
 %defaultVAR04 = /
 Image4Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = 
+%textVAR05 =
 %defaultVAR05 = /
 Image5Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = 
+%textVAR06 =
 %defaultVAR06 = /
 Image6Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = 
+%textVAR07 =
 %defaultVAR07 = /
 Image7Name = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = 
+%textVAR08 =
 %defaultVAR08 = /
 Image8Name = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = 
+%textVAR09 =
 %defaultVAR09 = /
 Image9Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
@@ -141,7 +141,7 @@ if strcmp(Image1Name,'/') ~= 1
         %%% Reads (opens) the image you want to analyze and assigns it to a variable.
         fieldname = ['', Image1Name];
         %%% Checks whether image has been loaded.
-if isfield(handles.Pipeline, fieldname)==0,
+        if isfield(handles.Pipeline, fieldname)==0,
             %%% If the image is not there, an error message is produced.  The error
             %%% is not displayed: The error function halts the current function and
             %%% returns control to the calling function (the analyze all images
@@ -258,12 +258,12 @@ if strcmp(Image9Name,'/') ~= 1
     end
 end
 if strcmp(ObjectName,'/') ~= 1
-    %%% Retrieves the label matrix image that contains the 
+    %%% Retrieves the label matrix image that contains the
     %%% segmented objects which will be used as a mask. Checks first to see
     %%% whether the appropriate image exists.
     fieldname = ['Segmented', ObjectName];
     %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
+    if isfield(handles.Pipeline, fieldname)==0,
         error(['Image processing has been canceled. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
     end
     MaskLabelMatrixImage = handles.Pipeline.(fieldname);
@@ -276,9 +276,9 @@ end
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -294,50 +294,50 @@ ImageNames = [];
 %%% places it as a column into the variable ImageMatrix.  Adds its name
 %%% to the list of ImageNames, too.
 if strcmp(Image1Name,'/') ~= 1
-Image1Column = reshape(Image1,[],1);
-     % figure, imshow(Image1Column), title('Image1Column'), colormap(gray)
-ImageMatrix = horzcat(ImageMatrix,Image1Column);
-ImageNames = strvcat(ImageNames,Image1Name); %#ok We want to ignore MLint error checking for this line.
+    Image1Column = reshape(Image1,[],1);
+    % figure, imshow(Image1Column), title('Image1Column'), colormap(gray)
+    ImageMatrix = horzcat(ImageMatrix,Image1Column);
+    ImageNames = strvcat(ImageNames,Image1Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image2Name,'/') ~= 1
-Image2Column = reshape(Image2,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image2Column);
-ImageNames = strvcat(ImageNames,Image2Name); %#ok We want to ignore MLint error checking for this line.
+    Image2Column = reshape(Image2,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image2Column);
+    ImageNames = strvcat(ImageNames,Image2Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image3Name,'/') ~= 1
-Image3Column = reshape(Image3,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image3Column);
-ImageNames = strvcat(ImageNames,Image3Name); %#ok We want to ignore MLint error checking for this line.
+    Image3Column = reshape(Image3,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image3Column);
+    ImageNames = strvcat(ImageNames,Image3Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image4Name,'/') ~= 1
-Image4Column = reshape(Image4,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image4Column);
-ImageNames = strvcat(ImageNames,Image4Name); %#ok We want to ignore MLint error checking for this line.
+    Image4Column = reshape(Image4,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image4Column);
+    ImageNames = strvcat(ImageNames,Image4Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image5Name,'/') ~= 1
-Image5Column = reshape(Image5,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image5Column);
-ImageNames = strvcat(ImageNames,Image5Name); %#ok We want to ignore MLint error checking for this line.
+    Image5Column = reshape(Image5,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image5Column);
+    ImageNames = strvcat(ImageNames,Image5Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image6Name,'/') ~= 1
-Image6Column = reshape(Image6,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image6Column);
-ImageNames = strvcat(ImageNames,Image6Name); %#ok We want to ignore MLint error checking for this line.
+    Image6Column = reshape(Image6,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image6Column);
+    ImageNames = strvcat(ImageNames,Image6Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image7Name,'/') ~= 1
-Image7Column = reshape(Image7,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image7Column);
-ImageNames = strvcat(ImageNames,Image7Name); %#ok We want to ignore MLint error checking for this line.
+    Image7Column = reshape(Image7,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image7Column);
+    ImageNames = strvcat(ImageNames,Image7Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image8Name,'/') ~= 1
-Image8Column = reshape(Image8,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image8Column);
-ImageNames = strvcat(ImageNames,Image8Name); %#ok We want to ignore MLint error checking for this line.
+    Image8Column = reshape(Image8,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image8Column);
+    ImageNames = strvcat(ImageNames,Image8Name); %#ok We want to ignore MLint error checking for this line.
 end
 if strcmp(Image9Name,'/') ~= 1
-Image9Column = reshape(Image9,[],1);
-ImageMatrix = horzcat(ImageMatrix,Image9Column);
-ImageNames = strvcat(ImageNames,Image9Name); %#ok We want to ignore MLint error checking for this line.
+    Image9Column = reshape(Image9,[],1);
+    ImageMatrix = horzcat(ImageMatrix,Image9Column);
+    ImageNames = strvcat(ImageNames,Image9Name); %#ok We want to ignore MLint error checking for this line.
 end
 %%% Applies the mask, if requested
 if strcmp(ObjectName,'/') ~= 1
@@ -376,22 +376,22 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to pause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
         %%% Sets the width of the figure window to be appropriate (half width).
@@ -418,8 +418,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         title('Overall')
     else
         title(ObjectName)
+    end
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -477,7 +477,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -505,7 +505,7 @@ drawnow
 % measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
 % ensure that your data will be extracted properly. It is likely that
 % Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects. 
+% collected for objects contained within other objects.
 %       Saving measurements: The data extraction functions of
 % CellProfiler are designed to deal with only one "column" of data per
 % named measurement field. So, for example, instead of creating a
@@ -558,5 +558,3 @@ for i = 1:size(ImageNames,1)-1
 end
 handles.Measurements.(ObjectName).CorrelationFeatures = CorrelationFeatures;
 handles.Measurements.(ObjectName).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
-
-        

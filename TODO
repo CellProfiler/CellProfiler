@@ -6,6 +6,10 @@ MAY 18th, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- I just adapted ClassifyObjects into ClassifyObjectsIntensity, but probably we should combine the two. I wasn't sure how to look up which column of measurements is desired, so that's one definite improvement that ought to be made.  Also, the new version doesn't allow for marking/coloring which object is in which bin since it extracts the data from the handles structure rather than calculating it from a label matrix. Neither version allows anything other than three bins, so it would be nice to allow the user to enter a variable number of bins separated by commas.
+
+- I think MeasureCorrelation uses the Mask so correlation is only measured within objects, but it does not measure the correlation within *each* object. If it doesn't take an absurd amount of time, it would be nice to have individual measurements of correlation for each object.
+
 - Disable the 'analyze images' button when it's pressed so that the user doesn't click it more than once by mistake
 
 - After renaming is complete, the list of image names does not update itself automatically

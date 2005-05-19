@@ -3,9 +3,11 @@ function handles = PlotMeasurement(handles)
 % Help for the Plot Measurement tool:
 % Category: Data Tools
 %
-% This tool makes a bar plot of the mean and standard deviation of a measurement.
+% This tool allows the user to plot either a bar chart or a line chart of 
+% the mean and standard deviation of a measurement.
 % As prompted, select a CellProfiler output file containing the measurements,
-% then choose the measurement parameter to be displayed.
+% choose the measurement parameter to be displayed, and choose the display
+% type.
 %
 % See also HISTOGRAM.
 

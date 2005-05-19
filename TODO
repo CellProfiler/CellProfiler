@@ -10,11 +10,9 @@ WANT IT NOW:
 
 - I think MeasureCorrelation uses the Mask so correlation is only measured within objects, but it does not measure the correlation within *each* object. If it doesn't take an absurd amount of time, it would be nice to have individual measurements of correlation for each object.
 
-- Disable the 'analyze images' button when it's pressed so that the user doesn't click it more than once by mistake
-
 - After renaming is complete, the list of image names does not update itself automatically
 
-- The help for the image tools is currently working fine, but for some reason the help button for the data tools just yields a blank figure window.
+- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData
 
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
 
@@ -23,8 +21,6 @@ WANT IT NOW:
 - Is it possible to combine the identifyPrim AdaptiveThreshold modules all together?
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
-
-- Update help for PlotMeasurement.
 
 +++ Make a shape-based IdentifyPrim module which recognizes
        oblong/elliptical objects rather than perfectly round

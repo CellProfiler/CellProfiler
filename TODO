@@ -43,14 +43,7 @@ Settings =      ModuleNames: {1x6 cell}
              VariableValues: {6x13 cell}
          NumbersOfVariables: [13 6 5 6 4 8]
     VariableRevisionNumbers: [2 0 1 0 1 1]
-
-- Show data on image tool: it currently is using global
-       variables to store the numerical data, rather than using
-       UserData.  Thus, the figure cannot be saved with the numerical
-       data still accessible.  See histograms for how to use UserData
-       to store the numbers with the figure. 
-
-- When a figure has been produced by CellProfiler (either during the analysis run or by one of the ImageTools), and you choose File > Save As, the default directory for saving the figure is Matlab's current directory.  It would be nice if instead the directory were the default output directory. If this is not straightforward, abandon it, because it isn't a huge issue.
+*Note: This requires editing almost all the modules, while this improvement is not absolutely necessary; the time cost should be considered.
 
 - Make the DIB cancel button work in CPimread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like OpenNewImageFile.m
 

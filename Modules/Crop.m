@@ -218,7 +218,7 @@ if strcmpi(Shape, 'EA') == 1 || strcmpi(Shape, 'EE') == 1
                 if CroppingFileName == 0
                     error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
                 else
-                    ImageToBeCropped = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
+                    [ImageToBeCropped, handles] = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
                 end
             end
         else ImageToBeCropped = OrigImage;

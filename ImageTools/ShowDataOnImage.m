@@ -102,7 +102,7 @@ try delete(h), end
 if FileName == 0,return,end
 
 %%% Opens and displays the image, with pixval shown.
-ImageToDisplay = CPimread(fullfile(Pathname,FileName));
+[ImageToDisplay, handles] = CPimread(fullfile(Pathname,FileName));
 
 %%% Extracts the measurement values.
 tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};

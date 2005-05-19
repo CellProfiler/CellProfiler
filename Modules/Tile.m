@@ -273,7 +273,8 @@ if handles.Current.SetBeingAnalyzed == 1
     CancelButtonFunction = ['set(',num2str(CancelButton_handle*8192), '/8192,''string'',''Canceling'')'];
     set(CancelButton_handle,'Callback', CancelButtonFunction);
     set(WaitbarHandle, 'CloseRequestFcn', CancelButtonFunction);
-    ImageSize = size(imresize(CPimread(fullfile(Pathname,char(NewFileList(1,1))), handles),SizeChange));
+    [LoadedImage, handles] = CPimread(fullfile(Pathname,char(NewFileList(1,1))), handles);
+    ImageSize = size(imresize(LoadedImage,SizeChange));
     ImageHeight = ImageSize(1);
     ImageWidth = ImageSize(2);
     TotalWidth = NumberColumns*ImageWidth;
@@ -287,7 +288,8 @@ if handles.Current.SetBeingAnalyzed == 1
             if strcmp(char(FileName),'none') == 1
                 CurrentImage = imresize(zeros(size(CurrentImage)),SizeChange);
             else
-                CurrentImage = imresize(CPimread(fullfile(Pathname,char(FileName)), handles),SizeChange);
+                [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileName)), handles);
+                CurrentImage = imresize(LoadedImage,SizeChange);
                 %%% Flips the image left to right or top to bottom if
                 %%% necessary.  The entire image will be flipped at the
                 %%% end.

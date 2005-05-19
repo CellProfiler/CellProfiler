@@ -241,15 +241,18 @@ if strcmpi(EachOrAll,'A') == 1
             %%% Calculates a coarse estimate of the background illumination by
             %%% determining the minimum of each block in the image.  If the minimum is
             %%% zero, it is recorded as .0001 to prevent divide by zero errors later.
-            SumMiniIlluminationImage = blkproc(padarray(CPimread(fullfile(Pathname,char(FileList(1))),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
+            [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileList(1))),handles);
+            SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
             for i=2:length(FileList)
-                SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(CPimread(fullfile(Pathname,char(FileList(i))),handles),[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
+                [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileList(i))),handles);
+                SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
             end
             MiniIlluminationImage = SumMiniIlluminationImage / length(FileList);
 %%% The coarse estimate is then expanded in size so that it is the same
 %%% size as the original image. Bilinear interpolation is used to ensure the
 %%% values do not dip below zero.
-            IlluminationImage = imresize(MiniIlluminationImage, size(CPimread(fullfile(Pathname,char(FileList(1))),handles)), 'bilinear');
+            [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileList(1))),handles);
+            IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
             ReadyFlag = 'Ready';
         elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
             %%% In Pipeline (cycling) mode, each time through the image sets,

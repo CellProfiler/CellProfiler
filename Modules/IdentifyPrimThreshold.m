@@ -269,7 +269,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
             Counts = zeros(256,1);
             NumberOfBins = 256;
             for i=1:length(FileList)
-                Image = CPimread(fullfile(Pathname,char(FileList(i))),handles);
+                [Image, handles] = CPimread(fullfile(Pathname,char(FileList(i))),handles);
                 Counts = Counts + imhist(im2uint8(Image(:)), NumberOfBins);
                 drawnow
             end

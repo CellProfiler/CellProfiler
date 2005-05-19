@@ -44,7 +44,7 @@ else
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
-    Image = CPimread(fullfile(Pathname, FileName));
+    [Image, handles] = CPimread(fullfile(Pathname, FileName));
     figure; imagesc(Image), colormap(gray)
     pixval
     title(FileName)

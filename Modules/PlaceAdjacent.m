@@ -106,7 +106,11 @@ AdjacentImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = H
 HorizontalOrVertical = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 1
+%textVAR05 = Can the incoming images be deleted from the pipeline after they are placed adjacent (this saves memory, but prevents you from using the incoming images later in the pipeline)?
+%defaultVAR05 = N
+DeletePipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -129,12 +133,20 @@ end
 %%% Reads the image.
 OrigImage1 = handles.Pipeline.(fieldname);
 
+%%% Removes the image from the pipeline to save memory if requested.
+if strncmpi(DeletePipeline,'Y',1) == 1
+   handles.Pipeline = rmfield(handles.Pipeline,fieldname);
+end
 %%% Repeat for the second image.
 fieldname = ['', ImageName2];
 if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Place Adjacent module could not find the input image.  It was supposed to be named ', ImageName1, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImage2 = handles.Pipeline.(fieldname);
+%%% Removes the image from the pipeline to save memory if requested.
+if strncmpi(DeletePipeline,'Y',1) == 1
+handles.Pipeline = rmfield(handles.Pipeline,fieldname);
+end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

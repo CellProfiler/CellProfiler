@@ -14,8 +14,6 @@ WANT IT NOW:
 
 - After renaming is complete, the list of image names does not update itself automatically
 
-- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData
-
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
 
 - Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules.
@@ -165,8 +163,6 @@ For each title, add properties at the end:
 Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASK OLA AND STEVE LOWE}.
 
 - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
-
-- Allow canceling from the first dialog box when using the Save Image As button.
 
 ++ Prevent clicking pause/cancel buttons twice in the timer window.
 
@@ -418,3 +414,9 @@ correct if exit message box using clicking x instead of cancel.
 
 4/22/05
 Went through Modules and adjusted so they will work with Restart.m.
+
+5/24/05 (Colin)
+- Allow canceling from the first dialog box when using the Save Image As button.
+
+5/24/05 (Colin)
+- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData

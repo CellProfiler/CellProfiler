@@ -1,1 +1,1 @@
-GeneralInfo
+OriginalImage

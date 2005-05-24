@@ -448,7 +448,6 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, 'for BatchSetBeingAnalyzed = StartImage:EndImage,\n');
     fprintf(BatchFile, '    disp(sprintf(''Analyzing set %%d'', BatchSetBeingAnalyzed));\n');
     fprintf(BatchFile, '    toc;\n');
-    fprintf(BatchFile, '    break_outer_loop = 0;\n');
     fprintf(BatchFile, '    handles.Current.SetBeingAnalyzed = BatchSetBeingAnalyzed;\n');
     fprintf(BatchFile, '    setbeinganalyzed = handles.Current.SetBeingAnalyzed;\n');
     fprintf(BatchFile, '    for SlotNumber = 1:handles.Current.NumberOfModules,\n');
@@ -462,16 +461,14 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '            catch\n');
     fprintf(BatchFile, '                handles.BatchError = [ModuleName '' '' lasterr];\n');
     fprintf(BatchFile, '                disp([''Batch Error: '' ModuleName '' '' lasterr]);\n');
-    fprintf(BatchFile, '                break_outer_loop = 1;\n');
-    fprintf(BatchFile, '                break;\n');
+    fprintf(BatchFile, '                rethrow(lasterr);\n');
+    fprintf(BatchFile, '                quit;\n');
     fprintf(BatchFile, '            end\n');
     fprintf(BatchFile, '        end\n');
     fprintf(BatchFile, '    end\n');
-    fprintf(BatchFile, '    if (break_outer_loop),\n');
-    fprintf(BatchFile, '        break;\n');
-    fprintf(BatchFile, '    end\n');
     fprintf(BatchFile, 'end\n');
     fprintf(BatchFile, 'cd(''%s'');\n', BatchOutputPath);
+    fprintf(BatchFile, 'handles.Pipeline = [];');
     fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
     fclose(BatchFile);
 end

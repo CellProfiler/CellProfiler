@@ -283,7 +283,7 @@ try addpath(Pathname)
         for i = 1:length(FileNamesNoDir),
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
                 ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                ToolHelp{i} = [ToolHelpInfo, '-----------' 10 help(char(FileNamesNoDir{i}(1:end-2)))];
+                ToolHelp{length(ListOfTools)-1} = [ToolHelpInfo, '-----------' 10 help(char(FileNamesNoDir{i}(1:end-2)))];
             end
         end
         if length(ListOfTools) > 1

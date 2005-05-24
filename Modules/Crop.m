@@ -7,31 +7,40 @@ function handles = Crop(handles)
 %
 % Rectangular: enter the pixel coordinates for the left, top and
 % right, bottom corners, and every image will be cropped at these
-% locations.
-%
-% File: specify the directory and filename of a binary image
-% (actually, an image containing only the values 0 and 255) that is
-% the exact same starting size as your image, and has zeros for the
-% parts you want to remove and 255 for the parts you want to retain.
-% This image should contain a contiguous block of 255's, because keep
-% in mind that the cropping module will remove rows and columns
-% that are completely blank. This image can be created in any image
-% program, such as Photoshop.
+% locations.  For the right, bottom corner, you can type "end" instead
+% of a numerical pixel position if you want the right-most or
+% bottom-most pixel position to be calculated automatically.
 %
 % Ellipse Each: To draw an ellipse on each image, type EE. Each image
 % in the set will be opened as CellProfiler cycles through the image
 % sets and you will be asked to click five or more points to define an
-% ellipse around the part of the image you want to analyze.  More
-% points require longer calculations to generate the ellipse shape.
+% ellipse around the part of the image you want to analyze.  Keep in
+% mind that the more points you click, the longer it will take to
+% calculate the ellipse shape.
 %
-% Ellipse All: To draw one ellipse for all images, type EA. In this
-% case, you will be asked during the first image set's processing to
-% choose an image on which to draw the ellipse you want to use for all
-% the images that will be cycled through.  This image need not be one
-% that is part of the image set you are analyzing. You will be asked
-% to click five or more points to define an ellipse around the part of
-% the image you want to analyze.  More points require longer
-% calculations to generate the ellipse shape.
+% Ellipse All: To draw one ellipse to be applied to all images, type
+% EA. In this case, you will be asked during the first image set's
+% processing to choose an image on which to draw an ellipse. This
+% ellipse will then be used for all the images that will be cycled
+% through.  This image need not be one that is part of the image set
+% you are analyzing. You will be asked to click five or more points to
+% define an ellipse around the part of the image you want to analyze.
+% Keep in mind that the more points you click, the longer it will take
+% to calculate the ellipse shape.
+%
+% File: You can crop images to any arbitrary shape by loading that
+% shape into CellProfiler. Use the LoadSingleImage module to load the
+% black and white image (that you have already prepared) from a file.
+% If you have created this image in an image program such as
+% Photoshop, this binary image should actually contain only the values
+% 0 and 255, with zeros (black) for the parts you want to remove and
+% 255 (white) for the parts you want to retain.  Or, you may have
+% previously generated a binary image using this module (e.g. using
+% the ellipse option) and saved it using the SaveImages module (see
+% SAVING IMAGES below).  In any case, the image must be the exact same
+% starting size as your image and should contain a contiguous block of
+% white pixels, because keep in mind that the cropping module will
+% remove rows and columns that are completely blank.
 %
 % Warning: Keep in mind that cropping changes the size of your images,
 % which may have unexpected consequences.  For example, identifying
@@ -49,9 +58,21 @@ function handles = Crop(handles)
 % assign. If you want to save other intermediate images, alter the
 % code for this module to save those images to the handles structure
 % (see the SaveImages module help) and then use the Save Images
-% module. You can alter the code of this module to allow saving the cropping
-% shape that you have used, so that in future analyses you can use the
-% File option.
+% module. You can save the cropping shape that you have used (e.g. an
+% ellipse you drew), so that in future analyses you can use the File
+% option.  To do this, you need to add the prefix "Cropping" to the
+% name you called the cropped image (e.g. CroppingCropBlue) and this
+% is the name of the image you will want to save using the SaveImages
+% module.  I think you will want to save it in mat format. You can
+% also save the cropping shape, trimmed for any unused rows and
+% columns at the edges.  This image has the prefix "CropMask" plus the
+% name you called the cropped image (e.g. CropMaskCropBlue).  This
+% image is used for downstream modules that use the CPgraythresh
+% function.  The Cropping and CropMask images are similar (both are
+% binary and contain the cropping shape you used), but the Cropping
+% image is the same size as the original images to be processed
+% whereas the CropMask image is the same size as the final, cropped
+% image.
 %
 % See also <nothing relevant>.
 

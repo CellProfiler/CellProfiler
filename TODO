@@ -18,8 +18,6 @@ WANT IT NOW:
 
 - Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules.
 
-- Is it possible to combine the identifyPrim AdaptiveThreshold modules all together?
-
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 +++ Make a shape-based IdentifyPrim module which recognizes
@@ -64,14 +62,6 @@ Settings =      ModuleNames: {1x6 cell}
 - In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
 
 - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
-
-- Add this to the Open New Image File help: "The Open New Image File button shows
-       pixel values in the range 0 to 1.  Images are loaded into
-       CellProfiler in this range so that modules behave consistently.
-       The display is set to the same range so that, for example, if a
-       user wants to look at an image in order to determine which
-       threshold to use within a module, the pixel values are directly
-       applicable. "
 
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
@@ -414,9 +404,16 @@ correct if exit message box using clicking x instead of cancel.
 
 4/22/05
 Went through Modules and adjusted so they will work with Restart.m.
+<<<<<<< TODO
 
 5/24/05 (Colin)
 - Allow canceling from the first dialog box when using the Save Image As button.
 
 5/24/05 (Colin)
-- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData
+- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData>>>>>>> 1.112
+
+5/24/05 (Joo Han)
+- Module IdentifyPrim combined together. (Not yet committed, will do on Monday after checking with everyone)
+
+5/24/05 (Joo Han)
+- Updated help for OpenNewImageFile.m

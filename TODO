@@ -410,7 +410,7 @@ Went through Modules and adjusted so they will work with Restart.m.
 - Allow canceling from the first dialog box when using the Save Image As button.
 
 5/24/05 (Colin)
-- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData>>>>>>> 1.112
+- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData
 
 5/24/05 (Joo Han)
 - Module IdentifyPrim combined together. (Not yet committed, will do on Monday after checking with everyone)

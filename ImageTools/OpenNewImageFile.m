@@ -7,6 +7,12 @@ function handles = OpenNewImageFile(handles)
 % to check the background pixel intensity or to determine pixel
 % coordinates, or to check which wavelength it is).
 %
+% The Open New Image File button shows pixel values in the range 0 to 1.
+% Images are loaded into CellProfiler in this range so that modules behave
+% consistently. The display is set to the same range so that, for example, 
+% if a user wants to look at an image in order to determine which threshold
+% to use within a module, the pixel values are directly applicable.
+%
 % See also SHOWPIXELDATA, SHOWDATAONIMAGE.
 
 % CellProfiler is distributed under the GNU General Public License.

@@ -10,12 +10,6 @@ function [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles)
 %%% Extract the fieldnames of measurements from the handles structure.
 MeasFieldnames = fieldnames(handles.Measurements);
 
-% Remove the 'GeneralInfo' field
-%%% I think we do not need to do this anymore; we have removed the
-%%% GeneralInfo field.
-% index = setdiff(1:length(MeasFieldnames),strmatch('GeneralInfo',MeasFieldnames));
-% MeasFieldnames = MeasFieldnames(index);
-
 %%% Error detection.
 if isempty(MeasFieldnames)
     errordlg('No measurements were found.')
@@ -38,13 +32,13 @@ while dlgno < 4
             end
             ObjectTypename = MeasFieldnames{Selection};
 
-            % Get the feature types, remove all fields that contain
-            % 'Features' in the name
+            % Get all fields with the suffix 'Features'. These fields
+            % contain measurements.
             FeatureTypes = fieldnames(handles.Measurements.(ObjectTypename));
             tmp = {};
             for k = 1:length(FeatureTypes)
-                if isempty(strfind(FeatureTypes{k},'Features'))
-                    tmp = cat(1,tmp,FeatureTypes(k));
+                if ~isempty(strfind(FeatureTypes{k},'Features'))
+                    tmp{end+1} = FeatureTypes{k}(1:end-8);    % Remove the 'Features' suffix
                 end
             end
             FeatureTypes = tmp;

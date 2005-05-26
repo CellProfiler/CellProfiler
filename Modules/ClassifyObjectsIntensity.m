@@ -360,5 +360,14 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-handles.Measurements.(ObjectName).ClassifyObjectsIntensityFeatures = {['Fraction of ', ObjectName, ' with low ', MeasurementName],['Fraction of ', ObjectName, ' with medium ', MeasurementName],['Fraction of ', ObjectName, ' with high ', MeasurementName]};
-handles.Measurements.(ObjectName).ClassifyObjectsIntensity(handles.Current.SetBeingAnalyzed) = {[FractionInLowBin FractionInMediumBin FractionInHighBin]};
+% Write the measurements
+handles.Measurements.Image.(['ClassifyObjectsIntensity_',ObjectName,'Features']) = ... 
+    {['Fraction of ', ObjectName, ' with low ', MeasurementName],['Fraction of ', ObjectName, ' with medium ', MeasurementName],['Fraction of ', ObjectName, ' with high ', MeasurementName]};
+
+handles.Measurements.Image.(['ClassifyObjectsIntensity_',ObjectName])(handles.Current.SetBeingAnalyzed) = ...
+    {[FractionInLowBin FractionInMediumBin FractionInHighBin]};
+
+
+
+
+

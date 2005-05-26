@@ -113,7 +113,7 @@ VariableNames = fieldnames(handles.Measurements.Image);
 Variableindex = find(cellfun('isempty',strfind(VariableNames,'Filename'))==0);
 VariableNames = VariableNames(Variableindex);
 
-%%% Get segmented objects 
+%%% Get segmented objects
 if isfield(handles,'Measurements') && isfield(handles.Measurements,'Image')
     ObjectNames   = fieldnames(handles.Measurements.Image);
     Thresholdindex = find(cellfun('isempty',strfind(ObjectNames,'ImageThreshold'))==0);
@@ -132,10 +132,10 @@ fprintf(fid,'Number of processed image sets: %d\n\n',NbrOfProcessedSets);
 
 %%% Report info for each image set
 for imageset = 1:NbrOfProcessedSets
-    
+
     % Update waitbar handle
     waitbar(imageset/NbrOfProcessedSets,waitbarhandle)
-    
+
     % Write info about image set
     fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
     fprintf(fid,'\tVariables:\n');
@@ -169,9 +169,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
     %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
 
-    %%% Organize features in format suitable for exportation. Create
-    %%% a cell array Measurements where all features are concatenated
-    %%% with each column corresponding to a separate feature
+    %%% Organize features in format suitable for exportation. This
+    %%% piece of code creates a super measurement matrix, where
+    %%% all features for all objects are stored. There will be one such
+    %%% matrix for each image set, and each column in such a matrix
+    %%% corresponds to one feature, e.g. Area or IntegratedIntensity.
     FeatureNames = {};
     Measurements = {};
     for k = 1:length(fields)
@@ -179,29 +181,32 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
             % Get the associated cell array of measurements
             try
-                tmp = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
+                CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
             catch
                 fclose(fid);
                 errordlg('Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.');
             end
-
-            % Concatenate measurement and feature name matrices
-            if isempty(Measurements)                                           % Have to initialize
-                Measurements = tmp;
+          
+            % Concatenate
+            if length(Measurements) == 0
+                Measurements = CellArray;                             % The first measurement structure encounterered
             else
-                for j = 1:length(tmp)
-                    Measurements(j) = {cat(2,Measurements{j},real(tmp{j}))};   % The real should be removed, it's a quick fix to protect from imaginary measurements
-                end
+                for j = 1:NbrOfImageSets, Measurements(j) = {cat(2,Measurements{j},CellArray{j})};end
             end
-
+            
             % Construct informative feature names
-            tmp = handles.Measurements.(ObjectName).(fields{k});
+            tmp = handles.Measurements.(ObjectName).(fields{k});     % Get the feature names
             for j = 1:length(tmp)
                 tmp{j} = [tmp{j} ' (' , fields{k}(1:end-8),')'];
             end
             FeatureNames = cat(2,FeatureNames,tmp);
         end
     end
+    
+    % Check if there are any measurements to export for this object type.
+    % Otherwise, continue to the next object type. This happens often for
+    % handles.Measurements.Image
+    if length(Measurements) == 0;continue,end
 
     % Count objects
     NumObjects = zeros(length(Measurements),1);
@@ -220,9 +225,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
         end
     end
-    
+
     if ~strcmp(ExportInfo.ReportStyle,'summary')                          % The user wants a full report
-        
+
         % Open a file for exporting the measurements
         % Add dot in extension if it's not there
         if ExportInfo.MeasurementExtension(1) ~= '.';
@@ -251,11 +256,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
             % Update waitbar
             waitbar(k/length(Measurements),waitbarhandle,sprintf('Exporting %s',ObjectName));
-            
+
             % Write info about the image set
             fprintf(fid,'Set #%d, %d objects, ',k,NumObjects(k));
-            
-            % Construct and write image filename 
+
+            % Construct and write image filename
             ImageName = handles.Measurements.Image.(Filenames{1})(:,k);
             if length(ImageName) == 1
                 ImageName = ImageName{1};
@@ -263,7 +268,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 ImageName = sprintf('%s %d',ImageName{1},ImageName{2});    % Image loaded from movie file
             end
             fprintf(fid,'%s\n',ImageName);
-            
+
             % Write measurements
             if ~isempty(Measurements{k})
                 for row = 1:size(Measurements{k},1)                        % Loop over the rows
@@ -296,7 +301,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 Measurements{k} = [mean(Measurements{k},1);std(Measurements{k},0,1)];
             end
         end
-        
+
         % Open a file for exporting the measurements
         % Add dot in extension if it's not there
         if ExportInfo.MeasurementExtension(1) ~= '.';
@@ -318,16 +323,17 @@ for Object = 1:length(ExportInfo.ObjectNames)
         str = cell(2*length(FeatureNames),1);
         str(1:2:end) = {'\t'};
         str(2:2:end) = FeatureNames;
-        
+
         %%% Write mean data
         fprintf(fid,sprintf('Mean\tThreshold\tObject count %s\n',cat(2,str{:})));
         % Loop over the images sets
+
         for k = 1:length(Measurements)
 
             % Write info about the image set
             fprintf(fid,'Set #%d, ',k);
-            
-            % Construct and write image filename 
+
+            % Construct and write image filename
             ImageName = handles.Measurements.Image.(Filenames{1})(:,k);
             if length(ImageName) == 1
                 ImageName = ImageName{1};
@@ -335,13 +341,10 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 ImageName = sprintf('%s %d',ImageName{1},ImageName{2});    % Image loaded from movie file
             end
             fprintf(fid,'%s\t',ImageName);
-            
+
             % Write segmentation threshold if it exists
-            if exist('Threshold','var')
-                fprintf(fid,'%g\t',Threshold{k});
-            else
-                fprintf(fid,'\t');
-            end
+            if exist('Threshold','var'),fprintf(fid,'%g\t',Threshold{k});else fprintf(fid,'\t');end
+
             % Write number of objects
             fprintf(fid,'%d',NumObjects(k));
 
@@ -355,8 +358,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
             fprintf(fid,'\n');
         end % End loop over image sets
-        
-        
+
+
         %%% Write standard deviation data
         fprintf(fid,'\n');
         fprintf(fid,'Std\n',cat(2,str{:}));
@@ -365,8 +368,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
             % Write info about the image set
             fprintf(fid,'Set #%d, ',k);
-            
-            % Construct and write image filename 
+
+            % Construct and write image filename                          % THIS MIGHT BE UNNECESSARY
             ImageName = handles.Measurements.Image.(Filenames{1})(:,k);
             if length(ImageName) == 1
                 ImageName = ImageName{1};
@@ -374,7 +377,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 ImageName = sprintf('%s %d',ImageName{1},ImageName{2});    % Image loaded from movie file
             end
             fprintf(fid,'%s\t',ImageName);
-            
+
             % No std for threshold and object count
             fprintf(fid,'\t');
 
@@ -384,11 +387,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 str = cell(2*length(tmp),1);                         % Interleave with commas
                 str(1:2:end) = {'\t'};
                 str(2:2:end) = tmp;
-                fprintf(fid,sprintf('%s',cat(2,str{:})));                    % Write to file
+                fprintf(fid,sprintf('%s',cat(2,str{:})));            % Write to file
             end
             fprintf(fid,'\n');
         end % End loop over image sets
-        
+
         fclose(fid);
     end % End of summary report writing
 
@@ -416,14 +419,6 @@ FontSize = get(0,'UserData');
 
 % Get measurement object fields
 fields = fieldnames(handles.Measurements);
-
-% Remove the 'GeneralInfo' field
-%%% ANNE: I don't think we really want to change the following lines
-%%% to "Image" rather than GeneralInfo, so I am commenting it out for
-%%% now.
-% index = setdiff(1:length(fields),strmatch('GeneralInfo',fields));
-% fields = fields(index);
-
 if length(fields) > 20
     errordlg('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')
     return
@@ -440,7 +435,7 @@ uiheight = 0.25;
 % Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
 Height = 2.2+length(fields)*uiheight;
-Width  = 6; 
+Width  = 6;
 set(ETh,'position',[pos(1)+1 pos(2) Width Height]);
 
 if ~isempty(fields)
@@ -504,9 +499,9 @@ uicontrol(ETh,'style','text','String','Choose base of output filename:','FontNam
 EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[2 basey 2.5 uiheight],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename);
 uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[4.7 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
+    'HorizontalAlignment','left','units','inches','position',[4.7 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
 EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[4.7 basey 0.7 uiheight],...
-        'backgroundcolor',[1 1 1],'String','.txt');
+    'backgroundcolor',[1 1 1],'String','.txt');
 
 
 % Export and Cancel pushbuttons

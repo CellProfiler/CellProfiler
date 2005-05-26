@@ -13,7 +13,6 @@ WANT IT NOW:
 
 - I think MeasureCorrelation uses the Mask so correlation is only measured within objects, but it does not measure the correlation within *each* object. If it doesn't take an absurd amount of time, it would be nice to have individual measurements of correlation for each object.
 
-- After renaming is complete, the list of image names does not update itself automatically
 
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
 
@@ -418,3 +417,9 @@ Went through Modules and adjusted so they will work with Restart.m.
 
 5/24/05 (Joo Han)
 - Updated help for OpenNewImageFile.m
+
+5/26/05 (Colin)
+- After renaming is complete, the list of image names does not update itself automatically
+
+5/26/05 (Colin)
+- CPtextdisplaybox scrolls faster

@@ -1,4 +1,4 @@
-function handles = ClassifyObjects(handles)
+function handles = ClassifyObjectsIntensity(handles)
 
 % Help for the Classify Objects module:
 % Category: Other
@@ -181,7 +181,7 @@ if any(findobj == ThisModuleFigureNumber);
     uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
         'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
         'fontsize',FontSize,'fontweight','bold','string',sprintf('Classifications for image set #%d',handles.Current.SetBeingAnalyzed));
-columns = 1
+    columns = 1;
     % Number of objects
     uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
         'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
@@ -360,5 +360,5 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-handles.Measurements.Classify.NumberOfCellsFeatures = {['Fraction of ', ObjectName, ' with low ', MeasurementName],['Fraction of ', ObjectName, ' with medium ', MeasurementName],['Fraction of ', ObjectName, ' with high ', MeasurementName]};
-handles.Measurements.Classify.NumberOfCells(handles.Current.SetBeingAnalyzed) = {[FractionInLowBin FractionInMediumBin FractionInHighBin]};
+handles.Measurements.(ObjectName).ClassifyObjectsIntensityFeatures = {['Fraction of ', ObjectName, ' with low ', MeasurementName],['Fraction of ', ObjectName, ' with medium ', MeasurementName],['Fraction of ', ObjectName, ' with high ', MeasurementName]};
+handles.Measurements.(ObjectName).ClassifyObjectsIntensity(handles.Current.SetBeingAnalyzed) = {[FractionInLowBin FractionInMediumBin FractionInHighBin]};

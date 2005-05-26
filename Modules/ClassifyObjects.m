@@ -357,7 +357,7 @@ handles.Pipeline.(fieldname) = RGBimage;
 %fieldname = ['NumberLarge',ObjectName];
 %handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberLarge};
 
-handles.Measurements.Classify.NumberOfCellsFeatures = {'Number of small cells','Number of medium cells','Number of large cells'};
-handles.Measurements.Classify.NumberOfCells(handles.Current.SetBeingAnalyzed) = {[NumberSmall NumberMedium NumberLarge]};
+handles.Measurements.(ObjectName).ClassifyObjectsFeatures = {'Number of small cells','Number of medium cells','Number of large cells'};
+handles.Measurements.(ObjectName).ClassifyObjects(handles.Current.SetBeingAnalyzed) = {[NumberSmall NumberMedium NumberLarge]};
 
 

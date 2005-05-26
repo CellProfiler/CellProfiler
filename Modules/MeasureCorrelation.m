@@ -415,7 +415,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     set(Displaytexthandle,'string',TextToDisplay)
     set(ThisModuleFigureNumber,'toolbar','figure')
     if strcmp(ObjectName,'/') == 1
-        title('Overall')
+        title('Image')
     else
         title(ObjectName)
     end
@@ -553,11 +553,9 @@ CorrelationFeatures = {};
 for i = 1:size(ImageNames,1)-1
     for j = i+1:size(ImageNames,1)
         Correlation = [Correlation Results(i,j)];
-        CorrelationFeatures = cat(2,CorrelationFeatures, {['Correlation ',char(ImageNames(i,:)),' and ', char(ImageNames(j,:)), ' in ', ObjectName]});
+        CorrelationFeatures = cat(2,CorrelationFeatures, {['Correlation ',ImageNames(i,:),' and ',ImageNames(j,:), ' in ', ObjectName]});
     end
 end
-% handles.Measurements.(ObjectName).CorrelationFeatures = CorrelationFeatures;
-% handles.Measurements.(ObjectName).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
+handles.Measurements.(ObjectName).CorrelationFeatures = CorrelationFeatures;
+handles.Measurements.(ObjectName).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
 
-handles.Measurements.Correlation.CorrelationFeatures = CorrelationFeatures;
-handles.Measurements.Correlation.Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};

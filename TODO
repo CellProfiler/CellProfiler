@@ -16,14 +16,6 @@ WANT IT NOW:
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
 
-[ASK RAY IF THIS IS WORTH IT]>>>>
-- Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
-Settings =      ModuleNames: {1x6 cell}
-             VariableValues: {6x13 cell}
-         NumbersOfVariables: [13 6 5 6 4 8]
-    VariableRevisionNumbers: [2 0 1 0 1 1]
-*Note: This requires editing almost all the modules, while this improvement is not absolutely necessary; the time cost should be considered.
-
 - Make the DIB cancel button work in CPimread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like OpenNewImageFile.m
 
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
@@ -41,9 +33,6 @@ Settings =      ModuleNames: {1x6 cell}
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
 - Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
-
-[ASK RAY IF THIS IS WORTH IT]>>>>
-+++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
 
 STEVE IS WORKING ON THIS >>>
 +++ Download code relating to Perlman, Mitchison, et al. Science
@@ -289,6 +278,17 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 - Add background masking to the identify sec distance module
        (make it optional in case a cell stain image is not
        available). 
+
+[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
+- Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
+Settings =      ModuleNames: {1x6 cell}
+             VariableValues: {6x13 cell}
+         NumbersOfVariables: [13 6 5 6 4 8]
+    VariableRevisionNumbers: [2 0 1 0 1 1]
+*Note: This requires editing almost all the modules, while this improvement is not absolutely necessary; the time cost should be considered.
+
+[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
++++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
 
 ---------------------------------------------------
 

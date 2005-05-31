@@ -1,5 +1,5 @@
 CellProfiler cell image analysis software development 
-MAY 18th, 2005  IN ORDER OF PRIORITY
+MAY 31, 2005  IN ORDER OF PRIORITY
 
 (+ sign indicates more challenging projects)
 ---------------------------------------------------
@@ -12,13 +12,60 @@ WANT IT NOW:
 
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
-+++ Make a shape-based IdentifyPrim module which recognizes
+---------------------------------------------------
+LONG-TERM, 20% TIME PROJECTS:
+VISION 1 +++ (Colin might work on this) Make a shape-based IdentifyPrim module which recognizes
        oblong/elliptical objects rather than perfectly round
        objects. Actually, adopt the current IdentifyPrimShapeIntens to
        take in an ellipticity factor which can be set to 1 for perfect
        circles or some other number for oblong objects.  There is a
        paper somewhere detailing an ellipse-based shape transform
        (maybe Ray has it?). 
+
+VISION 2 +++ (Joo Han might work on this) Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
+Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
+The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
+Segment cells
+Estimate illumination variation from the background and correct the original image
+Re-segment cells
+Re-estimate illumination variation from the background and correct the original image
+Re-segment cells
+Repeat until convergence.
+The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
+
+
+GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). 
+
+GUI 2 +++ Make image tools more accessible/intuitive:
+Create an image toolbar to replace the drop down menu in the main CP GUI 
+- The toolbar should have a horizontal orientation due to the drop down menu
+- One row of tiny icon-buttons for standard image tools
+- Below that, a drop down menu for infrequently used/custom tools
+- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
+- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
+- When clicking on any image, have the toolbar become active/come to the top of all other windows.
+For standard image tools:
+[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
+- Have tooltips appear upon mouse-over of each button that show the name of the tool 
+- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
+For infrequently used/custom tools:
+[ShowDataOnImage, any other .m file in the ImageTools folder]
+- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
+- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
+Other implementation notes:
+- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
+ImageHandle  = imagesc(Image);
+set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
+This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
+- Possibly add DataTools to the same toolbar, just have it divided in half?
+- To aid in interactive selection of settings, allow user to
+       create a figure window where images can be dragged and overlaid
+       and toggled back and forth. See Inca and dragndrop in Matlab
+       Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
+
+GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
+
+GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
 
 ---------------------------------------------------
 
@@ -28,6 +75,7 @@ WANT IT SOON (~ for next beta release, late February 2005):
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
 
+[ASK RAY IF THIS IS WORTH IT]>>>>
 - Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
 Settings =      ModuleNames: {1x6 cell}
              VariableValues: {6x13 cell}
@@ -39,25 +87,17 @@ Settings =      ModuleNames: {1x6 cell}
 
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
-+++ Make a module to identify and count and measure objects
-       within previously identified objects (e.g. nucleoli or
-       organelles or speckles within nuclei or cells).  This also requires designing a way to store measurements of Subobjects. See MeasureNeighbors.m for an example of saving several measurements per object.  Need to also develop tools to export the Subobject measurements.
-
-++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). 
-
 - Be sure that all exporting tools will function properly if some
        measurement fields are left blank, which is the case when there
        are no objects in a particular image, for example.  This is particularly a concern when the last image had no objects, so make a fake image set with no objects in the last set and see if everything works.
 
 - We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries.
 
-- In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured. (that is, the contents of the last variable box).
+- In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured (e.g. nuclei).
 
 - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
-
-- Make the help/manual prettier: For each example image that is just text, move it into the help for that file, because as it is these images are stretched a lot. 
 
 [Do the following prior to releasing the new beta version:
 - Smart Indent
@@ -69,44 +109,17 @@ Settings =      ModuleNames: {1x6 cell}
 
 ---------------------------------------------------
 
-WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
+WANT IT BEFORE PUBLIC RELEASE (~ Sept-Dec 2005):
 
 - Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
 
-***********
-+++ Make image tools more accessible/intuitive:
-Create an image toolbar to replace the drop down menu in the main CP GUI 
-- The toolbar should have a horizontal orientation due to the drop down menu
-- One row of tiny icon-buttons for standard image tools
-- Below that, a drop down menu for infrequently used/custom tools
-- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
-- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
-- When clicking on any image, have the toolbar become active/come to the top of all other windows.
-
-For standard image tools:
-[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
-- Have tooltips appear upon mouse-over of each button that show the name of the tool 
-- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
-
-For infrequently used/custom tools:
-[ShowDataOnImage, any other .m file in the ImageTools folder]
-- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
-- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
-
-Other implementation notes:
-- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
-ImageHandle  = imagesc(Image);
-set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
-This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
-- Possibly add DataTools to the same toolbar, just have it divided in half?
-************
-
+[ASK RAY IF THIS IS WORTH IT]>>>>
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
 
-STEVE IS WORKING ON THIS >>> 
+STEVE IS WORKING ON THIS >>>
 +++ Download code relating to Perlman, Mitchison, et al. Science
        2004 and make modules accordingly (Laplacian of Gaussian to
-       identify nuclei) 
+       identify nuclei)
 
 - When attempting to Export data using any of the various
        data tools, add an error check in case the mat file does not
@@ -212,6 +225,10 @@ Also, ask Ola whether we should take out the old method of finding the preferred
        http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
        k-means clustering.
 
+- All modules: look for speed improvements (esp. imresize?)
+
+- Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
+
 [Do the following prior to releasing the public version:
 - Make reference sheet with short descriptions of the modules.
 - Make "applications" technical notes and automatic settings
@@ -239,34 +256,11 @@ POST-PUBLIC RELEASE SUPPORT:
 
 ---------------------------------------------------
 
-WANT IT SOMEDAY:
+PROBABLY DO NOT WANT TO INVEST TIME IN THESE:
 
 ++ Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
 
 ++ Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
-
-- Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
-The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
-Segment cells
-Estimate illumination variation from the background and correct the original image
-Re-segment cells
-Re-estimate illumination variation from the background and correct the original image
-Re-segment cells
-....
-until convergence.
-The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
-
-- All modules: look for speed improvements (esp. imresize?)
-
-+++ To aid in interactive selection of settings, allow user to
-       create a figure window where images can be dragged and overlaid
-       and toggled back and forth. See Inca and dragndrop in Matlab
-       Central.
-
-+++ Allow data to be exported to Open Microscopy Environment
-       databases.  (Being worked on by Tony Scelfo in Peter Sorger's lab).
-
-+++ Port to python so we don't need to use Matlab anymore
 
 +++ Try to get code for yeast segmentation from this paper, and
        incorporate it into CellProfiler: SCMD: Saccharomyces
@@ -286,6 +280,11 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 - 'Start job midway' module, run image set #XXXX (allow putting
        in a bunch of comma-delimited numbers to allow random), every
        50th. 
+
++++ Allow data to be exported to Open Microscopy Environment
+       databases.  (Being worked on by Tony Scelfo in Peter Sorger's lab).
+
++++ Port to python so we don't need to use Matlab anymore.
 
 +++ Binucleate cells: figure out how to identify and count them
 

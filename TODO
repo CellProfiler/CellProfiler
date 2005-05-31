@@ -8,8 +8,6 @@ WANT IT NOW:
 
 - Despite numerous attempts, we have had trouble adding a panel/frame to the GUI (CellProfiler.fig file) so that variable descriptions don't peek through under the boxes at the bottom of the GUI, when loading a module with lots of variables. The problem is peculiar, because it seems that if we make the change and save the .fig file on a PC it works fine everywhere but on the mac platform suddenly there is a 5 minute delay - the first few times we tried it, the delay occurred upon loading up CellProfiler. Later, it would happen only when you actually try to run a pipeline.  Usually the problem would be fixed by making the changes on a mac rather than a pc, but the past few times we tried, even that doesn't help. It's worth trying again on a mac.  the reason it seems so peculiar may have to do with how the .fig and CellProfiler.m files interact - they seem to update each other in a magical way that gets disturbed if you aren't careful. Seems like a buggy Matlab issue.  If all else fails, we could add a frame 'manually' by writing code in CellProfiler.m that runs upon start up rather than trying to add the panel to the .fig file using GUIDE.
 
-- Done (Joo Han) I just adapted ClassifyObjects into ClassifyObjectsIntensity, but probably we should combine the two. I wasn't sure how to look up which column of measurements is desired, so that's one definite improvement that ought to be made.  Also, the new version doesn't allow for marking/coloring which object is in which bin since it extracts the data from the handles structure rather than calculating it from a label matrix. Neither version allows anything other than three bins, so it would be nice to allow the user to enter a variable number of bins separated by commas.
-
 - (Joo Han is working on this) I think MeasureCorrelation uses the Mask so correlation is only measured within objects, but it does not measure the correlation within *each* object. If it doesn't take an absurd amount of time, it would be nice to have individual measurements of correlation for each object.
 
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
@@ -80,8 +78,6 @@ WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 - We have modified several built in matlab functions and produced new functions with the CP prefix (they are all in the main CellProfiler folder). It's unclear which lines we have modified, so use the Matlab tool 'FileComparison Report' to show how the modified functions differ from the original and mark those lines in the code with comments so that we are aware of the differences.
 
 - Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
-
-- Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
 
 ***********
 +++ Make image tools more accessible/intuitive:
@@ -410,8 +406,8 @@ Went through Modules and adjusted so they will work with Restart.m.
 5/24/05 (Colin)
 - The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData
 
-5/24/05 (Joo Han)
-- Module IdentifyPrim combined together. (Not yet committed, will do on Monday after checking with everyone)
+5/24/05 (Joo Han) - Not committed yet, have pending questions.
+- I just adapted ClassifyObjects into ClassifyObjectsIntensity, but probably we should combine the two. I wasn't sure how to look up which column of measurements is desired, so that's one definite improvement that ought to be made.  Also, the new version doesn't allow for marking/coloring which object is in which bin since it extracts the data from the handles structure rather than calculating it from a label matrix. Neither version allows anything other than three bins, so it would be nice to allow the user to enter a variable number of bins separated by commas.
 
 5/24/05 (Joo Han)
 - Updated help for OpenNewImageFile.m
@@ -421,3 +417,17 @@ Went through Modules and adjusted so they will work with Restart.m.
 
 5/26/05 (Colin)
 - CPtextdisplaybox scrolls faster
+
+- Done, unCVSed (Joo Han) Expanded the syntax for declaration of variable boxes and such using comments in modules.
+
+- Done, unCVSed (Joo Han) Combined all the identifyprim modules (need to delete most comments?)
+
+- Done, unCVSed (Joo Han) Wrote the help file for the expanded syntax. (Perhaps too long?)
+
+- Done, unCVSed (Joo Han)	Combined all the load images modules into LoadImages.m, using the expanded syntax.
+				Combined all the load movies modules into LoadMovies.m, using the expanded syntax.
+				(It would be very simple to change the program so that either LoadImages or LoadMovies module is added to the pipeline by default when the program starts; however, this will result in some loss of flexibility. Perhaps we can have a feature in the GUI called "Frequently Used Modules" where the user can add certain modules with just one click?)
+                *Shouldn't we also have a LoadSingleMovie feature? It will probably end up being the most used load movie method..
+
+- Done, need to CVS ~30 files!! (Joo Han) Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
+

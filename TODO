@@ -12,65 +12,6 @@ WANT IT NOW:
 
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
----------------------------------------------------
-LONG-TERM, 20% TIME PROJECTS:
-VISION 1 +++ (Colin might work on this) Make a shape-based IdentifyPrim module which recognizes
-       oblong/elliptical objects rather than perfectly round
-       objects. Actually, adopt the current IdentifyPrimShapeIntens to
-       take in an ellipticity factor which can be set to 1 for perfect
-       circles or some other number for oblong objects.  There is a
-       paper somewhere detailing an ellipse-based shape transform
-       (maybe Ray has it?). 
-
-VISION 2 +++ (Joo Han might work on this) Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
-Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
-The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
-Segment cells
-Estimate illumination variation from the background and correct the original image
-Re-segment cells
-Re-estimate illumination variation from the background and correct the original image
-Re-segment cells
-Repeat until convergence.
-The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
-
-
-GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). 
-
-GUI 2 +++ Make image tools more accessible/intuitive:
-Create an image toolbar to replace the drop down menu in the main CP GUI 
-- The toolbar should have a horizontal orientation due to the drop down menu
-- One row of tiny icon-buttons for standard image tools
-- Below that, a drop down menu for infrequently used/custom tools
-- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
-- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
-- When clicking on any image, have the toolbar become active/come to the top of all other windows.
-For standard image tools:
-[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
-- Have tooltips appear upon mouse-over of each button that show the name of the tool 
-- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
-For infrequently used/custom tools:
-[ShowDataOnImage, any other .m file in the ImageTools folder]
-- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
-- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
-Other implementation notes:
-- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
-ImageHandle  = imagesc(Image);
-set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
-This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
-- Possibly add DataTools to the same toolbar, just have it divided in half?
-- To aid in interactive selection of settings, allow user to
-       create a figure window where images can be dragged and overlaid
-       and toggled back and forth. See Inca and dragndrop in Matlab
-       Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
-
-GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
-
-GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
-
----------------------------------------------------
-
-WANT IT SOON (~ for next beta release, late February 2005):
-
 - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
@@ -98,18 +39,6 @@ Settings =      ModuleNames: {1x6 cell}
 - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
-
-[Do the following prior to releasing the new beta version:
-- Smart Indent
-- M Lint error checking
-- Check for TODO's
-- Test every module & button
-- Especially, try canceling and closing & opening figure windows
-- Prepare updated manual]
-
----------------------------------------------------
-
-WANT IT BEFORE PUBLIC RELEASE (~ Sept-Dec 2005):
 
 - Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
 
@@ -229,7 +158,13 @@ Also, ask Ola whether we should take out the old method of finding the preferred
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
-[Do the following prior to releasing the public version:
+[Do the following prior to releasing:
+- Smart Indent
+- M Lint error checking
+- Check for TODO's
+- Test every module & button
+- Especially, try canceling and closing & opening figure windows
+- Prepare updated manual
 - Make reference sheet with short descriptions of the modules.
 - Make "applications" technical notes and automatic settings
        files to give a good starting place for common applications
@@ -253,6 +188,60 @@ POST-PUBLIC RELEASE SUPPORT:
        Utilities - GUI Tools & examples, and Misc.) 
      - Organize training workshops
      - Present at conferences
+
+---------------------------------------------------
+LONG-TERM, 20% TIME PROJECTS:
+VISION 1 +++ (Colin might work on this) Make a shape-based IdentifyPrim module which recognizes
+       oblong/elliptical objects rather than perfectly round
+       objects. Actually, adopt the current IdentifyPrimShapeIntens to
+       take in an ellipticity factor which can be set to 1 for perfect
+       circles or some other number for oblong objects.  There is a
+       paper somewhere detailing an ellipse-based shape transform
+       (maybe Ray has it?). 
+
+VISION 2 +++ (Joo Han might work on this) Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
+Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
+The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
+Segment cells
+Estimate illumination variation from the background and correct the original image
+Re-segment cells
+Re-estimate illumination variation from the background and correct the original image
+Re-segment cells
+Repeat until convergence.
+The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
+
+GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). 
+
+GUI 2 +++ Make image tools more accessible/intuitive:
+Create an image toolbar to replace the drop down menu in the main CP GUI 
+- The toolbar should have a horizontal orientation due to the drop down menu
+- One row of tiny icon-buttons for standard image tools
+- Below that, a drop down menu for infrequently used/custom tools
+- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
+- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
+- When clicking on any image, have the toolbar become active/come to the top of all other windows.
+For standard image tools:
+[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
+- Have tooltips appear upon mouse-over of each button that show the name of the tool 
+- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
+For infrequently used/custom tools:
+[ShowDataOnImage, any other .m file in the ImageTools folder]
+- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
+- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
+Other implementation notes:
+- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
+ImageHandle  = imagesc(Image);
+set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
+This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
+- Possibly add DataTools to the same toolbar, just have it divided in half?
+- To aid in interactive selection of settings, allow user to
+       create a figure window where images can be dragged and overlaid
+       and toggled back and forth. See Inca and dragndrop in Matlab
+       Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
+
+GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
+
+GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
 
 ---------------------------------------------------
 

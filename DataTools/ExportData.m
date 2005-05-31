@@ -191,7 +191,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
             if length(Measurements) == 0
                 Measurements = CellArray;                             % The first measurement structure encounterered
             else
-                for j = 1:NbrOfImageSets, Measurements(j) = {cat(2,Measurements{j},CellArray{j})};end
+                for j = 1:length(CellArray)
+                    Measurements(j) = {cat(2,Measurements{j},CellArray{j})};
+                end
             end
             
             % Construct informative feature names

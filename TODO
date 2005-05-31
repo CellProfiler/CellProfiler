@@ -12,8 +12,6 @@ WANT IT NOW:
 
 - When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
 
-- (Joo Han is working on this) Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules.
-
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 +++ Make a shape-based IdentifyPrim module which recognizes
@@ -430,4 +428,6 @@ Went through Modules and adjusted so they will work with Restart.m.
                 *Shouldn't we also have a LoadSingleMovie feature? It will probably end up being the most used load movie method..
 
 - Done, need to CVS ~30 files!! (Joo Han) Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
+
+- Done (Joo Han) Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules. (Used ReplaceTextInModules and checked modules with more than 3 instances of 'hard drive' found.)
 

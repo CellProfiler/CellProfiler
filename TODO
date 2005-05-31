@@ -73,8 +73,6 @@ Settings =      ModuleNames: {1x6 cell}
 
 WANT IT BEFORE PUBLIC RELEASE (~ May 2005):
 
-- We have modified several built in matlab functions and produced new functions with the CP prefix (they are all in the main CellProfiler folder). It's unclear which lines we have modified, so use the Matlab tool 'FileComparison Report' to show how the modified functions differ from the original and mark those lines in the code with comments so that we are aware of the differences.
-
 - Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
 
 ***********

@@ -392,7 +392,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences:
+% handles.Preferences: 
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -405,33 +405,49 @@ drawnow
 % DefaultModuleDirectory, DefaultOutputDirectory,
 % DefaultImageDirectory.
 %
-% handles.Measurements:
-%       Everything in handles.Measurements contains data specific to each
-% image set analyzed for exporting. It is used by the ExportMeanImage
-% and ExportCellByCell data tools. This substructure is deleted at the
-% beginning of the analysis run (see 'Which substructures are deleted
-% prior to an analysis run?' below).
-%    Note that two types of measurements are typically made: Object
-% and Image measurements.  Object measurements have one number for
-% every object in the image (e.g. ObjectArea) and image measurements
-% have one number for the entire image, which could come from one
-% measurement from the entire image (e.g. ImageTotalIntensity), or
-% which could be an aggregate measurement based on individual object
-% measurements (e.g. ImageMeanArea).  Use the appropriate prefix to
-% ensure that your data will be extracted properly. It is likely that
-% Subobject will become a new prefix, when measurements will be
-% collected for objects contained within other objects.
-%       Saving measurements: The data extraction functions of
-% CellProfiler are designed to deal with only one "column" of data per
-% named measurement field. So, for example, instead of creating a
-% field of XY locations stored in pairs, they should be split into a
-% field of X locations and a field of Y locations. It is wise to
-% include the user's input for 'ObjectName' or 'ImageName' as part of
-% the fieldname in the handles structure so that multiple modules can
-% be run and their data will not overwrite each other.
-%   Example fields in handles.Measurements: ImageCountNuclei,
-% ObjectAreaCytoplasm, FilenameOrigBlue, PathnameOrigBlue,
-% TimeElapsed.
+% handles.Measurements
+%      Data extracted from input images are stored in the
+% handles.Measurements substructure for exporting or further analysis.
+% This substructure is deleted at the beginning of the analysis run
+% (see 'Which substructures are deleted prior to an analysis run?'
+% below). The Measurements structure is organized in two levels. At
+% the first level, directly under handles.Measurements, there are
+% substructures (fields) containing measurements of different objects.
+% The names of the objects are specified by the user in the Identify
+% modules (e.g. 'Cells', 'Nuclei', 'Colonies').  In addition to these
+% object fields is a field called 'Image' which contains information
+% relating to entire images, such as filenames, thresholds and
+% measurements derived from an entire image. That is, the Image field
+% contains any features where there is one value for the entire image.
+% As an example, the first level might contain the fields
+% handles.Measurements.Image, handles.Measurements.Cells and
+% handles.Measurements.Nuclei.
+%      In the second level, the measurements are stored in matrices 
+% with dimension [#objects x #features]. Each measurement module
+% writes its own block; for example, the MeasureAreaShape module
+% writes shape measurements of 'Cells' in
+% handles.Measurements.Cells.AreaShape. An associated cell array of
+% dimension [1 x #features] with suffix 'Features' contains the names
+% or descriptions of the measurements. The export data tools, e.g.
+% ExportData, triggers on this 'Features' suffix. Measurements or data
+% that do not follow the convention described above, or that should
+% not be exported via the conventional export tools, can thereby be
+% stored in the handles.Measurements structure by leaving out the
+% '....Features' field. This data will then be invisible to the
+% existing export tools.
+%      Following is an example where we have measured the area and
+% perimeter of 3 cells in the first image and 4 cells in the second
+% image. The first column contains the Area measurements and the
+% second column contains the Perimeter measurements.  Each row
+% contains measurements for a different cell:
+% handles.Measurements.Cells.AreaShapeFeatures = {'Area' 'Perimeter'}
+% handles.Measurements.Cells.AreaShape{1} = 	40		20
+%                                               100		55
+%                                              	200		87
+% handles.Measurements.Cells.AreaShape{2} = 	130		100
+%                                               90		45
+%                                               100		67
+%                                               45		22
 %
 % Which substructures are deleted prior to an analysis run?
 %       Anything stored in handles.Measurements or handles.Pipeline
@@ -444,7 +460,7 @@ drawnow
 % which results in a set of 12 measurements ("ImageTotalNucArea")
 % stored in handles.Measurements. In addition, a processed image of
 % nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different module which
+% ("SegmNucImg"). Now, if the user uses a different algorithm which
 % happens to have the same measurement output name "ImageTotalNucArea"
 % to analyze 4 image sets, the 4 measurements will overwrite the first
 % 4 measurements of the previous analysis, but the remaining 8

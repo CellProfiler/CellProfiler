@@ -8,7 +8,7 @@ WANT IT NOW:
 
 - Despite numerous attempts, we have had trouble adding a panel/frame to the GUI (CellProfiler.fig file) so that variable descriptions don't peek through under the boxes at the bottom of the GUI, when loading a module with lots of variables. The problem is peculiar, because it seems that if we make the change and save the .fig file on a PC it works fine everywhere but on the mac platform suddenly there is a 5 minute delay - the first few times we tried it, the delay occurred upon loading up CellProfiler. Later, it would happen only when you actually try to run a pipeline.  Usually the problem would be fixed by making the changes on a mac rather than a pc, but the past few times we tried, even that doesn't help. It's worth trying again on a mac.  the reason it seems so peculiar may have to do with how the .fig and CellProfiler.m files interact - they seem to update each other in a magical way that gets disturbed if you aren't careful. Seems like a buggy Matlab issue.  If all else fails, we could add a frame 'manually' by writing code in CellProfiler.m that runs upon start up rather than trying to add the panel to the .fig file using GUIDE.
 
-- When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
+- When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper UserData.Application field.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
 
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
@@ -25,8 +25,6 @@ WANT IT NOW:
        are no objects in a particular image, for example.  This is particularly a concern when the last image had no objects, so make a fake image set with no objects in the last set and see if everything works.
 
 - We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries.
-
-- In MeasureCorrelation module, have the display window indicate whether the region analyzed is 'overall', or the name of the object within which correlation is measured (e.g. nuclei).
 
 - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 

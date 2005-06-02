@@ -347,6 +347,7 @@ catch
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;
+handles.Settings.SelectedOption = Settings.SelectedOption;
 ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
 %%% Checks to make sure that the modules have not changed
 if exist(ModuleNamedotm,'file')
@@ -363,7 +364,8 @@ end
 %%file
 revisionConfirm = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames),
-    [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
+    SelectedOption = handles.Settings.SelectedOption(ModuleNum);
+    [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)), SelectedOption);
     if (isfield(Settings,'VariableRevisionNumbers')),
         SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
     else
@@ -467,24 +469,29 @@ end
 guidata(hObject,handles);
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName)
+function [VariableValues VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName, SelectedOption)
 
 VariableValues = {[]};
 VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
+OptionInCode = 0;
 try
     ModuleNamedotm = [ModuleName '.m'];
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-        if (strncmp(output,'%defaultVAR',11) == 1),
+        if strncmp(output,'%Start VariableSet',18)
+            OptionInCode = str2num(output(19:end));
+        elseif strncmp(output,'%End VariableSet',16)
+            OptionInCode = 0;
+        elseif (strncmp(output,'%defaultVAR',11) == 1) && (OptionInCode == SelectedOption),
             displayval = output(17:end);
             istr = output(12:13);
             i = str2num(istr);
             VariableValues(i) = {displayval};
             NumbersOfVariables = i;
-        elseif (strncmp(output,'%textVAR',8) == 1);
+        elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption);
             displayval = output(13:end);
             if(length(displayval) > 8)
                 if(strcmp(displayval(end-8:end),'#LongBox#'))
@@ -494,14 +501,14 @@ try
             istr = output(9:10);
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};
-        elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1)
+        elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
                 VarRevNum = str2num(output(29:30));
             catch
                 VarRevNum = str2num(output(29:29));
             end
         end
-    end
+    end    
     fclose(fid);
 catch
     errordlg('Module could not be found in directory specified','Error');
@@ -657,6 +664,9 @@ if FileName ~= 0
     if isfield(handles.Settings,'VariableRevisionNumbers'),
         Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
     end
+    if isfield(handles.Settings,'SelectedOption'),
+        Settings.SelectedOption = handles.Settings.SelectedOption;
+    end
     save(fullfile(Pathname,FileName),'Settings')
     %%% Writes settings into a readable text file.
     if strcmp(SaveText,'Yes') == 1
@@ -808,15 +818,35 @@ else
 
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     lastVariableCheck = 0;
+    SelectedOption = 0;
+    OptionInCode = 0;
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
-        if strncmp(output,'%defaultVAR',11) == 1
+        if strcmp(output,'%AskOptionSelect') == 1
+            while 1;
+                output=fgetl(fid); if ~ischar(output); break; end;
+                if strncmp(output,'%OptionList',11) == 1
+                    OptionList(str2num(output(12:13)))={output(17:end)};
+                end
+                if strncmp(output,'%ModuleFile',11) == 1
+                    ModuleFile(str2num(output(12:13)))={output(17:end)};
+                end
+                if strncmp(output,'%Question',9) == 1
+                    SelectedOption = listdlg('ListString',OptionList,'PromptString',output(13:end),'SelectionMode','single');
+                    break;
+                end 
+            end 
+        elseif strncmp(output,'%Start VariableSet',18)
+            OptionInCode = str2num(output(19:end));
+        elseif strncmp(output,'%End VariableSet',16)
+            OptionInCode = 0;
+        elseif (strncmp(output,'%defaultVAR',11) == 1) && (OptionInCode == SelectedOption)
             displayval = output(17:end);
             istr = output(12:13);
             lastVariableCheck = str2num(istr);
             handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {displayval};
             handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
-        elseif strncmp(output,'%%%VariableRevisionNumber',25) == 1
+        elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
             handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = str2num(output(29:30));
             catch
@@ -842,6 +872,7 @@ else
     % Find which module slot number this callback was called for.
 
     handles.Settings.ModuleNames{ModuleNums} = ModuleName;
+    handles.Settings.SelectedOption(ModuleNums) = SelectedOption;
     contents = get(handles.ModulePipelineListBox,'String');
     contents{ModuleNums} = ModuleName;
     set(handles.ModulePipelineListBox,'String',contents);
@@ -1046,6 +1077,8 @@ if (length(ModuleHighlighted) > 0)
 
         %%% 3. Extracts and displays the variable descriptors from the .m file.
         lastVariableCheck = 0;
+        SelectedOption = handles.Settings.SelectedOption(ModuleNumber);
+        OptionInCode = 0;
         ModuleNamedotm = strcat(ModuleName,'.m');
         if exist(ModuleNamedotm,'file') ~= 2
             errordlg(['The image analysis module named ', ModuleNamedotm, ' was not found. Is it stored in the folder with the other modules?  Has its name changed?  The settings stored for this module will be displayed, but this module will not run properly.']);
@@ -1053,7 +1086,11 @@ if (length(ModuleHighlighted) > 0)
             fid=fopen(ModuleNamedotm);
             while 1;
                 output = fgetl(fid); if ~ischar(output); break; end;
-                if (strncmp(output,'%textVAR',8) == 1);
+                if strncmp(output,'%Start VariableSet',18)
+                    OptionInCode = str2num(output(19:end));
+                elseif strncmp(output,'%End VariableSet',16)
+                    OptionInCode = 0;
+                elseif (strncmp(output,'%textVAR',8) == 1)  && (OptionInCode == SelectedOption);
                     set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end),'visible', 'on');
                     lastVariableCheck = str2num(output(9:10));
                 end
@@ -1062,7 +1099,7 @@ if (length(ModuleHighlighted) > 0)
             if lastVariableCheck == 0
                 errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
                 return  
-            end
+            end            
         end
         %%% 4. Extracts the stored values for the variables from the handles
         %%% structure and displays in the edit boxes.

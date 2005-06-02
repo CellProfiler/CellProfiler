@@ -41,6 +41,11 @@ else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirec
         catch error('Sorry, the file could not be loaded for some reason.')
         end
     end
+    if ~ (isfield(OutputFile, 'Settings') || isfield(OutputFile, 'handles'))
+        errordlg(['The file ' pOutName fOutName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
+        errFlg = 1;
+        return
+    end
 end
 
 %%% Opens a dialog box to retrieve a file name that contains a list of

@@ -477,7 +477,6 @@ end
 %%% Saves this info in a variable, FigureSettings, which
 %%% will be stored later with the figure.
 FigureSettings{3} = FinalHistogramData;
-
 if strcmpi(GreaterOrLessThan,'A') ~= 1
     AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
     try
@@ -516,7 +515,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     StdColor = get(0,'DefaultUIcontrolBackgroundColor');
     PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
     %%% Creates the display window.
-    FigureHandle = figure;
+    FigureHandle = CPfigure;
     set(FigureHandle, 'Name', MeasurementToExtract);
 
     Increment = 0;
@@ -749,7 +748,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     FinalHistogramData = FinalHistogramData';
-    FigureHandle = figure;
+    FigureHandle = CPfigure;
     set(FigureHandle,'Color',[1 1 1])
     if strcmpi(RowImageOrBin,'image') == 1
         imagesc(FinalHistogramData),

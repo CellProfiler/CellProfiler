@@ -55,7 +55,7 @@ for k = 1:length(tmp)
 end
 
 %%% Do the plotting
-fig = figure;
+fig = CPfigure;
 titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 set(fig,'Numbertitle','off','name',['Plot Measurement: ',titlestr])
 set(gcf,'Color',[1 1 1])

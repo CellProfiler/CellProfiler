@@ -120,7 +120,7 @@ Ylocations = tmp(:,11);
 
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');
-FigureHandle = figure; imagesc(ImageToDisplay), colormap(gray)
+FigureHandle = CPfigure; imagesc(ImageToDisplay), colormap(gray)
 title([ObjectTypename,', ',handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo} ' on ', ImageFileName])
 set(FigureHandle,'toolbar', 'figure')
 
@@ -129,7 +129,9 @@ TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...
     'HorizontalAlignment','center', 'color', [0 0 1],'fontsize',8);
 
 %%% Create structure and save it to the UserData property of the window
-Info = struct('ListOfMeasurements',ListOfMeasurements,'TextHandles',TextHandles);
+Info = get(FigureHandle,'UserData');
+Info.ListOfMeasurements = ListOfMeasurements;
+Info.TextHandles = TextHandles;
 set(FigureHandle,'UserData',Info);
 
 %%% A button is created in the display window which

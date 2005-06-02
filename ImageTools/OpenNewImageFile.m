@@ -50,10 +50,9 @@ else
 %%% REMOVED DUE TO CONFLICTS WITH THE NORMAL ZOOM FUNCTION
     
     %%% Reads the image.
-    userData.Application = 'CellProfiler';
     userData.MyHandles=handles;
     Image = CPimread(fullfile(Pathname, FileName));
-    figure('UserData',userData);
+    CPfigure('UserData',userData);
     imagesc(Image);
     colormap(gray);
     pixval;

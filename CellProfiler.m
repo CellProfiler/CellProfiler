@@ -1573,10 +1573,11 @@ end
 
 % --- Executes on button press in TechnicalDiagnosisButton.
 function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% This button shows the handles structure in the main Matlab window.
-%%% When running a GUI, typing these lines at the command line of
-%%% Matlab is useless, because the CellProfiler GUI's workspace and
-%%% the main workspace is not shared.
+%%% This pauses execution and allows the user to type things in at the
+%%% matlab prompt.  You can check the current variables and they will show
+%%% up in the workspace.
+
+%%% TYPE "return" TO STOP.
 keyboard;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

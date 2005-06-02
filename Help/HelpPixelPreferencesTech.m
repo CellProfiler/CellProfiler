@@ -24,6 +24,6 @@ helpdlg(help('HelpPixelPreferencesTech'))
 % write permission in either location, you are out of luck.
 %
 % TECHNICAL DIAGNOSIS: 
-% Clicking here causes text to appear in the main Matlab window.  This
-% text shows the 'handles structure' which is sometimes useful for
-% diagnosing problems with the software.
+% Clicking here stops execution and allows the user to enter things in
+% the MATLAB prompt.  The user can check variable values or change them.
+% TYPE "return" TO STOP.

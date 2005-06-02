@@ -399,23 +399,25 @@ Went through Modules and adjusted so they will work with Restart.m.
                 -for Windows: In the installation package, include the shortcut with the path set as: matlab.exe /r CellProfiler
                 -for UNIX: In the installation package, include the shortcut with the path set as matlab.exe -r CellProfiler
 
-- Done, unCVSed (Joo Han) - Expanded the syntax for declaration of variable boxes and such using comments in modules.
+*The changes below have been canceled and replaced by a new version. The help file for the new syntax will follow soon.
+_______________________________________
+- Done (Joo Han) - Expanded the syntax for declaration of variable boxes and such using comments in modules.
 
-- Done, unCVSed (Joo Han) Combined all the identifyprim modules (need to delete most comments?)
+- Done (Joo Han) Combined all the identifyprim modules (need to delete most comments?)
 
-- Done, unCVSed (Joo Han) Wrote the help file for the expanded syntax. (Perhaps too long?)
+- Done (Joo Han) Wrote the help file for the expanded syntax. (Perhaps too long?)
 
-- Done, unCVSed (Joo Han)	Combined all the load images modules into LoadImages.m, using the expanded syntax.
+- Done (Joo Han)	Combined all the load images modules into LoadImages.m, using the expanded syntax.
 				Combined all the load movies modules into LoadMovies.m, using the expanded syntax.
 				(It would be very simple to change the program so that either LoadImages or LoadMovies module is added to the pipeline by default when the program starts; however, this will result in some loss of flexibility. Perhaps we can have a feature in the GUI called "Frequently Used Modules" where the user can add certain modules with just one click?)
                 *Shouldn't we also have a LoadSingleMovie feature? It will probably end up being the most used load movie method..
-
-- Done, need to CVS ~30 files!! (Joo Han) Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
+_______________________________________
+- Done (Joo Han) Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
 
 - Done (Joo Han) Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules. (Used ReplaceTextInModules and checked modules with more than 3 instances of 'hard drive' found.)
 
 - Done (Joo Han) We have modified several built in matlab functions and produced new functions with the CP prefix (they are all in the main CellProfiler folder). It's unclear which lines we have modified, so use the Matlab tool 'FileComparison Report' to show how the modified functions differ from the original and mark those lines in the code with comments so that we are aware of the differences. *All are well documented. File Comparison Report fails to give meaningful comparison results sometimes due to inconsistency of order, so I went through the modules myself. Most of the CP modules had been modified to indicate that figures or msgboxes created belong to CellProfiler.
 
-- Done, unCVSed (Joo Han) Add error checking to data-related buttons to determine whether
+- Done (Joo Han) Add error checking to data-related buttons to determine whether
        the .mat file the user selected is a valid CellProfiler output
        file. AddData, ClearData, ConvertBatchFiles.m. Load pipeline already has error check built-in, and for other modules it seems more complicated.

@@ -1,4 +1,5 @@
-function CPfigure()
+function FigHandles=CPfigure(varargin);
 
 userData.Application = 'CellProfiler';
-figure('UserData',userData);
+FigHandles=figure(varargin{:});
+set(FigHandles,'UserData',userData);

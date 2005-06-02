@@ -135,18 +135,18 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-    %%% "OrigImageToBeAnalyzed".
+    %%% "OrigImage".
     fieldname = ['', ImageName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
         error(['Image processing has been canceled. Prior to running the Measure Intensity module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureIntensity module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
     end
-    OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+    OrigImage = handles.Pipeline.(fieldname);
 
 
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
-    if ndims(OrigImageToBeAnalyzed) ~= 2
+    if ndims(OrigImage) ~= 2
         error('Image processing was canceled because the Measure Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
     end
 
@@ -325,11 +325,11 @@ for i = 1:3
             %%% Measure basic set of texture features
             [r,c] = find(LabelMatrixImage == Object);
             index = sub2ind(size(LabelMatrixImage),r,c);
-            Basic(Object,1) = sum(OrigImageToBeAnalyzed(index));
-            Basic(Object,2) = mean(OrigImageToBeAnalyzed(index));
-            Basic(Object,3) = std(OrigImageToBeAnalyzed(index));
-            Basic(Object,4) = min(OrigImageToBeAnalyzed(index));
-            Basic(Object,5) = max(OrigImageToBeAnalyzed(index));
+            Basic(Object,1) = sum(OrigImage(index));
+            Basic(Object,2) = mean(OrigImage(index));
+            Basic(Object,3) = std(OrigImage(index));
+            Basic(Object,4) = min(OrigImage(index));
+            Basic(Object,5) = max(OrigImage(index));
 
             %%% Cut patch so that we don't have to deal with entire image
             rmax = min(sr,max(r));
@@ -337,7 +337,7 @@ for i = 1:3
             cmax = min(sc,max(c));
             cmin = max(1,min(c));
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-            Greyim = OrigImageToBeAnalyzed(rmin:rmax,cmin:cmax);
+            Greyim = OrigImage(rmin:rmax,cmin:cmax);
 
             % Get perimeter in order to calculate edge features
             perim = bwperim(BWim);

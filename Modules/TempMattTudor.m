@@ -80,22 +80,22 @@ MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles, fieldname) == 0
     error(['Image processing has been canceled. Prior to running the Identify Primary Adaptive Threshold module, you must have previously run a module to load an image. You specified in the Identify Primary Adaptive Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Adaptive Threshold module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImage = handles.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Adaptive Threshold module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%% Checks whether the chosen block size is larger than the image itself.
-[m,n] = size(OrigImageToBeAnalyzed);
+[m,n] = size(OrigImage);
 MinLengthWidth = min(m,n);
 if BlockSize >= MinLengthWidth
         error('Image processing was canceled because in the Identify Primary Adaptive Threshold module the selected block size is greater than or equal to the image size itself.')
@@ -108,7 +108,7 @@ drawnow
 
 %%% Calculates the MinimumThreshold automatically, if requested.
 if strncmp(upper(MinimumThreshold),'A',1) == 1
-    GlobalThreshold = CPgraythresh(OrigImageToBeAnalyzed);
+    GlobalThreshold = CPgraythresh(OrigImage);
     %%% 0.7 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.7;
@@ -136,7 +136,7 @@ BestColumns = BestBlockSize(2)*ceil(n/BestBlockSize(2));
 RowsToAdd = BestRows - m;
 ColumnsToAdd = BestColumns - n;
 %%% Pads the image so that the blocks fit properly.
-PaddedImage = padarray(OrigImageToBeAnalyzed,[RowsToAdd ColumnsToAdd],'replicate','post');
+PaddedImage = padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post');
 drawnow
 %%% Calculates the threshold for each block in the image.
 SmallImageOfThresholds = blkproc(PaddedImage,[BestBlockSize(1) BestBlockSize(2)],@isodata);
@@ -158,7 +158,7 @@ drawnow
 MinImageOfThresholds = CorrectedImageOfThresholds;
 MinImageOfThresholds(MinImageOfThresholds <= MinimumThreshold) = MinimumThreshold;
 %%% Applies the thresholds to the image.
-ThresholdedImage = OrigImageToBeAnalyzed;
+ThresholdedImage = OrigImage;
 ThresholdedImage(ThresholdedImage <= MinImageOfThresholds) = 0;
 ThresholdedImage(ThresholdedImage > MinImageOfThresholds) = 1;
 drawnow
@@ -247,7 +247,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     %%% Calculates the PreThresholdedImage for displaying in the figure
     %%% window in subplot(2,2,3).
-    PreThresholdedImage = OrigImageToBeAnalyzed;
+    PreThresholdedImage = OrigImage;
     PreThresholdedImage(PreThresholdedImage <= CorrectedImageOfThresholds) = 0;
     PreThresholdedImage(PreThresholdedImage > CorrectedImageOfThresholds) = 1;
     %%% Calculates the object outlines, which are overlaid on the original
@@ -262,10 +262,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
     %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOrigImage = OrigImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
-    ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows
     %%% until breaks between image analysis modules, or when a few select
@@ -283,7 +283,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
@@ -293,7 +293,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3); imagesc(PreThresholdedImage);colormap(gray); title('Without applying minimum threshold');
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOriginalImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -488,22 +488,22 @@ MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['dOT', ImageName];
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles, fieldname) == 0
     error(['Image processing has been canceled. Prior to running the Identify Primary Adaptive Threshold module, you must have previously run an algorithm to load an image. You specified in the Identify Primary Adaptive Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Adaptive Threshold module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.(fieldname);
+OrigImage = handles.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Adaptive Threshold module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%% Checks whether the chosen block size is larger than the image itself.
-[m,n] = size(OrigImageToBeAnalyzed);
+[m,n] = size(OrigImage);
 MinLengthWidth = min(m,n);
 if NeighborhoodSize >= MinLengthWidth
     error('Image processing was canceled because in the Identify Primary Adaptive Threshold module the selected block size is greater than or equal to the image size itself.')
@@ -516,7 +516,7 @@ drawnow
 
 %%% Calculates the MinimumThreshold automatically, if requested.
 if strncmp(upper(MinimumThreshold),'A',1) == 1
-    GlobalThreshold = CPgraythresh(OrigImageToBeAnalyzed);
+    GlobalThreshold = CPgraythresh(OrigImage);
     %%% 0.2 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.2;
@@ -536,7 +536,7 @@ end
 %%% Converts the image before processing.  This assumes that it's coming in
 %%% as a double image from 0 to 1.
 %%% Invert the image to make dark objects on a white background.
-Image1 = imcomplement(OrigImageToBeAnalyzed);
+Image1 = imcomplement(OrigImage);
 %%% Stretch the image to use the full dynamic range from 0 to 1. 
 Image = imadjust(Image1,[min(min(Image1)) max(max(Image1))],[0 1]);
 %%% Performs adaptive thresholding.
@@ -551,9 +551,9 @@ FirstNumber = ceil(NeighborhoodSize/2);
 SecondNumber = NeighborhoodSize - FirstNumber;
 %MT:  need to pad array to get around convolution-derived edge effects
 %which cause entire image to be filled in in the imfill('holes') step
-Threshold = conv2(padarray(OrigImageToBeAnalyzed,[FirstNumber FirstNumber],'symmetric'), AverageFilter,'same');
+Threshold = conv2(padarray(OrigImage,[FirstNumber FirstNumber],'symmetric'), AverageFilter,'same');
 drawnow
-ThresholdMask = (OrigImageToBeAnalyzed - Threshold(FirstNumber:m+SecondNumber, FirstNumber:n+SecondNumber));
+ThresholdMask = (OrigImage - Threshold(FirstNumber:m+SecondNumber, FirstNumber:n+SecondNumber));
 drawnow
 % AdjustedThresholdMask = ThresholdMask*ThresholdAdjustmentFactor;
 % PreThresholdedImage = AdjustedThresholdMask > 0;
@@ -564,7 +564,7 @@ drawnow
 PreThresholdedImage = ThresholdMask > MinimumThreshold*ThresholdAdjustmentFactor;
 drawnow
 ThresholdedImage = PreThresholdedImage;
-ThresholdedImage(OrigImageToBeAnalyzed <= MinimumThreshold) = 0;
+ThresholdedImage(OrigImage <= MinimumThreshold) = 0;
 %%% Holes in the ThresholdedImage image are filled in.
 drawnow
 ThresholdedImage = imfill(ThresholdedImage, 'holes');
@@ -656,10 +656,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
     %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOrigImage = OrigImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
-    ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
     %%% The "drawnow" function executes any pending figure window-related
     %%% commands.  In general, Matlab does not update figure windows
     %%% until breaks between image analysis modules, or when a few select
@@ -677,7 +677,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(pink);
+    subplot(2,2,1); imagesc(OrigImage);colormap(pink);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
@@ -687,7 +687,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3); imagesc(PreThresholdedImage);colormap(pink); title('Without applying minimum threshold');
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOriginalImage);colormap(pink); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(pink); title([ObjectName, ' Outlines on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

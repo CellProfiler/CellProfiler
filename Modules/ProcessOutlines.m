@@ -114,16 +114,16 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3})
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Intensity module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
+OrigImage = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
@@ -144,7 +144,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-BinaryImage = im2bw(imcomplement(OrigImageToBeAnalyzed),Threshold); 
+BinaryImage = im2bw(imcomplement(OrigImage),Threshold); 
 FilledImage = imfill(BinaryImage,'holes');
 ObjectsIdentifiedImage = imsubtract(FilledImage,BinaryImage);
 
@@ -190,7 +190,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.

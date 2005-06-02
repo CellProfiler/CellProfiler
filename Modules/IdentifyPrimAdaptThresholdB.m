@@ -219,21 +219,21 @@ MinSize = SizeRangeNumerical(1);
 MaxSize = SizeRangeNumerical(2);
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing has been canceled. Prior to running the Identify Primary Adaptive Threshold module, you must have previously run a module to load an image. You specified in the Identify Primary Adaptive Threshold module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Adaptive Threshold module cannot find this image.']);
     end
-OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
+OrigImage = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Adaptive Threshold module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%% Checks whether the chosen block size is larger than the image itself.
-[m,n] = size(OrigImageToBeAnalyzed);
+[m,n] = size(OrigImage);
 MinLengthWidth = min(m,n);
 if NeighborhoodSize >= MinLengthWidth
     error('Image processing was canceled because in the Identify Primary Adaptive Threshold module the selected block size is greater than or equal to the image size itself.')
@@ -258,10 +258,10 @@ drawnow
 
 %%% Calculates the MinimumThreshold automatically, if requested.
 if strncmp(upper(MinimumThreshold),'A',1) == 1
-    GlobalThreshold = CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
+    GlobalThreshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked. Did not test it!
-    %       GlobalThreshold = CPgraythresh(OrigImageToBeAnalyzed);
+    %       GlobalThreshold = CPgraythresh(OrigImage);
     %%% 0.2 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
     MinimumThreshold = GlobalThreshold*0.2;
@@ -281,7 +281,7 @@ end
 %%% Converts the image before processing.  This assumes that it's coming in
 %%% as a double image from 0 to 1.
 %%% Invert the image to make dark objects on a white background.
-Image1 = imcomplement(OrigImageToBeAnalyzed);
+Image1 = imcomplement(OrigImage);
 %%% Stretch the image to use the full dynamic range from 0 to 1. 
 Image = imadjust(Image1,[min(min(Image1)) max(max(Image1))],[0 1]);
 %%% Performs adaptive thresholding.
@@ -387,10 +387,10 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
     %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOrigImage = OrigImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
-    ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -410,7 +410,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
@@ -420,7 +420,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     subplot(2,2,3); imagesc(PreThresholdedImage);colormap(gray); title('Without applying minimum threshold');
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOriginalImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -583,7 +583,7 @@ try
     end
     if strncmpi(SaveOutlined,'Y',1) == 1
         fieldname = ['Outlined',ObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end
 %%% I am pretty sure this try/catch is no longer necessary, but will
 %%% leave in just in case.

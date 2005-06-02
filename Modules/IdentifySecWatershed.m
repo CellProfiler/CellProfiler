@@ -213,11 +213,11 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Identify Secondary Watershed module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Secondary Watershed module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
@@ -274,10 +274,10 @@ drawnow
 drawnow
 %%% Determines the threshold to use. 
 if Threshold == 0
-    Threshold = CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
+    Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
-    %    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
+    %    Threshold = CPgraythresh(OrigImage);
     %%% Adjusts the threshold by a correction factor.
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
@@ -285,7 +285,7 @@ MinimumThreshold = str2num(MinimumThreshold);
 Threshold = max(MinimumThreshold,Threshold);
 
 %%% Thresholds the original image.
-ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
+ThresholdedOrigImage = im2bw(OrigImage, Threshold);
 %%% Inverts the image.
 InvertedThresholdedOrigImage = imcomplement(ThresholdedOrigImage);
 
@@ -353,8 +353,8 @@ drawnow
 filter1 = fspecial('sobel');
 filter2 = filter1';
 %%% Applies each of the sobel filters to the original image.
-I1 = imfilter(OrigImageToBeAnalyzed, filter1);
-I2 = imfilter(OrigImageToBeAnalyzed, filter2);
+I1 = imfilter(OrigImage, filter1);
+I2 = imfilter(OrigImage, filter2);
 %%% Adds the two images.  
 %%% The Sobel operator results in negative values, so the absolute values
 %%% are calculated to prevent errors in future steps.
@@ -445,7 +445,7 @@ BinaryMarkerImage2(ActualObjectOutlines == 1) = 0;
 %%% intensity image rather than on a gradient (Sobel) image.
 drawnow
 %%% Inverts the original image.
-InvertedOrigImage = imcomplement(OrigImageToBeAnalyzed);
+InvertedOrigImage = imcomplement(OrigImage);
 %%% Overlays the foreground and background markers onto the
 %%% InvertedOrigImage, so there are black secondary object markers on top
 %%% of each dark secondary object, with black background. 
@@ -539,7 +539,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
         ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage,'jet', 'k', 'shuffle');
     else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
-    %%% Calculates ObjectOutlinesOnOriginalImage for displaying in the figure
+    %%% Calculates ObjectOutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,3).
     %%% Calculates the final watershed lines for the secondary objects.
     %%% Creates the structuring element that will be used for dilation.
@@ -550,14 +550,14 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% which leaves the SecondaryObjectOutlines.
     SecondaryObjectOutlines = DilatedFinalSecondaryImage - FinalBinaryImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
+    LineIntensity = max(OrigImage(:));
     %%% Overlays the secondary object lines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
-    ObjectOutlinesOnOriginalImage(SecondaryObjectOutlines == 1) = LineIntensity;
-    %%% Calculates BothOutlinesOnOriginalImage for displaying in the figure
+    ObjectOutlinesOnOrigImage = OrigImage;
+    ObjectOutlinesOnOrigImage(SecondaryObjectOutlines == 1) = LineIntensity;
+    %%% Calculates BothOutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,4).
-    BothOutlinesOnOriginalImage = ObjectOutlinesOnOriginalImage;
-    BothOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    BothOutlinesOnOrigImage = ObjectOutlinesOnOrigImage;
+    BothOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -578,18 +578,18 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
     %%% A subplot of the figure window is set to display the original image
     %%% with watershed lines drawn on top.
-    subplot(2,2,3); imagesc(ObjectOutlinesOnOriginalImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
     %%% A subplot of the figure window is set to display the original
     %%% image with watershed lines drawn for both the primary and secondary
     %%% objects.
-    subplot(2,2,4); imagesc(BothOutlinesOnOriginalImage); colormap(gray); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); colormap(gray); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -747,7 +747,7 @@ try
     end
     if strncmpi(SaveOutlined,'Y',1) == 1
         fieldname = ['Outlined',SecondaryObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end
 %%% I am pretty sure this try/catch is no longer necessary, but will
 %%% leave in just in case.

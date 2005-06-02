@@ -134,7 +134,7 @@ PixelSize = str2double(handles.Settings.PixelSize);
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
 if isfield(handles.Pipeline, fieldname)==0,
@@ -146,11 +146,11 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Measure Total Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Measure Total Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
@@ -171,7 +171,7 @@ end
 % the SaveImages module.
 
 %%% Subtracts the threshold from the original image.
-ThresholdedOrigImage = OrigImageToBeAnalyzed - LowThreshold;
+ThresholdedOrigImage = OrigImage - LowThreshold;
 ThresholdedOrigImage(ThresholdedOrigImage < 0) = 0;
 
 %%% Expands the mask around bright regions if requested.
@@ -235,7 +235,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,1,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the processed
     %%% image.

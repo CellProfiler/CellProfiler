@@ -151,7 +151,7 @@ PixelSize = str2double(handles.Settings.PixelSize);
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
 if isfield(handles.Pipeline, fieldname)==0,
@@ -163,7 +163,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Area Occupied module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
 
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -186,14 +186,14 @@ drawnow
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if Threshold == 0
-    Threshold = CPgraythresh(OrigImageToBeAnalyzed,handles,ImageName);
+    Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
-%    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
+%    Threshold = CPgraythresh(OrigImage);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
 %%% Thresholds the original image.
-ThresholdedOrigImage = im2bw(OrigImageToBeAnalyzed, Threshold);
+ThresholdedOrigImage = im2bw(OrigImage, Threshold);
 AreaOccupiedPixels = sum(ThresholdedOrigImage(:));
 AreaOccupied = AreaOccupiedPixels*PixelSize*PixelSize;
 
@@ -240,7 +240,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.

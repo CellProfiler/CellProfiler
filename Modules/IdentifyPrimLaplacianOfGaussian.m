@@ -265,19 +265,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['',  ImageName];
 
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Intensity module cannot find this image.']);
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
 
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OrigImageToBeAnalyzed) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
@@ -302,12 +302,12 @@ end
 drawnow
 %{
 if BlurRadius == 0
-    BlurredImage = OrigImageToBeAnalyzed;
+    BlurredImage = OrigImage;
 else
 %%% Blurs the image.
 %%% Note: using filter2 is much faster than imfilter (e.g. 14.5 sec vs. 99.1 sec).
 FiltSize = max(3,ceil(4*BlurRadius));
-BlurredImage = filter2(fspecial('gaussian',FiltSize, BlurRadius), OrigImageToBeAnalyzed);
+BlurredImage = filter2(fspecial('gaussian',FiltSize, BlurRadius), OrigImage);
 end
 
 %%% Perturbs the blurred image so that local maxima near each other with
@@ -330,20 +330,20 @@ MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(sum(getnhood(MaximaMask))),
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if Threshold == 0
-    Threshold = CPgraythresh(OrigImageToBeAnalyzed);
+    Threshold = CPgraythresh(OrigImage);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 end
 MinimumThreshold = str2num(MinimumThreshold);
 Threshold = max(MinimumThreshold,Threshold);
 
 %%% Thresholds the image to eliminate dim maxima.
-MaximaImage(~im2bw(OrigImageToBeAnalyzed, Threshold))=0;
+MaximaImage(~im2bw(OrigImage, Threshold))=0;
 
 %%% STEP 2: Performs watershed function on the original intensity
 %%% (grayscale) image.
 drawnow 
 %%% Inverts original image.
-InvertedOriginal = imcomplement(OrigImageToBeAnalyzed);
+InvertedOriginal = imcomplement(OrigImage);
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
 %%% there are black dots on top of each dark nucleus on a white background.
 Overlaid = imimposemin(InvertedOriginal,MaximaImage);
@@ -372,7 +372,7 @@ PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
 %%% Creates the Laplacian of a Gaussian filter.
 rgLoG=fspecial('log',NeighborhoodSize,Sigma);
 %%% Filters the image.
-imLoGout=imfilter(double(OrigImageToBeAnalyzed),rgLoG);
+imLoGout=imfilter(double(OrigImage),rgLoG);
     figure, imagesc(imLoGout), colormap(gray), title('imLoGout')
 %%% Removes noise using the weiner filter.
 imLoGoutW=wiener2(imLoGout,WienerSize);
@@ -502,10 +502,10 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
     %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOrigImage = OrigImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
-    ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -525,7 +525,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
@@ -535,7 +535,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     % subplot(2,2,3); imagesc(Overlaid); colormap(gray); title([ObjectName, ' markers']);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOriginalImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -702,7 +702,7 @@ try
     end
     if strncmpi(SaveOutlined,'Y',1) == 1
         fieldname = ['Outlined',ObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end
 %%% I am pretty sure this try/catch is no longer necessary, but will
 %%% leave in just in case.

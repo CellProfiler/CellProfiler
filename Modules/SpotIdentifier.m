@@ -194,23 +194,23 @@ drawnow
 % the SaveImages module.
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
 end
-OriginalImage = handles.Pipeline.(ImageName);
+OrigImage = handles.Pipeline.(ImageName);
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number to display in.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    FigureHandle = figure(ThisModuleFigureNumber); ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+    FigureHandle = figure(ThisModuleFigureNumber); ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
 else
     %%% A new figure is opened each time through the pipeline so that the
     %%% resulting labeled figures are all available to the user for
     %%% viewing.
-    FigureHandle = figure; ImageHandle = imagesc(OriginalImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+    FigureHandle = figure; ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
     %%% Tag new figure so "Close Windows" knows to delete it.
     userData.Application = 'CellProfiler';
     set(FigureHandle,'UserData',userData);
@@ -218,7 +218,7 @@ end
 drawnow
 RotateMethod = upper(RotateMethod);
 if strncmp(RotateMethod, 'N',1) == 1
-    RotatedImage = OriginalImage;
+    RotatedImage = OrigImage;
 elseif strncmp(RotateMethod, 'M',1) == 1
     Answer2 = CPquestdlg('After closing this window by clicking OK, click on the lower left marker in the image, then the lower right marker, then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.','Rotate image using the mouse','OK','Cancel','OK');
     waitfor(Answer2)
@@ -240,7 +240,7 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     AngleToRotateDegrees = AngleToRotateRadians*180/pi;
     PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
     drawnow
-    RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
+    RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
     figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image;
     title('Rotated Image'), pixval
     try %#ok We want to ignore MLint error checking for this line.
@@ -249,8 +249,8 @@ elseif strncmp(RotateMethod, 'M',1) == 1
 elseif strncmp(RotateMethod, 'C',1) == 1
     %%% Rotates the image based on user-entered coordinates.
     Prompts = {'Enter the X coordinate of the lower left marker', 'Enter the Y coordinate of the lower left marker', 'Enter the X coordinate of the lower right marker', 'Enter the Y coordinate of the lower right marker'};
-    Height = size(OriginalImage,1);
-    Width = size(OriginalImage,2);
+    Height = size(OrigImage,1);
+    Width = size(OrigImage,2);
     Defaults = {'0', num2str(Height), num2str(Width), num2str(Height)};
     Answers = inputdlg(Prompts, 'Enter coordinates', 1, Defaults);
     if isempty(Answers) == 1
@@ -267,7 +267,7 @@ elseif strncmp(RotateMethod, 'C',1) == 1
     AngleToRotateDegrees = AngleToRotateRadians*180/pi;
     PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
     drawnow
-    RotatedImage = imrotate(OriginalImage, -AngleToRotateDegrees);
+    RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
     figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image
     title('Rotated Image'), pixval
     try, delete(PatienceHandle), end %#ok We want to ignore MLint error checking for this line.
@@ -480,7 +480,7 @@ uicontrol('Parent',gcf, ...
     'String','Colormap:', ...
     'Style','text');
 
-SizeOfImage = size(OriginalImage);
+SizeOfImage = size(OrigImage);
 TotalHeight = SizeOfImage(1);
 TotalWidth = SizeOfImage(2);
 

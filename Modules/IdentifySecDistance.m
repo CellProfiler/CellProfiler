@@ -151,7 +151,7 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['', OrigImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
@@ -163,7 +163,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled because the Identify Secondary Distance module could not find the input image.  It was supposed to be named ', OrigImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects which will be used for dilation. Checks first to see
@@ -253,18 +253,18 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
         ColoredLabelMatrixImage = label2rgb(FinalSecObjectsLabelMatrixImage,'jet', 'k', 'shuffle');
     else ColoredLabelMatrixImage = FinalSecObjectsLabelMatrixImage;
     end
-    %%% Calculates ObjectOutlinesOnOriginalImage for displaying in the figure
+    %%% Calculates ObjectOutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,3).
     StructuringElement3 = [0 0 0; 0 1 -1; 0 0 0];
     OutlinesDirection1 = filter2(StructuringElement3, FinalSecObjectsLabelMatrixImage);
     OutlinesDirection2 = filter2(StructuringElement3', FinalSecObjectsLabelMatrixImage);
     SecondaryObjectOutlines = OutlinesDirection1 | OutlinesDirection2;
     %%% Overlay the watershed lines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOrigImage = OrigImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
-    ObjectOutlinesOnOriginalImage(SecondaryObjectOutlines == 1) = LineIntensity;
-    %%% Calculates BothOutlinesOnOriginalImage for displaying in the figure
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(SecondaryObjectOutlines == 1) = LineIntensity;
+    %%% Calculates BothOutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,4).
     %%% Converts the PrimaryLabelMatrixImage to binary.
     PrimaryBinaryImage = im2bw(PrimaryLabelMatrixImage,.5);
@@ -275,8 +275,8 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedPrimaryBinaryImage - PrimaryBinaryImage;
     %%% Writes the outlines onto the original image.
-    BothOutlinesOnOriginalImage = ObjectOutlinesOnOriginalImage;
-    BothOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    BothOutlinesOnOrigImage = ObjectOutlinesOnOrigImage;
+    BothOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -297,17 +297,17 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Activates the appropriate figure window.
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
     %%% A subplot of the figure window is set to display the original image
     %%% with outlines drawn on top.
-    subplot(2,2,3); imagesc(ObjectOutlinesOnOriginalImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
     %%% A subplot of the figure window is set to display the original image
     %%% with outlines drawn on top.
-    subplot(2,2,4); imagesc(BothOutlinesOnOriginalImage); colormap(gray); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); colormap(gray); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -461,7 +461,7 @@ try
     end
     if strncmpi(SaveOutlined,'Y',1) == 1
         fieldname = ['Outlined',SecondaryObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end
 %%% I am pretty sure this try/catch is no longer necessary, but will
 %%% leave in just in case.

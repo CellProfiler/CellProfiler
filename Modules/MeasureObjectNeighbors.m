@@ -123,7 +123,7 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4})
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 fieldname = ['Segmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if ~isfield(handles.Pipeline,fieldname)

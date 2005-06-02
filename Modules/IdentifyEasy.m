@@ -38,19 +38,19 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OriginalImage".
+%%% "OrigImage".
 fieldname = ['',  ImageName];
 
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Intensity module cannot find this image.']);
 end
-OriginalImage = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(fieldname);
 
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
-if ndims(OriginalImage) ~= 2
+if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
@@ -98,7 +98,7 @@ sigma = (Diameter/8)/2.35;                                                 % Con
 FiltLength = max(1,ceil(3*sigma));                                         % Determine filter length
 f = exp(-linspace(-FiltLength,FiltLength,2*FiltLength+1).^2/(2*sigma^2));  % 1D Gaussian filter kernel
 f = f/sum(f(:));                                                           % Normalize
-BlurredImage = conv2(f,f,OriginalImage,'same');                            % Separable filtering
+BlurredImage = conv2(f,f,OrigImage,'same');                            % Separable filtering
 
 %%% Extract object markers by finding local maxima in the blurred image
 MaximaImage = BlurredImage;
@@ -108,10 +108,10 @@ MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask))
 
 %%% Thresholds the image to eliminate dim maxima.
 if Threshold == '-',
-    Threshold = CPgraythresh(OriginalImage,handles,ImageName);
+    Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
-    % Threshold = CPgraythresh(OriginalImage);
+    % Threshold = CPgraythresh(OrigImage);
 end
 MaximaImage = MaximaImage > Threshold;
 
@@ -120,7 +120,7 @@ MaximaImage = MaximaImage > Threshold;
 Overlaid = imimposemin(1 - BlurredImage,MaximaImage);
 WatershedBoundaries = watershed(Overlaid) > 0;
 
-Objects = OriginalImage > Threshold;                          % Threshold image
+Objects = OrigImage > Threshold;                          % Threshold image
 Objects = imfill(Objects,'holes');                            % Fill holes
 Objects = Objects.*WatershedBoundaries;                       % Cut objects along the watershed lines
 Objects = bwlabel(Objects);                                   % Label the objects
@@ -172,7 +172,7 @@ if any(findobj == ThisModuleFigureNumber)
     figure(ThisModuleFigureNumber);
     
     subplot(2,2,1)
-    ImageHandle = imagesc(OriginalImage);colormap(gray)
+    ImageHandle = imagesc(OrigImage);colormap(gray)
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
     axis image
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',8);
@@ -185,7 +185,7 @@ if any(findobj == ThisModuleFigureNumber)
     axis image,set(gca,'fontsize',8)
     
     % Indicate objects in original image and color excluded objects in red
-    tmp = OriginalImage/max(OriginalImage(:));
+    tmp = OrigImage/max(OrigImage(:));
     OutlinedObjectsR = tmp;
     OutlinedObjectsG = tmp;
     OutlinedObjectsB = tmp;

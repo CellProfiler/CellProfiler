@@ -153,12 +153,12 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImageToBeAnalyzed".
+%%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing has been canceled. Prior to running the Identify Primary Manually module, you must have previously run a module to load an image. You specified in the Identify Primary Manually module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Manually module cannot find this image.']);
 end
-OrigImageToBeAnalyzed = handles.Pipeline.(ImageName);
+OrigImage = handles.Pipeline.(ImageName);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -179,8 +179,8 @@ drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = figure;
-ImageHandle = imagesc(OrigImageToBeAnalyzed);
-[nrows,ncols,ncolors] = size(OrigImageToBeAnalyzed);
+ImageHandle = imagesc(OrigImage);
+[nrows,ncols,ncolors] = size(OrigImage);
 if ncolors == 1
     colormap(gray)
 end
@@ -257,10 +257,10 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
     %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOriginalImage = OrigImageToBeAnalyzed;
+    ObjectOutlinesOnOrigImage = OrigImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImageToBeAnalyzed(:));
-    ObjectOutlinesOnOriginalImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 % PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
@@ -280,13 +280,13 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     figure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImageToBeAnalyzed); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); colormap(gray);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); imagesc(FinalLabelMatrixImage); title(['Manually Identified ',ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,3); imagesc(ObjectOutlinesOnOriginalImage);colormap(gray); title([ObjectName, ' Outline on Input Image']);
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outline on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -453,7 +453,7 @@ try
     end
     if strncmpi(SaveOutlined,'Y',1) == 1
         fieldname = ['Outlined',ObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOriginalImage;
+        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end
 %%% I am pretty sure this try/catch is no longer necessary, but will
 %%% leave in just in case.

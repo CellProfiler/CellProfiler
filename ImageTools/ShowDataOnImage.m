@@ -1,4 +1,4 @@
-function handles = ShowDataOnImage(handles)
+function ShowDataOnImage(handles)
 
 % Help for the Show Data on Image tool:
 % Category: Image Tools

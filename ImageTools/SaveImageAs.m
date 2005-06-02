@@ -1,4 +1,4 @@
-function handles = SaveImageAs(handles)
+function SaveImageAs(handles)
 
 % Help for the Save Image As tool:
 % Category: Image Tools

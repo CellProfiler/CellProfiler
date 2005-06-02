@@ -1,4 +1,4 @@
-function handles = ShowPixelIntensityHistogram(handles)
+function ShowPixelIntensityHistogram(handles)
 
 % Help for the Show Pixel Intensity Histogram tool:
 % Category: Image Tools
@@ -43,7 +43,9 @@ if isempty(ClickedFigureTitle) ~= 1 | isempty(ClickedImageTitle) ~= 1
     Title = [ClickedFigureTitle,' ',ClickedImageTitle];
 else Title =[];
 end
-delete(MsgboxHandle)
+try
+    delete(MsgboxHandle)
+end
 drawnow
 figure
 hist(ClickedImage(:),min(200,round(length(ClickedImage(:))/150)));

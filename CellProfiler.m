@@ -534,6 +534,7 @@ Color = [0.925490196078431 0.913725490196078 0.847058823529412];
 
 %%% Label we attach to figures (as UserData) so we know they are ours
 userData.Application = 'CellProfiler';
+userData.MyHandles=handles;
 LoadSavedWindowHandle = figure(...
 'Units','pixels',...
 'Color',Color,...
@@ -1317,10 +1318,11 @@ CancelButtonCallback = 'delete(gcf)';
 
 %%% Creates the dialog box and its text, buttons, and edit boxes.
 MainWinPos = get(handles.figure1,'Position');
-Color = [0.7 0.7 0.7];
+Color = [0.7 0.7 0.9];
 
 %%% Label we attach to figures (as UserData) so we know they are ours
 userData.Application = 'CellProfiler';
+userData.MyHandles=handles;
 SetPreferencesWindowHandle = figure(...
 'Units','pixels',...
 'Color',Color,...
@@ -1575,13 +1577,7 @@ function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We 
 %%% When running a GUI, typing these lines at the command line of
 %%% Matlab is useless, because the CellProfiler GUI's workspace and
 %%% the main workspace is not shared.
-try MainHandles = handles, catch MainHandles = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-try Preferences = handles.Preferences, catch Preferences = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-try Current = handles.Current, catch Current = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-try Settings = handles.Settings, catch Settings = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-try Pipeline = handles.Pipeline, catch Pipeline = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-try Measurements = handles.Measurements, catch Measurements = 'Does not exist', end %#ok We want to ignore MLint error checking for this line.
-CPmsgbox('The handles structure has been printed out at the command line of Matlab.')
+keyboard;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% BROWSE DEFAULT IMAGE DIRECTORY BUTTON %%%
@@ -2032,6 +2028,7 @@ else
                 %%% Creates the Timer window.
                 %%% Label we attach to figures (as UserData) so we know they are ours
                 userData.Application = 'CellProfiler';
+                userData.MyHandles = handles;
                 timer_handle = figure('name','Timer','position',[0 BottomOfTimer 495 120],...
                     'menubar','none','NumberTitle','off','IntegerHandle','off', 'HandleVisibility', 'off', ...
                     'color',[0.7,0.7,0.9],'UserData',userData);
@@ -2106,12 +2103,14 @@ else
 
                 %%% Label we attach to figures (as UserData) so we know they are ours
                 userData.Application = 'CellProfiler';
+                userData.MyHandles=handles;
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
                         handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
                             figure('name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
                             'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
                             'color',[0.7,0.7,0.7],'UserData',userData);
+                        CreateImageToolsMenuBar(handles);
                     end
                 end
 
@@ -2633,6 +2632,7 @@ end
 
 %%% Label we attach to figures (as UserData) so we know they are ours
 userData.Application = 'CellProfiler';
+userData.MyHandles=handles;
 ToolsHelpWindowHandle = figure(...
 'Units','pixels',...
 'Color',Color,...
@@ -2700,3 +2700,11 @@ HelpText = help('HelpAnalyzeImages.m');
 CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%
+ 
+
+function CreateImageToolsMenuBar(handles)
+    TempMenu = uimenu('Label','CellProfiler Image Tools');
+    ListOfImageTools=get(handles.ImageToolsPopUpMenu,'String');
+    for j=2:length(ListOfImageTools)
+        uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''UserData'');' char(ListOfImageTools(j)) '(UserData.MyHandles)']);
+    end

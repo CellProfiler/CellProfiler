@@ -207,7 +207,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% Activates the appropriate figure window.
-    figure(ThisModuleFigureNumber);
+    CPfigure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); imagesc(LabelMatrixImage);colormap(gray);
     title(['Gray version of ',ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);

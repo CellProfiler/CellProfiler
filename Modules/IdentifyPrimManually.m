@@ -278,7 +278,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
-    figure(ThisModuleFigureNumber);
+    CPfigure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); colormap(gray);
     %%% A subplot of the figure window is set to display the colored label

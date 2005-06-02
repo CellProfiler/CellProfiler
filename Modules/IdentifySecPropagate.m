@@ -416,7 +416,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     BothOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
     drawnow
     %%% Activates the appropriate figure window.
-    figure(ThisModuleFigureNumber);
+    CPfigure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);

@@ -278,7 +278,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Activates the appropriate figure window.
-    figure(ThisModuleFigureNumber);
+    CPfigure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
     if exist('OrigImage','var') == 1

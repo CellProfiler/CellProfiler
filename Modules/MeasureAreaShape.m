@@ -58,7 +58,7 @@ ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber);
-    figure(ThisModuleFigureNumber);
+    CPfigure(ThisModuleFigureNumber);
     set(ThisModuleFigureNumber,'color',[1 1 1])
     columns = 1;
 end

@@ -282,7 +282,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Activates the appropriate figure window.
-    figure(ThisModuleFigureNumber);
+    CPfigure(ThisModuleFigureNumber);
 
     % Set white background color
     set(ThisModuleFigureNumber,'Color',[1 1 1])

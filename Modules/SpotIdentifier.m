@@ -205,7 +205,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number to display in.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    FigureHandle = figure(ThisModuleFigureNumber); ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+    FigureHandle = CPfigure(ThisModuleFigureNumber); ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
 else
     %%% A new figure is opened each time through the pipeline so that the
     %%% resulting labeled figures are all available to the user for

@@ -34,7 +34,7 @@ function OpenNewImageFile(handles)
 %%% for image selection and then immediately restored
 TempCD=cd;
 cd(handles.Current.DefaultImageDirectory);
-[FileName,Pathname] = uigetfile({'*.bmp;*.cur;*.fts;*.fits;*.gif;*.hdf;*.ico;*.jpg;*.jpeg;*.pbm;*.pcx;*.pgm;*.png;*.pnm;*.ppm;*.ras;*.tif;*.tiff;*.xwd;*.dib', 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');
+[FileName,Pathname] = uigetfile({'*.bmp;*.BMP;*.cur;*.CUR;*.fts;*.FTS;*.fits;*.FITS;*.gif;*.GIF;*.hdf;*.HDF;*.ico;*.ICO;*.jpg;*.JPG;*.jpeg;*.JPEG;*.pbm;*.PBM;*.pcx;*.PCX;*.pgm;*.PGM;*.png;*.PNG;*.pnm;*.PNM;*.ppm;*.PPM;*.ras;*.RAS;*.tif;*.TIF;*.tiff;*.TIFF;*.xwd;*.XWD;*.dib;*.DIB', 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');
 cd(TempCD);
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.

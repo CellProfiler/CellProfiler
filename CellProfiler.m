@@ -347,7 +347,12 @@ catch
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;
-handles.Settings.SelectedOption = Settings.SelectedOption;
+try
+    handles.Settings.SelectedOption = Settings.SelectedOption;
+catch
+    handles.Settings.SelectedOption = zeros(1,NumberOfModules);
+end
+
 ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
 %%% Checks to make sure that the modules have not changed
 if exist(ModuleNamedotm,'file')

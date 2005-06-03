@@ -28,7 +28,7 @@ function varargout = CellProfiler(varargin)
 % $Revision$
 
 
-% Last Modified by GUIDE v2.5 19-Dec-2004 02:52:31
+% Last Modified by GUIDE v2.5 03-Jun-2005 16:32:22
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1097,7 +1097,11 @@ if (length(ModuleHighlighted) > 0)
                 elseif strncmp(output,'%End VariableSet',16)
                     OptionInCode = 0;
                 elseif (strncmp(output,'%textVAR',8) == 1)  && (OptionInCode == SelectedOption);
-                    set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end),'visible', 'on');
+                    set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end));
+                    tempPos=get(handles.(['VariableDescription',output(9:10)]),'Position');
+                    if tempPos(2) > 0
+                        set(handles.(['VariableDescription',output(9:10)]),'visible', 'on');
+                    end
                     lastVariableCheck = str2num(output(9:10));
                 end
             end
@@ -1119,7 +1123,7 @@ if (length(ModuleHighlighted) > 0)
             lastVariableCheck = handles.Settings.NumbersOfVariables(ModuleNumber);
         end
         for i=1:lastVariableCheck,
-            if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
+   %       if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
                 descriptionString = get(handles.(['VariableDescription' TwoDigitString(i)]), 'string');
                 flagExist = 0;
                 if(length(descriptionString) > 8)
@@ -1136,7 +1140,7 @@ if (length(ModuleHighlighted) > 0)
                 varXSize = VarDesPosition(3);
                 varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
                 set(handles.(['VariableDescription' TwoDigitString(i)]),'Position', [varXPos varYPos varXSize varYSize]);
-            end
+      %     end
 
             if (i <= handles.Settings.NumbersOfVariables(ModuleNumber))
                 if iscellstr(handles.Settings.VariableValues(ModuleNumber, i));
@@ -1154,7 +1158,10 @@ if (length(ModuleHighlighted) > 0)
                         varYSize = normBoxHeight;
                     end
                     set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [varXPos varYPos varXSize varYSize]);
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'string',VariableValuesString,'visible','on');
+                    set(handles.(['VariableBox' TwoDigitString(i)]),'string',VariableValuesString);
+                    if varYPos > 0
+                        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','on');
+                    end
                 else
                     set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
                 end
@@ -1224,11 +1231,27 @@ function slider1_Callback(hObject, eventdata, handles)
 %        of slider
 scrollPos = get(hObject, 'Value');
 variablepanelPos = get(handles.variablepanel, 'position');
+ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
+ModuleNumber = ModuleHighlighted(1);
 % Note:  The yPosition is 0 + scrollPos because 0 is the original Y
 % Position of the variablePanel.  If the original location of the
 % variablePanel gets changed, then the constant offset must be changed as
 % well.
 set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
+for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
+    tempPos=get(handles.(['VariableDescription' TwoDigitString(i)]),'Position');
+    if(tempPos(2)+scrollPos)>0
+        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','on');
+    else
+        set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off');
+    end
+    tempPos=get(handles.(['VariableBox' TwoDigitString(i)]),'Position');
+    if(tempPos(2)+scrollPos)>0
+        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','on');
+    else
+        set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off');
+    end
+end
 
 function slider1_CreateFcn(hObject, eventdata, handles)
 
@@ -2714,3 +2737,20 @@ function CreateImageToolsMenuBar(handles)
     for j=2:length(ListOfImageTools)
         uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''UserData'');' char(ListOfImageTools(j)) '(UserData.MyHandles)']);
     end
+
+
+% --- Executes when variablepanel is resized.
+function variablepanel_ResizeFcn(hObject, eventdata, handles)
+% hObject    handle to variablepanel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over slider1.
+function slider1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to slider1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+

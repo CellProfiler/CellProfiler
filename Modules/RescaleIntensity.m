@@ -3,6 +3,19 @@ function handles = RescaleIntensity(handles)
 % Help for the Rescale Intensity module:
 % Category: Pre-processing
 %
+% Settings:
+%
+% Rescaling method:
+% There are several options: (S) stretch the image
+% so that the minimum is zero and the maximum is one, 
+% Note that there are other options for rescaling which are used by
+% other modules but didn't seem very useful to put in this module. See
+% CPrescale for more details on: (M) match the
+% maximum of one image to the maximum of another.
+
+%
+%
+%
 % Pixels are scaled from their user-specified original range to a new
 % user-specified range.  If the user enters "AE", then the highest and
 % lowest pixel values will be Automatically computed for Each image by
@@ -13,13 +26,9 @@ function handles = RescaleIntensity(handles)
 % below the original range are pinned to the high/low values of that range
 % before being scaled.
 %
-%
 % SAVING IMAGES: The thresholded images produced by this module can be
 % easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
+% assign.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

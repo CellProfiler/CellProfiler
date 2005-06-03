@@ -3,45 +3,27 @@ function handles = SmoothImage(handles)
 % Help for the Smooth Image module:
 % Category: Pre-processing
 %
-% This module applies a smoothing function to the incoming image. The most
-% common use for the module is to smooth a projection image prior to using
-% it to correct for uneven illumination of each image.
+% This module smooths (blurs) the incoming image.
 %
-% How it works:
-% This module works by smoothing an image and rescaling it to an
-% appropriate range to be used for illumination correction.  This
-% produces an image that represents the variation in illumination
-% across the field of view. If the user specifies that the module is to be
-% run on a projection image produced by another module, the module waits
-% for the make projection module to produce a flag telling this module that
-% the projection image is ready. This is because projection image modules
-% can be run in two modes: one where the projection image is produced
-% during the first image set's processing (non-cycling, LoadImages mode)
-% and the other where the projection image is produced only at the end of
-% the last image set's processing (cycling, Pipeline mode).
+% Settings:
 %
-% The smoothing can be done by fitting a low-order polynomial to the mean
-% (projection) image (option = P), or by applying a median filter to the
-% image (option = a number). In filtering mode, the user enters an even
+% Smoothing Method:
+% The smoothing can be done by fitting a low-order polynomial to the
+% image (option = P), or by applying a median filter to the image
+% (option = a number). In filtering mode, the user enters an even
 % number for the artifact width, and this number is divided by two to
-% obtain the radius of a disk shaped structuring element which is used for
-% filtering. Note that with either mode of calculation, the illumination
-% function is scaled from 1 to infinity, so that if there is substantial
-% variation across the field of view, the rescaling of each image might be
-% dramatic, causing the image to appear darker.
+% obtain the radius of a disk shaped structuring element which is used
+% for filtering.
 %
-% SAVING IMAGES: The illumination corrected
-% images produced by this module can be easily saved using the Save Images
-% module, using the name you assign. If
-% you want to save the smoothed image to use it in a later analysis,
-% you should save the
-% smoothed image in '.mat' format to prevent degradation of the data. 
+% SAVING IMAGES: The smoothed images produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. If you want to save the smoothed image to use it for later
+% analysis, you should save the smoothed image in '.mat' format to
+% prevent degradation of the data. 
 %
-% See also MAKEPROJECTION, CORRECTILLUMDIVIDEALLMEAN,
-% CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
-% CORRECTILLUMSUBTRACTALLMIN,
-% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEEACHMIN_10,
-% CORRECTILLUMSUBTRACTEACHMIN.
+% See also MAKEPROJECTION_AVERAGEIMAGES, CORRECTILLUMINATION_APPLY,
+% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES,
+% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES, CPSMOOTH.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -130,11 +112,11 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are you using this module to smooth an image that results from processing multiple images?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
+%textVAR03 = Are you using this module to smooth an image that results from processing multiple image sets?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
 %defaultVAR03 = Y
 WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
+%textVAR04 = Smoothing method: Enter the width of the artifacts (an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
 %defaultVAR04 = 50
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 

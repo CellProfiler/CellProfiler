@@ -4,7 +4,10 @@ function handles = MakeProjection_AverageImages(handles)
 % Category: Pre-processing
 %
 % This module makes a projection of a set of images (e.g. a Z-stack)
-% by averaging the pixel intensities at each pixel position. The first
+% by averaging the pixel intensities at each pixel position. 
+%
+% How it works:
+% This module works by averaging together all of the images. The first
 % time through the pipeline (i.e. for image set 1), the whole set of
 % images (as defined by a Load Images module) is used to calculate one
 % projected image. Subsequent runs through the pipeline (i.e. for
@@ -14,14 +17,27 @@ function handles = MakeProjection_AverageImages(handles)
 % is still available to other modules during subsequent runs through
 % the pipeline.
 %
-% How it works:
-% This module works by averaging together all of the images.
+% Settings:
 %
-% SAVING IMAGES: The image produced by this
-% module can be easily saved using the Save Images module, using the
-% name you assign.
+% Enter L or P:
+% If you choose L, the module will calculate the single, averaged
+% projection image the first time through the pipeline by loading
+% every image of the type specified in the Load Images module. It is
+% then acceptable to use the resulting image later in the pipeline. If
+% you choose P, the module will allow the pipeline to cycle through
+% all of the image sets.  With this option, the module does not need
+% to follow a Load Images module; it is acceptable to make the single,
+% averaged projection from images resulting from other image
+% processing steps in the pipeline. However, the resulting projection
+% image will not be available until the last image set has been
+% processed, so it cannot be used in subsequent modules unless they
+% are instructed to wait until the last image set.
 %
-% See also CORRECTILLUMDIVIDEALLMEAN.
+% SAVING IMAGES: The image produced by this module can be easily saved
+% using the Save Images module, using the name you assign.
+%
+% See also CORRECTILLUMINATION_APPLY,
+% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -110,7 +126,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = ProjectedBlue
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are the images you want to use to make the projection to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? If you choose L, the module will calculate the single, averaged projection image the first time through the pipeline by loading every image of the type specified in the Load Images module. It is then acceptable to use the resulting image later in the pipeline. If you choose P, the module will allow the pipeline to cycle through all of the image sets.  With this option, the module does not need to follow a Load Images module; it is acceptable to make the single, averaged projection from images resulting from other image processing steps in the pipeline. However, the resulting projection image will not be available until the last image set has been processed, so it cannot be used in subsequent modules.
+%textVAR03 = Are the images you want to use to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
 %defaultVAR03 = L
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 

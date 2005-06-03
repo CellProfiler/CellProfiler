@@ -224,7 +224,7 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
        and toggled back and forth. See Inca and dragndrop in Matlab
        Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
 
-GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
+GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. Also, be sure that the PROGRAMMING NOTES are up to date within all the modules.  The master copy is in HelpProgrammingNotes, and every module should have exactly one copy of every programming note. You can check this by using the ReplaceTextInModules function in ('test') mode.
 
 GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
 

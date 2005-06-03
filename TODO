@@ -14,7 +14,6 @@ WANT IT NOW:
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
 
-- Make the DIB cancel button work in CPimread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like OpenNewImageFile.m
 
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
@@ -224,7 +223,7 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
        and toggled back and forth. See Inca and dragndrop in Matlab
        Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
 
-GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. Also, be sure that the PROGRAMMING NOTES are up to date within all the modules.  The master copy is in HelpProgrammingNotes, and every module should have exactly one copy of every programming note. You can check this by using the ReplaceTextInModules function in ('test') mode.
+GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
 
 GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
 
@@ -423,3 +422,5 @@ _______________________________________
 - Done (Joo Han) Bug fixed for OpenNewImageFile.m where capital lettered image file extensions were not recognized.
  
 - Done (Joo Han) When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
+
+- Done (Colin) Make the DIB cancel button work in CPimread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like OpenNewImageFile.m

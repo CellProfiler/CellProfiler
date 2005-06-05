@@ -35,7 +35,7 @@ function handles = IdentifyPrimManually(handles)
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
-% 
+%
 % Additional image(s) are normally calculated for display only,
 % including the object outlines alone. These images can be saved by
 % altering the code for this module to save those images to the
@@ -45,18 +45,18 @@ function handles = IdentifyPrimManually(handles)
 % See also IDENTIFYPRIMTHRESHOLD,
 % IDENTIFYPRIMADAPTTHRESHOLDA,
 % IDENTIFYPRIMADAPTTHRESHOLDB,
-% IDENTIFYPRIMADAPTTHRESHOLDC, 
-% IDENTIFYPRIMADAPTTHRESHOLDD, 
+% IDENTIFYPRIMADAPTTHRESHOLDC,
+% IDENTIFYPRIMADAPTTHRESHOLDD,
 % IDENTIFYPRIMSHAPEDIST,
-% IDENTIFYPRIMSHAPEINTENS, 
+% IDENTIFYPRIMSHAPEINTENS,
 % IDENTIFYPRIMINTENSINTENS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -74,7 +74,7 @@ function handles = IdentifyPrimManually(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -98,7 +98,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -109,7 +109,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -124,12 +124,12 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to use to manually identify an object? 
+%textVAR01 = What did you call the images you want to use to manually identify an object?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -139,11 +139,11 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR03 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,3}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR04 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 01
 
@@ -160,15 +160,23 @@ if isfield(handles.Pipeline, ImageName) == 0
 end
 OrigImage = handles.Pipeline.(ImageName);
 
+% Use a low resolution image for outlining the primary region
+MaxSize = max(size(OrigImage));
+if MaxSize > 512
+    LowResOrigImage = imresize(OrigImage,512/MaxSize);
+else
+    LowResOrigImage = OrigImage;
+end
+
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -179,8 +187,8 @@ drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = figure;
-ImageHandle = imagesc(OrigImage);
-[nrows,ncols,ncolors] = size(OrigImage);
+ImageHandle = imagesc(LowResOrigImage);axis off
+[nrows,ncols,ncolors] = size(LowResOrigImage);
 if ncolors == 1
     colormap(gray)
 end
@@ -196,45 +204,15 @@ title({['Image Set # ', num2str(handles.Current.SetBeingAnalyzed)], 'Click on co
 %============================================================================
 %%% See local function 'getpoints' below.
 [x , y, linehandle] = getpoints(AxisHandle);
-
-%============================================================================
-% Create the smallest rectangular grid around the ROI
-%============================================================================
-XData = get(ImageHandle, 'XData'); 
-YData = get(ImageHandle, 'YData');
-xmingrid = max( XData(1), floor(min(x))  );
-xmaxgrid = min( XData(2),  ceil(max(x))  );
-ymingrid = max( YData(1), floor(min(y))  );
-ymaxgrid = min( YData(2),  ceil(max(y))  );  
-xgrid = xmingrid:xmaxgrid;
-ygrid = ymingrid:ymaxgrid;
-
-[X, Y] = meshgrid(xgrid, ygrid);
-
-mask = zeros(nrows,ncols);
-mask(ygrid,xgrid) = 1;
-cdata = get(ImageHandle, 'CData');
-smallcdata = double(cdata(ygrid,xgrid,:));
-[m,n,ncolors] = size(smallcdata);
-%============================================================================
-% Analyze only the points in the polygon
-%============================================================================
-k_inside= inpolygon(X,Y, x,y);
-Xin = X(k_inside); 
-Yin = Y(k_inside);
-clear X Y
-%============================================================================
-% Set the mask points in the smaller rectangle only
-%============================================================================
-mask(logical(mask)) = k_inside;
-
-FinalBinaryImage = mask;
-FinalLabelMatrixImage = bwlabel(FinalBinaryImage);
+close(FigureHandle)
+[X,Y] = meshgrid(1:ncols,1:nrows);
+LowResInterior = inpolygon(X,Y, x,y);
+FinalLabelMatrixImage = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
@@ -247,46 +225,33 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
-    %%% Calculates the object outlines, which are overlaid on the original
-    %%% image and displayed in figure subplot (2,2,4).
-    %%% Creates the structuring element that will be used for dilation.
-    StructuringElement = strel('square',3);
-    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
-    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
-    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
-    %%% which leaves the PrimaryObjectOutlines.
-    PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
-    %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOrigImage = OrigImage;
-    %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImage(:));
-    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to pause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     CPfigure(ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); colormap(gray);
+    subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); colormap(gray);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(FinalLabelMatrixImage); title(['Manually Identified ',ObjectName]);
+    subplot(2,2,2); imagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outline on Input Image']);
+    subplot(2,2,3); imagesc(LowResOrigImage);colormap(gray); title([ObjectName, ' Outline on Input Image']);
+    hold on, plot(x,y,'r'),hold off
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -346,7 +311,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -376,7 +341,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -429,27 +394,27 @@ drawnow
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
 %%% Makes this module comparable to other Identify Primary modules,
-%%% even though in this case the object was not edited for objects 
-fieldname = ['PrelimSegmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+%%% even though in this case the object was not edited for objects
+%fieldname = ['PrelimSegmented',ObjectName];
+%handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
 %%% Makes this module comparable to other Identify Primary modules,
-%%% even though in this case the object was not edited for objects 
-fieldname = ['PrelimSmallSegmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+%%% even though in this case the object was not edited for objects
+%fieldname = ['PrelimSmallSegmented',ObjectName];
+%handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);
@@ -474,11 +439,10 @@ try
         fieldname = ['Outlined',ObjectName];
         handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end
-%%% I am pretty sure this try/catch is no longer necessary, but will
-%%% leave in just in case.
+    %%% I am pretty sure this try/catch is no longer necessary, but will
+    %%% leave in just in case.
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images could not be saved to the handles structure. The Save Images module will therefore not function on these images.')
 end
-
 %%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION %%%
 %%%%%%%%%%%%%%%%%%
@@ -492,7 +456,7 @@ function [xs,ys, linehandle] = getpoints(AxisHandle)
 % Find parent figure for the argument axishandle
 %============================================================================
 FigureHandle = (get(AxisHandle, 'Parent'));
- 
+
 %===========================================================================
 % Prepare for interactive collection of ROI boundary points
 %===========================================================================
@@ -509,72 +473,76 @@ done =0;
 %===========================================================================
 % Loop until right hand mouse button or keyboard is pressed
 %===========================================================================
-while ~done;  
-  %===========================================================================
-  % Analyze each buttonpressed event
-  %===========================================================================
-  keyb_or_butn = waitforbuttonpress;
-  if keyb_or_butn == BUTN;
-    currpt = get(AxisHandle, 'CurrentPoint');
-    seltype = get(FigureHandle,'SelectionType');
-    switch seltype 
-    case 'normal',
-      but = 1;
-    case 'alt',
-      but = 2;
-    otherwise,
-      but = 2;
-    end;          
-  elseif keyb_or_butn == KEYB
-    but = 2;
-  end; 
-  %===========================================================================
-  % Get coordinates of the last buttonpressed event
-  %===========================================================================
-  xi = currpt(2,1);
-  yi = currpt(2,2);
-  %===========================================================================
-  % Start a spline throught the points or 
-  % update the line through the points with a new spline
-  %===========================================================================
-  if but ==1
-        if ~isempty(splinehandle)
-           delete(splinehandle);
-        end;
-    	pointhandles(n+1) = plot(xi,yi,'ro');
-	n = n+1;
-	xpts(n,1) = xi;
-	ypts(n,1) = yi;
-	%===========================================================================
-	% Draw a spline line through the points
+while ~done;
     %===========================================================================
-	if n > 1
-	  t = 1:n;
-	  ts = 1: 0.1 : n;
-	  xs = spline(t, xpts, ts);
-	  ys = spline(t, ypts, ts);
-	  splinehandle = plot(xs,ys,'r-');
-	end;
-  elseif but > 1
-      %===========================================================================
-	  % Exit for right hand mouse button or keyboard input
-      %===========================================================================
-      done = 1;
-  end;
+    % Analyze each buttonpressed event
+    %===========================================================================
+    keyb_or_butn = waitforbuttonpress;
+    if keyb_or_butn == BUTN;
+        currpt = get(AxisHandle, 'CurrentPoint');
+        seltype = get(FigureHandle,'SelectionType');
+        switch seltype
+            case 'normal',
+                but = 1;
+            case 'alt',
+                but = 2;
+            otherwise,
+                but = 2;
+        end;
+    elseif keyb_or_butn == KEYB
+        but = 2;
+    end;
+
+    %===========================================================================
+    % Get coordinates of the last buttonpressed event
+    %===========================================================================
+    xi = currpt(2,1);
+    yi = currpt(2,2);
+    %===========================================================================
+    % Start a spline throught the points or
+    % update the line through the points with a new spline
+    %===========================================================================
+
+    if but ==1
+        if ~isempty(splinehandle)
+            delete(splinehandle);
+        end;
+        pointhandles(n+1) = plot(xi,yi,'ro');
+        n = n+1;
+        xpts(n,1) = xi;
+        ypts(n,1) = yi;
+
+        %===========================================================================
+        % Draw a spline line through the points
+        %===========================================================================
+        if n > 1
+            t = 1:n;
+            ts = 1: 0.1 : n;
+            xs = spline(t, xpts, ts);
+            ys = spline(t, ypts, ts);
+            splinehandle = plot(xs,ys,'r-');
+        end;
+
+    elseif but > 1
+        %===========================================================================
+        % Exit for right hand mouse button or keyboard input
+        %===========================================================================
+        done = 1;
+    end;
 end;
 
 %===========================================================================
-% Add first point to the end of the vector for spline 
+% Add first point to the end of the vector for spline
 %===========================================================================
 xpts(n+1,1) = xpts(1,1);
 ypts(n+1,1) = ypts(1,1);
 
 %===========================================================================
-% (re)draw the final spline 
+% (re)draw the final spline
 %===========================================================================
 if ~ isempty(splinehandle)
     delete(splinehandle);
-end;    
+end;
 
 t = 1:n+1;
 ts = 1: 0.25 : n+1;
@@ -584,12 +552,12 @@ ys = spline(t, ypts, ts);
 linehandle = plot(xs,ys,'r-');
 drawnow;
 %===========================================================================
-% Delete the point markers 
+% Delete the point markers
 %===========================================================================
 if ~isempty(pointhandles)
     delete(pointhandles)
 end;
 
 %===========================================================================
-% END OF LOCAL FUNCTION GETPOINTS 
+% END OF LOCAL FUNCTION GETPOINTS
 %=====================================================================

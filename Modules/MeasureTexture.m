@@ -323,6 +323,7 @@ for i = 1:3
         'Gabor2y',...
         'Gabor3x',...
         'Gabor3y'};
+    
     %%% Count objects
     ObjectCount = max(LabelMatrixImage(:));
 
@@ -338,7 +339,7 @@ for i = 1:3
         % filter output
         tmp = regionprops(LabelMatrixImage,'Area','Centroid');
         MedianArea = median(cat(1,tmp.Area));
-        sigma = sqrt(MedianArea/pi);
+        sigma = sqrt(MedianArea/pi);                            % Set width of filter to the median radius
 
         % Round centroids and find linear index for them.
         % The centroids are stored in [column,row] order.
@@ -352,31 +353,59 @@ for i = 1:3
         theta = [0 pi/2];
 
         % Create kernel coordinates
-        KernelSize = round(2*sigma);
-        [x,y]=meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
-
+        KernelSize = round(sigma);                                 % The filter size is set somewhat arbitrary
+        [x,y] = meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
+        
         % Apply Gabor filters and store filter outputs in the Centroid pixels
         Fourier_OrigImage = fft2(OrigImage);
         GaborFeatureNo = 1;
         Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
         for m = 1:length(f)
-            for n = 1:length(theta)
-
-                % Calculate Gabor filter kernel
-                % Scale by 1000 to get measurements in a convenient range
-                g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-
-
-                % Perform filtering in the Fourier domain
-                q = ifft2(fft2(g,size(OrigImage,1),size(OrigImage,2)).*Fourier_OrigImage);
-
-                % Store filter output
-                Gabor(:,GaborFeatureNo) = abs(q(Centroidsindex));
-                GaborFeatureNo = GaborFeatureNo + 1;
-
+          for n = 1:length(theta)
+            
+            % Calculate Gabor filter kernel
+            % Scale by 1000 to get measurements in a convenient range
+            g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
+            g = g - mean(g(:));           % Important that the filters has DC zero, otherwise they will be sensitive to the intensity of the image
+            
+            
+            % Center the Gabor kernel over the centroid and calculate the filter response.
+            for k = 1:ObjectCount
+              
+              xmin1 = Centroids(k,1)-KernelSize;
+              xmax1 = Centroids(k,1)+KernelSize;
+              ymin1 = Centroids(k,2)-KernelSize;
+              ymax1 = Centroids(k,2)+KernelSize;
+              xmin2 = max(1,xmin1);
+              xmax2 = min(size(OrigImage,2),xmax1);
+              ymin2 = max(1,ymin1);
+              ymax2 = min(size(OrigImage,1),ymax1);
+              
+              % Cut patch
+              p = OrigImage(ymin2:ymax2,xmin2:xmax2);
+              
+              % Pad with zeros if necessary to match the filter kernel size
+              if xmin1 < xmin2
+                p = [zeros(size(p,1),xmin2 - xmin1) p];
+              elseif xmax1 > xmax2
+                p = [p zeros(size(p,1),xmax1 - xmax2)];
+              end
+              
+              if ymin1 < ymin2
+                p = [zeros(ymin2 - ymin1,size(p,2));p];
+              elseif ymax1 > ymax2
+                p = [p;zeros(ymax1 - ymax2,size(p,2))];
+              end
+              
+              % Calculate the filter output
+              Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
             end
+            
+            GaborFeatureNo = GaborFeatureNo + 1;
+          end
         end
-
+        
+       
         %%% Get Haralick features.
         %%% Have to loop over the objects
         Haralick = zeros(ObjectCount,13);
@@ -395,6 +424,7 @@ for i = 1:3
             %%% Get Haralick features
             Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
         end
+       
     end
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);

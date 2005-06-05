@@ -35,15 +35,11 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = .
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Enter name of the SQL script. Script lines will be appended in this file. Make sure that a file with this name does not exist in the above directory already! #LongBox#
-%defaultVAR02 = SQLScript.SQL
-SQLScriptFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What is the name of the database to use?
+%defaultVAR02 = DefaultDB
+DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What is the name of the database to use?
-%defaultVAR03 = DefaultDB
-DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 02
 
 % This module should only be executed when all image sets have been processed
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
@@ -57,10 +53,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         errordlg('Cannot locate the specified directory in the WriteSQLFiles module.');
     end
 
-    if isempty(SQLScriptFileName)
-        errordlg('SQL script file name is not specified in the WriteSQLFiles module.');
-    end
-
     if isempty(DatabaseName)
         errordlg('No database specified in the WriteSQLFiles module.');
     end
@@ -68,14 +60,13 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     % Store the variables in the handles structure so that they can be retrieved
     % by the ExportSQL export tool
     handles.DataPath = DataPath;
-    handles.SQLScriptFileName = SQLScriptFileName;
     handles.DatabaseName = DatabaseName;
 
     % Call the ExportSQL function
     handles = ExportSQL2(handles);
 
     % Remove the variables from the handles structure
-    handles = rmfield(handles,{'DataPath','SQLScriptFileName','DatabaseName'});
+    handles = rmfield(handles,{'DataPath','DatabaseName'});
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

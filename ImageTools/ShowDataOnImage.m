@@ -1,4 +1,4 @@
-function ShowDataOnImage(handles)
+function handles = ShowDataOnImage(handles)
 
 % Help for the Show Data on Image tool:
 % Category: Image Tools
@@ -110,13 +110,9 @@ ListOfMeasurements = tmp(:,FeatureNo);
 StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 
 %%% Extracts the XY locations. This is temporarily hard-coded
-if ~isfield(handles.Measurements.(ObjectTypename),'Shape')
-    errordlg('Currently the MeasureShape module must be used to extract X and Y locations. It seems as if this was not done.')
-    return
-end
-tmp = handles.Measurements.(ObjectTypename).Shape{SampleNumber};
-Xlocations = tmp(:,10);
-Ylocations = tmp(:,11);
+Xlocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,1);
+Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
+ 
 
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');

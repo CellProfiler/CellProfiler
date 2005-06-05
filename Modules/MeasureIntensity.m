@@ -155,7 +155,7 @@ for i = 1:3
     fieldname = ['Segmented', ObjectName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing has been canceled. Prior to running the Measure Texture module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Texture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+        error(['Image processing has been canceled. Prior to running the Measure Intensity module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Intensity module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
     end
     LabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -322,7 +322,7 @@ for i = 1:3
         [sr sc] = size(LabelMatrixImage);
         for Object = 1:ObjectCount
 
-            %%% Measure basic set of texture features
+            %%% Measure basic set of Intensity features
             [r,c] = find(LabelMatrixImage == Object);
             index = sub2ind(size(LabelMatrixImage),r,c);
             Basic(Object,1) = sum(OrigImage(index));

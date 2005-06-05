@@ -600,8 +600,46 @@ fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the Threshold value to the handles structure.
-fieldname = ['ImageThreshold', ObjectName];
-handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = {Threshold};
+%%% Storing the threshold is a little more complicated than storing other measurements
+%%% because several different modules will write to the handles.Measurements.Image.Threshold
+%%% structure, and we should therefore probably append the current threshold to an existing structure
+% First, if the Threshold fields don't exist, initialize them
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+    handles.Measurements.Image.ThresholdFeatures = {};
+    handles.Measurements.Image.Threshold = {};
+end
+% Search the ThresholdFeatures to find the column for this object type
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));  
+% If column is empty it means that this particular object has not been segmented before. This will
+% typically happen for the first image set. Append the feature name in the
+% handles.Measurements.Image.ThresholdFeatures matrix
+if isempty(column)
+    handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};
+    column = length(handles.Measurements.Image.ThresholdFeatures);
+end
+handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
+
+
+%%% Saves the ObjectCount, i.e. the number of segmented objects.
+%%% See comments for the Threshold saving above
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
+
+
+%%% Saves the location of each segmented object
+handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
 
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.

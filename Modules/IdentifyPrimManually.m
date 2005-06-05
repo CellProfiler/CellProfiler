@@ -444,6 +444,25 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
+%%% Saves the ObjectCount, i.e. the number of segmented objects.
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
+
+%%% Saves the location of each segmented object
+handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
+
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try

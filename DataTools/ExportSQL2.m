@@ -46,8 +46,15 @@ if isfield(handles,'DatabaseName')
     ModuleCall = 1;
     DatabaseName = handles.DatabaseName;
     DataPath = handles.DataPath;
-    SQLScriptFileName = fullfile(DataPath,handles.SQLScriptFileName);
     CellProfilerDataFileNames = {get(handles.OutputFileNameEditBox,'string')};
+
+    %%% Generate SQL by removing the 'OUT' and appending '_SQLScript.SQL'.
+    filename = get(handles.OutputFileNameEditBox,'string');
+    index = strfind(filename,'OUT');
+    if ~isempty(index)
+        filename = [filename(1:index-1),filename(index+3:end)];
+    end
+    SQLScriptFileName = fullfile(DataPath,[filename(1:end-4),'_SQLScript.SQL']);
 else
     % This function is not called from WriteSQLFiles but from the Data tool menu
     ModuleCall = 0;
@@ -56,7 +63,6 @@ else
     %%% filename is constructed
     if exist(handles.Current.DefaultOutputDirectory, 'dir')
         [ExampleFile, DataPath] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select one CellProfiler output file');
-
     else
         [ExampleFile, DataPath] = uigetfile('*.mat','Select one CellProfiler output file');
     end
@@ -90,23 +96,18 @@ else
     end
 end
 
-%%% If the SQL script file does not exist, create it and write the first 'USE database' line.
-%%% Then close the file again, to avoid trouble during parallell processing the SQL script
-%%% should only be open when things actually are written to it.
-if ~exist(SQLScriptFileName,'file')
-    SQLScriptFid = fopen(SQLScriptFileName, 'wt');
-    if SQLScriptFid == -1, error(['Could not open ' SQLScriptFileName ' for writing.']); end
-    fprintf(SQLScriptFid, 'USE %s;\n', DatabaseName);
-    fclose(SQLScriptFid)
-end
+SQLScriptFid = fopen(SQLScriptFileName, 'wt');
+if SQLScriptFid == -1, error(['Could not open ' SQLScriptFileName ' for writing.']); end
+fprintf(SQLScriptFid, 'USE %s;\n', DatabaseName);
 
 GlobalImageSetNo = 0;                                                                % This variable is used for numbering the image sets when several input files are exported
-if ~ModuleCall,waitbarhandle = waitbar(0,'Exporting SQL files');drawnow,end          % Use a waitbar only if called as a Data Tool
+waitbarhandle = waitbar(0,'Exporting SQL files');
+drawnow         
 
 for FileNo = 1:length(CellProfilerDataFileNames)
 
-    % If called as a Data tool, load handles structure from the first data file
-    if ~ModuleCall,load(fullfile(DataPath,CellProfilerDataFileNames{1}));end
+    % If called as a Data tool, load handles structure from file
+    if ~ModuleCall,load(fullfile(DataPath,CellProfilerDataFileNames{FileNo}));end
 
     % Get the object types, e.g. 'Image', 'Cells', 'Nuclei',...
     ObjectTypes = fieldnames(handles.Measurements);
@@ -117,11 +118,10 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         ObjectType = ObjectTypes{ObjectTypeNo};
 
         % Update waitbar
-        if ~ModuleCall
-            done = (FileNo - 1)*length(ObjectTypes) + ObjectTypeNo;
-            total = length(CellProfilerDataFileNames)*length(ObjectTypes);
-            waitbar(done/total,waitbarhandle);drawnow
-        end
+        done = (FileNo - 1)*length(ObjectTypes) + ObjectTypeNo;
+        total = length(CellProfilerDataFileNames)*length(ObjectTypes);
+        waitbar(done/total,waitbarhandle);drawnow
+
 
         %%% For each image set, construct a big matrix of size [NbrOfObjects x Total number of features]
         %%% and corresponding cell array of size [1 x Total number of features] with the measurement names.
@@ -171,7 +171,6 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         % Write lines in the SQL script for mean data (i.e. average object data)
         % Add ImageSetNo and ObjectNo entries in the table
         % Write lines for object data
-        SQLScriptFid = fopen(SQLScriptFileName, 'at');              % Important, the SQL script must be opened in append mode!
         fprintf(SQLScriptFid, 'CREATE TABLE IF NOT EXISTS %s (ImageSetNo INTEGER, ObjectNo INTEGER',ObjectType);
         for k = 1:length(MeasurementNames),
             fprintf(SQLScriptFid, ', %s FLOAT', MeasurementNames{k});
@@ -189,7 +188,6 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         end
         fprintf(SQLScriptFid,');\n');
         fprintf(SQLScriptFid, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE Mean%s FIELDS TERMINATED BY ''|'';\n', fullfile(DataPath,SQLDataFileName),ObjectType);
-        fclose(SQLScriptFid);
 
         %%% Open the SQL data files for writing
         SQLDataFid = fopen(fullfile(DataPath,SQLDataFileName), 'wt');
@@ -233,8 +231,9 @@ for FileNo = 1:length(CellProfilerDataFileNames)
 end % End loop over data files
 
 %%% Done, let the user know if this function was called as a data tool and restore the handles structure
+close(waitbarhandle);
 if ~ModuleCall
-    close(waitbarhandle)
     CPmsgbox('Exporting is completed.')
 end
+fclose(SQLScriptFid);
 handles = oldhandles;

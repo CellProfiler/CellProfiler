@@ -145,7 +145,7 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = No
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -193,7 +193,7 @@ if ncolors == 1
     colormap(gray)
 end
 AxisHandle = gca;
-title({['Image Set # ', num2str(handles.Current.SetBeingAnalyzed)], 'Click on consecutive points to outline the region of interest, then press enter.', 'The first and last points will be connected automatically.'})
+title({['Image Set # ', num2str(handles.Current.SetBeingAnalyzed)], 'Click on consecutive points to outline the region of interest, then press enter.', 'The first and last points will be connected automatically.','The backspace key will erase the last clicked point.'})
 
 %%% The following code was written by Ronald Ouwerkerk of John Hopkins
 %%% University and was retrieved from Mathworks Central as the file

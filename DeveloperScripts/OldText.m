@@ -1,1 +1,1 @@
-CPsmooth
+CPfigure(

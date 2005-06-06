@@ -355,7 +355,7 @@ handles.Measurements.Image.PercentSaturation{handles.Current.SetBeingAnalyzed} =
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    CPfigure(ThisModuleFigureNumber);
+    CPfigure(handles,ThisModuleFigureNumber);
     originalsize = get(ThisModuleFigureNumber, 'position');
     newsize = originalsize;
     newsize(1) = 0;

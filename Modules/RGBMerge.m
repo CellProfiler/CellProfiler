@@ -271,7 +271,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(ThisModuleFigureNumber);
+    CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the Merged RGB
     %%% image.  Using imagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.

@@ -243,7 +243,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(ThisModuleFigureNumber);
+    CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
     subplot(2,1,1); imagesc(OrigImage);

@@ -2735,7 +2735,7 @@ function CreateImageToolsMenuBar(handles)
     TempMenu = uimenu('Label','CellProfiler Image Tools');
     ListOfImageTools=get(handles.ImageToolsPopUpMenu,'String');
     for j=2:length(ListOfImageTools)
-        uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''UserData'');' char(ListOfImageTools(j)) '(UserData.MyHandles)']);
+        uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''userData'');' char(ListOfImageTools(j)) '(UserData.MyHandles); clear UserData']);
     end
 
 

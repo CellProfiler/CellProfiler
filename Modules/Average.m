@@ -212,7 +212,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% updated at all, to prevent the need to load the projection
         %%% image from the handles structure.
         %%% Activates the appropriate figure window.
-        CPfigure(ThisModuleFigureNumber);
+        CPfigure(handles,ThisModuleFigureNumber);
         imagesc(ProjectionImage);
         title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']);
         colormap(gray)
@@ -220,7 +220,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% The accumulated projection image so far is displayed each time through
         %%% the pipeline.
         %%% Activates the appropriate figure window.
-        CPfigure(ThisModuleFigureNumber);
+        CPfigure(handles,ThisModuleFigureNumber);
         imagesc(ProjectionImage);
         title(['Projection Image so far, based on Image set # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
         colormap(gray)

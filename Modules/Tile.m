@@ -370,7 +370,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(ThisModuleFigureNumber);
+    CPfigure(handles,ThisModuleFigureNumber);
     %%% Displays the image.
     imagesc(TiledImage)
     %%% Sets the figure to take up most of the screen.

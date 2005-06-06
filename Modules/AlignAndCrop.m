@@ -363,7 +363,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
 drawnow
-    CPfigure(ThisModuleFigureNumber);
+    CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1); imagesc(TracedImage); colormap(gray);
     title(['Traced Input, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); imagesc(RealImage); title('Real Input Image');

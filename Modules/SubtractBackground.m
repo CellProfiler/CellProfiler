@@ -297,7 +297,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 % window or in the wrong figure window, or in help dialog boxes.
         drawnow
         %%% Activates the appropriate figure window.
-        CPfigure(ThisModuleFigureNumber);
+        CPfigure(handles,ThisModuleFigureNumber);
         %%% Sets the figure window to half width the first time through.
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;

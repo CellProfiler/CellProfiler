@@ -52,7 +52,7 @@ else
     %%% Reads the image.
     userData.MyHandles=handles;
     Image = CPimread(fullfile(Pathname, FileName));
-    CPfigure('UserData',userData);
+    CPfigure(handles,'UserData',userData);
     imagesc(Image);
     colormap(gray);
     pixval;

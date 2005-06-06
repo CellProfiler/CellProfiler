@@ -169,7 +169,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
     
     drawnow
-    CPfigure(ThisModuleFigureNumber);
+    CPfigure(handles,ThisModuleFigureNumber);
     
     subplot(2,2,1)
     ImageHandle = imagesc(OrigImage);colormap(gray)

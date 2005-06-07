@@ -3,45 +3,90 @@ function handles = CorrectIllumination_CalculateUsingBackgroundIntensities(handl
 % Help for the Correct Illumination_Calculate Using Background Intensities module: 
 % Category: Pre-processing
 % 
-% This module corrects for uneven illumination of each image, based on
-% an image calculated by another module in the pipeline, or loaded
-% from a .mat file using the LoadSingleImage module.
+% This module calculates an illumination function based on the
+% background intensities of images.  The illumination function can
+% then be saved to the hard drive for later use (see SAVING IMAGES),
+% or it can be immediately applied to images later in the pipeline
+% (using the CorrectIllumination_Apply module). This will correct for
+% uneven illumination of each image. 
 %
 % How it works:
-% The minimum pixel value is determined within each "block" of
-% each image. If requested, the values are averaged together for all
-% images (this processing is done the first time through the image
-% analysis pipeline). If requested, these values are then smoothed.
-% The block dimensions are entered by the user, and should be large
-% enough that every block is likely to contain some "background"
-% pixels, where no cells are located. Theoretically, the intensity
-% values of these background pixels should always be the same number.
-% With uneven illumination, the background pixels will vary across the
+% An image is produced where the value of every pixel is equal to the
+% minimum value of any pixel within a "block" of pixels centered
+% around that pixel. Theoretically, the intensity values of these
+% background pixels should be the same across the image. In reality,
+% with uneven illumination, the background pixels will vary across the
 % image, and this yields a function that presumably affects the
-% intensity of the "real" pixels, those that comprise cells.
+% intensity of the "real" pixels, e.g. those that comprise cells.
 % Therefore, once the average minimums are determined across the
-% images, the minimums are smoothed out. This produces an image that
-% represents the variation in illumination across the field of view.
+% image(s), the minimums are smoothed out (optional). This produces an
+% image that represents the variation in illumination across the field
+% of view.
+% 
+% Settings:
+%
+% Block Size:
+% The minimum pixel value is determined within each "block" of the
+% image(s). The block dimensions should be large enough that every
+% block is likely to contain some "background" pixels, where no cells
+% are located.
+%
+% Enter E or A:
+% Enter E to calculate an illumination function for Each image
+% individually, or enter A to average together the minimums in All
+% images at each pixel location (this processing is done at the time
+% you specify by choosing L or P in the next box - see 'Enter L or P'
+% for more details). Note that applying illumination correction on
+% each image individually may make intensity measures not directly
+% comparable across different images. Using illumination correction
+% based on all images makes the assumption that the illumination
+% anomalies are consistent across all the images in the set. 
+%
+% Enter L or P:
+% If you choose L, the module will calculate the illumination
+% correction function the first time through the pipeline by loading
+% every image of the type specified in the Load Images module. It is
+% then acceptable to use the resulting image later in the pipeline. If
+% you choose P, the module will allow the pipeline to cycle through
+% all of the image sets.  With this option, the module does not need
+% to follow a Load Images module; it is acceptable to make the single,
+% averaged projection from images resulting from other image
+% processing steps in the pipeline. However, the resulting projection
+% image will not be available until the last image set has been
+% processed, so it cannot be used in subsequent modules unless they
+% are instructed to wait until the last image set.
+%
+% Smoothing Method:
+% If requested, the resulting image is smoothed. See the help for the
+% SmoothImage module for more details.
+%
+% Rescaling:
+% The illumination function can be rescaled so that the pixel
+% intensities are all equal to or greater than one. This is
+% recommended if you plan to use the division option in
+% CorrectIllumination_Apply so that the corrected images are in the
+% range 0 to 1. Note that as a result of the illumination function
+% being rescaled from 1 to infinity, if there is substantial variation
+% across the field of view, the rescaling of each image might be
+% dramatic, causing the corrected images to be very dark.
+%
+% SAVING IMAGES: 
+% The illumination correction function produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. The raw illumination function (before smoothing) can be
+% saved in a similar manner using the name you assign. If you want to
+% save the illumination image to use it in a later analysis, it is
+% very important to save the illumination image in '.mat' format or
+% else the quality of the illumination function values will be
+% degraded.
 %
 % This module is loosely based on the Matlab demo "Correction of
 % non-uniform illumination" in the Image Processing Toolbox demos
 % "Enhancement" category.
 % MATLAB6p5/toolbox/images/imdemos/examples/enhance/ipss003.html
 %
-% SAVING IMAGES: The illumination correction function produced by this
-% module can be easily saved using the Save Images module, using the
-% name you assign. The raw illumination function (before smoothing)
-% can be saved in a similar manner by prepending the word 'Raw' to the
-% name you assigned.
-% If you want to save the illumination image to use it in a later
-% analysis, it is very important to save the illumination image in
-% '.mat' format or else the quality of the illumination function
-% values will be degraded.
-%
-% See also CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
-% CORRECTILLUMDIVIDEALLMEAN,
-% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEEACHMIN_10,
-% CORRECTILLUMSUBTRACTEACHMIN.
+% See also CORRECTILLUMINATION_APPLY, SMOOTHIMAGE,
+% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -122,11 +167,11 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be used to calculate the illumination correction function?
+%textVAR01 = What did you call the images to be used to calculate the illumination function?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the illumination correction function?
+%textVAR02 = What do you want to call the illumination function?
 %defaultVAR02 = IllumBlue
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -134,15 +179,15 @@ IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2}
 %defaultVAR03 = AverageMinimumsBlue
 AverageMinimumsImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Block size. This should be set large enough that every square block of pixels is likely to contain some background.
+%textVAR04 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no cells are located.
 %defaultVAR04 = 60
 BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = Enter E to calculate an illumination function for each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on all the specified images to be corrected. Note that applying illumination correction on each image individually may make intensity measures not directly comparable across different images. Using illumination correction based on all images makes the assumption that the illumination anomalies are consistent across all the images in the set.
+%textVAR05 = Enter E to calculate an illumination function for Each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on All the specified images to be corrected. See the help for details.
 %defaultVAR05 = E
 EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? If you choose L, the module will calculate the illumination correction function the first time through the pipeline by loading every image of the type specified in the Load Images module. It is then acceptable to use the resulting image later in the pipeline. If you choose P, the module will allow the pipeline to cycle through all of the image sets.  With this option, the module does not need to follow a Load Images module; it is acceptable to make the single, averaged projection from images resulting from other image processing steps in the pipeline. However, the resulting projection image will not be available until the last image set has been processed, so it cannot be used in subsequent modules.
+%textVAR06 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
 %defaultVAR06 = L
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -150,7 +195,11 @@ SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum
 %defaultVAR07 = N
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 1
+%textVAR08 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
+%defaultVAR08 = N
+RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -248,9 +297,9 @@ if strcmpi(EachOrAll,'A') == 1
                 SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
             end
             MiniIlluminationImage = SumMiniIlluminationImage / length(FileList);
-%%% The coarse estimate is then expanded in size so that it is the same
-%%% size as the original image. Bilinear interpolation is used to ensure the
-%%% values do not dip below zero.
+            %%% The coarse estimate is then expanded in size so that it is the same
+            %%% size as the original image. Bilinear interpolation is used to ensure the
+            %%% values do not dip below zero.
             [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileList(1))),handles);
             IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
             ReadyFlag = 'Ready';
@@ -273,9 +322,9 @@ if strcmpi(EachOrAll,'A') == 1
             if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                 %%% Divides by the total number of images in order to average.
                 MiniIlluminationImage = SumMiniIlluminationImage / handles.Current.NumberOfImageSets;
-%%% The coarse estimate is then expanded in size so that it is the same
-%%% size as the original image. Bilinear interpolation is used to ensure the
-%%% values do not dip below zero.
+                %%% The coarse estimate is then expanded in size so that it is the same
+                %%% size as the original image. Bilinear interpolation is used to ensure the
+                %%% values do not dip below zero.
                 IlluminationImage = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
                 ReadyFlag = 'Ready';
             end
@@ -290,15 +339,15 @@ elseif strcmpi(EachOrAll,'E') == 1
     %%% Calculates a coarse estimate of the background illumination by
     %%% determining the minimum of each block in the image.  If the minimum is
     %%% zero, it is recorded as .0001 to prevent divide by zero errors later.
-    
+
     %%% Not sure why this line differed from the one above for 'A'
     %%% mode, so I changed it to use the padarray version.
     % MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'max([min(x(:)); .0001])');
     MiniIlluminationImage = blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
     drawnow
-%%% The coarse estimate is then expanded in size so that it is the same
-%%% size as the original image. Bilinear interpolation is used to ensure the
-%%% values do not dip below zero.
+    %%% The coarse estimate is then expanded in size so that it is the same
+    %%% size as the original image. Bilinear interpolation is used to ensure the
+    %%% values do not dip below zero.
     IlluminationImage = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
     ReadyFlag = 'Ready';
 else error('Image processing was canceled because you must enter E or A in answer to the question "Enter E to calculate an illumination function for each image individually or A to calculate an illumination function based on all the specified images to be corrected."')
@@ -309,6 +358,12 @@ if strcmpi(SmoothingMethod,'N') ~= 1
     %%% first.
     AverageMinimumsImage = IlluminationImage;
     IlluminationImage = CPsmooth(IlluminationImage,SmoothingMethod);
+end
+
+%%% The resulting illumination image is rescaled to be in the range 1
+%%% to infinity, if requested.
+if strncmpi(RescaleOption,'Y',1) == 1
+    IlluminationImage = CPrescale(IlluminationImage,'G',OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

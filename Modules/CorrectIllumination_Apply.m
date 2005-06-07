@@ -3,24 +3,55 @@ function handles = CorrectIllumination_Apply(handles)
 % Help for the CorrectIllumination_Apply module:
 % Category: Pre-processing
 %
-% This module corrects for uneven illumination of each image, based on
-% an illumination correction function calculated by another module.
+% This module corrects for uneven illumination of each image. An
+% illumination function image that represents the variation in
+% illumination across the field of view is either made by a previous
+% module or loaded by a previous module in the pipeline.  This module
+% then applies the illumination function to each image coming through
+% the pipeline to produce the corrected image.
 %
-% How it works:
-% An illumination correction function image that represents the
-% variation in illumination across the field of view is loaded from
-% the pipeline.  Each image is divided by the illumination correction
-% function image, or the illumination correction function image is
-% subtracted from each image, to produce the corrected image.  Be sure
-% that the illumination correction function is in a reasonable range
-% (e.g. 1 to some number), so that the resulting image is in a
-% reasonable range (0 to 1).
+% Settings:
+%
+% Divide or Subtract:
+% This module either divides each image by the illumination function,
+% or the illumination function is subtracted from each image. The
+% choice depends on how the illumination function was calculated and
+% on your physical model of how illumination variation affects the
+% background of images relative to the objects in images. If the
+% background is significant relative to the real signal coming from
+% cells (a somewhat empirical decision), then the Subtract may be
+% preferable. If, in contrast, the signal to background ratio is quite
+% high (the cells are stained strongly), then the Divide option is
+% probably preferable. Typically, Subtract is used if the illumination
+% function was calculated using the
+% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES module and
+% divide is used if the illumination function was calculated using the
+% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES
+%
+% Rescaling:
+% If subtracting the illumination function, any pixels that end up
+% negative are set to zero, so no rescaling of the corrected image is
+% necessary.  If dividing, the resulting corrected image may be in a
+% very different range of intensity values relative to the original,
+% depending on the values of the illumination function. If you are not
+% rescaling, you should confirm that the illumination function is in a
+% reasonable range (e.g. 1 to some number), so that the resulting
+% image is in a reasonable range (0 to 1). Otherwise, you have two
+% options to rescale the resulting image: either (S) stretch the image
+% so that the minimum is zero and the maximum is one, or (M) match the
+% maximum of the corrected image to the the maximum of the original.
+% Either of these options has the potential to disturb the brightness
+% of images relative to other images in the set, so caution should be
+% used in interpreting intensity measurements from images that have
+% been rescaled. See the help for RESCALEINTENSITY for details.
 %
 % SAVING IMAGES: The illumination corrected images produced by this
 % module can be easily saved using the Save Images module, using the
 % name you assign.
 %
-% See also MAKEPROJECTION, SMOOTHIMAGEFORILLUMCORRECTION.
+% See also CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES,
+% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES,
+% RESCALEINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -109,7 +140,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module)?
+%textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module with the 'Single Image' option)?
 %defaultVAR03 = IllumBlue
 IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -191,22 +222,8 @@ if strcmpi(DivideOrSubtract,'D') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by dividing each pixel by the value in the IlluminationImage.
     CorrectedImage1 = OrigImage ./ IllumCorrectFunctionImage;
-    if strcmpi(RescaleOption,'N') == 1
-        CorrectedImage = CorrectedImage1;
-    elseif strcmpi(RescaleOption,'S') == 1
-        %%% The minimum of the image is brought to zero, whether it
-        %%% was originally positive or negative.
-        CorrectedImage2 = CorrectedImage1 - min(min(CorrectedImage1));
-        %%% The maximum of the image is brought to 1.
-        CorrectedImage = CorrectedImage2 ./ max(max(CorrectedImage2));
-    elseif strcmpi(RescaleOption,'M') == 1
-        %%% Rescales the corrected image so the max equals the max of
-        %%% the original image.
-        CorrectedImage2 = CorrectedImage1 ./ max(max(CorrectedImage1));
-        CorrectedImage = CorrectedImage2 .* max(max(OrigImage));
-    else error('In the Correct Illumination_Apply module, you must enter N, S, or M for the method by which to rescale the final corrected image.')
-    end
-
+    %%% Rescales using a CP subfunction, if requested.
+    CorrectedImage = CPrescale(CorrectedImage1,RescaleOption,OrigImage);
 elseif strcmpi(DivideOrSubtract,'S') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by subtracting each pixel by the value in the IlluminationImage.

@@ -3,55 +3,83 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 % Help for the Correct Illumination_Calculate Using Intensities module: 
 % Category: Pre-processing
 %
-% This module corrects for uneven illumination of each image, based on
-% information from a set of images collected at the same time.   If
-% cells are distributed uniformly in the images, the mean of all the
-% images should be a good estimate of the illumination.
+% This module calculates an illumination function based on the
+% intensities of images. The illumination function can then be saved
+% to the hard drive for later use (see SAVING IMAGES), or it can be
+% immediately applied to images later in the pipeline (using the
+% CorrectIllumination_Apply module). This will correct for uneven
+% illumination of each image.
 %
 % How it works:
-% This module works by averaging together all of the images (making a
-% projection), then smoothing this image and rescaling it.  This
+% This module is most often used to calculate an illumination function
+% based on information from a set of images collected at the same
+% time. This module works by averaging together all of the images
+% (making a projection).  This image is then smoothed (optional). This
 % produces an image that represents the variation in illumination
-% across the field of view.  This process is carried out before the
-% first image set is processed; subsequent image sets use the already
-% calculated image. Each image is divided by this illumination image
-% to produce the corrected image.
+% across the field of view, as long as the cells are spatially
+% distributed uniformly across each image. Note that if you are using
+% a small image set, there will be spaces in the projection image that
+% contain no objects and smoothing by median filtering is unlikely to
+% work well.
 %
-% The smoothing can be done by fitting a low-order polynomial to the
-% mean (projection) image (option = P), or by applying a filter to the
-% image. The user enters an even number for the artifact width, and
-% this number is divided by two to obtain the radius of a disk shaped
-% structuring element which is used for filtering. Note that with
-% either mode of calculation, the illumination function is scaled from
-% 1 to infinity, so that if there is substantial variation across the
-% field of view, the rescaling of each image might be dramatic,
-% causing the image to appear darker.
+% Settings:
 %
-% If you want to run this module only to calculate the mean and
-% illumination images and not to correct every image in the directory,
-% simply run the module as usual and use the button on the Timer to
-% stop processing after the first image set.
+% Enter E or A:
+% Enter E to calculate an illumination function for Each image
+% individually, or enter A to average together All images at each
+% pixel location (this processing is done at the time you specify by
+% choosing L or P in the next box - see 'Enter L or P' for more
+% details). Note that applying illumination correction on each image
+% individually may make intensity measures not directly comparable
+% across different images. Using illumination correction based on all
+% images makes the assumption that the illumination anomalies are
+% consistent across all the images in the set. 
 %
-% SAVING IMAGES: The illumination corrected images produced by this
-% module can be easily saved using the Save Images module, using the
-% name you assign. The mean image can be saved using the name
-% ProjectionImageAD plus whatever you called the corrected image (e.g.
-% ProjectionImageADCorrBlue). The Illumination correction image can be saved
-% using the name IllumImageAD plus whatever you called the corrected
-% image (e.g. IllumImageADCorrBlue).  Note that using the Save Images
-% module saves a copy of the image in an image file format, which has
-% lost some of the detail that a matlab file format would contain.  In
-% other words, if you want to save the illumination image to use it in
-% a later analysis, you should use the settings boxes within this
-% module to save the illumination image in '.mat' format. If you want
-% to save other intermediate images, alter the code for this module to
-% save those images to the handles structure (see the SaveImages
-% module help) and then use the Save Images module.
+% Enter L or P:
+% If you choose L, the module will calculate the illumination
+% correction function the first time through the pipeline by loading
+% every image of the type specified in the Load Images module. It is
+% then acceptable to use the resulting image later in the pipeline. If
+% you choose P, the module will allow the pipeline to cycle through
+% all of the image sets.  With this option, the module does not need
+% to follow a Load Images module; it is acceptable to make the single,
+% averaged projection from images resulting from other image
+% processing steps in the pipeline. However, the resulting projection
+% image will not be available until the last image set has been
+% processed, so it cannot be used in subsequent modules unless they
+% are instructed to wait until the last image set.
 %
-% See also CORRECTILLUMDIVIDEALLMEANRETRIEVEIMG,
-% CORRECTILLUMSUBTRACTALLMIN,
-% CORRECTILLUMDIVIDEEACHMIN_9, CORRECTILLUMDIVIDEEACHMIN_10,
-% CORRECTILLUMSUBTRACTEACHMIN.
+% Dilation:
+% For some applications, the incoming images are binary and each
+% object should be dilated with a gaussian filter in the final
+% averaged (projection) image.
+%
+% Smoothing Method:
+% If requested, the resulting image is smoothed. See the help for the
+% SmoothImage module for more details.
+%
+% Rescaling:
+% The illumination function can be rescaled so that the pixel
+% intensities are all equal to or greater than one. This is
+% recommended if you plan to use the division option in
+% CorrectIllumination_Apply so that the corrected images are in the
+% range 0 to 1. Note that as a result of the illumination function
+% being rescaled from 1 to infinity, if there is substantial variation
+% across the field of view, the rescaling of each image might be
+% dramatic, causing the corrected images to be very dark.
+%
+% SAVING IMAGES: 
+% The illumination correction function produced by this module can be
+% easily saved using the Save Images module, using the name you
+% assign. Intermediate images - prior to dilation and smoothing, or
+% after dilation but prior to smoothing - can be saved in a similar
+% manner using the name you assign. If you want to save the
+% illumination image to use it in a later analysis, it is very
+% important to save the illumination image in '.mat' format or else
+% the quality of the illumination function values will be degraded.
+%
+% See also CORRECTILLUMINATION_APPLY, SMOOTHIMAGE
+% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -132,11 +160,11 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be used to calculate the illumination correction function?
+%textVAR01 = What did you call the images to be used to calculate the illumination function?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the final illumination correction function?
+%textVAR02 = What do you want to call the illumination function?
 %defaultVAR02 = IllumBlue
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -148,15 +176,15 @@ ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = DilatedProjectedBlue
 DilatedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter E to calculate an illumination function for each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on all the specified images to be corrected. Note that applying illumination correction on each image individually may make intensity measures not directly comparable across different images. Using illumination correction based on all images makes the assumption that the illumination anomalies are consistent across all the images in the set.
+%textVAR05 = Enter E to calculate an illumination function for Each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on All the specified images to be corrected. See the help for details.
 %defaultVAR05 = A
 EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? If you choose L, the module will calculate the single, averaged projection image the first time through the pipeline by loading every image of the type specified in the Load Images module. It is then acceptable to use the resulting image later in the pipeline. If you choose P, the module will allow the pipeline to cycle through all of the image sets.  With this option, the module does not need to follow a Load Images module; it is acceptable to make the single, averaged projection from images resulting from other image processing steps in the pipeline. However, the resulting projection image will not be available until the last image set has been processed, so it cannot be used in subsequent modules.
+%textVAR06 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
 %defaultVAR06 = L
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = If the incoming images are binary and you want to dilate each object in the final projection image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0. Note that if you are using a small image set, there will be spaces in the projection image that contain no objects and median filtering is unlikely to work well. 
+%textVAR07 = If the incoming images are binary and you want to dilate each object in the final projection image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.
 %defaultVAR07 = 0
 ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
@@ -164,7 +192,11 @@ ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,7})
 %defaultVAR08 = N
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 1
+%textVAR09 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
+%defaultVAR09 = Y
+RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -242,6 +274,12 @@ if strcmp(ReadyFlag, 'Ready') == 1
         IlluminationImage = CPsmooth(IlluminationImage,SmoothingMethod);
     end
     drawnow
+end
+
+%%% The resulting illumination image is rescaled to be in the range 1
+%%% to infinity, if requested.
+if strncmpi(RescaleOption,'Y',1) == 1
+    IlluminationImage = CPrescale(IlluminationImage,'G',OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

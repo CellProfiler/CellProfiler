@@ -137,15 +137,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR03 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Resize the image to this size before manual identification (pixels)
+%defaultVAR03 = 512
+MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%textVAR04 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR04 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 1
+%textVAR05 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
+%defaultVAR05 = No
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%%%VariableRevisionNumber = 02
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -160,10 +164,14 @@ if isfield(handles.Pipeline, ImageName) == 0
 end
 OrigImage = handles.Pipeline.(ImageName);
 
+if isempty(MaxResolution)
+    errordlg('Invalid specification of the image size in the Identify Primary Manually module.')
+end
+
 % Use a low resolution image for outlining the primary region
 MaxSize = max(size(OrigImage));
-if MaxSize > 512
-    LowResOrigImage = imresize(OrigImage,512/MaxSize);
+if MaxSize > MaxResolution
+    LowResOrigImage = imresize(OrigImage,MaxResolution/MaxSize,'bicubic');
 else
     LowResOrigImage = OrigImage;
 end

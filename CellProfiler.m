@@ -1098,10 +1098,6 @@ if (length(ModuleHighlighted) > 0)
                     OptionInCode = 0;
                 elseif (strncmp(output,'%textVAR',8) == 1)  && (OptionInCode == SelectedOption);
                     set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end));
-                    tempPos=get(handles.(['VariableDescription',output(9:10)]),'Position');
-                    if tempPos(2) > 0
-                        set(handles.(['VariableDescription',output(9:10)]),'visible', 'on');
-                    end
                     lastVariableCheck = str2num(output(9:10));
                 end
             end
@@ -1123,7 +1119,7 @@ if (length(ModuleHighlighted) > 0)
             lastVariableCheck = handles.Settings.NumbersOfVariables(ModuleNumber);
         end
         for i=1:lastVariableCheck,
-   %       if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))
+        %  if(strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'), 'on'))     
                 descriptionString = get(handles.(['VariableDescription' TwoDigitString(i)]), 'string');
                 flagExist = 0;
                 if(length(descriptionString) > 8)
@@ -1140,7 +1136,10 @@ if (length(ModuleHighlighted) > 0)
                 varXSize = VarDesPosition(3);
                 varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
                 set(handles.(['VariableDescription' TwoDigitString(i)]),'Position', [varXPos varYPos varXSize varYSize]);
-      %     end
+                if varYPos > 0
+                    set(handles.(['VariableDescription',TwoDigitString(i)]),'visible', 'on');
+                end
+         %  end
 
             if (i <= handles.Settings.NumbersOfVariables(ModuleNumber))
                 if iscellstr(handles.Settings.VariableValues(ModuleNumber, i));
@@ -1240,13 +1239,13 @@ ModuleNumber = ModuleHighlighted(1);
 set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
 for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
     tempPos=get(handles.(['VariableDescription' TwoDigitString(i)]),'Position');
-    if(tempPos(2)+scrollPos)>0
+    if(tempPos(2)+scrollPos)>-25
         set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','on');
     else
         set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off');
     end
     tempPos=get(handles.(['VariableBox' TwoDigitString(i)]),'Position');
-    if(tempPos(2)+scrollPos)>0
+    if(tempPos(2)+scrollPos)>-25
         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','on');
     else
         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off');

@@ -1,18 +1,14 @@
-Getting the SQL conversion working. We are really starting to process large data sets routinely so
-we are likely to need this sometime in the next week.
-
-Modify segmentation algorithms so that they store number of objects and location.
-
 Check that importing gene names still works and that their output is exportable. This is something
 I have not used in a while, so there may be latent bugs already.  It is not something we are using
 routinely right now, because mostly we are doing huge jobs where Ray manually imports gene names
 and id's into the database, but it should be nearly functional and it's worth keeping its format up
 with the rest of CP. [Colin or Joo Han may test this out]
 
-And after *that*, polishing up IdentifyEasy so that it is consistent with the other IdentifyPrim
+Polish up IdentifyEasy so that it is consistent with the other IdentifyPrim
 modules (e.g. compatible with downstream modules)
 
-Make a module to identify and count and measure objects
-       within previously identified objects (e.g. nucleoli or
-       organelles or speckles within nuclei or cells).  This also requires designing a way to store measurements of Subobjects. See MeasureNeighbors.m for an example of saving several measurements per object.  Need to also develop tools to export the Subobject measurements.
-
+Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
+organelles or speckles within nuclei or cells).  
+This also requires designing a way to store measurements of Subobjects. 
+See MeasureNeighbors.m for an example of saving several measurements per object.  
+Need to also develop tools to export the Subobject measurements.

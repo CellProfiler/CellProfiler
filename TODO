@@ -12,7 +12,6 @@ WANT IT NOW:
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
 
-
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
 - Be sure that all exporting tools will function properly if some

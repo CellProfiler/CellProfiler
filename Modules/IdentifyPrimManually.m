@@ -403,15 +403,15 @@ drawnow
 %%% for size, to the handles structure.
 %%% Makes this module comparable to other Identify Primary modules,
 %%% even though in this case the object was not edited for objects
-%fieldname = ['PrelimSegmented',ObjectName];
-%handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+fieldname = ['PrelimSegmented',ObjectName];
+handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
 %%% Makes this module comparable to other Identify Primary modules,
 %%% even though in this case the object was not edited for objects
-%fieldname = ['PrelimSmallSegmented',ObjectName];
-%handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+fieldname = ['PrelimSmallSegmented',ObjectName];
+handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];
@@ -439,6 +439,20 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
+    %%% Calculates the object outlines. Note that FinalLabelMatrixImage is binary in this module
+    %%% Creates the structuring element that will be used for dilation.
+    StructuringElement = strel('square',3);
+    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
+    DilatedImage = imdilate(FinalLabelMatrixImage, StructuringElement);
+    %%% Subtracts the FinalLabelMatrixImage from the DilatedImage,
+    %%% which leaves the PrimaryObjectOutlines.
+    PrimaryObjectOutlines = DilatedImage - FinalLabelMatrixImage;
+    %%% Overlays the object outlines on the original image.
+    ObjectOutlinesOnOrigImage = OrigImage;
+    %%% Determines the grayscale intensity to use for the cell outlines.
+    LineIntensity = max(OrigImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    
     if strncmpi(SaveColored,'Y',1) == 1
         fieldname = ['Colored',ObjectName];
         handles.Pipeline.(fieldname) = FinalLabelMatrixImage;

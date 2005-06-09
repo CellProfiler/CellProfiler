@@ -198,8 +198,8 @@ for i = 1:length(ObjectNameList)
     end
 
     %%% Save measurements
-    handles.Measurements.(ObjectName).ShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
-    handles.Measurements.(ObjectName).Shape(handles.Current.SetBeingAnalyzed) = {[Basic Zernike]};
+    handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
+    handles.Measurements.(ObjectName).AreaShape(handles.Current.SetBeingAnalyzed) = {[Basic Zernike]};
 
     %%% Report measurements
     FontSize = get(0,'UserData');

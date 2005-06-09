@@ -24,7 +24,7 @@ function SaveImageAs(handles)
 %
 % $Revision$
 
-MsgboxHandle = CPmsgbox('Click twice on the image you wish to save or hit anything on the keyboard to cancel. This window will be closed automatically.');
+MsgboxHandle = CPmsgbox('Click on the image you wish to save or hit anything on the keyboard to cancel. This window will be closed automatically.');
 keyPress=waitforbuttonpress;
 if keyPress == 0
     ClickedImage = getimage(gca);

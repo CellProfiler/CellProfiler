@@ -3,11 +3,10 @@ function handles = ClassifyObjects(handles)
 % Help for the Classify Objects module:
 % Category: Other
 %
-% This module takes an image containing objects identified by another
-% module and classifies them by area. Each class is given a different
-% color in the display. The colors can be changed in the line of the
-% code that begins 'cmap = '. Right now, we can only classify into
-% three bins based on area, but we hope to expand these features.
+% This module classifies objects into a number of different
+% classes according to the size of a measurement specified
+% by the user.
+%
 %
 % SAVING IMAGES: To save images using this module, use the SaveImages
 % module with the images to be saved called 'ColorClassified' plus
@@ -18,10 +17,10 @@ function handles = ClassifyObjects(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -39,7 +38,7 @@ function handles = ClassifyObjects(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -64,7 +63,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -75,7 +74,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -99,15 +98,28 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Enter the largest size (in square micrometers) for the small bin
-%defaultVAR02 = 0.67
-SmallBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
+%textVAR02 = Enter the feature type, e.g. AreaShape, Texture, Intensity,...
+%defaultVAR02 = AreaShape
+FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter the smallest size (in square micrometers) for the large bin
-%defaultVAR03 = 1.5
-LargeBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = Enter feature number
+%defaultVAR03 = 1
+FeatureNbr = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%%%VariableRevisionNumber = 1
+%textVAR04 = Enter the lower limit of the lower bin
+%defaultVAR04 = 0
+LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+
+%textVAR05 = Enter the upper limit for the upper bin
+%defaultVAR05 = 100
+UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+
+%textVAR06 = Enter number of bins
+%defaultVAR06 = 3
+NbrOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -118,17 +130,24 @@ drawnow
 fieldname = ['Segmented', ObjectName];
 
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname) == 0,
-    error(['Image processing has been canceled. Prior to running the Area Image module, you must have previously run a module that generates an image with the objects identified.  You specified in the Area Image module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Area Image module cannot locate this image.']);
+if ~isfield(handles.Pipeline, fieldname)
+    errordlg(['Image processing has been canceled. Prior to running the ClassifyObject module, you must have previously run a module that generates an image with the objects identified.  You specified in the ClassifyObject module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ClassifyObject module cannot locate this image.']);
 end
 LabelMatrixImage = handles.Pipeline.(fieldname);
 
-if SmallBinMax > LargeBinMin
-    error('Image processing has been canceled because the value you entered in the Area Image module for the largest size for the small bin is greater than the smallest size for the large bin.')
+%%% Checks whether the feature type exists in the handles structure.
+if ~isfield(handles.Measurements.(ObjectName),FeatureType)
+    errordlg('The feature type entered in the ClassifyObjects module does not exist.');
 end
 
-%%% Retrieves the pixel size that the user entered (micrometers per pixel).
-PixelSize = str2double(handles.Settings.PixelSize);
+if isempty(LowerBinMin) | isempty(UpperBinMax) | LowerBinMin > UpperBinMax
+    errordlg('Image processing has been canceled because an error in the specification of the lower and upper limits was found in the ClassifyObjects module.');
+end
+
+if isempty(NbrOfBins) | NbrOfBins < 1
+    errordlg('Image processing has been canceled because an error was found in the number of bins specification in the ClassifyObjects module.');
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -136,9 +155,9 @@ PixelSize = str2double(handles.Settings.PixelSize);
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -147,24 +166,30 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-% Get areas
-props = regionprops(LabelMatrixImage,'Area');              % Area in pixels
-area  = cat(1,props.Area)*PixelSize^2;                                 
+% Get Measurements
+Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
 
-% Quantize areas
-index1 = find(area < SmallBinMax);
-index3 = find(area > LargeBinMin);
-index2 = setdiff(1:length(area),[index1;index3]);
-qarea = zeros(size(area));
-qarea(index1) = 1;qarea(index2) = 2;qarea(index3) = 3;
-qarea = [0;qarea];
+% Quantize measurements
+edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1);
+edges(1) = edges(1) - sqrt(eps);                               % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
+QuantizedMeasurements = zeros(size(Measurements));
+bins = zeros(1,NbrOfBins);
+for k = 1:NbrOfBins
+    index = find(Measurements > edges(k) & Measurements <= edges(k+1));
+    QuantizedMeasurements(index) = k;
+    bins(k) = length(index);
+end
 
-NumberSmall = length(index1);
-NumberMedium = length(index2);
-NumberLarge =  length(index3);
+% Produce image where the the objects are colored according to the original
+% measurements and the quantized measurements
+NonQuantizedImage = zeros(size(LabelMatrixImage));
+NbrOfObjects = max(LabelMatrixImage(:));
+for k = 1:NbrOfObjects
+    NonQuantizedImage(find(LabelMatrixImage == k)) = Measurements(k);
+end
+QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
+QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
 
-% Generate area map
-areamap = qarea(LabelMatrixImage+1);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -182,45 +207,72 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to pause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
     drawnow
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
-        newsize(3) = 0.5*originalsize(3);
+        newsize(3) = originalsize(3);
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(LabelMatrixImage);colormap(gray);
-    title(['Gray version of ',ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the Thresholded
-    %%% image.
-    subplot(2,1,2);
-    cmap = [0 0 0;           % RGB color for background
-        0.25 0.25 1;           % light blue RGB color for objects with area < SmallBinMax
-        1 0 0;               % red RGB color for objects with SmallBinMax < area < LargeBinMin
-        1 1 0];              % yellow RGB color for objects with area > LargeBinMin
-    RGBimage = ind2rgb(areamap+1,cmap);
-    imagesc(RGBimage)
-    title(['Classified ', ObjectName]);
+    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
+    subplot(2,2,1)
+    imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+    colormap(hot),axis image
+    set(gca,'Fontsize',get(0,'UserData'))
+    title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
+
+    %%% Produce and plot histogram of original data
+    subplot(2,2,2)
+    hist(Measurements,round(NbrOfObjects/3))
+    set(get(gca,'Children'),'FaceVertexCData',hot(round(NbrOfObjects/3)));
+    set(gca,'Fontsize',get(0,'UserData'));
+    xlabel(FeatureName),ylabel(['#',ObjectName]);
+    title(sprintf('Histogram of %s',FeatureName));
+    xlimits = xlim;
+    xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
+    xlimits(2) = max(xlimits(2),UpperBinMax);                          % so they can be used for the second histogram
+    
+    %%% A subplot of the figure window is set to display the quantized image.
+    subplot(2,2,3)
+    cmap = [0 0 0;jet(length(bins))];
+    QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
+    image(QuantizedRGBimage);axis image
+    set(gca,'Fontsize',get(0,'UserData'))
+    title(['Classified ', ObjectName],'fontsize',get(0,'UserData'));
+
+    %%% Produce and plot histogram
+    subplot(2,2,4)
+    x = edges(1:end-1) + (edges(2)-edges(1))/2;
+    h = bar(x,bins,1);
+    set(gca,'Fontsize',get(0,'UserData'));
+    xlabel(FeatureName),ylabel(['#',ObjectName])
+    title(sprintf('Histogram of %s',FeatureName))
+    axis tight
+    axis([xlimits ylim])
+    set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
+
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -280,7 +332,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -310,7 +362,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -363,18 +415,14 @@ drawnow
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requests.
 fieldname = ['ColorClassified',ObjectName];
-handles.Pipeline.(fieldname) = RGBimage;
+handles.Pipeline.(fieldname) = QuantizedRGBimage;
 
-%%% Saves the number in each class to the handles structure.
-%fieldname = ['NumberSmall',ObjectName];
-%handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberSmall};
-%fieldname = ['NumberMedium',ObjectName];
-%handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberMedium};
-%fieldname = ['NumberLarge',ObjectName];
-%handles.Measurements.Classify.(fieldname)(handles.Current.SetBeingAnalyzed) = {NumberLarge};
-
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'Features']) = ...
-    {'Number of small objects','Number of medium objects','Number of large objects'};
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName])(handles.Current.SetBeingAnalyzed) = {[NumberSmall NumberMedium NumberLarge]};
+ClassifyFeatureNames = cell(1,NbrOfBins);
+for k = 1:NbrOfBins
+    ClassifyFeatureNames{k} = ['Bin ',num2str(k)];
+end
+FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
+handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName,'Features']) = ClassifyFeatureNames;
+handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins};
 
 

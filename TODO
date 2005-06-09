@@ -57,7 +57,9 @@ And then, for each subplot or text window, add this line:
     set(gca,'FontSize',FontSize)
 For each title, add properties at the end:
     title('Original Image', 'FontSize', FontSize)
-Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASK OLA AND STEVE LOWE}.
+Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASKED OLA AND HERE IS HIS RESPONSE:"it seems that the FontSize is still stored in UserData, and not in a UserData.FontSize. However, the fontsize is stored in the UserData for the 0-window, i.e. the main matlab window.
+I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
+no conflict, but we should perhaps everything consistent."
 
 - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
@@ -77,12 +79,12 @@ Also, ask Ola whether we should take out the old method of finding the preferred
 - PlotMeasurement DataTool: allow displaying two parameters vs. each
        other in a scatter plot. 
 
-- Spot Identifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
+- SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
        an email from Mathworks describing the issue, thread QW38).
        Allow asking if numbers are in rows or columns.  Check offsets,
        flipping. Display value only when clicking (see email that Anne
        has: Mathworks tricks for interactive figures). Make manual
-       page. Toggle several images. 
+       page. Toggle several images. In general, it just needs to be looked over and polished up.
 
 - Image Tiler: We haven't checked this module in a while. Main GUI's error catching is causing problems when
        sample info is loaded.  Allow zoom in on thumbnail: get
@@ -138,6 +140,8 @@ Also, ask Ola whether we should take out the old method of finding the preferred
 - All modules: look for speed improvements (esp. imresize?)
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
+
+- It would be nice if clicking '+' to add a module to the pipeline added the module after the point you have highlighted in the pipeline, rather than always adding the new module to the end.
 
 [Do the following prior to releasing:
 - Smart Indent

@@ -195,23 +195,21 @@ drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = figure;
-ImageHandle = imagesc(LowResOrigImage);axis off
+ImageHandle = imagesc(LowResOrigImage);axis off,axis image
 [nrows,ncols,ncolors] = size(LowResOrigImage);
 if ncolors == 1
     colormap(gray)
 end
 AxisHandle = gca;
-title({['Image Set # ', num2str(handles.Current.SetBeingAnalyzed)], 'Click on consecutive points to outline the region of interest, then press enter.', 'The first and last points will be connected automatically.','The backspace key will erase the last clicked point.'})
+set(gca,'fontsize',get(0,'UserData'))
+title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},... 
+    {'Press enter when finished, the first and last points will be connected automatically.'},...
+    {'The backspace key or right mouse button will erase the last clicked point.'}]);
 
-%%% The following code was written by RonaldÊOuwerkerk of John Hopkins
-%%% University and was retrieved from Mathworks Central as the file
-%%% ImROI and ImROIdemo and modified for use in CellProfiler.
 
-%============================================================================
-% Get the ROI interactively
-%============================================================================
-%%% See local function 'getpoints' below.
-[x , y, linehandle] = getpoints(AxisHandle);
+%%% Manual outline of the object, see local function 'getpoints' below.
+%%% Continue until user has drawn a valid shape
+[x,y] = getpoints(AxisHandle);
 close(FigureHandle)
 [X,Y] = meshgrid(1:ncols,1:nrows);
 LowResInterior = inpolygon(X,Y, x,y);
@@ -452,7 +450,7 @@ try
     %%% Determines the grayscale intensity to use for the cell outlines.
     LineIntensity = max(OrigImage(:));
     ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
-    
+
     if strncmpi(SaveColored,'Y',1) == 1
         fieldname = ['Colored',ObjectName];
         handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
@@ -463,121 +461,83 @@ try
     end
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end
+
 %%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION %%%
 %%%%%%%%%%%%%%%%%%
 
-function [xs,ys, linehandle] = getpoints(AxisHandle)
-%%% The following code was written by RonaldÊOuwerkerk of John Hopkins
-%%% University and was retrieved from Mathworks Central as the file
-%%% ImROI and ImROIdemo and modified for use in CellProfiler.
+function [xpts_spline,ypts_spline] = getpoints(AxisHandle)
 
-%============================================================================
-% Find parent figure for the argument axishandle
-%============================================================================
+Position = get(gca,'Position');
 FigureHandle = (get(AxisHandle, 'Parent'));
-
-%===========================================================================
-% Prepare for interactive collection of ROI boundary points
-%===========================================================================
-hold on
-pointhandles = [];
+PointHandles = [];
 xpts = [];
 ypts = [];
-splinehandle= [];
-n = 0;
-but = 1;
-BUTN = 0;
-KEYB = 1;
-done =0;
-%===========================================================================
-% Loop until right hand mouse button or keyboard is pressed
-%===========================================================================
+NbrOfPoints = 0;
+done = 0;
+
+hold on
 while ~done;
-    %===========================================================================
-    % Analyze each buttonpressed event
-    %===========================================================================
-    keyb_or_butn = waitforbuttonpress;
-    if keyb_or_butn == BUTN;
-        currpt = get(AxisHandle, 'CurrentPoint');
-        seltype = get(FigureHandle,'SelectionType');
-        switch seltype
-            case 'normal',
-                but = 1;
-            case 'alt',
-                but = 2;
-            otherwise,
-                but = 2;
-        end;
-    elseif keyb_or_butn == KEYB
-        but = 2;
-    end;
 
-    %===========================================================================
-    % Get coordinates of the last buttonpressed event
-    %===========================================================================
-    xi = currpt(2,1);
-    yi = currpt(2,2);
-    %===========================================================================
-    % Start a spline throught the points or
-    % update the line through the points with a new spline
-    %===========================================================================
+    UserInput = waitforbuttonpress;                            % Wait for user input
+    SelectionType = get(FigureHandle,'SelectionType');         % Get information about the last button press
+    CharacterType = get(FigureHandle,'CurrentCharacter');      % Get information about the character entered
 
-    if but ==1
-        if ~isempty(splinehandle)
-            delete(splinehandle);
-        end;
-        pointhandles(n+1) = plot(xi,yi,'ro');
-        n = n+1;
-        xpts(n,1) = xi;
-        ypts(n,1) = yi;
+    % Left mouse button was pressed, add a point
+    if UserInput == 0 & strcmp(SelectionType,'normal')
 
-        %===========================================================================
-        % Draw a spline line through the points
-        %===========================================================================
-        if n > 1
-            t = 1:n;
-            ts = 1: 0.1 : n;
-            xs = spline(t, xpts, ts);
-            ys = spline(t, ypts, ts);
-            splinehandle = plot(xs,ys,'r-');
-        end;
+        % Get the new point and store it
+        CurrentPoint  = get(AxisHandle, 'CurrentPoint');
+        xpts = [xpts CurrentPoint(2,1)];
+        ypts = [ypts CurrentPoint(2,2)];
+        NbrOfPoints = NbrOfPoints + 1;
 
-    elseif but > 1
-        %===========================================================================
-        % Exit for right hand mouse button or keyboard input
-        %===========================================================================
+        % Plot the new point
+        h = plot(CurrentPoint(2,1),CurrentPoint(2,2),'r.');
+        set(AxisHandle,'Position',Position)                   % For some reason, Matlab moves the Title text when the first point is plotted, which in turn resizes the image slightly. This line restores the original size of the image
+        PointHandles = [PointHandles h];
+
+        % If there are any points, and the right mousebutton or the backspace key was pressed, remove a points
+    elseif NbrOfPoints > 0 & ((UserInput == 0 & strcmp(SelectionType,'alt')) | (UserInput == 1 & CharacterType == char(8)))   % The ASCII code for backspace is 8
+
+        NbrOfPoints = NbrOfPoints - 1;
+        xpts = xpts(1:end-1);
+        ypts = ypts(1:end-1);
+        delete(PointHandles(end));
+        PointHandles = PointHandles(1:end-1);
+
+        % Enter key was pressed, manual outlining done, and the number of points are at least 3
+    elseif NbrOfPoints >= 3 & UserInput == 1 & CharacterType == char(13)
+
+        % Indicate that we are done
         done = 1;
-    end;
-end;
 
-%===========================================================================
-% Add first point to the end of the vector for spline
-%===========================================================================
-xpts(n+1,1) = xpts(1,1);
-ypts(n+1,1) = ypts(1,1);
+        % Close the curve by making the first and last points the same
+        xpts = [xpts xpts(1)];
+        ypts = [ypts ypts(1)];
 
-%===========================================================================
-% (re)draw the final spline
-%===========================================================================
-if ~ isempty(splinehandle)
-    delete(splinehandle);
-end;
+        % Remove plotted points
+        if ~isempty(PointHandles)
+            delete(PointHandles)
+        end
 
-t = 1:n+1;
-ts = 1: 0.25 : n+1;
-xs = spline(t, xpts, ts);
-ys = spline(t, ypts, ts);
+    end
 
-linehandle = plot(xs,ys,'r-');
-drawnow;
-%===========================================================================
-% Delete the point markers
-%===========================================================================
-if ~isempty(pointhandles)
-    delete(pointhandles)
-end;
-
-%===========================================================================
-% END OF LOCAL FUNCTION GETPOINTS
-%=====================================================================
+    % Remove old spline and draw new
+    if exist('SplineCurve','var')
+        delete(SplineCurve)                                % Delete the graphics object
+        clear SplineCurve                                  % Clear the variable
+    end
+    if NbrOfPoints > 1
+        q = 0:length(xpts)-1;
+        qq = 0:0.1:length(xpts)-1;                          % Increase the number of points 10 times using spline interpolation
+        xpts_spline = spline(q,xpts,qq);
+        ypts_spline = spline(q,ypts,qq);
+        SplineCurve = plot(xpts_spline,ypts_spline,'r');
+        drawnow
+    else
+        xpts_spline = xpts;
+        ypts_spline = ypts;
+    end
+end
+hold off

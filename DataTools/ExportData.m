@@ -241,7 +241,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
     % First, add the image file names as features,
     % then, add the average values for all other measurements too
     if strcmp(ObjectName,'Image')
-        FeatureNames = cat(2,{'Filename'},FeatureNames);
         for k = 1:length(ExportInfo.ObjectNames)
             if ~strcmp('Image',ExportInfo.ObjectNames{k})
                 FeatureNames = cat(2,FeatureNames,SuperFeatureNames{k});
@@ -266,27 +265,27 @@ for Object = 1:length(ExportInfo.ObjectNames)
     str(2:2:end) = FeatureNames;
     fprintf(fid,sprintf('%s\n',cat(2,str{:})));
 
+    % Get the filenames
+    fields = fieldnames(handles.Measurements.Image);
+    Filenames  = fields(strmatch('Filename',fields));
+    
     % Loop over the images sets
     for imageset = 1:length(Measurements)
 
         % Update waitbar
         waitbar(imageset/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
 
-        % Write info about the image set
-        fprintf(fid,'Set #%d',imageset);
+        % Write info about the image set (a little unnecessary code here)
+        ImageName = handles.Measurements.Image.(Filenames{1}){imageset};
+        fprintf(fid,'Set #%d, %s',imageset,ImageName);
 
         % Write measurements row by row
         if ~isempty(Measurements{imageset})
             for row = 1:size(Measurements{imageset},1)                        % Loop over the rows
 
-                % Write filename if 'Image' object, otherwise write object number
-                if strcmp(ObjectName,'Image')
-                    fields = fieldnames(handles.Measurements.Image);
-                    Filenames  = fields(strmatch('Filename',fields));
-                    ImageName = handles.Measurements.Image.(Filenames{1}){imageset};
-                    fprintf(fid,'\t%s',ImageName);
-                else
-                    fprintf(fid,'\t%d',row);
+                % If not the 'Image' field, write an object number
+                if ~strcmp(ObjectName,'Image')
+                fprintf(fid,'\t%d',row);
                 end
                 
                 % Write measurements

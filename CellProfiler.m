@@ -1604,6 +1604,8 @@ function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We 
 %%% matlab prompt.  You can check the current variables and they will show
 %%% up in the workspace.
 
+CPmsgbox('Type ''return'' in the MATLAB promp (where the K>> is) to stop diagnosis mode');
+display('Type ''return'' in the MATLAB promp (where the K>> is) to stop diagnosis mode');
 %%% TYPE "return" TO STOP.
 keyboard;
 
@@ -2129,16 +2131,14 @@ else
                 set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
 
-                %%% Label we attach to figures (as UserData) so we know they are ours
-                userData.Application = 'CellProfiler';
-                userData.MyHandles=handles;
+                %%% Label we attach to figures (as UserData) so we know
+                %%% they are ours
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
                         handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
-                            figure('name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
+                            CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
                             'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
-                            'color',[0.7,0.7,0.7],'UserData',userData);
-                        CreateImageToolsMenuBar(handles);
+                            'color',[0.7,0.7,0.7]);
                     end
                 end
 
@@ -2729,14 +2729,6 @@ CPtextdisplaybox(HelpText,'CellProfiler Help');
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%
  
-
-function CreateImageToolsMenuBar(handles)
-    TempMenu = uimenu('Label','CellProfiler Image Tools');
-    ListOfImageTools=get(handles.ImageToolsPopUpMenu,'String');
-    for j=2:length(ListOfImageTools)
-        uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''userData'');' char(ListOfImageTools(j)) '(UserData.MyHandles); clear UserData']);
-    end
-
 
 % --- Executes when variablepanel is resized.
 function variablepanel_ResizeFcn(hObject, eventdata, handles)

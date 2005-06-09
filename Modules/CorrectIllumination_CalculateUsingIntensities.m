@@ -279,7 +279,9 @@ end
 %%% The resulting illumination image is rescaled to be in the range 1
 %%% to infinity, if requested.
 if strncmpi(RescaleOption,'Y',1) == 1
-    IlluminationImage = CPrescale(IlluminationImage,'G',OrigImage);
+    %%% To save time, the handles argument is not fed to this
+    %%% subfunction because it is not needed.
+    [ignore,IlluminationImage] = CPrescale('',IlluminationImage,'G',[]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

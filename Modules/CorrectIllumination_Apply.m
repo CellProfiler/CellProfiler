@@ -201,6 +201,14 @@ if ndims(IllumCorrectFunctionImage) ~= 2
     error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded of the illumination correction function does not fit this requirement.  This may be because the image is a color image.')
 end
 
+if strncmpi(RescaleOption,'N',1) == 1
+    MethodSpecificArguments = [];
+elseif strncmpi(RescaleOption,'S',1) == 1
+    MethodSpecificArguments = [];
+elseif strncmpi(RescaleOption,'M',1) == 1
+    MethodSpecificArguments = OrigImage;
+end
+
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
@@ -223,7 +231,7 @@ if strcmpi(DivideOrSubtract,'D') == 1
     %%% by dividing each pixel by the value in the IlluminationImage.
     CorrectedImage1 = OrigImage ./ IllumCorrectFunctionImage;
     %%% Rescales using a CP subfunction, if requested.
-    CorrectedImage = CPrescale(CorrectedImage1,RescaleOption,OrigImage);
+    [handles,CorrectedImage] = CPrescale(handles,CorrectedImage1,RescaleOption,MethodSpecificArguments);
 elseif strcmpi(DivideOrSubtract,'S') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by subtracting each pixel by the value in the IlluminationImage.

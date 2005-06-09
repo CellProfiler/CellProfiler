@@ -1,1 +1,1 @@
-CPrescale(handles,
+(handles,OutputImage) = CPrescale(

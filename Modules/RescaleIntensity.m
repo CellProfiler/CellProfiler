@@ -3,30 +3,30 @@ function handles = RescaleIntensity(handles)
 % Help for the Rescale Intensity module:
 % Category: Pre-processing
 %
+% The intensity of the incoming images are rescaled by one of several
+% methods.
+%
 % Settings:
-%
+% 
 % Rescaling method:
-% There are several options: (S) stretch the image
-% so that the minimum is zero and the maximum is one, 
-% Note that there are other options for rescaling which are used by
-% other modules but didn't seem very useful to put in this module. See
-% CPrescale for more details on: (M) match the
-% maximum of one image to the maximum of another.
-
+% (S) Stretch the image so that the minimum is zero and the maximum is
+% one.
+% (E) Enter the minimum and maximum values of the original image
+% and the resulting image. Pixels are scaled from their user-specified
+% original range to a new user-specified range.  If the user enters
+% "AE", then the highest and lowest pixel values will be Automatically
+% computed for Each image by taking the maximum and minimum pixel
+% values in Each image.  If the user enters "AA", then the highest and
+% lowest pixel values will be Automatically computed by taking the
+% maximum and minimum pixel values in All the images in the set.
+% Pixels in the original image that are above or below the original
+% range are pinned to the high/low values of that range before being
+% scaled.
+% (G) rescale the image so that all pixels are equal to or Greater
+% than one.
+% (M) Match the maximum of one image to the maximum of another
 %
-%
-%
-% Pixels are scaled from their user-specified original range to a new
-% user-specified range.  If the user enters "AE", then the highest and
-% lowest pixel values will be Automatically computed for Each image by
-% taking the maximum and minimum pixel values in Each image.  If the user
-% enters "AA", then the highest and lowest pixel values will be
-% Automatically computed by taking the maximum and minimum pixel values in
-% All the images in the set. Pixels in the original image that are above or
-% below the original range are pinned to the high/low values of that range
-% before being scaled.
-%
-% SAVING IMAGES: The thresholded images produced by this module can be
+% SAVING IMAGES: The rescaled images produced by this module can be
 % easily saved using the Save Images module, using the name you
 % assign.
 
@@ -117,25 +117,31 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = RescaledBlue
 RescaledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What is the lowest pixel value of the original image?
-%defaultVAR03 = AA
-LowestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. See the help for details.
+%defaultVAR03 = S
+RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What is the highest pixel value of the original image?
+%textVAR04 = (Method E only): Enter the intensity from the original image that should be set to the lowest value in the rescaled image, or type AA to calculate the lowest intensity automatically from all of the images to be analyzed and AE to calculate the lowest intensity from each image independently.
 %defaultVAR04 = AA
-HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+LowestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = To calculate automatically, type AA to calculate the pixel value automatically from all of the images to be analyzed and AE to calculate the pixel value from each image independently.
+%textVAR05 = (Method E only): Enter the intensity from the original image that should be set to the highest value in the rescaled image, or type AA to calculate the highest intensity automatically from all of the images to be analyzed and AE to calculate the highest intensity from each image independently.
+%defaultVAR05 = AA
+HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What should the lowest pixel value of the rescaled image be?
+%textVAR06 = (Method E only): What should the lowest intensity of the rescaled image be?
 %defaultVAR06 = 0
 LowestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = What should the highest pixel value of the rescaled image be?
+%textVAR07 = (Method E only): What should the highest intensity of the rescaled image be?
 %defaultVAR07 = 1
 HighestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%%%VariableRevisionNumber = 01
+%textVAR08 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
+%defaultVAR08 = OtherImage
+OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -175,85 +181,36 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')) == 1
-    if handles.Current.SetBeingAnalyzed == 1
-        try
-            %%% Notifies the user that the first image set will take much longer than
-            %%% subsequent sets.
-            %%% Obtains the screen size.
-            ScreenSize = get(0,'ScreenSize');
-            ScreenHeight = ScreenSize(4);
-            PotentialBottom = [0, (ScreenHeight-720)];
-            BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 100];
-            h = CPmsgbox('Preliminary calculations are under way for the Rescale Intensity module.  Subsequent image sets will be processed much more quickly than the first image set.');
-            set(h, 'Position', PositionMsgBox)
-            drawnow
-            %%% Retrieves the path where the images are stored from the handles
-            %%% structure.
-            fieldname = ['Pathname', ImageName];
-            try Pathname = handles.Pipeline.(fieldname);
-            catch error('Image processing was canceled because the Rescale Intensity module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Rescale Intensity module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Rescale Intensity module onward.')
-            end
-            %%% Retrieves the list of filenames where the images are stored from the
-            %%% handles structure.
-            fieldname = ['FileList', ImageName];
-            FileList = handles.Pipeline.(fieldname);
-            %%% Calculates the maximum and minimum pixel values based on all of the images.
-            if (length(FileList) <= 0)
-                error('Image processing was canceled because the Rescale Intensity module found no images to process.');
-            end
-            maxPixelValue = -inf;
-            minPixelValue = inf;
-            for i=1:length(FileList)
-                [Image, handles] = CPimread(fullfile(Pathname,char(FileList(i))), handles);
-                if(max(max(Image)) > maxPixelValue)
-                    maxPixelValue = max(max(Image));
-                end
-                if(min(min(Image)) < minPixelValue)
-                    minPixelValue = min(min(Image));
-                end
-                drawnow
-            end
-        catch [ErrorMessage, ErrorMessage2] = lasterr;
-            error(['An error occurred in the Rescale Intensity module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
-        end
-        HighestPixelOrig = double(maxPixelValue);
-        LowestPixelOrig = double(minPixelValue);
-        fieldname = ['MaxPixelValue', ImageName];
-        handles.Pipeline.(fieldname) = HighestPixelOrig;
-        fieldname = ['MinPixelValue', ImageName];
-        handles.Pipeline.(fieldname) = LowestPixelOrig;
-    else 
-        fieldname = ['MaxPixelValue', ImageName];
-        HighestPixelOrig = handles.Pipeline.(fieldname);
-        fieldname = ['MinPixelValue',ImageName];
-        LowestPixelOrig = handles.Pipeline.(fieldname);
+if strncmpi(RescaleOption,'S',1) == 1
+    MethodSpecificArguments = [];
+elseif strncmpi(RescaleOption,'M',1) == 1
+    %%% Reads (opens) the image to be analyzed and assigns it to a variable,
+    %%% "OrigImage".
+    fieldname = ['', OtherImageName];
+    %%% Checks whether the image to be analyzed exists in the handles structure.
+    if isfield(handles.Pipeline, fieldname)==0,
+        %%% If the image is not there, an error message is produced.  The error
+        %%% is not displayed: The error function halts the current function and
+        %%% returns control to the calling function (the analyze all images
+        %%% button callback.)  That callback recognizes that an error was
+        %%% produced because of its try/catch loop and breaks out of the image
+        %%% analysis loop without attempting further modules.
+        error(['Image processing was canceled because the RescaleIntensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
-elseif (strcmp(upper(LowestPixelOrig), 'AE') & strcmp(upper(HighestPixelOrig), 'AE'))== 1
-    LowestPixelOrig = min(min(OrigImage));
-    HighestPixelOrig = max(max(OrigImage));
-else
-    LowestPixelOrig = str2double(LowestPixelOrig);
-    HighestPixelOrig = str2double(HighestPixelOrig);
+    %%% Reads the image.
+    MethodSpecificArguments = handles.Pipeline.(fieldname);
+elseif strncmpi(RescaleOption,'G',1) == 1
+    MethodSpecificArguments = [];
+elseif strncmpi(RescaleOption,'E',1) == 1
+    MethodSpecificArguments{1} = LowestPixelOrig;
+    MethodSpecificArguments{2} = HighestPixelOrig;
+    MethodSpecificArguments{3} = LowestPixelRescale;
+    MethodSpecificArguments{4} = HighestPixelRescale;
+    MethodSpecificArguments{5} = ImageName;
 end
 
-
-
-%%% Rescales the Image
-OrigImageMod = OrigImage;
-%Any pixel in the original image lower than the user-input lowest bound is
-%pinned to the lowest value.
-OrigImageMod(OrigImageMod < LowestPixelOrig) = LowestPixelOrig;
-%Any pixel in the original image higher than the user-input highest bound is
-%pinned to the lowest value.
-OrigImageMod(OrigImageMod > HighestPixelOrig) = HighestPixelOrig;
-%Scales and shifts the original image to produce the rescaled image
-scaleFactor = (HighestPixelRescale - LowestPixelRescale)  / (HighestPixelOrig - LowestPixelOrig);
-shiftFactor = LowestPixelRescale - LowestPixelOrig;
-RescaledImage = OrigImageMod + shiftFactor;
-RescaledImage = RescaledImage * scaleFactor;
-
+%%% Uses a CellProfiler subfunction.
+[handles,RescaledImage] = CPrescale(handles,OrigImage,RescaleOption,MethodSpecificArguments);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

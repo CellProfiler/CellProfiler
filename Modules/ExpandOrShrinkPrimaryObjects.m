@@ -227,6 +227,9 @@ elseif strncmpi(upper(ShrinkOrExpand),'E',1) == 1
         ShrunkenPrelimSegmentedImage = bwmorph(PrelimSegmentedImage, 'thicken', ShrinkingNumber);
         ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'thicken', ShrinkingNumber);
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
+%        ShrunkenPrelimSegmentedImage = imdilate(PrelimSegmentedImage, strel('ball', ShrinkingNumber);
+ %       ShrunkenPrelimSmallSegmentedImage = imdilate(PrelimSmallSegmentedImage, strel('ball', ShrinkingNumber);
+  %      ShrunkenSegmentedImage = imdilate(SegmentedImage, strel('ball', ShrinkingNumber);
     catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
     end
 end

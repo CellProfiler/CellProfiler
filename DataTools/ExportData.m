@@ -56,7 +56,7 @@ global waitbarhandle
 waitbarhandle = waitbar(0,'');
 
 %%% Export process info
-if ~isempty(ExportInfo.ProcessInfoFilename)
+if strcmp(ExportInfo.ExportProcessInfo,'Yes')
     WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
 end
 
@@ -142,9 +142,17 @@ for imageset = 1:NbrOfProcessedSets
     fprintf(fid,'\n');
     fprintf(fid,'\tObjects:\n');
     for k = 1:length(ObjectNames)
-        fprintf(fid,'\t\t%s',ObjectNames{k});
-        column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectNames{k})));
-        fprintf(fid,'\t Threshold: %g\n',handles.Measurements.Image.Threshold{imageset}(column));
+        fprintf(fid,'\t\t%s\t',ObjectNames{k});
+        fields = fieldnames(handles.Measurements.Image);
+        fields = fields(~cellfun('isempty',strfind(fields,'Features')));
+        for j = 1:length(fields)
+            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.(fields{j}),ObjectNames{k})));
+            if ~isempty(column)
+                
+                fprintf(fid,'\t %s: %g',fields{j}(1:end-8),handles.Measurements.Image.(fields{j}(1:end-8)){imageset}(column));
+            end
+        end
+    fprintf(fid,'\n');
     end
     fprintf(fid,'\n');
 end
@@ -327,7 +335,7 @@ uiheight = 0.25;
 
 % Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
-Height = 2.2+length(fields)*uiheight;
+Height = 2.5+length(fields)*uiheight;
 Width  = 4.2;
 set(ETh,'position',[pos(1)+1 pos(2) Width Height]);
 
@@ -346,7 +354,7 @@ if ~isempty(fields)
     end
 
     % Filename, remove 'OUT' and '.mat' extension from filename
-    basey = 1.2;
+    basey = 1.5;
     ProposedFilename = RawFileName;
     indexOUT = strfind(ProposedFilename,'OUT');
     if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];end
@@ -376,8 +384,10 @@ if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) Prop
 indexMAT = strfind(ProposedFilename,'mat');
 if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
 ProposedFilename = [ProposedFilename,'_ProcessInfo'];
-uicontrol(ETh,'style','text','String','Choose base of output filename:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.2 2.2 uiheight],'BackgroundColor',get(ETh,'color'))
+uicontrol(ETh,'style','text','String','Export process info?','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.3 1 uiheight],'BackgroundColor',get(ETh,'color'));
+ExportProcessInfo = uicontrol(ETh,'style','popupmenu','String',{'No','Yes'},'FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[1.2 basey+0.32 0.6 uiheight],'BackgroundColor',get(ETh,'color'));
 EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 basey 2.5 uiheight],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename);
 uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
@@ -406,7 +416,12 @@ elseif get(ETh,'Userdata') == 1     % The user pressed the Export button
     end
     ExportInfo.ProcessInfoFilename = get(EditProcessInfoFilename,'String');
     ExportInfo.ProcessInfoExtension = get(EditProcessInfoExtension,'String');
-
+    if get(ExportProcessInfo,'Value') == 1                                       % Indicates a 'No' (equals 2 if 'Yes')                       
+        ExportInfo.ExportProcessInfo = 'No';
+    else
+        ExportInfo.ExportProcessInfo = 'Yes';
+    end
+    
     % Get measurements to export
     if ~isempty(fields)
         buttonchoice = get(h,'Value');

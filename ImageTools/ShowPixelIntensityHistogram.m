@@ -47,7 +47,7 @@ try
     delete(MsgboxHandle)
 end
 drawnow
-CPfigure
+CPfigure(handles)
 hist(ClickedImage(:),min(200,round(length(ClickedImage(:))/150)));
 title(['Histogram for ' Title])
 grid on

@@ -287,14 +287,16 @@ if strcmpi(EachOrAll,'A') == 1
             fieldname = ['FileList', ImageName];
             FileList = handles.Pipeline.(fieldname);
             [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
-            %%% Calculates a coarse estimate of the background illumination by
-            %%% determining the minimum of each block in the image.  If the minimum is
-            %%% zero, it is recorded as .0001 to prevent divide by zero errors later.
+            %%% Calculates a coarse estimate of the background
+            %%% illumination by determining the minimum of each block
+            %%% in the image.  If the minimum is zero, it is recorded
+            %%% as the minimum non-zero number to prevent divide by
+            %%% zero errors later.
             [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileList(1))),handles);
-            SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
+            SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
             for i=2:length(FileList)
                 [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileList(i))),handles);
-                SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
+                SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
             end
             MiniIlluminationImage = SumMiniIlluminationImage / length(FileList);
             %%% The coarse estimate is then expanded in size so that it is the same
@@ -310,13 +312,13 @@ if strcmpi(EachOrAll,'A') == 1
             if handles.Current.SetBeingAnalyzed == 1
                 %%% Creates the empty variable so it can be retrieved later
                 %%% without causing an error on the first image set.
-                handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])')));
+                handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))')));
             end
             %%% Retrieves the existing illumination image, as accumulated so
             %%% far.
             SumMiniIlluminationImage = handles.Pipeline.(IlluminationImageName);
             %%% Adds the current image to it.
-            SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
+            SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
             %%% If the last image set has just been processed, indicate that
             %%% the projection image is ready.
             if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
@@ -336,14 +338,15 @@ if strcmpi(EachOrAll,'A') == 1
     end
 elseif strcmpi(EachOrAll,'E') == 1
     [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
-    %%% Calculates a coarse estimate of the background illumination by
-    %%% determining the minimum of each block in the image.  If the minimum is
-    %%% zero, it is recorded as .0001 to prevent divide by zero errors later.
-
+            %%% Calculates a coarse estimate of the background
+            %%% illumination by determining the minimum of each block
+            %%% in the image.  If the minimum is zero, it is recorded
+            %%% as the minimum non-zero number to prevent divide by
+            %%% zero errors later.
     %%% Not sure why this line differed from the one above for 'A'
     %%% mode, so I changed it to use the padarray version.
-    % MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'max([min(x(:)); .0001])');
-    MiniIlluminationImage = blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'max([min(x(:)); .0001])');
+    % MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'min(x(x>0))');
+    MiniIlluminationImage = blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
     drawnow
     %%% The coarse estimate is then expanded in size so that it is the same
     %%% size as the original image. Bilinear interpolation is used to ensure the

@@ -11,18 +11,8 @@ L 2886 (C 25-31): Array 'Pending' is constructed using subscripting. Consider pr
 L 3112 (C 25-31): Array 'Lengths' is constructed using subscripting. Consider preallocating for speed 
 
    Fix the "FIXME" sections in CellProfiler, unless Ray wanted to do it himself
-   
 
-Analyze subdirectories module.
-
-
-Look into these two bugs reported:
-     - The Set Preferences Tab only shows "Set default pixel
-       size", and not the other options on page 8 of the manual. So
-       the user can not make a CellProfilerPreferences file.  (This is
-       probably a platform-specific issue,  reported by Arne
-       Heydorn). 
-
+Look into this bug reported:
      - Allow the font sizes of GUI elements to be changed for various
             screen resolutions/platforms.  Make this part of
             "SetPreferences"?  Here is the quick fix which may help in
@@ -41,9 +31,6 @@ Look into these two bugs reported:
             and add this line (replacing the number 8 with whatever
             size is appropriate for your screen): 
               set(handles.(['VariableDescription' TwoDigitString(i)]),'fontsize',8)
-
-
-
 
 As part of the validation work, you might look at:
 

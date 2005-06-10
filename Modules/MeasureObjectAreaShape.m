@@ -15,8 +15,8 @@ function handles = MeasureAreaShape(handles)
 % matrix image, the image should be converted to binary and re-made into a
 % label matrix image before feeding into this module.
 %
-% See also MEASURETEXTURE, MEASURECORRELATION,
-%
+% See also MeasureTexture, MeasureIntensity, MeasureCorrelation
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

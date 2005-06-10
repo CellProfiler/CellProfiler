@@ -189,6 +189,8 @@ for k = 1:NbrOfObjects
 end
 QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
 QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
+cmap = [0 0 0;jet(length(bins))];
+QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
 
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -255,8 +257,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     
     %%% A subplot of the figure window is set to display the quantized image.
     subplot(2,2,3)
-    cmap = [0 0 0;jet(length(bins))];
-    QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
     image(QuantizedRGBimage);axis image
     set(gca,'Fontsize',get(0,'UserData'))
     title(['Classified ', ObjectName],'fontsize',get(0,'UserData'));

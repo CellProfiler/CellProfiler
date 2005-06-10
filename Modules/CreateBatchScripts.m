@@ -461,7 +461,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, '            catch\n');
     fprintf(BatchFile, '                handles.BatchError = [ModuleName '' '' lasterr];\n');
     fprintf(BatchFile, '                disp([''Batch Error: '' ModuleName '' '' lasterr]);\n');
-    fprintf(BatchFile, '                rethrow(lasterr);\n');
+    fprintf(BatchFile, '                rethrow(lasterror);\n');
     fprintf(BatchFile, '                quit;\n');
     fprintf(BatchFile, '            end\n');
     fprintf(BatchFile, '        end\n');

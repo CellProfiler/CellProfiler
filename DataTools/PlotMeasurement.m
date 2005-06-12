@@ -3,7 +3,7 @@ function handles = PlotMeasurement(handles)
 % Help for the Plot Measurement tool:
 % Category: Data Tools
 %
-% This tool allows the user to plot either a bar chart or a line chart of 
+% This tool allows the user to plot either a bar chart or a line chart of
 % the mean and standard deviation of a measurement.
 % As prompted, select a CellProfiler output file containing the measurements,
 % choose the measurement parameter to be displayed, and choose the display
@@ -33,36 +33,38 @@ if RawFileName == 0
 end
 load(fullfile(RawPathname, RawFileName));
 
-%%% Call the function blabla(), which opens a series of list dialogs and
-%%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
-%%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
-if isempty(ObjectTypename),return,end
+PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListSize',[200 200],... 
+    'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});
+if isempty(PlotType), return,end
 
-%%% Allows the user to choose how to display the standard deviation.
-Display = CPquestdlg('Choose the display type','Display options','Bar chart','Line chart','Cancel','Line chart');
-if strcmp(Display,'Cancel') == 1, return, end
 
-%%% Extract the measurement and calculate mean and standard deviation
-tmp = handles.Measurements.(ObjectTypename).(FeatureType);
-MeasurementMean = zeros(length(tmp),1);
-MeasurementStd = zeros(length(tmp),1);
-for k = 1:length(tmp)
-    if ~isempty(tmp{k})
-        MeasurementsMean(k) = mean(tmp{k}(:,FeatureNo));
-        MeasurementsStd(k)  = std(tmp{k}(:,FeatureNo));
-    end
-end
-
-%%% Do the plotting
+% Open figure
 fig = CPfigure;
-titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
-set(fig,'Numbertitle','off','name',['Plot Measurement: ',titlestr])
 set(gcf,'Color',[1 1 1])
-hold on
+FontSize = get(0,'UserData');
 
-if strcmp(Display,'Bar chart') == 1
+
+% Bar chart
+if PlotType == 1
+
+    %%% Get the feature type
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    if isempty(ObjectTypename),return,end
+
+    %%% Extract the measurement and calculate mean and standard deviation
+    Measurements = handles.Measurements.(ObjectTypename).(FeatureType);
+    MeasurementMean = zeros(length(Measurements),1);
+    MeasurementStd = zeros(length(Measurements),1);
+    for k = 1:length(Measurements)
+        if ~isempty(Measurements{k})
+            MeasurementsMean(k) = mean(Measurements{k}(:,FeatureNo));
+            MeasurementsStd(k)  = std(Measurements{k}(:,FeatureNo));
+        end
+    end
+
+    %%% Do the plotting
     bar(MeasurementsMean);
+    hold on
     colormap([.7 .7 .7])
     shading flat
     for k = 1:length(MeasurementsMean)
@@ -71,24 +73,115 @@ if strcmp(Display,'Bar chart') == 1
         plot([k-0.075,k+0.075],[MeasurementsMean(k)+MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
     end
     hold off
-elseif strcmp(Display,'Line chart') == 1
+    str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
+    ylabel(gca,[str,', mean +/- standard deviation'],'fontname','times','fontsize',FontSize+2)
+    axis([0 length(Measurements)+1 ylim])
+    set(gca,'xtick',1:length(Measurements))
+    titlestr = [str,' of ', ObjectTypename];
+
+
+
+%%% Line chart
+elseif PlotType == 2
+    
+    %%% Get the feature type
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    if isempty(ObjectTypename),return,end
+
+    %%% Extract the measurement and calculate mean and standard deviation
+    Measurements = handles.Measurements.(ObjectTypename).(FeatureType);
+    MeasurementMean = zeros(length(Measurements),1);
+    MeasurementStd = zeros(length(Measurements),1);
+    for k = 1:length(Measurements)
+        if ~isempty(Measurements{k})
+            MeasurementsMean(k) = mean(Measurements{k}(:,FeatureNo));
+            MeasurementsStd(k)  = std(Measurements{k}(:,FeatureNo));
+        end
+    end
+
     %%% Plots a line chart, where the X dimensions are incremented
-    %%% from 1 to the number of measurements to be displayed, and Y is
+    %%% from 1 to the number of measurements to be PlotTypeed, and Y is
     %%% the measurement of interest.
     hold on
-    plot(1:1:length(MeasurementsMean), MeasurementsMean,'Color',[0 0 0],'LineWidth',1);
+    plot(1:length(MeasurementsMean), MeasurementsMean,'Color',[0 0 0],'LineWidth',1);
+
     %%% Plots the Standard deviations as lines, too.
-    plot(1:1:length(MeasurementsMean), MeasurementsMean-MeasurementsStd,'Color',[0.7 0.7 0.7]);
-    plot(1:1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,'Color',[0.7 0.7 0.7]);
+    plot(1:length(MeasurementsMean), MeasurementsMean-MeasurementsStd,':','Color',[0.7 0.7 0.7]);
+    plot(1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,':','Color',[0.7 0.7 0.7]);
     hold off
+    axis([0 length(Measurements)+1 ylim])
+    str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
+    ylabel(gca,[str,', mean +/- standard deviation'],'fontname','times','fontsize',FontSize+2)
+    set(gca,'xtick',1:length(Measurements))
+    titlestr = [str,' of ', ObjectTypename];
+
+
+
+%%% Scatter plot, 1 measurement
+elseif PlotType == 3
+
+    %%% Get the feature type
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    if isempty(ObjectTypename),return,end
+
+    %%% Extract the measurements 
+    Measurements = handles.Measurements.(ObjectTypename).(FeatureType);
+
+    %%% Plot
+    hold on
+    for k = 1:length(Measurements)
+        if ~isempty(Measurements{k})
+            plot(k*ones(length(Measurements{k}(:,FeatureNo))),Measurements{k}(:,FeatureNo),'.k')
+            plot(k,mean(Measurements{k}(:,FeatureNo)),'.r','Markersize',20)
+        end
+    end
+    hold off
+    axis([0 length(Measurements)+1 ylim])
+    str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
+    ylabel(gca,str,'fontname','times','fontsize',FontSize+2)
+    set(gca,'xtick',1:length(Measurements))
+    titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
+
+
+
+%%% Scatter plot, 2 measurements
+elseif PlotType == 4
+    
+    %%% Get the feature type 1
+    [ObjectTypename1,FeatureType1,FeatureNo1] = CPgetfeature(handles);
+    if isempty(ObjectTypename1),return,end
+    
+    %%% Get the feature type 2
+    [ObjectTypename2,FeatureType2,FeatureNo2] = CPgetfeature(handles);
+    if isempty(ObjectTypename2),return,end
+    
+    %%% Extract the measurements
+    Measurements1 = handles.Measurements.(ObjectTypename1).(FeatureType1);
+    Measurements2 = handles.Measurements.(ObjectTypename2).(FeatureType2);
+
+    %%% Plot
+    hold on
+    for k = 1:length(Measurements1)
+        if size(Measurements1{k},1) ~= size(Measurements2{k})
+            errordlg('The number object for the chosen measurements does not match.')
+            return
+        end
+        if ~isempty(Measurements1{k})
+            plot(Measurements1{k}(:,FeatureNo1),Measurements2{k}(:,FeatureNo2),'.k')
+        end
+    end
+    hold off
+    str1 = [handles.Measurements.(ObjectTypename1).([FeatureType1,'Features']){FeatureNo1},' of ', ObjectTypename1];
+    str2 = [handles.Measurements.(ObjectTypename2).([FeatureType2,'Features']){FeatureNo2},' of ', ObjectTypename2];
+    xlabel(gca,str1,'fontsize',FontSize+2,'fontname','times')
+    ylabel(gca,str2,'fontsize',FontSize+2,'fontname','times')
+    titlestr = [str1,' vs. ',str2];
 end
 
-set(gca,'xtick',[0:100:length(MeasurementsMean)])
-FontSize = get(0,'UserData');
+% Set some general figure and axes properties
 set(gca,'fontname','times','fontsize',FontSize)
-xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
-ylabel(gca,'Mean +/- standard deviation','fontname','times','fontsize',FontSize+2)
 title(titlestr,'Fontname','times','fontsize',FontSize+2)
-axis([0 length(MeasurementsMean)+1 ylim])
-
-
+set(fig,'Numbertitle','off','name',['Plot Measurement: ',titlestr])

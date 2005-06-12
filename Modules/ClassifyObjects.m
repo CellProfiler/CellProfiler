@@ -239,25 +239,29 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
     subplot(2,2,1)
-    imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+    ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))
     colormap(hot),axis image
     set(gca,'Fontsize',get(0,'UserData'))
     title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
 
     %%% Produce and plot histogram of original data
     subplot(2,2,2)
-    hist(Measurements,round(NbrOfObjects/3))
-    set(get(gca,'Children'),'FaceVertexCData',hot(round(NbrOfObjects/3)));
+    Nbins = min(round(NbrOfObjects/5),40);
+    hist(Measurements,Nbins)
+    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
     set(gca,'Fontsize',get(0,'UserData'));
     xlabel(FeatureName),ylabel(['#',ObjectName]);
     title(sprintf('Histogram of %s',FeatureName));
+    ylimits = ylim;
+    axis tight
     xlimits = xlim;
-    xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
-    xlimits(2) = max(xlimits(2),UpperBinMax);                          % so they can be used for the second histogram
+    axis([xlimits ylimits])
     
     %%% A subplot of the figure window is set to display the quantized image.
     subplot(2,2,3)
-    image(QuantizedRGBimage);axis image
+    ImageHandle = image(QuantizedRGBimage);axis image
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Classified ', ObjectName])
     set(gca,'Fontsize',get(0,'UserData'))
     title(['Classified ', ObjectName],'fontsize',get(0,'UserData'));
 
@@ -269,6 +273,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     xlabel(FeatureName),ylabel(['#',ObjectName])
     title(sprintf('Histogram of %s',FeatureName))
     axis tight
+    xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
+    xlimits(2) = max(xlimits(2),UpperBinMax);                          % so they can be used for the second histogram
     axis([xlimits ylim])
     set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
 

@@ -446,6 +446,8 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fprintf(BatchFile, 'EndImage = %d;\n', EndImage);
     fprintf(BatchFile, 'tic;\n');
     fprintf(BatchFile, 'load([''%s/'' BatchFilePrefix ''data.mat'']);\n', BatchRemotePath);
+    fprintf(BatchFile, 'handles.Current.BatchInfo.Start = StartImage');
+    fprintf(BatchFile, 'handles.Current.BatchInfo.End = EndImage');
     fprintf(BatchFile, 'for BatchSetBeingAnalyzed = StartImage:EndImage,\n');
     fprintf(BatchFile, '    disp(sprintf(''Analyzing set %%d'', BatchSetBeingAnalyzed));\n');
     fprintf(BatchFile, '    toc;\n');

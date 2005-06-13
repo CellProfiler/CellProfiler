@@ -240,6 +240,36 @@ set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 % Update handles structure
 guidata(hObject, handles);
 
+FileMenu=uimenu('Label','File');
+OptionsMenu=uimenu('Label','Options');
+DataToolsMenu=uimenu('Label','Data Tools');
+HelpMenu=uimenu('Label','Help');
+
+uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
+
+uimenu(OptionsMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(OptionsMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
+
+ListOfDataTools=get(handles.DataToolsPopUpMenu,'String');
+for j=2:length(ListOfDataTools)
+    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));']);
+end
+
+set(handles.DataToolsPopUpMenu,'Visible','off')
+set(handles.ImageToolsPopUpMenu,'Visible','off')
+set(handles.DataToolsHelp,'Visible','off')
+set(handles.ImageToolsHelp,'Visible','off')
+set(handles.PixelPreferencesTechHelp,'Visible','off')
+set(handles.LoadPipelineButton,'Visible','off')
+set(handles.SavePipelineButton,'Visible','off')
+set(handles.PipelineOfModulesText,'Visible','off')
+set(handles.SetPreferencesButton,'Visible','off')
+set(handles.TechnicalDiagnosisButton,'Visible','off')
+set(handles.PipelineModuleHelp,'Visible','off')
+
+
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
 
@@ -300,7 +330,7 @@ set(handles.(PopUpMenuHandle), 'string', ListOfTools)
 
 % --- Executes on button press in LoadPipelineButton.
 function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
-    LoadPipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+    LoadPipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 errFlg = 0;
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
@@ -633,7 +663,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SavePipelineButton.
-function SavePipelineButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+function SavePipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 if handles.Current.NumberOfModules == 0
     warndlg('Please add modules before attempting to save the current pipeline.','Warning')
@@ -1321,7 +1351,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in SetPreferencesButton.
-function SetPreferencesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+function SetPreferences_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Creates a global variable to be used later.
 global EnteredPreferences
@@ -1604,13 +1634,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in TechnicalDiagnosisButton.
-function TechnicalDiagnosisButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+function TechnicalDiagnosis_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% This pauses execution and allows the user to type things in at the
 %%% matlab prompt.  You can check the current variables and they will show
 %%% up in the workspace.
 
-CPmsgbox('Type ''return'' in the MATLAB promp (where the K>> is) to stop diagnosis mode');
-display('Type ''return'' in the MATLAB promp (where the K>> is) to stop diagnosis mode');
+CPmsgbox('Type ''return'' in the MATLAB prompt (where the K>> is) to stop diagnosis mode');
+display('Type ''return'' in the MATLAB prompt (where the K>> is) to stop diagnosis mode');
 %%% TYPE "return" TO STOP.
 keyboard;
 
@@ -2750,3 +2780,8 @@ function slider1_ButtonDownFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
+function OpenImage_Callback(hObject, eventdata, handles)
+% hObject    handle to OpenImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+OpenNewImageFile(handles);

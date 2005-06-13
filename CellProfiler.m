@@ -243,6 +243,7 @@ guidata(hObject, handles);
 FileMenu=uimenu('Label','File');
 OptionsMenu=uimenu('Label','Options');
 DataToolsMenu=uimenu('Label','Data Tools');
+uimenu('Label','Close Windows','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));')
 HelpMenu=uimenu('Label','Help');
 
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
@@ -270,6 +271,7 @@ set(handles.PipelineOfModulesText,'Visible','off')
 set(handles.SetPreferencesButton,'Visible','off')
 set(handles.TechnicalDiagnosisButton,'Visible','off')
 set(handles.PipelineModuleHelp,'Visible','off')
+set(handles.CloseWindowsButton,'Visible','off')
 
 
 % Set default output filename
@@ -1914,7 +1916,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in CloseWindowsButton.
-function CloseWindowsButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+function CloseWindows_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 %%% Requests confirmation to really delete all the figure windows.
 Answer = CPquestdlg('Are you sure you want to close all figure windows, timers, and message boxes that CellProfiler created?','Confirm','Yes','No','Yes');

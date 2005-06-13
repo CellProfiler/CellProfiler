@@ -61,12 +61,14 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     % by the ExportSQL export tool
     handles.DataPath = DataPath;
     handles.DatabaseName = DatabaseName;
+disp('done with line 63')
 
     % Call the ExportSQL function
     handles = ExportSQL2(handles);
-
+disp('done with line 66')
     % Remove the variables from the handles structure
     handles = rmfield(handles,{'DataPath','DatabaseName'});
+disp('done with line 69')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -78,8 +80,10 @@ end
 %%% Determines the figure number.
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
+disp('done with line 83')
 %%% If the window is open, it is closed.
 if any(findobj == ThisModuleFigureNumber) == 1;
     delete(ThisModuleFigureNumber)
 end
+disp('done with line 87')
 

@@ -26,12 +26,13 @@ function handles = WriteSQLFiles(handles)
 %
 % $Revision$
 
+
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Enter the directory where the SQL files are to be saved? Leave a period (.) to retrieve images from the default output directory #LongBox#
+%textVAR01 = Enter the directory where the SQL files are to be saved? Leave a period (.) to write files to the default output directory #LongBox#
 %defaultVAR01 = .
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -39,36 +40,59 @@ DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = DefaultDB
 DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%%%VariableRevisionNumber = 02
+%textVAR03 = What prefix should be used to name the SQL files?
+%defaultVAR03 = SQL_
+FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-% This module should only be executed when all image sets have been processed
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+%textVAR04 = What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?
+%defaultVAR04 = 
+TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+
+%%%VariableRevisionNumber = 03
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if strcmp(DataPath, '.') == 1
+    DataPath = handles.Current.DefaultOutputDirectory ;
+end
+
+%% Two possibilities: we're at the end of the pipeline in an
+%% interactive session, or we're in the middle of batch processing.
+
+if isfield(handles.Current, 'BatchInfo'),
+    FirstSet = handles.Current.BatchInfo.Start;
+    LastSet = handles.Current.BatchInfo.End;
+else 
+    FirstSet = 1;
+    LastSet = handles.Current.NumberOfImageSets;
+end
+DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
+
+% Special case: We're writing batch files, and this is the first image set.
+if (strcmp(handles.ModuleNames{end},'CreateBatchScripts') && (handles.Current.SetBeingAnalyzed == 1)),
+    DoWriteSQL = 1;
+    FirstSet = 1;
+    LastSet = 1;
+end
+
+
+if DoWriteSQL,
     % Initial checking of variables
     if isempty(DataPath)
-        errordlg('No path specified in the WriteSQLFiles module.');
-    elseif strcmp(DataPath,'.')
-        DataPath = handles.Current.DefaultOutputDirectory;
+        error('No path specified in the WriteSQLFiles module.');
     elseif ~exist(DataPath,'dir')
-        errordlg('Cannot locate the specified directory in the WriteSQLFiles module.');
+        error('Cannot locate the specified directory in the WriteSQLFiles module.');
     end
 
     if isempty(DatabaseName)
-        errordlg('No database specified in the WriteSQLFiles module.');
+        error('No database specified in the WriteSQLFiles module.');
     end
 
-    % Store the variables in the handles structure so that they can be retrieved
-    % by the ExportSQL export tool
-    handles.DataPath = DataPath;
-    handles.DatabaseName = DatabaseName;
-disp('done with line 63')
-
-    % Call the ExportSQL function
-    handles = ExportSQL2(handles);
-disp('done with line 66')
-    % Remove the variables from the handles structure
-    handles = rmfield(handles,{'DataPath','DatabaseName'});
-disp('done with line 69')
+    CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -80,10 +104,7 @@ end
 %%% Determines the figure number.
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-disp('done with line 83')
 %%% If the window is open, it is closed.
 if any(findobj == ThisModuleFigureNumber) == 1;
     delete(ThisModuleFigureNumber)
 end
-disp('done with line 87')
-

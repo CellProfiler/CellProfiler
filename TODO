@@ -6,8 +6,6 @@ JUNE 10, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
-- Make a button/tool that creates a zipped archive of all the CellProfiler files (e.g. a 'snapshot' of the code that is currently being used). 
-
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
@@ -431,3 +429,5 @@ _______________________________________
 
 - Done (Ola) - PlotMeasurement DataTool: allow displaying two parameters vs. each
        other in a scatter plot.
+
+- Done (Colin) - Make a button/tool that creates a zipped archive of all the CellProfiler files (e.g. a 'snapshot' of the code that is currently being used). 

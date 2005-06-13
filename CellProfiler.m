@@ -248,6 +248,8 @@ HelpMenu=uimenu('Label','Help');
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Zip Files','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
+
 
 uimenu(OptionsMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(OptionsMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
@@ -2785,3 +2787,14 @@ function OpenImage_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 OpenNewImageFile(handles);
+
+function ZipFiles_Callback(hObject, eventdata, handles)
+TempListOfThingsToSave = {'DataTools' 'ImageTools' 'Modules' 'Help' 'CellProfiler.m' 'CellProfiler.fig'};
+ListOfThingsToSave = {};
+for(i=[1:length(TempListOfThingsToSave)])
+    if(exist(char(TempListOfThingsToSave(i)),'file'))
+        ListOfThingsToSave(length(ListOfThingsToSave)+1) = TempListOfThingsToSave(i);
+    end
+end
+zip([handles.Current.CellProfilerPathname '/SNAPSHOT.zip'],['CP*.m' ListOfThingsToSave],handles.Current.CellProfilerPathname);
+CPmsgbox(['The files have been saved to ' handles.Current.CellProfilerPathname '/SNAPSHOT.zip.  You can change the name of this if you want.']);

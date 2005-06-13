@@ -154,7 +154,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% PROGRAMMING NOTE
+f% PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
 % figure, imshow(BlurredImage, []), title('BlurredImage')
 % TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
@@ -191,6 +191,7 @@ QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a backg
 QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
 cmap = [0 0 0;jet(length(bins))];
 QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
+    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -237,7 +238,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
 
     %%% A subplot of the figure window is set to display the original image.
-    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
     subplot(2,2,1)
     ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))

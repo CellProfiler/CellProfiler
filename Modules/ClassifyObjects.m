@@ -154,7 +154,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-f% PROGRAMMING NOTE
+% PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
 % figure, imshow(BlurredImage, []), title('BlurredImage')
 % TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:

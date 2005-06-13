@@ -77,9 +77,6 @@ no conflict, but we should perhaps everything consistent."
 
 - We would like to overhaul all modules that pass images from one to the next to use drop-down menus rather than the user typing in the image name, which will limit typos. This would be a major infrastructure change.
 
-- PlotMeasurement DataTool: allow displaying two parameters vs. each
-       other in a scatter plot. 
-
 - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
        an email from Mathworks describing the issue, thread QW38).
        Allow asking if numbers are in rows or columns.  Check offsets,
@@ -431,3 +428,6 @@ _______________________________________
        identify nuclei)
 
 - Done (Ola) Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
+
+- Done (Ola) - PlotMeasurement DataTool: allow displaying two parameters vs. each
+       other in a scatter plot.

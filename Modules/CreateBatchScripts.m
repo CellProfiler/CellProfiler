@@ -439,6 +439,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
 
     fprintf(BatchFile, 'path(''%s'',path);\n', fullfile(BatchCellProfilerPath, 'Modules'));
+    fprintf(BatchFile, 'path(''%s'',path);\n', fullfile(BatchCellProfilerPath, 'DataTools'));
     fprintf(BatchFile, 'path(''%s'',path);\n', BatchCellProfilerPath);
     fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);

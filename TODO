@@ -6,6 +6,11 @@ JUNE 10, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- Make a "CreateWebPage" module that takes in original images, small thumbnail versions of the images (e.g. made with the ResizeImages module), and a filename that you want to call the html file.  The module should then write a text html file with code something like this:
+<A HREF= origfilename.jpg><IMG SRC = thumbnailfilename.jpg>
+</A> <BR>
+Check to be sure that it works with subdirectories, so that one html file is produced per subdirectory.
+
 - WriteSQL.m should enforce itself being the last module in the
 pipeline, like CreateBatchScripts does (or second to last, if
 CreateBatchScripts is last).

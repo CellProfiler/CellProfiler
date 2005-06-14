@@ -25,11 +25,7 @@ end
 %%% The threshold is calculated using the matlab function graythresh
 %%% but with our modifications that take into account the max and min
 %%% values in the image.
-lo = min(im(:));
-hi = max(im(:));
-if (lo == hi),
-    [level] = graythresh(im);
-    return;
-end
-[level] = graythresh((im - lo) / (hi - lo));
-level = level * (hi - lo) + lo;
+im = double(im)*255;
+im(im == 0) = min(im(im > 0));
+im = log(im);
+[level]=exp(graythresh(im))/(max(im(:))-min(im(:)));

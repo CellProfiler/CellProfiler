@@ -7,9 +7,8 @@ function handles = WriteSQLFiles(handles)
 % It creates a MySQL script and associated data files. It calls
 % the ExportSQL data tool.
 %
-%
-% It does not make sense to run this module in conjunction with other
-% modules.  It should be the only module in the pipeline.
+% This module I think is designed to be run at the end of a pipeline
+% (but before the CreateBatchScripts module).
 %
 % See also: CREATEBATCHSCRIPTS.
 
@@ -25,7 +24,6 @@ function handles = WriteSQLFiles(handles)
 %   In Han Kang    <inthek@mit.edu>
 %
 % $Revision$
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -48,9 +46,7 @@ FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-
-%%%VariableRevisionNumber = 03
-
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

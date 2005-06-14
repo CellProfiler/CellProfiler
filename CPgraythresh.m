@@ -28,4 +28,5 @@ end
 im = double(im)*255;
 im(im == 0) = min(im(im > 0));
 im = log(im);
-[level]=exp(graythresh(im))/(max(im(:))-min(im(:)));
+im = im/(log(255));
+[level]=exp(graythresh(im)*log(255))/255;

@@ -6,6 +6,10 @@ JUNE 10, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- WriteSQL.m should enforce itself being the last module in the
+pipeline, like CreateBatchScripts does (or second to last, if
+CreateBatchScripts is last).
+
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - When viewing algorithms in the main GUI on the Mac platform, the down arrow should

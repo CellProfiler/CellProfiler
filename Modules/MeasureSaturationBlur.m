@@ -331,12 +331,16 @@ for ImageNumber = 1:6;
 end
 
 % Remove empty cells, in case there is an 'N' in between two actual images
-FocusScoreFeaturenames = cellstr(strvcat(FocusScoreFeaturenames{:}))';
+if strcmp(upper(BlurCheck), 'N') ~= 1
+    FocusScoreFeaturenames = cellstr(strvcat(FocusScoreFeaturenames{:}))';
+end
 PercentSaturationFeaturenames = cellstr(strvcat(PercentSaturationFeaturenames{:}))';
 
 % Store measurements
-handles.Measurements.Image.FocusScoreFeatures = FocusScoreFeaturenames;
-handles.Measurements.Image.FocusScore{handles.Current.SetBeingAnalyzed} = cat(2,FocusScore{:});;
+if strcmp(upper(BlurCheck), 'N') ~= 1
+    handles.Measurements.Image.FocusScoreFeatures = FocusScoreFeaturenames;
+    handles.Measurements.Image.FocusScore{handles.Current.SetBeingAnalyzed} = cat(2,FocusScore{:});;
+end
 handles.Measurements.Image.PercentSaturationFeatures = PercentSaturationFeaturenames;
 handles.Measurements.Image.PercentSaturation{handles.Current.SetBeingAnalyzed} = cat(2,PercentSaturation{:});
 
@@ -378,10 +382,12 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         end
     end
     DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
-    for ImageNumber = 1:length(FocusScore)
-        if ~isempty(FocusScore{ImageNumber})
-            try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
-                    [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
+    if strcmp(upper(BlurCheck), 'N') ~= 1
+        for ImageNumber = 1:length(FocusScore)
+            if ~isempty(FocusScore{ImageNumber})
+                try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
+                        [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
+                end
             end
         end
     end

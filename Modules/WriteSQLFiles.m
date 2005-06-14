@@ -66,33 +66,26 @@ else
     FirstSet = 1;
     LastSet = handles.Current.NumberOfImageSets;
 end
-DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet)
-disp('after line 69')
+DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
+
 % Special case: We're writing batch files, and this is the first image set.
 if (strcmp(handles.Settings.ModuleNames{end},'CreateBatchScripts') && (handles.Current.SetBeingAnalyzed == 1)),
     DoWriteSQL = 1;
     FirstSet = 1;
     LastSet = 1;
 end
-disp('after line 76')
 
 if DoWriteSQL,
     % Initial checking of variables
-disp('after line 79')
     if isempty(DataPath)
         error('No path specified in the WriteSQLFiles module.');
     elseif ~exist(DataPath,'dir')
         error('Cannot locate the specified directory in the WriteSQLFiles module.');
     end
-disp('after line 86')
-
     if isempty(DatabaseName)
         error('No database specified in the WriteSQLFiles module.');
     end
-disp('after line 92')
-
     CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet);
-disp('after line 94')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -108,4 +101,3 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
     delete(ThisModuleFigureNumber)
 end
-disp('after line 111')

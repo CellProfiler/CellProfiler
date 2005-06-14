@@ -5,8 +5,6 @@ per_object_names = {};
 
 M = handles.Measurements;
 
-M.Nuclei
-
 subM = fieldnames(M)';
 for sfc = subM,
     sf = sfc{1};

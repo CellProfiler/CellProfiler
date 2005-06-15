@@ -316,6 +316,7 @@ try addpath(Pathname)
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
                 ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
                 ToolHelp{length(ListOfTools)-1} = [ToolHelpInfo, '-----------' 10 help(char(FileNamesNoDir{i}(1:end-2)))];
+                ToolHelp{length(ListOfTools)-1}
             end
         end
         if length(ListOfTools) > 1
@@ -402,7 +403,8 @@ end
 revisionConfirm = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames),
     SelectedOption = handles.Settings.SelectedOption(ModuleNum);
-    [defVariableValues defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)), SelectedOption);
+    
+    [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)), SelectedOption);
     if (isfield(Settings,'VariableRevisionNumbers')),
         SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
     else
@@ -437,17 +439,22 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
         revisionConfirm = 1;
     end
     if (varChoice == 1),
+        
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+        handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
         handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
         savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
     elseif (varChoice == 2),
+        
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
+        handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
         handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
         savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
     elseif (varChoice == 0),
         break;
     end
+    clear defVariableInfoTypes;
 end
 
 if(varChoice == 0),
@@ -472,7 +479,6 @@ else
     %%% Update handles structure.
     guidata(hObject,handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
-    
     
     %%% If the user loaded settings from an output file, prompt them to
     %%% save it as a separate Settings file for future use.
@@ -503,12 +509,12 @@ try handles.Settings.NumbersOfVariables(ModuleNum+1:end) = [];
 end
 try handles.Settings.VariableRevisionNumbers(ModuleNum+1:end) = [];
 end
-guidata(hObject,handles);
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName, SelectedOption)
+function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName, SelectedOption)
 
 VariableValues = {[]};
+VariableInfoTypes = {[]};
 VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
@@ -527,7 +533,6 @@ try
             istr = output(12:13);
             i = str2num(istr);
             VariableValues(i) = {displayval};
-            NumbersOfVariables = i;
         elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption);
             displayval = output(13:end);
             if(length(displayval) > 8)
@@ -538,6 +543,14 @@ try
             istr = output(9:10);
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};
+            VariableValues(i) = {[]};
+            NumbersOfVariables = i;
+        elseif (strncmp(output,'%infotypeVAR',12)==1) && (OptionInCode == SelectedOption)
+            displayval = output(18:end);
+            istr = output(13:14);
+            i = str2num(istr);
+            VariableInfoTypes(i) = {displayval};
+        
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
                 VarRevNum = str2num(output(29:30));
@@ -690,6 +703,9 @@ if FileName ~= 0
     if isfield(handles.Settings,'VariableValues'),
         Settings.VariableValues = handles.Settings.VariableValues;
     end
+    if isfield(handles.Settings,'VariableInfoTypes'),
+        Settings.VariableInfoTypes = handles.Settings.VariableInfoTypes;
+    end
     if isfield(handles.Settings,'ModuleNames'),
         Settings.ModuleNames = handles.Settings.ModuleNames;
     end
@@ -709,6 +725,7 @@ if FileName ~= 0
     %%% Writes settings into a readable text file.
     if strcmp(SaveText,'Yes') == 1
         VariableValues = handles.Settings.VariableValues;
+        VariableInfoTypes = handles.Settings.VariableInfoTypes;
         ModuleNames = handles.Settings.ModuleNames;
         ModuleNamedotm = [char(ModuleNames(1)) '.m'];
         %Prompt what to save file as, and where to save it.
@@ -884,6 +901,10 @@ else
             lastVariableCheck = str2num(istr);
             handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {displayval};
             handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
+        elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption)
+            lastVariableCheck = str2num(output(9:10));
+            handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {''};
+            handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
             handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = str2num(output(29:30));
@@ -974,6 +995,8 @@ for ModuleDelete = 1:length(ModuleHighlighted);
     handles.Settings.NumbersOfVariables(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     %%% 4. Clears the Variable Revision Numbers in each module slot from handles structure.
     handles.Settings.VariableRevisionNumbers(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
+    
+    handles.Settings.VariableInfoTypes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1,:) = [];
 end
 
 %%% 5. Update the number of modules loaded
@@ -1034,8 +1057,13 @@ else
         copyVarRevNums = handles.Settings.VariableRevisionNumbers(ModuleNow);
         handles.Settings.VariableRevisionNumbers(ModuleNow) = handles.Settings.VariableRevisionNumbers(ModuleUp);
         handles.Settings.VariableRevisionNumbers(ModuleUp) = copyVarRevNums;
+        %%% 5. Copy then clear the variable infotypes in the handles
+        %%% structure.
+        copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
+        handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleUp,:);
+        handles.Settings.VariableInfoTypes(ModuleUp,:) = copyVarInfoTypes;
     end
-    %%% 5. Changes the Listbox to show the changes
+    %%% 6. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;
     ModuleHighlighted = ModuleHighlighted-1;
     set(handles.ModulePipelineListBox,'String',contents);
@@ -1071,8 +1099,13 @@ else
         copyVarRevNums = handles.Settings.NumbersOfVariables(ModuleNow);
         handles.Settings.NumbersOfVariables(ModuleNow) = handles.Settings.NumbersOfVariables(ModuleDown);
         handles.Settings.NumbersOfVariables(ModuleDown) = copyVarRevNums;
+        %%% 5. Copy then clear the variable infotypes in the handles
+        %%% structure.
+        copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
+        handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleDown,:);
+        handles.Settings.VariableInfoTypes(ModuleDown,:) = copyVarInfoTypes;
     end
-    %%% 5. Changes the Listbox to show the changes
+    %%% 6. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;
     set(handles.ModulePipelineListBox,'String',contents);
     set(handles.ModulePipelineListBox,'Value',ModuleHighlighted+1);
@@ -1098,7 +1131,7 @@ if (length(ModuleHighlighted) > 0)
         %%% 2. Sets all VariableBox edit boxes and all
         %%% VariableDescriptions to be invisible.
         for i = 1:99,
-            set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a')
+            set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off','String','n/a','style','edit','enable','on','UserData','undefined')
             set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off')
         end
 
@@ -1108,7 +1141,7 @@ if (length(ModuleHighlighted) > 0)
         %%% position values here as well.
         set(handles.variablepanel, 'position', [238 0 563 346]);
         set(handles.slider1,'visible','off');
-
+        
         %%% 2.5 Checks whether a module is loaded in this slot.
         contents = get(handles.ModulePipelineListBox,'String');
         ModuleName = contents{ModuleNumber};
@@ -1129,9 +1162,71 @@ if (length(ModuleHighlighted) > 0)
                 elseif strncmp(output,'%End VariableSet',16)
                     OptionInCode = 0;
                 elseif (strncmp(output,'%textVAR',8) == 1)  && (OptionInCode == SelectedOption);
-                    set(handles.(['VariableDescription',output(9:10)]), 'string', output(13:end));
+                    set(handles.(['VariableDescription',output(9:10)]), 'string', output(14:end));
+                    handles.Settings.VariableInfoTypes(ModuleNumber, str2num(output(9:10))) = {get(handles.(['VariableBox' output(9:10)  ]),'UserData')};
+                    guidata(gcbo,handles);
                     lastVariableCheck = str2num(output(9:10));
+                elseif (strncmp(output,'%choiceVAR',10) == 1 ) && (OptionInCode == SelectedOption);
+                    if ~(exist('StrSet'))
+                        StrSet = cell(1);
+                        StrSet{1} = output(16:end);
+                    else
+                        StrSet{numel(StrSet)+1} = output(16:end);
+                    end
+                    if isempty(handles.Settings.VariableValues{ModuleNumber, str2num(output(11:12))})
+                        handles.Settings.VariableValues(ModuleNumber, str2num(output(11:12))) = StrSet(1);
+                    end
+                elseif (strncmp(output,'%inputtypeVAR',13) == 1) && (OptionInCode == SelectedOption);
+                    set(handles.(['VariableBox',output(14:15)]),'style', output(19:27));
+                    lastVariableCheck = str2num(output(14:15));
+                    %Should Check if inputtypeVAR == popupmenu
+                 %   if(isstr(handles.Settings.VariableValues{ModuleNumber, lastVariableCheck}) || isempty(handles.Settings.VariableValues{ModuleNumber, lastVariableCheck}))
+                 %       handles.Settings.VariableValues{ModuleNumber, lastVariableCheck} = 1;
+                 %   end
+              %      StrSet=get(handles.(['VariableBox',output(14:15)]),'string');
+                    if ~(exist('StrSet'))
+                        StrSet = cell(1);
+                        Count = 1;
+                    else
+                        Count = size(StrSet,2)+1;
+                    end
+                    for i=1:size(handles.Settings.VariableInfoTypes,1)
+                        for j=1:size(handles.Settings.VariableInfoTypes,2)
+                            if ~strcmp(get(handles.(['VariableBox',output(14:15)]),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.(['VariableBox',output(14:15)]),'UserData'),' indep'])
+                                if  (i~=ModuleNumber) && (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact'))))
+                                    StrSet(Count) = handles.Settings.VariableValues(i,j);
+                                    Count = Count + 1;
+                                    
+                                end
+                            end
+                        end
+                    end
+                    if strcmp(output(29:end),'custom')
+                 
+                        if  (~isempty(handles.Settings.VariableValues{ModuleNumber,str2num(output(14:15))})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{ModuleNumber,str2num(output(14:15))}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNumber,str2num(output(14:15))}, StrSet, 'exact'))))
+                            StrSet(Count) = handles.Settings.VariableValues(ModuleNumber,str2num(output(14:15)));
+                            Count = Count + 1;            
+                        end
+                        StrSet(Count) = {'Other..'};
+                        Count = Count + 1;
+                    end
+                    set(handles.(['VariableBox',output(14:15)]),'string',StrSet);
+                    guidata(gcbo,handles);
+                    if Count == 1
+                        set(handles.(['VariableBox',output(14:15)]),'enable','off')
+                        guidata(gcbo,handles);
+               %     else
+                %        UserEntry = get(handles.(['VariableBox',output(14:15)]),'value');
+               %         handles.Settings.VariableValues(ModuleNumber, str2double(output(14:15))) = StrSet(UserEntry);
+                %        guidata(gcbo, handles);
+                    end
+                    clear StrSet
+                elseif (strncmp(output,'%infotypeVAR',12) == 1) && (OptionInCode == SelectedOption);   
+                    set(handles.(['VariableBox',output(13:14)]),'UserData', output(18:end));
+                    lastVariableCheck = str2num(output(13:14));
+                    guidata(gcbo,handles);
                 end
+                
             end
             fclose(fid);
             if lastVariableCheck == 0
@@ -1174,9 +1269,9 @@ if (length(ModuleHighlighted) > 0)
          %  end
 
             if (i <= handles.Settings.NumbersOfVariables(ModuleNumber))
-                if iscellstr(handles.Settings.VariableValues(ModuleNumber, i));
-                    VariableValuesString = char(handles.Settings.VariableValues{ModuleNumber, i});
-                    if ( ( length(VariableValuesString) > 13) | (flagExist) )
+               % if iscellstr(handles.Settings.VariableValues(ModuleNumber, i));
+                    VariableValue = handles.Settings.VariableValues{ModuleNumber, i};
+                    if ( ( length(char(VariableValue)) > 13) | (flagExist) )
                         numberOfLongBoxes = numberOfLongBoxes+1;
                         varXPos = 25;
                         varYPos = firstBoxLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(i+numberOfLongBoxes+numberExtraLinesOfDescription);
@@ -1189,13 +1284,31 @@ if (length(ModuleHighlighted) > 0)
                         varYSize = normBoxHeight;
                     end
                     set(handles.(['VariableBox' TwoDigitString(i)]), 'Position', [varXPos varYPos varXSize varYSize]);
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'string',VariableValuesString);
+                    if strcmp(get(handles.(['VariableBox' TwoDigitString(i)]),'style'),'edit')
+                        set(handles.(['VariableBox' TwoDigitString(i)]),'string',char(VariableValue));
+                    elseif strcmp(get(handles.(['VariableBox' TwoDigitString(i)]),'style'),'popupmenu')
+                        try
+                            StrSet = get(handles.(['VariableBox' TwoDigitString(i)]),'string');
+                            UserEntry = max(strmatch(VariableValue, StrSet , 'exact'),1);
+                            if isempty(UserEntry)
+                                UserEntry=1;
+                            end
+                            set(handles.(['VariableBox' TwoDigitString(i)]),'value', UserEntry);
+                            handles.Settings.VariableValues(ModuleNumber, i) = StrSet(UserEntry);
+                            guidata(gcbo, handles);
+                            clear StrSet
+                        catch
+                            StrSet
+                            VariableValue
+                            clear StrSet
+                        end
+                    end
                     if varYPos > 0
                         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','on');
                     end
-                else
-                    set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
-                end
+              %  else
+            %        set(handles.(['VariableBox' TwoDigitString(i)]),'string','n/a','visible','off');
+            %    end
             end
         end
 
@@ -1221,7 +1334,13 @@ function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% when given the Module Number, the Variable Number, 
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
+
+if strcmp(get(handles.(['VariableBox' VariableNumber]),'style'), 'edit')
+    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
+else
+    StrSet = get(handles.(['VariableBox' VariableNumber]),'string');
+    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = StrSet(UserEntry);
+end
 guidata(gcbo, handles);
 
 function [ModuleNumber] = whichactive(handles)
@@ -1237,7 +1356,24 @@ function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignor
 VariableName = get(hObject,'tag');
 VariableNumberStr = VariableName(12:13);
 
-UserEntry = get(handles.(['VariableBox' VariableNumberStr]),'string');
+InputType = get(handles.(['VariableBox' VariableNumberStr]),'style');
+if strcmp(InputType, 'edit')
+    UserEntry = get(handles.(['VariableBox' VariableNumberStr]),'string');
+elseif strcmp(InputType, 'popupmenu')
+    UserEntry = get(handles.(['VariableBox' VariableNumberStr]),'value');
+    ChoiceList = get(handles.(['VariableBox' VariableNumberStr]),'string');
+    if strcmp('Other..', ChoiceList{UserEntry})
+        CustomInput = inputdlg('Enter your custom input: ');
+        if isempty(CustomInput{1})
+            UserEntry=1;
+        else
+            ChoiceList(numel(ChoiceList)) = CustomInput;
+            ChoiceList(numel(ChoiceList)+1) = {'Other..'};
+            set(handles.(['VariableBox' VariableNumberStr]),'string',ChoiceList);
+        end
+    end
+end
+
 ModuleNumber = whichactive(handles);
 if isempty(UserEntry)
   errordlg('Variable boxes must not be left blank');
@@ -1301,6 +1437,7 @@ for i=1:99,
         'CreateFcn', 'CellProfiler(''VariableBox_CreateFcn'',gcbo,[],guidata(gcbo))',...
         'Tag',['VariableBox' TwoDigitString(i)],...
         'Behavior',get(0,'defaultuicontrolBehavior'),...
+        'UserData','undefined',...
         'Visible','off');
 
     handles.(['VariableDescription' TwoDigitString(i)]) = uicontrol(...

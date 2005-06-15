@@ -249,7 +249,7 @@ HelpMenu=uimenu('Label','Help');
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','Zip Files','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Take Snapshot','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
 
 
 uimenu(OptionsMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
@@ -2798,5 +2798,9 @@ for(i=[1:length(TempListOfThingsToSave)])
         ListOfThingsToSave(length(ListOfThingsToSave)+1) = TempListOfThingsToSave(i);
     end
 end
-zip([handles.Current.CellProfilerPathname '/SNAPSHOT.zip'],['CP*.m' ListOfThingsToSave],handles.Current.CellProfilerPathname);
-CPmsgbox(['The files have been saved to ' handles.Current.CellProfilerPathname '/SNAPSHOT.zip.  You can change the name of this if you want.']);
+try
+    zip([handles.Current.DefaultOutputDirectory '/CellProfiler_SNAPSHOT.zip'],['CP*.m' ListOfThingsToSave],handles.Current.CellProfilerPathname);
+catch
+    helpdlg(['The Files were unable to save.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
+end
+CPmsgbox(['The files have been saved to ' handles.Preferences.DefaultOutputDirectory '/CellProfiler_SNAPSHOT.zip.  You can change the name of this if you want.']);

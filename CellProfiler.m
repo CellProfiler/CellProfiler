@@ -241,7 +241,6 @@ set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
 guidata(hObject, handles);
 
 FileMenu=uimenu('Label','File');
-OptionsMenu=uimenu('Label','Options');
 DataToolsMenu=uimenu('Label','Data Tools');
 uimenu('Label','Close Windows','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));')
 HelpMenu=uimenu('Label','Help');
@@ -250,10 +249,9 @@ uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callba
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Take Snapshot','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
-
-
-uimenu(OptionsMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(OptionsMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
 
 ListOfDataTools=get(handles.DataToolsPopUpMenu,'String');
 for j=2:length(ListOfDataTools)

@@ -190,6 +190,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = DAPI
 TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the images loaded from these movies?
 %defaultVAR02 = OrigBlue
 MovieName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -198,6 +199,7 @@ MovieName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = /
 TextToFind2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the images loaded from these movies?
 %defaultVAR04 = /
 MovieName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -206,6 +208,7 @@ MovieName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = /
 TextToFind3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
+%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call the images loaded from these movies?
 %defaultVAR06 = /
 MovieName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -214,6 +217,7 @@ MovieName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = /
 TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
+%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call the images loaded from these movies?
 %defaultVAR08 = /
 MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
@@ -221,15 +225,19 @@ MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %textVAR09 = If an image slot above is not being used, type a slash  /  in the box.
 
 %textVAR10 = Enter the movie file format (avi or stk)
-%defaultVAR10 = avi
+%choiceVAR10 = avi
+%choiceVAR10 = stk
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
 %textVAR11 = Do you want to match the text exactly (E), or use regular expressions (R)?
-%defaultVAR11 = E
+%choiceVAR11 = Exact
+%choiceVAR11 = Regular
 ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = Analyze all subdirectories within the selected directory (Y or N)?
-%defaultVAR12 = N
+%choiceVAR12 = No
+%choiceVAR12 = Yes
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %textVAR13 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
@@ -277,7 +285,7 @@ MovieName{4} = MovieName4;
 %%% through this module.
 if SetBeingAnalyzed == 1
     %%% Makes sure this entry is appropriate.
-    if strncmpi(ExactOrRegExp,'E',1) == 1 | strncmpi(ExactOrRegExp,'R',1) == 1
+    if strcmp(ExactOrRegExp,'Exact') == 1 | strcmp(ExactOrRegExp,'Regular') == 1
     else error('You must enter E or R in the Load Movies Text module to look for exact text matches or regular expression text matches.')
     end
     %%% If the user did not enter any data in the first slot (they put
@@ -637,12 +645,12 @@ else
     FileNames = cell(0);
     Count = 1;
     for i=1:length(NotYetTextMatchedFileNames),
-        if strncmpi(ExactOrRegExp,'E',1) == 1
+        if strcmp(ExactOrRegExp,'Exact') == 1
             if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
                 FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                 Count = Count + 1;
             end
-        elseif strncmpi(ExactOrRegExp,'R',1) == 1
+        elseif strcmp(ExactOrRegExp,'Regular') == 1
             if regexp(char(NotYetTextMatchedFileNames(i)), TextToFind),
                 FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                 Count = Count + 1;
@@ -651,7 +659,7 @@ else
         end
     end
 end
-if(strcmp(upper(recurse),'Y'))
+if(strcmp(recurse,'Yes'))
     DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
     DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
     DirNames = DirNamesNoFiles(~DiscardLogical1Dir);

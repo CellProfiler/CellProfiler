@@ -119,29 +119,39 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the primary objects you want to create secondary objects around? 
-%defaultVAR01 = Nuclei
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the secondary objects identified by this module?
-%defaultVAR02 = Cells
+%choiceVAR02 = Nuclei
+%choiceVAR02 = Cells
+%choiceVAR02 = Spots
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu custom
 
+%infotypeVAR03 = imagegroup
 %textVAR03 = On which image would you like to display the outlines of the secondary objects?
-%defaultVAR03 = OrigGreen
 OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = Set the number of pixels by which to expand the primary objects [Positive number]
 %defaultVAR04 = 10
 DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %textVAR05 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR05 = No
+%choiceVAR05 = No
+%choiceVAR05 = Yes
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR06 = No
+%choiceVAR06 = No
+%choiceVAR06 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+%inputtypeVAR06 = popupmenu
 
 %%%VariableRevisionNumber = 01
 

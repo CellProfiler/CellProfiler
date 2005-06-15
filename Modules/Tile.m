@@ -109,33 +109,43 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images to be tiled?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the tiled image?
 %defaultVAR02 = TiledImage
 TiledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Number of rows to display (leave "A" to calculate automatically)
-%defaultVAR03 = A
+%textVAR03 = Number of rows to display.
+%choiceVAR03 = Automatic
 NumberRows = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Number of columns to display (leave "A" to calculate automatically)
-%defaultVAR04 = A
+%textVAR04 = Number of columns to display.
+%choiceVAR04 = Automatic
 NumberColumns = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = Are the first two images arranged in a row or a column?
-%defaultVAR05 = C
+%choiceVAR05 = Column
+%choiceVAR05 = Row
 RowOrColumn = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = Is the first image at the bottom or the top?
-%defaultVAR06 = T
+%choiceVAR06 = Top
+%choiceVAR06 = Bottom
 TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
 %textVAR07 = Is the first image at the left or the right?
-%defaultVAR07 = L
+%choiceVAR07 = Left
+%choiceVAR07 = Right
 LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
 %textVAR08 = What fraction should the images be sized (the resolution will be changed)?
 %defaultVAR08 = .1
@@ -204,17 +214,17 @@ if handles.Current.SetBeingAnalyzed == 1
         end
     end
     NumberOfImages = length(FileList);
-    if strcmp(upper(NumberRows),'A') == 1 && strcmp(upper(NumberColumns),'A')== 1
+    if strcmp(NumberRows,'Automatic') == 1 && strcmp(NumberColumns,'Automatic')== 1
         %%% Calculates the square root in order to determine the dimensions
         %%% of the display grid.
         SquareRoot = sqrt(NumberOfImages);
         %%% Converts the result to an integer.
         NumberRows = fix(SquareRoot);
         NumberColumns = ceil((NumberOfImages)/NumberRows);
-    elseif strcmp(upper(NumberRows),'A') == 1
+    elseif strcmp(NumberRows,'Automatic')
         NumberColumns = str2double(NumberColumns);
         NumberRows = ceil((NumberOfImages)/NumberColumns);
-    elseif strcmp(upper(NumberColumns),'A') == 1
+    elseif strcmp(NumberColumns,'Automatic')
         NumberRows = str2double(NumberRows);
         NumberColumns = ceil((NumberOfImages)/NumberRows);
     else NumberColumns = str2double(NumberColumns);
@@ -247,20 +257,19 @@ if handles.Current.SetBeingAnalyzed == 1
             SampleInfo(length(FileList)+1:NumberRows*NumberColumns) = {'none'};
         end
     end
-    if strcmp(upper(RowOrColumn),'R') == 1
+    if strcmp(RowOrColumn,'Row') == 1
         NewFileList = reshape(FileList, NumberColumns, NumberRows);
         NewFileList = NewFileList';
         if isempty(SampleInfo) ~= 1
             NewSampleInfo = reshape(SampleInfo, NumberColumns, NumberRows);
             NewSampleInfo = NewSampleInfo';
         end
-    elseif strcmp(upper(RowOrColumn),'C') == 1
+    else
         NewFileList = reshape(FileList, NumberRows, NumberColumns);
         if isempty(SampleInfo) ~= 1
 
             NewSampleInfo = reshape(SampleInfo, NumberRows, NumberColumns);
         end
-    else error('You must enter "R" or "C" to select whether the first two images are in a row or a column relative to each other')
     end
     NumberOfImages = NumberColumns*NumberRows;
     WaitbarHandle = waitbar(0,'Tiling images...');
@@ -293,10 +302,10 @@ if handles.Current.SetBeingAnalyzed == 1
                 %%% Flips the image left to right or top to bottom if
                 %%% necessary.  The entire image will be flipped at the
                 %%% end.
-                if strcmp(LeftOrRight,'R') == 1
+                if strcmp(LeftOrRight,'Right') == 1
                     CurrentImage = fliplr(CurrentImage);
                 end
-                if strcmp(TopOrBottom,'B') == 1
+                if strcmp(TopOrBottom,'Bottom') == 1
                     CurrentImage = flipud(CurrentImage);
                 end
             end
@@ -315,14 +324,14 @@ if handles.Current.SetBeingAnalyzed == 1
             drawnow
         end
     end
-    if strcmp(LeftOrRight,'R') == 1
+    if strcmp(LeftOrRight,'Right') == 1
         NewFileList = fliplr(NewFileList);
         if isempty(SampleInfo) ~= 1
             NewSampleInfo = fliplr(NewSampleInfo);
         end
         TiledImage = fliplr(TiledImage);
     end
-    if strcmp(TopOrBottom,'B') == 1
+    if strcmp(TopOrBottom,'Bottom') == 1
         NewFileList = flipud(NewFileList);
         if isempty(SampleInfo) ~= 1
             NewSampleInfo = flipud(NewSampleInfo);
@@ -494,12 +503,12 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     set(gca, 'YTick', ImageHeight/2:ImageHeight:TotalHeight-ImageHeight/2)
     
     %%% Sets the Tick Labels.
-    if strcmp(LeftOrRight,'R') == 1
+    if strcmp(LeftOrRight,'Right') == 1
         set(gca, 'XTickLabel',fliplr(1:NumberColumns))
     else
         set(gca, 'XTickLabel', 1:NumberColumns)
     end
-    if strcmp(TopOrBottom,'B') == 1
+    if strcmp(TopOrBottom,'Bottom') == 1
         set(gca, 'YTickLabel',fliplr(1:NumberRows))
     else
         set(gca, 'YTickLabel', 1:NumberRows)

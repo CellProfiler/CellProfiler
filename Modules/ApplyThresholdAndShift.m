@@ -96,10 +96,12 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be thresholded?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the thresholded image?
 %defaultVAR02 = ThreshBlue
 ThresholdedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});

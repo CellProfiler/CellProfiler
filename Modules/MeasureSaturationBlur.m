@@ -103,35 +103,49 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image you want to check for saturation?
-%defaultVAR01 = OrigBlue
+%choiceVAR01 = Do not use
 NameImageToCheck{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup
 %textVAR02 = What did you call the image you want to check for saturation?
-%defaultVAR02 = OrigGreen
+%choiceVAR02 = Do not use
 NameImageToCheck{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%inputtypeVAR03 = imagegroup
 %textVAR03 = What did you call the image you want to check for saturation?
-%defaultVAR03 = OrigRed
+%choiceVAR03 = Do not use
 NameImageToCheck{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
+%inputtypeVAR04 = imagegroup
 %textVAR04 = What did you call the image you want to check for saturation?
-%defaultVAR04 = N
+%choiceVAR04 = Do not use
 NameImageToCheck{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
+%inputtypeVAR05 = imagegroup
 %textVAR05 = What did you call the image you want to check for saturation?
-%defaultVAR05 = N
+%choiceVAR05 = Do not use
 NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
+%inputtypeVAR06 = imagegroup
 %textVAR06 = What did you call the image you want to check for saturation?
-%defaultVAR06 = N
+%choiceVAR06 = Do not use
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-
-%textVAR07 =  For unused colors, leave "N" in the boxes above.
+%inputtypeVAR06 = popupmenu
 
 %textVAR08 =  Do you want to also check the above images for blur?
-%defaultVAR08 = Y
+%choiceVAR08 = Yes
+%choiceVAR08 = No
 BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+BlurCheck = BlurCheck(1);
+%inputtypeVAR08 = popupmenu
+
 
 %%%VariableRevisionNumber = 02
 
@@ -288,7 +302,7 @@ drawnow
 for ImageNumber = 1:6;
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
-    if strcmp(upper(NameImageToCheck{ImageNumber}), 'N') ~= 1
+    if strcmp(NameImageToCheck{ImageNumber}), 'Do not use') ~= 1
         fieldname = ['', NameImageToCheck{ImageNumber}];
         %%% Checks whether the image to be analyzed exists in the handles structure.
         if isfield(handles.Pipeline, fieldname)==0,

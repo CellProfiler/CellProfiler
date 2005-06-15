@@ -95,9 +95,10 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the objects you want to classify?
-%defaultVAR01 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
 %textVAR02 = What type of feature do you want to use to classify these objects?
 %defaultVAR02 = Intensity_CorrRed

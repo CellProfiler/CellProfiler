@@ -105,33 +105,42 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the first image to be aligned? (will be displayed as blue)
-%defaultVAR01 = OrigBlue
 Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the aligned first image?
 %defaultVAR02 = AlignedBlue
 AlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
+%infotypeVAR03 = imagegroup
 %textVAR03 = What did you call the second image to be aligned? (will be displayed as green)
-%defaultVAR03 = OrigGreen
 Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the aligned second image?
 %defaultVAR04 = AlignedGreen
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
+%infotypeVAR05 = imagegroup
 %textVAR05 = What did you call the third image to be aligned? (will be displayed as red)
 %defaultVAR05 = /
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
+%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call the aligned third image?
 %defaultVAR06 = /
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = This module calculates the alignment shift. Do you want to actually adjust the images?
-%defaultVAR07 = N
-AdjustImage = upper(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%choiceVAR07 = Yes
+%choiceVAR07 = No
+AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
 %%%VariableRevisionNumber = 02
 
@@ -202,7 +211,7 @@ if strcmp(Image3Name,'/') ~= 1
     [sx2, sy2] = autoalign(Temp2, Temp3);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy), ...
         ') (2 vs 3: X ', num2str(sx2), ', Y ', num2str(sy2),')'];
-    if strcmp(AdjustImage,'Y') == 1
+    if strcmp(AdjustImage,'Yes') == 1
         AlignedImage2 = subim(Temp2, sx2, sy2);
         AlignedImage3 = subim(Temp3, -sx2, -sy2);
         %%% 1 was already aligned with 2.
@@ -211,7 +220,7 @@ if strcmp(Image3Name,'/') ~= 1
 else %%% Aligns two input images.
     [sx, sy] = autoalign(Image1, Image2);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy),')'];
-    if strcmp(AdjustImage,'Y') == 1
+    if strcmp(AdjustImage,'Yes') == 1
         AlignedImage1 = subim(Image1, sx, sy);
         AlignedImage2 = subim(Image2, -sx, -sy);
     end
@@ -234,7 +243,7 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    if strcmp(AdjustImage,'Y') == 1
+    if strcmp(AdjustImage,'Yes') == 1
         %%% For three input images.
         if strcmp(Image3Name,'/') ~= 1
             OriginalRGB(:,:,1) = Image3;
@@ -278,7 +287,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    if strcmp(AdjustImage,'Y') == 1
+    if strcmp(AdjustImage,'Yes') == 1
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1); imagesc(OriginalRGB);
         title(['Input Images, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
@@ -428,7 +437,7 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-if strcmp(AdjustImage,'Y') == 1
+if strcmp(AdjustImage,'Yes') == 1
     %%% Saves the adjusted image to the
     %%% handles structure so it can be used by subsequent modules.
     handles.Pipeline.(AlignedImage1Name) = AlignedImage1;

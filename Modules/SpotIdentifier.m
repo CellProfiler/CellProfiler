@@ -113,21 +113,31 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be rotated and labeled with spot information?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
-%textVAR02 = Do you want to rotate the image? (No, C = Coordinates, M = Mouse)
-%defaultVAR02 = No
+%textVAR02 = Choose rotation method. (No, C = Coordinates, M = Mouse)
+%choiceVAR02 = No rotation
+%choiceVAR02 = Coordinates
+%choiceVAR02 = Mouse
 RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+RotateMethod = RotateMethod(1);
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = imagegroup indep
 %textVAR03 = What do you want to call the rotated image?
 %defaultVAR03 = RotatedImage
 RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Mark the top, left corner of the grid by coordinates (C), or by mouse (M)?
-%defaultVAR04 = C
+
+%textVAR04 = Mark the top, left corner of the grid by coordinates or by mouse?
+%choiceVAR04 = Coordinates
+%choiceVAR04 = Mouse
 MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+MarkingMethod = MarkingMethod(1);
+%inputtypeVAR04 = popupmenu
 
 %textVAR05 = Enter the number of rows, columns
 %defaultVAR05 = 40,140
@@ -163,14 +173,18 @@ catch error('Image processing was canceled because your entry for the distance f
 end
 
 %textVAR08 = Is the first spot at the Left or Right?
-%defaultVAR08 = L
+%choiceVAR08 = Left
+%choiceVAR08 = Right
 LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-LeftOrRight = upper(LeftOrRight);
+LeftOrRight = LeftOrRight(1);
+%inputtypeVAR08 = popupmenu
 
 %textVAR09 = Is the first spot at the Bottom or Top?
-%defaultVAR09 = B
+%choiceVAR09 = Bottom
+%choiceVAR09 = Top
 TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-TopOrBottom = upper(TopOrBottom);
+TopOrBottom = TopOrBottom(1);
+%inputtypeVAR09 = popupmenu
 
 %textVAR10 = Do you want to load spot information from a file (e.g. gene names)?
 %defaultVAR10 = N

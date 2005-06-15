@@ -129,10 +129,12 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to use to manually identify an object?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -142,12 +144,16 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
 %textVAR04 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR04 = No
+%choiceVAR04 = No
+%choiceVAR04 = Yes
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
 %textVAR05 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR05 = No
+%choiceVAR05 = No
+%choiceVAR05 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
 %%%VariableRevisionNumber = 02
 

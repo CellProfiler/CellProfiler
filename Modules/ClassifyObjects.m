@@ -94,13 +94,20 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the segmented objects?
-%defaultVAR01 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
 %textVAR02 = Enter the feature type, e.g. AreaShape, Texture, Intensity,...
-%defaultVAR02 = AreaShape
+%choiceVAR02 = AreaShape
+%choiceVAR02 = Correlation
+%choiceVAR02 = Texture
+%choiceVAR02 = Intensity
+%choiceVAR02 = Neighbors
+%choiceVAR02 = Ratios
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Enter feature number
 %defaultVAR03 = 1

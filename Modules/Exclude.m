@@ -121,21 +121,26 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = Ignore the objects you called
-%defaultVAR01 = Staining
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup
 %textVAR02 = If they are outside the region(s) called
-%defaultVAR02 = Tumor
 MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = objectgroup indep
 %textVAR03 = What do you want to call the remaining objects?
 %defaultVAR03 = EditedStaining
 RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For the remaining objects, do you want to retain their original number or renumber them consecutively (Retain or Renumber)? Retaining their original number might be important if you intend to correlate measurements made on the remaining objects with measurements made on the original objects.  Renumbering, on the other hand, makes the output file more compact and the processing quicker.
-%defaultVAR04 = Renumber
+%choiceVAR04 = Renumber
+%choiceVAR04 = Retain
 Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
 %%%VariableRevisionNumber = 01
 
@@ -197,7 +202,7 @@ drawnow
 %%% within the regions identified in the MaskRegionObjectImage.
 NewSegmentedObjectImage = SegmentedObjectImage;
 NewSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
-if strncmpi(Renumber,'Ren',3) == 1
+if strcmp(Renumber,'Renumber') == 1
     %%% In case some objects are entirely deleted, the label matrix is
     %%% compacted so that labels are not skipped. This is done by
     %%% relabeling. The default connectivity is used, to be consistent
@@ -210,14 +215,14 @@ end
 if exist('PrelimSegmentedObjectImage','var') == 1
     NewPrelimSegmentedObjectImage = PrelimSegmentedObjectImage;
     NewPrelimSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
-    if strncmpi(Renumber,'Ren',3) == 1
+    if strcmp(Renumber,'Renumber') == 1
         NewPrelimSegmentedObjectImage = bwlabel(NewPrelimSegmentedObjectImage);
     end
 end
 if exist('PrelimSmallSegmentedObjectImage','var') == 1
     NewPrelimSmallSegmentedObjectImage = PrelimSmallSegmentedObjectImage;
     NewPrelimSmallSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
-    if strncmpi(Renumber,'Ren',3) == 1
+    if strcmp(Renumber,'Renumber') == 1
         NewPrelimSmallSegmentedObjectImage = bwlabel(NewPrelimSmallSegmentedObjectImage);
     end
 end

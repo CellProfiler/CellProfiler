@@ -45,21 +45,28 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this algorithm?
-%defaultVAR02 = Nuclei
+%choiceVAR02 = Nuclei
+%choiceVAR02 = Cells
+%choiceVAR02 = Spots
+%choiceVAR02 = Cytoplasms
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
 %defaultVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Enter the desired minimum threshold (0 to 1), or "A" to calculate automatically
-%defaultVAR04 = A
+%textVAR04 = Enter the desired minimum threshold (0 to 1)
+%choiceVAR04 = Automatic
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = Enter the threshold adjustment factor (>1 = more stringent, <1 = less stringent)
 %defaultVAR05 = 1
@@ -107,11 +114,10 @@ end
 drawnow
 
 %%% Calculates the MinimumThreshold automatically, if requested.
-if strncmp(upper(MinimumThreshold),'A',1) == 1
+if strcmp(MinimumThreshold,'A')
     GlobalThreshold = CPgraythresh(OrigImage);
     %%% 0.7 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
-    MinimumThreshold = GlobalThreshold*0.7;
 else 
     try MinimumThreshold = str2num(MinimumThreshold);
     catch error('The value entered for the minimum threshold in the Identify Primary Adaptive Threshold module was not correct.')
@@ -540,8 +546,8 @@ Image1 = imcomplement(OrigImage);
 %%% Stretch the image to use the full dynamic range from 0 to 1. 
 Image = imadjust(Image1,[min(min(Image1)) max(max(Image1))],[0 1]);
 %%% Performs adaptive thresholding.
-%%% This code was adapted from ñImage Segmentation by adaptive
-%%% thresholdingî by Nir Milstein of Technion - Israel Institute of
+%%% This code was adapted from ?Image Segmentation by adaptive
+%%% thresholding? by Nir Milstein of Technion - Israel Institute of
 %%% Technology, The Faculty for Computer Sciences.  The theory is that the
 %%% average value within a neighborhood is likely to be a good threshold
 %%% (this assumes a rather sparse distribution of objects so that the

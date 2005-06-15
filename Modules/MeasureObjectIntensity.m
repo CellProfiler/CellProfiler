@@ -98,18 +98,28 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the greyscale images you want to measure?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
+
+%infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the segmented objects that you want to measure?
-%defaultVAR02 = Nuclei
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%choiceVAR02 = /
+%inputtypeVAR02 = popupmenu
+
+%infotypeVAR03 = objectgroup
 %textVAR03 = Type / in unused boxes.
-%defaultVAR03 = Cells
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%choiceVAR03 = /
+%inputtypeVAR03 = popupmenu
+
+%infotypeVAR04 = objectgroup
 %textVAR04 =
-%defaultVAR04 = /
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%choiceVAR04 = /
+%inputtypeVAR04 = popupmenu
 
 %%%VariableRevisionNumber = 01
 

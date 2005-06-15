@@ -132,25 +132,33 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be corrected?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the corrected image?
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
+%infotypeVAR03 = imagegroup
 %textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module with the 'Single Image' option)?
-%defaultVAR03 = IllumBlue
 IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = How do you want to apply the illumination correction function?  Enter D for Divide or S for subtract.
-%defaultVAR04 = D
+%choiceVAR04 = Divide
+%choiceVAR04 = Subtract
 DivideOrSubtract = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
-%textVAR05 = If you chose division, do you want to rescale the final image? N = no, S = stretch to fit 0 to 1 range, M = match the maximum of the final image to the maximum of the original.
-%defaultVAR05 = N
+%textVAR05 = If you chose division, Choose rescaling method.
+%choiceVAR05 = No rescaling
+%choiceVAR05 = Stretch 0 to 1
+%choiceVAR05 = Match maximums
 RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
 %%%VariableRevisionNumber = 3
 
@@ -201,12 +209,15 @@ if ndims(IllumCorrectFunctionImage) ~= 2
     error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded of the illumination correction function does not fit this requirement.  This may be because the image is a color image.')
 end
 
-if strncmpi(RescaleOption,'N',1) == 1
+if strcmp(RescaleOption,'No rescaling') == 1
     MethodSpecificArguments = [];
-elseif strncmpi(RescaleOption,'S',1) == 1
+    RescaleOption = 'N'
+elseif strcmp(RescaleOption,'Stretch 0 to 1') == 1
     MethodSpecificArguments = [];
-elseif strncmpi(RescaleOption,'M',1) == 1
+    RescaleOption = 'S'
+elseif strcmp(RescaleOption,'Match maximums') == 1
     MethodSpecificArguments = OrigImage;
+    RescaleOption = 'M'
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -226,13 +237,13 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strcmpi(DivideOrSubtract,'D') == 1
+if strcmp(DivideOrSubtract,'Divide') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by dividing each pixel by the value in the IlluminationImage.
     CorrectedImage1 = OrigImage ./ IllumCorrectFunctionImage;
     %%% Rescales using a CP subfunction, if requested.
     [handles,CorrectedImage] = CPrescale(handles,CorrectedImage1,RescaleOption,MethodSpecificArguments);
-elseif strcmpi(DivideOrSubtract,'S') == 1
+elseif strcmp(DivideOrSubtract,'Subtract') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by subtracting each pixel by the value in the IlluminationImage.
     CorrectedImage = imsubtract(OrigImage, IllumCorrectFunctionImage);

@@ -108,10 +108,12 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the image with the binary objects to be dilated?
-%defaultVAR01 = BinaryObjects
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the image with the dilated objects?
 %defaultVAR02 = DilatedObjects
 DilatedObjectsImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});

@@ -105,12 +105,16 @@ AddressFrom = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SMTPServer = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Send an e-mail after the first image set is completed?
-%defaultVAR04 = Y
+%choiceVAR04 = Yes
+%choiceVAR04 = No
 FirstImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
 %textVAR05 = Send an e-mail after the last image set is completed?
-%defaultVAR05 = Y
+%choiceVAR05 = Yes
+%choiceVAR05 = No
 LastImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = Send an e-mail after every X number of image sets?
 %defaultVAR06 = 0
@@ -153,13 +157,13 @@ while isempty(AddressEmail) == 0
     [AddressTo{numAddresses} AddressEmail] = strtok(AddressEmail, ',');
 end
 
-if strcmp(FirstImageEmail, 'Y') == 1 & SetBeingAnalyzed == handles.Current.StartingImageSet
+if strcmp(FirstImageEmail, 'Yes') == 1 & SetBeingAnalyzed == handles.Current.StartingImageSet
     subject = 'CellProfiler:  First image set has been completed';
     if (SetBeingAnalyzed > 1)
         subject = [subject,' after Restart, image number ',num2str(SetBeingAnalyzed)];
     end
     sendmail(AddressTo,subject,subject);
-elseif strcmp(LastImageEmail, 'Y') == 1 & SetBeingAnalyzed == handles.Current.NumberOfImageSets
+elseif strcmp(LastImageEmail, 'Yes') == 1 & SetBeingAnalyzed == handles.Current.NumberOfImageSets
     subject = 'CellProfiler:  Last image set has been completed';
     sendmail(AddressTo,'CellProfiler Progress',subject);
 elseif EveryXImageEmail > 0 & mod(SetBeingAnalyzed,EveryXImageEmail) == 0

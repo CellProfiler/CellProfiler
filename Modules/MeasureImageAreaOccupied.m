@@ -124,20 +124,27 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigGreen
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects measured by this module?
-%defaultVAR02 = Cells
+%choiceVAR02 = Nuclei
+%choiceVAR02 = Cells
+%choiceVAR02 = Spots
+%choiceVAR02 = Cytoplasm
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR03 = 0
-Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = Enter the threshold (Positive number, Max = 1):
+%choiceVAR03 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
-%defaultVAR04 = 0.75
+%defaultVAR04 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
@@ -185,12 +192,14 @@ drawnow
 
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
-if Threshold == 0
+if strcmp(Threshold,'Automatic')
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
 %    Threshold = CPgraythresh(OrigImage);
     Threshold = Threshold*ThresholdAdjustmentFactor;
+else
+    Threshold=str2double(Threshold);
 end
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImage, Threshold);

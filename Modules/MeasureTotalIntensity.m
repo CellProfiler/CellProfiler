@@ -103,10 +103,12 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?  
-%defaultVAR01 = OrigGreen
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the staining measured by this module? 
 %defaultVAR02 = Sytox
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});

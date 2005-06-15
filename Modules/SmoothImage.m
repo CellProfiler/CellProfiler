@@ -104,21 +104,30 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be smoothed?
-%defaultVAR01 = OrigBlue
 OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the smoothed image?
 %defaultVAR02 = CorrBlue
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Are you using this module to smooth an image that results from processing multiple image sets?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
-%defaultVAR03 = Y
+%choiceVAR03 = Yes
+%choiceVAR03 = No
 WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+WaitForFlag = WaitForFlag(1);
+%inputtypeVAR03 = popupmenu
 
-%textVAR04 = Smoothing method: Enter the width of the artifacts (an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead.
-%defaultVAR04 = 50
+%textVAR04 = Smoothing method: Enter the width of the artifacts (an even number) that are to be smoothed out by median filtering, or use a low order polynomial fit.
+%choiceVAR04 = Polynomial fit
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+if strcmp(SmoothingMethod,'Polynomial fit')
+    SmoothingMethod='P';
+end
+%inputtypeVAR04 = popupmenu custom
 
 %%%VariableRevisionNumber = 1
 

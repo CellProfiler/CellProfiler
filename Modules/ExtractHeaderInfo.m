@@ -89,15 +89,21 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup indep
 %textVAR01 = What do you want to call the images saved in the first location?
 %defaultVAR01 = CFP
 FirstImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the images saved in the third location?
 %defaultVAR02 = DAPI
 ThirdImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+
+%infotypeVAR03 = imagegroup indep
 %textVAR03 = What do you want to call the images saved in the fifth location?
 %defaultVAR03 = YFP
 FifthImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
 %textVAR04 = Enter the directory path name where the images are saved.#LongBox#
 %defaultVAR04 = Default directory - leave this text to retrieve images from the directory specified above
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});

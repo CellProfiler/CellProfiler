@@ -182,21 +182,25 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigBlue
+%infotypeVAR01 = imagegroup
+%textVAR01 = What did you call the images you want to process?
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%defaultVAR03 = 1,99999
+%choiceVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Neighborhood size (height, width in pixels)
-%defaultVAR04 = 9 9
+%textVAR04 = Neighborhood size (height and width in pixels)
+%choiceVAR04 = 9 9
 NbhdSizeStr = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = Sigma
 %defaultVAR05 = 1.8
@@ -206,25 +210,32 @@ Sigma = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 %defaultVAR06 = 3
 MinArea = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Size for Wiener filter (height, width in pixels)
-%defaultVAR07 = 5 5
+%textVAR07 = Size for Wiener filter (height and width in pixels)
+%choiceVAR07 = 5 5
 WienerSizeStr = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu custom
 
 %textVAR08 = Threshold
 %defaultVAR08 = -.001
 Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
 %textVAR09 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR09 = No
+%choiceVAR09 = No
+%choiceVAR09 = Yes
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+%inputtypeVAR09 = popupmenu
 
 %textVAR10 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR10 = No
+%choiceVAR10 = No
+%choiceVAR10 = Yes
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+%inputtypeVAR10 = popupmenu
 
 %textVAR11 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR11 = No
+%defaultVAR11 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%inputtypeVAR11 = popupmenu
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.

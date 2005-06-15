@@ -185,21 +185,25 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%defaultVAR03 = 1,99999
+%choiceVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR04 = 0
-Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%choiceVAR04 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, >1 = more stringent, <1 = less stringent, 1 = no adjustment):
 %defaultVAR05 = 1
@@ -218,16 +222,22 @@ MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{
 BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
 %textVAR09 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR09 = No
+%choiceVAR09 = No
+%choiceVAR09 = Yes
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+%inputtypeVAR09 = popupmenu
 
 %textVAR10 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR10 = No
+%choiceVAR10 = No
+%choiceVAR10 = Yes
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+%inputtypeVAR10 = popupmenu
 
 %textVAR11 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR11 = No
+%choiceVAR11 = No
+%choiceVAR11 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%inputtypeVAR11 = popupmenu
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
@@ -249,7 +259,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Intensity module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(fieldname);
-
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -304,13 +313,15 @@ MaximaMask = strel('disk', MaximaSuppressionNeighborhood);
 MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(sum(getnhood(MaximaMask))),getnhood(MaximaMask))) = 0;
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
-if Threshold == 0
-    Threshold = CPgraythresh(OrigImage,handles,ImageName);
+if strcmp(Threshold,'Automatic')
+    Threshold = CPgraythresh(OrigImage);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
     % Threshold = CPgraythresh(OrigImage);
     %    Threshold = CPgraythresh(OrigImage);
     Threshold = Threshold*ThresholdAdjustmentFactor;
+else
+    Threshold=str2double(Threshold);
 end
 MinimumThreshold = str2num(MinimumThreshold);
 Threshold = max(MinimumThreshold,Threshold);

@@ -95,14 +95,18 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = Subtract this image (enter the name here)
-%defaultVAR01 = tubulinw3
 SubtractImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup
 %textVAR02 = From this image (enter the name here)
 %defaultVAR02 = NHSw1
 BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = imagegroup custom
 %textVAR03 = What do you want to call the resulting image?
 %defaultVAR03 = SubtractedCellStain
 ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -112,8 +116,11 @@ ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 MultiplyFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %textVAR05 = Contrast stretch the resulting image?
-%defaultVAR05 = N
+%choiceVAR05 = No
+%choiceVAR05 = Yes
 Stretch = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+Stretch = Stretch(1);
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = Blur radius for the basic image
 %defaultVAR06 = 3

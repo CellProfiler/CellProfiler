@@ -10,10 +10,12 @@ function handles = IdentifyEasy(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -23,13 +25,14 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Min,Max area of objects (pixels):
-%defaultVAR04 = -,-
+%choiceVAR04 = 1,Inf
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Threshold in the range [0,1]. Enter '-' for automatic thresholding.
-%defaultVAR05 = -
+%textVAR05 = Threshold in the range [0,1].
+%choiceVAR05 = Automatic
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
+%inputtypeVAR05 = popupmenu custom
 
 %%%VariableRevisionNumber = 1
 
@@ -65,14 +68,13 @@ index = strfind(SizeRange,',');
 if isempty(index),error('The Min and Max size entry in the Segmentation module is invalid.'),end
 MinArea = SizeRange(1:index-1);
 MaxArea = SizeRange(index+1:end);
-if MinArea == '-' ,MinArea = 0;
-else    
-    MinArea = str2double(MinArea);
-    if isnan(MinArea) | MinArea < 0
-        error('The Min area entry in the Segmentation module is invalid.')
-    end
+  
+MinArea = str2double(MinArea);
+if isnan(MinArea) | MinArea < 0
+    error('The Min area entry in the Segmentation module is invalid.')
 end
-if MaxArea == '-' ,MaxArea = Inf;
+
+if strcmp(MaxArea,'Inf') ,MaxArea = Inf;
 else    
     MaxArea = str2double(MaxArea);
     if isnan(MaxArea) | MaxArea < 0
@@ -82,7 +84,7 @@ end
 if MinArea > MaxArea, error('Min area larger the Max area in the Segmentation module.'),end
 
 %%% Checks that the Threshold parameter has a valid value
-if Threshold~='-' 
+if ~strcmp(Threshold,'Automatic')
         Threshold = str2double(Threshold);
         if isnan(Threshold) | Threshold > 1 | Threshold < 0
             error('The threshold entered in the Segmentation module is out of range.')
@@ -107,7 +109,7 @@ MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask))
 
 
 %%% Thresholds the image to eliminate dim maxima.
-if Threshold == '-',
+if strcmp(Threshold,'Automatic'),
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.

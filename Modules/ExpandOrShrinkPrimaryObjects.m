@@ -130,21 +130,29 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the objects that you want to expand or shrink?
-%defaultVAR01 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the expanded or shrunken objects?
 %defaultVAR02 = ShrunkenNuclei
 ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter E for Expand or S for Shrink.
-%defaultVAR03 = S
+%choiceVAR03 = Shrink
+%choiceVAR03 = Expand
 ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = Enter the number of pixels by which to expand or shrink the objects (or "Inf" to either shrink to a point or expand until almost touching).
-%defaultVAR04 = 1
+%choiceVAR04 = 1
+%choiceVAR04 = 2
+%choiceVAR04 = 3
+%choiceVAR04 = Inf
 ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %%%VariableRevisionNumber = 1
 
@@ -197,7 +205,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strncmpi(upper(ShrinkOrExpand),'S',1) == 1
+if strcmp(ShrinkOrExpand),'Shrink') == 1
     %%% Shrinks the three incoming images.  The "thin" option nicely removes
     %%% one pixel border from objects with each iteration.  When carried out
     %%% for an infinite number of iterations, however, it produces one-pixel
@@ -208,7 +216,7 @@ if strncmpi(upper(ShrinkOrExpand),'S',1) == 1
     %%% iterations, to reduce objects to a single point (one pixel).
     %%% Therefore, if the user wants a single pixel for each object, the
     %%% "shrink" option is used; otherwise, the "thin" option is used.
-    if strcmp(upper(ShrinkingNumber),'INF') == 1
+    if strcmp(ShrinkingNumber,'Inf') == 1
         ShrunkenPrelimSegmentedImage = bwmorph(PrelimSegmentedImage, 'shrink', Inf);
         ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'shrink', Inf);
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'shrink', Inf);
@@ -220,7 +228,7 @@ if strncmpi(upper(ShrinkOrExpand),'S',1) == 1
         catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
         end
     end
-elseif strncmpi(upper(ShrinkOrExpand),'E',1) == 1
+elseif strcmp(ShrinkOrExpand,'Expand') == 1
     try %%% Converts the ShrinkingNumber entry to a number if possible
         %%% (or leaves it as Inf otherwise).
         try ShrinkingNumber = str2double(ShrinkingNumber); end
@@ -243,11 +251,11 @@ end
 %%% so that if the user has made measurements on the non-shrunk objects,
 %%% the order of these objects will be exactly the same as the shrunk
 %%% objects, which may go on to be used to identify secondary objects.
-if strncmpi(upper(ShrinkOrExpand),'S',1)
+if strcmp(ShrinkOrExpand,'Shrink')
     FinalShrunkenPrelimSegmentedImage = ShrunkenPrelimSegmentedImage.*PrelimSegmentedImage;
     FinalShrunkenPrelimSmallSegmentedImage = ShrunkenPrelimSmallSegmentedImage.*PrelimSmallSegmentedImage;
     FinalShrunkenSegmentedImage = ShrunkenSegmentedImage.*SegmentedImage;
-elseif strncmpi(upper(ShrinkOrExpand),'E',1)
+elseif strcmp(ShrinkOrExpand,'Expand')
     [L,num] = bwlabel(ShrunkenPrelimSegmentedImage);       % Generate new temporal labeling of the expanded objects
     FinalShrunkenPrelimSegmentedImage = zeros(size(ShrunkenPrelimSegmentedImage));   
     for k = 1:num                                          % Loop over the objects to give them a new label 

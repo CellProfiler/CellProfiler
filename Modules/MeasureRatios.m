@@ -95,12 +95,16 @@ CurrentModuleNum = str2double(CurrentModule);
 %textVAR01 = Enter the measurement name
 %defaultVAR01 = Area
 MeasurementName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+
+%infotypeVAR02 = objectgroup
 %textVAR02 = For which objects do you want to measure ratios (numerator)?
-%defaultVAR02 = Cytoplasm
+%inputtypeVAR02 = popupmenu
 NumeratorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+
+%infotypeVAR03 = objectgroup
 %textVAR03 = denominator
-%defaultVAR03 = Nuclei
 DenominatorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
 %%%VariableRevisionNumber = 1
 

@@ -116,29 +116,37 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the traced images?
-%defaultVAR01 = OrigTraced
 TracedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup
 %textVAR02 = What did you call the real images?
 %defaultVAR02 = OrigReal
 RealImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = imagegroup indep
 %textVAR03 = What do you want to call the aligned, cropped traced images?
 %defaultVAR03 = ACTraced
 FinishedTracedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the aligned, cropped real images?
 %defaultVAR04 = ACReal
 FinishedRealImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter the printed size of the real image in inches as "height,width" (no quotes).
-%defaultVAR05 = height,width
+%choiceVAR05 = 11,8.5
 PrintedImageSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
 
 %textVAR06 = Enter the page orientation of the traced images (portrait or landscape)
-%defaultVAR06 = portrait
+%choiceVAR06 = portrait
+%choiceVAR06 = landscape
 Orientation = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

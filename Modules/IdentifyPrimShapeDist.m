@@ -187,21 +187,28 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigBlue
+%infotypeVAR01 = imagegroup
+%textVAR01 = What did you call the images you want to process?
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects segmented by this module?
-%defaultVAR02 = Nuclei
+%choiceVAR02 = Nuclei
+%choiceVAR02 = Cells
+%choiceVAR02 = Spots
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%defaultVAR03 = 1,99999
+%choiceVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR04 = 0
-Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR04 = Enter the threshold (Positive number, Max = 1):
+%choiceVAR04 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR05 = 1
@@ -216,16 +223,22 @@ MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
 %textVAR08 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR08 = No
+%choiceVAR08 = No
+%choiceVAR08 = Yes
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+%inputtypeVAR08 = popupmenu
 
 %textVAR09 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR09 = No
+%choiceVAR09 = No
+%choiceVAR09 = Yes
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+%inputtypeVAR09 = popupmenu
 
 %textVAR10 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR10 = No
+%choiceVAR10 = No
+%choiceVAR10 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+%inputtypeVAR10 = popupmenu
 
 %%%VariableRevisionNumber = 2
 
@@ -275,9 +288,11 @@ drawnow
 
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
-if Threshold == 0
+if strcmp(Threshold,'Automatic')
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
     Threshold = Threshold*ThresholdAdjustmentFactor;
+else
+    Threshold = str2double(Threshold);
 end
 MinimumThreshold = str2num(MinimumThreshold);
 Threshold = max(MinimumThreshold,Threshold);

@@ -118,17 +118,22 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images to be averaged to make the projection?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the resulting projection image?
 %defaultVAR02 = ProjectedBlue
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Are the images you want to use to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
-%defaultVAR03 = L
+%choiceVAR03 = Load Images module
+%choiceVAR03 = Pipeline
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+SourceIsLoadedOrPipeline = SourceIsLoadedOrPipeline(1);
+%inputtypeVAR03 = popupmenu
 
 %%%VariableRevisionNumber = 1
 

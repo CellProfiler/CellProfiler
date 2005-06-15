@@ -122,6 +122,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = DAPI
 TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call these images?
 %defaultVAR02 = OrigBlue
 ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -130,6 +131,7 @@ ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = /
 TextToFind2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call these images?
 %defaultVAR04 = /
 ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -138,6 +140,7 @@ ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = /
 TextToFind3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
+%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call these images?
 %defaultVAR06 = /
 ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -146,6 +149,7 @@ ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = /
 TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
+%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call these images?
 %defaultVAR08 = /
 ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
@@ -159,8 +163,10 @@ ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Analyze all subdirectories within the selected directory (Y or N)?
-%defaultVAR11 = N
+%choiceVAR11 = No
+%choiceVAR11 = Yes
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
 %textVAR12 = Enter the path name to the folder where the images to be loaded are located. Leave a period (.) to retrieve images from the default image directory #LongBox#
 %defaultVAR12 = .
@@ -235,7 +241,7 @@ if SetBeingAnalyzed == 1
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             end
-            FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
+            FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp);
             %%% Checks whether any files are left.
             if isempty(FileList)
                 error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])

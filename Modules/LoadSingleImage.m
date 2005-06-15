@@ -112,6 +112,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = IllumCorrImgBlue1
 TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call that image?
 %defaultVAR02 = IllumBlue
 ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -120,6 +121,7 @@ ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = /
 TextToFind2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call that image?
 %defaultVAR04 = /
 ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -128,6 +130,7 @@ ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = /
 TextToFind3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
+%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call that image?
 %defaultVAR06 = /
 ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -136,6 +139,7 @@ ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = /
 TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
+%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call that image?
 %defaultVAR08 = /
 ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});

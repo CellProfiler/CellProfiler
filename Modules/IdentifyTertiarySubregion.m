@@ -111,21 +111,30 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the larger identified objects?
-%defaultVAR01 = Cells
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the smaller identified objects?
-%defaultVAR02 = Nuclei
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = objectgroup indep
 %textVAR03 = What do you want to call the new subregions?
-%defaultVAR03 = Cytoplasm
+%choiceVAR03 = Cytoplasm
+%choiceVAR03 = Nuclei
+%choiceVAR03 = Cells
+%choiceVAR03 = Spots
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR04 = No
+%choiceVAR04 = No
+%choiceVAR04 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+%inputtypeVAR04 = popupmenu
 
 %%%VariableRevisionNumber = 01
 

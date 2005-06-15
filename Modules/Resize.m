@@ -92,10 +92,12 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be resized?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the resized image?
 %defaultVAR02 = ResizedBlue
 ResizedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -108,9 +110,19 @@ ResizingFactor = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3
 %defaultVAR04 = 100,100
 SpecificSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = Enter the interpolation method (N = nearest neighbor, L = Bilinear, C = bicubic)
-%defaultVAR05 = N
+%textVAR05 = Enter the interpolation method
+%choiceVAR05 = Nearest Neighbor
+%choiceVAR05 = Bilinear
+%choiceVAR05 = Bicubic
 InterpolationMethod = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+if strcmp(InterpolationMethod,'Bilinear')
+    InterpolationMethod = 'L';
+elseif strcmp(InterpolationMethod,'Bicubic')
+    InterpolationMethod = 'C';
+else
+    InterpolationMethod = 'N';
+end
+%inputtypeVAR05 = popupmenu
 
 %%%VariableRevisionNumber = 01
 

@@ -109,17 +109,24 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be rescaled?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the rescaled image?
 %defaultVAR02 = RescaledBlue
 RescaledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. See the help for details.
-%defaultVAR03 = S
+%choiceVAR03 = Stretch 0 to 1
+%choiceVAR03 = Enter min/max below
+%choiceVAR03 = Greater than one
+%choiceVAR03 = Match Maximum
 RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+RescaleOption = RescaleOption(1);
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = (Method E only): Enter the intensity from the original image that should be set to the lowest value in the rescaled image, or type AA to calculate the lowest intensity automatically from all of the images to be analyzed and AE to calculate the lowest intensity from each image independently.
 %defaultVAR04 = AA
@@ -137,9 +144,10 @@ LowestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleN
 %defaultVAR07 = 1
 HighestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
+%infotypeVAR08 = imagegroup
 %textVAR08 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
-%defaultVAR08 = OtherImage
 OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
 %%%VariableRevisionNumber = 2
 

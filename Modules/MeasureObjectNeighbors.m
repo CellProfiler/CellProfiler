@@ -101,16 +101,21 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-
+%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the objects whose neighbors you want to measure?
-%defaultVAR01 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
+
 %textVAR02 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
 %defaultVAR02 = 0
 NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
+
+%infotypeVAR03 = objectgroup indep
 %textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
 %defaultVAR03 = ExpandedCells
 ExpandedObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%infotypeVAR04 = objectgroup indep
 %textVAR04 = What do you want to call the image of the objects, colored by the number of neighbors?
 %defaultVAR04 = ColoredNeighbors
 ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});

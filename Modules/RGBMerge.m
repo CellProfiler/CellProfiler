@@ -102,19 +102,27 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be colored blue?
-%defaultVAR01 = OrigBlue
+%choiceVAR01 = Leave this black
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup
 %textVAR02 = What did you call the image to be colored green?
-%defaultVAR02 = OrigGreen
+%choiceVAR02 = Leave this black
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = imagegroup
 %textVAR03 = What did you call the image to be colored red?
-%defaultVAR03 = OrigRed
+%choiceVAR03 = Leave this black
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = Type "N" in any slots above to leave that color black.
+
+%infotypeVAR05 = imagegroup indep
 %textVAR05 = What do you want to call the resulting image?
 %defaultVAR05 = RGBImage
 RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -138,7 +146,7 @@ drawnow
 
 %%% Determines whether the user has specified an image to be loaded in
 %%% blue.
-if strcmp(upper(BlueImageName), 'N') == 0
+if strcmp(BlueImageName, 'Leave this black') == 0
     %%% Read (open) the images and assign them to variables.
     fieldname = ['', BlueImageName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
@@ -159,7 +167,7 @@ end
 
 drawnow
 %%% Repeat for Green and Red.
-if strcmp(upper(GreenImageName), 'N') == 0
+if strcmp(GreenImageName, 'Leave this black') == 0
     if isfield(handles.Pipeline, GreenImageName) == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
@@ -167,7 +175,7 @@ if strcmp(upper(GreenImageName), 'N') == 0
     GreenImageExists = 1;
 else GreenImageExists = 0;
 end
-if strcmp(upper(RedImageName), 'N') == 0
+if strcmp(RedImageName, 'Leave this black') == 0
     if isfield(handles.Pipeline, RedImageName) == 0
         error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end

@@ -92,18 +92,22 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be split into black and white images?
-%defaultVAR01 = OrigRGB
 RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the image that was red?
 %defaultVAR02 = OrigRed
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
+%infotypeVAR03 = imagegroup indep
 %textVAR03 = What do you want to call the image that was green?
 %defaultVAR03 = OrigGreen
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the image that was blue?
 %defaultVAR04 = OrigBlue
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});

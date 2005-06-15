@@ -160,41 +160,52 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images to be used to calculate the illumination function?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the illumination function?
 %defaultVAR02 = IllumBlue
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
+%infotypeVAR03 = imagegroup indep
 %textVAR03 = (Optional) What do you want to call the raw projection image prior to dilation or smoothing? (This is an image produced during the calculations - it is typically not needed for downstream modules)
 %defaultVAR03 = ProjectedBlue
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = (Optional) What do you want to call the projection image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
 %defaultVAR04 = DilatedProjectedBlue
 DilatedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter E to calculate an illumination function for Each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on All the specified images to be corrected. See the help for details.
-%defaultVAR05 = A
+%textVAR05 = Enter Each to calculate an illumination function for Each image individually (in which case, choose P in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.
+%choiceVAR05 = Each
+%choiceVAR05 = All
 EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
-%defaultVAR06 = L
+%choiceVAR06 = Pipeline
+%choiceVAR06 = Load Images module
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
 %textVAR07 = If the incoming images are binary and you want to dilate each object in the final projection image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.
 %defaultVAR07 = 0
 ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead. For no smoothing, enter N. Note that smoothing is a time-consuming process.
-%defaultVAR08 = N
+%choiceVAR08 = No smoothing
+%choiceVAR08 = Fit polynomial
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu custom
 
 %textVAR09 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
-%defaultVAR09 = Y
+%choiceVAR09 = Yes
+%choiceVAR09 = No
 RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
 
 %%%VariableRevisionNumber = 2
 
@@ -207,7 +218,7 @@ drawnow
 %%% all of the incoming images from a LoadImages module, it will already have been calculated
 %%% the first time through the image set. No further calculations are
 %%% necessary.
-if (strcmpi(EachOrAll,'A') == 1 && handles.Current.SetBeingAnalyzed ~= 1 && strcmpi(SourceIsLoadedOrPipeline,'L') == 1)
+if (strcmp(EachOrAll,'All') == 1 && handles.Current.SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module') == 1)
     return
 end
 
@@ -233,9 +244,9 @@ drawnow
 % the SaveImages module.
 
 ReadyFlag = 'Not Ready';
-if strcmpi(EachOrAll,'A') == 1
+if strcmp(EachOrAll,'All') == 1
     try
-        if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
+        if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1
             %%% The first time the module is run, the projection image is
             %%% calculated.
             [handles, IlluminationImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
@@ -247,7 +258,7 @@ if strcmpi(EachOrAll,'A') == 1
     catch [ErrorMessage, ErrorMessage2] = lasterr;
         error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
-elseif strcmpi(EachOrAll,'E') == 1
+elseif strcmp(EachOrAll,'Each') == 1
     %%% Retrieves the current image.
     OrigImage = handles.Pipeline.(ImageName);
     %%% Checks that the original image is two-dimensional (i.e. not a
@@ -267,10 +278,13 @@ if strcmp(ReadyFlag, 'Ready') == 1
         ProjectionImage = IlluminationImage;
         IlluminationImage = CPdilatebinaryobjects(IlluminationImage, NumericalObjectDilationRadius);
     end
-    if strcmpi(SmoothingMethod,'N') ~= 1
+    if strcmp(SmoothingMethod,'No smoothing') ~= 1
         %%% Smooths the projection image, if requested, but saves a raw copy
         %%% first.
         DilatedProjectionImage = IlluminationImage;
+        if strcmp(SmoothingMethod,'Fit polynomial')
+            SmoothingMethod = 'P';
+        end
         IlluminationImage = CPsmooth(IlluminationImage,SmoothingMethod);
     end
     drawnow
@@ -278,7 +292,7 @@ end
 
 %%% The resulting illumination image is rescaled to be in the range 1
 %%% to infinity, if requested.
-if strncmpi(RescaleOption,'Y',1) == 1
+if strcmp(RescaleOption,'Yes',1) == 1
     %%% To save time, the handles argument is not fed to this
     %%% subfunction because it is not needed.
     [ignore,IlluminationImage] = CPrescale('',IlluminationImage,'G',[]);
@@ -489,7 +503,7 @@ drawnow
 %%% processed. If running in cycling mode (Pipeline mode), the
 %%% projection image and its flag are saved to the handles structure
 %%% after every image set is processed.
-if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
+if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1 | (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1)
     fieldname = [IlluminationImageName];
     handles.Pipeline.(fieldname) = IlluminationImage;
     %%% Whether these images exist depends on whether the user has chosen

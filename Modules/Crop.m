@@ -155,25 +155,32 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be cropped?
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the cropped image?
 %defaultVAR02 = CropBlue
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For rectangular cropping, type R.  To draw an ellipse on each image, type EE. To draw one ellipse for all images: EA. For any shape (based on an image file), load the shape using the LoadSingleImage module and enter the name you gave the image here. To use the same cropping shape defined by another Crop module within this analysis run, type the name of the other image that was cropped, with the word 'Cropping' prefixed.
-%defaultVAR03 = R
+%textVAR03 = For rectangular cropping, type Rectangle.  To draw an ellipse on each image, type EE. To draw one ellipse for all images: EA. For any shape (based on an image file), load the shape using the LoadSingleImage module and enter the name you gave the image here. To use the same cropping shape defined by another Crop module within this analysis run, type the name of the other image that was cropped, with the word 'Cropping' prefixed.
+%choiceVAR03 = Rectangle
+%choiceVAR03 = Individual ellipse
+%choiceVAR03 = Common ellipse
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Rectangular: enter the pixel position for the left (X), top (Y) corner (with comma).
-%defaultVAR04 = 1,1
+%choiceVAR04 = 1,1
 LeftTop = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = Rectangular: enter the pixel position for the right (X), bottom (Y) corner (with comma). Enter 'end' for a position if you want to use the maximal bottom or right-most pixel.
-%defaultVAR05 = 100,100
+%choiceVAR05 = 100,100
 RightBottom = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
 
 %%%VariableRevisionNumber = 2
 
@@ -215,9 +222,9 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strcmpi(Shape, 'EA') == 1 || strcmpi(Shape, 'EE') == 1
-    if handles.Current.SetBeingAnalyzed == 1 || strcmp(Shape, 'EE') == 1
-        if strcmp(Shape, 'EA') == 1
+if strcmp(Shape, 'Common ellipse') == 1 || strcmp(Shape, 'Individual ellipse') == 1
+    if handles.Current.SetBeingAnalyzed == 1 || strcmp(Shape, 'Individual ellipse') == 1
+        if strcmp(Shape, 'Common ellipse') == 1
             %%% The user can choose an image from the pipeline or from the hard drive to use for
             %%% cropping.
             Answer = CPquestdlg('Choose an image to be used for cropping...','Select image','Image file from hard drive','Image from this image set','Image from this image set');
@@ -295,7 +302,7 @@ if strcmpi(Shape, 'EA') == 1 || strcmpi(Shape, 'EE') == 1
     %%% See subfunction below.
     [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
 
-elseif strcmpi(Shape,'R') == 1
+elseif strcmp(Shape,'Rectangle') == 1
     %%% Extracts the top, left, bottom, right pixel positions from the user's
     %%% input.
     LeftTopNumerical = str2num(LeftTop); %#ok We want MLint error checking to ignore this line.

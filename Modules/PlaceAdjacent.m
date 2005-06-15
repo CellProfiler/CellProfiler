@@ -90,25 +90,34 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the first image to be placed?
-%defaultVAR01 = OrigBlue
 ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the first image to be placed?
-%defaultVAR02 = OrigGreen
+%infotypeVAR02 = imagegroup
+%textVAR02 = What did you call the second image to be placed?
 ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = imagegroup indep
 %textVAR03 = What do you want to call the resulting image?
 %defaultVAR03 = AdjacentImage
 AdjacentImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Enter H for horizontal placement and V for vertical placement.
-%defaultVAR04 = H
+%textVAR04 = Placement Type.
+%choiceVAR04 = Horizontal
+%choiceVAR04 = Vertical
 HorizontalOrVertical = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+HorizontalOrVertical = HorizontalOrVertical(1);
+%inputtypeVAR04 = popupmenu
 
 %textVAR05 = Can the incoming images be deleted from the pipeline after they are placed adjacent (this saves memory, but prevents you from using the incoming images later in the pipeline)?
-%defaultVAR05 = N
+%choiceVAR05 = No
+%choiceVAR05 = Yes
 DeletePipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+DeletePipeline = DeletePipeline(1);
+%inputtypeVAR05 = popupmenu
 
 %%%VariableRevisionNumber = 2
 

@@ -182,6 +182,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 1
 NumberInSet1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
+%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the images loaded from these movies?
 %defaultVAR02 = OrigBlue
 MovieName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -190,6 +191,7 @@ MovieName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 0
 NumberInSet2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the images loaded from these movies?
 %defaultVAR04 = OrigGreen
 MovieName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -198,6 +200,7 @@ MovieName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 0
 NumberInSet3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
+%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call the images loaded from these movies?
 %defaultVAR06 = OrigRed
 MovieName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -206,6 +209,7 @@ MovieName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = 0
 NumberInSet4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
+%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call the images loaded from these movies?
 %defaultVAR08 = OrigOther1
 MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
@@ -221,8 +225,10 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 MoviesPerSet = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = Analyze all subdirectories within the selected directory (Y or N)?
-%defaultVAR12 = N
+%choiceVAR12 = No
+%choiceVAR12 = Yes
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
 
 %textVAR13 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
 %defaultVAR13 = .
@@ -303,7 +309,7 @@ if SetBeingAnalyzed == 1
             if exist(SpecifiedPathname) ~= 7
                 error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             end
-            FileNames = RetrieveImageFileNames(SpecifiedPathname,AnalyzeSubDir);
+            FileNames = RetrieveImageFileNames(SpecifiedPathname,AnalyzeSubDir(1));
             %%% Checks whether any files have been specified.
             if isempty(FileNames) == 1
                 error(['Image processing was canceled because there are no movie files of type "', MovieName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Movies Order module.'])

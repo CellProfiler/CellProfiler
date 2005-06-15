@@ -161,21 +161,28 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigGreen
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the objects that will be used to mark the centers of these objects?
-%defaultVAR02 = Nuclei
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = objectgroup indep
 %textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
-%defaultVAR03 = Cells
+%choiceVAR03 = Nuclei
+%choiceVAR03 = Cells
+%choiceVAR03 = Spots
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Enter the threshold [0 = automatically calculate] (Positive number, Max = 1):
-%defaultVAR04 = 0
-Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR04 = Enter the threshold (Positive number, Max = 1):
+%choiceVAR04 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = If auto threshold, enter an adjustment factor (Positive number, 1 = no adjustment):
 %defaultVAR05 = 0.75
@@ -186,12 +193,16 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
 %textVAR07 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR07 = No
+%choiceVAR07 = No
+%choiceVAR07 = Yes
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+%inputtypeVAR07 = popupmenu
 
 %textVAR08 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR08 = No
+%choiceVAR08 = No
+%choiceVAR08 = Yes
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+%inputtypeVAR08 = popupmenu
 
 %%%VariableRevisionNumber = 3
 
@@ -273,13 +284,15 @@ drawnow
 %%% weak threshold to the original image of the secondary objects.
 drawnow
 %%% Determines the threshold to use. 
-if Threshold == 0
+if strcmp(Threshold,'Automatic')
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
     %    Threshold = CPgraythresh(OrigImage);
     %%% Adjusts the threshold by a correction factor.
     Threshold = Threshold*ThresholdAdjustmentFactor;
+else
+    Threshold=str2double(Threshold);
 end
 MinimumThreshold = str2num(MinimumThreshold);
 Threshold = max(MinimumThreshold,Threshold);

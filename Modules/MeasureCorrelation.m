@@ -91,37 +91,53 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = Enter the names of each image type to be compared. If a box is unused, leave "/"
-%defaultVAR01 = OrigBlue
+%choiceVAR01 = /
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = imagegroup
 %textVAR02 = All pairwise comparisons will be performed.
-%defaultVAR02 = OrigGreen
+%choiceVAR02 = /
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
+%infotypeVAR03 = imagegroup
 %textVAR03 =
-%defaultVAR03 = OrigRed
+%choiceVAR03 = /
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
+%infotypeVAR04 = imagegroup
 %textVAR04 =
-%defaultVAR04 = /
+%choiceVAR04 = /
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
+%infotypeVAR05 = objectgroup
 %textVAR05 = What did you call the objects within which to compare the images?
-%defaultVAR05 = Cells
+%choiceVAR05 = /
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
+%infotypeVAR06 = objectgroup
 %textVAR06 =
-%defaultVAR06 = Nuclei
+%choiceVAR06 = /
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
+%infotypeVAR07 = objectgroup
 %textVAR07 =
-%defaultVAR07 = Cytoplasm
+%choiceVAR07 = /
 ObjectName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
+%infotypeVAR08 = objectgroup
 %textVAR08 =
-%defaultVAR08 = Image
+%choiceVAR08 = /
 ObjectName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
 %%%VariableRevisionNumber = 2
 

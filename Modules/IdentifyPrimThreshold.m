@@ -162,23 +162,31 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process? 
-%defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
+%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
-%defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%choiceVAR02 = Nuclei
+%choiceVAR02 = Cells
+%choiceVAR02 = Spots
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%defaultVAR03 = 1,99999
+%choiceVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Set the Threshold (Between 0 and 1). Or, type "All" to calculate the threshold based 
-%defaultVAR04 = All
+%textVAR04 = Set the Threshold (Between 0 and 1). Or, type "All" to calculate the threshold based on all of the images or type "Each" to calculate the threshold for each individual image.
+%choiceVAR04 = All
+%choiceVAR04 = Each
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = on all of the images or type "Each" to calculate the threshold for each individual image and enter an adjustment factor here (Positive number):
+%textVAR05 =  Enter an adjustment factor here (Positive number):
 %defaultVAR05 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
@@ -187,16 +195,22 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 
 %textVAR07 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%defaultVAR07 = No
+%choiceVAR07 = Yes
+%choiceVAR07 = No
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
 %textVAR08 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR08 = No
+%choiceVAR08 = Yes
+%choiceVAR08 = No
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+%inputtypeVAR08 = popupmenu
 
 %textVAR09 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%defaultVAR09 = No
+%choiceVAR09 = Yes
+%choiceVAR09 = No
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+%inputtypeVAR09 = popupmenu
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange);  %#ok We want to ignore MLint error checking for this line.
@@ -241,7 +255,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if strcmp(upper(Threshold), 'ALL') == 1
+if strcmp(Threshold, 'All') == 1
     if handles.Current.SetBeingAnalyzed == 1
         try
             %%% Notifies the user that the first image set will take much longer than
@@ -306,7 +320,7 @@ if strcmp(upper(Threshold), 'ALL') == 1
     else fieldname = ['Threshold', ImageName];
         Threshold = handles.Pipeline.(fieldname);
     end
-elseif strcmp(upper(Threshold), 'EACH') == 1
+elseif strcmp(Threshold, 'Each') == 1
     Threshold = ThresholdAdjustmentFactor*CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
@@ -349,7 +363,7 @@ if MaxSize ~= 99999
 end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly, if the user has requested this.
-if strncmpi(IncludeEdge,'N',1) == 1
+if strcmp(IncludeEdge,'No') == 1
 PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
 end
@@ -375,7 +389,7 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
+if any(findobj == ThisModuleFigureNumber) == 1 | strcmp(SaveColored,'Yes') == 1 | strcmp(SaveOutlined,'Yes') == 1
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,2,2).
     %%% Note that the label2rgb function doesn't work when there are no objects
@@ -625,11 +639,11 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if strncmpi(SaveColored,'Y',1) == 1
+    if strcmp(SaveColored,'Yes') == 1
         fieldname = ['Colored',ObjectName];
         handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
     end
-    if strncmpi(SaveOutlined,'Y',1) == 1
+    if strcmp(SaveOutlined,'Yes') == 1
         fieldname = ['Outlined',ObjectName];
         handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
     end

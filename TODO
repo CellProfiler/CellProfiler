@@ -1,10 +1,12 @@
 CellProfiler cell image analysis software development 
-JUNE 10, 2005  IN ORDER OF PRIORITY
+JUNE 15, 2005  IN ORDER OF PRIORITY
 
 (+ sign indicates more challenging projects)
 ---------------------------------------------------
 
 WANT IT NOW:
+
+- For the ExportData data tool, we would like to have the option of swapping rows and columns. Right now, measurements are across the columns and objects/images are the rows. We would like to add a checkbox that allows us to swap these.
 
 - Make a "CreateWebPage" module that takes in original images, small thumbnail versions of the images (e.g. made with the ResizeImages module), and a filename that you want to call the html file.  The module should then write a text html file with code something like this:
 <A HREF= origfilename.jpg><IMG SRC = thumbnailfilename.jpg>

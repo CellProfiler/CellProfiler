@@ -2175,6 +2175,7 @@ else
         close(HandleOfMsgBoxToDelete)
         Answer = CPquestdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes');
         if strcmp(Answer,'Cancel')
+            set(handles.OutputFileNameEditBox,'string',tmp)
             return
         end
     end

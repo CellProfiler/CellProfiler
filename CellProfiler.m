@@ -316,7 +316,7 @@ try addpath(Pathname)
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2) == 1,
                 ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
                 ToolHelp{length(ListOfTools)-1} = [ToolHelpInfo, '-----------' 10 help(char(FileNamesNoDir{i}(1:end-2)))];
-                ToolHelp{length(ListOfTools)-1}
+                ToolHelp{length(ListOfTools)-1};
             end
         end
         if length(ListOfTools) > 1
@@ -325,7 +325,7 @@ try addpath(Pathname)
         end
     end
 end
-set(handles.(PopUpMenuHandle), 'string', ListOfTools)
+set(handles.(PopUpMenuHandle), 'string', ListOfTools);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOAD PIPELINE BUTTON %%%

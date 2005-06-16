@@ -41,16 +41,19 @@ CurrentModuleNum = str2double(CurrentModule);
 
 %infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the segmented objects that you want to measure?
+%choiceVAR01 = Do not use
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %infotypeVAR02 = objectgroup
-%textVAR02 = Type / in unused boxes.
+%textVAR02 = 
+%choiceVAR02 = Do not use
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %infotypeVAR03 = objectgroup
-%textVAR03 =
+%textVAR03 = 
+%choiceVAR03 = Do not use
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
@@ -72,8 +75,8 @@ PixelSize = str2double(handles.Settings.PixelSize);
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:length(ObjectNameList)
     ObjectName = ObjectNameList{i};
-    if strcmp(ObjectName,'/')
-        break
+    if strcmp(ObjectName,'Do not use')
+        continue
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

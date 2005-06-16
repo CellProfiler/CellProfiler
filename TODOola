@@ -11,8 +11,7 @@ too long names can be fixed just before importing the data.
 - Check that importing gene names still works and that their output is exportable. This is something
 I have not used in a while, so there may be latent bugs already.  It is not something we are using
 routinely right now, because mostly we are doing huge jobs where Ray manually imports gene names
-and id's into the database, but it should be nearly functional and it's worth keeping its format up
-with the rest of CP. [Colin or Joo Han may test this out]
+and id's into the database, but it should be nearly functional and it's worth keeping its format up with the rest of CP.
 
 - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
 organelles or speckles within nuclei or cells).  

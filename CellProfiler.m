@@ -1062,8 +1062,13 @@ else
         copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
         handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleUp,:);
         handles.Settings.VariableInfoTypes(ModuleUp,:) = copyVarInfoTypes;
+        %%% 6. Copy then clear the selected option in the handles
+        %%% structure.
+        copySelectedOption = handles.Settings.SelectedOption(ModuleNow);
+        handles.Settings.SelectedOption(ModuleNow) = handles.Settings.SelectedOption(ModuleUp);
+        handles.Settings.SelectedOption(ModuleUp)  = copySelectedOption;
     end
-    %%% 6. Changes the Listbox to show the changes
+    %%% 7. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;
     ModuleHighlighted = ModuleHighlighted-1;
     set(handles.ModulePipelineListBox,'String',contents);
@@ -1104,8 +1109,14 @@ else
         copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
         handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleDown,:);
         handles.Settings.VariableInfoTypes(ModuleDown,:) = copyVarInfoTypes;
+        %%% 6. Copy then clear the selected option in the handles
+        %%% structure.
+        copySelectedOption = handles.Settings.SelectedOption(ModuleNow);
+        handles.Settings.SelectedOption(ModuleNow) = handles.Settings.SelectedOption(ModuleDown);
+        handles.Settings.SelectedOption(ModuleDown)  = copySelectedOption;
+        
     end
-    %%% 6. Changes the Listbox to show the changes
+    %%% 7. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;
     set(handles.ModulePipelineListBox,'String',contents);
     set(handles.ModulePipelineListBox,'Value',ModuleHighlighted+1);

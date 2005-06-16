@@ -106,19 +106,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the segmented objects that you want to measure?
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%choiceVAR02 = /
+%choiceVAR02 = Do not use
 %inputtypeVAR02 = popupmenu
 
 %infotypeVAR03 = objectgroup
 %textVAR03 = Type / in unused boxes.
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%choiceVAR03 = /
+%choiceVAR03 = Do not use
 %inputtypeVAR03 = popupmenu
 
 %infotypeVAR04 = objectgroup
 %textVAR04 =
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%choiceVAR04 = /
+%choiceVAR04 = Do not use
 %inputtypeVAR04 = popupmenu
 
 %%%VariableRevisionNumber = 01
@@ -136,8 +136,8 @@ end
 for i = 1:3
     
     ObjectName = ObjectNameList{i};
-    if strcmp(ObjectName,'/') == 1
-        break
+    if strcmp(ObjectName,'Do not use') == 1
+        continue
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

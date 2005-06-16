@@ -92,50 +92,50 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %infotypeVAR01 = imagegroup
-%textVAR01 = Enter the names of each image type to be compared. If a box is unused, leave "/"
-%choiceVAR01 = /
+%textVAR01 = Enter the names of each image type to be compared.
+%choiceVAR01 = Do not use
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %infotypeVAR02 = imagegroup
 %textVAR02 = All pairwise comparisons will be performed.
-%choiceVAR02 = /
+%choiceVAR02 = Do not use
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %infotypeVAR03 = imagegroup
 %textVAR03 =
-%choiceVAR03 = /
+%choiceVAR03 = Do not use
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %infotypeVAR04 = imagegroup
 %textVAR04 =
-%choiceVAR04 = /
+%choiceVAR04 = Do not use
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %infotypeVAR05 = objectgroup
 %textVAR05 = What did you call the objects within which to compare the images?
-%choiceVAR05 = /
+%choiceVAR05 = Do not use
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %infotypeVAR06 = objectgroup
 %textVAR06 =
-%choiceVAR06 = /
+%choiceVAR06 = Do not use
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %infotypeVAR07 = objectgroup
 %textVAR07 =
-%choiceVAR07 = /
+%choiceVAR07 = Do not use
 ObjectName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %infotypeVAR08 = objectgroup
 %textVAR08 =
-%choiceVAR08 = /
+%choiceVAR08 = Do not use
 ObjectName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
@@ -149,7 +149,7 @@ drawnow
 %%% Get the images
 ImageCount = 0;
 for ImageNbr = 1:4
-    if ~strcmp(ImageName{ImageNbr},'/')
+    if ~strcmp(ImageName{ImageNbr},'Do not use')
         ImageCount = ImageCount + 1;
         try
 
@@ -185,7 +185,7 @@ end
 %%% Get the masks of segemented objects
 ObjectNameCount = 0;
 for ObjectNameNbr = 1:4
-    if ~strcmp(ObjectName{ObjectNameNbr},'/')
+    if ~strcmp(ObjectName{ObjectNameNbr},'Do not use')
         ObjectNameCount = ObjectNameCount + 1;
         tmpObjectName{ObjectNameCount} = ObjectName{ObjectNameNbr};
         if ~strcmp(ObjectName{ObjectNameNbr},'Image')

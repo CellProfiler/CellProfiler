@@ -1201,10 +1201,10 @@ if (length(ModuleHighlighted) > 0)
                     else
                         Count = size(StrSet,2)+1;
                     end
-                    for i=1:size(handles.Settings.VariableInfoTypes,1)
+                    for i=1:(ModuleNumber-1)
                         for j=1:size(handles.Settings.VariableInfoTypes,2)
                             if ~strcmp(get(handles.(['VariableBox',output(14:15)]),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.(['VariableBox',output(14:15)]),'UserData'),' indep'])
-                                if  (i~=ModuleNumber) && (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact'))))
+                                if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact'))))
                                     StrSet(Count) = handles.Settings.VariableValues(i,j);
                                     Count = Count + 1;
                                     

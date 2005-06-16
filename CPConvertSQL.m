@@ -46,7 +46,7 @@ for sfc = subM,
     end
 end
 
-basename = [OutfilePrefix '_' int2str(FirstSet) '_' int2str(LastSet)];
+basename = [OutfilePrefix int2str(FirstSet) '_' int2str(LastSet)];
 fmain = fopen(fullfile(OutDir, [basename '.SQL']), 'W');
 fprintf(fmain, 'USE %s;\n', DBname);
 fprintf(fmain, 'CREATE TABLE IF NOT EXISTS %sPerImage (ImageNumber INTEGER PRIMARY KEY', TablePrefix);

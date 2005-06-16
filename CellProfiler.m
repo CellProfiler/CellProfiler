@@ -1501,6 +1501,43 @@ end
 %%% SET PREFERENCES BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function SaveButton_Callback (hObject, eventdata, handles)
+SetPreferencesWindowHandle = findobj('name','SetPreferences');
+global EnteredPreferences, PixelSizeEditBoxHandle = findobj('Tag','PixelSizeEditBox');
+FontSizeEditBoxHandle = findobj('Tag','FontSizeEditBox'); 
+ImageDirEditBoxHandle = findobj('Tag','ImageDirEditBox'); 
+OutputDirEditBoxHandle = findobj('Tag','OutputDirEditBox'); 
+ModuleDirEditBoxHandle = findobj('Tag','ModuleDirEditBox'); 
+PixelSize = get(PixelSizeEditBoxHandle,'string'); 
+PixelSize = PixelSize{1}; 
+FontSize = get(FontSizeEditBoxHandle,'string'); 
+DefaultImageDirectory = get(ImageDirEditBoxHandle,'string'); 
+DefaultOutputDirectory = get(OutputDirEditBoxHandle,'string'); 
+DefaultModuleDirectory = get(ModuleDirEditBoxHandle,'string'); 
+EnteredPreferences.PixelSize = PixelSize; EnteredPreferences.FontSize = FontSize; 
+EnteredPreferences.DefaultImageDirectory = DefaultImageDirectory; 
+EnteredPreferences.DefaultOutputDirectory = DefaultOutputDirectory; 
+EnteredPreferences.DefaultModuleDirectory = DefaultModuleDirectory; 
+SavedPreferences = EnteredPreferences; 
+CurrentDir = pwd; 
+try 
+    save(fullfile(matlabroot,'CellProfilerPreferences.mat'),'SavedPreferences')
+    clear SavedPreferences
+    helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
+catch
+    try 
+        save(fullfile(CurrentDir, 'CellProfilerPreferences.mat'),'SavedPreferences')
+        clear SavedPreferences
+        helpdlg('You do not have permission to write anything to the Matlab root directory.  Instead, your preferences will only function properly when you start CellProfiler from the current directory.')
+    catch
+        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.'); 
+    end
+end
+clear PixelSize* *Dir* , close(SetPreferencesWindowHandle);
+clear SetPreferencesWindowHandle FontSize FontSizeEditBoxHandle;
+
+
+
 % --- Executes on button press in SetPreferencesButton.
 function SetPreferences_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -1521,7 +1558,6 @@ ModuleDirEditBoxCallback = 'DefaultModuleDirectory = get(gco,''string''); if(~is
 %%% TODO: Add error checking to each directory edit box (does pathname exist).
 %%% TODO: Add error checking to pixel size box and font size box(is it a number).
 
-SaveButtonCallback = 'SetPreferencesWindowHandle = findobj(''name'',''SetPreferences''); global EnteredPreferences, PixelSizeEditBoxHandle = findobj(''Tag'',''PixelSizeEditBox''); FontSizeEditBoxHandle = findobj(''Tag'',''FontSizeEditBox''); ImageDirEditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); OutputDirEditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); ModuleDirEditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); PixelSize = get(PixelSizeEditBoxHandle,''string''); PixelSize = PixelSize{1}; FontSize = get(FontSizeEditBoxHandle,''string''); DefaultImageDirectory = get(ImageDirEditBoxHandle,''string''); DefaultOutputDirectory = get(OutputDirEditBoxHandle,''string''); DefaultModuleDirectory = get(ModuleDirEditBoxHandle,''string''); EnteredPreferences.PixelSize = PixelSize; EnteredPreferences.FontSize = FontSize; EnteredPreferences.DefaultImageDirectory = DefaultImageDirectory; EnteredPreferences.DefaultOutputDirectory = DefaultOutputDirectory; EnteredPreferences.DefaultModuleDirectory = DefaultModuleDirectory; SavedPreferences = EnteredPreferences; CurrentDir = pwd; try, save(fullfile(matlabroot,''CellProfilerPreferences.mat''),''SavedPreferences''), clear SavedPreferences, helpdlg(''Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.''), catch, try save(fullfile(handles.Current.StartupDirectory, ''CellProfilerPreferences.mat''),''SavedPreferences''), clear SavedPreferences, helpdlg(''You do not have permission to write anything to the Matlab root directory, which is required to save your preferences permanently.  Instead, your preferences will only function properly when you start CellProfiler from the current directory.''), catch, helpdlg(''CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler. (Note: this feature is still a bit buggy if you do not have write access to the Matlab root directory).''); end, end, clear PixelSize* *Dir* , close(SetPreferencesWindowHandle), clear SetPreferencesWindowHandle FontSize FontSizeEditBoxHandle';
 CancelButtonCallback = 'delete(gcf)';
 
 %%% Creates the dialog box and its text, buttons, and edit boxes.
@@ -1713,7 +1749,7 @@ ModuleDirEditBox = uicontrol(...
 SaveButton = uicontrol(...
 'Parent',SetPreferencesWindowHandle,...
 'Units','normalized',...
-'Callback',SaveButtonCallback,...
+'Callback','CellProfiler(''SaveButton_Callback'',gcbo,[],guidata(gcbo))',...
 'FontName','Times',...
 'FontSize',handles.Current.FontSize,...
 'FontWeight','bold',...

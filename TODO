@@ -44,9 +44,6 @@ CreateBatchScripts is last).
        data tools, add an error check in case the mat file does not
        contain the field "Measurements". 
 
-- In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing: try to write in matlab root first, and if that fails, write in the handles.Current.StartupDirectory) > Also, maybe we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.  That is where CellProfiler should look when trying to load the preferences upon launching, too, if we add this feature.
-
-- In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
 
 - Whenever anything is saved to the hard drive, add an error
        check to see whether the user has permission to write to that
@@ -443,3 +440,7 @@ _______________________________________
        other in a scatter plot.
 
 - Done (Colin) - Make a button/tool that creates a zipped archive of all the CellProfiler files (e.g. a 'snapshot' of the code that is currently being used). 
+
+- Done (Colin) - In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing: try to write in matlab root first, and if that fails, write in the handles.Current.StartupDirectory) > Also, maybe we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.  That is where CellProfiler should look when trying to load the preferences upon launching, too, if we add this feature.
+
+- Done (Colin) - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.

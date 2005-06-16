@@ -31,7 +31,7 @@ CreateBatchScripts is last).
 
 - ExportData Data Tool: I would like Export Process Data to include all of the variable descriptions and variable values and variable revision numbers, as is currently created when using the Save Pipeline button (save as a text file option).  The files created by both functions should be identical and so should share the same code.
 
-- We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries.
+- We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries when adding your own sample info to an existing output file.  i think we may want to remove the 'memory' option or we need to alter code to accommodate it, because at the moment i think it will be cleared from the handles structure at the beginning of a run. ViewData should work on numerical data too, not just imported data.
 
 - Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
@@ -202,7 +202,7 @@ Re-segment cells
 Repeat until convergence.
 The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
 
-GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). 
+GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
 
 GUI 2 +++ Make image tools more accessible/intuitive:
 Create an image toolbar to replace the drop down menu in the main CP GUI 

@@ -1,4 +1,4 @@
-- The new WriteSQL module also doesn't match the current ExportSQL2.m Data tool, which should be changed to use CPConvertSQL.m as well.
+- The new WriteSQL module also doesn't match the current ExportSQL2.m Data tool, which should be changed to use CPConvertSQL.m as well.  When everything is finished, we might consider making the ExportSQL2.m function an option in the regular ExportData DataTool.
 
 - CPConvertSQL automatically creates column names for the DB from the
 hierarchy in handles.  Sometimes these column names are too long.

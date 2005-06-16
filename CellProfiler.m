@@ -1273,7 +1273,7 @@ if (length(ModuleHighlighted) > 0)
                 varXSize = VarDesPosition(3);
                 varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
                 set(handles.(['VariableDescription' TwoDigitString(i)]),'Position', [varXPos varYPos varXSize varYSize]);
-                if varYPos > 0
+                if varYPos > -25
                     set(handles.(['VariableDescription',TwoDigitString(i)]),'visible', 'on');
                 end
          %  end
@@ -1313,7 +1313,7 @@ if (length(ModuleHighlighted) > 0)
                             clear StrSet
                         end
                     end
-                    if varYPos > 0
+                    if (varYPos > -25) && strcmp(get(handles.(['VariableDescription' TwoDigitString(i)]),'visible'),'on')
                         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','on');
                     end
               %  else
@@ -1419,11 +1419,13 @@ for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
     tempPos=get(handles.(['VariableDescription' TwoDigitString(i)]),'Position');
     if(tempPos(2)+scrollPos)>-25
         set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','on');
+        VarDesOn=1;
     else
         set(handles.(['VariableDescription' TwoDigitString(i)]),'visible','off');
+        VarDesOn=0;
     end
     tempPos=get(handles.(['VariableBox' TwoDigitString(i)]),'Position');
-    if(tempPos(2)+scrollPos)>-25
+    if ((tempPos(2)+scrollPos)>-25) && VarDesOn
         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','on');
     else
         set(handles.(['VariableBox' TwoDigitString(i)]),'visible','off');

@@ -115,29 +115,31 @@ NameImageToCheck{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 NameImageToCheck{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%inputtypeVAR03 = imagegroup
+%infotypeVAR03 = imagegroup
 %textVAR03 = What did you call the image you want to check for saturation?
 %choiceVAR03 = Do not use
 NameImageToCheck{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%inputtypeVAR04 = imagegroup
+%infotypeVAR04 = imagegroup
 %textVAR04 = What did you call the image you want to check for saturation?
 %choiceVAR04 = Do not use
 NameImageToCheck{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%inputtypeVAR05 = imagegroup
+%infotypeVAR05 = imagegroup
 %textVAR05 = What did you call the image you want to check for saturation?
 %choiceVAR05 = Do not use
 NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%inputtypeVAR06 = imagegroup
+%infotypeVAR06 = imagegroup
 %textVAR06 = What did you call the image you want to check for saturation?
 %choiceVAR06 = Do not use
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
+
+%textVAR07 =
 
 %textVAR08 =  Do you want to also check the above images for blur?
 %choiceVAR08 = Yes

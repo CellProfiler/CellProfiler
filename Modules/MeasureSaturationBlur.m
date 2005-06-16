@@ -139,17 +139,15 @@ NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 =
-
-%textVAR08 =  Do you want to also check the above images for blur?
-%choiceVAR08 = Yes
-%choiceVAR08 = No
+%textVAR07 =  Do you want to also check the above images for blur?
+%choiceVAR07 = Yes
+%choiceVAR07 = No
 BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 BlurCheck = BlurCheck(1);
-%inputtypeVAR08 = popupmenu
+%inputtypeVAR07 = popupmenu
 
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 03
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%

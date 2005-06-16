@@ -44,7 +44,7 @@ FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?
 %defaultVAR04 = 
-TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 3
 

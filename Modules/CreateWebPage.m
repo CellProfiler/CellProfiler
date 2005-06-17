@@ -11,100 +11,107 @@ OrigImage = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %infotypeVAR02 = imagegroup
-%textVAR02 = What did you call the thumbnail images you want to include?
+%textVAR02 = What did you call the thumbnail images you want to use to link to full images?
+%choiceVAR02 = Do not use
 ThumbImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What do you want to call the HTML file with the images above?
-FileName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%defaultVAR03 = images1.html
+%textVAR03 = Create HTML file before processing all images or after processing all images?
+%choiceVAR03 = Before
+%choiceVAR03 = After
+CreateBA = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
-%textVAR04 = HTML file save directory
-%choiceVAR04 = One level over the images
-%choiceVAR04 = Same as the images
-DirectoryOption = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+%textVAR04 = What do you want to call the HTML file with the images above?
+FileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%defaultVAR04 = images1.html
 
-%textVAR05 = Webpage title
-PageTitle = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%defaultVAR05 = CellProfiler Images
+%textVAR05 = HTML file save directory
+%choiceVAR05 = One level over the images
+%choiceVAR05 = Same as the images
+DirectoryOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
-%textVAR06 = Choose the background color, or provide the html color code (e.g. #00FF00)
-%choiceVAR06 = White
-%choiceVAR06 = Black
-%choiceVAR06 = Aqua
-%choiceVAR06 = Blue
-%choiceVAR06 = Fuchsia
-%choiceVAR06 = Green
-%choiceVAR06 = Gray
-%choiceVAR06 = Lime
-%choiceVAR06 = Maroon
-%choiceVAR06 = Navy
-%choiceVAR06 = Olive
-%choiceVAR06 = Purple
-%choiceVAR06 = Red
-%choiceVAR06 = Silver
-%choiceVAR06 = Teal
-%choiceVAR06 = Yellow
-BGColor = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu custom
+%textVAR06 = Webpage title
+PageTitle = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%defaultVAR06 = CellProfiler Images
 
-%textVAR07 = Number of columns for thumbnails
-%choiceVAR07 = 1
-%choiceVAR07 = 2
-%choiceVAR07 = 3
-%choiceVAR07 = 4
-%choiceVAR07 = 5
-ThumbCols = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR07 = Choose the background color, or provide the html color code (e.g. #00FF00)
+%choiceVAR07 = White
+%choiceVAR07 = Black
+%choiceVAR07 = Aqua
+%choiceVAR07 = Blue
+%choiceVAR07 = Fuchsia
+%choiceVAR07 = Green
+%choiceVAR07 = Gray
+%choiceVAR07 = Lime
+%choiceVAR07 = Maroon
+%choiceVAR07 = Navy
+%choiceVAR07 = Olive
+%choiceVAR07 = Purple
+%choiceVAR07 = Red
+%choiceVAR07 = Silver
+%choiceVAR07 = Teal
+%choiceVAR07 = Yellow
+BGColor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
-%textVAR08 = Table border width
-%choiceVAR08 = 0
+%textVAR08 = Number of columns for images
 %choiceVAR08 = 1
 %choiceVAR08 = 2
-TableBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%choiceVAR08 = 3
+%choiceVAR08 = 4
+%choiceVAR08 = 5
+ThumbCols = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 %inputtypeVAR08 = popupmenu custom
 
-%textVAR09 = Choose the table border color, or provide the html color code (e.g. #00FF00)
-%choiceVAR09 = White
-%choiceVAR09 = Black
-%choiceVAR09 = Aqua
-%choiceVAR09 = Blue
-%choiceVAR09 = Fuchsia
-%choiceVAR09 = Green
-%choiceVAR09 = Gray
-%choiceVAR09 = Lime
-%choiceVAR09 = Maroon
-%choiceVAR09 = Navy
-%choiceVAR09 = Olive
-%choiceVAR09 = Purple
-%choiceVAR09 = Red
-%choiceVAR09 = Silver
-%choiceVAR09 = Teal
-%choiceVAR09 = Yellow
-TableBorderColor = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Table border width (pixels)
+%choiceVAR09 = 0
+%choiceVAR09 = 1
+%choiceVAR09 = 2
+TableBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu custom
 
-%textVAR10 = Spacing between thumbnails
-%choiceVAR10 = 0
-%choiceVAR10 = 1
-%choiceVAR10 = 2
-ThumbSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Choose the table border color, or provide the html color code (e.g. #00FF00)
+%choiceVAR10 = Black
+%choiceVAR10 = Aqua
+%choiceVAR10 = Blue
+%choiceVAR10 = Fuchsia
+%choiceVAR10 = Green
+%choiceVAR10 = Gray
+%choiceVAR10 = Lime
+%choiceVAR10 = Maroon
+%choiceVAR10 = Navy
+%choiceVAR10 = Olive
+%choiceVAR10 = Purple
+%choiceVAR10 = Red
+%choiceVAR10 = Silver
+%choiceVAR10 = Teal
+%choiceVAR10 = White
+%choiceVAR10 = Yellow
+TableBorderColor = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu custom
 
-%textVAR11 = Thumbnail border width
+%textVAR11 = Spacing between images (pixels)
 %choiceVAR11 = 0
 %choiceVAR11 = 1
 %choiceVAR11 = 2
-ThumbBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+ThumbSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu custom
 
-%textVAR12 = Create new window for each click on thumbnail
-%choiceVAR12 = Once only
-%choiceVAR12 = For each image
-%choiceVAR12 = No
-CreateNewWindow = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+%textVAR12 = Image border width (pixels)
+%choiceVAR12 = 0
+%choiceVAR12 = 1
+%choiceVAR12 = 2
+ThumbBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
+
+%textVAR13 = Create new window for each click on thumbnail
+%choiceVAR13 = Once only
+%choiceVAR13 = For each image
+%choiceVAR13 = No
+CreateNewWindow = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
 
 %%%VariableRevisionNumber = 1
 
@@ -115,6 +122,7 @@ drawnow
 
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+NumberOfImageSets = handles.Current.NumberOfImageSets;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
@@ -132,18 +140,22 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-if SetBeingAnalyzed == 1
+if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed == NumberOfImageSets)
 
     NumOrigImage = numel(handles.Pipeline.(['FileList' OrigImage]));
-    NumThumbImage = numel(handles.Pipeline.(['FileList' ThumbImage]));
-    if NumOrigImage ~= NumThumbImage
-        msgbox('Number of original images and thumbnail images do not match');
-        return;
+    if ~strcmp(ThumbImage,'Do not use')
+        NumThumbImage = numel(handles.Pipeline.(['FileList' ThumbImage]));
+        if NumOrigImage ~= NumThumbImage
+            msgbox('Number of original images and thumbnail images do not match');
+            return;
+        end
+        ThumbImageFileNames = handles.Pipeline.(['FileList' ThumbImage]);
+        ThumbImagePathName = handles.Pipeline.(['Pathname' ThumbImage]);
     end
+    
     OrigImageFileNames = handles.Pipeline.(['FileList' OrigImage]);
     OrigImagePathName = handles.Pipeline.(['Pathname' OrigImage]);
-    ThumbImageFileNames = handles.Pipeline.(['FileList' ThumbImage]);
-    ThumbImagePathName = handles.Pipeline.(['Pathname' ThumbImage]);
+
     CurrentImage = 1;
     
     if strcmp(DirectoryOption,'One level over the images')
@@ -154,28 +166,14 @@ if SetBeingAnalyzed == 1
         
         HTMLSavePath = OrigImagePathName(1:LastDirPos-2);
         OrigImagePathName = OrigImagePathName(LastDirPos:end);
-        ThumbImagePathName = ThumbImagePathName(LastDirPos:end);
+        try
+            ThumbImagePathName = ThumbImagePathName(LastDirPos:end);
+        end
     else
         HTMLSavePath = OrigImagePathName;
         OrigImagePathName = '';
         ThumbImagePathName = '';
     end
-    
-  %  OrigMinPath = OrigImagePathNames{1};
-  %  ThumbMinPath = ThumbImagePathNames{1};
-  %  for i=1:NumOrigImage
-   %     if length(OrigImagePathNames{i})<length(OrigMinPath)
-  %          OrigMinPath = OrigImagePathNames{i};
-   %     end
-   %     if length(ThumbImagePathNames{i})<length(ThumbMinPath)
-    %        ThumbMinPath = ThumbImagePathNames{i};
-   %     end        
-   % end
-   % 
-   % for i=1:NumOrigImage
-   %     OrigImagePathNames{i}=OrigImagePathNames{i}(length(OrigMinPath)+1:end);
-    %    ThumbImagePathNames{i}=ThumbImagePathNames{i}(length(ThumbMinPath)+1:end);
-   % end
     
     WindowName = '_CPNewWindow';
     
@@ -188,18 +186,24 @@ if SetBeingAnalyzed == 1
         for i=1:ThumbCols
 
             Lines = strvcat(Lines,'<TD>');
-            if strcmp(CreateNewWindow,'Once only')
-                Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' TARGET=',AddQ(WindowName),'>']);
-            elseif strcmp(CreateNewWindow,'For each image')
-                Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' TARGET=',AddQ([WindowName,num2str(CurrentImage)]),'>']);
+            
+            if ~strcmp(ThumbImage,'Do not use')
+                if strcmp(CreateNewWindow,'Once only')
+                    Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' TARGET=',AddQ(WindowName),'>']);
+                elseif strcmp(CreateNewWindow,'For each image')
+                    Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' TARGET=',AddQ([WindowName,num2str(CurrentImage)]),'>']);
+                else
+                    Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),'>']);
+                end
+                Lines = strvcat(Lines,['<IMG SRC=',AddQ(fullfile(ThumbImagePathName,ThumbImageFileNames{CurrentImage})),' BORDER=',ThumbBorderWidth,'>']);
+                Lines = strvcat(Lines,'</A>');
             else
-                Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),'>']);
+                Lines = strvcat(Lines,['<IMG SRC=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' BORDER=',ThumbBorderWidth,'>']);
             end
-            Lines = strvcat(Lines,['<IMG SRC=',AddQ(fullfile(ThumbImagePathName,ThumbImageFileNames{CurrentImage})),' BORDER=',ThumbBorderWidth,'>']);
-            Lines = strvcat(Lines,'</A>');
+            
             Lines = strvcat(Lines,'</TD>');
             CurrentImage = CurrentImage + 1;
-            if CurrentImage > NumThumbImage
+            if CurrentImage > NumOrigImage
                 break;
             end
         end
@@ -211,6 +215,12 @@ if SetBeingAnalyzed == 1
     HTMLFullfile = fullfile(HTMLSavePath,FileName)
     dlmwrite(HTMLFullfile,Lines,'delimiter','');
     msgbox(['Your webpage has been saved as ', HTMLFullfile, '.']);
+    if SetBeingAnalyzed == 1
+        %%% This is the first image set, so this is the first time seeing this
+        %%% module.  It should cause a cancel so no further processing is done
+        %%% on this machine.
+        set(handles.timertexthandle,'string','Cancel');
+    end
 end
 
 function AfterQuotation = AddQ(BeforeQuotation)

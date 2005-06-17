@@ -52,6 +52,12 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    
+
+if (CurrentModuleNum ~= handles.Current.NumberOfModules) && ~(isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) && (handles.Current.NumberOfModules == CurrentModuleNum+1))
+    error(['WriteSQLFiles must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
+end;
+
 if strcmp(DataPath, '.') == 1
     DataPath = handles.Current.DefaultOutputDirectory ;
 end

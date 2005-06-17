@@ -1,4 +1,4 @@
-CellProfiler cell image analysis software development 
+    CellProfiler cell image analysis software development 
 JUNE 15, 2005  IN ORDER OF PRIORITY
 
 (+ sign indicates more challenging projects)
@@ -45,8 +45,6 @@ For each title, add properties at the end:
 Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASKED OLA AND HERE IS HIS RESPONSE:"it seems that the FontSize is still stored in UserData, and not in a UserData.FontSize. However, the fontsize is stored in the UserData for the 0-window, i.e. the main matlab window.
 I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
 no conflict, but we should perhaps everything consistent."
-
-++ Prevent clicking pause/cancel buttons twice in the timer window.
 
 - Have image windows pay attention to aspect ratio of images.
 
@@ -455,3 +453,4 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 
 - Done (Joo Han) - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
+- Done (Joo Han) - ++ Prevent clicking pause/cancel buttons twice in the timer window.

@@ -2307,26 +2307,26 @@ else
                 %%% Creates the Cancel and Pause buttons.
                 PauseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Pause', 'Position', [5 10 40 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelAfterImageSetButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after image set', 'Position', [50 10 120 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelAfterModuleButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after module', 'Position', [175 10 115 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelNowCloseButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel & close CellProfiler', 'Position', [295 10 160 30], ...
-                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize);
+                    'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize,'UserData',0);
 
                 %%% Sets the functions to be called when the Cancel and Pause buttons
                 %%% within the Timer window are pressed.
-                PauseButtonFunction = 'h = CPmsgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h;';
+                PauseButtonFunction = 'if ~exist(''h''); h = CPmsgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h; end';
                 set(PauseButton_handle,'Callback', PauseButtonFunction)
-                CancelAfterImageSetButtonFunction = ['deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this image set? Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current image set to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current image set will not be saved in the output file.''); case ''No''; return; end; clear deleteme'];
+                CancelAfterImageSetButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this image set? Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current image set to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current image set will not be saved in the output file.''); case ''No''; return; end; clear deleteme; clear delme; end'];
                 set(CancelAfterImageSetButton_handle, 'Callback', CancelAfterImageSetButtonFunction)
-                CancelAfterModuleButtonFunction = ['deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme'];
+                CancelAfterModuleButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme; end'];
                 set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
-                CancelNowCloseButtonFunction = ['deleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''), switch deleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme'];
+                CancelNowCloseButtonFunction = ['if ~exist(''delme''); delme=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''), switch deleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme; clear delme; end'];
                 set(CancelNowCloseButton_handle,'Callback', CancelNowCloseButtonFunction)
                 HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
                 %%% HelpButton
@@ -2683,7 +2683,8 @@ else
                 guidata(gcbo, handles)
 
                 %%% Calculate total time elapsed and display Complete in the Timer window.
-                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(round(10*toc)/10)];
+                total_time_elapsed_num = round(10*toc)/10;
+                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(total_time_elapsed_num)];
                 number_analyzed = ['Number of image sets analyzed = ',...
                         num2str(setbeinganalyzed - 1)];
                     
@@ -2705,10 +2706,9 @@ else
                 %%% Show seperate calcualtion times for each image set.
                 try
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
-                for i=1:handles.Current.NumberOfImageSets;
-                    show_time_elapsed_text = ['Time elapsed for image set' num2str(i) '= ' num2str(set_time_elapsed(i)) ];
-                    show_time_elapsed(i) = {show_time_elapsed_text};
-                end
+                
+                show_time_elapsed = {['Time elapsed for image set ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
+                show_time_elapsed(2) = {['Average time elapsed for other image sets = ' num2str((total_time_elapsed_num - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
                 show_time_elapsed = char(show_time_elapsed);    
                 module_times = char(ModuleTime);
                 split_time_elapsed = strvcat(show_time_elapsed, show_set_text, module_times);

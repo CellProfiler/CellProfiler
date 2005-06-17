@@ -185,9 +185,15 @@ RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = gray
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = Warning! It is possible to overwrite existing files using this module!
+%textVAR13 = Update file names within CellProfiler?
+%choiceVAR13 = Yes
+%choiceVAR13 = No
+UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
 
-%%%VariableRevisionNumber = 7
+%textVAR14 = Warning! It is possible to overwrite existing files using this module!
+
+%%%VariableRevisionNumber = 8
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -347,7 +353,12 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     if isdir(FileDirectoryToSave) ~= 1
         error(['Image processing was canceled because the specified directory "', FileDirectoryToSave, '" in the Save Images module does not exist.']);
     end
-
+    
+    if strcmp(UpdateFileOrNot,'Yes')
+        handles.Pipeline.(['FileList',ImageName])(handles.Current.SetBeingAnalyzed) = {NewImageName};
+        handles.Pipeline.(['Pathname',ImageName]) = FileDirectoryToSave;
+    end
+    
     NewFileAndPathName = fullfile(FileDirectoryToSave, NewImageName);
     if strcmpi(CheckOverwrite,'Y') == 1 && strcmpi(FileFormat,'avi') ~= 1
         %%% Checks whether the new image name is going to overwrite the

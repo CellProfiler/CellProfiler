@@ -28,8 +28,6 @@ WANT IT NOW:
 
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
-- For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.
-
 - When attempting to Export data using any of the various
        data tools, add an error check in case the mat file does not
        contain the field "Measurements". 
@@ -457,3 +455,5 @@ Check to be sure that it works with subdirectories, so that one html file is pro
 - Done (Joo Han) - WriteSQL.m should enforce itself being the last module in the
 pipeline, like CreateBatchScripts does (or second to last, if
 CreateBatchScripts is last).
+
+- (Joo Han is working on this) For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.

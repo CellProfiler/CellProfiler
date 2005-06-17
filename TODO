@@ -28,11 +28,6 @@ WANT IT NOW:
 
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
-- When attempting to Export data using any of the various
-       data tools, add an error check in case the mat file does not
-       contain the field "Measurements". 
-
-
 - Whenever anything is saved to the hard drive, add an error
        check to see whether the user has permission to write to that
        location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
@@ -457,3 +452,7 @@ pipeline, like CreateBatchScripts does (or second to last, if
 CreateBatchScripts is last).
 
 - Done (Joo Han) For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.
+
+- Done (Joo Han) - When attempting to Export data using any of the various
+       data tools, add an error check in case the mat file does not
+       contain the field "Measurements". 

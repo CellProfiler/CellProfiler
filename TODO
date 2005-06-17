@@ -46,8 +46,6 @@ Also, ask Ola whether we should take out the old method of finding the preferred
 I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
 no conflict, but we should perhaps everything consistent."
 
-- CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
-
 ++ Prevent clicking pause/cancel buttons twice in the timer window.
 
 - Have image windows pay attention to aspect ratio of images.
@@ -454,3 +452,6 @@ CreateBatchScripts is last).
 - Done (Joo Han) - When clicking on a module in the list box whose .m file no longer exists in the Modules directory, an error pops up saying the module no longer exists but that the settings will be shown anyway.  The settings are *not* shown in the window, because an error appears in the command window - undefined variable "flagExist" at line 1066.
 Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
   if ( ( length(VariableValuesString) > 13) | (flagExist))
+
+- Done (Joo Han) - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
+

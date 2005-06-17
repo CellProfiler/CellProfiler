@@ -34,10 +34,6 @@ WANT IT NOW:
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
-- When clicking on a module in the list box whose .m file no longer exists in the Modules directory, an error pops up saying the module no longer exists but that the settings will be shown anyway.  The settings are *not* shown in the window, because an error appears in the command window - undefined variable "flagExist" at line 1066.
-Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
-  if ( ( length(VariableValuesString) > 13) | (flagExist))
-
 - Use the User's preference for font size for all figure displays and dialog boxes.  Do this by adding this line:
 	FontSize = get(0,'UserData');
 After the line in the DISPLAY RESULTS section:
@@ -64,8 +60,6 @@ no conflict, but we should perhaps everything consistent."
        come to the center of the CP window (helpdlg, warndlg, msgbox):
        requires getting the handle then setting the color and
        position. Also, for the variablerevisionnumber window, set colors appropriately.
-
-- We would like to overhaul all modules that pass images from one to the next to use drop-down menus rather than the user typing in the image name, which will limit typos. This would be a major infrastructure change.
 
 - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
        an email from Mathworks describing the issue, thread QW38).
@@ -426,7 +420,7 @@ _______________________________________
 
 - Done (Joo Han) - Implement Log Thresholding by changing CPgraythresh. In Han tested different thresholding methods, and log thresholding seems to be most stable at the moment. Might need to add an option to log threshold or not.
 
-- Done (Joo Han) - Enable the use of popup menus by adding new possible syntax in comments within modules, and create an architecture by which modules can be linked to each other. (Refer to email sent concerning the use of new syntax)
+- Done (Joo Han) - Enable the use of popup menus by adding new possible syntax in comments within modules, and - We would like to overhaul all modules that pass images from one to the next to use drop-down menus rather than the user typing in the image name, which will limit typos. This would be a major infrastructure change.
 
 - Done (Joo Han) - Go through all the modules to use popup menus whenever applicable (except IdentifyPrimAdaptThreshold)
 
@@ -451,8 +445,12 @@ Check to be sure that it works with subdirectories, so that one html file is pro
 pipeline, like CreateBatchScripts does (or second to last, if
 CreateBatchScripts is last).
 
-- Done (Joo Han) For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.
+- Done (Joo Han) - For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.
 
 - Done (Joo Han) - When attempting to Export data using any of the various
        data tools, add an error check in case the mat file does not
-       contain the field "Measurements". 
+       contain the field "Measurements".
+
+- Done (Joo Han) - When clicking on a module in the list box whose .m file no longer exists in the Modules directory, an error pops up saying the module no longer exists but that the settings will be shown anyway.  The settings are *not* shown in the window, because an error appears in the command window - undefined variable "flagExist" at line 1066.
+Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
+  if ( ( length(VariableValuesString) > 13) | (flagExist))

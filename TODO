@@ -456,4 +456,4 @@ Check to be sure that it works with subdirectories, so that one html file is pro
 pipeline, like CreateBatchScripts does (or second to last, if
 CreateBatchScripts is last).
 
-- (Joo Han is working on this) For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.
+- Done (Joo Han) For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.

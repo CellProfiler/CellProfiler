@@ -256,14 +256,14 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     %%% Write tab-separated file that can be imported into Excel
     % Header part
-    fprintf(fid,'%s\n\n', ObjectName);
+    fprintf(fid,'%s\t\t', ObjectName);
 
     % Write feature names in one row
     % Interleave feature names with commas and write to file
     str = cell(2*length(FeatureNames),1);
-    str(1:2:end) = {'\t'};
+    str(1:2:end) = {'\n'};
     str(2:2:end) = FeatureNames;
-    fprintf(fid,sprintf('%s\n',cat(2,str{:})));
+    fprintf(fid,sprintf('%s\t',cat(2,str{:})));
 
     % Get the filenames
     fields = fieldnames(handles.Measurements.Image);
@@ -285,15 +285,15 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
                 % If not the 'Image' field, write an object number
                 if ~strcmp(ObjectName,'Image')
-                fprintf(fid,'\t%d',row);
+                fprintf(fid,'\n%d',row);
                 end
                 
                 % Write measurements
                 tmp = cellstr(num2str(Measurements{imageset}(row,:)','%g'));  % Create cell array with measurements
                 str = cell(2*length(tmp),1);                           % Interleave with tabs
-                str(1:2:end) = {'\t'};
+                str(1:2:end) = {'\n'};
                 str(2:2:end) = tmp;
-                fprintf(fid,sprintf('%s\n',cat(2,str{:})));            % Write to file
+                fprintf(fid,sprintf('%s\t',cat(2,str{:})));            % Write to file
             end
         end
     end
@@ -327,10 +327,10 @@ end
 
 % Create Export window
 ETh = figure;
-set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window');
+set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window','Color',[.7 .7 .9],'CloseRequestFcn','set(gcf,''UserData'',0);uiresume()');
 
 % Some variables controling the sizes of uicontrols
-uiheight = 0.25;
+uiheight = 0.3;
 
 % Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
@@ -347,8 +347,8 @@ if ~isempty(fields)
     h = [];
     for k = 1:length(fields)
         uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-            'units','inches','position',[0.6 Height-0.35-0.2*k 3 0.15],'BackgroundColor',get(ETh,'color'))
-        h(k) = uicontrol(ETh,'Style','Radiobutton','units','inches','position',[0.2 Height-0.35-0.2*k uiheight uiheight],...
+            'units','inches','position',[0.6 Height-0.35-uiheight*k 3 0.15],'BackgroundColor',get(ETh,'color'))
+        h(k) = uicontrol(ETh,'Style','checkbox','units','inches','position',[0.2 Height-0.35-uiheight*k uiheight uiheight],...
             'BackgroundColor',get(ETh,'color'),'Value',1);
     end
 
@@ -398,15 +398,13 @@ EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','positi
 % Export and Cancel pushbuttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
 exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)');
+    'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)','BackgroundColor',[.7 .7 .9]);
 cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[posx+0.95 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',0);uiresume(fig)');
+    'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
 
-if get(ETh,'Userdata') == 0         % The user pressed the Cancel button
-    close(ETh)
-elseif get(ETh,'Userdata') == 1     % The user pressed the Export button
+if get(ETh,'Userdata') == 1     % The user pressed the Export button
 
     % File names
     if ~isempty(fields)
@@ -429,8 +427,9 @@ elseif get(ETh,'Userdata') == 1     % The user pressed the Export button
         end
         ExportInfo.ObjectNames = fields(find(buttonchoice));  % Get the fields for which the radiobuttons are enabled
     end
-    close(ETh)
+    delete(ETh)
 else
+    delete(ETh);
     ExportInfo.ObjectNames = [];
 end
 

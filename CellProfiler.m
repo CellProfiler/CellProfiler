@@ -1375,8 +1375,8 @@ elseif strcmp(InputType, 'popupmenu')
     ChoiceList = get(handles.(['VariableBox' VariableNumberStr]),'string');
     if strcmp('Other..', ChoiceList{UserEntry})
         CustomInput = inputdlg('Enter your custom input: ');
-        if isempty(CustomInput{1})
-            UserEntry=1;
+        if isempty(CustomInput)
+            set(handles.(['VariableBox' VariableNumberStr]),'value',1);
         else
             ChoiceList(numel(ChoiceList)) = CustomInput;
             ChoiceList(numel(ChoiceList)+1) = {'Other..'};

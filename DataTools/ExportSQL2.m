@@ -110,7 +110,12 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     if ~ModuleCall,load(fullfile(DataPath,CellProfilerDataFileNames{FileNo}));end
 
     % Get the object types, e.g. 'Image', 'Cells', 'Nuclei',...
-    ObjectTypes = fieldnames(handles.Measurements);
+    try
+        ObjectTypes = fieldnames(handles.Measurements);
+    catch
+        errordlg('The output file does not contain a field called Measurements');
+        return;
+    end
 
     for ObjectTypeNo = 1:length(ObjectTypes)                                          % Loop over the objects
 

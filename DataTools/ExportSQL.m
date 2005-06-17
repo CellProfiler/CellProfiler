@@ -82,8 +82,14 @@ end
 %%% ------------------------------------------------------------------------------ %%%
 %%% Get list of measurement and file names (from the first CellProfiler data file) %%%
 %%% ------------------------------------------------------------------------------ %%%
-load(fullfile(DataPath,CellProfilerDataFileNames{1}));                            % Load handles structure from the first data file
-FilenameFields = fieldnames(handles.Measurements.GeneralInfo);                    % Get the fields where the filenames are stored
+load(fullfile(DataPath,CellProfilerDataFileNames{1}));
+try% Load handles structure from the first data file
+    FilenameFields = fieldnames(handles.Measurements.GeneralInfo);                % Get the fields where the filenames are stored
+catch
+    errordlg('The output file does not contain a field called Measurements.');
+    return;
+end
+
 FilenameFields = FilenameFields(~cellfun('isempty',strfind(FilenameFields,'Filename')));            %                       .
 
 handles.Measurements = rmfield(handles.Measurements,'GeneralInfo');               % Remove the GeneralInfo field, only interested in the measurements

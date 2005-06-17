@@ -109,7 +109,13 @@ end
 fprintf(fid,'\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
 
 % Get variable names used
-VariableNames = fieldnames(handles.Measurements.Image);
+
+try
+    VariableNames = fieldnames(handles.Measurements.Image);
+catch
+    errordlg('The output file does not contain a field called Measurements.');
+    return;
+end
 Variableindex = find(cellfun('isempty',strfind(VariableNames,'Filename'))==0);
 VariableNames = VariableNames(Variableindex);
 

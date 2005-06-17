@@ -24,18 +24,14 @@ function SaveImageAs(handles)
 %
 % $Revision$
 
-MsgboxHandle = CPmsgbox('Click on the image you wish to save or hit anything on the keyboard to cancel. This window will be closed automatically.');
-keyPress=waitforbuttonpress;
-if keyPress == 0
-    ClickedImage = getimage(gca);
-    delete(MsgboxHandle)
+    Image = getimage(gca);
     Answers = inputdlg({'Enter file name (no extension)','Enter image file format (e.g. tif,jpg)','If compatible with that file format, save as 16-bit image?'},'Save Image As',1,{'A','tif','no'});
     if isempty(Answers) ~= 1
         FileName = char(Answers{1});
         Extension = char(Answers{2});
         SixteenBit = char(Answers{3});
         if strcmp(SixteenBit,'yes') == 1
-            ClickedImage = uint16(65535*ClickedImage);
+            Image = uint16(65535*Image);
         end
         CompleteFileName = [FileName,'.',Extension];
         %%% Checks whether the specified file name will overwrite an
@@ -45,16 +41,19 @@ if keyPress == 0
         if OutputFileOverwrite ~= 0
             Answer = CPquestdlg(['A file with the name ', CompleteFileName, ' already exists at ', handles.Current.DefaultOutputDirectory,'. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
             if strcmp(Answer,'Yes') == 1;
-                imwrite(ClickedImage, ProposedFileAndPathname, Extension)
+                if strcmpi(Extension,'mat')
+                    save(ProposedFileAndPathname,'Image');
+                else
+                    imwrite(Image, ProposedFileAndPathname, Extension)
+                end
                 CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
             end
         else
-            imwrite(ClickedImage, ProposedFileAndPathname, Extension)
+            if strcmpi(Extension,'mat')
+                    save(ProposedFileAndPathname,'Image');
+            else
+                    imwrite(Image, ProposedFileAndPathname, Extension)
+            end
             CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
         end
-    else
-        try %MsgboxHandle might already be deleted if button pressed is esc
-            delete(MsgboxHandle);
-        end
     end
-end

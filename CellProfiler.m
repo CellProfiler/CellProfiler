@@ -219,8 +219,9 @@ handles.Current.CurrentHandles = findobj;
 %%% confirmation prior to closing.
 %%% First, obtains the handle for the main GUI window (aka figure1).
 ClosingFunction = ...
-    ['deleteme = CPquestdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme'];
-%%% Sets the closing function of the Main GUI window to be the line above.
+    ['deleteme = CPquestdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes'';  CellProfiler(''CloseWindows_Helper'',gcbo,[],guidata(gcbo)), delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme'];
+%%% Sets the closing function of the Main GUI window to be the line
+%%% above.
 set(handles.figure1,'CloseRequestFcn',ClosingFunction);
 
 %%% Obtains the screen size.
@@ -2106,31 +2107,38 @@ function CloseWindows_Callback(hObject, eventdata, handles) %#ok We want to igno
 %%% Requests confirmation to really delete all the figure windows.
 Answer = CPquestdlg('Are you sure you want to close all figure windows, timers, and message boxes that CellProfiler created?','Confirm','Yes','No','Yes');
 if strcmp(Answer, 'Yes') == 1
-    %%% All CellProfiler windows are now marked with 
-    %%%      UserData.Application = 'CellProfiler'
-    %%% so they can be found and deleted. This will get rid both windows
-    %%% from current CP session and leftover windows from previous CP runs
-    %%% (e.g., if just close CP with windows still open)
-    GraphicsHandles = findobj('-property','UserData');
-    for k=1:length(GraphicsHandles)
-        if (ishandle(GraphicsHandles(k)))
-            userData = get(GraphicsHandles(k),'UserData');
-            if (isfield(userData,'Application') && ...
+    %%% Run the CloseWindows_Helper function
+    CloseWindows_Helper(hObject, eventdata, handles);
+end
+
+
+% --- CloseWindows_Helper function was called because it is called from two
+% separate places...from the close windows button and when the user quits
+% CellProfiler
+function CloseWindows_Helper(hObject, eventdata, handles)
+%%% All CellProfiler windows are now marked with
+%%%      UserData.Application = 'CellProfiler'
+%%% so they can be found and deleted. This will get rid both windows
+%%% from current CP session and leftover windows from previous CP runs
+%%% (e.g., if just close CP with windows still open)
+GraphicsHandles = findobj('-property','UserData');
+for k=1:length(GraphicsHandles)
+    if (ishandle(GraphicsHandles(k)))
+        userData = get(GraphicsHandles(k),'UserData');
+        if (isfield(userData,'Application') && ...
                 isstr(userData.Application) && ...
                 strcmp(userData.Application, 'CellProfiler'))
-                %%% Closes the figure windows.
-                try
-                    delete(GraphicsHandles(k));
-                end
+            %%% Closes the figure windows.
+            try
+                delete(GraphicsHandles(k));
             end
         end
     end
-    %%% Finds and closes timer windows, which have HandleVisibility off.
-    TimerHandles = findall(findobj, 'Name', 'Timer');
-    try
-        delete(TimerHandles)
-    end
-    
+end
+%%% Finds and closes timer windows, which have HandleVisibility off.
+TimerHandles = findall(findobj, 'Name', 'Timer');
+try
+    delete(TimerHandles)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

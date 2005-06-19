@@ -3,9 +3,16 @@ function [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles)
 %   This function takes the user through three list dialogs where a
 %   specific feature is chosen. It is possible to go back and forth
 %   between the list dialogs. The chosen feature can be identified
-%   via the output variables
-%
+%   via the output variables as 
+%   handles.Measurements.(ObjectTypename).(FeatureType){FeatureNo}
+%   Empty variables will be returned if the cancel button is pressed.
 
+%%% Quick check if it seems to be a CellProfiler file or not
+if ~isfield(handles,'Measurements')
+    errordlg('The selected file does not contain any measurements.')
+    ObjectTypename = [];FeatureType = [];FeatureNo = [];
+    return
+end
 
 %%% Extract the fieldnames of measurements from the handles structure.
 MeasFieldnames = fieldnames(handles.Measurements);

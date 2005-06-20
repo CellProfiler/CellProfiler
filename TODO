@@ -48,11 +48,6 @@ no conflict, but we should perhaps everything consistent."
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
-- Make all pop-up windows use the proper background color and
-       come to the center of the CP window (helpdlg, warndlg, msgbox):
-       requires getting the handle then setting the color and
-       position. Also, for the variablerevisionnumber window, set colors appropriately.
-
 - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
        an email from Mathworks describing the issue, thread QW38).
        Allow asking if numbers are in rows or columns.  Check offsets,
@@ -104,7 +99,7 @@ no conflict, but we should perhaps everything consistent."
 
 - 'Report bug' button in CellProfiler's main GUI.
 
-- Have the save settings function automatically add SET to the
+- Have the save settings function automatically add SET to the  
        name > can't currently do it with uisave. 
 
 - Make a module using code from ImageJ
@@ -114,8 +109,6 @@ no conflict, but we should perhaps everything consistent."
 - All modules: look for speed improvements (esp. imresize?)
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
-
-- It would be nice if clicking '+' to add a module to the pipeline added the module after the point you have highlighted in the pipeline, rather than always adding the new module to the end.
 
 [Do the following prior to releasing:
 - Smart Indent
@@ -450,7 +443,16 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 - Done (Joo Han) - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
 - Done (Joo Han) - ++ Prevent clicking pause/cancel buttons twice in the timer window.
+<<<<<<< TODO
+
+
+- Done (Joo Han) - It would be nice if clicking '+' to add a module to the pipeline added the module after the point you have highlighted in the pipeline, rather than always adding the new module to the end.
 
 - I think the only way to do this is take away the ability to select multiple things, which isn't worth it. (Colin) - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
        move from one highlighted algorithm to the next (right now, the
        dotted line highlighting moves but nothing happens).
+
+- (Joo Han is working on this) Make all pop-up windows use the proper background color and
+       come to the center of the CP window (helpdlg, warndlg, msgbox):
+       requires getting the handle then setting the color and
+       position. Also, for the variablerevisionnumber window, set colors appropriately.

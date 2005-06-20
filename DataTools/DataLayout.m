@@ -58,11 +58,11 @@ NumberColumns = str2double(Answers{2});
 TotalSamplesToBeGridded = NumberRows*NumberColumns;
 NumberSamplesImported = length(Measurements);
 if TotalSamplesToBeGridded > NumberSamplesImported
-    h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
+    h = CPwarndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
     waitfor(h)
     Measurements(NumberSamplesImported+1:TotalSamplesToBeGridded) = Measurements(NumberSamplesImported);
 elseif TotalSamplesToBeGridded < NumberSamplesImported
-    h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
+    h = CPwarndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
     waitfor(h)
     Measurements(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
 end
@@ -107,11 +107,11 @@ figure, imagesc(MeanImage), title(TitleString,'fontsize',8), colorbar
 % TotalSamplesToBeGridded = NumberRows*NumberColumns;
 % NumberSamplesImported = length(IncomingData);
 % if TotalSamplesToBeGridded > NumberSamplesImported
-%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
+%     h = CPwarndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but only ', num2str(NumberSamplesImported), ' measurements were imported. The remaining spaces in the layout will be filled in with the value of the last sample.']);
 %     waitfor(h)
 %     IncomingData(NumberSamplesImported+1:TotalSamplesToBeGridded) = IncomingData(NumberSamplesImported);
 % elseif TotalSamplesToBeGridded < NumberSamplesImported
-%     h = warndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
+%     h = CPwarndlg(['You have specified a layout of ', num2str(TotalSamplesToBeGridded), ' samples in the layout, but ', num2str(NumberSamplesImported), ' measurements were imported. The imported measurements at the end will be ignored.']);
 %     waitfor(h)
 %     IncomingData(TotalSamplesToBeGridded+1:NumberSamplesImported) = [];
 % end

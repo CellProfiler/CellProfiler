@@ -927,7 +927,7 @@ end
 %%% Close the file
 try
     fclose(fid);
-    h = helpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
+    h = CPhelpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
     waitfor(h)
 catch
     h = errordlg(['Unable to close file ',FileName,'.']);

@@ -82,7 +82,7 @@ else extension = fname(end-2:end);
                 [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(Newhandles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
                 if CancelOption == 1
                     fclose(fid);
-                    warndlg('None of the sample info was saved.')
+                    CPwarndlg('None of the sample info was saved.')
                     return
                 end
             end
@@ -119,7 +119,7 @@ else extension = fname(end-2:end);
             [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
             if CancelOption == 1
                 fclose(fid);
-                warndlg('None of the sample info was saved.')
+                CPwarndlg('None of the sample info was saved.')
                 return
             end
             fclose(fid);

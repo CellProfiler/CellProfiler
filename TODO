@@ -10,10 +10,6 @@ WANT IT NOW:
 
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
-- When viewing algorithms in the main GUI on the Mac platform, the down arrow should
-       move from one highlighted algorithm to the next (right now, the
-       dotted line highlighting moves but nothing happens).
-
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
 - Be sure that all exporting tools will function properly if some
@@ -454,3 +450,7 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 - Done (Joo Han) - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
 
 - Done (Joo Han) - ++ Prevent clicking pause/cancel buttons twice in the timer window.
+
+- I think the only way to do this is take away the ability to select multiple things, which isn't worth it. (Colin) - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
+       move from one highlighted algorithm to the next (right now, the
+       dotted line highlighting moves but nothing happens).

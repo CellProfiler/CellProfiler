@@ -109,6 +109,11 @@ end
 FigHeight=50;
 DefFigPos(3:4)=[FigWidth FigHeight];
 
+ScreenDim = get(0,'ScreenSize');
+
+DefFigPos(1) = (ScreenDim(3)-FigWidth)/2;
+DefFigPos(2) = (ScreenDim(4)-FigHeight)/2;
+
 OKWidth=40;
 OKHeight=17;
 OKXOffset=(FigWidth-OKWidth)/2;
@@ -146,9 +151,7 @@ if ~strcmp(CreateMode,'non-modal'),
       OldFig(2:end)=[];
     end % if length
     BoxHandle=OldFig;
-    CurPos=get(BoxHandle,'Position');
-    CurPos(3:4)=[FigWidth FigHeight];
-    set(BoxHandle,'Position',CurPos);
+    set(BoxHandle,'Position',DefFigPos);
     set(BoxHandle,'Color',[0.7 0.7 0.9]);
     BoxChildren=get(BoxHandle,'Children');
     delete(BoxChildren);
@@ -167,7 +170,7 @@ if CreateModeFlag,
   BoxHandle=dialog(                                            ...
                   'Name'            ,TitleString             , ...
                   'Pointer'         ,'arrow'                 , ...
-                  'Units'           ,'points'                , ...
+                  'Units'           ,'pixels'                , ...
                   'Visible'         ,'off'                   , ...
                   'KeyPressFcn'     ,@doKeyPress             , ...
                   'WindowStyle'     ,WindowStyle             , ...
@@ -175,7 +178,7 @@ if CreateModeFlag,
                   'Toolbar'         ,'none'                  , ...
                   'Tag'             ,MsgboxTag               , ...
                   'Color'           ,[0.7 0.7 0.9]             ...
-                  );
+                   );
 else,
   set(BoxHandle,   ...
      'WindowStyle'     ,WindowStyle, ...
@@ -254,8 +257,8 @@ else,
 end % if ~strcmp
 
 OKXOffset=(FigWidth-OKWidth)/2; 
-DefFigPos(3:4)=[FigWidth FigHeight];
-DefFigPos = getnicedialoglocation(DefFigPos, get(BoxHandle,'Units'));
+%DefFigPos(3:4)=[FigWidth FigHeight];
+%DefFigPos = getnicedialoglocation(DefFigPos, get(BoxHandle,'Units'));
 
 % if there is a figure out there and it's modal, we need to be modal too
 if ~isempty(gcbf) && strcmp(get(gcbf,'WindowStyle'),'modal')

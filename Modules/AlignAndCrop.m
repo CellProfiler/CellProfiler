@@ -219,7 +219,7 @@ PreRealImage = im2bw(ExRealImage,.5);
 %%% finds the size of each of the images
 [TracedY,TracedX] = size(PreTracedImage);
 [RealY,RealX] = size(PreRealImage);
-    %warndlg(['The dimensions are as follows: TY=',num2str(TracedY),' TX=',num2str(TracedX),' RY=',num2str(RealY),' RX=',num2str(RealX)],'Alert!')
+    %CPwarndlg(['The dimensions are as follows: TY=',num2str(TracedY),' TX=',num2str(TracedX),' RY=',num2str(RealY),' RX=',num2str(RealX)],'Alert!')
 %%% checks that for both dimensions, the traced image is bigger than the
 %%% real one
 drawnow
@@ -235,13 +235,13 @@ RealResolution2 = RealY / PrintedHeight;
 if strcmp(upper(Orientation),'PORTRAIT') == 1
     TracedResolution = TracedX /8.5;
     TracedResolution2 = TracedY /11;
-        %warndlg('I think that you wrote portrait')
+        %CPwarndlg('I think that you wrote portrait')
 else TracedResolution = TracedX / (11);
     TracedResolution2 = TracedY / (8.5);
-        %warndlg('I think that you wrote landscape')
+        %CPwarndlg('I think that you wrote landscape')
 end
 %%% activate this line to pop up a dialog box with the resolution values in it
-    %warndlg(['RR is ',num2str(RealResolution),',RR2 is ',num2str(RealResolution2),', TR is ',num2str(TracedResolution),', TR2 is ',num2str(TracedResolution2)],'Alert!')
+    %CPwarndlg(['RR is ',num2str(RealResolution),',RR2 is ',num2str(RealResolution2),', TR is ',num2str(TracedResolution),', TR2 is ',num2str(TracedResolution2)],'Alert!')
 drawnow
 
 if RealResolution ~= RealResolution2
@@ -253,11 +253,11 @@ end
 drawnow
 %%% Resizes the real image to be at the same resolution as the traced image
 ResizingCoefficient = TracedResolution / RealResolution;
-    %warndlg(['Resizing Coefficient = ',num2str(ResizingCoefficient)],'NFO 4 U')
+    %CPwarndlg(['Resizing Coefficient = ',num2str(ResizingCoefficient)],'NFO 4 U')
 ResizedRealImage = imresize(RealImage,ResizingCoefficient,'bicubic');
 %%% finds the dimensions of the resized real image
 [RRealX,RRealY] = size(ResizedRealImage);
-    %warndlg(['RRealX = ',num2str(RRealX),', RRealY = ',num2str(RRealY)],'Yeahhhhh, About That...')
+    %CPwarndlg(['RRealX = ',num2str(RRealX),', RRealY = ',num2str(RRealY)],'Yeahhhhh, About That...')
 %%% finds the difference in dimensions to create a margin value
 XDifference = TracedX - RRealX;
 YDifference = TracedY - RRealY;
@@ -286,15 +286,15 @@ XMD = RXM - XMargin;
 YMD = RYM - YMargin;
 if isequal(XMD,0) == 0
     if isequal(YMD,0) == 0
-        warndlg(['Warning: neither margin value is an integer, and therefore problems may appear in the very near future. XM = ',num2str(XMargin),', YM = ',num2str(YMargin)],'Feeling Unwhole')
+        CPwarndlg(['Warning: neither margin value is an integer, and therefore problems may appear in the very near future. XM = ',num2str(XMargin),', YM = ',num2str(YMargin)],'Feeling Unwhole')
         YMargin1 = ceil(YMargin); 
         YMargin2 = floor(YMargin);
-    else warndlg('Warning: the XMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the YMargin value is an integer','Feeling Unwhole')
+    else CPwarndlg('Warning: the XMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the YMargin value is an integer','Feeling Unwhole')
     end
     XMargin1 = ceil(XMargin); 
     XMargin2 = floor(XMargin);
 elseif isequal(YMD,0) == 0
-    warndlg('Warning: the YMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the XMargin value is an integer','Feeling Unwhole')
+    CPwarndlg('Warning: the YMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the XMargin value is an integer','Feeling Unwhole')
     YMargin1 = ceil(YMargin); 
     YMargin2 = floor(YMargin);
 else XMargin1 = XMargin; 
@@ -316,12 +316,12 @@ TwoDTracedImage = rgb2gray(TracedImage);
 %%% one layer but applying movements to the whole image
 InvertedTraced = imcomplement(TwoDTracedImage);
 [sx,sy] = autoalign(InvertedTraced,ExpandedRealImage);
-    %warndlg('The autoalign step has completed','Notice:')
+    %CPwarndlg('The autoalign step has completed','Notice:')
 AlignedTracedImage = subim(TwoDTracedImage, sx, sy);
 AlignedRealImage = subim(ExpandedRealImage, -sx, -sy);
-    %warndlg('The subim steps have completed','Notice')
+    %CPwarndlg('The subim steps have completed','Notice')
 % Results = ['(Traced vs. Real: X ',num2str(sx),', Y ',num2str(sy),')'];
-    %warndlg(['All image processing has completed. Results are ',Results],'Notice:')
+    %CPwarndlg(['All image processing has completed. Results are ',Results],'Notice:')
 %%% Checks that the size of aligned images is the same
 if isequal(size(AlignedTracedImage),size(AlignedRealImage)) == 0
     error('After the alignment step was completed in the AlignAndCrop module, the two images were different sizes for some reason.  This is not good.')

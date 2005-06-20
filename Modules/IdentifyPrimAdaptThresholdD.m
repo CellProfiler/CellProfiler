@@ -263,7 +263,7 @@ drawnow
 %%% Neighborhood should be an odd number.
 if rem(NeighborhoodSize,2) == 0
 NeighborhoodSize = NeighborhoodSize - 1;
-warndlg(['The neighborhood size in the Identify Primary Adaptive Threshold module must be an odd number. The value that will be used is ', num2str(NeighborhoodSize), '.'])
+CPwarndlg(['The neighborhood size in the Identify Primary Adaptive Threshold module must be an odd number. The value that will be used is ', num2str(NeighborhoodSize), '.'])
 drawnow
 end
 

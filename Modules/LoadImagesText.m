@@ -154,9 +154,12 @@ TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = /
 ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If an image slot above is not being used, type a slash  /  in the box. Do you want to match the text exactly (E), or use regular expressions (R)?
-%defaultVAR09 = E
+%textVAR09 = If an image slot above is not being used, type a slash  /  in the box. Do you want to match the text exactly or use regular expressions?
+%choiceVAR09 = Exact
+%choiceVAR09 = Regular expressions
 ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+ExactOrRegExp = ExactOrRegExp(1);
+%inputtypeVAR09 = popupmenu
 
 %textVAR10 = Type the file format of the images
 %defaultVAR10 = tif

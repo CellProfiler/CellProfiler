@@ -476,7 +476,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     fclose(BatchFile);
 end
 
-helpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the invidual .m scripts for processing on your cluster.', 'BatchFilesDialog');
+CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the invidual .m scripts for processing on your cluster.', 'BatchFilesDialog');
 
 %%% This is the first image set, so this is the first time seeing this
 %%% module.  It should cause a cancel so no further processing is done

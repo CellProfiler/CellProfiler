@@ -383,11 +383,11 @@ if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
     %%% Determines the number of rows and columns for later use.
     [NumberRowsSpotIdentifyingInfo, NumberColumnsSpotIdentifyingInfo] = size(SpotIdentifyingInfo);
     if NumberRowsSpotIdentifyingInfo ~= NumberRows
-        warndlg('NumberRowsSpotIdentifyingInfo does not match NumberRows.')
+        CPwarndlg('NumberRowsSpotIdentifyingInfo does not match NumberRows.')
         error(['There were ', num2str(NumberRowsSpotIdentifyingInfo), ' rows and ', num2str(NumberColumnsSpotIdentifyingInfo), ' columns of data imported, but you specified that there are ', num2str(NumberRows), ' rows and ', num2str(NumberColumns), ' columns.']);
     end
     if NumberColumnsSpotIdentifyingInfo ~= NumberColumns
-        warndlg('NumberColumnsSpotIdentifyingInfo does not match NumberColumns.')
+        CPwarndlg('NumberColumnsSpotIdentifyingInfo does not match NumberColumns.')
         error(['There were ', num2str(NumberRowsSpotIdentifyingInfo), ' rows and ', NumberColumnsSpotIdentifyingInfo, ' columns of data imported, but you specified that there are ', NumberRows, ' rows and ', NumberColumns, ' .']);
     end
     %%% Draws the SpotIdentifyingInfo, though they are initially invisible until the
@@ -448,15 +448,15 @@ uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [270 6 45 20], ...
     'Callback', ChangeCoordinatesButtonFunction, 'parent',gcf);
 
-ShowSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''on''); end, clear Handles';
+ShowSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''on''); end, clear Handles';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Show', 'Position', [330 6 45 20], ...
     'Callback', ShowSpotIdentifyingInfoButtonFunction, 'parent',gcf);
-HideSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''off''); end, clear Handles';
+HideSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''off''); end, clear Handles';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Hide', 'Position', [380 6 45 20], ...
     'Callback', HideSpotIdentifyingInfoButtonFunction, 'parent',gcf);
-ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, warndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
+ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [430 6 45 20], ...
     'Callback', ChangeSpotIdentifyingInfoButtonFunction, 'parent',gcf);

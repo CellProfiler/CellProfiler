@@ -11,7 +11,9 @@ if nargin>0 && isfield(varargin{1},'ImageToolsPopUpMenu')
         end
     end
     set(FigHandles,'UserData',userData);
+    set(FigHandles,'Color',[0.7 0.7 0.9]);
 else
     FigHandles=figure(varargin{:});
     set(FigHandles,'UserData',userData);
+    set(FigHandles,'Color',[0.7 0.7 0.9]);
 end

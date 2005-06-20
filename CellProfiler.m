@@ -257,7 +257,7 @@ uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
 
 ListOfDataTools=get(handles.DataToolsPopUpMenu,'String');
 for j=2:length(ListOfDataTools)
-    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));']);
+    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));clear ans']);
 end
 
 set(handles.DataToolsPopUpMenu,'Visible','off')

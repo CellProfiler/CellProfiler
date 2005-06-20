@@ -451,7 +451,7 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
        dotted line highlighting moves but nothing happens).
 
 - Done (Joo Han) Make all pop-up windows use the proper background color and
-       come to the center of the CP window (helpdlg, warndlg, msgbox):
+       come to the center of the CP window (helpdlg, warndlg, msgbox): (changed as center of screen, will need handles to get CP center..)
        requires getting the handle then setting the color and
-       position. Also, for the variablerevisionnumber window, set colors appropriately.
+       position. (Also, for the variablerevisionnumber window, set colors appropriately.)<--???
         ***Please use CPhelpdlg and CPwarndlg from now on***

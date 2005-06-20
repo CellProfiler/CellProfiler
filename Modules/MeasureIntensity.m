@@ -322,9 +322,9 @@ for i = 1:3
         'MassDisplacement'};
 
 
-    %%% Count objects
-    ObjectCount = max(LabelMatrixImage(:));
-
+    %%% Get pixel indexes (fastest way), and count objects
+    props = regionprops(LabelMatrixImage,'PixelIdxList');
+    ObjectCount = length(props);
     if ObjectCount > 0
 
         Basic = zeros(ObjectCount,4);
@@ -333,15 +333,14 @@ for i = 1:3
         for Object = 1:ObjectCount
 
             %%% Measure basic set of Intensity features
-            [r,c] = find(LabelMatrixImage == Object);
-            index = sub2ind(size(LabelMatrixImage),r,c);
-            Basic(Object,1) = sum(OrigImage(index));
-            Basic(Object,2) = mean(OrigImage(index));
-            Basic(Object,3) = std(OrigImage(index));
-            Basic(Object,4) = min(OrigImage(index));
-            Basic(Object,5) = max(OrigImage(index));
+            Basic(Object,1) = sum(OrigImage(props(Object).PixelIdxList));
+            Basic(Object,2) = mean(OrigImage(props(Object).PixelIdxList));
+            Basic(Object,3) = std(OrigImage(props(Object).PixelIdxList));
+            Basic(Object,4) = min(OrigImage(props(Object).PixelIdxList));
+            Basic(Object,5) = max(OrigImage(props(Object).PixelIdxList));
 
             %%% Cut patch so that we don't have to deal with entire image
+            [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
             rmax = min(sr,max(r));
             rmin = max(1,min(r));
             cmax = min(sc,max(c));

@@ -399,6 +399,23 @@ drawnow
 %%% object, with no numbers skipped.
 FinalLabelMatrixImage = bwlabel(FinalBinary);
 
+%%% Remove objects with no marker in them
+changed = 0;
+tmp = regionprops(FinalLabelMatrixImage,'PixelIdxList');      % This is a very fast way to get pixel indexes for the objects
+for k = 1:length(tmp)
+    %find(FinalLabelMatrixImage==k);
+    if sum(MaximaImage(tmp(k).PixelIdxList)) == 0              % If there is no maxima in these pixels, exclude object
+        FinalLabelMatrixImage(tmp(k).PixelIdxList) = 0;
+        changed = 1;
+    end
+end
+
+% Do a final relabeling if there were objects with no markers in them
+if changed == 1
+    FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage>0);
+end
+
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%

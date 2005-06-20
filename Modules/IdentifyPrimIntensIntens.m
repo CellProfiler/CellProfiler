@@ -402,17 +402,21 @@ FinalBinary = imfill(FinalBinaryPre, 'holes');
 FinalLabelMatrixImage = bwlabel(FinalBinary);
 
 
-% Quick fix: Remove objects with no marker in them
-List = setdiff(unique(FinalLabelMatrixImage(:)),0);
-for k = 1:length(List)
-    index = find(FinalLabelMatrixImage==List(k));         % Get index for Object nr k pixels
-    if sum(MaximaImage(index)) == 0                       % If there is no maximum in these pixels, exclude object
-        FinalLabelMatrixImage(index) = 0;
+%%% Remove objects with no marker in them
+changed = 0;
+tmp = regionprops(FinalLabelMatrixImage,'PixelIdxList');      % This is a very fast way to get pixel indexes for the objects
+for k = 1:length(tmp)
+    %find(FinalLabelMatrixImage==k);
+    if sum(MaximaImage(tmp(k).PixelIdxList)) == 0              % If there is no maxima in these pixels, exclude object
+        FinalLabelMatrixImage(tmp(k).PixelIdxList) = 0;
+        changed = 1;
     end
 end
-FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage>0);
 
-%%% Write the threshold and number of objects to the measurements structure
+% Do a final relabeling if there were objects with no markers in them
+if changed == 1
+    FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage>0);
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%

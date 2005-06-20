@@ -336,7 +336,7 @@ for i = 1:3
     
     %%% Count objects
     ObjectCount = max(LabelMatrixImage(:));
-
+    
     if ObjectCount > 0
 
         %%% Get Gabor features.
@@ -367,7 +367,6 @@ for i = 1:3
         [x,y] = meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
         
         % Apply Gabor filters and store filter outputs in the Centroid pixels
-        Fourier_OrigImage = fft2(OrigImage);
         GaborFeatureNo = 1;
         Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
         for m = 1:length(f)
@@ -420,10 +419,11 @@ for i = 1:3
         %%% Have to loop over the objects
         Haralick = zeros(ObjectCount,13);
         [sr sc] = size(LabelMatrixImage);
+        props = regionprops(LabelMatrixImage,'PixelIdxList');   % Get pixel indexes in a fast way
         for Object = 1:ObjectCount
 
             %%% Cut patch so that we don't have to deal with entire image
-            [r,c] = find(LabelMatrixImage == Object);
+            [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
             rmax = min(sr,max(r));
             rmin = max(1,min(r));
             cmax = min(sc,max(c));

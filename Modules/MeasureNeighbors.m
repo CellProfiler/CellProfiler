@@ -185,9 +185,10 @@ ImageOfNeighbors = -ones(sr,sc);
 NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
 IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
 se = strel('disk',d,0);
+props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 for k = 1:max(IncomingLabelMatrixImage(:))
     % Cut patch
-    [r,c] = find(IncomingLabelMatrixImage == k);
+    [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
     rmax = min(sr,max(r) + (d+1));
     rmin = max(1,min(r) - (d+1));
     cmax = min(sc,max(c) + (d+1));

@@ -191,8 +191,9 @@ end
 % measurements and the quantized measurements
 NonQuantizedImage = zeros(size(LabelMatrixImage));
 NbrOfObjects = max(LabelMatrixImage(:));
+props = regionprops(LabelMatrixImage,'PixelIdxList');              % Pixel indexes for objects fast
 for k = 1:NbrOfObjects
-    NonQuantizedImage(find(LabelMatrixImage == k)) = Measurements(k);
+    NonQuantizedImage(props(k).PixelIdxList) = Measurements(k);
 end
 QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
 QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);

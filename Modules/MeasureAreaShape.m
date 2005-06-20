@@ -46,13 +46,13 @@ ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %infotypeVAR02 = objectgroup
-%textVAR02 = 
+%textVAR02 =
 %choiceVAR02 = Do not use
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %infotypeVAR03 = objectgroup
-%textVAR03 = 
+%textVAR03 =
 %choiceVAR03 = Do not use
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
@@ -125,12 +125,15 @@ for i = 1:length(ObjectNameList)
     NumObjects = max(LabelMatrixImage(:));
     if  NumObjects> 0
 
+        %%% Get the basic shape features
+        props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
+            'MajorAxisLength','MinorAxisLength');
+
         %%% Calculate Zernike shape features
-        % Use ConvexArea to automatically calculate the average equivalent diameter
+        % Use Area to automatically calculate the average equivalent diameter
         % of the objects, and then use this diameter to determine the grid size
         % of the Zernike functions
-        tmp = regionprops(LabelMatrixImage,'ConvexArea');
-        diameter = floor(sqrt(4/pi*mean(cat(1,tmp.ConvexArea)))+1);
+        diameter = floor(sqrt(4/pi*mean(cat(1,props.Area)))+1);
         if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 
         % Calculate the Zernike basis functions
@@ -183,10 +186,6 @@ for i = 1:length(ObjectNameList)
             Perimeter(Object) = sum(perim(:));
 
         end
-     
-        %%% Get the basic shape features
-        props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
-            'MajorAxisLength','MinorAxisLength');
 
         % Form factor
         FormFactor = 4*pi*cat(1,props.Area) ./ Perimeter.^2;

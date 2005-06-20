@@ -340,8 +340,12 @@ function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
 errFlg = 0;
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
+    pause(.1);
+    figure(handles.figure1);
 else
     [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
+    pause(.1);
+    figure(handles.figure1);
 end
 
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
@@ -397,6 +401,8 @@ else
     %%% If the module.m file is not on the path, it won't be
     %%% found, so ask the user where the modules are.
     Pathname = uigetdir('','Please select directory where modules are located');
+    pause(.1);
+    figure(handles.figure1);
 end
 
 %%defaultVariableRevisionNumbers and revisionConfirm are both variables
@@ -738,6 +744,8 @@ if FileName ~= 0
             %%% If the module.m file is not on the path, it won't be
             %%% found, so ask the user where the modules are.
             PathnameModules = uigetdir('','Please select directory where modules are located');
+            pause(.1);
+            figure(handles.figure1);
             if PathnameModules == 0
                 return
             end
@@ -844,6 +852,8 @@ if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
 else
     [ModuleNamedotm,Pathname] = uigetfile(fullfile(cd,'.', '*.m'),...
      'Choose an image analysis module');
+    pause(.1);
+    figure(handles.figure1);
     PutModuleInListBox(ModuleNameDotm,Pathname,handles);
 end
 
@@ -1556,11 +1566,11 @@ global EnteredPreferences
 %%% Sets the functions of the buttons and edit boxes in the dialog box.
 
 PixelSizeEditBoxCallback = 'PixelSize = str2double(get(gco,''string'')); if isempty(PixelSize) == 1 | ~isnumeric(PixelSize), PixelSize = {''1''}, set(gco,''string'',PixelSize), end, clear';
-ImageDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir = CurrentChoice; else, tempdir=pwd; end, DefaultImageDirectory = uigetdir(tempdir,''Select the default image directory''); if DefaultImageDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultImageDirectory), end, clear';
+ImageDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ImageDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir = CurrentChoice; else, tempdir=pwd; end, DefaultImageDirectory = uigetdir(tempdir,''Select the default image directory''); pause(.1);figure(findobj(''Tag'',''figure1''));figure(findobj(''Tag'',''SetPreferenceWindow''));if DefaultImageDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultImageDirectory), end, clear';
 ImageDirEditBoxCallback = 'DefaultImageDirectory = get(gco,''string''); if(~isdir(DefaultImageDirectory)); warndlg(''That is not a valid directory'');end;if isempty(DefaultImageDirectory); DefaultImageDirectory = pwd; set(gco,''string'',DefaultImageDirectory); end, clear';
-OutputDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else, tempdir=pwd; end, DefaultOutputDirectory = uigetdir(tempdir,''Select the default output directory''); if DefaultOutputDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultOutputDirectory), end, clear';
+OutputDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''OutputDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else, tempdir=pwd; end, DefaultOutputDirectory = uigetdir(tempdir,''Select the default output directory''); pause(.1);figure(findobj(''Tag'',''figure1''));figure(findobj(''Tag'',''SetPreferenceWindow''));if DefaultOutputDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultOutputDirectory), end, clear';
 OutputDirEditBoxCallback = 'DefaultOutputDirectory = get(gco,''string''); if(~isdir(DefaultOutputDirectory)); warndlg(''That is not a valid directory'');end;if isempty(DefaultOutputDirectory) == 1; DefaultOutputDirectory = pwd; set(gco,''string'',DefaultOutputDirectory), end, clear';
-ModuleDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else tempdir=pwd; end, DefaultModuleDirectory = uigetdir(tempdir,''Select the directory where modules are stored''); if DefaultModuleDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultModuleDirectory), end, clear';
+ModuleDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else tempdir=pwd; end, DefaultModuleDirectory = uigetdir(tempdir,''Select the directory where modules are stored''); pause(.1);figure(findobj(''Tag'',''figure1''));figure(findobj(''Tag'',''SetPreferenceWindow''));if DefaultModuleDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultModuleDirectory), end, clear';
 ModuleDirEditBoxCallback = 'DefaultModuleDirectory = get(gco,''string''); if(~isdir(DefaultModuleDirectory)); warndlg(''That is not a valid directory'');end;if isempty(DefaultModuleDirectory) == 1; DefaultModuleDirectory = pwd; set(gco,''string'',DefaultModuleDirectory), end, clear';
 
 %%% TODO: Add error checking to each directory edit box (does pathname exist).
@@ -1585,7 +1595,7 @@ SetPreferencesWindowHandle = figure(...
 'Position',[MainWinPos(1)+MainWinPos(3)/3 MainWinPos(2) MainWinPos(3)*2/3 MainWinPos(4)],...
 'Resize','off',...
 'HandleVisibility','on',...
-'Tag','figure1',...
+'Tag','SetPreferenceWindow',...
 'UserData',userData);
 
 InfoText = uicontrol(...
@@ -1852,8 +1862,12 @@ function BrowseImageDirectoryButton_Callback(hObject, eventdata, handles) %#ok W
 %%% directory to the chosen directory.
 if exist(handles.Current.DefaultImageDirectory, 'dir')
     pathname = uigetdir(handles.Current.DefaultImageDirectory,'Choose the directory of images to be analyzed');
+    pause(.1);
+    figure(handles.figure1);
 else
     pathname = uigetdir('','Choose the directory of images to be analyzed');
+    pause(.1);
+    figure(handles.figure1);
 end
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
 %%% happen.
@@ -1997,6 +2011,8 @@ function BrowseOutputDirectoryButton_Callback(hObject, eventdata, handles) %#ok 
 %%% that directory name into the edit box.  Also, changes the current
 %%% directory to the chosen directory.
 pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Choose the default output directory');
+pause(.1);
+figure(handles.figure1);
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
 %%% happen.
 if pathname == 0
@@ -3191,9 +3207,19 @@ handles = guidata(AddModuleWindowHandles.figure1);
 if(exist(handles.Preferences.DefaultModuleDirectory, 'dir'))
     [FileName PathName] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory, '.', '*.m'),...
         'Choose an image analysis module');
+    pause(.1);
+    figure(handles.figure1);
+    try
+        figure(AddModuleWindowHandles.AddModuleWindow);
+    end
 else
     [FileName PathName] = uigetfile(fullfile(cd, '.', '*.m'),...
         'Choose an image analysis module');
+    pause(.1);
+    figure(handles.figure1);
+    try
+        figure(AddModuleWindowHandles.AddModuleWindow);
+    end
 end
 PutModuleInListBox(FileName,PathName,handles);
 

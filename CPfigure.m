@@ -7,7 +7,7 @@ if nargin>0 && isfield(varargin{1},'ImageToolsPopUpMenu')
         TempMenu = uimenu('Label','CellProfiler Image Tools');
         ListOfImageTools=get(userData.MyHandles.ImageToolsPopUpMenu,'String');
         for j=2:length(ListOfImageTools)
-            uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''userData'');' char(ListOfImageTools(j)) '(UserData.MyHandles); clear UserData']);
+            uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''userData'');' char(ListOfImageTools(j)) '(UserData.MyHandles); clear UserData ans;']);
         end
     end
     set(FigHandles,'UserData',userData);

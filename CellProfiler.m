@@ -2368,7 +2368,7 @@ else
                 %%% resize the figure window appropriately.  The closing function of the
                 %%% figure window is set to wait until an image set is done processing
                 %%% before closing the window, to avoid unexpected results.              
-                set(handles.ba,'visible','on')
+                set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
 
                 %%% Label we attach to figures (as UserData) so we know
@@ -2756,7 +2756,7 @@ else
 %                         set(handles.(['VariableBox' TwoDigitString(VariableNumber)]),'enable','on','foregroundcolor','black');
 %                     end
 %                 end
-                set(handles.ba,'visible','off');
+                set(handles.CloseFigureButton,'visible','off');
                 set(handles.OpenFigureButton,'visible','off');
                 set(CancelAfterModuleButton_handle,'enable','off')
                 set(CancelAfterImageSetButton_handle,'enable','off')

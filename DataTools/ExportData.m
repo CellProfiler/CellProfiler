@@ -262,46 +262,80 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     %%% Write tab-separated file that can be imported into Excel
     % Header part
-    fprintf(fid,'%s\t\t', ObjectName);
+    fprintf(fid,'%s\n\n', ObjectName);
 
-    % Write feature names in one row
-    % Interleave feature names with commas and write to file
-    str = cell(2*length(FeatureNames),1);
-    str(1:2:end) = {'\n'};
-    str(2:2:end) = FeatureNames;
-    fprintf(fid,sprintf('%s\t',cat(2,str{:})));
+    if strcmp(ExportInfo.SwapRowsColumnInfo,'No')
+        % Write feature names in one row
+        % Interleave feature names with commas and write to file
+        str = cell(2*length(FeatureNames),1);
+        str(1:2:end) = {'\t'};
+        str(2:2:end) = FeatureNames;
+        fprintf(fid,sprintf('%s\n',cat(2,str{:})));
 
-    % Get the filenames
-    fields = fieldnames(handles.Measurements.Image);
-    Filenames  = fields(strmatch('Filename',fields));
-    
-    % Loop over the images sets
-    for imageset = 1:length(Measurements)
+        % Get the filenames
+        fields = fieldnames(handles.Measurements.Image);
+        Filenames  = fields(strmatch('Filename',fields));
 
-        % Update waitbar
-        waitbar(imageset/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
+        % Loop over the images sets
+        for imageset = 1:length(Measurements)
 
-        % Write info about the image set (a little unnecessary code here)
-        ImageName = handles.Measurements.Image.(Filenames{1}){imageset};
-        fprintf(fid,'Set #%d, %s',imageset,ImageName);
+            % Update waitbar
+            waitbar(imageset/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
 
-        % Write measurements row by row
-        if ~isempty(Measurements{imageset})
-            for row = 1:size(Measurements{imageset},1)                        % Loop over the rows
+            % Write info about the image set (a little unnecessary code here)
+            ImageName = handles.Measurements.Image.(Filenames{1}){imageset};
+            fprintf(fid,'Set #%d, %s',imageset,ImageName);
 
-                % If not the 'Image' field, write an object number
-                if ~strcmp(ObjectName,'Image')
-                fprintf(fid,'\n%d',row);
+            % Write measurements row by row
+            if ~isempty(Measurements{imageset})
+                for row = 1:size(Measurements{imageset},1)                        % Loop over the rows
+
+                    % If not the 'Image' field, write an object number
+                    if ~strcmp(ObjectName,'Image')
+                        fprintf(fid,'\t%d',row);
+                    end
+
+                    % Write measurements
+                    tmp = cellstr(num2str(Measurements{imageset}(row,:)','%g'));  % Create cell array with measurements
+                    str = cell(2*length(tmp),1);                           % Interleave with tabs
+                    str(1:2:end) = {'\t'};
+                    str(2:2:end) = tmp;
+                    fprintf(fid,sprintf('%s\n',cat(2,str{:})));            % Write to file
                 end
-                
-                % Write measurements
-                tmp = cellstr(num2str(Measurements{imageset}(row,:)','%g'));  % Create cell array with measurements
-                str = cell(2*length(tmp),1);                           % Interleave with tabs
-                str(1:2:end) = {'\n'};
-                str(2:2:end) = tmp;
-                fprintf(fid,sprintf('%s\t',cat(2,str{:})));            % Write to file
             end
         end
+    else
+        fprintf(fid,'\t%d',[]);
+        for imageset= 1:length(Measurements)
+            fields = fieldnames(handles.Measurements.Image);
+            Filenames  = fields(strmatch('Filename',fields));
+            fprintf(fid,'Set #%d, %s',imageset,handles.Measurements.Image.(Filenames{1}){imageset});
+            str = cell(size(Measurements{imageset}-1,1),1);
+            str(1:end)={'\t'};
+            fprintf(fid,sprintf('%s',cat(2,str{:})));
+        end
+        fprintf(fid,'\n%d',[]);
+        if ~strcmp(ObjectName,'Image')
+            for imageset= 1:length(Measurements)
+                Measurements{imageset} = cat(2,[1:size(Measurements{imageset},1)]',Measurements{imageset});
+            end
+        end
+        for i = 1:length(Measurements{1})
+            
+            % Update waitbar
+            waitbar(i/length(Measurements{1}),waitbarhandle,sprintf('Exporting %s',ObjectName));
+            
+            
+            fprintf(fid,'%s',FeatureNames{i});
+            tmp = {};
+            for imageset = 1:length(Measurements)
+                tmp = cat(1,tmp,cellstr(num2str(Measurements{imageset}(:,i),'%g')));
+            end
+               str = cell(2*length(tmp),1);
+               str(1:2:end) = {'\t'};
+               str(2:2:end) = tmp;
+               fprintf(fid,sprintf('%s\n',cat(2,str{:})));
+        end  
     end
     fclose(fid);
 end
@@ -390,9 +424,13 @@ indexMAT = strfind(ProposedFilename,'mat');
 if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
 ProposedFilename = [ProposedFilename,'_ProcessInfo'];
 uicontrol(ETh,'style','text','String','Export process info?','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.3 1 uiheight],'BackgroundColor',get(ETh,'color'));
+        'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.3 1.6 uiheight],'BackgroundColor',get(ETh,'color'));
 ExportProcessInfo = uicontrol(ETh,'style','popupmenu','String',{'No','Yes'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[1.2 basey+0.32 0.6 uiheight],'BackgroundColor',get(ETh,'color'));
+    'HorizontalAlignment','left','units','inches','position',[1.7 basey+0.35 0.6 uiheight],'BackgroundColor',get(ETh,'color'));
+uicontrol(ETh,'style','text','String','Swap Rows/Columns?','FontName','Times','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','inches','position',[2.5 basey+1.6 1.8 uiheight],'BackgroundColor',get(ETh,'color'));
+SwapRowsColumnInfo = uicontrol(ETh,'style','popupmenu','String',{'No','Yes'},'FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[3 basey+1.4 0.6 uiheight],'BackgroundColor',get(ETh,'color'));
 EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 basey 2.5 uiheight],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename);
 uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
@@ -404,7 +442,7 @@ EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','positi
 % Export and Cancel pushbuttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
 exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
-    'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig)','BackgroundColor',[.7 .7 .9]);
+    'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo','BackgroundColor',[.7 .7 .9]);
 cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
     'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
 
@@ -423,6 +461,11 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
         ExportInfo.ExportProcessInfo = 'No';
     else
         ExportInfo.ExportProcessInfo = 'Yes';
+    end
+    if get(SwapRowsColumnInfo,'Value') == 1
+        ExportInfo.SwapRowsColumnInfo = 'No';
+    else
+        ExportInfo.SwapRowsColumnInfo = 'Yes';
     end
     
     % Get measurements to export

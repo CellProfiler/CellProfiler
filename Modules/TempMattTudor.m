@@ -300,6 +300,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
     subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -291,6 +291,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3); imagesc(GreenImage); colormap(gray), title('Green Image');
     %%% A subplot of the figure window is set to display the red image.
     subplot(2,2,4); imagesc(RedImage); colormap(gray), title('Red Image');
+    CPFixAspectRatio(RGBImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

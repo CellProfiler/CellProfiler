@@ -439,6 +439,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         subplot(2,2,3); imagesc(AverageMinimumsImage);
         title(['Average minimums image']);
     end
+    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -305,6 +305,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3); imagesc(IllumCorrectFunctionImage);
     title(['Illumination Correction Function Image']);
     colormap(gray)
+    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

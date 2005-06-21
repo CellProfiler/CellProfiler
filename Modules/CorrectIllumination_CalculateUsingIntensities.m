@@ -357,6 +357,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         title('Final illumination correction function');
     else title('Projection calculated so far');
     end
+    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

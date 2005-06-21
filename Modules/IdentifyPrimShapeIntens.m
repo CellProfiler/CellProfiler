@@ -479,6 +479,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
     subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

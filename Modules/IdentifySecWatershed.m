@@ -603,6 +603,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% image with watershed lines drawn for both the primary and secondary
     %%% objects.
     subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); colormap(gray); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

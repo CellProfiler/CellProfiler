@@ -259,6 +259,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% subregion image in color.
     subplot(2,2,4); imagesc(ColoredLabelMatrixImage);
     title([SubregionObjectName, ' Color Image']);
+    CPFixAspectRatio(PrimaryObjectImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

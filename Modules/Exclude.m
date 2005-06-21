@@ -289,6 +289,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% matrix image.
     subplot(2,2,3); imagesc(ColoredMaskRegionObjectImage);
     title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    CPFixAspectRatio(ColoredSegmentedObjectImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

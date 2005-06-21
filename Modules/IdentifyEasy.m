@@ -203,6 +203,8 @@ if any(findobj == ThisModuleFigureNumber)
     title('Outlined objects','fontsize',8);
     axis image,set(gca,'fontsize',8)
     
+    CPFixAspectRatio(OrigImage);
+    
     % Report numbers
     posx = get(hx,'Position');
     posy = get(hy,'Position');

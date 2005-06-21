@@ -223,6 +223,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% matrix image.
     subplot(2,2,2); imagesc(SubtractImage); title([SubtractImageName, ' input image']);
     subplot(2,2,3); imagesc(ResultingImage); title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
+    CPFixAspectRatio(BasicImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

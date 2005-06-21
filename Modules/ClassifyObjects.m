@@ -286,7 +286,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     axis([xlimits ylim])
     set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
 
-
+    CPFixAspectRatio(NonQuantizedImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

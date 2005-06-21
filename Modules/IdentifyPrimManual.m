@@ -264,6 +264,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% image with outlines drawn on top.
     subplot(2,2,3); imagesc(LowResOrigImage);colormap(gray); title([ObjectName, ' Outline on Input Image']);
     hold on, plot(x,y,'r'),hold off
+    CPFixAspectRatio(LowResOrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

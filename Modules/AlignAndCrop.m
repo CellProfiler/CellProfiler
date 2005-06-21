@@ -377,6 +377,7 @@ drawnow
     subplot(2,2,2); imagesc(RealImage); title('Real Input Image');
     subplot(2,2,3); imagesc(CroppedAlignedTracedImage); colormap(gray); title('Cropped & Aligned Traced Image');
     subplot(2,2,4); imagesc(CroppedAlignedRealImage);title('Cropped & Aligned Real Image');
+    CPFixAspectRatio(RealImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

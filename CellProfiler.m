@@ -261,6 +261,7 @@ for j=2:length(ListOfDataTools)
 end
 
 uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
 
 set(handles.DataToolsPopUpMenu,'Visible','off')
 set(handles.ImageToolsPopUpMenu,'Visible','off')
@@ -3028,6 +3029,40 @@ function slider1_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to slider1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+function DownloadModules_Callback(hObject, eventdata, handles)
+try
+    CPServer = ftp('cellprofiler.org');
+catch
+    CPwarndlg('Error while establishing connection with server!');
+    return;
+end
+
+CPPath = which('CellProfiler.m');
+CPPath = CPPath(1:max(find(CPPath,'/'))-1);
+ModulePathName = fullfile(CPPath, 'Modules');
+
+try
+    mget(CPServer,'ModuleList.txt',CPPath);
+catch
+    CPwarndlg('The file containing the list of modules could not be downloaded.');
+    return;
+end
+
+fid = fopen(fullfile(CPPath,'ModuleList.txt'),'r');
+while ~feof(fid)
+    'a'
+    line = fgetl(fid);
+    if isempty(line), break, end;
+    if ~exist(line)
+        try
+            mget(CPServer,line,ModulePathName);
+        catch
+            CPwarndlg([line,' could not be downloaded.']);
+        end
+    end
+end
+msgbox('Update Complete!');
 
 function ReportBugs_Callback(hObject, eventdata, handles)
 

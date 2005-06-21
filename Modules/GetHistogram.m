@@ -15,6 +15,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the generated histograms?
+%defaultVAR02 = OrigHist
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = How many bins do you want?

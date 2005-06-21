@@ -20,8 +20,6 @@ WANT IT NOW:
 
 - We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries when adding your own sample info to an existing output file.  i think we may want to remove the 'memory' option or we need to alter code to accommodate it, because at the moment i think it will be cleared from the handles structure at the beginning of a run. ViewData should work on numerical data too, not just imported data.
 
-- Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
-
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
 - Whenever anything is saved to the hard drive, add an error
@@ -41,8 +39,6 @@ For each title, add properties at the end:
 Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASKED OLA AND HERE IS HIS RESPONSE:"it seems that the FontSize is still stored in UserData, and not in a UserData.FontSize. However, the fontsize is stored in the UserData for the 0-window, i.e. the main matlab window.
 I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
 no conflict, but we should perhaps everything consistent."
-
-- Have image windows pay attention to aspect ratio of images.
 
 - Save Image As tool: does not work well for all kinds of
        displayed images (e.g. The mean image produced by correct illum
@@ -459,3 +455,7 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 - Done (Joo Han) 'GetHistogram' module, which has various options to create a histogram and allows each histogram to be saved so that a movie can be created later.
 
 - Done (Joo Han) Added a zip create and download feature to CreateWebPage module so that the user does not have to download image by image.
+
+- Done (Joo Han) I think this was already done before but not removed from the list: Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
+
+- Done (Joo Han) Have image windows pay attention to aspect ratio of images. (Created a new function called CPFixAspectRatio.m which fixes the ratio for quadrant subplots, and made every module that uses quadrant subplots call this function. Not perfect, but much better than before. May also accommodate double subplots later)

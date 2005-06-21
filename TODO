@@ -6,8 +6,6 @@ JUNE 15, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
-- For the ExportData data tool, we would like to have the option of swapping rows and columns. Right now, measurements are across the columns and objects/images are the rows. We would like to add a checkbox that allows us to swap these.
-
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
@@ -447,7 +445,12 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 - Done (Joo Han) Make all pop-up windows use the proper background color and
        come to the center of the CP window (helpdlg, warndlg, msgbox): (changed as center of screen, will need handles to get CP center..)
        requires getting the handle then setting the color and
-       position. (Also, for the variablerevisionnumber window, set colors appropriately.)<--???
+       position. (Also, for the variablerevisionnumber window, set colors appropriately.)
+        ***Please use CPhelpdlg and CPwarndlg from now on***
+
+
+- Done (Colin) For the ExportData data tool, we would like to have the option of swapping rows and columns. Right now, measurements are across the columns and objects/images are the rows. We would like to add a checkbox that allows us to swap these.
+
         ***Please use CPhelpdlg and CPwarndlg from now on***
 
 - Done (Joo Han) 'Report bug' button in CellProfiler's main GUI. (in the Help menu) mail server needs to be automatically detected, though..

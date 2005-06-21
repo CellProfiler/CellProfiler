@@ -89,8 +89,6 @@ no conflict, but we should perhaps everything consistent."
 
 - Test and annotate in each module's help which modules work for grayscale vs color images.
 
-- 'Fetch new modules from website' button in CellProfiler's main GUI. 
-
 - Have the save settings function automatically add SET to the  
        name > can't currently do it with uisave. 
 
@@ -453,7 +451,7 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 
         ***Please use CPhelpdlg and CPwarndlg from now on***
 
-- Done (Joo Han) 'Report bug' button in CellProfiler's main GUI. (in the Help menu) mail server needs to be automatically detected, though..
+- Done (Joo Han) 'Report bug' button in CellProfiler's main GUI. (in the Help menu) The function itself is also implemented. mail server needs to be automatically detected, though..
 
 - Done (Joo Han) 'GetHistogram' module, which has various options to create a histogram and allows each histogram to be saved so that a movie can be created later.
 
@@ -462,3 +460,5 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 - Done (Joo Han) I think this was already done before but not removed from the list: Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
 
 - Done (Joo Han) Have image windows pay attention to aspect ratio of images. (Created a new function called CPFixAspectRatio.m which fixes the ratio for quadrant subplots, and made every module that uses quadrant subplots call this function. Not perfect, but much better than before. May also accommodate double subplots later)
+
+- Done (Joo Han) 'Fetch new modules from website' button in CellProfiler's main GUI. (in the Help menu) The function itself is also implemented, although it may have to be revised.

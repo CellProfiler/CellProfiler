@@ -113,6 +113,11 @@ ThumbBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 CreateNewWindow = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
+%textVAR14 = Specify a filename to create a ZIP file containing all full size images and link at the end of webpage for download.
+%choiceVAR14 = Do not use
+ZipFileName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu custom
+
 %%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,7 +160,8 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
     
     OrigImageFileNames = handles.Pipeline.(['FileList' OrigImage]);
     OrigImagePathName = handles.Pipeline.(['Pathname' OrigImage]);
-
+    ZipImagePathName = OrigImagePathName;
+    
     CurrentImage = 1;
     
     if strcmp(DirectoryOption,'One level over the images')
@@ -177,10 +183,12 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
     
     WindowName = '_CPNewWindow';
     
+    ZipList = {[]};
+    
     Lines = '<HTML>';
     Lines = strvcat(Lines,['<HEAD><TITLE>',PageTitle,'</TITLE></HEAD>']);
     Lines = strvcat(Lines,['<BODY BGCOLOR=',AddQ(BGColor),'>']);
-    Lines = strvcat(Lines,['<TABLE BORDER=',TableBorderWidth, ' BORDERCOLOR=', AddQ(TableBorderColor), ' CELLPADDING=0',' CELLSPACING=',ThumbSpacing,'>']);
+    Lines = strvcat(Lines,['<CENTER><TABLE BORDER=',TableBorderWidth, ' BORDERCOLOR=', AddQ(TableBorderColor), ' CELLPADDING=0',' CELLSPACING=',ThumbSpacing,'>']);
     while CurrentImage <= NumOrigImage
         Lines = strvcat(Lines,'<TR>');
         for i=1:ThumbCols
@@ -202,17 +210,28 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
             end
             
             Lines = strvcat(Lines,'</TD>');
+            if ~strcmp(ZipFileName,'Do not use')
+                ZipList(CurrentImage) = {fullfile(ZipImagePathName,OrigImageFileNames{CurrentImage})};
+            end
+            
             CurrentImage = CurrentImage + 1;
             if CurrentImage > NumOrigImage
                 break;
             end
+            
         end
         Lines = strvcat(Lines,'</TR>');
     end
-    Lines = strvcat(Lines,'</TABLE>');
+    Lines = strvcat(Lines,'</TABLE></CENTER>');
+    
+    if ~strcmp(ZipFileName,'Do not use')
+        zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
+        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ(ZipFileName),'>Download All Images</A></CENTER>']);
+    end
+    
     Lines = strvcat(Lines,'</BODY>');
     Lines = strvcat(Lines,'</HTML>');
-    HTMLFullfile = fullfile(HTMLSavePath,FileName)
+    HTMLFullfile = fullfile(HTMLSavePath,FileName);
     dlmwrite(HTMLFullfile,Lines,'delimiter','');
     msgbox(['Your webpage has been saved as ', HTMLFullfile, '.']);
     if SetBeingAnalyzed == 1

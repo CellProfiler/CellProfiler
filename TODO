@@ -444,12 +444,11 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
        come to the center of the CP window (helpdlg, warndlg, msgbox): (changed as center of screen, will need handles to get CP center..)
        requires getting the handle then setting the color and
        position. (Also, for the variablerevisionnumber window, set colors appropriately.)
+
         ***Please use CPhelpdlg and CPwarndlg from now on***
 
 
 - Done (Colin) For the ExportData data tool, we would like to have the option of swapping rows and columns. Right now, measurements are across the columns and objects/images are the rows. We would like to add a checkbox that allows us to swap these.
-
-        ***Please use CPhelpdlg and CPwarndlg from now on***
 
 - Done (Joo Han) 'Report bug' button in CellProfiler's main GUI. (in the Help menu) The function itself is also implemented. mail server needs to be automatically detected, though..
 
@@ -461,4 +460,5 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 
 - Done (Joo Han) Have image windows pay attention to aspect ratio of images. (Created a new function called CPFixAspectRatio.m which fixes the ratio for quadrant subplots, and made every module that uses quadrant subplots call this function. Not perfect, but much better than before. May also accommodate double subplots later)
 
-- Done (Joo Han) 'Fetch new modules from website' button in CellProfiler's main GUI. (in the Help menu) The function itself is also implemented, although it may have to be revised.
+- Done (Joo Han) 'Fetch new modules from website' button in CellProfiler's main GUI. (in the Help menu) 
+The function itself is also implemented, although it may have to be revised. Right now it tries to connect to cellprofiler.org and tries to download ModuleList.txt, and download all the modules listed in that file if the module doesn't already exist.

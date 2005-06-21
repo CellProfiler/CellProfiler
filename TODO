@@ -97,8 +97,6 @@ no conflict, but we should perhaps everything consistent."
 
 - 'Fetch new modules from website' button in CellProfiler's main GUI. 
 
-- 'Report bug' button in CellProfiler's main GUI.
-
 - Have the save settings function automatically add SET to the  
        name > can't currently do it with uisave. 
 
@@ -455,3 +453,9 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
        requires getting the handle then setting the color and
        position. (Also, for the variablerevisionnumber window, set colors appropriately.)<--???
         ***Please use CPhelpdlg and CPwarndlg from now on***
+
+- Done (Joo Han) 'Report bug' button in CellProfiler's main GUI. (in the Help menu) mail server needs to be automatically detected, though..
+
+- Done (Joo Han) 'GetHistogram' module, which has various options to create a histogram and allows each histogram to be saved so that a movie can be created later.
+
+- Done (Joo Han) Added a zip create and download feature to CreateWebPage module so that the user does not have to download image by image.

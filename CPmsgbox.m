@@ -257,7 +257,7 @@ else,
 end % if ~strcmp
 
 OKXOffset=(FigWidth-OKWidth)/2; 
-%DefFigPos(3:4)=[FigWidth FigHeight];
+DefFigPos(3:4)=[FigWidth FigHeight];
 %DefFigPos = getnicedialoglocation(DefFigPos, get(BoxHandle,'Units'));
 
 % if there is a figure out there and it's modal, we need to be modal too

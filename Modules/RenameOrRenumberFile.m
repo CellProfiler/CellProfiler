@@ -97,7 +97,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %infotypeVAR01 = imagegroup
-%textVAR01 = What did you call the images you want to rename/renumber?
+%textVAR01 = What did you call the images you want to rename/renumber? Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -114,10 +114,8 @@ NumberCharactersSuffix = str2double(char(handles.Settings.VariableValues{Current
 TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = How many characters would you like to allow between those two portions of filename, for renumbering purposes? Leave / to leave as is.
-%defaultVAR05 = 0
+%defaultVAR05 = /
 NumberDigits = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
-%textVAR06 = Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
 
 %%%VariableRevisionNumber = 1
 

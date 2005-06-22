@@ -325,11 +325,14 @@ for Object = 1:length(ExportInfo.ObjectNames)
             % Update waitbar
             waitbar(i/length(Measurements{1}),waitbarhandle,sprintf('Exporting %s',ObjectName));
             
-            
-            fprintf(fid,'%s',FeatureNames{i});
+            try % In case things in Measurements are not the same length
+                fprintf(fid,'%s',FeatureNames{i});
+            end
             tmp = {};
             for imageset = 1:length(Measurements)
-                tmp = cat(1,tmp,cellstr(num2str(Measurements{imageset}(:,i),'%g')));
+                try % In case things in Measurements are not the same length
+                    tmp = cat(1,tmp,cellstr(num2str(Measurements{imageset}(:,i),'%g')));
+                end
             end
                str = cell(2*length(tmp),1);
                str(1:2:end) = {'\t'};

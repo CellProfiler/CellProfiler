@@ -78,11 +78,8 @@ no conflict, but we should perhaps everything consistent."
      have the button added within each algorithm's code or within the
      main CellProfiler code when the window is first created). The
      most important thing is to add the button to "AlgImageTiler.m";
-     that is why I acquired this code in the first place.-
-     Calculations for display purposes only: surround by an if that
-     is: "If figure window is open OR saveimage = Yes, then do these
-     calculations." 
-
+     that is why I acquired this code in the first place.
+	
 - Test and annotate in each module's help which modules work for grayscale vs color images.
 
 - Have the save settings function automatically add SET to the  

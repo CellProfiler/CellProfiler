@@ -810,7 +810,7 @@ end
 %%% These buttons appear after analysis has begun, and disappear 
 %%% when it is over.
 
-function ba_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+function CloseFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 global closeFigures;
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 for i=1:length(ModuleHighlighted),

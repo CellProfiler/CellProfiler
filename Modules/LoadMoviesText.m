@@ -234,11 +234,13 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %choiceVAR11 = Exact
 %choiceVAR11 = Regular
 ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
 %textVAR12 = Analyze all subdirectories within the selected directory (Y or N)?
 %choiceVAR12 = No
 %choiceVAR12 = Yes
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
 
 %textVAR13 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
 %defaultVAR13 = .

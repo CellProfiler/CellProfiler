@@ -97,16 +97,23 @@ fprintf(fid,'Processed: %s\n\n',handles.Current.TimeStarted);
 fprintf(fid,'Pipeline:\n');
 for module = 1:length(handles.Settings.ModuleNames)
     fprintf(fid,'\t%s\n',handles.Settings.ModuleNames{module});
-    varibles = handles.Settings.VariableValues(module,:);
-    % Can add info about what the module did
-    %switch handles.Settings.ModuleNames{module}
-    %    case 'LoadImagesText'
-    %    case 'RGBSplit'
-    %    case 'IdentifyEasy'
-    %end
 end
 
-fprintf(fid,'\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
+fprintf(fid,'\n\nVariable Values:\n');
+for module = 1:length(handles.Settings.ModuleNames)
+    fprintf(fid,'\t%s  - revision %s\n',handles.Settings.ModuleNames{module},num2str(handles.Settings.VariableRevisionNumbers(module)));
+    variables = [];
+    variables = handles.Settings.VariableValues(module,:);
+    for varnum = 1:length(variables)
+        if ~isempty(variables{varnum})
+            fprintf(fid,'\t\tVariable %s Value: %s\n',num2str(varnum),variables{varnum});
+        end
+    end
+end
+    
+    
+
+fprintf(fid,'\n\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
 
 % Get variable names used
 

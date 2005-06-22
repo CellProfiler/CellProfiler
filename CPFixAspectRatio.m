@@ -1,6 +1,6 @@
 function CPFixAspectRatio(OrigImage)
 FigPos = get(gcf,'Position');
-SubPos = size(OrigImage)
+SubPos = size(OrigImage);
 ScSize = get(0,'ScreenSize');
 
 if(FigPos(3)/FigPos(4)) > (SubPos(2)/SubPos(1))

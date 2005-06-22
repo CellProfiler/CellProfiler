@@ -503,7 +503,7 @@ else
                     handles.Settings = Settings;
                 end
             end
-            SavePipelineButton_Callback(hObject, eventdata, handles);
+            SavePipeline_Callback(hObject, eventdata, handles);
             handles.Settings = tempSettings;
         end
     end

@@ -10,10 +10,6 @@ WANT IT NOW:
 
 - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
-- Be sure that all exporting tools will function properly if some
-       measurement fields are left blank, which is the case when there
-       are no objects in a particular image, for example.  This is particularly a concern when the last image had no objects, so make a fake image set with no objects in the last set and see if everything works.
-
 - ExportData Data Tool: I would like Export Process Data to include all of the variable descriptions and variable values and variable revision numbers, as is currently created when using the Save Pipeline button (save as a text file option).  The files created by both functions should be identical and so should share the same code.
 
 - We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries when adding your own sample info to an existing output file.  i think we may want to remove the 'memory' option or we need to alter code to accommodate it, because at the moment i think it will be cleared from the handles structure at the beginning of a run. ViewData should work on numerical data too, not just imported data.
@@ -462,3 +458,8 @@ Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
 
 - Done (Joo Han) 'Fetch new modules from website' button in CellProfiler's main GUI. (in the Help menu) 
 The function itself is also implemented, although it may have to be revised. Right now it tries to connect to cellprofiler.org and tries to download ModuleList.txt, and download all the modules listed in that file if the module doesn't already exist.
+
+
+- Done (Colin)- Be sure that all exporting tools will function properly if some
+       measurement fields are left blank, which is the case when there
+       are no objects in a particular image, for example.  This is particularly a concern when the last image had no objects, so make a fake image set with no objects in the last set and see if everything works.

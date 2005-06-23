@@ -192,7 +192,6 @@ for k = 1:length(names)
         set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','Times')
     end
 end
-set(0,'UserData',handles.Current.FontSize)
 
 %%% Checks whether the user has the Image Processing Toolbox.
 Answer = license('test','image_toolbox');
@@ -1859,7 +1858,6 @@ if exist('EnteredPreferences','var') == 1
                 
             end
         end
-        set(0,'UserData',handles.Current.FontSize)
         %%% Updates the handles structure to incorporate all the changes.
         guidata(gcbo, handles);
     end

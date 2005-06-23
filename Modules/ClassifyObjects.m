@@ -250,7 +250,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))
     colormap(hot),axis image
-    set(gca,'Fontsize',get(0,'UserData'))
+    set(gca,'Fontsize',handles.Current.FontSize)
     title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
 
     %%% Produce and plot histogram of original data
@@ -258,7 +258,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     Nbins = min(round(NbrOfObjects/5),40);
     hist(Measurements,Nbins)
     set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-    set(gca,'Fontsize',get(0,'UserData'));
+    set(gca,'Fontsize',handles.Current.FontSize);
     xlabel(FeatureName),ylabel(['#',ObjectName]);
     title(sprintf('Histogram of %s',FeatureName));
     ylimits = ylim;
@@ -270,14 +270,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3)
     ImageHandle = image(QuantizedRGBimage);axis image
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Classified ', ObjectName])
-    set(gca,'Fontsize',get(0,'UserData'))
-    title(['Classified ', ObjectName],'fontsize',get(0,'UserData'));
+    set(gca,'Fontsize',handles.Current.FontSize)
+    title(['Classified ', ObjectName],'fontsize',handles.Current.FontSize);
 
     %%% Produce and plot histogram
     subplot(2,2,4)
     x = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(x,bins,1);
-    set(gca,'Fontsize',get(0,'UserData'));
+    set(gca,'Fontsize',handles.Current.FontSize);
     xlabel(FeatureName),ylabel(['#',ObjectName])
     title(sprintf('Histogram of %s',FeatureName))
     axis tight

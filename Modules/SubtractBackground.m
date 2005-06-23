@@ -310,7 +310,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
         newsize(1) = 0;
         newsize(2) = 0;
         newsize(4) = 20;
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7], 'FontSize',handles.Current.FontSize);
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,1,1); imagesc(OrigImage);

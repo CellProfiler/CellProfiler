@@ -207,13 +207,13 @@ for i = 1:length(ObjectNameList)
     handles.Measurements.(ObjectName).AreaShape(handles.Current.SetBeingAnalyzed) = {[Basic Zernike]};
 
     %%% Report measurements
-    FontSize = get(0,'UserData');
+    FontSize = handles.Current.FontSize;
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','Backgroundcolor',[1 1 1],'fontname','times',...
-            'fontsize',10,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed));
+            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed));
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...

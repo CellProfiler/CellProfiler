@@ -1,1 +1,1 @@
-(handles,OutputImage) = CPrescale(
+handles.Current.FontSize

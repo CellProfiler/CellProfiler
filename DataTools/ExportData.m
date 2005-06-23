@@ -366,7 +366,7 @@ ExportInfo.MeasurementFilename = [];
 ExportInfo.ProcessInfoFilename = [];
 
 % The fontsize is stored in the 'UserData' property of the main Matlab window
-FontSize = get(0,'UserData');
+FontSize = handles.Current.FontSize;
 
 % Get measurement object fields
 fields = fieldnames(handles.Measurements);

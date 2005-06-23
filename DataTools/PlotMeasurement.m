@@ -41,7 +41,7 @@ if isempty(PlotType), return,end
 % Open figure
 fig = CPfigure;
 set(gcf,'Color',[1 1 1])
-FontSize = get(0,'UserData');
+FontSize = handles.Current.FontSize;
 
 
 % Bar chart

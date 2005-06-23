@@ -442,7 +442,7 @@ for i = 1:3
 
 
     %%% Report measurements
-    FontSize = get(0,'UserData');
+    FontSize = handles.Current.FontSize;
 
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times

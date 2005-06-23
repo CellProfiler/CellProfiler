@@ -22,18 +22,6 @@ WANT IT NOW:
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
-- Use the User's preference for font size for all figure displays and dialog boxes.  Do this by adding this line:
-	FontSize = get(0,'UserData');
-After the line in the DISPLAY RESULTS section:
-if any(findobj == ThisModuleFigureNumber) == 1
-And then, for each subplot or text window, add this line:
-    set(gca,'FontSize',FontSize)
-For each title, add properties at the end:
-    title('Original Image', 'FontSize', FontSize)
-Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASKED OLA AND HERE IS HIS RESPONSE:"it seems that the FontSize is still stored in UserData, and not in a UserData.FontSize. However, the fontsize is stored in the UserData for the 0-window, i.e. the main matlab window.
-I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
-no conflict, but we should perhaps everything consistent."
-
 - Save Image As tool: does not work well for all kinds of
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
@@ -146,33 +134,6 @@ Repeat until convergence.
 The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
 
 GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
-
-GUI 2 +++ Make image tools more accessible/intuitive:
-Create an image toolbar to replace the drop down menu in the main CP GUI 
-- The toolbar should have a horizontal orientation due to the drop down menu
-- One row of tiny icon-buttons for standard image tools
-- Below that, a drop down menu for infrequently used/custom tools
-- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
-- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
-- When clicking on any image, have the toolbar become active/come to the top of all other windows.
-For standard image tools:
-[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
-- Have tooltips appear upon mouse-over of each button that show the name of the tool 
-- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
-For infrequently used/custom tools:
-[ShowDataOnImage, any other .m file in the ImageTools folder]
-- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
-- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
-Other implementation notes:
-- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
-ImageHandle  = imagesc(Image);
-set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
-This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
-- Possibly add DataTools to the same toolbar, just have it divided in half?
-- To aid in interactive selection of settings, allow user to
-       create a figure window where images can be dragged and overlaid
-       and toggled back and forth. See Inca and dragndrop in Matlab
-       Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
 
 GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
 
@@ -315,7 +276,6 @@ correct if exit message box using clicking x instead of cancel.
 
 4/22/05
 Went through Modules and adjusted so they will work with Restart.m.
-<<<<<<< TODO
 
 5/24/05 (Colin)
 - Allow canceling from the first dialog box when using the Save Image As button.
@@ -341,7 +301,7 @@ Went through Modules and adjusted so they will work with Restart.m.
                 -for UNIX: In the installation package, include the shortcut with the path set as matlab.exe -r CellProfiler
 
 *The changes below have been canceled and replaced by a new version. The help file for the new syntax will follow soon.
-_______________________________________
+
 - Done (Joo Han) - Expanded the syntax for declaration of variable boxes and such using comments in modules.
 
 - Done (Joo Han) Combined all the identifyprim modules (need to delete most comments?)
@@ -352,7 +312,7 @@ _______________________________________
 				Combined all the load movies modules into LoadMovies.m, using the expanded syntax.
 				(It would be very simple to change the program so that either LoadImages or LoadMovies module is added to the pipeline by default when the program starts; however, this will result in some loss of flexibility. Perhaps we can have a feature in the GUI called "Frequently Used Modules" where the user can add certain modules with just one click?)
                 *Shouldn't we also have a LoadSingleMovie feature? It will probably end up being the most used load movie method..
-_______________________________________
+
 - Done (Joo Han) Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
 
 - Done (Joo Han) Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules. (Used ReplaceTextInModules and checked modules with more than 3 instances of 'hard drive' found.)
@@ -461,3 +421,44 @@ The function itself is also implemented, although it may have to be revised. Rig
        are no objects in a particular image, for example.  This is particularly a concern when the last image had no objects, so make a fake image set with no objects in the last set and see if everything works.
 
 - Done (Colin) - ExportData Data Tool: I would like Export Process Data to include all of the variable descriptions and variable values and variable revision numbers, as is currently created when using the Save Pipeline button (save as a text file option).
+
+- Done (Colin) - - Use the User's preference for font size for all figure displays and dialog boxes.  Do this by adding this line:
+	FontSize = get(0,'UserData');
+After the line in the DISPLAY RESULTS section:
+if any(findobj == ThisModuleFigureNumber) == 1
+And then, for each subplot or text window, add this line:
+    set(gca,'FontSize',FontSize)
+For each title, add properties at the end:
+    title('Original Image', 'FontSize', FontSize)
+Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASKED OLA AND HERE IS HIS RESPONSE:"it seems that the FontSize is still stored in UserData, and not in a UserData.FontSize. However, the fontsize is stored in the UserData for the 0-window, i.e. the main matlab window.
+I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
+no conflict, but we should perhaps everything consistent."
+
+- Done (Colin) - 
+GUI 2 +++ Make image tools more accessible/intuitive:
+Create an image toolbar to replace the drop down menu in the main CP GUI 
+- The toolbar should have a horizontal orientation due to the drop down menu
+- One row of tiny icon-buttons for standard image tools
+- Below that, a drop down menu for infrequently used/custom tools
+- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
+- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
+- When clicking on any image, have the toolbar become active/come to the top of all other windows.
+For standard image tools:
+[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
+- Have tooltips appear upon mouse-over of each button that show the name of the tool 
+- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
+For infrequently used/custom tools:
+[ShowDataOnImage, any other .m file in the ImageTools folder]
+- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
+- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
+Other implementation notes:
+- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
+ImageHandle  = imagesc(Image);
+set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
+This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
+- Possibly add DataTools to the same toolbar, just have it divided in half?
+- To aid in interactive selection of settings, allow user to
+       create a figure window where images can be dragged and overlaid
+       and toggled back and forth. See Inca and dragndrop in Matlab
+       Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
+

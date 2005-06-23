@@ -384,7 +384,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', originalsize,'color',[1 1 1]);
     end
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position', [0.1 0.1 0.8 0.8],...
-        'fontname','times','fontsize',get(0,'UserData'),'backgroundcolor',[1 1 1],'horizontalalignment','left');
+        'fontname','times','fontsize',handles.Current.FontSize,'backgroundcolor',[1 1 1],'horizontalalignment','left');
     DisplayText = strvcat(['    Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
         '      ',...
         'Percent of pixels that are Saturated:');

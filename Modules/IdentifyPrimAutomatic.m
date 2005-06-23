@@ -210,16 +210,16 @@ if any(findobj == ThisModuleFigureNumber)
     posy = get(hy,'Position');
     bgcolor = get(ThisModuleFigureNumber,'Color');
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold));
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects));
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.12 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Median area (pixels): ' num2str(MedianArea)]);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Median area (pixels): ' num2str(MedianArea)],'FontSize',handles.Current.FontSize);
     
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects));
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of objects outside area range: %d',NumOfAreaObjects));
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of objects outside area range: %d',NumOfAreaObjects),'FontSize',handles.Current.FontSize);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

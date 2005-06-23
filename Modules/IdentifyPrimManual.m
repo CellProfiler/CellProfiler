@@ -207,7 +207,7 @@ if ncolors == 1
     colormap(gray)
 end
 AxisHandle = gca;
-set(gca,'fontsize',get(0,'UserData'))
+set(gca,'fontsize',handles.Current.FontSize)
 title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},... 
     {'Press enter when finished, the first and last points will be connected automatically.'},...
     {'The backspace key or right mouse button will erase the last clicked point.'}]);

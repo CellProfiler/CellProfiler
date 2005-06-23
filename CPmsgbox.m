@@ -195,10 +195,8 @@ FigColor=get(BoxHandle,'Color');
 MsgTxtBackClr=FigColor;
 
 Font.FontUnits = 'points';
-Font.FontSize = get(0,'UserData');
-if isempty(Font.FontSize)
-    Font.FontSize = 9;
-end
+handles = guidata(findobj('Tag','figure1'));
+Font.FontSize = handles.Current.FontSize;
 Font.FontName = 'Times';
 
 OKHandle=uicontrol(BoxHandle           , Font                             , ...

@@ -255,7 +255,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% matrix image.
     subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
     
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7]);
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7],'FontSize',Font);
     displaytext = {['      Image Set # ',num2str(handles.Current.SetBeingAnalyzed)];...
         ['Area occupied by ', ObjectName ,':      ', num2str(AreaOccupied, '%2.1E')]};
     set(displaytexthandle,'string',displaytext)

@@ -114,13 +114,6 @@ POST-PUBLIC RELEASE SUPPORT:
 
 ---------------------------------------------------
 LONG-TERM, 20% TIME PROJECTS:
-VISION 1 +++ (Colin might work on this) Make a shape-based IdentifyPrim module which recognizes
-       oblong/elliptical objects rather than perfectly round
-       objects. Actually, adopt the current IdentifyPrimShapeIntens to
-       take in an ellipticity factor which can be set to 1 for perfect
-       circles or some other number for oblong objects.  There is a
-       paper somewhere detailing an ellipse-based shape transform
-       (maybe Ray has it?). 
 
 VISION 2 +++ (Joo Han might work on this) Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
 Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.

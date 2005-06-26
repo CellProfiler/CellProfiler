@@ -2,7 +2,7 @@ function handles = LoadImagesText(handles)
 
 % Help for the Load Images Text module:
 % Category: File Handling
-% 
+%
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
 %
@@ -11,7 +11,7 @@ function handles = LoadImagesText(handles)
 % these modules also allows images to be retrieved from different
 % folders. If you want to load all images in a directory, you can
 % enter the file extension as the text for which to search.
-%  
+%
 % This module is different from the Load Images Order module because
 % Load Images Text can be used to load images that are not in a
 % defined order.  That is, Load Images Order is useful when images are
@@ -27,7 +27,7 @@ function handles = LoadImagesText(handles)
 % asking for text in common and typing R in the Exact/Regular expression
 % box will select any file containing the digit 1 or 2 immediately in
 % between the text 'image' and 'dapi'.
-% 
+%
 % You may have subfolders within the folder that is being searched, but the
 % names of the folders themselves must not contain the text you are
 % searching for or an error will result.
@@ -42,10 +42,10 @@ function handles = LoadImagesText(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -120,39 +120,39 @@ CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = Type the text that this set of images has in common
 %defaultVAR01 = DAPI
-TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call these images?
 %defaultVAR02 = OrigBlue
-ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Type the text that this set of images has in common
 %defaultVAR03 = /
-TextToFind2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call these images?
 %defaultVAR04 = /
-ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Type the text that this set of images has in common
 %defaultVAR05 = /
-TextToFind3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call these images?
 %defaultVAR06 = /
-ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Type the text that this set of images has in common
 %defaultVAR07 = /
-TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call these images?
 %defaultVAR08 = /
-ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = If an image slot above is not being used, type a slash  /  in the box. Do you want to match the text exactly or use regular expressions?
 %choiceVAR09 = Exact
@@ -162,8 +162,14 @@ ExactOrRegExp = ExactOrRegExp(1);
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 = Type the file format of the images
-%defaultVAR10 = tif
+%choiceVAR10 = tif
+%choiceVAR10 = bmp
+%choiceVAR10 = gif
+%choiceVAR10 = jpg
+%choiceVAR10 = mat
+%choiceVAR10 = DIB
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
 %textVAR11 = Analyze all subdirectories within the selected directory (Y or N)?
 %choiceVAR11 = No
@@ -184,24 +190,28 @@ drawnow
 
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-%%% Stores the text the user entered into cell arrays.
-TextToFind{1} = TextToFind1;
-TextToFind{2} = TextToFind2;
-TextToFind{3} = TextToFind3;
-TextToFind{4} = TextToFind4;
-ImageName{1} = ImageName1;
-ImageName{2} = ImageName2;
-ImageName{3} = ImageName3;
-ImageName{4} = ImageName4;
+
+%%% Remove slashes '/' from the input
+tmp1 = {};
+tmp2 = {};
+for n = 1:4
+    if ~strcmp(TextToFind{n}, '/') && ~strcmp(ImageName{n}, '/')
+        tmp1{end+1} = TextToFind{n};
+        tmp2{end+1} = ImageName{n};
+    end
+end
+TextToFind = tmp1;
+ImageName = tmp2;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -213,53 +223,33 @@ ImageName{4} = ImageName4;
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
 if SetBeingAnalyzed == 1
-    %%% Makes sure this entry is appropriate.
-    if strncmpi(ExactOrRegExp,'E',1) == 1 | strncmpi(ExactOrRegExp,'R',1) == 1
-    else error('You must enter E or R in the Load Images Text module to look for exact text matches or regular expression text matches.')
-    end
-    %%% Checks whether the file format the user entered is readable by Matlab.
-    IsFormat = imformats(FileFormat);
-    if isempty(IsFormat) == 1
-        %%% Checks if the image is a DIB image file.
-        if (strcmpi(FileFormat,'DIB') == 0)&(strcmpi(FileFormat,'mat') == 0)
-            error(['The image file type "', FileFormat , '" entered in the Load Images Text module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
-        end
-    end
-    %%% If the user did not enter any data in the first slot (they put
-    %%% a slash in either box), no images are retrieved.
-    if strcmp(TextToFind{1}, '/') == 1 || strcmp(ImageName{1}, '/') == 1
-        error('Image processing was canceled because the first image slot in the Load Images Text module was left blank.')
-    end
-    if strcmp(Pathname, '.') == 1
+
+    %%% Get the pathname and check that it exists
+    if strcmp(Pathname, '.')
         Pathname = handles.Current.DefaultImageDirectory;
     end
     SpecifiedPathname = Pathname;
-    %%% For all 4 image slots, extracts the file names.
-    for n = 1:4
-        %%% Checks whether the two variables required have been entered by
-        %%% the user.
-        if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
-            %%% If a directory was typed in, retrieves the filenames
-            %%% from the chosen directory.
-            if exist(SpecifiedPathname) ~= 7
-                error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-            end
-            FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp);
-            %%% Checks whether any files are left.
-            if isempty(FileList)
-                error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
-            end
-            %%% Saves the File Lists and Path Names to the handles structure.
-            fieldname = ['FileList', ImageName{n}];
-            handles.Pipeline.(fieldname) = FileList;
-            fieldname = ['Pathname', ImageName{n}];
-            handles.Pipeline.(fieldname) = SpecifiedPathname;
-            %% for reference in saved files
-            handles.Measurements.Image.(fieldname) = SpecifiedPathname;
-            NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
-            clear FileList % Prevents confusion when loading this value later, for each image set.
-       end
+    if ~exist(SpecifiedPathname,'dir')
+        error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
     end
+
+    %%% Extract the file names
+    for n = 1:length(ImageName)
+        FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp);
+        %%% Checks whether any files are left.
+        if isempty(FileList)
+            error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
+        end
+        %%% Saves the File Lists and Path Names to the handles structure.
+        fieldname = ['FileList', ImageName{n}];
+        handles.Pipeline.(fieldname) = FileList;
+        fieldname = ['Pathname', ImageName{n}];
+        handles.Pipeline.(fieldname) = SpecifiedPathname;
+
+        NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
+        clear FileList % Prevents confusion when loading this value later, for each image set.
+    end
+
     %%% Determines which slots are empty.  None should be zero, because there is
     %%% an error check for that when looping through n = 1:5.
     for g = 1: length(NumberOfFiles)
@@ -308,44 +298,77 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-for n = 1:4
+for n = 1:length(ImageName)
     %%% This try/catch will catch any problems in the load images module.
     try
-        if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
-            %%% The following runs every time through this module (i.e. for
-            %%% every image set).
-            %%% Determines which image to analyze.
-            fieldname = ['FileList', ImageName{n}];
-            FileList = handles.Pipeline.(fieldname);
-            %%% Determines the file name of the image you want to analyze.
-            CurrentFileName = FileList(SetBeingAnalyzed);
-            %%% Determines the directory to switch to.
-            fieldname = ['Pathname', ImageName{n}];
-            Pathname = handles.Pipeline.(fieldname);
-            [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
-            %%% Saves the original image file name to the handles
-            %%% structure.  The field is named appropriately based on
-            %%% the user's input, in the Pipeline substructure so that
-            %%% this field will be deleted at the end of the analysis
-            %%% batch.
-            fieldname = ['Filename', ImageName{n}];
-            handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            %%% Also saved to the handles.Measurements structure for reference in output files.
-            handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            %%% Saves the loaded image to the handles structure.  The field is named
-            %%% appropriately based on the user's input, and put into the Pipeline
-            %%% substructure so it will be deleted at the end of the analysis batch.
-            handles.Pipeline.(ImageName{n}) = LoadedImage;
-        end
+        %%% The following runs every time through this module (i.e. for every image set).
+        %%% Determines which image to analyze.
+        fieldname = ['FileList', ImageName{n}];
+        FileList = handles.Pipeline.(fieldname);
+        %%% Determines the file name of the image you want to analyze.
+        CurrentFileName = FileList(SetBeingAnalyzed);
+        %%% Determines the directory to switch to.
+        fieldname = ['Pathname', ImageName{n}];
+        Pathname = handles.Pipeline.(fieldname);
+        [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
+
+        %%% Saves the original image file name to the handles
+        %%% structure.  The field is named appropriately based on
+        %%% the user's input, in the Pipeline substructure so that
+        %%% this field will be deleted at the end of the analysis
+        %%% batch.
+        fieldname = ['Filename', ImageName{n}];
+        handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+        handles.Pipeline.(ImageName{n}) = LoadedImage;
     catch ErrorMessage = lasterr;
-        ErrorNumber(1) = {'first'};
-        ErrorNumber(2) = {'second'};
-        ErrorNumber(3) = {'third'};
-        ErrorNumber(4) = {'fourth'};
+        ErrorNumber = {'first','second','third','fourth'};
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
+
+    % Create a cell array with the filenames
+    FileNames(n) = CurrentFileName(1);
+
 end
+
+%%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
+%%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
+
+%%% First, fix feature names and the pathname
+PathNames = cell(1,length(ImageName));
+FileNamesFeatures = cell(1,length(ImageName));
+PathNamesFeatures = cell(1,length(ImageName));
+for n = 1:length(ImageName)
+    PathNames{n} = Pathname;
+    FileNamesFeatures{n} = ['Filename ', ImageName{n}];
+    PathNamesFeatures{n} = ['Path ', ImageName{n}];
+end
+
+%%% Since there may be several load modules in the pipeline which all write to the
+%%% handles.Measurements.Image.FileName field, we have store filenames in an "appending" style.
+%%% Here we check if any of the modules above the current module in the pipline has written to
+%%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
+%%% names to the already written ones.
+if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
+        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+    % Get existing file/path names. Returns a cell array of names
+    ExistingFileNamesFeatures = handles.Measurements.Image.FileNamesFeatures;
+    ExistingFileNames         = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+    ExistingPathNamesFeatures = handles.Measurements.Image.PathNamesFeatures;
+    ExistingPathNames         = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+
+    % Append current file names to existing file names
+    FileNamesFeatures = cat(2,ExistingFileNamesFeatures,FileNamesFeatures);
+    FileNames         = cat(2,ExistingFileNames,FileNames);
+    PathNamesFeatures = cat(2,ExistingPathNamesFeatures,PathNamesFeatures);
+    PathNames         = cat(2,ExistingPathNames,PathNames);
+end
+
+%%% Write to the handles.Measurements.Image structure
+handles.Measurements.Image.FileNamesFeatures                   = FileNamesFeatures;
+handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
+handles.Measurements.Image.PathNamesFeatures                   = PathNamesFeatures;
+handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
+%%% ------------------------------------------------------------------------------------------------ %%%
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
@@ -399,7 +422,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -429,7 +452,7 @@ end
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -511,7 +534,7 @@ FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
 LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 %%% Eliminates directories from the list of file names.
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-if isempty(FileNamesNoDir) == 1
+if isempty(FileNamesNoDir)
     FileNames = [];
 else
     %%% Makes a logical array that marks with a "1" all file names that start
@@ -547,20 +570,20 @@ else
     FileNames = cell(0);
     Count = 1;
     for i=1:length(NotYetTextMatchedFileNames),
-        if strncmpi(ExactOrRegExp,'E',1) == 1
+        if strncmpi(ExactOrRegExp,'E',1)
             if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
                 FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                 Count = Count + 1;
             end
-        elseif strncmpi(ExactOrRegExp,'R',1) == 1
+        elseif strncmpi(ExactOrRegExp,'R',1)
             if regexp(char(NotYetTextMatchedFileNames(i)), TextToFind),
                 FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                 Count = Count + 1;
             end
-        else error('You must enter E or R in the Load Images Text module to look for exact text matches or regular expression text matches.')
         end
     end
 end
+
 if(strcmp(upper(recurse),'Y'))
     DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
     DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);

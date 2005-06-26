@@ -66,12 +66,6 @@ function handles = LoadSingleImage(handles)
 % when running jobs on a cluster where speed is important.
 drawnow
 
-%%% This module only loads the image during the first image set's
-%%% processing.
-if handles.Current.SetBeingAnalyzed ~= 1
-    return
-end
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
@@ -110,45 +104,51 @@ CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
 %defaultVAR01 = IllumCorrImgBlue1
-TextToFind1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call that image?
 %defaultVAR02 = IllumBlue
-ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Type the name of the image file you want to load (include the extension, like .tif)
 %defaultVAR03 = /
-TextToFind2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call that image?
 %defaultVAR04 = /
-ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Type the name of the image file you want to load (include the extension, like .tif)
 %defaultVAR05 = /
-TextToFind3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call that image?
 %defaultVAR06 = /
-ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Type the name of the image file you want to load (include the extension, like .tif)
 %defaultVAR07 = /
-TextToFind4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call that image?
 %defaultVAR08 = /
-ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = If an image slot is not being used, type a slash  /  in the box.
 
 %textVAR10 = Type the file format of the images
-%defaultVAR10 = mat
+%choiceVAR10 = tif
+%choiceVAR10 = bmp
+%choiceVAR10 = gif
+%choiceVAR10 = jpg
+%choiceVAR10 = mat
+%choiceVAR10 = DIB
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
 %textVAR11 = Enter the path name to the folder where the images to be loaded are located. Leave a period (.) to retrieve images from the default image directory #LongBox#
 %defaultVAR11 = .
@@ -161,34 +161,27 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Stores the text the user entered into cell arrays.
-TextToFind{1} = TextToFind1;
-TextToFind{2} = TextToFind2;
-TextToFind{3} = TextToFind3;
-TextToFind{4} = TextToFind4;
-ImageName{1} = ImageName1;
-ImageName{2} = ImageName2;
-ImageName{3} = ImageName3;
-ImageName{4} = ImageName4;
+%%% Determines which image set is being analyzed.
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%%% Error checking.
-%%% Checks whether the file format the user entered is readable.
-IsFormat = imformats(FileFormat);
-if isempty(IsFormat) == 1
-    %%% Checks if the image is a DIB image file.
-    if (strcmpi(FileFormat,'DIB') == 0)&(strcmpi(FileFormat,'mat') == 0)
-        error(['The image file type "', FileFormat , '" entered in the Load Single Image module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
+%%% Remove slashes '/' from the input
+tmp1 = {};
+tmp2 = {};
+for n = 1:4
+    if ~strcmp(TextToFind{n}, '/') && ~strcmp(ImageName{n}, '/')
+        tmp1{end+1} = TextToFind{n};
+        tmp2{end+1} = ImageName{n};
     end
 end
-%%% If the user did not enter any data in the first slot (they put
-%%% a slash in either box), no images are retrieved.
-if strcmp(TextToFind{1}, '/') == 1 || strcmp(ImageName{1}, '/') == 1
-    error('Image processing was canceled because the first image slot in the Load Single Image module was left blank.')
-end
-if strcmp(Pathname, '.') == 1
+TextToFind = tmp1;
+ImageName = tmp2;
+
+%%% Get the pathname and check that it exists
+if strcmp(Pathname, '.')
     Pathname = handles.Current.DefaultImageDirectory;
 end
-if exist(Pathname) ~= 7
+SpecifiedPathname = Pathname;
+if ~exist(SpecifiedPathname,'dir')
     error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
 end
 
@@ -207,41 +200,81 @@ end
 % imwrite(uint8(BlurredImage), FileName, FileFormat);
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
-
-for n = 1:4
+for n = 1:length(ImageName)
     %%% This try/catch will catch any problems in the load images module.
     try
-        if strcmp(TextToFind{n}, '/') == 0 && strcmp(ImageName{n}, '/') == 0
-            CurrentFileName = TextToFind{n};
-            %%% The following runs every time through this module (i.e. for
-            %%% every image set).
-            %%% Saves the original image file name to the handles
-            %%% structure.  The field is named appropriately based on
-            %%% the user's input, in the Pipeline substructure so that
-            %%% this field will be deleted at the end of the analysis
-            %%% batch.
-            fieldname = ['Filename', ImageName{n}];
-            handles.Pipeline.(fieldname) = CurrentFileName;
-            fieldname = ['Pathname', ImageName{n}];
-            handles.Pipeline.(fieldname) =  Pathname;
-            
-            FileAndPathname = fullfile(Pathname, CurrentFileName);
-            if strcmpi(FileFormat,'mat') == 1
-                StructureLoadedImage = load(FileAndPathname);
-                LoadedImage = StructureLoadedImage.Image;                
-            else [LoadedImage, handles] = CPimread(FileAndPathname,handles);
-            end
-            %%% Saves the image to the handles structure.
-            handles.Pipeline.(ImageName{n}) = LoadedImage;
+        CurrentFileName = TextToFind{n};
+        %%% The following runs every time through this module (i.e. for
+        %%% every image set).
+        %%% Saves the original image file name to the handles
+        %%% structure.  The field is named appropriately based on
+        %%% the user's input, in the Pipeline substructure so that
+        %%% this field will be deleted at the end of the analysis
+        %%% batch.
+        fieldname = ['Filename', ImageName{n}];
+        handles.Pipeline.(fieldname) = CurrentFileName;
+        fieldname = ['Pathname', ImageName{n}];
+        handles.Pipeline.(fieldname) =  Pathname;
+
+        FileAndPathname = fullfile(Pathname, CurrentFileName);
+        if strcmpi(FileFormat,'mat')
+            StructureLoadedImage = load(FileAndPathname);
+            LoadedImage = StructureLoadedImage.Image;
+        else [LoadedImage, handles] = CPimread(FileAndPathname,handles);
         end
+        %%% Saves the image to the handles structure.
+        handles.Pipeline.(ImageName{n}) = LoadedImage;
+
     catch ErrorMessage = lasterr;
-        ErrorNumber(1) = {'first'};
-        ErrorNumber(2) = {'second'};
-        ErrorNumber(3) = {'third'};
-        ErrorNumber(4) = {'fourth'};
+        ErrorNumber = {'first','second','third','fourth'};
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Single Image module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
+    
+    % Create a cell array with the filenames
+    FileNames(n) = {CurrentFileName};
 end
+
+%%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
+%%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
+
+%%% First, fix feature names and the pathname
+PathNames = cell(1,length(ImageName));
+FileNamesFeatures = cell(1,length(ImageName));
+PathNamesFeatures = cell(1,length(ImageName));
+for n = 1:length(ImageName)
+    PathNames{n} = Pathname;
+    FileNamesFeatures{n} = ['Filename ', ImageName{n}];
+    PathNamesFeatures{n} = ['Path ', ImageName{n}];
+end
+
+%%% Since there may be several load modules in the pipeline which all write to the
+%%% handles.Measurements.Image.FileName field, we have store filenames in an "appending" style.
+%%% Here we check if any of the modules above the current module in the pipline has written to
+%%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
+%%% names to the already written ones.
+if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
+        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+    % Get existing file/path names. Returns a cell array of names
+    ExistingFileNamesFeatures = handles.Measurements.Image.FileNamesFeatures;
+    ExistingFileNames         = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+    ExistingPathNamesFeatures = handles.Measurements.Image.PathNamesFeatures;
+    ExistingPathNames         = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+
+    % Append current file names to existing file names
+    FileNamesFeatures = cat(2,ExistingFileNamesFeatures,FileNamesFeatures);
+    FileNames         = cat(2,ExistingFileNames,FileNames);
+    PathNamesFeatures = cat(2,ExistingPathNamesFeatures,PathNamesFeatures);
+    PathNames         = cat(2,ExistingPathNames,PathNames);
+end
+
+%%% Write to the handles.Measurements.Image structure
+handles.Measurements.Image.FileNamesFeatures                   = FileNamesFeatures;
+handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
+handles.Measurements.Image.PathNamesFeatures                   = PathNamesFeatures;
+handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
+%%% ------------------------------------------------------------------------------------------------ %%%
+
+
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
@@ -295,7 +328,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -325,7 +358,7 @@ end
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

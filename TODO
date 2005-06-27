@@ -105,8 +105,6 @@ GUI 1 +++ Histogram DataTool is kind of hacked together at the moment. Streamlin
 
 GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
 
-GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
-
 ---------------------------------------------------
 
 PROBABLY DO NOT WANT TO INVEST TIME IN THESE:
@@ -454,6 +452,8 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
 
 - Done (Colin) - Many modules that load images from the hard drive use a subfunction called RetrieveImageFileNames, but it's slightly different when used in different contexts. It would be nice to consolidate at least part of this function into a standalone subfunction.  This allows people to change something like which file extensions are ignored in the one subfunction rather than every individual module.
 
+- Done (Colin) - GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
+
 - Done (Joo Han) - Fix speed problem when CP is run with figures open, which occurs due to the fact that uicontrols which are created for each image set are never deleted.
 
-- Done (Joo Han) - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
+- Done (Joo Han) - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.>>>>>>> 1.173

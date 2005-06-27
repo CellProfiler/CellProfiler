@@ -302,7 +302,7 @@ if SetBeingAnalyzed == 1
     %%% For all non-empty slots, extracts the file names.
     for n = 1:length(MovieName)
 
-        FileList = RetrieveImageFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp);
+        FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
         %%% Checks whether any files are left.
         if isempty(FileList)
             error(['Image processing was canceled because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesText module.'])
@@ -624,89 +624,6 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
         close(ThisModuleFigureNumber)
     end
     drawnow
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SUBFUNCTION TO RETRIEVE FILE NAMES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function FileNames = RetrieveImageFileNames(Pathname, TextToFind, recurse, ExactOrRegExp)
-%%% Lists all the contents of that path into a structure which includes the
-%%% name of each object as well as whether the object is a file or
-%%% directory.
-FilesAndDirsStructure = dir(Pathname);
-%%% Puts the names of each object into a list.
-FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
-%%% Puts the logical value of whether each object is a directory into a list.
-LogicalIsDirectory = [FilesAndDirsStructure.isdir];
-%%% Eliminates directories from the list of file names.
-FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-if isempty(FileNamesNoDir) == 1
-    FileNames = [];
-else
-    %%% Makes a logical array that marks with a "1" all file names that start
-    %%% with a period (hidden files):
-    DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
-    %%% Makes logical arrays that mark with a "1" all file names that have
-    %%% particular suffixes (mat, m, m~, and frk). The dollar sign indicates
-    %%% that the pattern must be at the end of the string in order to count as
-    %%% matching.  The first line of each set finds the suffix and marks its
-    %%% location in a cell array with the index of where that suffix begins;
-    %%% the third line converts this cell array of numbers into a logical
-    %%% array of 1's and 0's.   cellfun only works on arrays of class 'cell',
-    %%% so there is a check to make sure the class is appropriate.  When there
-    %%% are very few files in the directory (I think just one), the class is
-    %%% not cell for some reason.
-    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|rtf|txt|csv)$', 'once');
-    if strcmp(class(DiscardsByExtension), 'cell')
-        DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
-    else
-        DiscardsByExtension = [];
-    end
-    %%% Combines all of the DiscardLogical arrays into one.
-    DiscardLogical = DiscardLogical1 | DiscardsByExtension;
-    %%% Eliminates filenames to be discarded.
-    if isempty(DiscardLogical) == 1
-        NotYetTextMatchedFileNames = FileNamesNoDir;
-    else NotYetTextMatchedFileNames = FileNamesNoDir(~DiscardLogical);
-    end
-
-    %%% Loops through the names in the Directory listing, looking for the text
-    %%% of interest.  Creates the array Match which contains the numbers of the
-    %%% file names that match.
-    FileNames = cell(0);
-    Count = 1;
-    for i=1:length(NotYetTextMatchedFileNames),
-        if strcmp(ExactOrRegExp,'Exact') == 1
-            if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
-                FileNames{Count} = char(NotYetTextMatchedFileNames(i));
-                Count = Count + 1;
-            end
-        elseif strcmp(ExactOrRegExp,'Regular') == 1
-            if regexp(char(NotYetTextMatchedFileNames(i)), TextToFind),
-                FileNames{Count} = char(NotYetTextMatchedFileNames(i));
-                Count = Count + 1;
-            end
-        end
-    end
-end
-if(strcmp(recurse,'Yes'))
-    DirNamesNoFiles = FileAndDirNames(LogicalIsDirectory);
-    DiscardLogical1Dir = strncmp(DirNamesNoFiles,'.',1);
-    DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
-    if (length(DirNames) > 0)
-        for i=1:length(DirNames),
-            MoreFileNames = RetrieveImageFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse, ExactOrRegExp);
-            for j = 1:length(MoreFileNames)
-                MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
-            end
-            if isempty(FileNames) == 1
-                FileNames = MoreFileNames;
-            else
-                FileNames(end+1:end+length(MoreFileNames)) = MoreFileNames(1:end);
-            end
-        end
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

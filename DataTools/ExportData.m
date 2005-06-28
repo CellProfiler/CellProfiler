@@ -128,7 +128,7 @@ VariableNames = VariableNames(Variableindex);
 
 %%% Get number of processed sets
 if ~isempty(VariableNames)
-    NbrOfProcessedSets = length(handles.Measurements.Image.(VariableNames{1}));
+    NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
 else
     NbrOfProcessedSets = 0;
 end
@@ -191,7 +191,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
     %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
 
-    %%% Organize numerical features in format suitable for exportation. This
+    %%% Organize numerical features and text in a format suitable for exportation. This
     %%% piece of code creates a super measurement matrix, where
     %%% all features for all objects are stored. There will be one such
     %%% matrix for each image set, and each column in such a matrix
@@ -253,11 +253,15 @@ for Object = 1:length(ExportInfo.ObjectNames)
             TextNames = cat(2,TextNames,handles.Measurements.(ObjectName).(fields{k}));
         end
     end % end loop over the fields in the current object type
+
+    %%% Create the super measurement structure
     SuperMeasurements{Object} = Measurements;
     SuperMeasurementNames{Object} = MeasurementNames;
     SuperText{Object} = Text;
     SuperTextNames{Object} = TextNames;
 end % end loop over object types, i.e., Cells, Nuclei, Cytoplasm, Image
+
+
 
 %%% Step 2: Write the measurements to file
 for Object = 1:length(ExportInfo.ObjectNames)
@@ -297,8 +301,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
     else     % If not the 'Image' field, add a Object Nbr feature instead
         MeasurementNames = cat(2,{'Object Nbr'},MeasurementNames);
     end
-    
-    
+
+
     %%% Write tab-separated file that can be imported into Excel
     % Header part
     fprintf(fid,'%s\n\n', ObjectName);
@@ -314,7 +318,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
         strText = cell(2*length(TextNames),1);
         strText(1:2:end) = {'\t'};
         strText(2:2:end) = TextNames;
-        fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))))
+        fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));
 
         % Loop over the images sets
         for imageset = 1:max(length(Measurements),length(Text))
@@ -335,14 +339,14 @@ for Object = 1:length(ExportInfo.ObjectNames)
             else
                 NbrOfRows = 0;
             end
-                
+
             for row = 1:NbrOfRows    % Loop over the rows
-                
+
                 % If not the 'Image' field, write an object number
                 if ~strcmp(ObjectName,'Image')
                     fprintf(fid,'\t%d',row);
                 end
-                
+
                 % Write text
                 strText = {};
                 if ~isempty(TextNames)
@@ -366,52 +370,89 @@ for Object = 1:length(ExportInfo.ObjectNames)
                     strMeasurement(1:2:end) = {'\t'};                             % Interleave with tabs
                     strMeasurement(2:2:end) = tmp;
                 end
-
                 fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));            % Write to file
             end
 
         end
-    
-    % Write each measurement as a row, with each object as a column
+
+        %%% Write each measurement as a row, with each object as a column
     else
+        %%% Write first row where the image set starting points are indicated
         fprintf(fid,'\t%d',[]);
-        for imageset= 1:length(Measurements)
-            fields = fieldnames(handles.Measurements.Image);
-            Filenames  = fields(strmatch('Filename',fields));
-            fprintf(fid,'Set #%d, %s',imageset,handles.Measurements.Image.(Filenames{1}){imageset});
-            str = cell(size(Measurements{imageset}-1,1),1);
-            str(1:end)={'\t'};
+        for imageset = 1:length(Measurements)
+            str = cell(size(Measurements{imageset},1)+1,1);
+            str(1) = {sprintf('Set #%d, %s',imageset,handles.Measurements.Image.FileNames{imageset}{1})};
+            str(2:end) = {'\t'};
             fprintf(fid,sprintf('%s',cat(2,str{:})));
         end
-        fprintf(fid,'\n%d',[]);
+        fprintf(fid,'\n');
+
+        %%% If the current object type isn't 'Image'
+        %%% add the 'Object count' to the Measurement matrix
         if ~strcmp(ObjectName,'Image')
-            for imageset= 1:length(Measurements)
+            for imageset = 1:length(Measurements)
                 Measurements{imageset} = cat(2,[1:size(Measurements{imageset},1)]',Measurements{imageset});
             end
         end
-        for i = 1:length(Measurements{1})
 
-            % Update waitbar
-            waitbar(i/length(Measurements{1}),waitbarhandle,sprintf('Exporting %s',ObjectName));
-
-            try % In case things in Measurements are not the same length
-                fprintf(fid,'%s',MeasurementNames{i});
-            end
-            tmp = {};
-            for imageset = 1:length(Measurements)
-                try % In case things in Measurements are not the same length
-                    tmp = cat(1,tmp,cellstr(num2str(Measurements{imageset}(:,i),'%g')));
+        %%% Start by writing text 
+        %%% Loop over rows, writing one image set's text features at the time
+        for row = 1:length(TextNames)
+            fprintf(fid,'%s',TextNames{row});
+            for imageset = 1:length(Text)
+                strText = cell(2*size(Text{imageset},1),1);
+                strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
+                tmp = Text{imageset}(:,row)';              % Get the right row in the right image set
+                index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
+                for k = 1:length(index)
+                    for l = 1:length(index{k})
+                        tmp{k} = [tmp{k}(1:index{k}(l)),'\',tmp{k}(index{k}(l)+1:end)];   % Duplicate '\':s
+                    end
                 end
+                strText(2:2:end) = tmp;                    % Interleave with tabs
+                fprintf(fid,sprintf('%s',char(cat(2,strText{:}))));
             end
-            str = cell(2*length(tmp),1);
-            str(1:2:end) = {'\t'};
-            str(2:2:end) = tmp;
-            fprintf(fid,sprintf('%s\n',cat(2,str{:})));
+            fprintf(fid,'\n');
         end
-    end
-    fclose(fid);
-end
+    
+        %%% Next, write numerical measurements
+        %%% Loop over rows, writing one image set's measurements at the time
+        for row = 1:length(MeasurementNames)
+            fprintf(fid,'%s',MeasurementNames{row});
+            for imageset = 1:length(Measurements)
+                tmp = cellstr(num2str(Measurements{imageset}(:,row),'%g'));  % Create cell array with measurements
+                strMeasurement = cell(2*size(Measurements{imageset},1),1);
+                strMeasurement(1:2:end) = {'\t'};                 
+                strMeasurement(2:2:end) = tmp;                    % Interleave with tabs
+                fprintf(fid,sprintf('%s',char(cat(2,strMeasurement{:}))));  
+            end
+            fprintf(fid,'\n');
+        end
+    
+    
+    end % Ends 'if' row/column flip
 
+    fclose(fid);
+end % Ends 'for'-loop over object types
+
+
+%
+%             % Update waitbar
+%             
+%
+%             try % In case things in Measurements are not the same length
+%                 fprintf(fid,'%s',MeasurementNames{i});
+%             end
+%             tmp = {};
+%             for imageset = 1:length(Measurements)
+%                 try % In case things in Measurements are not the same length
+%                     tmp = cat(1,tmp,cellstr(num2str(Measurements{imageset}(:,i),'%g')));
+%                 end
+%             end
+%             str = cell(2*length(tmp),1);
+%             str(1:2:end) = {'\t'};
+%             str(2:2:end) = tmp;
+%             fprintf(fid,sprintf('%s\n',cat(2,str{:})));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ExportInfo = ObjectsToExport(handles,RawFileName)

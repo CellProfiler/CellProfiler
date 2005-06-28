@@ -66,6 +66,8 @@ for ImageSetNbr = 1:length(Measurements1)
     % the image average, and proceed by doing "objectwise" multiplication/division
     if strcmp(UserInput.Operation2,'mean')
         tmp2 = mean(tmp2)*ones(size(tmp1));    % Important to give the new vector the size of tmp1
+    elseif strcmp(UserInput.Operation2,'median')
+        tmp2 = median(tmp2)*ones(size(tmp1));    % Important to give the new vector the size of tmp1
     end
     
     % Check so tmp1 and tmp2 have the same size
@@ -144,14 +146,14 @@ uicontrol(Window,'style','pushbutton','String','Get feature','FontName','Times',
 uicontrol(Window,'style','text','String','Feature:','FontName','Times','Fontweight','bold','horizontalalignment','left',...
     'FontSize',handles.Current.FontSize,'units','inches','position',[0.1 BaseY+uiheight 1 uiheight],'backgroundcolor',[.7 .7 .9]);
 Feature1 = uicontrol(Window,'style','text','String','','FontName','Times',...
-    'Fontsize',10,'units','inches','position',[0.9 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
+    'Fontsize',handles.Current.FontSize,'units','inches','position',[0.9 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
 
 %%% OPERATION
 BaseY = 2.25;
 Operation1 = uicontrol(Window,'Style','popupmenu','String',{'multiplied','divided'},'FontName','Times','FontSize',8,...
     'backgroundcolor',[1 1 1],'units','inches','position',[0.1 BaseY 0.8 uiheight]);
-Operation2 = uicontrol(Window,'Style','popupmenu','String',{'objectwise by','by the image mean of'},...
-    'backgroundcolor',[1 1 1],'FontName','Times','FontSize',8,'units','inches','position',[1 BaseY 1.2 uiheight]);
+Operation2 = uicontrol(Window,'Style','popupmenu','String',{'objectwise by','by the image mean of','by the image median of'},...
+    'backgroundcolor',[1 1 1],'FontName','Times','FontSize',8,'units','inches','position',[1 BaseY 1.4 uiheight]);
 
 %%% FEATURE 2
 BaseY = 1.7;
@@ -235,9 +237,12 @@ while 1
             % Operation2 indicates if operation should be perform objectwise, or based on the image mean
             if  get(Operation2,'Value') == 1                                     
                 UserInput.Operation2 = 'objectwise';
-            else
+            elseif get(Operation2,'Value') == 2
                 UserInput.Operation2 = 'mean';
+            elseif get(Operation2,'Value') == 3
+                UserInput.Operation2 = 'median';
             end
+                
             close(Window);
             return
         end

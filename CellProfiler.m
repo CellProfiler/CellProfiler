@@ -90,7 +90,7 @@ try
     clear SavedPreferences
 catch
     try 
-        load(fullfile(handles.Current.StartupDirectory, CellProfilerPreferences))
+        load(fullfile(handles.Current.StartupDirectory, 'CellProfilerPreferences.mat'))
         LoadedPreferences = SavedPreferences;
         LoadedPreferencesExist = 1;
         clear SavedPreferences

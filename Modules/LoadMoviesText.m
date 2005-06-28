@@ -440,12 +440,12 @@ end
 
 %%% First, fix feature names and the pathname
 PathNames = cell(1,length(MovieName));
-FileNamesFeatures = cell(1,length(MovieName));
-PathNamesFeatures = cell(1,length(MovieName));
+FileNamesText = cell(1,length(MovieName));
+PathNamesText = cell(1,length(MovieName));
 for n = 1:length(MovieName)
     PathNames{n} = Pathname;
-    FileNamesFeatures{n} = ['Filename ', MovieName{n}];
-    PathNamesFeatures{n} = ['Path ', MovieName{n}];
+    FileNamesText{n} = ['Filename ', MovieName{n}];
+    PathNamesText{n} = ['Path ', MovieName{n}];
 end
 
 %%% Since there may be several load modules in the pipeline which all write to the
@@ -456,23 +456,23 @@ end
 if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
         length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
     % Get existing file/path names. Returns a cell array of names
-    ExistingFileNamesFeatures = handles.Measurements.Image.FileNamesFeatures;
-    ExistingFileNames         = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
-    ExistingPathNamesFeatures = handles.Measurements.Image.PathNamesFeatures;
-    ExistingPathNames         = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+    ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
+    ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+    ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
+    ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
 
     % Append current file names to existing file names
-    FileNamesFeatures = cat(2,ExistingFileNamesFeatures,FileNamesFeatures);
-    FileNames         = cat(2,ExistingFileNames,FileNames);
-    PathNamesFeatures = cat(2,ExistingPathNamesFeatures,PathNamesFeatures);
-    PathNames         = cat(2,ExistingPathNames,PathNames);
+    FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
+    FileNames     = cat(2,ExistingFileNames,FileNames);
+    PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
+    PathNames     = cat(2,ExistingPathNames,PathNames);
 end
 
 %%% Write to the handles.Measurements.Image structure
-handles.Measurements.Image.FileNamesFeatures                   = FileNamesFeatures;
-handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
-handles.Measurements.Image.PathNamesFeatures                   = PathNamesFeatures;
-handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
+handles.Measurements.Image.FileNamesText                   = FileNamesText;
+handles.Measurements.Image.FileNames(SetBeingAnalyzed)     = {FileNames};
+handles.Measurements.Image.PathNamesText                   = PathNamesText;
+handles.Measurements.Image.PathNames(SetBeingAnalyzed)     = {PathNames};
 %%% ------------------------------------------------------------------------------------------------ %%%
 
       

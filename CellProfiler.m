@@ -1600,9 +1600,6 @@ OutputDirEditBoxCallback = 'DefaultOutputDirectory = get(gco,''string''); if(~is
 ModuleDirBrowseButtonCallback = 'EditBoxHandle = findobj(''Tag'',''ModuleDirEditBox''); CurrentChoice = get(EditBoxHandle,''string''); if exist(CurrentChoice, ''dir''), tempdir=CurrentChoice; else tempdir=pwd; end, DefaultModuleDirectory = uigetdir(tempdir,''Select the directory where modules are stored''); pause(.1);figure(findobj(''Tag'',''figure1''));figure(findobj(''Tag'',''SetPreferenceWindow''));if DefaultModuleDirectory == 0, return, else set(EditBoxHandle,''string'', DefaultModuleDirectory), end, clear';
 ModuleDirEditBoxCallback = 'DefaultModuleDirectory = get(gco,''string''); if(~isdir(DefaultModuleDirectory)); warndlg(''That is not a valid directory'');end;if isempty(DefaultModuleDirectory) == 1; DefaultModuleDirectory = pwd; set(gco,''string'',DefaultModuleDirectory), end, clear';
 
-%%% TODO: Add error checking to each directory edit box (does pathname exist).
-%%% TODO: Add error checking to pixel size box and font size box(is it a number).
-
 CancelButtonCallback = 'delete(gcf)';
 
 %%% Creates the dialog box and its text, buttons, and edit boxes.
@@ -2766,9 +2763,6 @@ else
                 end
 
                 %%% Re-enable/disable appropriate buttons.
-                set(handles.PipelineOfModulesText,'visible','on')
-                set(handles.LoadPipelineButton,'visible','on')
-                set(handles.SavePipelineButton,'visible','on')
                 set(handles.IndividualModulesText,'visible','on')
                 set(handles.AddModule,'visible','on');
                 set(handles.RemoveModule,'visible','on');

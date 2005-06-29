@@ -115,23 +115,8 @@ end
 
 fprintf(fid,'\n\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
 
-% Get variable names used
-
-try
-    VariableNames = fieldnames(handles.Measurements.Image);
-catch
-    errordlg('The output file does not contain a field called Measurements.');
-    return;
-end
-Variableindex = find(cellfun('isempty',strfind(VariableNames,'Filename'))==0);
-VariableNames = VariableNames(Variableindex);
-
-%%% Get number of processed sets
-if ~isempty(VariableNames)
-    NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
-else
-    NbrOfProcessedSets = 0;
-end
+% Get number of processed data sets
+NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
 fprintf(fid,'Number of processed image sets: %d\n\n',NbrOfProcessedSets);
 
 %%% Get segmented objects, don't count the 'Image' field
@@ -147,10 +132,9 @@ for imageset = 1:NbrOfProcessedSets
 
     % Write info about image set
     fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
-    fprintf(fid,'\tVariables:\n');
-    for k = 1:length(VariableNames)
-        ImageName = handles.Measurements.Image.(VariableNames{k}){imageset};
-        fprintf(fid,'\t\t%s: %s\n',VariableNames{k}(9:end),ImageName);
+    fprintf(fid,'\tInput images:\n');
+    for k = 1:length(handles.Measurements.Image.FileNamesText)
+        fprintf(fid,'\t\t%s: %s\n',handles.Measurements.Image.FileNamesText{k},handles.Measurements.Image.FileNames{imageset}{k});
     end
     fprintf(fid,'\n');
     fprintf(fid,'\tObjects:\n');

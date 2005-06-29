@@ -219,12 +219,12 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number to display in.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    FigureHandle = CPfigure(handles,ThisModuleFigureNumber); ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+    FigureHandle = CPfigure(handles,ThisModuleFigureNumber); ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
 else
     %%% A new figure is opened each time through the pipeline so that the
     %%% resulting labeled figures are all available to the user for
     %%% viewing.
-    FigureHandle = figure; ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval %#ok We want to ignore MLint error checking for this line.
+    FigureHandle = figure; ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
     %%% Tag new figure so "Close Windows" knows to delete it.
     userData.Application = 'CellProfiler';
     set(FigureHandle,'UserData',userData);
@@ -256,7 +256,8 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     drawnow
     RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
     figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image;
-    title('Rotated Image'), pixval
+    title('Rotated Image');
+    pixval off;
     try %#ok We want to ignore MLint error checking for this line.
         delete(PatienceHandle)
     end 
@@ -283,7 +284,8 @@ elseif strncmp(RotateMethod, 'C',1) == 1
     drawnow
     RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
     figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image
-    title('Rotated Image'), pixval
+    title('Rotated Image')
+    pixval off;
     try, delete(PatienceHandle), end %#ok We want to ignore MLint error checking for this line.
 else
     error('Image processing was canceled because your entry relating to image rotation was not one of the options: No, C, or M.')
@@ -305,7 +307,7 @@ elseif strncmp(MarkingMethod,'M',1) == 1
     if strcmp(Answer3, 'Cancel') == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end
-    pixval
+    pixval off;
     [x,y] = getpts(gcf);
     if length(x) ~=1
         error('SpotIdentifier was canceled because you must click on one point then press enter.')
@@ -420,9 +422,16 @@ end
 drawnow
 %%% Sets the figure to take up most of the screen.
 ScreenSize = get(0,'ScreenSize');
-Font = handles.Current.FontSize;
 NewFigureSize = [30,60, ScreenSize(3)-60, ScreenSize(4)-150];
 set(FigureHandle, 'Position', NewFigureSize)
+
+%PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
+InteractiveZoomButton = findobj(get(FigureHandle,'Children'),'Tag','InteractiveZoom');
+set(InteractiveZoomButton,'Visible','off');
+%ButtonPos = get(InteractiveZoomButton,'Position');
+%ButtonPos(1) = PointsPerPixel*(NewFigureSize(1)-108);
+%set(findobj(get(FigureHandle,'Children'),'Tag','InteractiveZoom'),'Position',ButtonPos);
+Font = handles.Current.FontSize;
 axis image
 ShowGridButtonFunction = 'Handles = findobj(''type'',''line''); set(Handles,''visible'',''on''); clear Handles';
 uicontrol('Style', 'pushbutton', ...

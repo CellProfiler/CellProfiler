@@ -118,7 +118,7 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Choose rotation method. (No, C = Coordinates, M = Mouse)
+%textVAR02 = Choose rotation method.
 %choiceVAR02 = No rotation
 %choiceVAR02 = Coordinates
 %choiceVAR02 = Mouse
@@ -132,7 +132,7 @@ RotateMethod = RotateMethod(1);
 RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 
-%textVAR04 = Mark the top, left corner of the grid by coordinates or by mouse?
+%textVAR04 = Mark the control spot by coordinates or by mouse?
 %choiceVAR04 = Coordinates
 %choiceVAR04 = Mouse
 MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -161,9 +161,15 @@ try
 catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
 end
 
-%textVAR07 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
-%defaultVAR07 = 57,0
-HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Would you like the distance units (the next option) be in pixals or spots?
+%choiceVAR07 = Pixals
+%choiceVAR07 = Spots
+SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
+
+%textVAR08 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
+%defaultVAR08 = 57,0
+HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% Extracts the vertical and horizontal offset from the user's input.
 try
     HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
@@ -171,29 +177,49 @@ try
     HorizOffset = HorizVertOffsetNumerical(2);
 catch error('Image processing was canceled because your entry for the distance from the top left marker to the center of the nearest spot (vertical, horizontal) in the Spot Identifier module was not understood.')
 end
+if strcmp(SpacingUnits,'Spots')
+    VertOffset = VertOffset*VertSpacing;
+    HorizOffset = HorizOffset*HorizSpacing;
+end
 
-%textVAR08 = Is the first spot at the Left or Right?
-%choiceVAR08 = Left
-%choiceVAR08 = Right
-LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR09 = Is the first spot at the Left or Right?
+%choiceVAR09 = Left
+%choiceVAR09 = Right
+LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 LeftOrRight = LeftOrRight(1);
-%inputtypeVAR08 = popupmenu
-
-%textVAR09 = Is the first spot at the Bottom or Top?
-%choiceVAR09 = Bottom
-%choiceVAR09 = Top
-TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-TopOrBottom = TopOrBottom(1);
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Do you want to load spot information from a file (e.g. gene names)?
-%defaultVAR10 = N
-LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Is the first spot at the Bottom or Top?
+%choiceVAR10 = Top
+%choiceVAR10 = Bottom
+TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+TopOrBottom = TopOrBottom(1);
+%inputtypeVAR10 = popupmenu
+
+%textVAR11 = Would you like to count by rows or columns?
+%choiceVAR11 = Rows
+%choiceVAR11 = Columns
+RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 = From where do you want to load spot information (if you select now, it will be assumed to be from the first sheet of the excel file)?
+%choiceVAR12 = Don't Load
+%choiceVAR12 = Browse each time through
+LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+%Temporary quick fix
+if strcmp(RowsOrColumns,'Rows')
+    temp=NumberRows;
+    NumberRows=NumberColumns;
+    NumberColumns=NumberRows;
+end
+
 
 % PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
@@ -325,6 +351,9 @@ OriginY = TopLeftY + VertOffset;
 NumberSpots = NumberRows*NumberColumns;
 Numbers = 1:NumberSpots;
 NumbersGridShape = reshape(Numbers, NumberRows, NumberColumns);
+if strcmp(RowsOrColumns,'Rows')
+    NumbersGridShape = NumbersGridShape';
+end
 if strcmp(TopOrBottom,'B') == 1
     NumbersGridShape = flipud(NumbersGridShape);
 end
@@ -342,21 +371,24 @@ drawnow
 %%% Calculates the locations for all the sample labelings (whether it is
 %%% numbers, spot identifying information, or coordinates).
 GridXLocations = NumbersGridShape;
-for g = 1:NumberColumns
+for g = 1:size(GridXLocations,2)
     GridXLocations(:,g) = OriginX + (g-1)*HorizSpacing;
 end
 %%% Converts to a single column.
 XLocations = reshape(GridXLocations, 1, NumberSpots);
+
+    
 % %%% Shifts if necessary.
 % if strcmp(LeftOrRight,'R') == 1
 % XLocations = XLocations - (NumberRows-1)*VertSpacing;
 % end
 %%% Same routine for Y.
 GridYLocations = NumbersGridShape;
-for h = 1:NumberRows
+for h = 1:size(GridYLocations,1)
     GridYLocations(h,:) = OriginY + (h-1)*VertSpacing;
 end
 YLocations = reshape(GridYLocations, 1, NumberSpots);
+
 % %%% Shifts if necessary.
 % if strcmp(TopOrBottom,'B') == 1
 % YLocations = YLocations - (NumberColumns-1)*HorizSpacing;
@@ -369,17 +401,24 @@ text(XLocations, YLocations, PositionList, ...
     'UserData','PositionListHandles');
 drawnow
 %%% Retrieves the spot identifying info from a file, if requested.
-if strcmp(upper(LoadSpotIdentifiers),'Y') == 1
-    [FileName,Pathname] = uigetfile('*.*', 'Choose the file containing the spot identifying information.');
-    if FileName == 0
-        error('Image processing was canceled during the Spot Identifier module.')
+if ~strcmp(LoadSpotIdentifiers,'Don''t Load')
+    if strcmp(LoadSpotIdentifiers,'Browse each time through')
+        [FileName,Pathname] = uigetfile('*.xls', 'Choose the file containing the spot identifying information.');
+        if FileName == 0
+            error('Image processing was canceled during the Spot Identifier module.')
+        end
+        Answer = inputdlg('What is the name of the Excel sheet with the data of interest?');
+    else
+        FileName=LoadSpotIdentifiers;
+        Pathname=handles.Current.DefaultImageDirectory;
+        Answer=[];
     end
-    Answer = inputdlg('What is the name of the Excel sheet with the data of interest?');
-    if isempty(Answer) == 1
-        error('Image processing was canceled during the Spot Identifier module.')
+    if isempty(Answer)
+        xlsread(fullfile(Pathname,FileName));
+    else
+        SheetName = Answer{1};
+        [ignore,SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName),SheetName); %#ok We want to ignore MLint error checking for this line.
     end
-    SheetName = Answer{1};
-    [ignore,SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName),SheetName); %#ok We want to ignore MLint error checking for this line.
     SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
     SpotIdentifyingInfo = SpotIdentifyingInfo(2:end,:);
     %%% Determines the number of rows and columns for later use.
@@ -535,16 +574,16 @@ end
 VertLinesX(1,:) = [GridXLocations(1,:),GridXLocations(1,end)+HorizSpacing];
 VertLinesX(2,:) = [GridXLocations(1,:),GridXLocations(1,end)+HorizSpacing];
 VertLinesX = VertLinesX - HorizSpacing/2;
-VertLinesY(1,:) = repmat(0,1,NumberColumns+1);
-VertLinesY(2,:) = repmat(TotalHeight,1,NumberColumns+1);
+VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1);
+VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
 line(VertLinesX,VertLinesY)
 
 %%% Draws the Horizontal Lines.
 HorizLinesY(1,:) = [GridYLocations(:,1)',GridYLocations(end,1)+VertSpacing];
 HorizLinesY(2,:) = [GridYLocations(:,1)',GridYLocations(end,1)+VertSpacing];
 HorizLinesY = HorizLinesY - VertSpacing/2;
-HorizLinesX(1,:) = repmat(0,1,NumberRows+1);
-HorizLinesX(2,:) = repmat(TotalWidth,1,NumberRows+1);
+HorizLinesX(1,:) = repmat(0,1,size(GridXLocations,1)+1);
+HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridXLocations,1)+1);
 line(HorizLinesX,HorizLinesY)
 
 %%% Sets the line color.

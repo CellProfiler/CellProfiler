@@ -457,3 +457,5 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
 - Done (Joo Han) - Fix speed problem when CP is run with figures open, which occurs due to the fact that uicontrols which are created for each image set are never deleted.
 
 - Done (Joo Han) - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.>>>>>>> 1.173
+
+- Done (Joo Han) - Make a FilterObjectsAreaShape module that selects objects according to statistics obtained using MeasureAreaShape module. This module can be used, for example, to eliminate objects with a solidity below 0.5.

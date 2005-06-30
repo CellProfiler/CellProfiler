@@ -1,5 +1,25 @@
 function handles = IdentifyWellSpots(handles)
 
+% Help for the Identify Well Spots module:
+% Category: Object Identification and Modification
+%
+% This module allows you to identify well spots in a grid. The resulting
+% well spots are ordered by columns and then rows, e.g:
+% 1 5 9  13
+% 2 6 10 14
+% 3 7 11 15
+% 4 8 12 16
+% The module calculates the average radius of all the spots, excluding
+% outliers, and redraws all the spots with the same radius.
+% If a spot is not present where it should be, the module calculates the
+% expected location of the spot and draws it.
+% This module should be used after an Identify Primary module to first
+% identify objects. Then, a crop module or MeasureAreaShape +
+% FilterObjectsAreaShape modules may be needed to eliminate the border or
+% misidentified objects.
+% See also IDENTIFYPRIMINTENSINTENS, IDENTIFYPRIMSHAPEINTENS, CROP,
+% MEASUREAREASHAPE, FILTEROBJECTSAREASHAPE.
+
 %%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;

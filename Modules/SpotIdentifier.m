@@ -409,14 +409,16 @@ if ~strcmp(LoadSpotIdentifiers,'Don''t Load')
         Pathname=handles.Current.DefaultImageDirectory;
         Answer=[];
     end
+    warning off %Because matlab warns when you open an excel in a non-windows platform
     if isempty(Answer)
-        xlsread(fullfile(Pathname,FileName));
+        [ignore SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName));
     else
         SheetName = Answer{1};
-        [ignore,SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName),SheetName); %#ok We want to ignore MLint error checking for this line.
+        [ignore SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName),SheetName); %#ok We want to ignore MLint error checking for this line.
     end
-    SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
-    SpotIdentifyingInfo = SpotIdentifyingInfo(2:end,:);
+    warning on
+    %SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
+    %SpotIdentifyingInfo = SpotIdentifyingInfo(2:end,:);
     %%% Determines the number of rows and columns for later use.
     [NumberRowsSpotIdentifyingInfo, NumberColumnsSpotIdentifyingInfo] = size(SpotIdentifyingInfo);
     if NumberRowsSpotIdentifyingInfo ~= NumberRows

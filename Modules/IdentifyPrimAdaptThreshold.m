@@ -1,7 +1,7 @@
 function handles = IdentifyPrimAdaptThresholdA(handles)
 
 % Help for the Identify Primary Adaptive Threshold A module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This image analysis module identifies objects by applying an
 % adaptive threshold to a grayscale image.  Four different methods

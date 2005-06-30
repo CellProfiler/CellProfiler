@@ -1,7 +1,7 @@
 function handles = AlignImages(handles)
 
 % Help for the Align module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % For two or three input images, this module determines the optimal
 % alignment among them.  This works whether the images are correlated

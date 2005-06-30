@@ -1,7 +1,7 @@
 function handles = IdentifyPrimThreshold(handles)
 
 % Help for the Identify Primary Threshold module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This image analysis module identifies objects by simply thresholding
 % the image, with a single, global threshold used across the image.

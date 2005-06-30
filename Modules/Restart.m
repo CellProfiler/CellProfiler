@@ -1,7 +1,7 @@
 function handles = Restart(handles)
 
 % Help for the Restart module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Restarts an Analysis Run where it left off.
 % To use: Start CellProfiler and insert Restart as the only module.

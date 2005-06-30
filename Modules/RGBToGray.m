@@ -1,7 +1,7 @@
 function handles = RGBToGray(handles)
 
 % Help for the RGB To Gray module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Takes an RGB image and converts it to grayscale.  Each color's
 % contribution to the final image can be adjusted independently.

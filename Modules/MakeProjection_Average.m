@@ -1,7 +1,7 @@
 function handles = MakeProjection_AverageImages(handles)
 
 % Help for the Make Projection/Average Images module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % This module makes a projection of a set of images (e.g. a Z-stack)
 % by averaging the pixel intensities at each pixel position.

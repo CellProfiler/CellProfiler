@@ -1,7 +1,7 @@
 function handles = PlaceAdjacent(handles)
 
 % Help for the Place Adjacent module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % This module places two images next to each other, either
 % horizontally or vertically.

@@ -1,7 +1,7 @@
 function handles = Crop(handles)
 
 % Help for the Crop module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Allows the images to be cropped in any shape:
 %

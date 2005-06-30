@@ -1,7 +1,7 @@
 function handles = ImageTiler(handles)
 
 % Help for the Image Tiler module:
-% Category: Other
+% Category: Image Processing
 %
 % Allows many images to be viewed simultaneously, in a grid layout you
 % specify (e.g. in the actual layout in which the images were

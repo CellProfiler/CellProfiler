@@ -1,7 +1,7 @@
 function handles = ApplyThreshold(handles)
 
 % Help for the Apply Threshold module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Pixels below (or above) a certain threshold are set to zero. The
 % remaining pixels retain their original value.

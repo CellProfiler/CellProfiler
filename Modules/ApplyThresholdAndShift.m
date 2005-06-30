@@ -1,7 +1,7 @@
 function handles = ApplyThresholdAndShift(handles)
 
 % Help for the Apply Threshold and Shift module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % First, pixels above a certain threshold are set to zero (in case
 % very bright objects need to be excluded).  Then, a user-specified

@@ -1,7 +1,7 @@
 function handles = ExpandOrShrinkSecondaryObjects(handles)
 
 % Help for the Expand Or Shrink Secondary Objects module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % The module expands or shrinks Secondary objects by adding or removing
 % border pixels. The user can specify a certain number of times the

@@ -1,7 +1,7 @@
 function handles = CorrectIllumination_CalculateUsingBackgroundIntensities(handles)
 
 % Help for the Correct Illumination_Calculate Using Background Intensities module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % This module calculates an illumination function based on the
 % background intensities of images.  The illumination function can

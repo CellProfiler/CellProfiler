@@ -1,7 +1,7 @@
 function handles = SmoothImage(handles)
 
 % Help for the Smooth Image module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % This module smooths (blurs) the incoming image.
 %

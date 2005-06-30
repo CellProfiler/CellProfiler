@@ -1,7 +1,7 @@
 function handles = IdentifyPrimIntensIntens(handles)
 
 % Help for the Identify Primary Intensity Intensity module: 
-% Category: Object Identification
+% Category: Object Identification and Modification
 % 
 % This image analysis module works best for objects that are brighter
 % towards the interior; the objects can be any shape, so they need not

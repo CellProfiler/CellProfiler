@@ -1,7 +1,7 @@
 function handles = IdentifyPrimYeastPhase(handles)
 
 % Help for the Identify Primary Yeast Phase module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This module contains code contributed by Ben Kaufmann of MIT.
 %

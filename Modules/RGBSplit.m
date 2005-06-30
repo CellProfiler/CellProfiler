@@ -1,7 +1,7 @@
 function handles = RGBSplit(handles)
 
 % Help for the RGB Split module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Takes an RGB image and splits into three separate grayscale images.
 %

@@ -1,7 +1,7 @@
 function handles = ResizeImages(handles)
 
 % Help for the Resize module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Images are resized (smaller or larger) based on the user's inputs.
 % This module uses the Matlab built-in function imresize.

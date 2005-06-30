@@ -1,7 +1,7 @@
 function handles = FilterObjectsAreaShape(handles)
 
 % Help for the Filter Objects by AreaShape module: 
-% Category: Object Identification
+% Category: Object Identification and Modification
 % This module applies a filter using statistics measured by the 
 % MeasureAreaShape module to select objects with desired area or shape. For
 % example, it can be used to eliminate objects with a Solidity value below

@@ -1,7 +1,7 @@
 function handles = IdentifyPrimManually(handles)
 
 % Help for the Identify Primary Manually module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This module allows the user to identify an single object by manually
 % outlining it by using the mouse to click at multiple points around

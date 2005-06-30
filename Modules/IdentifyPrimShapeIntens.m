@@ -1,7 +1,7 @@
 function handles = IdentifyPrimShapeIntens(handles)
 
 % Help for the Identify Primary Shape Intensity module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This image analysis module identifies and separates clumps of
 % objects in a grayscale input image. The module works best for

@@ -1,1 +1,1 @@
-RetrieveImageFileNames
+Category: Object Identification

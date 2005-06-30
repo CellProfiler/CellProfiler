@@ -1,7 +1,7 @@
 function handles = ProcessOutlines(handles)
 
 % Help for the Process Outlines module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Sorry, help does not yet exist for this module.  We wrote it really
 % quickly for a collaborator.

@@ -1,7 +1,7 @@
 function handles = IdentifySecPropagate(handles)
 
 % Help for the Identify Secondary Propagate module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This module identifies secondary objects based on a previous
 % module's identification of primary objects.  Each primary object is

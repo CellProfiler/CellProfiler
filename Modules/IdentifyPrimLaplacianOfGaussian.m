@@ -1,7 +1,7 @@
 function handles = IdentifyPrimLaplacianOfGaussian(handles)
 
 % Help for the Laplacian Of Gaussian module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This object identification module applies an algorithm developed by
 % Perlman, Mitchison, et al. (Science, 2004 TODO: supply exact reference)

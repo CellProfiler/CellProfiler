@@ -1,7 +1,7 @@
 function handles = DilateBinaryObjects(handles)
 
 % Help for the Dilate Binary Objects module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % Sorry, this module is not yet documented!
 %

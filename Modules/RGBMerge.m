@@ -1,7 +1,7 @@
 function handles = RGBMerge(handles)
 
 % Help for the RGB Merge module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % Takes 1 to 3 images and assigns them to colors in a final, RGB
 % image.  Each color's brightness can be adjusted independently.

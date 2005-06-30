@@ -1,7 +1,7 @@
 function handles = RescaleIntensity(handles)
 
 % Help for the Rescale Intensity module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % The intensity of the incoming images are rescaled by one of several
 % methods.

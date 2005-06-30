@@ -1,7 +1,7 @@
 function handles = ExcludeObjects(handles)
 
 % Help for the Exclude Objects module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % This image analysis module allows you to delete the objects and
 % portions of objects that are outside of a region you specify (e.g.

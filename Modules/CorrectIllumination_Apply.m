@@ -1,7 +1,7 @@
 function handles = CorrectIllumination_Apply(handles)
 
 % Help for the CorrectIllumination_Apply module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % This module corrects for uneven illumination of each image. An
 % illumination function image that represents the variation in

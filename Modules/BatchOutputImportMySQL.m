@@ -1,7 +1,7 @@
 function handles = BatchOutputImportMySQL(handles)
 
 % Help for the Batch Ouput Import to MySQL module:
-% Category: Other
+% Category: File Handling
 %
 % This module creates SQL files from batch run output files.
 %

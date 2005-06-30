@@ -1,7 +1,7 @@
 function handles = StretchAlignCrop(handles)
 
 % Help for the Stretch, Align, and Crop module:
-% Category: Pre-processing
+% Category: Image Processing
 %
 % This module was written for a specific purpose: to take a larger
 % image of the outlines of cells, with some space around the outside,

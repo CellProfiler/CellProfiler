@@ -1,7 +1,7 @@
 function handles = IdentifySecDistance(handles)
 
 % Help for the Identify Secondary Distance module:
-% Category: Object Identification
+% Category: Object Identification and Modification
 %
 % Based on another module's identification of primary objects, this
 % module identifies secondary objects when no specific staining is

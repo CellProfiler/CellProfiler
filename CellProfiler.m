@@ -938,6 +938,11 @@ if ModuleNamedotm ~= 0,
         set(handles.ModulePipelineListBox,'String',contents);
     end
     
+    if ModuleNums <= handles.Current.NumberOfModules
+        handles.VariableDescription = [handles.VariableDescription(1:ModuleNums-1) {[]} handles.VariableDescription(ModuleNums:end)];
+        handles.VariableBox = [handles.VariableBox(1:ModuleNums-1) {[]} handles.VariableBox(ModuleNums:end)];
+    end
+
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     lastVariableCheck = 0;
     SelectedOption = 0;
@@ -1200,6 +1205,7 @@ end
 
 handles.VariableDescription = [handles.VariableDescription(1:ModuleHighlighted-1),handles.VariableDescription(ModuleHighlighted+1:end)];
 handles.VariableBox = [handles.VariableBox(1:ModuleHighlighted-1),handles.VariableBox(ModuleHighlighted+1:end)];
+delete(findobj('Parent',handles.variablepanel,'Visible','on'));
 
 for ModuleDelete = 1:length(ModuleHighlighted);
     %%% 2. Removes the ModuleName from the handles structure.

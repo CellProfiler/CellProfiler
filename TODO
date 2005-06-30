@@ -24,13 +24,6 @@ WANT IT NOW:
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
-- SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
-       an email from Mathworks describing the issue, thread QW38).
-       Allow asking if numbers are in rows or columns.  Check offsets,
-       flipping. Display value only when clicking (see email that Anne
-       has: Mathworks tricks for interactive figures). Make manual
-       page. Toggle several images. In general, it just needs to be looked over and polished up.
-
 - Image Tiler: We haven't checked this module in a while. Main GUI's error catching is causing problems when
        sample info is loaded.  Allow zoom in on thumbnail: get
        filename (GET COORDINATES) and display high res image.  Needs
@@ -463,3 +456,11 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
 - Done (Joo Han) - Improve the response time of the main GUI - previously, toggling between modules was very slow, especially on macs. Through a significant infrastructure change that should be taken into account in future changes, an instantaneous module toggling was achieved. Common 99 VariableDescriptions and Boxes were used before - now, they are classified the module number. (handles.VariableDescription{ModuleNumber}(VariableNumber) and handles.VariableBox{ModuleNumber}(VariableNumber).
 
 - Done (Joo Han) - Make the order of variable declarations consistent by always having %textVAR declared first. Before, either %infotypeVAR or %textVAR came first depending on the use of infotype. Relevant redundant calculations were removed and now CellProfiler.m will fail to read modules properly if %textVAR does not come first.
+
+- Done (Colin) - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
+       an email from Mathworks describing the issue, thread QW38).
+       Allow asking if numbers are in rows or columns.  Check offsets,
+       flipping. Display value only when clicking (see email that Anne
+       has: Mathworks tricks for interactive figures). Make manual
+       page. Toggle several images. In general, it just needs to be looked over and polished up.
+

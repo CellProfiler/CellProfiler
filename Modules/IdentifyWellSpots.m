@@ -86,8 +86,7 @@ else
     [Rightmost,Lowermost]=strread(RightCoord,'%d',2,'delimiter',',');
 end
 
-%Assuming the user declared the number of rows and cols (Anyway to
-%automatically know?)
+%Assuming the user declared the number of rows and cols
 XDiv = (Rightmost - Leftmost)/(Cols - 1);
 YDiv = (Lowermost - Uppermost)/(Rows - 1);
 

@@ -1163,7 +1163,7 @@ if ModuleNamedotm ~= 0,
     end
     
     MaxInfo = get(handles.slider1,'UserData');
-    MaxInfo = [MaxInfo(1:ModuleNums-1) ((handles.Settings.NumbersOfVariables(ModuleNums)-14+numberOfLongBoxes+numberExtraLinesOfDescription)*25) MaxInfo(ModuleNums+1:end)];
+    MaxInfo = [MaxInfo(1:ModuleNums-1) ((handles.Settings.NumbersOfVariables(ModuleNums)-14+numberOfLongBoxes+numberExtraLinesOfDescription)*25) MaxInfo(ModuleNums:end)];
     set(handles.slider1,'UserData',MaxInfo);
     
     
@@ -1209,8 +1209,8 @@ end
 %%% 1. Sets all 11 VariableBox edit boxes and all 11
 %%% VariableDescriptions to be invisible.
 
-handles.VariableDescription = [handles.VariableDescription(1:ModuleHighlighted-1),handles.VariableDescription(ModuleHighlighted+1:end)];
-handles.VariableBox = [handles.VariableBox(1:ModuleHighlighted-1),handles.VariableBox(ModuleHighlighted+1:end)];
+MaxInfo = get(handles.slider1,'UserData');
+
 delete(findobj('Parent',handles.variablepanel,'Visible','on'));
 
 for ModuleDelete = 1:length(ModuleHighlighted);
@@ -1224,7 +1224,14 @@ for ModuleDelete = 1:length(ModuleHighlighted);
     handles.Settings.VariableRevisionNumbers(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     
     handles.Settings.VariableInfoTypes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1,:) = [];
+    
+    handles.VariableDescription(ModuleHighlighted(ModuleDelete)-ModuleDelete+1)=[];
+    handles.VariableBox(ModuleHighlighted(ModuleDelete)-ModuleDelete+1)=[];
+    
+    MaxInfo = [MaxInfo(1:(ModuleHighlighted(ModuleDelete)-ModuleDelete)) MaxInfo((ModuleHighlighted(ModuleDelete)-ModuleDelete+2):end)];
 end
+
+set(handles.slider1,'UserData',MaxInfo);
 
 %%% 5. Update the number of modules loaded
 handles.Current.NumberOfModules = 0;
@@ -1261,6 +1268,7 @@ ModulePipelineListBox_Callback(hObject, eventdata, handles);
 function MoveUpButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
+    MaxInfo = get(handles.slider1,'UserData');
     for ModuleUp1 = 1:length(ModuleHighlighted);
         ModuleUp = ModuleHighlighted(ModuleUp1)-1;
         ModuleNow = ModuleHighlighted(ModuleUp1);
@@ -1301,13 +1309,16 @@ if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
         CopyVariableBox = handles.VariableBox(ModuleNow);
         handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleUp);
         handles.VariableBox(ModuleUp) = CopyVariableBox;
-                
+        
+        CopyMaxInfo = MaxInfo(ModuleNow);
+        MaxInfo(ModuleNow) = MaxInfo(ModuleUp);
+        MaxInfo(ModuleUp) = CopyMaxInfo;
     end
     %%% 7. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;
-    ModuleHighlighted = ModuleHighlighted-1;
     set(handles.ModulePipelineListBox,'String',contents);
-    set(handles.ModulePipelineListBox,'Value',ModuleHighlighted);
+    set(handles.ModulePipelineListBox,'Value',ModuleHighlighted-1);
+    set(handles.slider1,'UserData',MaxInfo);
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles)
@@ -1315,9 +1326,9 @@ end
 
 function MoveDownButton_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
-if(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
-else
-    for ModuleDown1 = 1:length(ModuleHighlighted);
+if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
+    MaxInfo = get(handles.slider1,'UserData');
+    for ModuleDown1 = length(ModuleHighlighted):-1:1;
         ModuleDown = ModuleHighlighted(ModuleDown1) + 1;
         ModuleNow = ModuleHighlighted(ModuleDown1);
         %%% 1. Saves the ModuleName
@@ -1358,12 +1369,16 @@ else
         handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleDown);
         handles.VariableBox(ModuleDown) = CopyVariableBox;
         
+        CopyMaxInfo = MaxInfo(ModuleNow);
+        MaxInfo(ModuleNow) = MaxInfo(ModuleDown);
+        MaxInfo(ModuleDown) = CopyMaxInfo;
+        
     end
     %%% 7. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;
     set(handles.ModulePipelineListBox,'String',contents);
     set(handles.ModulePipelineListBox,'Value',ModuleHighlighted+1);
-    ModuleHighlighted = ModuleHighlighted+1;
+    set(handles.slider1,'UserData',MaxInfo);
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles)
@@ -1380,7 +1395,7 @@ function ModulePipelineListBox_CreateFcn(hObject, eventdata, handles) %#ok We wa
 function ModulePipelineListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 if (length(ModuleHighlighted) > 0)
-    ModuleNumber = ModuleHighlighted(1);
+    ModuleNumber = ModuleHighlighted(1)
     if( handles.Current.NumberOfModules > 0 )
         %%% 2. Sets all VariableBox edit boxes and all
         %%% VariableDescriptions to be invisible.
@@ -1402,7 +1417,7 @@ if (length(ModuleHighlighted) > 0)
 
         %%% 5.  Sets the slider
         MaxInfo = get(handles.slider1,'UserData');
-        MaxInfo = MaxInfo(ModuleHighlighted);
+        MaxInfo = MaxInfo(ModuleNumber);
         if(MaxInfo > 0)
             set(handles.slider1,'visible','on');
             set(handles.slider1,'max',MaxInfo);
@@ -1554,7 +1569,7 @@ for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
         set(handles.VariableBox{ModuleNumber}(i),'visible','off');
     end
 end
-
+guidata(handles.figure1,handles);
 
 
 function slider1_CreateFcn(hObject, eventdata, handles)

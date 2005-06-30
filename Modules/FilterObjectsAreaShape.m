@@ -277,7 +277,7 @@ drawnow
 handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
 
 if strcmp(SaveColored,'Yes')
-    handles.Pipeline.(['Colored' TargetName]) = FinalLabelMatrixImage;
+    handles.Pipeline.(['Colored' TargetName]) = label2rgb(FinalLabelMatrixImage);
 end
 if strcmp(SaveOutlined,'Yes')
     handles.Pipeline.(['Outlined' TargetName]) = ObjectOutlinesOnOrigImage;

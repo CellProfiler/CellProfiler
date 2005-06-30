@@ -27,7 +27,7 @@ else
         
     DiscardsByExtension = zeros(size(FileNamesNoDir));
     for i = [1:length(DiscardsByExtension)]
-        DiscardsByExtension(i) = ~any(strcmp(FileNamesNoDir{i}(end-2:end),MediaExtensions));
+        DiscardsByExtension(i) = ~any(strcmpi(FileNamesNoDir{i}(end-2:end),MediaExtensions));
     end
    
     %%% Combines all of the DiscardLogical arrays into one.

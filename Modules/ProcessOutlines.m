@@ -100,8 +100,8 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR01 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = ProcessedOutlines
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

@@ -1081,7 +1081,6 @@ if ModuleNamedotm ~= 0,
                         if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact'))))
                             StrSet(Count) = handles.Settings.VariableValues(i,j);
                             Count = Count + 1;
-
                         end
                     end
                 end

@@ -187,13 +187,13 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects segmented by this module?
+%infotypeVAR02 = objectgroup indep
 %choiceVAR02 = Nuclei
 %choiceVAR02 = Cells
 %choiceVAR02 = Spots

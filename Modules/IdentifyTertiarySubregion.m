@@ -138,7 +138,6 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
 %textVAR05 = Do you want to save the labeled matrix image in RGB or grayscale?
-%infotypeVAR05 = imagegroup indep
 %choiceVAR05 = RGB
 %choiceVAR05 = Grayscale
 SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 

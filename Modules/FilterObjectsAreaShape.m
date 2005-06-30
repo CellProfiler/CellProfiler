@@ -15,7 +15,7 @@ CurrentModuleNum = str2double(CurrentModule);
 %textVAR01 = What did you call the original image?
 %infotypeVAR01 = imagegroup
 %inputtypeVAR01 = popupmenu
-OrigImage = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What did you call the objects you want to process?
 %infotypeVAR02 = objectgroup
@@ -62,7 +62,7 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %choiceVAR08 = Yes
 %inputtypeVAR08 = popupmenu
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-
+OrigImage = handles.Pipeline.(ImageName);
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 FilterType = strmatch(FeatureName1, handles.Measurements.(ObjectName).AreaShapeFeatures);
 AreaShapeInfo = handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed}(:,FilterType);
@@ -80,8 +80,9 @@ else
 end
 
 Filter = find((AreaShapeInfo < MinValue1) | (AreaShapeInfo > MaxValue1));
+FinalLabelMatrixImage = LabelMatrixImage;
 for i=1:numel(Filter)
-    FinalLabelMatrixImage(LabelMatrixImage == Filter(i)) = 0;
+    FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
 end
 
 FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage);
@@ -128,10 +129,11 @@ if any(findobj == ThisModuleFigureNumber) == 1
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(LabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,2); imagesc(label2rgb(LabelMatrixImage, 'jet', 'k', 'shuffle')); title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    subplot(2,2,3); imagesc(FinalLabelMatrixImage); title(['Filtered ' ObjectName]);
+    ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+    subplot(2,2,3); imagesc(ColoredLabelMatrixImage); title(['Filtered ' ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
     subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([TargetName, ' Outlines on Input Image']);
@@ -277,7 +279,7 @@ drawnow
 handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
 
 if strcmp(SaveColored,'Yes')
-    handles.Pipeline.(['Colored' TargetName]) = label2rgb(FinalLabelMatrixImage);
+    handles.Pipeline.(['Colored' TargetName]) = ColoredLabelMatrixImage;
 end
 if strcmp(SaveOutlined,'Yes')
     handles.Pipeline.(['Outlined' TargetName]) = ObjectOutlinesOnOrigImage;

@@ -236,17 +236,25 @@ ErodeSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7})
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR10 = No
-%choiceVAR10 = Yes
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+%textVAR10 = What do you want to call the image of the outlines of the objects?
+%choiceVAR10 = Do not save
+%choiceVAR10 = OutlinedNuclei
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+%inputtypeVAR10 = popupmenu custom
 
-%textVAR11 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR11 = No
-%choiceVAR11 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu
+%textVAR11 =  What do you want to call the labeled matrix image?
+%infotypeVAR11 = imagegroup indep
+%choiceVAR11 = Do not save
+%choiceVAR11 = LabeledNuclei
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%inputtypeVAR11 = popupmenu custom
+
+%textVAR12 = Do you want to save the labeled matrix image in RGB or grayscale?
+%infotypeVAR12 = imagegroup indep
+%choiceVAR12 = RGB
+%choiceVAR12 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,12}); 
+%inputtypeVAR12 = popupmenu
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
@@ -664,17 +672,18 @@ tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if strncmpi(SaveColored,'Y',1) == 1
-        fieldname = ['Colored',ObjectName];
-        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+    if ~strcmp(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+        else
+            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+        end
     end
-    if strncmpi(SaveOutlined,'Y',1) == 1
-        fieldname = ['Outlined',ObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
+    if ~strcmp(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
     end
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end

@@ -143,17 +143,25 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 512
 MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR04 = No
-%choiceVAR04 = Yes
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+%textVAR04 = What do you want to call the image of the outlines of the objects?
+%choiceVAR04 = Do not save
+%choiceVAR04 = OutlinedNuclei
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+%inputtypeVAR04 = popupmenu custom
 
-%textVAR05 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR05 = No
-%choiceVAR05 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+%textVAR05 =  What do you want to call the labeled matrix image?
+%infotypeVAR05 = imagegroup indep
+%choiceVAR05 = Do not save
+%choiceVAR05 = LabeledNuclei
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
+%inputtypeVAR05 = popupmenu custom
+
+%textVAR06 = Do you want to save the labeled matrix image in RGB or grayscale?
+%infotypeVAR06 = imagegroup indep
+%choiceVAR06 = RGB
+%choiceVAR06 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+%inputtypeVAR06 = popupmenu
 
 %%%VariableRevisionNumber = 02
 
@@ -458,14 +466,31 @@ try
     LineIntensity = max(OrigImage(:));
     ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
-    if strncmpi(SaveColored,'Y',1) == 1
-        fieldname = ['Colored',ObjectName];
-        handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
+    %%% window in subplot(2,2,2).
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    if sum(sum(FinalLabelMatrixImage)) >= 1
+        ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+    else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
-    if strncmpi(SaveOutlined,'Y',1) == 1
-        fieldname = ['Outlined',ObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
+    
+    %%% Saves images to the handles structure so they can be saved to the hard
+    %%% drive, if the user requested.
+    try
+        if ~strcmp(SaveColored,'Do not save')
+            if strcmp(SaveMode,'RGB')
+                handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+            else
+                handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+            end
+        end
+        if ~strcmp(SaveOutlined,'Do not save')
+            handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
+        end
+    catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
     end
+
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end
 

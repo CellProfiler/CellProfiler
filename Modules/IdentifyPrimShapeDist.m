@@ -228,17 +228,25 @@ MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR09 = No
-%choiceVAR09 = Yes
+%textVAR09 = What do you want to call the image of the outlines of the objects?
+%choiceVAR09 = Do not save
+%choiceVAR09 = OutlinedNuclei
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
-%inputtypeVAR09 = popupmenu
+%inputtypeVAR09 = popupmenu custom
 
-%textVAR10 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR10 = No
-%choiceVAR10 = Yes
+%textVAR10 =  What do you want to call the labeled matrix image?
+%infotypeVAR10 = imagegroup indep
+%choiceVAR10 = Do not save
+%choiceVAR10 = LabeledNuclei
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
-%inputtypeVAR10 = popupmenu
+%inputtypeVAR10 = popupmenu custom
+
+%textVAR11 = Do you want to save the labeled matrix image in RGB or grayscale?
+%infotypeVAR11 = imagegroup indep
+%choiceVAR11 = RGB
+%choiceVAR11 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%inputtypeVAR11 = popupmenu
 
 %%%VariableRevisionNumber = 2
 
@@ -685,13 +693,15 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if strncmpi(SaveColored,'Y',1) == 1
-        fieldname = ['Colored',ObjectName];
-        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+    if ~strcmp(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+        else
+            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+        end
     end
-    if strncmpi(SaveOutlined,'Y',1) == 1
-        fieldname = ['Outlined',ObjectName];
-        handles.Pipeline.(fieldname) = ObjectOutlinesOnOrigImage;
+    if ~strcmp(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
     end
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end

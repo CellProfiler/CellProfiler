@@ -130,11 +130,19 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
-%choiceVAR04 = No
-%choiceVAR04 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+%textVAR04 =  What do you want to call the labeled matrix image?
+%infotypeVAR04 = imagegroup indep
+%choiceVAR04 = Do not save
+%choiceVAR04 = LabeledNuclei
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+%inputtypeVAR04 = popupmenu custom
+
+%textVAR05 = Do you want to save the labeled matrix image in RGB or grayscale?
+%infotypeVAR05 = imagegroup indep
+%choiceVAR05 = RGB
+%choiceVAR05 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
+%inputtypeVAR05 = popupmenu
 
 %%%VariableRevisionNumber = 01
 
@@ -431,6 +439,19 @@ try
     if strncmpi(SaveColored,'Y',1) == 1
         fieldname = ['Colored',SubregionObjectName];
         handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
+    end
+catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+end
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+try
+    if ~strcmp(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+        else
+            handles.Pipeline.(SaveColored) = SubregionObjectImage;
+        end
     end
 catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end

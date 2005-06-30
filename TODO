@@ -33,18 +33,13 @@ WANT IT NOW:
 
 - Make another primary object identification module based on
        Intensity then distance. 
-
-- We should change the Identify modules and the SaveImages module so that if the user has chosen to save a label matrix image, the user has a choice between saving the grayscale label matrix (in which case they should be warned if they have more than 256 objects and if saving in 8 bit format), or a colored version, created using label2rgb on the spot in the SaveImages module rather than having the colored version saved to the handles structure by the Identify modules, which requires Variables in the Identify modules asking the user if they might want to save the images later in order to save processing time. >> It's possible that Anne already did some of this??
 	
 - Test and annotate in each module's help which modules work for grayscale vs color images.
-
-- Have the save settings function automatically add SET to the  
-       name > can't currently do it with uisave. 
 
 - Make a module using code from ImageJ
        http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
        k-means clustering.
-
+z
 - All modules: look for speed improvements (esp. imresize?)
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
@@ -443,7 +438,8 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
      most important thing is to add the button to "AlgImageTiler.m";
      that is why I acquired this code in the first place.
 
-- Done (Colin) - Many modules that load images from the hard drive use a subfunction called RetrieveImageFileNames, but it's slightly different when used in different contexts. It would be nice to consolidate at least part of this function into a standalone subfunction.  This allows people to change something like which file extensions are ignored in the one subfunction rather than every individual module.
+- Done (Colin) - Many modules that load images from the hard drive use a 
+subfunction called RetrieveImageFileNames, but it's slightly different when used in different contexts. It would be nice to consolidate at least part of this function into a standalone subfunction.  This allows people to change something like which file extensions are ignored in the one subfunction rather than every individual module.
 
 - Done (Colin) - GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
 
@@ -456,6 +452,12 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
 - Done (Joo Han) - Improve the response time of the main GUI - previously, toggling between modules was very slow, especially on macs. Through a significant infrastructure change that should be taken into account in future changes, an instantaneous module toggling was achieved. Common 99 VariableDescriptions and Boxes were used before - now, they are classified the module number. (handles.VariableDescription{ModuleNumber}(VariableNumber) and handles.VariableBox{ModuleNumber}(VariableNumber).
 
 - Done (Joo Han) - Make the order of variable declarations consistent by always having %textVAR declared first. Before, either %infotypeVAR or %textVAR came first depending on the use of infotype. Relevant redundant calculations were removed and now CellProfiler.m will fail to read modules properly if %textVAR does not come first.
+<<<<<<< TODO
+
+- Done (Joo Han) Have the save settings function automatically add SET to the  
+       name > can't currently do it with uisave. (The user is prompted whether he really wants to do this, with Yes as default. This actually seemed like a better and easier solution since it allows more flexibility.)
+
+- Done (Joo Han) - Created CPwaitbar which uses a waitbar with adjusted colors and applied the function accordingly for load pipeline.=======
 
 - Done (Colin) - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
        an email from Mathworks describing the issue, thread QW38).
@@ -463,4 +465,6 @@ This will be a simple string replacement of imagesc > CPimagesc to convert all t
        flipping. Display value only when clicking (see email that Anne
        has: Mathworks tricks for interactive figures). Make manual
        page. Toggle several images. In general, it just needs to be looked over and polished up.
+
+- Done (Joo Han) - We should change the Identify modules and the SaveImages module so that if the user has chosen to save a label matrix image, the user has a choice between saving the grayscale label matrix (in which case they should be warned if they have more than 256 objects and if saving in 8 bit format), or a colored version, created using label2rgb on the spot in the SaveImages module rather than having the colored version saved to the handles structure by the Identify modules, which requires Variables in the Identify modules asking the user if they might want to save the images later in order to save processing time. >> It's possible that Anne already did some of this??
 

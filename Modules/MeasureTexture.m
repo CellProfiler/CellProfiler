@@ -101,25 +101,25 @@ function handles = MeasureTexture(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the greyscale images you want to measure?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the segmented objects that you want to measure?
+%infotypeVAR02 = objectgroup
 %choiceVAR02 = Do not use
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
+%textVAR03 =
 %infotypeVAR03 = objectgroup
-%textVAR03 = 
 %choiceVAR03 = Do not use
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%infotypeVAR04 = objectgroup
 %textVAR04 =
+%infotypeVAR04 = objectgroup
 %choiceVAR04 = Do not use
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
@@ -142,7 +142,7 @@ for i = 1:3
     if strcmp(ObjectName,'Do not use') == 1
         continue
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -229,7 +229,7 @@ for i = 1:3
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -259,7 +259,7 @@ for i = 1:3
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -333,10 +333,10 @@ for i = 1:3
         'Gabor2y',...
         'Gabor3x',...
         'Gabor3y'};
-    
+
     %%% Count objects
     ObjectCount = max(LabelMatrixImage(:));
-    
+
     if ObjectCount > 0
 
         %%% Get Gabor features.
@@ -365,22 +365,22 @@ for i = 1:3
         % Create kernel coordinates
         KernelSize = round(sigma);                                 % The filter size is set somewhat arbitrary
         [x,y] = meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
-        
+
         % Apply Gabor filters and store filter outputs in the Centroid pixels
         GaborFeatureNo = 1;
         Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
         for m = 1:length(f)
           for n = 1:length(theta)
-            
+
             % Calculate Gabor filter kernel
             % Scale by 1000 to get measurements in a convenient range
             g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
             g = g - mean(g(:));           % Important that the filters has DC zero, otherwise they will be sensitive to the intensity of the image
-            
-            
+
+
             % Center the Gabor kernel over the centroid and calculate the filter response.
             for k = 1:ObjectCount
-              
+
               xmin1 = Centroids(k,1)-KernelSize;
               xmax1 = Centroids(k,1)+KernelSize;
               ymin1 = Centroids(k,2)-KernelSize;
@@ -389,32 +389,32 @@ for i = 1:3
               xmax2 = min(size(OrigImage,2),xmax1);
               ymin2 = max(1,ymin1);
               ymax2 = min(size(OrigImage,1),ymax1);
-              
+
               % Cut patch
               p = OrigImage(ymin2:ymax2,xmin2:xmax2);
-              
+
               % Pad with zeros if necessary to match the filter kernel size
               if xmin1 < xmin2
                 p = [zeros(size(p,1),xmin2 - xmin1) p];
               elseif xmax1 > xmax2
                 p = [p zeros(size(p,1),xmax1 - xmax2)];
               end
-              
+
               if ymin1 < ymin2
                 p = [zeros(ymin2 - ymin1,size(p,2));p];
               elseif ymax1 > ymax2
                 p = [p;zeros(ymax1 - ymax2,size(p,2))];
               end
-              
+
               % Calculate the filter output
               Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
             end
-            
+
             GaborFeatureNo = GaborFeatureNo + 1;
           end
         end
-        
-       
+
+
         %%% Get Haralick features.
         %%% Have to loop over the objects
         Haralick = zeros(ObjectCount,13);
@@ -430,11 +430,11 @@ for i = 1:3
             cmin = max(1,min(c));
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImage(rmin:rmax,cmin:cmax);
-            
+
             %%% Get Haralick features
             Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
         end
-       
+
     end
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
@@ -447,6 +447,9 @@ for i = 1:3
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
+
+        delete(findobj('Parent',ThisModuleFigureNumber));
+
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',sprintf('Average texture features for image set #%d',handles.Current.SetBeingAnalyzed));

@@ -27,7 +27,7 @@ function handles = SaveImages(handles)
 % fieldname = CroppedImageName;
 % handles.Pipeline.(fieldname) = CroppedImage;
 %
-% Special notes for saving in movie format (avi): 
+% Special notes for saving in movie format (avi):
 % The movie will be saved after the last image set is processed. You
 % have the option to also save the movie periodically during image
 % processing, so that the partial movie will be available in case
@@ -248,12 +248,12 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
     end
     Image = handles.Pipeline.(ImageName);
-    
+
     if strncmpi(RescaleImage,'Y',1) == 1
         LOW_HIGH = stretchlim(Image,0);
         Image = imadjust(Image,LOW_HIGH,[0 1]);
     end
-    
+
     %%% Checks whether the file format the user entered is readable by Matlab.
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
@@ -353,12 +353,12 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     if isdir(FileDirectoryToSave) ~= 1
         error(['Image processing was canceled because the specified directory "', FileDirectoryToSave, '" in the Save Images module does not exist.']);
     end
-    
+
     if strcmp(UpdateFileOrNot,'Yes')
         handles.Pipeline.(['FileList',ImageName])(handles.Current.SetBeingAnalyzed) = {NewImageName};
         handles.Pipeline.(['Pathname',ImageName]) = FileDirectoryToSave;
     end
-    
+
     NewFileAndPathName = fullfile(FileDirectoryToSave, NewImageName);
     if strcmpi(CheckOverwrite,'Y') == 1 && strcmpi(FileFormat,'avi') ~= 1
         %%% Checks whether the new image name is going to overwrite the
@@ -491,15 +491,15 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 %%% It opens the entire file from the hard drive and re-saves the whole
 %%% thing.
 %         %%% If this movie file already exists, open it.
-%         try 
-%             
+%         try
+%
 %             Movie = aviread(NewFileAndPathName);
 %             NumberExistingFrames = size(Movie,2);
 %          %%% If the movie does not yet exist, create the colormap
 %          %%% field as empty to prevent errors when trying to save as a
 %          %%% movie.
-%          
-%          
+%
+%
 %         catch   Movie.colormap = [];
 %             NumberExistingFrames = 0;
 %         end
@@ -514,39 +514,39 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             %%% indexed image plus a colormap to allow saving as a
             %%% movie.
             %%% I THINK ONLY ONE COLORMAP IS ALLOWED FOR THE WHOLE
-            %%% MOVIE.>>>>>>>>>>>>> MAYBE NEED TO SPECIFY A SINGLE COLORMAP 
+            %%% MOVIE.>>>>>>>>>>>>> MAYBE NEED TO SPECIFY A SINGLE COLORMAP
             %%% HERE RATHER THAN HAVING IT AUTO CALCULATED.
 %             [Image,map] = rgb2ind(Image,256,'nodither');
 %             Movie(NumberExistingFrames+1).colormap = map;
 %             %%% Adds the image as the last frame in the movie.
 %             %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
-%             %%% 
+%             %%%
 %             Movie(NumberExistingFrames+1).cdata = Image;
           %   [Image,map] = rgb2ind(Image,256,'nodither');
             %%% Adds the image as the last frame in the movie.
             %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
-            %%% 
+            %%%
            % Movie(NumberExistingFrames+1).cdata = Image;
 
 
 
 % %%% ATTEMPT TO ONLY SAVE AT THE END>>>
 % %%% RIGHT NOW IT WON"T WORK IF WE ARE TRYING TO OVERWRITE AN OLD FILE.
-% 
-% %%% See if this movie file already exists. If so, 
+%
+% %%% See if this movie file already exists. If so,
 % %%% retrieve the movie data accumulated so far from handles.
-% 
+%
 % if handles.Current.SetBeingAnalyzed == 1
 %     Movie = avifile(NewFileAndPathName);
 %     fieldname = ['Movie', ImageName];
 %     handles.Pipeline.(fieldname) =  Movie;
 % end
-% 
+%
 % %%% Add the frame to the movie.
 % fieldname = ['Movie', ImageName];
 % Movie = handles.Pipeline.(fieldname);
 % Movie = addframe(Movie,Image);
-% 
+%
 % %%% Closes the file.
 % if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 %     Movie = close(Movie);
@@ -566,19 +566,19 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
 %                 SUCCESSFULHANDLERETIREVAL = 1;
 %             end
 %         end
-% 
+%
 %         if SUCCESSFULHANDLERETIREVAL == 0
 %             %%% If the movie does not exist already, create it using
 %             %%% the avifile function and put the AviHandle into the handles.
-% 
+%
 %             AviHandle = avifile(NewFileAndPathName);
 %             AviHandle = addframe(AviHandle,Image);
 %             AviHandle = close(AviHandle);
-% 
+%
 %             fieldname = ['AviHandle', ImageName];
 %             handles.Pipeline.(fieldname) =  AviHandle;
 %         end
-% 
+%
 
     else
         try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
@@ -665,7 +665,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -695,7 +695,7 @@ end
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

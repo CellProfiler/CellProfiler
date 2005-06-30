@@ -91,50 +91,50 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = Enter the names of each image type to be compared.
+%infotypeVAR01 = imagegroup
 %choiceVAR01 = Do not use
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup
 %textVAR02 = All pairwise comparisons will be performed.
+%infotypeVAR02 = imagegroup
 %choiceVAR02 = Do not use
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%infotypeVAR03 = imagegroup
 %textVAR03 =
+%infotypeVAR03 = imagegroup
 %choiceVAR03 = Do not use
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%infotypeVAR04 = imagegroup
 %textVAR04 =
+%infotypeVAR04 = imagegroup
 %choiceVAR04 = Do not use
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%infotypeVAR05 = objectgroup
 %textVAR05 = What did you call the objects within which to compare the images?
+%infotypeVAR05 = objectgroup
 %choiceVAR05 = Do not use
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%infotypeVAR06 = objectgroup
 %textVAR06 =
+%infotypeVAR06 = objectgroup
 %choiceVAR06 = Do not use
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%infotypeVAR07 = objectgroup
 %textVAR07 =
+%infotypeVAR07 = objectgroup
 %choiceVAR07 = Do not use
 ObjectName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%infotypeVAR08 = objectgroup
 %textVAR08 =
+%infotypeVAR08 = objectgroup
 %choiceVAR08 = Do not use
 ObjectName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
@@ -308,6 +308,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     Height = Position(4);
     Width  = Position(3);
 
+    delete(findobj('Parent',ThisModuleFigureNumber));
+
     %%% Displays the results.
     Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 Height-40 Width 20],...
         'fontname','times','FontSize',handles.Current.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center','fontweight','bold');
@@ -327,7 +329,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         end
 
         % Write image names or correlation measurements
-        FeatureNbr = 1; 
+        FeatureNbr = 1;
         for i = 1:ImageCount-1
             for j = i+1:ImageCount
                 if ObjectNameNbr == 0               % First column, write image names
@@ -408,7 +410,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -438,7 +440,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

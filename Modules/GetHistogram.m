@@ -8,13 +8,13 @@ function handles = GetHistogram(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to include?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the generated histograms?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigHist
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -57,9 +57,9 @@ NumberOfImageSets = handles.Current.NumberOfImageSets;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try

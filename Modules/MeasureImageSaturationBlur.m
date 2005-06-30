@@ -103,38 +103,38 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image you want to check for saturation?
+%infotypeVAR01 = imagegroup
 %choiceVAR01 = Do not use
 NameImageToCheck{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup
 %textVAR02 = What did you call the image you want to check for saturation?
+%infotypeVAR02 = imagegroup
 %choiceVAR02 = Do not use
 NameImageToCheck{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%infotypeVAR03 = imagegroup
 %textVAR03 = What did you call the image you want to check for saturation?
+%infotypeVAR03 = imagegroup
 %choiceVAR03 = Do not use
 NameImageToCheck{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%infotypeVAR04 = imagegroup
 %textVAR04 = What did you call the image you want to check for saturation?
+%infotypeVAR04 = imagegroup
 %choiceVAR04 = Do not use
 NameImageToCheck{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%infotypeVAR05 = imagegroup
 %textVAR05 = What did you call the image you want to check for saturation?
+%infotypeVAR05 = imagegroup
 %choiceVAR05 = Do not use
 NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%infotypeVAR06 = imagegroup
 %textVAR06 = What did you call the image you want to check for saturation?
+%infotypeVAR06 = imagegroup
 %choiceVAR06 = Do not use
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
@@ -218,7 +218,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -248,7 +248,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -383,6 +383,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         originalsize(3) = originalsize(3)*.5;
         set(ThisModuleFigureNumber, 'position', originalsize,'color',[1 1 1]);
     end
+
+    delete(findobj('Parent',ThisModuleFigureNumber));
+
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position', [0.1 0.1 0.8 0.8],...
         'fontname','times','fontsize',handles.Current.FontSize,'backgroundcolor',[1 1 1],'horizontalalignment','left');
     DisplayText = strvcat(['    Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.

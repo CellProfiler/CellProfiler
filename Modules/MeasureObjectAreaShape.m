@@ -39,20 +39,20 @@ function handles = MeasureAreaShape(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the segmented objects that you want to measure?
+%infotypeVAR01 = objectgroup
 %choiceVAR01 = Do not use
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup
 %textVAR02 =
+%infotypeVAR02 = objectgroup
 %choiceVAR02 = Do not use
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%infotypeVAR03 = objectgroup
 %textVAR03 =
+%infotypeVAR03 = objectgroup
 %choiceVAR03 = Do not use
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
@@ -211,45 +211,46 @@ for i = 1:length(ObjectNameList)
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
+        delete(findobj('Parent',ThisModuleFigureNumber));
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','Backgroundcolor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed));
+            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed),'UserData',handles.Current.SetBeingAnalyzed);
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
             'HorizontalAlignment','left','Backgroundcolor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
+            'fontsize',FontSize,'fontweight','bold','string','Number of objects:','UserData',handles.Current.SetBeingAnalyzed);
 
         % Text for Basic features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string','Basic features:');
+            'fontsize',FontSize,'fontweight','bold','string','Basic features:','UserData',handles.Current.SetBeingAnalyzed);
         for k = 1:21
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',BasicFeatures{mod(k,6)+1});
+                'fontsize',FontSize,'string',BasicFeatures{mod(k,6)+1},'UserData',handles.Current.SetBeingAnalyzed);
         end
 
         % Text for Zernike features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string','5 first Zernike features:');
+            'fontsize',FontSize,'fontweight','bold','string','5 first Zernike features:','UserData',handles.Current.SetBeingAnalyzed);
         for k = 1:5
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
-                'fontsize',FontSize,'string',ZernikeFeatures{k});
+                'fontsize',FontSize,'string',ZernikeFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
         end
 
 
         % The name of the object image
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.9 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string',ObjectName);
+            'fontsize',FontSize,'fontweight','bold','string',ObjectName,'UserData',handles.Current.SetBeingAnalyzed);
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.85 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'string',num2str(max(LabelMatrixImage(:))));
+            'fontsize',FontSize,'string',num2str(max(LabelMatrixImage(:))),'UserData',handles.Current.SetBeingAnalyzed);
 
         % Report features, if there are any.
         if max(LabelMatrixImage(:)) > 0
@@ -257,14 +258,14 @@ for i = 1:length(ObjectNameList)
             for k = 1:7
                 q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
             end
 
             % Zernike shape features
             for k = 1:5
                 q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.45-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))));
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
             end
         end
         % This variable is used to write results in the correct column

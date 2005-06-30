@@ -10,13 +10,13 @@ function handles = IdentifyEasy(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -68,14 +68,14 @@ index = strfind(SizeRange,',');
 if isempty(index),error('The Min and Max size entry in the Segmentation module is invalid.'),end
 MinArea = SizeRange(1:index-1);
 MaxArea = SizeRange(index+1:end);
-  
+
 MinArea = str2double(MinArea);
 if isnan(MinArea) | MinArea < 0
     error('The Min area entry in the Segmentation module is invalid.')
 end
 
 if strcmp(MaxArea,'Inf') ,MaxArea = Inf;
-else    
+else
     MaxArea = str2double(MaxArea);
     if isnan(MaxArea) | MaxArea < 0
         error('The Max area entry in the Segmentation module is invalid.')
@@ -129,19 +129,19 @@ Objects = bwlabel(Objects);                                   % Label the object
 
 %%% Remove objects with area outside the specified range
 tmp = regionprops(Objects,'Area');                            % Get areas of the objects
-areas = [0;cat(1,tmp.Area)];                      
+areas = [0;cat(1,tmp.Area)];
 MedianArea = median(areas);
 AreaMap = areas(Objects+1);                                   % Create image with object intensity equal to the area
 tmp = Objects;
 Objects(AreaMap > MaxArea) = 0;                               % Remove objects that are too big
 Objects(AreaMap < MinArea) = 0;                               % Remove objects that are too small
 AreaExcludedObjects = tmp - Objects ;                         % Store objects that fall outside area range for display
-NumOfAreaObjects = length(unique(AreaExcludedObjects(:)))-1;  % Count the objects 
+NumOfAreaObjects = length(unique(AreaExcludedObjects(:)))-1;  % Count the objects
 
 %%% Remove objects along the border of the image
 tmp = Objects;
-Objects = imclearborder(Objects);                       
-BorderObjects = tmp - Objects;                      
+Objects = imclearborder(Objects);
+BorderObjects = tmp - Objects;
 NumOfBorderObjects = length(unique(BorderObjects(:)))-1;
 
 %%% Remove objects with no marker in it
@@ -169,23 +169,23 @@ end
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
-    
+
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-    
+
     subplot(2,2,1)
     ImageHandle = imagesc(OrigImage);colormap(gray)
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
     axis image
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',8);
     set(gca,'fontsize',8)
-    
-    hx = subplot(2,2,2); 
+
+    hx = subplot(2,2,2);
     ImageHandle = image(label2rgb(Objects, 'jet', 'k', 'shuffle'));
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
     title(sprintf('Segmented %s',ObjectName),'fontsize',8);
     axis image,set(gca,'fontsize',8)
-    
+
     % Indicate objects in original image and color excluded objects in red
     tmp = OrigImage/max(OrigImage(:));
     OutlinedObjectsR = tmp;
@@ -202,9 +202,9 @@ if any(findobj == ThisModuleFigureNumber)
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
     title('Outlined objects','fontsize',8);
     axis image,set(gca,'fontsize',8)
-    
+
     CPFixAspectRatio(OrigImage);
-    
+
     % Report numbers
     posx = get(hx,'Position');
     posy = get(hy,'Position');
@@ -215,7 +215,7 @@ if any(findobj == ThisModuleFigureNumber)
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.12 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Median area (pixels): ' num2str(MedianArea)],'FontSize',handles.Current.FontSize);
-    
+
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...

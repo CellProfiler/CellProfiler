@@ -2,7 +2,7 @@ function handles = LoadImagesOrder(handles)
 
 % Help for the Load Images Order module:
 % Category: File Handling
-% 
+%
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
 %
@@ -114,8 +114,8 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 1
 NumberInSet1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call these images?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
 ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -123,8 +123,8 @@ ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 0
 NumberInSet2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call these images?
+%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigGreen
 ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -132,8 +132,8 @@ ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 0
 NumberInSet3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call these images?
+%infotypeVAR06 = imagegroup indep
 %defaultVAR06 = OrigRed
 ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -141,8 +141,8 @@ ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = 0
 NumberInSet4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call these images?
+%infotypeVAR08 = imagegroup indep
 %defaultVAR08 = OrigOther1
 ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -364,7 +364,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -394,7 +394,7 @@ end
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

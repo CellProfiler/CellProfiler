@@ -5,7 +5,7 @@ function handles = MeasureRatios(handles)
 %
 % This module has not yet been documented.  Sometimes I get divide by
 % zero errors; We should add error checking to be sure the proper
-% number of measurements exist. 
+% number of measurements exist.
 %
 % How it works:
 %
@@ -37,7 +37,7 @@ function handles = MeasureRatios(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -61,7 +61,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -72,7 +72,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -87,7 +87,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -96,13 +96,13 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = Area
 MeasurementName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%infotypeVAR02 = objectgroup
 %textVAR02 = For which objects do you want to measure ratios (numerator)?
+%infotypeVAR02 = objectgroup
 %inputtypeVAR02 = popupmenu
 NumeratorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%infotypeVAR03 = objectgroup
 %textVAR03 = denominator
+%infotypeVAR03 = objectgroup
 DenominatorObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
@@ -286,7 +286,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -316,7 +316,7 @@ end
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

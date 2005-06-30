@@ -24,10 +24,10 @@ function handles = ApplyThreshold(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -45,7 +45,7 @@ function handles = ApplyThreshold(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -70,7 +70,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -81,7 +81,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -96,18 +96,18 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be thresholded?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the thresholded image?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = ThreshBlue
 ThresholdedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -150,16 +150,16 @@ end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
 
-        
+
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -298,7 +298,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -328,7 +328,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

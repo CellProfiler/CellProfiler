@@ -129,13 +129,13 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to use to manually identify an object?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -208,7 +208,7 @@ if ncolors == 1
 end
 AxisHandle = gca;
 set(gca,'fontsize',handles.Current.FontSize)
-title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},... 
+title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
     {'Press enter when finished, the first and last points will be connected automatically.'},...
     {'The backspace key or right mouse button will erase the last clicked point.'}]);
 

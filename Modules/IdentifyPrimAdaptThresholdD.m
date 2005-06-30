@@ -1,8 +1,8 @@
 function handles = IdentifyPrimAdaptThresholdD(handles)
 
-% Help for the Identify Primary Adaptive Threshold D module: 
+% Help for the Identify Primary Adaptive Threshold D module:
 % Category: Object Identification
-% 
+%
 % This image analysis module identifies objects by applying an
 % adaptive threshold to a grayscale image.  Four different methods
 % (A,B,C, and D) of adaptive thresholding can be used to identify
@@ -16,7 +16,7 @@ function handles = IdentifyPrimAdaptThresholdD(handles)
 % spatially weighted average (Gaussian lowpass) and multiplying by an
 % offset, within the neighborhood of every pixel. Possibly comparable
 % to the method used by Zeiss KS software.
-% 
+%
 % Settings:
 %
 % Size range: You may exclude objects that are smaller or bigger than
@@ -45,14 +45,14 @@ function handles = IdentifyPrimAdaptThresholdD(handles)
 % whereas larger neighborhoods will cause objects to begin merging
 % with each other, at least to a certain extent. Smaller neighborhood
 % sizes take less processing time.
-% 
+%
 % Sigma (positive number, higher = less stringent): Sigma affects the
 % blurring step, so its behavior can be described in a similar way to
 % neighborhood above.  Neighborhood describes how many nearby pixels
 % are used for blurring, and sigma determines how much far away pixels
 % should affect the blurring.
 %
-% What does Primary mean? 
+% What does Primary mean?
 % Identify Primary modules identify objects without relying on any
 % information other than a single grayscale input image (e.g. nuclei
 % are typically primary objects). Identify Secondary modules require a
@@ -80,7 +80,7 @@ function handles = IdentifyPrimAdaptThresholdD(handles)
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
-% 
+%
 % Additional image(s) are normally calculated for display only,
 % including the object outlines alone. These images can be saved by
 % altering the code for this module to save those images to the
@@ -88,19 +88,19 @@ function handles = IdentifyPrimAdaptThresholdD(handles)
 % the Save Images module.
 %
 % See also IDENTIFYPRIMADAPTTHRESHOLDA,
-% IDENTIFYPRIMADAPTTHRESHOLDB, 
+% IDENTIFYPRIMADAPTTHRESHOLDB,
 % IDENTIFYPRIMADAPTTHRESHOLDC,
-% IDENTIFYPRIMTHRESHOLD, 
+% IDENTIFYPRIMTHRESHOLD,
 % IDENTIFYPRIMSHAPEDIST,
-% IDENTIFYPRIMSHAPEINTENS, 
+% IDENTIFYPRIMSHAPEINTENS,
 % IDENTIFYPRIMINTENSINTENS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -118,7 +118,7 @@ function handles = IdentifyPrimAdaptThresholdD(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -140,10 +140,10 @@ drawnow
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -154,7 +154,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -169,12 +169,12 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to process? 
+%textVAR01 = What did you call the images you want to process?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -200,15 +200,15 @@ Sigma = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %textVAR07 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %defaultVAR07 = No
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR08 = No
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR09 = No
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 01
 
@@ -249,9 +249,9 @@ end
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -317,7 +317,7 @@ end
 if strncmpi(IncludeEdge,'N',1) == 1
 PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
-end 
+end
 drawnow
 %%% The PrelimLabelMatrixImage4 is converted to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,.5);
@@ -327,7 +327,7 @@ FinalBinary = imfill(FinalBinaryPre, 'holes');
 %%% is excluded (filling holes), it is still necessary to do this in order
 %%% to "compact" the label matrix: this way, each number corresponds to an
 %%% object, with no numbers skipped.
-FinalLabelMatrixImage = bwlabel(FinalBinary);    
+FinalLabelMatrixImage = bwlabel(FinalBinary);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -458,7 +458,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -488,7 +488,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

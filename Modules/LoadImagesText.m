@@ -122,8 +122,8 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = DAPI
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call these images?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -131,8 +131,8 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = /
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call these images?
+%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = /
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -140,8 +140,8 @@ ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = /
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call these images?
+%infotypeVAR06 = imagegroup indep
 %defaultVAR06 = /
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -149,8 +149,8 @@ ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = /
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call these images?
+%infotypeVAR08 = imagegroup indep
 %defaultVAR08 = /
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 

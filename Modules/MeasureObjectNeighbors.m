@@ -101,8 +101,8 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the objects whose neighbors you want to measure?
+%infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -110,13 +110,13 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = 0
 NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%infotypeVAR03 = objectgroup indep
 %textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
+%infotypeVAR03 = objectgroup indep
 %defaultVAR03 = ExpandedCells
 ExpandedObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%infotypeVAR04 = objectgroup indep
 %textVAR04 = What do you want to call the image of the objects, colored by the number of neighbors?
+%infotypeVAR04 = objectgroup indep
 %defaultVAR04 = ColoredNeighbors
 ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -279,7 +279,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -309,7 +309,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

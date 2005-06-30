@@ -1,8 +1,8 @@
 function handles = IdentifySecWatershed(handles)
 
-% Help for the Identify Secondary Watershed module: 
+% Help for the Identify Secondary Watershed module:
 % Category: Object Identification
-% 
+%
 % This module identifies secondary objects based on a previous
 % module's identification of primary objects.  Each primary object is
 % assumed to be completely within a secondary object (e.g. nuclei
@@ -42,7 +42,7 @@ function handles = IdentifySecWatershed(handles)
 % resulting image that pops up during processing should not have lots
 % of speckles - this adds to the processing time. Rather, there should
 % be rather large regions of black where the cells are located.
-% 
+%
 % Note: Primary segmenters produce two output images that are used by
 % this module.  The Pipeline.Segmented image contains the final, edited
 % primary objects (i.e. objects at the border and those that are too
@@ -85,10 +85,10 @@ function handles = IdentifySecWatershed(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -106,7 +106,7 @@ function handles = IdentifySecWatershed(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -130,7 +130,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -141,7 +141,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -156,23 +156,23 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
-%textVAR01 = What did you call the images you want to process? 
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the objects that will be used to mark the centers of these objects?
+%infotypeVAR02 = objectgroup
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%infotypeVAR03 = objectgroup indep
 %textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
+%infotypeVAR03 = objectgroup indep
 %choiceVAR03 = Nuclei
 %choiceVAR03 = Cells
 %choiceVAR03 = Spots
@@ -190,18 +190,18 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 
 %textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
 %defaultVAR06 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR07 = No
 %choiceVAR07 = Yes
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR08 = No
 %choiceVAR08 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %%%VariableRevisionNumber = 3
@@ -233,7 +233,7 @@ if ndims(OrigImage) ~= 2
 end
 
 %%% Retrieves the preliminary label matrix image that contains the primary
-%%% segmented objects which have only been edited to discard objects 
+%%% segmented objects which have only been edited to discard objects
 %%% that are smaller than a certain size.  This image
 %%% will be used as markers to segment the secondary objects with this
 %%% module.  Checks first to see whether the appropriate image exists.
@@ -261,9 +261,9 @@ EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -280,10 +280,10 @@ drawnow
 %%% object's outline to extend at least as far as the edge of the primary
 %%% objects.
 
-%%% STEP 1: Marks at least some of the background by applying a 
+%%% STEP 1: Marks at least some of the background by applying a
 %%% weak threshold to the original image of the secondary objects.
 drawnow
-%%% Determines the threshold to use. 
+%%% Determines the threshold to use.
 if strcmp(Threshold,'Automatic')
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
@@ -304,11 +304,11 @@ InvertedThresholdedOrigImage = imcomplement(ThresholdedOrigImage);
 
 %%% NOTE: There are two other ways to mark the background prior to
 %%% watershedding; I think the method used above is best, but I have
-%%% included the ideas for two alternate methods. 
+%%% included the ideas for two alternate methods.
 %%% METHOD (2): Threshold the original image (or a smoothed image)
 %%% so that background pixels are black.  This is overly strong, so instead
 %%% of weakly thresholding the image as is done in METHOD (1),  you can then "thin"
-%%% the background pixels by computing the SKIZ 
+%%% the background pixels by computing the SKIZ
 %%% (skeleton of influence zones), which is done by watershedding the
 %%% distance transform of the thresholded image.  These watershed lines are
 %%% then superimposed on the marked image that will be watershedded to
@@ -326,7 +326,7 @@ InvertedThresholdedOrigImage = imcomplement(ThresholdedOrigImage);
 %%% objects.  These lines are superimposed on the marked image that will be
 %%% watershedded to segment the objects. But if marked objects are
 %%% clustered and not a uniform distance from each other, this will produce
-%%% background lines on top of actual objects. 
+%%% background lines on top of actual objects.
 %%% This method is based on Gonzalez, et al. Digital Image Processing using
 %%% Matlab, page 422-425.
 
@@ -356,9 +356,9 @@ BinaryMarkerImagePre = PrelimPrimaryBinaryImage | InvertedThresholdedOrigImage;
 %%% primary object and the background.
 BinaryMarkerImage = BinaryMarkerImagePre;
 BinaryMarkerImage(PrimaryObjectOutlines == 1) = 0;
-        
+
 %%% STEP 4: Calculate the Sobel image, which reflects gradients, which will
-%%% be used for the watershedding function.  
+%%% be used for the watershedding function.
 drawnow
 %%% Calculates the 2 sobel filters.  The sobel filter is directional, so it
 %%% is used in both the horizontal & vertical directions and then the
@@ -368,7 +368,7 @@ filter2 = filter1';
 %%% Applies each of the sobel filters to the original image.
 I1 = imfilter(OrigImage, filter1);
 I2 = imfilter(OrigImage, filter2);
-%%% Adds the two images.  
+%%% Adds the two images.
 %%% The Sobel operator results in negative values, so the absolute values
 %%% are calculated to prevent errors in future steps.
 AbsSobeledImage = abs(I1) + abs(I2);
@@ -380,7 +380,7 @@ drawnow
 %%% absolute value of the Sobel Image, so there are black nuclei on top of
 %%% each dark object, with black background.
 Overlaid = imimposemin(AbsSobeledImage, BinaryMarkerImage);
-%%% Perform the watershed on the marked absolute-value Sobel Image. 
+%%% Perform the watershed on the marked absolute-value Sobel Image.
 BlackWatershedLinesPre = watershed(Overlaid);
 %%% Bug workaround (see step 9).
 BlackWatershedLinesPre2 = im2bw(BlackWatershedLinesPre,.5);
@@ -407,7 +407,7 @@ drawnow
 %%% objects because they do not overlap a primary object.
 
 %%% The following changes all the labels in LabelMatrixImage1 to match the
-%%% centers they enclose (from PrelimPrimaryBinaryImage), and marks as background 
+%%% centers they enclose (from PrelimPrimaryBinaryImage), and marks as background
 %%% any labeled regions that don't overlap a center. This function assumes
 %%% that every center is entirely contained in one labeled area.  The
 %%% results if otherwise may not be well-defined. The non-background labels
@@ -461,12 +461,12 @@ drawnow
 InvertedOrigImage = imcomplement(OrigImage);
 %%% Overlays the foreground and background markers onto the
 %%% InvertedOrigImage, so there are black secondary object markers on top
-%%% of each dark secondary object, with black background. 
+%%% of each dark secondary object, with black background.
 MarkedInvertedOrigImage = imimposemin(InvertedOrigImage, BinaryMarkerImage2);
-%%% Performs the watershed on the MarkedInvertedOrigImage. 
+%%% Performs the watershed on the MarkedInvertedOrigImage.
 SecondWatershedPre = watershed(MarkedInvertedOrigImage);
-%%% BUG WORKAROUND: 
-%%% There is a bug in the watershed function of Matlab that often results in 
+%%% BUG WORKAROUND:
+%%% There is a bug in the watershed function of Matlab that often results in
 %%% the label matrix result having two objects labeled with the same label.
 %%% I am not sure whether it is a bug in how the watershed image is
 %%% produced (it seems so: the resulting objects often are nowhere near the
@@ -527,7 +527,7 @@ FinalLabelMatrixImagePre = LabelsUsed(ActualObjectsLabelMatrixImage3+1);
 %%% pixels of secondary object.
 FinalLabelMatrixImage = FinalLabelMatrixImagePre;
 FinalLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0) = EditedPrimaryLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0);
-        
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -663,7 +663,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -693,7 +693,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -753,12 +753,12 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 %%% because several different modules will write to the handles.Measurements.Image.Threshold
 %%% structure, and we should therefore probably append the current threshold to an existing structure.
 % First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
     handles.Measurements.Image.ThresholdFeatures = {};
     handles.Measurements.Image.Threshold = {};
 end
 % Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
 % typically happen for the first image set. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
@@ -770,11 +770,11 @@ handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column)
 
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' SecondaryObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);

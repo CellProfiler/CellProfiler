@@ -1,43 +1,56 @@
-function handles = MakeProjection_AverageImages(handles)
+function handles = ExpandOrShrinkSecondaryObjects(handles)
 
-% Help for the Make Projection/Average Images module:
-% Category: Pre-processing
+% Help for the Expand Or Shrink Secondary Objects module:
+% Category: Object Identification
 %
-% This module makes a projection of a set of images (e.g. a Z-stack)
-% by averaging the pixel intensities at each pixel position.
+% The module expands or shrinks Secondary objects by adding or removing
+% border pixels. The user can specify a certain number of times the
+% border pixels are added or removed, or type 'Inf' to expand objects
+% until they are almost touching or to shrink objects down to a point.
+% Objects are never lost using this module (shrinking stops when an
+% object becomes a single pixel). Sometimes when identifying secondary
+% objects (e.g. cell edges), it is useful to shrink the Secondary
+% objects (e.g. nuclei) a bit in case the nuclei overlap the cell
+% edges slightly, since the secondary object identifiers demand that
+% the secondary objects completely enclose Secondary objects. This is
+% handy when the two images are not aligned perfectly, for example.
 %
-% How it works:
-% This module works by averaging together all of the images. The first
-% time through the pipeline (i.e. for image set 1), the whole set of
-% images (as defined by a Load Images module) is used to calculate one
-% projected image. Subsequent runs through the pipeline (i.e. for
-% image set 2 through the end) produce no new results, but processing
-% is not aborted in case other modules are being run for some reason.
-% The projection image calculated the first time through the pipeline
-% is still available to other modules during subsequent runs through
-% the pipeline.
+% What does Secondary mean?
+% Identify Secondary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically Secondary objects). Identify Secondary modules require a
+% grayscale image plus an image where Secondary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the Secondary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 %
-% Settings:
+% SAVING IMAGES: In addition to the object outlines and the
+% pseudo-colored object images that can be saved using the
+% instructions in the main CellProfiler window for this module,
+% this module produces several additional images which can be
+% easily saved using the Save Images module. These will be grayscale
+% images where each object is a different intensity. (1) The
+% preliminary segmented image, which includes objects on the edge of
+% the image and objects that are outside the size range can be saved
+% using the name: PrelimSegmented + whatever you called the objects
+% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% which excludes objects smaller than your selected size range can be
+% saved using the name: PrelimSmallSegmented + whatever you called the
+% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% image which excludes objects on the edge of the image and excludes
+% objects outside the size range can be saved using the name:
+% Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-% Enter L or P:
-% If you choose L, the module will calculate the single, averaged
-% projection image the first time through the pipeline by loading
-% every image of the type specified in the Load Images module. It is
-% then acceptable to use the resulting image later in the pipeline. If
-% you choose P, the module will allow the pipeline to cycle through
-% all of the image sets.  With this option, the module does not need
-% to follow a Load Images module; it is acceptable to make the single,
-% averaged projection from images resulting from other image
-% processing steps in the pipeline. However, the resulting projection
-% image will not be available until the last image set has been
-% processed, so it cannot be used in subsequent modules unless they
-% are instructed to wait until the last image set.
+% Additional image(s) are normally calculated for display only,
+% including the object outlines alone. These images can be saved by
+% altering the code for this module to save those images to the
+% handles structure (see the SaveImages module help) and then using
+% the Save Images module.
 %
-% SAVING IMAGES: The image produced by this module can be easily saved
-% using the Save Images module, using the name you assign.
-%
-% See also CORRECTILLUMINATION_APPLY,
-% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES.
+% See also any identify Secondary module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -84,7 +97,6 @@ drawnow
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow
 
 % PROGRAMMING NOTE
 % VARIABLE BOXES AND TEXT:
@@ -118,24 +130,46 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images to be averaged to make the projection?
-%infotypeVAR01 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = What did you call the objects that you want to expand or shrink?
+%infotypeVAR01 = objectgroup
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the resulting projection image?
-%infotypeVAR02 = imagegroup indep
-%defaultVAR02 = ProjectedBlue
-ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the expanded or shrunken objects?
+%infotypeVAR02 = objectgroup indep
+%defaultVAR02 = ShrunkenNuclei
+ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are the images you want to use to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
-%choiceVAR03 = Load Images module
-%choiceVAR03 = Pipeline
-SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-SourceIsLoadedOrPipeline = SourceIsLoadedOrPipeline(1);
+%textVAR03 = Enter E for Expand or S for Shrink.
+%choiceVAR03 = Shrink
+%choiceVAR03 = Expand
+ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
+%textVAR04 = Enter the number of pixels by which to expand or shrink the objects (or "Inf" to either shrink to a point or expand until almost touching).
+%choiceVAR04 = 1
+%choiceVAR04 = 2
+%choiceVAR04 = 3
+%choiceVAR04 = Inf
+ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
+
 %%%VariableRevisionNumber = 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+
+%%% Retrieves the final segmented label matrix image.
+fieldname = ['Segmented', ObjectName];
+%%% Checks whether the image to be analyzed exists in the handles structure.
+if isfield(handles.Pipeline, fieldname)==0,
+    error(['Image processing was canceled because the Expand Or Shrink Secondary Objects module could not find the input image.  It was supposed to be produced by an Identify Secondary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+end
+SegmentedImage = handles.Pipeline.(fieldname);
+
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -154,20 +188,60 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-ReadyFlag = 'Not Ready';
-try
-    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
-        %%% The first time the module is run, the projection image is
-        %%% calculated.
-        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
-    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
-        [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, ProjectionImageName);
+if strcmp(ShrinkOrExpand,'Shrink') == 1
+    %%% Shrinks the three incoming images.  The "thin" option nicely removes
+    %%% one pixel border from objects with each iteration.  When carried out
+    %%% for an infinite number of iterations, however, it produces one-pixel
+    %%% width objects (points, lines, or branched lines) rather than a single
+    %%% pixel.  The "shrink" option uses a peculiar algorithm to remove border
+    %%% pixels that does not result in nice uniform shrinking of objects, but
+    %%% it does have the capability, when used with an infinite number of
+    %%% iterations, to reduce objects to a single point (one pixel).
+    %%% Therefore, if the user wants a single pixel for each object, the
+    %%% "shrink" option is used; otherwise, the "thin" option is used.
+    if strcmp(ShrinkingNumber,'Inf') == 1
+        ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'shrink', Inf);
     else
-        error('Image processing was canceled because you must choose either "L" or "P" in the Make Projection/Average Images module');
+        try ShrinkingNumber = str2double(ShrinkingNumber);
+            ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thin', ShrinkingNumber);
+        catch error('Image processing was canceled because the value entered in the Expand Or Shrink Secondary Objects module must either be a number or the text "Inf" (no quotes).')
+        end
     end
-catch [ErrorMessage, ErrorMessage2] = lasterr;
-    error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+elseif strcmp(ShrinkOrExpand,'Expand') == 1
+    try %%% Converts the ShrinkingNumber entry to a number if possible
+        %%% (or leaves it as Inf otherwise).
+        try ShrinkingNumber = str2double(ShrinkingNumber); end
+        ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
+%        ShrunkenPrelimSegmentedImage = imdilate(PrelimSegmentedImage, strel('ball', ShrinkingNumber);
+ %       ShrunkenPrelimSmallSegmentedImage = imdilate(PrelimSmallSegmentedImage, strel('ball', ShrinkingNumber);
+  %      ShrunkenSegmentedImage = imdilate(SegmentedImage, strel('ball', ShrinkingNumber);
+    catch error('Image processing was canceled because the value entered in the Expand Or Shrink Secondary Objects module must either be a number or the text "Inf" (no quotes).')
+    end
 end
+
+%%% TODO >>> The following quickly relabels the three binary images so
+%%% their labels match the incoming labels, but it only works for
+%%% shrunken objects, not expanded ones >>>
+
+%%% For the ShrunkenSegmentedImage, the objects are relabeled so that their
+%%% numbers correspond to the numbers used for nuclei.  This is important
+%%% so that if the user has made measurements on the non-shrunk objects,
+%%% the order of these objects will be exactly the same as the shrunk
+%%% objects, which may go on to be used to identify secondary objects.
+if strcmp(ShrinkOrExpand,'Shrink')
+    FinalShrunkenSegmentedImage = ShrunkenSegmentedImage.*SegmentedImage;
+elseif strcmp(ShrinkOrExpand,'Expand')
+
+    [L,num] = bwlabel(ShrunkenSegmentedImage);
+    FinalShrunkenSegmentedImage = zeros(size(ShrunkenSegmentedImage));
+    for k = 1:num
+        index = find(L==k);                             % Get index for expanded object temporarily numbered k
+        OriginalLabel = SegmentedImage(index);          % In the original labeled image, index indexes either zeros or the original label
+        fooindex = find(OriginalLabel);                 % Find index to a nonzero element, i.e. to the original label number
+        FinalShrunkenSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+    end
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -181,55 +255,56 @@ drawnow
 % modules. To speed processing, these calculations are omitted if the
 % figure window is closed and the user does not want to save the
 % images.
+
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    % PROGRAMMING NOTE
-    % DRAWNOW BEFORE FIGURE COMMAND:
-    % The "drawnow" function executes any pending figure window-related
-    % commands.  In general, Matlab does not update figure windows until
-    % breaks between image analysis modules, or when a few select commands
-    % are used. "figure" and "drawnow" are two of the commands that allow
-    % Matlab to pause and carry out any pending figure window- related
-    % commands (like zooming, or pressing timer pause or cancel buttons or
-    % pressing a help button.)  If the drawnow command is not used
-    % immediately prior to the figure(ThisModuleFigureNumber) line, then
-    % immediately after the figure line executes, the other commands that
-    % have been waiting are executed in the other windows.  Then, when
-    % Matlab returns to this module and goes to the subplot line, the
-    % figure which is active is not necessarily the correct one. This
-    % results in strange things like the subplots appearing in the timer
-    % window or in the wrong figure window, or in help dialog boxes.
-    %%% Sets the width of the figure window to be appropriate (half width and height),
-    %%% the first time through the set.
+    %%% Calculates the OriginalColoredLabelMatrixImage for displaying in the figure
+    %%% window in subplot(2,1,1).
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    if sum(sum(SegmentedImage)) >= 1
+        OriginalColoredLabelMatrixImage = label2rgb(SegmentedImage,'jet', 'k', 'shuffle');
+    else  OriginalColoredLabelMatrixImage = SegmentedImage;
+    end
+    %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
+    %%% window in subplot(2,1,2).
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    if sum(sum(SegmentedImage)) >= 1
+        ShrunkenColoredLabelMatrixImage = label2rgb(FinalShrunkenSegmentedImage,'jet', 'k', 'shuffle');
+    else  ShrunkenColoredLabelMatrixImage = FinalShrunkenSegmentedImage;
+    end
+% PROGRAMMING NOTE
+% DRAWNOW BEFORE FIGURE COMMAND:
+% The "drawnow" function executes any pending figure window-related
+% commands.  In general, Matlab does not update figure windows until
+% breaks between image analysis modules, or when a few select commands
+% are used. "figure" and "drawnow" are two of the commands that allow
+% Matlab to pause and carry out any pending figure window- related
+% commands (like zooming, or pressing timer pause or cancel buttons or
+% pressing a help button.)  If the drawnow command is not used
+% immediately prior to the figure(ThisModuleFigureNumber) line, then
+% immediately after the figure line executes, the other commands that
+% have been waiting are executed in the other windows.  Then, when
+% Matlab returns to this module and goes to the subplot line, the
+% figure which is active is not necessarily the correct one. This
+% results in strange things like the subplots appearing in the timer
+% window or in the wrong figure window, or in help dialog boxes.
+    drawnow
+    %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
-        newsize(2) = originalsize(2) + originalsize(4)/2;
-        newsize(3) = originalsize(3)/2;
-        newsize(4) = originalsize(4)/2;
+        newsize(3) = 0.5*originalsize(3);
         set(ThisModuleFigureNumber, 'position', newsize);
-        drawnow
     end
-    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        %%% The projection image is displayed the first time through
-        %%% the set. For subsequent image sets, this figure is not
-        %%% updated at all, to prevent the need to load the projection
-        %%% image from the handles structure.
-        %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
-        imagesc(ProjectionImage);
-        title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']);
-        colormap(gray)
-    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
-        %%% The accumulated projection image so far is displayed each time through
-        %%% the pipeline.
-        %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
-        imagesc(ProjectionImage);
-        title(['Projection Image so far, based on Image set # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
-        colormap(gray)
-    end
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,ThisModuleFigureNumber);
+    %%% A subplot of the figure window is set to display the original image.
+    subplot(2,1,1); imagesc(OriginalColoredLabelMatrixImage);colormap(gray);
+    title([ObjectName, ' Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,1,2); imagesc(ShrunkenColoredLabelMatrixImage); title(ShrunkenObjectName);colormap(gray);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -369,20 +444,6 @@ drawnow
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 
-
-
-%%% If running in non-cycling mode (straight from the hard drive using
-%%% a LoadImages module), the projection image and its flag need only
-%%% be saved to the handles structure after the first image set is
-%%% processed. If running in cycling mode (Pipeline mode), the
-%%% projection image and its flag are saved to the handles structure
-%%% after every image set is processed.
-if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
-    %%% Saves the projected image to the handles structure so it can be used by
-    %%% subsequent modules.
-    handles.Pipeline.(ProjectionImageName) = ProjectionImage;
-    %%% Saves the ready flag to the handles structure so it can be used by
-    %%% subsequent modules.
-    fieldname = [ProjectionImageName,'ReadyFlag'];
-    handles.Pipeline.(fieldname) = ReadyFlag;
-end
+%%% Saves the final segmented label matrix image to the handles structure.
+fieldname = ['Segmented',ShrunkenObjectName];
+handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;

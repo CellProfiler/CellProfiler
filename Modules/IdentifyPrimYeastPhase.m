@@ -52,11 +52,11 @@ function handles = IdentifyPrimYeastPhase(handles)
 % Several other variables are adjustable in the code itself; we may
 % make these easily user-adjustable in the future, but here is some
 % information about them:
-% 
+%
 % CODE: disks=[8 14];
 % These are masks passed over the image to select for objects with a
 % radius in the range of 8-14 pixels. These can be thought of as the
-% smallest and largest feasible radii 
+% smallest and largest feasible radii
 %
 % CODE:
 % OrigImageMinima = imopen(BWerode,strel('disk', 2));
@@ -64,7 +64,7 @@ function handles = IdentifyPrimYeastPhase(handles)
 % PrelimLabelMatrixImage1 = imopen(WS,strel('disk', 6))
 %   Each of these lines uses an integer at the end. They probably have
 % some relationship to the typical object's diameter, but we haven't
-% characterized them well yet. 
+% characterized them well yet.
 %
 % How it works:
 % This image analysis module identifies objects by finding peaks in
@@ -198,13 +198,13 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = Yeast
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -529,7 +529,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -559,7 +559,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -628,12 +628,12 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 %%% because several different modules will write to the handles.Measurements.Image.Threshold
 %%% structure, and we should therefore probably append the current threshold to an existing structure
 % First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
     handles.Measurements.Image.ThresholdFeatures = {};
     handles.Measurements.Image.Threshold = {};
 end
 % Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
 % typically happen for the first image set. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
@@ -646,11 +646,11 @@ handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column)
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 %%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);

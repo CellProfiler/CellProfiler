@@ -3,10 +3,10 @@ function handles = RenameOrRenumberFile(handles)
 % Help for the RenameOrRenumberFile module:
 % Category: File Handling
 %
-% File renaming utility that deletes or adds text anywhere 
+% File renaming utility that deletes or adds text anywhere
 % within image file names.
-% It can also serve as a File renumbering utility that converts numbers 
-% within image file names to solve improper ordering of files on 
+% It can also serve as a File renumbering utility that converts numbers
+% within image file names to solve improper ordering of files on
 % Unix/Mac OSX systems.  For example:
 % DrosDAPI_1.tif becomes DrosDAPI_001.tif
 % DrosDAPI_10.tif	becomes DrosDAPI_010.tif
@@ -19,10 +19,10 @@ function handles = RenameOrRenumberFile(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -40,7 +40,7 @@ function handles = RenameOrRenumberFile(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -65,7 +65,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -76,7 +76,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -91,13 +91,13 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to rename/renumber? Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -140,14 +140,14 @@ for n = 1:length(FileNames)
     OldFilename = char(FileNames(n));
     Prefix = OldFilename(1:NumberCharactersPrefix);
     Suffix = OldFilename((end-NumberCharactersSuffix+1):end);
-    
+
     %Renaming Stage
     if strcmp(TextToAdd,'/') == 0
         InterFilename = [Prefix,TextToAdd,Suffix];
     else
         InterFilename = OldFilename;
     end
-    
+
     %Renumbering Stage
     if strcmp(NumberDigits,'/') == 0
         OldNumber = InterFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
@@ -161,10 +161,10 @@ for n = 1:length(FileNames)
     else
         TextToAdd = InterFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
     end
-    
+
     %Final renamed & renumbered name
     NewFilename = [Prefix,TextToAdd,Suffix];
-    
+
     if n == 1
         DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.'];
         Answer = CPquestdlg(DialogText, 'Confirm file name change','OK','Cancel','Cancel');
@@ -173,15 +173,15 @@ for n = 1:length(FileNames)
         end
     end
     if strcmp(OldFilename,NewFilename) ~= 1
-        movefile(fullfile(Pathname,OldFilename),fullfile(Pathname,NewFilename)) 
-    end    
+        movefile(fullfile(Pathname,OldFilename),fullfile(Pathname,NewFilename))
+    end
     drawnow
 end
 
 %%% This line will "cancel" processing after the first time through this
 %%% module.  All the files are renumbered the first time through. Without
 %%% the following cancel line, the module will run X times, where X is the
-%%% number of files in the current directory.  
+%%% number of files in the current directory.
 set(handles.timertexthandle,'string','Cancel')
 
 %%%%%%%%%%%%%%%%%%%%
@@ -201,9 +201,9 @@ guidata(handles.figure1,handles)
 
 % PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -289,7 +289,7 @@ guidata(handles.figure1,handles)
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -319,7 +319,7 @@ guidata(handles.figure1,handles)
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

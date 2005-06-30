@@ -1,6 +1,6 @@
 function handles = IdentifyPrimShapeIntens(handles)
 
-% Help for the Identify Primary Shape Intensity module: 
+% Help for the Identify Primary Shape Intensity module:
 % Category: Object Identification
 %
 % This image analysis module identifies and separates clumps of
@@ -51,7 +51,7 @@ function handles = IdentifyPrimShapeIntens(handles)
 % actually two lumpy parts of the same object, and they will be
 % merged.
 %
-% How it works: 
+% How it works:
 % This module identifies objects by finding peaks in the distance
 % transform of a thresholded image.  Once a marker for each object has
 % been identified in this way, a watershed function on the original
@@ -89,7 +89,7 @@ function handles = IdentifyPrimShapeIntens(handles)
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
-% 
+%
 % Additional image(s) are normally calculated for display only,
 % including the object outlines alone. These images can be saved by
 % altering the code for this module to save those images to the
@@ -98,18 +98,18 @@ function handles = IdentifyPrimShapeIntens(handles)
 %
 % See also IDENTIFYPRIMADAPTTHRESHOLDA,
 % IDENTIFYPRIMADAPTTHRESHOLDB,
-% IDENTIFYPRIMADAPTTHRESHOLDC, 
+% IDENTIFYPRIMADAPTTHRESHOLDC,
 % IDENTIFYPRIMADAPTTHRESHOLDD,
-% IDENTIFYPRIMTHRESHOLD, 
-% IDENTIFYPRIMSHAPEDIST, 
+% IDENTIFYPRIMTHRESHOLD,
+% IDENTIFYPRIMSHAPEDIST,
 % IDENTIFYPRIMINTENSINTENS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -127,7 +127,7 @@ function handles = IdentifyPrimShapeIntens(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -151,7 +151,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -162,7 +162,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -177,18 +177,18 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects segmented by this module?
+%infotypeVAR02 = objectgroup indep
 %choiceVAR02 = Nuclei
 %choiceVAR02 = Cells
 %choiceVAR02 = Spots
@@ -211,7 +211,7 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 
 %textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view. This is intended for use with automatic thresholding; a number entered here will override an absolute threshold entered two boxes above):
 %defaultVAR06 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Enter the Max Suppress N'hood (Non-negative integer ~ the radius of objects)
 %defaultVAR07 = 10
@@ -220,19 +220,19 @@ MaximaSuppressionNeighborhood = str2double(char(handles.Settings.VariableValues{
 %textVAR08 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %choiceVAR08 = No
 %choiceVAR08 = Yes
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR09 = No
 %choiceVAR09 = Yes
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR10 = No
 %choiceVAR10 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
 %%%VariableRevisionNumber = 2
@@ -265,9 +265,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -300,7 +300,7 @@ FilledThresholdedImage = imfill(ThresholdedOrigImage, 'holes');
 %%% Computes distance transform.
 DistanceTransformedImage = bwdist(~FilledThresholdedImage);
 %%% Essentially thresholds again to get rid of background pixels.
-DistanceTransformedImage(~FilledThresholdedImage) = -Inf; 
+DistanceTransformedImage(~FilledThresholdedImage) = -Inf;
 
 %%% Perturbs the distance image so that local maxima near each other with
 %%% identical values will now have slightly different values.
@@ -322,10 +322,10 @@ MaximaMask = strel('disk', MaximaSuppressionNeighborhood);
 MaximaImage(DistanceTransformedImage < ordfilt2(DistanceTransformedImage,sum(sum(getnhood(MaximaMask))),getnhood(MaximaMask))) = 0;
 %%% Converts the maxima image to black and white.
     MaximaImage(MaximaImage ~= 0) = 1;
-     
+
 %%% STEP 2: Performs watershed function on the original intensity
 %%% (grayscale) image.
-drawnow 
+drawnow
 %%% Inverts original image.
 InvertedOriginal = imcomplement(OrigImage);
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
@@ -339,7 +339,7 @@ WhiteWatershedOnInvertedOrig = InvertedOriginal;
 WhiteWatershedOnInvertedOrig(BlackWatershedLinesPre == 0) = 255;
 
 %%% STEP 3: Identifies and extracts the objects, using the watershed lines.
-drawnow 
+drawnow
 %%% Thresholds the WhiteWatershedOnInvertedOrig image, using the same
 %%% threshold as used for the maxima detection, except the number is inverted
 %%% since we are working with an inverted image now.
@@ -539,7 +539,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -569,7 +569,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -638,12 +638,12 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 %%% because several different modules will write to the handles.Measurements.Image.Threshold
 %%% structure, and we should therefore probably append the current threshold to an existing structure
 % First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
     handles.Measurements.Image.ThresholdFeatures = {};
     handles.Measurements.Image.Threshold = {};
 end
 % Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
 % typically happen for the first image set. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
@@ -656,11 +656,11 @@ handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column)
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 %%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);

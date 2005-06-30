@@ -2,7 +2,7 @@ function handles = IdentifySecPropagate(handles)
 
 % Help for the Identify Secondary Propagate module:
 % Category: Object Identification
-% 
+%
 % This module identifies secondary objects based on a previous
 % module's identification of primary objects.  Each primary object is
 % assumed to be completely within a secondary object (e.g. nuclei
@@ -10,7 +10,7 @@ function handles = IdentifySecPropagate(handles)
 % determining the dividing lines between clustered secondary objects.
 % The dividing lines between objects are determined by a combination
 % of the distance to the nearest primary object and intensity
-% gradients (dividing lines can be either dim or bright). 
+% gradients (dividing lines can be either dim or bright).
 %
 % Settings:
 %
@@ -33,7 +33,7 @@ function handles = IdentifySecPropagate(handles)
 % so, the intensity image is almost completely ignored and the
 % dividing line will simply be halfway between the two competing
 % primary objects.
-% 
+%
 % Note: Primary segmenters produce two output images that are used by
 % this module.  The Segmented image contains the final, edited
 % primary objects (i.e. objects at the border and those that are too
@@ -45,12 +45,12 @@ function handles = IdentifySecPropagate(handles)
 % Small objects are not used at this stage because they are more
 % likely to be artifactual, and so they therefore should not "claim"
 % any secondary object pixels.
-% 
-% TECHNICAL DESCRIPTION OF THE MODULE: 
-% Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and 
-% limited to MASK.  MASK should be a logical array.  LAMBDA is a 
+%
+% TECHNICAL DESCRIPTION OF THE MODULE:
+% Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
+% limited to MASK.  MASK should be a logical array.  LAMBDA is a
 % regularization parameter, larger being closer to Euclidean distance
-% in the image plane, and zero being entirely controlled by IMAGE. 
+% in the image plane, and zero being entirely controlled by IMAGE.
 % Propagation of labels is by shortest path to a nonzero label in
 % LABELS_IN.  Distance is the sum of absolute differences in the image
 % in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
@@ -89,10 +89,10 @@ function handles = IdentifySecPropagate(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -110,7 +110,7 @@ function handles = IdentifySecPropagate(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -134,7 +134,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -145,7 +145,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -160,23 +160,23 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
-%textVAR01 = What did you call the images you want to process? 
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup
 %textVAR02 = What did you call the objects that will be used to mark the centers of these objects?
+%infotypeVAR02 = objectgroup
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%infotypeVAR03 = objectgroup indep
 %textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
+%infotypeVAR03 = objectgroup indep
 %choiceVAR03 = Nuclei
 %choiceVAR03 = Cells
 %choiceVAR03 = Spots
@@ -194,7 +194,7 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 
 %textVAR06 = Enter the minimum allowable threshold (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
 %defaultVAR06 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Regularization factor (0 to infinity). Larger=distance,0=intensity
 %defaultVAR07 = 0.05
@@ -203,13 +203,13 @@ RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentMo
 %textVAR08 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR08 = No
 %choiceVAR08 = Yes
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR09 = No
 %choiceVAR09 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %%%VariableRevisionNumber = 3
@@ -242,7 +242,7 @@ if ndims(OrigImage) ~= 2
 end
 
 %%% Retrieves the preliminary label matrix image that contains the primary
-%%% segmented objects which have only been edited to discard objects 
+%%% segmented objects which have only been edited to discard objects
 %%% that are smaller than a certain size.  This image
 %%% will be used as markers to segment the secondary objects with this
 %%% module.  Checks first to see whether the appropriate image exists.
@@ -253,7 +253,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     end
 PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
-        
+
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects which will be used to weed out which objects are
 %%% real - not on the edges and not below or above the specified size
@@ -271,9 +271,9 @@ EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -284,13 +284,13 @@ drawnow
 
 %%% STEP 1: The distinction between objects and background is determined
 %%% using the user-specified threshold.
-%%% Determines the threshold to use. 
+%%% Determines the threshold to use.
 if strcmp(Threshold,'Automatic')
  %   Threshold = CPgraythresh(OrigImage,handles,ImageName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
 %    Threshold = CPgraythresh(OrigImage);
-    %%% Adjusts the threshold by a correction factor.  
+    %%% Adjusts the threshold by a correction factor.
 %    Threshold = Threshold*ThresholdAdjustmentFactor;
 
 
@@ -512,7 +512,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -542,7 +542,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -602,12 +602,12 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 %%% because several different modules will write to the handles.Measurements.Image.Threshold
 %%% structure, and we should therefore probably append the current threshold to an existing structure.
 % First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
     handles.Measurements.Image.ThresholdFeatures = {};
     handles.Measurements.Image.Threshold = {};
 end
 % Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
 % typically happen for the first image set. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
@@ -619,11 +619,11 @@ handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column)
 
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' SecondaryObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);

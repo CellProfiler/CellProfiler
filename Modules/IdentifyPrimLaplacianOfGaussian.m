@@ -50,7 +50,7 @@ function handles = IdentifyPrimLaplacianOfGaussian(handles)
 % merged. Note that increasing the blur radius increases
 % the processing time exponentially.
 %
-% How it works: 
+% How it works:
 % This image analysis module identifies objects by finding peaks in
 % intensity, after the image has been blurred to remove texture (based
 % on blur radius).  Once a marker for each object has been identified
@@ -89,7 +89,7 @@ function handles = IdentifyPrimLaplacianOfGaussian(handles)
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
-% 
+%
 % Additional image(s) are normally calculated for display only,
 % including the object outlines alone. These images can be saved by
 % altering the code for this module to save those images to the
@@ -98,18 +98,18 @@ function handles = IdentifyPrimLaplacianOfGaussian(handles)
 %
 % See also IDENTIFYPRIMADAPTTHRESHOLDA,
 % IDENTIFYPRIMADAPTTHRESHOLDB,
-% IDENTIFYPRIMADAPTTHRESHOLDC, 
+% IDENTIFYPRIMADAPTTHRESHOLDC,
 % IDENTIFYPRIMADAPTTHRESHOLDD,
-% IDENTIFYPRIMTHRESHOLD, 
+% IDENTIFYPRIMTHRESHOLD,
 % IDENTIFYPRIMSHAPEDIST,
 % IDENTIFYPRIMSHAPEINTENS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -127,7 +127,7 @@ function handles = IdentifyPrimLaplacianOfGaussian(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -151,7 +151,7 @@ drawnow
 %%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -162,7 +162,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -177,18 +177,18 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -222,19 +222,19 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8})
 %textVAR09 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
 %choiceVAR09 = No
 %choiceVAR09 = Yes
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 = Will you want to save the outlines of the objects (Yes or No)? If yes, use a Save Images module and type "OutlinedOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %choiceVAR10 = No
 %choiceVAR10 = Yes
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
 %textVAR11 =  Will you want to save the image of the pseudo-colored objects (Yes or No)? If yes, use a Save Images module and type "ColoredOBJECTNAME" in the first box, where OBJECTNAME is whatever you have called the objects identified by this module.
 %defaultVAR11 = No
 %defaultVAR11 = Yes
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
 %%% Determines what the user entered for the size range.
@@ -297,9 +297,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -352,7 +352,7 @@ MaximaImage(~im2bw(OrigImage, Threshold))=0;
 
 %%% STEP 2: Performs watershed function on the original intensity
 %%% (grayscale) image.
-drawnow 
+drawnow
 %%% Inverts original image.
 InvertedOriginal = imcomplement(OrigImage);
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
@@ -402,7 +402,7 @@ rgNegCurve(1:end,[1 end])=1;
 %disp(['Generated LoG regions. Time: ' num2str(toc)])
 
 %Throw out noise, label regions
-rgArOpen=bwareaopen(rgNegCurve,MinArea,4); 
+rgArOpen=bwareaopen(rgNegCurve,MinArea,4);
 rgLabelled=uint16(bwlabel(rgArOpen,4));
 % rgArOpen=bwareaopen(rgNegCurve,MinArea,8); %use 8-connectivity like rest of CP
 % rgLabelled=uint16(bwlabel(rgArOpen,8));
@@ -411,7 +411,7 @@ if max(rgLabelled(:))==1
 end
 
 %Get rid of region around outsides (upper-left region gets value 1)
-rgLabelled(rgLabelled==1)=0; 
+rgLabelled(rgLabelled==1)=0;
 rgLabelled(rgLabelled==0)=1;
 rgLabelled=uint16(double(rgLabelled)-1);
 %disp(['Generated labelled, size-excluded regions. Time: ' num2str(toc)])
@@ -465,7 +465,7 @@ end
 if strncmpi(IncludeEdge,'N',1) == 1
 PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
-end 
+end
 %%% The PrelimLabelMatrixImage4 is converted to binary.
 FinalBinaryPre = im2bw(PrelimLabelMatrixImage4,.5);
 drawnow
@@ -480,7 +480,7 @@ FinalLabelMatrixImage = bwlabel(FinalBinary);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 % PROGRAMMING NOTE
 % DISPLAYING RESULTS:
@@ -607,7 +607,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -637,7 +637,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -707,12 +707,12 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 %%% because several different modules will write to the handles.Measurements.Image.Threshold
 %%% structure, and we should therefore probably append the current threshold to an existing structure
 % First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
     handles.Measurements.Image.ThresholdFeatures = {};
     handles.Measurements.Image.Threshold = {};
 end
 % Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
 % typically happen for the first image set. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
@@ -725,11 +725,11 @@ handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column)
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 %%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);

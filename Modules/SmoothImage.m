@@ -19,7 +19,7 @@ function handles = SmoothImage(handles)
 % easily saved using the Save Images module, using the name you
 % assign. If you want to save the smoothed image to use it for later
 % analysis, you should save the smoothed image in '.mat' format to
-% prevent degradation of the data. 
+% prevent degradation of the data.
 %
 % See also MAKEPROJECTION_AVERAGEIMAGES, CORRECTILLUMINATION_APPLY,
 % CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES,
@@ -104,13 +104,13 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be smoothed?
+%infotypeVAR01 = imagegroup
 OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the smoothed image?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = CorrBlue
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -320,7 +320,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -350,7 +350,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

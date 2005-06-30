@@ -43,7 +43,7 @@ DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?
-%defaultVAR04 = 
+%defaultVAR04 =
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 3
@@ -52,7 +52,7 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    
+
 
 if (CurrentModuleNum ~= handles.Current.NumberOfModules) && ~(isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) && (handles.Current.NumberOfModules == CurrentModuleNum+1))
     error(['WriteSQLFiles must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
@@ -68,7 +68,7 @@ end
 if isfield(handles.Current, 'BatchInfo'),
     FirstSet = handles.Current.BatchInfo.Start;
     LastSet = handles.Current.BatchInfo.End;
-else 
+else
     FirstSet = 1;
     LastSet = handles.Current.NumberOfImageSets;
 end

@@ -5,13 +5,13 @@ function handles = CreateWebPage(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the full-size images you want to include?
+%infotypeVAR01 = imagegroup
 OrigImage = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup
 %textVAR02 = What did you call the thumbnail images you want to use to link to full images?
+%infotypeVAR02 = imagegroup
 %choiceVAR02 = Do not use
 ThumbImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
@@ -134,9 +134,9 @@ NumberOfImageSets = handles.Current.NumberOfImageSets;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -157,19 +157,19 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
         ThumbImageFileNames = handles.Pipeline.(['FileList' ThumbImage]);
         ThumbImagePathName = handles.Pipeline.(['Pathname' ThumbImage]);
     end
-    
+
     OrigImageFileNames = handles.Pipeline.(['FileList' OrigImage]);
     OrigImagePathName = handles.Pipeline.(['Pathname' OrigImage]);
     ZipImagePathName = OrigImagePathName;
-    
+
     CurrentImage = 1;
-    
+
     if strcmp(DirectoryOption,'One level over the images')
         LastDirPos = max(findstr('\',OrigImagePathName))+1;
         if isempty(LastDirPos)
             LastDirPos = max(findstr('/',OrigImagePathName))+1;
         end
-        
+
         HTMLSavePath = OrigImagePathName(1:LastDirPos-2);
         OrigImagePathName = OrigImagePathName(LastDirPos:end);
         try
@@ -180,11 +180,11 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
         OrigImagePathName = '';
         ThumbImagePathName = '';
     end
-    
+
     WindowName = '_CPNewWindow';
-    
+
     ZipList = {[]};
-    
+
     Lines = '<HTML>';
     Lines = strvcat(Lines,['<HEAD><TITLE>',PageTitle,'</TITLE></HEAD>']);
     Lines = strvcat(Lines,['<BODY BGCOLOR=',AddQ(BGColor),'>']);
@@ -194,7 +194,7 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
         for i=1:ThumbCols
 
             Lines = strvcat(Lines,'<TD>');
-            
+
             if ~strcmp(ThumbImage,'Do not use')
                 if strcmp(CreateNewWindow,'Once only')
                     Lines = strvcat(Lines,['<A HREF=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' TARGET=',AddQ(WindowName),'>']);
@@ -208,27 +208,27 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
             else
                 Lines = strvcat(Lines,['<IMG SRC=',AddQ(fullfile(OrigImagePathName,OrigImageFileNames{CurrentImage})),' BORDER=',ThumbBorderWidth,'>']);
             end
-            
+
             Lines = strvcat(Lines,'</TD>');
             if ~strcmp(ZipFileName,'Do not use')
                 ZipList(CurrentImage) = {fullfile(ZipImagePathName,OrigImageFileNames{CurrentImage})};
             end
-            
+
             CurrentImage = CurrentImage + 1;
             if CurrentImage > NumOrigImage
                 break;
             end
-            
+
         end
         Lines = strvcat(Lines,'</TR>');
     end
     Lines = strvcat(Lines,'</TABLE></CENTER>');
-    
+
     if ~strcmp(ZipFileName,'Do not use')
         zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
         Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ(ZipFileName),'>Download All Images</A></CENTER>']);
     end
-    
+
     Lines = strvcat(Lines,'</BODY>');
     Lines = strvcat(Lines,'</HTML>');
     HTMLFullfile = fullfile(HTMLSavePath,FileName);

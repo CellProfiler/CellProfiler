@@ -1,6 +1,6 @@
 function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 
-% Help for the Correct Illumination_Calculate Using Intensities module: 
+% Help for the Correct Illumination_Calculate Using Intensities module:
 % Category: Pre-processing
 %
 % This module calculates an illumination function based on the
@@ -33,7 +33,7 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 % individually may make intensity measures not directly comparable
 % across different images. Using illumination correction based on all
 % images makes the assumption that the illumination anomalies are
-% consistent across all the images in the set. 
+% consistent across all the images in the set.
 %
 % Enter L or P:
 % If you choose L, the module will calculate the illumination
@@ -68,7 +68,7 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 % across the field of view, the rescaling of each image might be
 % dramatic, causing the corrected images to be very dark.
 %
-% SAVING IMAGES: 
+% SAVING IMAGES:
 % The illumination correction function produced by this module can be
 % easily saved using the Save Images module, using the name you
 % assign. Intermediate images - prior to dilation and smoothing, or
@@ -83,10 +83,10 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -104,7 +104,7 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -129,7 +129,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -140,7 +140,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -155,13 +155,13 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the images to be used to calculate the illumination function?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -169,13 +169,13 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = IllumBlue
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%infotypeVAR03 = imagegroup indep
 %textVAR03 = (Optional) What do you want to call the raw projection image prior to dilation or smoothing? (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = ProjectedBlue
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%infotypeVAR04 = imagegroup indep
 %textVAR04 = (Optional) What do you want to call the projection image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = DilatedProjectedBlue
 DilatedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -232,9 +232,9 @@ end
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -417,7 +417,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -447,7 +447,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

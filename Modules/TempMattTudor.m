@@ -1,6 +1,6 @@
 function handles = TempMattTudor(handles)
 
-% Help for the Identify Primary Adaptive Threshold C module: 
+% Help for the Identify Primary Adaptive Threshold C module:
 % Category: Testing
 %
 % This image analysis module identifies objects by applying an adaptive
@@ -10,24 +10,24 @@ function handles = TempMattTudor(handles)
 % pixels is likely to contain some background and some foreground.
 % Smaller block sizes take more processing time.
 
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
+% The contents of this file are subject to the Mozilla Public License Version
+% 1.1 (the "License"); you may not use this file except in compliance with
+% the License. You may obtain a copy of the License at
 % http://www.mozilla.org/MPL/
-% 
+%
 % Software distributed under the License is distributed on an "AS IS" basis,
 % WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
 % for the specific language governing rights and limitations under the
 % License.
-% 
-% 
+%
+%
 % The Original Code is the the Identify Primary Adaptive Threshold C module.
-% 
+%
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research
 % Portions created by the Initial Developer are Copyright (C) 2003,2004
 % the Initial Developer. All Rights Reserved.
-% 
+%
 % Contributor(s):
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -38,20 +38,20 @@ function handles = TempMattTudor(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
-%textVAR01 = What did you call the images you want to process? 
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = objectgroup indep
 %textVAR02 = What do you want to call the objects identified by this algorithm?
+%infotypeVAR02 = objectgroup indep
 %choiceVAR02 = Nuclei
 %choiceVAR02 = Cells
 %choiceVAR02 = Spots
@@ -118,7 +118,7 @@ if strcmp(MinimumThreshold,'A')
     GlobalThreshold = CPgraythresh(OrigImage);
     %%% 0.7 seemed to produce good results; there is no theoretical basis
     %%% for choosing that exact number.
-else 
+else
     try MinimumThreshold = str2num(MinimumThreshold);
     catch error('The value entered for the minimum threshold in the Identify Primary Adaptive Threshold module was not correct.')
     end
@@ -132,9 +132,9 @@ end
 MM = floor(BlockSize):-1:floor(min(ceil(m/10),ceil(BlockSize*3/4)));
 NN = floor(BlockSize):-1:floor(min(ceil(n/10),ceil(BlockSize*3/4)));
 %%% Chooses the acceptable block that has the minimum padding.
-[dum,ndx] = min(ceil(m./MM).*MM-m); 
+[dum,ndx] = min(ceil(m./MM).*MM-m);
 BestBlockSize(1) = MM(ndx);
-[dum,ndx] = min(ceil(n./NN).*NN-n); 
+[dum,ndx] = min(ceil(n./NN).*NN-n);
 drawnow
 BestBlockSize(2) = NN(ndx);
 BestRows = BestBlockSize(1)*ceil(m/BestBlockSize(1));
@@ -219,7 +219,7 @@ FinalLabelMatrixImage = bwlabel(FinalBinary);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -408,7 +408,7 @@ while abs(T(i)-T(i-1))>=1
     MAT=sum(N(T(i):end).*counts(T(i):end))/mu3(end);
 
     i=i+1;
-    T(i)=round((MAT+MBT)/2); 
+    T(i)=round((MAT+MBT)/2);
     Threshold=T(i);
 end
 
@@ -416,8 +416,8 @@ end
 %MT:  on the _original_ scale
 level = (Irange(2)-Irange(1))*(Threshold - 1) / (N(end) - 1);function handles = AlgIdentifyPrimAdaptThresholdB(handles)
 
-% Help for the Identify Primary Adaptive Threshold B module: 
-% 
+% Help for the Identify Primary Adaptive Threshold B module:
+%
 % This image analysis module identifies objects by applying an adaptive
 % threshold to the image.
 %
@@ -425,24 +425,24 @@ level = (Irange(2)-Irange(1))*(Threshold - 1) / (N(end) - 1);function handles = 
 % pixels is likely to contain some background and some foreground.
 % Smaller neighborhood sizes take less processing time.
 
-% The contents of this file are subject to the Mozilla Public License Version 
-% 1.1 (the "License"); you may not use this file except in compliance with 
-% the License. You may obtain a copy of the License at 
+% The contents of this file are subject to the Mozilla Public License Version
+% 1.1 (the "License"); you may not use this file except in compliance with
+% the License. You may obtain a copy of the License at
 % http://www.mozilla.org/MPL/
-% 
+%
 % Software distributed under the License is distributed on an "AS IS" basis,
 % WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
 % for the specific language governing rights and limitations under the
 % License.
-% 
-% 
+%
+%
 % The Original Code is the Identify Primary Adaptive Threshold B module.
-% 
+%
 % The Initial Developer of the Original Code is
 % Whitehead Institute for Biomedical Research
 % Portions created by the Initial Developer are Copyright (C) 2003,2004
 % the Initial Developer. All Rights Reserved.
-% 
+%
 % Contributor(s):
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -453,14 +453,14 @@ level = (Irange(2)-Irange(1))*(Threshold - 1) / (N(end) - 1);function handles = 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to process? 
+%textVAR01 = What did you call the images you want to process?
 %defaultVAR01 = OrigBlue
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -544,7 +544,7 @@ end
 %%% as a double image from 0 to 1.
 %%% Invert the image to make dark objects on a white background.
 Image1 = imcomplement(OrigImage);
-%%% Stretch the image to use the full dynamic range from 0 to 1. 
+%%% Stretch the image to use the full dynamic range from 0 to 1.
 Image = imadjust(Image1,[min(min(Image1)) max(max(Image1))],[0 1]);
 %%% Performs adaptive thresholding.
 %%% This code was adapted from ?Image Segmentation by adaptive
@@ -619,7 +619,7 @@ FinalLabelMatrixImage = bwlabel(FinalBinary);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];

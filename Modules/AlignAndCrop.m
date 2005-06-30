@@ -2,7 +2,7 @@ function handles = AlignAndCrop(handles)
 
 % Help for the Align and Crop module:
 % Category: Pre-processing
-% 
+%
 % This module was written for a specific purpose: to take a larger
 % image of the outlines of cells, with some space around the outside,
 % and align it with a real image of cells (or of nuclei).
@@ -11,7 +11,7 @@ function handles = AlignAndCrop(handles)
 % course, there are features shared which can be used to align the
 % images).  Just enter the larger images as the traced ones, and the
 % smaller ones as the real images.
-% 
+%
 % This module determines the best alignment of two images.  It expects
 % the first to be a scanned, traced transparency of 8 1/2 by 11
 % inches, and the second should be a real image from a microscope.
@@ -23,7 +23,7 @@ function handles = AlignAndCrop(handles)
 % area as on the original real image. In the future, this may be
 % developed to include a way of finding the optimal scaling of the
 % images to each other; however, no guarantees.
-% 
+%
 % Note that as long as the input real images of nuclei and of cells
 % are the same dimensions, their output files will have the same
 % dimensions as well.
@@ -39,10 +39,10 @@ function handles = AlignAndCrop(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -60,7 +60,7 @@ function handles = AlignAndCrop(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -85,7 +85,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -96,7 +96,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -111,29 +111,29 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the traced images?
+%infotypeVAR01 = imagegroup
 TracedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup
 %textVAR02 = What did you call the real images?
+%infotypeVAR02 = imagegroup
 %defaultVAR02 = OrigReal
 RealImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%infotypeVAR03 = imagegroup indep
 %textVAR03 = What do you want to call the aligned, cropped traced images?
+%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = ACTraced
 FinishedTracedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the aligned, cropped real images?
+%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = ACReal
 FinishedRealImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -199,9 +199,9 @@ RealImage = handles.Pipeline.(RealImageName);
 drawnow
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -268,7 +268,7 @@ drawnow
 %%% creates a matrix of zeros the size of the traced image
 RealImageBlankSlate = zeros(TracedY,TracedX);
 %%% makes sure images are the right size
-NewImageSizeX = TracedX - 2*(XMargin); 
+NewImageSizeX = TracedX - 2*(XMargin);
 NewImageSizeY = TracedY - 2*(YMargin);
 if isequal(NewImageSizeX,RRealX) == 0
     error('The value (TracedX - 2(XMargin)) is not the same as the value (RRealX) in the AlignAndCrop module')
@@ -280,26 +280,26 @@ drawnow
 %%% equality with zero to see if the numbers are not whole, which then pops
 %%% up messages but does not abort. then it pastes the resized real image
 %%% over the blank image
-RXM = round(XMargin); 
+RXM = round(XMargin);
 RYM = round(YMargin);
-XMD = RXM - XMargin; 
+XMD = RXM - XMargin;
 YMD = RYM - YMargin;
 if isequal(XMD,0) == 0
     if isequal(YMD,0) == 0
         CPwarndlg(['Warning: neither margin value is an integer, and therefore problems may appear in the very near future. XM = ',num2str(XMargin),', YM = ',num2str(YMargin)],'Feeling Unwhole')
-        YMargin1 = ceil(YMargin); 
+        YMargin1 = ceil(YMargin);
         YMargin2 = floor(YMargin);
     else CPwarndlg('Warning: the XMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the YMargin value is an integer','Feeling Unwhole')
     end
-    XMargin1 = ceil(XMargin); 
+    XMargin1 = ceil(XMargin);
     XMargin2 = floor(XMargin);
 elseif isequal(YMD,0) == 0
     CPwarndlg('Warning: the YMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the XMargin value is an integer','Feeling Unwhole')
-    YMargin1 = ceil(YMargin); 
+    YMargin1 = ceil(YMargin);
     YMargin2 = floor(YMargin);
-else XMargin1 = XMargin; 
+else XMargin1 = XMargin;
     XMargin2 = XMargin;
-    YMargin1 = YMargin; 
+    YMargin1 = YMargin;
     YMargin2 = YMargin;
 end
 YBegin = YMargin2 + 1;
@@ -437,7 +437,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -467,7 +467,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in
@@ -622,7 +622,7 @@ Y = double(im2uint8(Y));
 XY = 256*X + Y;
 S = histc(XY(:),0:(256*256-1));
 %%% If S is probability distribution function N is 1
-N=sum(sum(S));          
+N=sum(sum(S));
 if ((N>0) && (min(S(:))>=0))
     Snz=nonzeros(S);
     H=log2(N)-sum(Snz.*log2(Snz))/N;

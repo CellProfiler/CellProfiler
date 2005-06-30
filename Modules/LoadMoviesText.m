@@ -190,8 +190,8 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = DAPI
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the images loaded from these movies?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
 MovieName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -199,8 +199,8 @@ MovieName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = /
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%infotypeVAR04 = imagegroup indep
 %textVAR04 = What do you want to call the images loaded from these movies?
+%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = /
 MovieName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -208,8 +208,8 @@ MovieName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = /
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%infotypeVAR06 = imagegroup indep
 %textVAR06 = What do you want to call the images loaded from these movies?
+%infotypeVAR06 = imagegroup indep
 %defaultVAR06 = /
 MovieName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -217,8 +217,8 @@ MovieName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = /
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%infotypeVAR08 = imagegroup indep
 %textVAR08 = What do you want to call the images loaded from these movies?
+%infotypeVAR08 = imagegroup indep
 %defaultVAR08 = /
 MovieName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -475,7 +475,7 @@ handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)     = {PathNames};
 %%% ------------------------------------------------------------------------------------------------ %%%
 
-      
+
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:

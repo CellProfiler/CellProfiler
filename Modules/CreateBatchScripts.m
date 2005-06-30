@@ -33,7 +33,7 @@ function handles = CreateBatchScripts(handles)
 % After batch processing is complete, the output files can be merged
 % by the MergeBatchOutput module.  For the simplest behavior in
 % merging, it is best to save output files to a unique and initially
-% empty directory. 
+% empty directory.
 %
 % If the batch processing fails for some reason, the handles structure
 % in the output file will have a field BatchError, and the error will
@@ -57,14 +57,14 @@ function handles = CreateBatchScripts(handles)
 %     echo "usage: $0 BatchDir BatchOutputDir BatchFilePrefix" 1>&2
 %     exit 1
 % fi
-% 
+%
 % BATCHDIR=$1
 % BATCHOUTPUTDIR=$2
 % BATCHFILEPREFIX=$3
 % MATLAB=/nfs/apps/matlab701
-% 
+%
 % export DISPLAY=""
-% 
+%
 % for i in $BATCHDIR/$BATCHFILEPREFIX*.m; do
 %     BATCHFILENAME=`basename $i`
 %     bsub -o $BATCHOUTPUTDIR/$BATCHFILENAME.txt -u carpenter@wi.mit.edu -R 'rusage[img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm < $BATCHDIR/$BATCHFILENAME"
@@ -77,19 +77,19 @@ function handles = CreateBatchScripts(handles)
 % These instructions are for writing the batch files straight to the
 % remote location. You can also write the batch files to the local
 % computer and copy them over (see LOCAL ONLY steps).
-% 
+%
 % 1. Put your images on gobo somewhere. Currently, /gobo/imaging,
 % /gobo/sabatini1_ata and /gobo/sabatini2_ata are all nfs mounted and
 % accessible to the cluster.
-% 
+%
 % 2. Connect to that location from the CP G5, using Go > Connect to
 % server.  Be sure to use nfs rather than cifs because the connection
 % is much faster.
-% 
+%
 % 3. Log into barra (a server and a front end to submit jobs to the
 % cluster) as user=carpente, using Terminal or X Windows: ssh -X
 % carpente@barra.wi.mit.edu
-% 
+%
 % 4. As carpente, logged into barra, make a directory for the project
 % somewhere on gobo that is accessible to the cluster, and give write
 % permission to the new directory: mkdir DIRNAME chmod a+w DIRNAME. (I
@@ -97,60 +97,60 @@ function handles = CreateBatchScripts(handles)
 % than just making a folder using the Mac, because the
 % CellProfilerUser does not have write permission on sabatini_ata's, I
 % think.)
-% 
+%
 % 5. (LOCAL ONLY) Make a folder on the local computer.
-% 
+%
 % 6. In CellProfiler, add the module CreateBatchScripts to the end of
 % the pipeline, and enter the settings (see Notes below for server
-% naming issues): 
-% CreateBatchScripts module: 
-% What prefix ahould be added to the batch file names? 
-% Batch_ 
+% naming issues):
+% CreateBatchScripts module:
+% What prefix ahould be added to the batch file names?
+% Batch_
 % What is the path to the CellProfiler folder on the cluster machines?
-% /home/carpente/CellProfiler 
-% What is the path to the image directory on the cluster machines? 
-% . 
+% /home/carpente/CellProfiler
+% What is the path to the image directory on the cluster machines?
+% .
 % What is the path to the directory where batch output should be
-% written on the cluster machines? 
-% . 
+% written on the cluster machines?
+% .
 % What is the path to the directory where you want to save the batch
-% files? 
+% files?
 % .
 % What is the path to the directory where the batch data file will be
-% saved on the cluster machines? 
-% . 
+% saved on the cluster machines?
+% .
 % If pathnames are specified differently between the local and cluster
 % machines, enter that part of the pathname from the local machine's
-% perspective 
-% Volumes/tap6 
+% perspective
+% Volumes/tap6
 % If pathnames are specified differently between the local and cluster
 % machines, enter that part of the pathname from the cluster machines'
-% perspective 
-% nfs/sabatini2_ata 
-% SaveImages module: 
+% perspective
+% nfs/sabatini2_ata
+% SaveImages module:
 % Enter the pathname to the directory where you want to save the
 % images: (note: I am not sure if we can currently save images on each
 % cycle through the pipeline)
 %  /nfs/sabatini2_ata/PROJECTNAME
-% Default image directory: /Volumes/tap6/IMAGEDIRECTORY 
+% Default image directory: /Volumes/tap6/IMAGEDIRECTORY
 % Default output directory: /Volumes/tap6/PROJECTNAME (or LOCAL
 % folder)
-% 
+%
 % 7. Run the pipeline through CellProfiler, which will analyze the
 % first set and create batch files on the local computer.
-% 
+%
 % 8. (LOCAL ONLY) Drag the BatchFiles folder (which now contains the
 % Batch  .m files and .mat file) and BatchOutputFiles folder (empty)
 % from the local computer into the project folder at the remote
-% location. 
-% 
+% location.
+%
 % 9. From the command line, logged into barra, make sure the
 % CellProfiler code at  /home/carpente/CellProfiler is up to date by
 % changing to /home/carpente/CellProfiler and type: cvs update.  Any
 % compiled functions in the code must be compiled for every type of
 % architecture present in the cluster using the matlab command mex
 % (PC, Mac, Unix, 64-bit, etc).
-% 
+%
 % 10. From the command line, logged into barra, submit the jobs using
 % the script runallbatchjobs.sh as follows: ./runallbatchjobs.sh
 % /BATCHFILESFOLDER /FOLDERWHERETEXTLOGSSHOULDGO BATCHPREFIXNAME For
@@ -178,22 +178,22 @@ function handles = CreateBatchScripts(handles)
 % BatchesToRerun/' | sed "s/.txt//" | sh
 %  d. Start the jobs in that subdirectory using runallbatchjobs.
 % --------------------------------------------------------------------
-% 
-% Bsub Functions: 
-% List all jobs: bjobs 
+%
+% Bsub Functions:
+% List all jobs: bjobs
 % Count all jobs: bjobs | wc -l
-% Count running jobs: bjobs | grep RUN | wc -l 
+% Count running jobs: bjobs | grep RUN | wc -l
 % Kill all jobs bkill 0
 % Submit an individual job: copy a bsub line out of batAll.sh, like
-% this: 
-% bsub -B -N -u carpenter@wi.mit.edu matlab -nodisplay -r Batch_2_to_2 
-% -B sends email at beginning of job, -N at the end. 
-% To see what is in batAll.sh: less batAll.sh 
+% this:
+% bsub -B -N -u carpenter@wi.mit.edu matlab -nodisplay -r Batch_2_to_2
+% -B sends email at beginning of job, -N at the end.
+% To see what is in batAll.sh: less batAll.sh
 % To edit batAll.sh: pico batAll.sh (Works only in Terminal, not in X
-% Windows). 
+% Windows).
 % To show the number of lines in an output file: wc -l *_OUT.txt
-% 
-% Other notes: 
+%
+% Other notes:
 % 1. COPY OPTIONS:
 % 	Example 1: drag and drop to /gobo/carpente or gobo/sabatini1_ata
 % For some locations, it may not be permitted to create a folder using
@@ -208,11 +208,11 @@ function handles = CreateBatchScripts(handles)
 % 	destination folder in Terminal on the local computer:
 % scp
 % carpente@barra.wi.mit.edu:/home/carpente/CellProfiler/ExampleFlyImag
-% es/Test3Batch_2_to_2_OUT.mat . 
-% 2. SERVER NAMING: 
+% es/Test3Batch_2_to_2_OUT.mat .
+% 2. SERVER NAMING:
 % - The cluster calls gobo "nfs", so all instances where you might
 % normally use gobo should be replaced with nfs.   e.g. gobo/imaging
-% becomes /nfs/imaging from the cluster's perspective. 
+% becomes /nfs/imaging from the cluster's perspective.
 % - The local computer uses the actual address of servers to use in
 % place of "gobo". Connect to the server using cifs://gobo/DIRNAME,
 % then in Terminal ssh to barra, then df /nfs/DIRNAME, where DIRNAME
@@ -225,10 +225,10 @@ function handles = CreateBatchScripts(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter <carpenter@wi.mit.edu>
 %   Thouis Jones   <thouis@csail.mit.edu>
@@ -246,7 +246,7 @@ function handles = CreateBatchScripts(handles)
 % format, using the same name as the module, and it will automatically be
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be 
+% each, how it works (technical description), info on which images can be
 % saved, and See also CAPITALLETTEROTHERMODULES. The license/author
 % information should be separated from the help lines with a blank line so
 % that it does not show up in the help displays.  Do not change the
@@ -271,7 +271,7 @@ drawnow
 drawnow
 
 % PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT: 
+% VARIABLE BOXES AND TEXT:
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
 % This text will wrap appropriately so it can be as long as desired.
@@ -282,7 +282,7 @@ drawnow
 % a variable in the workspace of this module with a descriptive
 % name. The syntax is important for the %textVAR and %defaultVAR
 % lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. 
+% also that the capitalization is as shown.
 % CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,
@@ -297,7 +297,7 @@ drawnow
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 
-%%% Reads the current module number, because this is needed to find 
+%%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -489,9 +489,9 @@ handles = handles_in;
 
 
 % PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
-% figure, imshow(BlurredImage, []), title('BlurredImage') 
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
+% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
+% figure, imshow(BlurredImage, []), title('BlurredImage')
+% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
 % imwrite(BlurredImage, FileName, FileFormat);
 % Note that you may have to alter the format of the image before
 % saving.  If the image is not saved correctly, for example, try
@@ -592,7 +592,7 @@ end
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -622,7 +622,7 @@ end
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

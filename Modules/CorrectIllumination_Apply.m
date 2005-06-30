@@ -132,18 +132,18 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = imagegroup
 %textVAR01 = What did you call the image to be corrected?
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%infotypeVAR02 = imagegroup indep
 %textVAR02 = What do you want to call the corrected image?
+%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = CorrBlue
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%infotypeVAR03 = imagegroup
 %textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module with the 'Single Image' option)?
+%infotypeVAR03 = imagegroup
 IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
@@ -365,7 +365,7 @@ drawnow
 % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
 % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
 %
-% handles.Preferences: 
+% handles.Preferences:
 %       Everything in handles.Preferences is stored in the file
 % CellProfilerPreferences.mat when the user uses the Set Preferences
 % button. These preferences are loaded upon launching CellProfiler.
@@ -395,7 +395,7 @@ drawnow
 % As an example, the first level might contain the fields
 % handles.Measurements.Image, handles.Measurements.Cells and
 % handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices 
+%      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
 % writes its own block; for example, the MeasureAreaShape module
 % writes shape measurements of 'Cells' in

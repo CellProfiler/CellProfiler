@@ -94,8 +94,8 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%infotypeVAR01 = objectgroup
 %textVAR01 = What did you call the segmented objects?
+%infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -265,7 +265,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     axis tight
     xlimits = xlim;
     axis([xlimits ylimits])
-    
+
     %%% A subplot of the figure window is set to display the quantized image.
     subplot(2,2,3)
     ImageHandle = image(QuantizedRGBimage);axis image

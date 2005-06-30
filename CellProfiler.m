@@ -492,18 +492,20 @@ else
     
     guidata(hObject,handles);
     
-    
-    for i=1:length(handles.Settings.ModuleNames)
-        
+    WaitBarHandle = CPwaitbar(0,'Loading Pipeline...');
+    for i=1:length(handles.Settings.ModuleNames)        
         PutModuleInListBox([contents{i} '.m'], Pathname, handles, 1);
         handles=guidata(handles.figure1);
         handles.Current.NumberOfModules = i;
+        CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
     end
     
     set(handles.ModulePipelineListBox,'String',contents);
     
     set(handles.ModulePipelineListBox,'Value',1);
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
+    
+    close(WaitBarHandle);
     
     %%% If the user loaded settings from an output file, prompt them to
     %%% save it as a separate Settings file for future use.
@@ -1039,9 +1041,6 @@ if ModuleNamedotm ~= 0,
             varXSize = VarDesPosition(3);
             varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
             set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'Position', [varXPos varYPos varXSize varYSize]);
-            if varYPos > -25
-                set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'visible', 'on');
-            end
             
             if flagExist
             	numberOfLongBoxes = numberOfLongBoxes+1;

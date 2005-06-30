@@ -718,6 +718,13 @@ else
 end
 %%% Allows canceling.
 if FileName ~= 0
+    [Temp,FileNom,FileExt,Temp2] = fileparts(FileName);
+    AutoName = CPquestdlg(['Do you want to rather name the file as ', FileNom, 'SET', FileExt, ' in order to prevent confusion with output files?'],'Rename file?','Yes');
+    if strcmp(AutoName,'Yes')
+        FileName = [FileNom,'SET',FileExt];
+    elseif strcmp(AutoName,'Cancel')
+        return
+    end
     %%% Allows user to save pipeline setting as a readable text file (.txt)
     SaveText = CPquestdlg('Do you want to save settings as a text file also?','Save as text?','No');
     if strcmp(SaveText,'Cancel') == 1

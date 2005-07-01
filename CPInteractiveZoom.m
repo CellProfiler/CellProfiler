@@ -116,7 +116,7 @@ setappdata(gcf,'zoomparams',zoomparams);
 function zoomfcn
 zoomparams = getappdata(gcf,'zoomparams');
 children = get(zoomparams.currax,'Children');
-if isempty(children) || ~any(strcmp(get(children,'Type'),'image'))
+if ~strcmp(get(children(1),'type'),'image')
     return;
 end
 posn = get(zoomparams.refax,'currentpoint');

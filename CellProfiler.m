@@ -995,7 +995,9 @@ if ModuleNamedotm ~= 0,
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'String',displayval);
         elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption)
             lastVariableCheck = str2double(output(9:10));
-            handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {''};
+            if ~RunInBG
+                handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {''};
+            end
             handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
             descriptionString = output(14:end);
             
@@ -1065,9 +1067,9 @@ if ModuleNamedotm ~= 0,
             else
                 StrSet{numel(StrSet)+1} = output(16:end);
             end
-            if isempty(handles.Settings.VariableValues{ModuleNums, str2num(output(11:12))})
-                handles.Settings.VariableValues(ModuleNums, str2num(output(11:12))) = StrSet(1);
-            end
+          %  if isempty(handles.Settings.VariableValues{ModuleNums, str2num(output(11:12))})
+          %      handles.Settings.VariableValues(ModuleNums, str2num(output(11:12))) = StrSet(1);
+           % end
         elseif (strncmp(output,'%inputtypeVAR',13) == 1) && (OptionInCode == SelectedOption);
             lastVariableCheck = str2double(output(14:15));
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'style', output(19:27));
@@ -1124,10 +1126,23 @@ if ModuleNamedotm ~= 0,
     
     for i=1:lastVariableCheck
         if strcmp(get(handles.VariableBox{ModuleNums}(i),'style'),'edit')
-            handles.Settings.VariableValues{ModuleNums, i} = get(handles.VariableBox{ModuleNums}(i),'String');
+            if ~RunInBG
+                handles.Settings.VariableValues{ModuleNums, i} = get(handles.VariableBox{ModuleNums}(i),'String');
+            else
+                set(handles.VariableBox{ModuleNums}(i),'String',handles.Settings.VariableValues{ModuleNums,i});
+            end
         else
             OptList = get(handles.VariableBox{ModuleNums}(i),'String');
-            handles.Settings.VariableValues{ModuleNums, i} = OptList{1};
+            if ~RunInBG
+                handles.Settings.VariableValues{ModuleNums, i} = OptList{1};
+            else
+                PPos = strmatch(handles.Settings.VariableValues{ModuleNums,i},OptList);
+                if isempty(PPos)
+                    set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);
+                else
+                    set(handles.VariableBox{ModuleNums}(i),'Value',PPos);
+                end
+            end
         end
     end
    
@@ -1397,7 +1412,7 @@ function ModulePipelineListBox_CreateFcn(hObject, eventdata, handles) %#ok We wa
 function ModulePipelineListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 if (length(ModuleHighlighted) > 0)
-    ModuleNumber = ModuleHighlighted(1)
+    ModuleNumber = ModuleHighlighted(1);
     if( handles.Current.NumberOfModules > 0 )
         %%% 2. Sets all VariableBox edit boxes and all
         %%% VariableDescriptions to be invisible.
@@ -2816,7 +2831,9 @@ else
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
                 
                 show_time_elapsed = {['Time elapsed for image set ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
-                show_time_elapsed(2) = {['Average time elapsed for other image sets = ' num2str((total_time_elapsed_num - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
+                if handles.Current.NumberOfImageSets > 1
+                    show_time_elapsed(2) = {['Average time elapsed for other image sets = ' num2str((total_time_elapsed_num - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
+                end
                 show_time_elapsed = char(show_time_elapsed);    
                 module_times = char(ModuleTime);
                 split_time_elapsed = strvcat(show_time_elapsed, show_set_text, module_times);

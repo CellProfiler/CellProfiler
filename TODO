@@ -6,8 +6,6 @@ JUNE 15, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
-- Decide about cutting down the name of modules.
-
 - (Joo Han is working on this) Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries when adding your own sample info to an existing output file.  i think we may want to remove the 'memory' option or we need to alter code to accommodate it, because at the moment i think it will be cleared from the handles structure at the beginning of a run. ViewData should work on numerical data too, not just imported data.
@@ -443,19 +441,18 @@ subfunction called RetrieveImageFileNames, but it's slightly different when used
 
 - Done (Joo Han) - Fix speed problem when CP is run with figures open, which occurs due to the fact that uicontrols which are created for each image set are never deleted.
 
-- Done (Joo Han) - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.>>>>>>> 1.173
+- Done (Joo Han) - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
 
 - Done (Joo Han) - Make a FilterObjectsAreaShape module that selects objects according to statistics obtained using MeasureAreaShape module. This module can be used, for example, to eliminate objects with a solidity below 0.5.
 
 - Done (Joo Han) - Improve the response time of the main GUI - previously, toggling between modules was very slow, especially on macs. Through a significant infrastructure change that should be taken into account in future changes, an instantaneous module toggling was achieved. Common 99 VariableDescriptions and Boxes were used before - now, they are classified the module number. (handles.VariableDescription{ModuleNumber}(VariableNumber) and handles.VariableBox{ModuleNumber}(VariableNumber).
 
 - Done (Joo Han) - Make the order of variable declarations consistent by always having %textVAR declared first. Before, either %infotypeVAR or %textVAR came first depending on the use of infotype. Relevant redundant calculations were removed and now CellProfiler.m will fail to read modules properly if %textVAR does not come first.
-<<<<<<< TODO
 
 - Done (Joo Han) Have the save settings function automatically add SET to the  
        name > can't currently do it with uisave. (The user is prompted whether he really wants to do this, with Yes as default. This actually seemed like a better and easier solution since it allows more flexibility.)
 
-- Done (Joo Han) - Created CPwaitbar which uses a waitbar with adjusted colors and applied the function accordingly for load pipeline.=======
+- Done (Joo Han) - Created CPwaitbar which uses a waitbar with adjusted colors and applied the function accordingly for load pipeline.
 
 - Done (Colin) - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
        an email from Mathworks describing the issue, thread QW38).
@@ -463,6 +460,8 @@ subfunction called RetrieveImageFileNames, but it's slightly different when used
        flipping. Display value only when clicking (see email that Anne
        has: Mathworks tricks for interactive figures). Make manual
        page. Toggle several images. In general, it just needs to be looked over and polished up.
+
+- Done (Colin) - Decide about cutting down the name of modules.
 
 - Done (Joo Han) - We should change the Identify modules and the SaveImages module so that if the user has chosen to save a label matrix image, the user has a choice between saving the grayscale label matrix (in which case they should be warned if they have more than 256 objects and if saving in 8 bit format), or a colored version, created using label2rgb on the spot in the SaveImages module rather than having the colored version saved to the handles structure by the Identify modules, which requires Variables in the Identify modules asking the user if they might want to save the images later in order to save processing time. >> It's possible that Anne already did some of this??
 

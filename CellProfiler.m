@@ -1420,7 +1420,6 @@ if (length(ModuleHighlighted) > 0)
         set(findobj('Parent',handles.variablepanel,'Visible','On'),'Visible','Off');
         set(handles.VariableDescription{ModuleNumber},'Visible','On');
         set(handles.VariableBox{ModuleNumber},'Visible','On');
-
         %%% 2.25 Removes slider and moves panel back to original
         %%% position.
         %%% If panel location gets changed in GUIDE, must change the
@@ -1580,7 +1579,7 @@ for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
         VarDesOn=0;
     end
     tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
-    if ((tempPos(2)+scrollPos)>-25) && VarDesOn
+    if ((tempPos(2)+scrollPos)>-25) && VarDesOn && ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a')
         set(handles.VariableBox{ModuleNumber}(i),'visible','on');
     else
         set(handles.VariableBox{ModuleNumber}(i),'visible','off');

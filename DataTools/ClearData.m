@@ -3,9 +3,10 @@ function handles = ClearData(handles)
 % Help for the Clear Data tool:
 % Category: Data Tools
 %
-% This module has not yet been documented. The Clear Sample Info
-% button allows deleting any list of sample info, specified by its
-% heading, from the handles structure.
+% This tool lets the user remove a measurement or
+% data field from a CellProfiler output file. The same
+% measurement can be removed from several files.
+% 
 %
 % See also ADDDATA VIEWDATA.
 
@@ -22,78 +23,127 @@ function handles = ClearData(handles)
 %
 % $Revision$
 
-ExistingOrMemory = CPquestdlg('Do you want to delete sample info or data in an existing output file or do you want to delete the sample info or data stored in memory to be placed into future output files?', 'Delete Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
-if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
-    %%% Allows canceling.
+%%% Ask the user to choose the file from which directory to extract measurements.
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Select directory where CellProfiler output files are located');
+    PathToSave = handles.Current.DefaultOutputDirectory;
+else
+    Pathname = uigetdir(pwd,'Select directory where CellProfiler output files are located');
+    PathToSave = RawPathname;
+end
+%%% Check if cancel button pressed
+if Pathname == 0
     return
-elseif strcmp(ExistingOrMemory, 'Memory') == 1
-    %%% Checks whether any headings are loaded yet.
-    Fieldnames = fieldnames(handles.Measurements.Image);
-    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
-    if isempty(ImportedFieldnames) == 1
-        errordlg('No sample info has been loaded.')
-    else
-        %%% Opens a filenameslistbox which displays the list of headings so that one can be
-        %%% selected.  The OK button has been assigned to mean "Delete".
-        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-            'Name','Current sample info loaded',...
-            'PromptString','Select the sample descriptions you would like to delete',...
-            'OKString','Delete','CancelString','Cancel','SelectionMode','single');
-        %%% Extracts the actual heading name.
-        SelectedFieldName = ImportedFieldnames(Selected);
-        % Action = 1 if the user pressed the OK (DELETE) button.  If they pressed
-        % the cancel button or closed the window Action == 0 and nothing happens.
-        if Action == 1
-            %%% Delete the selected heading (with its contents, the sample data)
-            %%% from the structure.
-            handles.Measurements.Image = rmfield(handles.Measurements.Image,SelectedFieldName);
-            %%% Handles structure is updated
-            guidata(gcbo,handles)
-            h = CPmsgbox(['The sample info was successfully deleted from memory']);
-        end
-        %%% This end goes with the error-detecting - "Do you have any sample info
-        %%% loaded?"
+end
+
+%%% Get all files with .mat extension in the chosen directory that contains a 'OUT' in the filename
+AllFiles = dir(Pathname);                                                        % Get all file names in the chosen directory
+AllFiles = {AllFiles.name};                                                      % Cell array with file names
+SelectedFiles = AllFiles(~cellfun('isempty',strfind(AllFiles,'.mat')));          % Keep files that has a .mat extension
+SelectedFiles = SelectedFiles(~cellfun('isempty',strfind(SelectedFiles,'OUT'))); % Keep files with an 'OUT' in the name
+
+%%% Let the user select the files
+[selection,ok] = listdlg('liststring',SelectedFiles,'name','Select output files',...
+    'PromptString','Select CellProfiler output files. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
+if ~ok, return, end
+SelectedFiles = SelectedFiles(selection);
+
+%%% Load the specified CellProfiler output file
+try
+    load(fullfile(Pathname, SelectedFiles{1}));
+catch
+    errordlg('Selected file is not a Matlab file')
+    return
+end  
+    
+%%% Quick check if it seems to be a CellProfiler file or not
+if ~exist('handles','var')
+    errordlg([SelectedFiles{1} ,' is not a CellProfiler output file.'])
+    return
+end
+
+%%% Let the user select which feature to delete
+Suffix = {'Features','Text'};
+[ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,Suffix);
+
+%%% If Cancel button pressed
+if isempty(ObjectTypename),return,end
+
+%%% Ask the user if he really wants to clear the selected feature
+Confirmation = questdlg('Are you sure you want to delete the selected feature?','Confirmation','Yes','Cancel','Cancel');
+if strcmp(Confirmation,'Cancel')
+    return
+end
+
+%%% Loop over the selected files and remove the selected feature
+%%% An cell array is used to indicated any errors in the processing
+errors = cell(length(SelectedFiles),1);
+for FileNbr = 1:length(SelectedFiles)
+
+    %%% Load the specified CellProfiler output file
+    try
+        load(fullfile(Pathname, SelectedFiles{FileNbr}));
+    catch
+        errors{FileNbr} = [SelectedFiles{FileNbr},' is not a Matlab file'];
+        continue
     end
-elseif strcmp(ExistingOrMemory, 'Existing') == 1
-[fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Choose the output file');
-    %%% Allows canceling.
-    if fOutName == 0
-        return
-    else
-        try OutputFile = load(fullfile(pOutName,fOutName));
-        catch error('Sorry, the file could not be loaded for some reason.')
-        end
-        if ~ (isfield(OutputFile, 'Settings') || isfield(OutputFile, 'handles'))
-            errordlg(['The file ' pOutName fOutName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
-            errFlg = 1;
-            return
-        end
+
+    %%% Quick check if it seems to be a CellProfiler file or not
+    if ~exist('handles','var')
+        errors{FileNbr} = [SelectedFiles{FileNbr},' is not a CellProfiler output file'];
+        continue
     end
-    %%% Checks whether any sample info is contained within the file.
-    Fieldnames = fieldnames(OutputFile.handles.Measurements.Image);
-    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1);
-    if isempty(ImportedFieldnames) == 1
-        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements.Image, and would be prefixed with either ''Image'' or ''Imported''.')
-    else
-        %%% Opens a filenameslistbox which displays the list of headings so that one can be
-        %%% selected.  The OK button has been assigned to mean "Delete".
-        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-            'Name','Current sample info loaded',...
-            'PromptString','Select the sample descriptions you would like to delete',...
-            'OKString','Delete','CancelString','Cancel','SelectionMode','single');
-        %%% Extracts the actual heading name.
-        SelectedFieldName = ImportedFieldnames(Selected);
-        % Action = 1 if the user pressed the OK (DELETE) button.  If they pressed
-        % the cancel button or closed the window Action == 0 and nothing happens.
-        if Action == 1
-            %%% Delete the selected heading (with its contents, the sample data)
-            %%% from the structure.
-            OutputFile.handles.Measurements.Image = rmfield(OutputFile.handles.Measurements.Image,SelectedFieldName);
-            %%% Saves the output file with this new sample info.
-            save(fullfile(pOutName,fOutName),'-struct','OutputFile');
-            h = CPmsgbox(['The sample info was successfully deleted from the output file']);
+
+    %%% Get the cell array of data
+    data = handles.Measurements.(ObjectTypename).(FeatureType);
+   
+    %%% If there is only one feature for this feature type, we should remove the entire field
+    %%% from the handles structure
+    if size(data{1},2) == 1
+        
+        % Remove the data field and the associated field with suffix 'Text'/'Features'
+        handles.Measurements.(ObjectTypename) = rmfield(handles.Measurements.(ObjectTypename),FeatureType);
+        handles.Measurements.(ObjectTypename) = rmfield(handles.Measurements.(ObjectTypename),[FeatureType,Suffix{SuffixNbr}]);
+        
+        %%% If this was the last measurement in the ObjectTypename (e.g., Nuclei, Cells, Cytoplasm)
+        %%% remove the ObjectTypename too
+        if isempty(fieldnames(handles.Measurements.(ObjectTypename)))
+            handles.Measurements = rmfield(handles.Measurements,ObjectTypename);
         end
-        %%% This end goes with the error-detecting - "Do you have any sample info
-        %%% loaded?"
+        
+    %%% Otherwise we need to loop over the image sets and remove the column indicated by
+    %%% 'FeatureNbr'
+    else
+        %%% Loop over the image sets and remove the specified feature
+        for ImageSetNbr = 1:length(data)
+            data{ImageSetNbr} = cat(2,data{ImageSetNbr}(:,1:FeatureNbr-1),data{ImageSetNbr}(:,FeatureNbr+1:end));
+        end
+        handles.Measurements.(ObjectTypename).(FeatureType) = data;
+        
+        %%% Remove the feature from the associated description field with suffix 'Features' or 'Text'
+        text = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]);
+        text = cat(2,text(1:FeatureNbr-1),text(FeatureNbr+1:end));
+        handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]) = text;
+    end
+
+    %%% Save the updated CellProfiler output file
+    try
+        save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
+    catch
+        errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
+        continue
+    end
+
+end
+
+error_index = find(~cellfun('isempty',errors));
+if isempty(error_index)
+    CPmsgbox('Data successfully deleted.')
+else
+    %%% Show a warning dialog box for each error
+    for k = 1:length(error_index)
+       CPwarndlg(errors{error_index(k)},'Clear Data failure')
     end
 end
+
+

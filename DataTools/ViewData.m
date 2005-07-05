@@ -3,12 +3,13 @@ function handles = ViewData(handles)
 % Help for the View Data tool:
 % Category: Data Tools
 %
-% This module has not yet been documented. It
-% allows viewing any list of sample info or data, specified by its heading,
-% taken from the handles structure of an output file or existing memory.
+% This tool views any text data that has been stored in a
+% CellProfiler output file. It can be useful to check that
+% text data added with the AddData tool is associated with
+% the correct image sets.
 %
-% See also CLEARDATA VIEWDATA.
-
+% See also CLEARDATA ADDDATA.
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -22,90 +23,73 @@ function handles = ViewData(handles)
 %
 % $Revision$
 
-ExistingOrMemory = CPquestdlg('Do you want to view sample info or data in an existing output file or do you want to view the sample info or data stored in memory to be placed into future output files?', 'View Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
-if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
-    %%% Allows canceling.
-    return
-elseif strcmp(ExistingOrMemory, 'Memory') == 1
-    %%% Checks whether any headings are loaded yet.
-    Fieldnames = fieldnames(handles.Measurements.Image);
-    ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1);
-    if isempty(ImportedFieldnames) == 1
-        errordlg('No sample info or data is currently stored in memory.')
-        %%% Opens a filenameslistbox which displays the list of headings so that one can be
-        %%% selected.  The OK button has been assigned to mean "View".
-    else
-        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-            'Name','Current sample info loaded',...
-            'PromptString','Select the sample descriptions you would like to view.',...
-            'OKString','View','CancelString','Cancel','SelectionMode','single');
-
-        %%% Extracts the actual heading name.
-        SelectedFieldName = ImportedFieldnames(Selected);
-
-        % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
-        % the cancel button or closed the window Action == 0.
-        if Action == 1
-            CPtextdisplaybox(ListToShow, char(SelectedFieldName))
-            %%% The OK buttons within this window don't do anything.
-        else
-            %%% If the user pressed "cancel" or closes the window, Action = 0, so
-            %%% nothing happens.
-        end
-        %%% This "end" goes with the "isempty" if no sample info is loaded.
-    end
-elseif strcmp(ExistingOrMemory, 'Existing') == 1
-   [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Choose the output file');
-    %%% Allows canceling.
-    if fOutName == 0
-        return
-    else
-        try OutputFile = load(fullfile(pOutName,fOutName));
-        catch error('Sorry, the file could not be loaded for some reason.')
-        end
-        if ~ (isfield(OutputFile, 'Settings') || isfield(OutputFile, 'handles'))
-            errordlg(['The file ' pOutName fOutName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
-            errFlg = 1;
-            return
-        end
-    end
-    %%% Checks whether any sample info is contained within the file. Some
-    %%% old output files may not have the 'Measurements'
-    %%% substructure, so we check for that field first.
-    if isfield(OutputFile.handles,'Measurements') == 1
-        Fieldnames = fieldnames(OutputFile.handles.Measurements.Image);
-        ImportedFieldnames = Fieldnames(strncmp(Fieldnames,'Imported',8) == 1 | strncmp(Fieldnames,'Image',5) == 1 | strncmp(Fieldnames,'Filename',8) == 1 );
-    else ImportedFieldnames = [];
-    end
-    if isempty(ImportedFieldnames) == 1
-        errordlg('The output file you selected does not contain any sample info or data. It would be in a field called handles.Measurements.Image, and would be prefixed with either ''Image'' or ''Imported''.')
-        %%% Opens a filenameslistbox which displays the list of headings so that one can be
-        %%% selected.  The OK button has been assigned to mean "View".
-    else
-        [Selected,Action] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 600],...
-            'Name','Current sample info loaded',...
-            'PromptString','Select the sample descriptions you would like to view.',...
-            'OKString','View','CancelString','Cancel','SelectionMode','single');
-
-        %%% Extracts the actual heading name.
-        SelectedFieldName = ImportedFieldnames(Selected);
-
-        % Action = 1 if the user pressed the OK (VIEW) button.  If they pressed
-        % the cancel button or closed the window Action == 0.
-        if Action == 1
-            try
-                ListToShow = OutputFile.handles.Measurements.Image.(char(SelectedFieldName));
-                if strcmp(class(ListToShow{1}),'double') == 1
-                    ListToShow = sprintf('%d\n',cell2mat(ListToShow));
-                end
-                CPtextdisplaybox(ListToShow, char(SelectedFieldName))
-                %%% The OK buttons within this window don't do anything.
-            catch errordlg('Sorry, there was an error displaying this sample info or data. This function may not yet work properly on mixed numerical and text data.')
-            end
-        else
-            %%% If the user pressed "cancel" or closes the window, Action = 0, so
-            %%% nothing happens.
-        end
-        %%% This "end" goes with the "isempty" if no sample info is loaded.
-    end
+%%% Ask the user to choose the file from which to extract measurements.
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [FileName, Pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
+else
+    [FileName, Pathname] = uigetfile('*.mat','Select the raw measurements file');
 end
+if FileName == 0
+    return
+end
+
+%%% Load the specified CellProfiler output file
+try
+    load(fullfile(Pathname, FileName));
+catch
+    errordlg('Selected file is not a Matlab file.')
+end
+
+%%% Quick check if it seems to be a CellProfiler file or not
+if ~exist('handles','var')
+    errordlg('Selected file is not a CellProfiler output file.')
+end
+
+% Get text data
+Fields = fieldnames(handles.Measurements.Image);
+TextFields = Fields(~cellfun('isempty',strfind(Fields,'Text')));
+TextData = {};
+TextDataField = {};
+TextDataNbr = [];
+for k = 1:length(TextFields)
+    TextData = cat(2,TextData,handles.Measurements.Image.(TextFields{k}));
+    TextDataField = cat(2,TextDataField,repmat(TextFields(k),[1 length(handles.Measurements.Image.(TextFields{k}))]));
+    TextDataNbr  = cat(2,TextDataNbr,1:length(handles.Measurements.Image.(TextFields{k})));
+end
+
+FinalOK = 0;
+while FinalOK == 0
+    % Let the user choose a specific text data entry
+    [Selection, ok] = listdlg('ListString',TextData, 'ListSize', [300 400],...
+        'Name','Select measurement',...
+        'PromptString','Select text information to view',...
+        'CancelString','Cancel',...
+        'SelectionMode','single');
+    if ok == 0, return, end                             % Should restore the previous handles structure....?
+
+    % Get the data for the specific selection
+    SelectedTextData = TextData{Selection};
+    SelectedTextDataField = TextDataField{Selection}(1:end-4);
+    SelectedTextDataNbr = TextDataNbr(Selection);
+
+    % Generate a cell array with strings to display
+    NbrOfImageSets = length(handles.Measurements.Image.(SelectedTextDataField));
+    TextToDisply = cell(NbrOfImageSets,1);
+    for ImageSet = 1:NbrOfImageSets
+        TextToDisplay{ImageSet} = sprintf('Image set #%d, Filename: %s:     %s',...
+            ImageSet,...
+            handles.Measurements.Image.FileNames{ImageSet}{1},...
+            handles.Measurements.Image.(SelectedTextDataField){ImageSet}{SelectedTextDataNbr});
+    end
+
+    % Display data in a list dialog box
+    [Selection, FinalOK] = listdlg('ListString',TextToDisplay, 'ListSize', [600 400],...
+        'Name',['Information for ',SelectedTextData],...
+        'PromptString','Press ''Back'' to select another information entry.',...
+        'CancelString','Back',...
+        'SelectionMode','single');
+end
+
+
+
+

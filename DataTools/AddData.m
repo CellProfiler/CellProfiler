@@ -5,14 +5,33 @@ function handles = AddData(handles)
 %
 % Use this tool if you would like text information about each image to
 % be recorded in the output file along with measurements (e.g. Gene
-% names, accession numbers, or sample numbers). You will then be
-% guided through the process of choosing a text file that contains the
-% text data for each image. More than one set of text information can
-% be entered for each image; each set of text will be a separate
-% column in the output file.        
+% names, accession numbers, or sample numbers). 
+% The text information must be specified in a separate text file
+% with the following syntax:
+%
+% IDENTIFIER <identfier> 
+% DESCRIPTION <description>
+% <Text info for image set #1>
+% <Text info for image set #2>
+% <Text info for image set #3>
+%              .
+%              .
+%
+% <identifier> is used as field name when storing the text information in
+% the Matlab structure. It must be one word. <description> is a description
+% of the text information stored in the file. It can be a sentence.
+%
+% For example:
+%
+% IDENTIFIER GeneNames
+% DESCRIPTION Gene names
+% Gene X
+% Gene Y
+% Gene Z
+%
 %
 % See also CLEARDATA VIEWDATA.
-
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -26,297 +45,133 @@ function handles = AddData(handles)
 %
 % $Revision$
 
-ExistingOrMemory = CPquestdlg('Do you want to add sample info into an existing output file or into memory so that it is incorporated into future output files?', 'Load Sample Info', 'Existing', 'Memory', 'Cancel', 'Existing');
-if strcmp(ExistingOrMemory, 'Cancel') == 1 | isempty(ExistingOrMemory) ==1
-    %%% Allows canceling.
-    return
-elseif strcmp(ExistingOrMemory, 'Memory') == 1
-    OutputFile = []; pOutName = []; fOutName = [];
-else [fOutName,pOutName] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Add sample info to which existing output file?');
-%%% Allows canceling.
-    if fOutName == 0
-        return
-    else
-        try OutputFile = load(fullfile(pOutName,fOutName));
-        catch error('Sorry, the file could not be loaded for some reason.')
-        end
-    end
-    if ~ (isfield(OutputFile, 'Settings') || isfield(OutputFile, 'handles'))
-        errordlg(['The file ' pOutName fOutName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
-        errFlg = 1;
-        return
-    end
-end
-
-%%% Opens a dialog box to retrieve a file name that contains a list of
-%%% sample descriptions, like gene names or sample numbers.
-[fname,pname] = uigetfile({'*.csv;*.txt','Readable files: .txt (Plain text) or .csv (Comma-separated)'},'Choose sample info file');
-%%% If the user presses "Cancel", the fname will = 0 and nothing will
-%%% happen.
-if fname == 0
-else extension = fname(end-2:end);
-    HeadingsPresent = CPquestdlg('Does the first row of your file contain headings?', 'Are headings present?', 'Yes', 'No', 'Cancel', 'Yes');
-    %%% Allows canceling.
-    if strcmp(HeadingsPresent, 'Cancel') == 1 | isempty(HeadingsPresent) == 1
-        return
-    end
-    %%% Determines the file type.
-    if strcmp(extension,'csv') == 1
-        try fid = fopen([pname fname]);
-            FirstLineOfFile = fgetl(fid);
-            LocationOfCommas = strfind(FirstLineOfFile,',');
-            NumberOfColumns = size(LocationOfCommas,2) + 1;
-            Format = repmat('%s',1,NumberOfColumns);
-            %%% Returns to the beginning of the file so that textscan
-            %%% reads the entire contents.
-            frewind(fid);
-            ImportedData = textscan(fid,Format,'delimiter',',');
-            for i = 1:NumberOfColumns
-                ColumnOfData = ImportedData{i};
-                ColumnOfData = ColumnOfData';
-                %%% Sends the heading and the sample info to a
-                %%% subfunction to be previewed and saved.
-                if i == 1
-                    Newhandles = handles;
-                end
-                [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(Newhandles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
-                if CancelOption == 1
-                    fclose(fid);
-                    CPwarndlg('None of the sample info was saved.')
-                    return
-                end
-            end
-            fclose(fid);
-            if strcmp(ExistingOrMemory,'Memory') == 1
-                %%% For future output files:
-                %%% Saves the new sample info to the handles
-                %%% structure.
-                handles = Newhandles;
-                h = CPmsgbox(['The sample info is successfully stored in memory and will be added to future output files']);
-                waitfor(h)
-            else
-                %%% For existing output files:
-                %%% Saves the output file with this new sample info.
-                save(fullfile(pOutName,fOutName),'-struct','OutputFile');
-                h = CPmsgbox(['The sample info was successfully added to output file']);
-                waitfor(h)
-            end
-        catch lasterr
-            fclose(fid)
-            if CancelOption == 1
-                fclose(fid);
-            else error('Sorry, the sample info could not be imported for some reason.')
-                fclose(fid);
-            end
-        end
-    elseif strcmp(extension,'txt') == 1
-        try fid = fopen([pname fname]);
-            ImportedData = textscan(fid,'%s','delimiter','\r');
-            ColumnOfData = ImportedData{1};
-            ColumnOfData = ColumnOfData';
-            %%% Sends the heading and the sample info to a
-            %%% subfunction to be previewed and saved.
-            [Newhandles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
-            if CancelOption == 1
-                fclose(fid);
-                CPwarndlg('None of the sample info was saved.')
-                return
-            end
-            fclose(fid);
-            if strcmp(ExistingOrMemory,'Memory') == 1
-                %%% For future output files:
-                %%% Saves the new sample info to the handles
-                %%% structure.
-                handles = Newhandles;
-                h = CPmsgbox(['The sample info will be added to future output files']);
-                waitfor(h)
-            else
-                %%% For existing output files:
-                %%% Saves the output file with this new sample info.
-                save(fullfile(pOutName,fOutName),'-struct','OutputFile');
-                h = CPmsgbox(['The sample info was successfully added to output file']);
-                waitfor(h)
-            end
-        catch lasterr
-            fclose(fid)
-            if CancelOption == 1
-                fclose(fid);
-            else error('Sorry, the sample info could not be imported for some reason.')
-                fclose(fid);
-            end
-        end
-    else errordlg('Sorry, the list of sample descriptions must be in a text file (.txt) or comma delimited file (.csv).');
-    end
-end
-
-%%% SUBFUNCTION %%%
-function [handles,CancelOption,OutputFile] = PreviewAndSaveColumnOfSampleInfo(handles,ColumnOfData,ExistingOrMemory,HeadingsPresent,OutputFile);
-%%% Sets the initial value to zero.
-CancelOption = 0;
-%%% Extracts the sample info and the headings from the first row, if they are present.
-if strcmp(HeadingsPresent, 'Yes') == 1
-    SingleHeading = ColumnOfData(1);
-    %%% Converts to char in order to perform the following lines.
-    SingleHeading = char(SingleHeading);
-    %%% Replaces spaces with underscores, because spaces
-    %%% are forbidden in fieldnames.
-    SingleHeading(strfind(SingleHeading,' ')) = '_';
-    %%% Strips weird characters (e.g. punctuation) out, because such
-    %%% characters are forbidden in fieldnames.  The user is still
-    %%% responsible for making sure their heading begins with a letter
-    %%% rather than a number or underscore.
-    PermittedCharacterLocations = regexp(SingleHeading, '[A-Za-z0-9_]');
-    SingleHeading = SingleHeading(PermittedCharacterLocations);
-    if isempty(SingleHeading) == 1
-        SingleHeading = 'Heading not yet entered';
-    end
-    %%% Converts back to cell array.
-    SingleHeading = {SingleHeading};
-    ColumnOfSampleInfo = ColumnOfData(2:end);
-else SingleHeading = {'Heading not yet entered'};
-    ColumnOfSampleInfo = ColumnOfData(1:end);
-end
-NumberSamples = length(ColumnOfSampleInfo);
-%%% Displays a notice.  The buttons don't do anything except proceed.
-Notice = {['You have ', num2str(NumberSamples), ' lines of sample information with the heading:']; ...
-    char(SingleHeading); ...
-    ''; ...
-    'The next window will show you a preview of the sample'; ...
-    'info you have loaded, and you will then have the'; ...
-    'opportunity to enter or change the heading name (Disallowed';...
-    'characters have been removed). Press ''OK'' to continue.';...
-    '-------'; ...
-    'Please note:';...
-    '(1) For text files, any spaces or punctuation characters'; ...
-    'may split the entry into two entries.';...
-    '(2) For csv files, entries containing commas ';...
-    'will split the entry into two entries.';...
-    '(3) Check that the order of the image files within Matlab is';...
-    'as expected.  For example, If you are running Matlab within';...
-    'X Windows on a Macintosh, the Mac will show the files as: ';...
-    '(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) whereas the X windows ';...
-    'system that Matlab uses will show them as ';...
-    '(1, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9) and so on.  So be sure that ';...
-    'the order of your sample info matches the order that Matlab ';...
-    'is using.  You can see the order of image files within';...
-    'CellProfiler, or in the Current Directory window of';...
-    'Matlab. Go to View > Current Directory to open the window';...
-    'if it is not already visible.'};
-[Selection,OK] = listdlg('ListString',Notice,'ListSize', [300 600],'Name','Imported sample info',...
-    'PromptString','Press any button to continue.',...
-    'SelectionMode','single');
-%%% Allows canceling.
-if OK == 0
-    CancelOption = 1;
+%%% Select file with text information to be added
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.*'),'Pick file with text information');
 else
-    %%% Displays a filenameslistbox so the user can preview the data.  The buttons in
-    %%% this filenameslistbox window don't do anything except proceed.
-    [Selection,OK] = listdlg('ListString',ColumnOfSampleInfo, 'ListSize', [300 600],...
-        'Name','Sample info preview',...
-        'PromptString','Press ''OK'' to continue.',...
-        'SelectionMode','single');
-    %%% Allows canceling.
-    if OK == 0
-        CancelOption = 1;
+    [filename, pathname] = uigetfile('*.*','Pick file with text information');
+end
+
+%%% Parse text file %%%
+fid = fopen(fullfile(pathname,filename),'r');
+
+% The first 10 characters must equal 'IDENTIFIER'
+s = fgets(fid,10);
+if ~strcmp(s,'IDENTIFIER')
+    errordlg('The first line in the text information file must be of the format ''IDENTIFIER <identifiername>''.')
+end
+s = fgetl(fid); s = s(2:end);
+if sum(isspace(s)) > 0
+    errordlg('Entry after IDENTIFIER on the first line contains white spaces.')
+end
+FieldName = s;
+
+% Get description
+s = fgets(fid,11);
+if ~strcmp(s,'DESCRIPTION')
+    errordlg('The second line in the text information file must start with DESCRIPTION')
+end
+Description = fgetl(fid);
+Description = Description(2:end);       % Remove space
+
+% Read following lines into a cell array
+Text = {};
+while 1
+    s = fgetl(fid);
+    if ~ischar(s), break, end
+    if ~isempty(s)
+        Text{end+1} = s;
+    end
+end
+fclose(fid);
+
+%%% Ask the user to choose the file from which to extract measurements.
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Select directory where CellProfiler output files are located');
+else
+    Pathname = uigetdir('Select directory where CellProfiler output files are located');
+end
+%%% Check if cancel button pressed
+if Pathname == 0
+    return
+end
+
+%%% Get all files with .mat extension in the chosen directory that contains a 'OUT' in the filename
+AllFiles = dir(Pathname);                                                        % Get all file names in the chosen directory
+AllFiles = {AllFiles.name};                                                      % Cell array with file names
+SelectedFiles = AllFiles(~cellfun('isempty',strfind(AllFiles,'.mat')));          % Keep files that has a .mat extension
+SelectedFiles = SelectedFiles(~cellfun('isempty',strfind(SelectedFiles,'OUT'))); % Keep files with an 'OUT' in the name
+
+%%% Let the user select the files
+[selection,ok] = listdlg('liststring',SelectedFiles,'name','Select output files',...
+    'PromptString','Select CellProfiler output files. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
+if ~ok, return, end
+SelectedFiles = SelectedFiles(selection);
+
+
+
+%%% Loop over the selected files and remove the selected feature
+%%% An cell array is used to indicated any errors in the processing
+errors = cell(length(SelectedFiles),1);
+for FileNbr = 1:length(SelectedFiles)
+
+    %%% Load the specified CellProfiler output file
+    try
+        load(fullfile(Pathname, SelectedFiles{FileNbr}));
+    catch
+        errors{FileNbr} = [SelectedFiles{FileNbr},' is not a Matlab file'];
+        continue
+    end
+
+    %%% Quick check if it seems to be a CellProfiler file or not
+    if ~exist('handles','var')
+        errors{FileNbr} = [SelectedFiles{FileNbr},' is not a CellProfiler output file'];
+        continue
+    end
+
+    %%% Check that the number of processed file names equals the number of text entries
+    if length(handles.Measurements.Image.FileNames) ~= length(Text)
+        errors{FileNbr} = sprintf('The number of processed image sets in %s (%d) does not match the number of entries in text information file (%d)',SelectedFiles{FileNbr},length(handles.Measurements.Image.FileNames),length(Text));
+        continue
+    end
+
+    %%% Add the data
+    %%% If the entered field doesn't exist  (This is the convenient way of doing it. Takes time for large ouput files??)
+    if ~isfield(handles.Measurements.Image,FieldName)
+        handles.Measurements.Image.([FieldName,'Text']) = {Description};
+        for imageset = 1:length(Text)
+            handles.Measurements.Image.(FieldName){imageset} = Text(imageset);
+        end
+    
+    %%% If the entered field already exists we have to append to this field
     else
-        %%% Sets the initial value.
-        HeadingApproved = 0;
-        while HeadingApproved ~= 1
-            if strcmp(SingleHeading, 'Heading not yet entered') == 1;
-                SingleHeading = {''};
-            end
-            %%% The input dialog displays the current candidate for
-            %%% the heading, or it is blank if nothing has been
-            %%% entered.
-            SingleHeading = inputdlg('Enter the heading for these sample descriptions (e.g. GeneNames                 or SampleNumber). Your entry must be one word with letters and                   numbers only, and must begin with a letter.','Name the Sample Info',1,SingleHeading);
-            %%% Allows canceling.
-            if isempty(SingleHeading) == 1
-                CancelOption = 1;
-                return
-            elseif strcmp(SingleHeading,'') == 1
-                errordlg('No heading was entered. Please try again.');
-                %%% For future output files:
-            elseif strcmp(ExistingOrMemory, 'Memory') == 1
-                %%% Checks to see if the heading exists already.
-                if isfield(handles.Measurements.Image, ['Imported',char(SingleHeading)]) == 1
-                    Answer = CPquestdlg('Sample info with that heading already exists in memory.  Do you want to overwrite?');
-                    %%% Allows canceling.
-                    if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
-                        CancelOption = 1;
-                        return
-                    end
-                else Answer = 'Newfield';
-                end
-                %%% If the user does not want to overwrite, try again.
-                if strcmp(Answer,'No')
-
-                elseif strcmp(Answer,'Yes') == 1 | strcmp(Answer, 'Newfield') == 1
-                    if strcmp(Answer,'Yes') == 1
-                        handles.Measurements.Image = rmfield(handles.Measurements.Image, ['Imported',char(SingleHeading)]);
-                        guidata(gcbo,handles)
-                    end
-                    %%% Tries to make a field with that name.
-                    try handles.Measurements.Image.(['Imported',char(SingleHeading)]) = [];
-                        HeadingApproved = 1;
-                    catch
-                        MessageHandle = errordlg(['The heading name ',char(SingleHeading),' is not acceptable for some reason. Please try again.']);
-                        waitfor(MessageHandle)
-                    end
-                end
-            else %%% For existing output files:
-                %%% Checks to see if the heading exists already. Some
-                %%% old output files may not have the 'Measurements'
-                %%% substructure, so we check for that field first.
-                if isfield(OutputFile.handles, 'Measurements') == 1
-                    if isfield(OutputFile.handles.Measurements.Image, ['Imported',char(SingleHeading)]) == 1
-                        Answer = CPquestdlg(['Sample info with the heading ',char(SingleHeading),' already exists in the output file.  Do you want to overwrite?']);
-                        %%% Allows canceling.
-                        if isempty(Answer) == 1 | strcmp(Answer,'Cancel') == 1
-                            CancelOption = 1;
-                            return
-                        end
-                    else Answer = 'Newfield';
-                    end
-                else Answer = 'Newfield';
-                end
-                %%% If the user does not want to overwrite, try again.
-                if strcmp(Answer,'No')
-
-                elseif strcmp(Answer,'Yes') == 1 | strcmp(Answer, 'Newfield') == 1
-                    if strcmp(Answer,'Yes') == 1
-                        OutputFile.handles.Measurements.Image = rmfield(OutputFile.handles.Measurements.Image,['Imported',char(SingleHeading)]);
-                    end
-                    %%% Tries to make a field with that name.
-                    try OutputFile.handles.Measurements.Image.(['Imported',char(SingleHeading)]) = [];
-                        HeadingApproved = 1;
-                    catch
-                        MessageHandle = errordlg(['The heading name ',char(SingleHeading),' is not acceptable for some reason. Please try again.']);
-                        waitfor(MessageHandle)
-                    end
-                end
-            end
+        handles.Measurements.Image.([FieldName,'Text']) = cat(2,handles.Measurements.Image.([FieldName,'Text']),{Description});
+        for imageset = 1:length(Text)
+            handles.Measurements.Image.(FieldName){imageset} = cat(2,handles.Measurements.Image.(FieldName){imageset},Text(imageset));
         end
-        %%% Saves the sample info to the handles structure or existing output
-        %%% file.
-        if strcmp(ExistingOrMemory, 'Memory') == 1
-            %%% For future files:
-            %%% Saves the column of sample info to the handles.
-            handles.Measurements.Image.(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
-            guidata(gcbo,handles)
-        else
-            %%% For an existing file:
-            %%% Saves the column of sample info to the handles structure from an existing output file.
-            OutputFile.handles.Measurements.Image(['Imported',char(SingleHeading)]) = ColumnOfSampleInfo;
-        end
+    end
+    
+    %%% Save the updated CellProfiler output file
+    try
+        save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
+    catch
+        errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
+        continue
+    end
+
+end
+
+%%% Finished, display success of warning windows if we failed for some data set
+error_index = find(~cellfun('isempty',errors));
+if isempty(error_index)
+    CPmsgbox('Data successfully deleted.')
+else
+    %%% Show a warning dialog box for each error
+    for k = 1:length(error_index)
+        msgbox(errors{error_index(k)},'Add Data failure')
     end
 end
 
-% Some random advice from Ganesh:
-% SampleNames is a n x m (n - number of rows, m - 1 column) cell array
-% If you want to make it into a 1x1 cell array where the cell element
-% contains the text, you can do the following
-%
-% cell_data = {strvcat(SampleNames)};
-%
-% This will assign the string matrix being created into a single cell
-% element.
+
+
+

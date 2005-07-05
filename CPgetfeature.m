@@ -48,7 +48,7 @@ while dlgno < 4
             ObjectTypename = MeasFieldnames{Selection};
 
             % Get all fields with the supplied suffix
-            FeatureTypes = fieldnames(handles.Measurements.(ObjectTypename))
+            FeatureTypes = fieldnames(handles.Measurements.(ObjectTypename));
             SuffixNbr = [];
             tmp = {};
             for k = 1:length(FeatureTypes)

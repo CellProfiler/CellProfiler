@@ -45,46 +45,37 @@ if ~exist('handles','var')
     errordlg('Selected file is not a CellProfiler output file.')
 end
 
-% Get text data
-Fields = fieldnames(handles.Measurements.Image);
-TextFields = Fields(~cellfun('isempty',strfind(Fields,'Text')));
-TextData = {};
-TextDataField = {};
-TextDataNbr = [];
-for k = 1:length(TextFields)
-    TextData = cat(2,TextData,handles.Measurements.Image.(TextFields{k}));
-    TextDataField = cat(2,TextDataField,repmat(TextFields(k),[1 length(handles.Measurements.Image.(TextFields{k}))]));
-    TextDataNbr  = cat(2,TextDataNbr,1:length(handles.Measurements.Image.(TextFields{k})));
-end
-
 FinalOK = 0;
 while FinalOK == 0
-    % Let the user choose a specific text data entry
-    [Selection, ok] = listdlg('ListString',TextData, 'ListSize', [300 400],...
-        'Name','Select measurement',...
-        'PromptString','Select text information to view',...
-        'CancelString','Cancel',...
-        'SelectionMode','single');
-    if ok == 0, return, end                             % Should restore the previous handles structure....?
+   
+    %%% Let the user select which feature to view
+    Suffix = {'Features','Text'};
+    [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,Suffix);
 
-    % Get the data for the specific selection
-    SelectedTextData = TextData{Selection};
-    SelectedTextDataField = TextDataField{Selection}(1:end-4);
-    SelectedTextDataNbr = TextDataNbr(Selection);
-
-    % Generate a cell array with strings to display
-    NbrOfImageSets = length(handles.Measurements.Image.(SelectedTextDataField));
+    %%% Get the description
+    Description = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]){FeatureNbr};
+    
+    %%% Generate a cell array with strings to display
+    NbrOfImageSets = length(handles.Measurements.(ObjectTypename).(FeatureType));
     TextToDisply = cell(NbrOfImageSets,1);
     for ImageSet = 1:NbrOfImageSets
+        
+        % Numeric of text?
+        if strcmp(Suffix{SuffixNbr},'Features')
+            info = num2str(mean(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}(:,FeatureNbr)));
+        elseif strcmp(Suffix{SuffixNbr},'Text')
+            info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}{FeatureNbr};
+        end
+        
         TextToDisplay{ImageSet} = sprintf('Image set #%d, Filename: %s:     %s',...
             ImageSet,...
             handles.Measurements.Image.FileNames{ImageSet}{1},...
-            handles.Measurements.Image.(SelectedTextDataField){ImageSet}{SelectedTextDataNbr});
+            info);
     end
 
     % Display data in a list dialog box
     [Selection, FinalOK] = listdlg('ListString',TextToDisplay, 'ListSize', [600 400],...
-        'Name',['Information for ',SelectedTextData],...
+        'Name',['Information for ',Description],...
         'PromptString','Press ''Back'' to select another information entry.',...
         'CancelString','Back',...
         'SelectionMode','single');

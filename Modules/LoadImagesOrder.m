@@ -110,49 +110,79 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = The images to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR01 = 1
-NumberInSet1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = The images to be loaded are located in what position in each set?
+%choiceVAR01 = 1
+%choiceVAR01 = 2
+%choiceVAR01 = 3
+%choiceVAR01 = 4
+NumberInSet{1} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
+%inputtypeVAR01 = popupmenu
+
 
 %textVAR02 = What do you want to call these images?
 %infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
-ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = The images to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR03 = 0
-NumberInSet2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = The images to be loaded are located in what position in each set?
+%choiceVAR03 = N/A
+%choiceVAR03 = 1
+%choiceVAR03 = 2
+%choiceVAR03 = 3
+%choiceVAR03 = 4
+NumberInSet{2} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call these images?
 %infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigGreen
-ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = The images to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR05 = 0
-NumberInSet3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = The images to be loaded are located in what position in each set?
+%choiceVAR05 = N/A
+%choiceVAR05 = 1
+%choiceVAR05 = 2
+%choiceVAR05 = 3
+%choiceVAR05 = 4
+NumberInSet{3} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = What do you want to call these images?
 %infotypeVAR06 = imagegroup indep
 %defaultVAR06 = OrigRed
-ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = The images to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR07 = 0
-NumberInSet4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = The images to be loaded are located in what position in each set?
+%choiceVAR07 = N/A
+%choiceVAR07 = 1
+%choiceVAR07 = 2
+%choiceVAR07 = 3
+%choiceVAR07 = 4
+NumberInSet{4} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%inputtypeVAR07 = popupmenu
 
 %textVAR08 = What do you want to call these images?
 %infotypeVAR08 = imagegroup indep
-%defaultVAR08 = OrigOther1
-ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%defaultVAR08 = OrigOther
+ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = How many images are there in each set (i.e. each field of view)?
-%defaultVAR09 = 3
-ImagesPerSet = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%choiceVAR09 = 1
+%choiceVAR09 = 2
+%choiceVAR09 = 3
+%choiceVAR09 = 4
+ImagesPerSet = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
+%inputtypeVAR09 = popupmenu
 
 %textVAR10 = Type the file format of the images
-%defaultVAR10 = tif
+%choiceVAR10 = tif
+%choiceVAR10 = bmp
+%choiceVAR10 = gif
+%choiceVAR10 = jpg
+%choiceVAR10 = mat
+%choiceVAR10 = DIB
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
 %textVAR11 = Analyze all subdirectories within the selected directory?
 %choiceVAR11 = No
@@ -164,7 +194,7 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -173,36 +203,25 @@ drawnow
 
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-ImagesPerSet = str2double(ImagesPerSet);
-%%% If the user left boxes blank, sets the values to 0.
-if isempty(NumberInSet1) == 1
-    NumberInSet1 = '0';
+
+%%% Remove slashes entries with N/A or no filename from the input,
+%%% i.e., store only valid entries
+tmp1 = {};
+tmp2 = {};
+for n = 1:length(ImageName)
+    if ~isempty(NumberInSet{n}) && ~strcmp(ImageName{n}, '/') && ~isempty(ImageName{n})
+        tmp1{end+1} = NumberInSet{n};
+        tmp2{end+1} = ImageName{n};
+    end
 end
-if isempty(NumberInSet2) == 1
-    NumberInSet2 = '0';
-end
-if isempty(NumberInSet3) == 1
-    NumberInSet3 = '0';
-end
-if isempty(NumberInSet4) == 1
-    NumberInSet4 = '0';
-end
-%%% Stores the text the user entered into cell arrays.
-NumberInSet{1} = str2double(NumberInSet1);
-NumberInSet{2} = str2double(NumberInSet2);
-NumberInSet{3} = str2double(NumberInSet3);
-NumberInSet{4} = str2double(NumberInSet4);
+NumberInSet = tmp1;
+ImageName = tmp2;
+
 %%% Checks whether the position in set exceeds the number per set.
-Max12 = max(NumberInSet{1}, NumberInSet{2});
-Max34 = max(NumberInSet{3}, NumberInSet{4});
-Max1234 = max(Max12, Max34);
-if ImagesPerSet < Max1234
+if ImagesPerSet < max([NumberInSet{:}])
     error(['Image processing was canceled during the Load Images Order module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
 end
-ImageName{1} = ImageName1;
-ImageName{2} = ImageName2;
-ImageName{3} = ImageName3;
-ImageName{4} = ImageName4;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
@@ -223,94 +242,119 @@ ImageName{4} = ImageName4;
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
 if SetBeingAnalyzed == 1
-    %%% Checks whether the file format the user entered is readable by Matlab.
-    IsFormat = imformats(FileFormat);
-    if isempty(IsFormat) == 1
-        %%% Checks if the image is a DIB image file.
-        if (strcmpi(FileFormat,'DIB') == 0)&(strcmpi(FileFormat,'mat') == 0)
-            error(['The image file type "', FileFormat , '" entered in the Load Images Order module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.'])
-        end
-    end
-    if strcmp(Pathname, '.') == 1
+
+    %%% Get the pathname and check that it exists
+    if strcmp(Pathname, '.')
         Pathname = handles.Current.DefaultImageDirectory;
     end
     SpecifiedPathname = Pathname;
-    %%% For all 4 image slots, extracts the file names.
-    for n = 1:4
-        %%% Checks whether the two variables required have been entered by
-        %%% the user.
-        if NumberInSet{n} ~= 0 && isempty(ImageName{n}) == 0
-            %%% If a directory was typed in, retrieves the filenames
-            %%% from the chosen directory.
-            if exist(SpecifiedPathname) ~= 7
-                error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-            end
-            FileNames = CPretrieveMediaFileNames(SpecifiedPathname,'',AnalyzeSubDir,'Regular','Image');
-            %%% Checks whether any files have been specified.
-            if isempty(FileNames) == 1
-                error(['Image processing was canceled because there are no image files of type "', ImageName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
-            end
-            %%% Determines the number of image sets to be analyzed.
-            NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
-            if length(FileNames) < ImagesPerSet
-                error(['Image processing was canceled because there are fewer files of type "', ImageName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), than the number of files per set, according to the Load Images Order module.'])
-            end
-            handles.Current.NumberOfImageSets = NumberOfImageSets;
-            %%% Loops through the names in the FileNames listing,
-            %%% creating a new list of files.
-            for i = 1:NumberOfImageSets
-                Number = (i - 1) .* ImagesPerSet + NumberInSet{n};
-                FileList(i) = FileNames(Number);
-            end
-            %%% Saves the File Lists and Path Names to the handles structure.
-            fieldname = ['FileList', ImageName{n}];
-            handles.Pipeline.(fieldname) = FileList;
-            fieldname = ['Pathname', ImageName{n}];
-            handles.Pipeline.(fieldname) = SpecifiedPathname;
-            clear FileList % Prevents confusion when loading this value later, for each image set.
-        end
+    if ~exist(SpecifiedPathname,'dir')
+        errordlg(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
     end
+
+    % Get all filenames in the specified directory wich contains the specified extension (e.g., .tif, .jpg, .DIB).
+    % Note that there is no check that the extensions actually is the last part of the filename.
+    FileNames = CPretrieveMediaFileNames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Image');
+
+    %%% Checks whether any files have been specified.
+    if isempty(FileNames)
+        errordlg(['Image processing was canceled because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
+    end
+
+    %%% Determines the number of image sets to be analyzed.
+    NumberOfImageSets = length(FileNames)/ImagesPerSet;
+    if rem(NumberOfImageSets,1) ~= 0
+        errordlg(sprintf('Image processing was canceled because because the number of image files (%d) found in the specified directory is not a multiple of the number of images per set (%d), according to the Load Images Order module.',length(FileNames),ImagesPerSet));
+    end
+    handles.Current.NumberOfImageSets = NumberOfImageSets;
+
+    %%% For all valid entries, write list of image files to handles structure
+    for n = 1:length(ImageName)
+        % Get the list of filenames
+        FileList = FileNames(NumberInSet{n}:ImagesPerSet:end);
+
+        %%% Saves the File Lists and Path Names to the handles structure.
+        fieldname = ['FileList', ImageName{n}];
+        handles.Pipeline.(fieldname) = FileList;
+        fieldname = ['Pathname', ImageName{n}];
+        handles.Pipeline.(fieldname) = SpecifiedPathname;
+    end
+    clear FileNames
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-for n = 1:4
+for n = 1:length(ImageName)
     %%% This try/catch will catch any problems in the load images module.
     try
-        if NumberInSet{n} ~= 0 && isempty(ImageName{n}) == 0
-            %%% Determines which image to analyze.
-            fieldname = ['FileList', ImageName{n}];
-            FileList = handles.Pipeline.(fieldname);
-            %%% Determines the file name of the image you want to analyze.
-            CurrentFileName = FileList(SetBeingAnalyzed);
-            %%% Determines the directory to switch to.
-            fieldname = ['Pathname', ImageName{n}];
-            Pathname = handles.Pipeline.(fieldname);
-            [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
-            %%% Saves the original image file name to the handles
-            %%% structure.  The field is named appropriately based on
-            %%% the user's input, in the Pipeline substructure so that
-            %%% this field will be deleted at the end of the analysis
-            %%% batch.
-            fieldname = ['Filename', ImageName{n}];
-            handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            %%% Also saved to the handles.Measurements.Image structure for reference in output files.
-            handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            %%% Saves the loaded image to the handles structure.  The field is named
-            %%% appropriately based on the user's input, and put into the Pipeline
-            %%% substructure so it will be deleted at the end of the analysis batch.
-            handles.Pipeline.(ImageName{n}) = LoadedImage;
-        end
+        %%% Determines which image to analyze.
+        fieldname = ['FileList', ImageName{n}];
+        FileList = handles.Pipeline.(fieldname);
+        %%% Determines the file name of the image you want to analyze.
+        CurrentFileName = FileList(SetBeingAnalyzed);
+        %%% Determines the directory to switch to.
+        fieldname = ['Pathname', ImageName{n}];
+        Pathname = handles.Pipeline.(fieldname);
+        [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
+        %%% Saves the original image file name to the handles
+        %%% structure.  The field is named appropriately based on
+        %%% the user's input, in the Pipeline substructure so that
+        %%% this field will be deleted at the end of the analysis
+        %%% batch.
+        fieldname = ['Filename', ImageName{n}];
+        handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+        handles.Pipeline.(ImageName{n}) = LoadedImage;
     catch ErrorMessage = lasterr;
-        ErrorNumber(1) = {'first'};
-        ErrorNumber(2) = {'second'};
-        ErrorNumber(3) = {'third'};
-        ErrorNumber(4) = {'fourth'};
+        ErrorNumber = {'first','second','third','fourth'};
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Order module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
+
+    % Create a cell array with the filenames
+    FileNames(n) = CurrentFileName(1);
 end
+
+%%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
+%%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
+
+%%% First, fix feature names and the pathname
+PathNames = cell(1,length(ImageName));
+FileNamesText = cell(1,length(ImageName));
+PathNamesText = cell(1,length(ImageName));
+for n = 1:length(ImageName)
+    PathNames{n} = Pathname;
+    FileNamesText{n} = ['Filename ', ImageName{n}];
+    PathNamesText{n} = ['Path ', ImageName{n}];
+end
+
+%%% Since there may be several load modules in the pipeline which all write to the
+%%% handles.Measurements.Image.FileName field, we have store filenames in an "appending" style.
+%%% Here we check if any of the modules above the current module in the pipline has written to
+%%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
+%%% names to the already written ones.
+if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
+        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+    % Get existing file/path names. Returns a cell array of names
+    ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
+    ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+    ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
+    ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+
+    % Append current file names to existing file names
+    FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
+    FileNames     = cat(2,ExistingFileNames,FileNames);
+    PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
+    PathNames     = cat(2,ExistingPathNames,PathNames);
+end
+
+%%% Write to the handles.Measurements.Image structure
+handles.Measurements.Image.FileNamesText                   = FileNamesText;
+handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
+handles.Measurements.Image.PathNamesText                   = PathNamesText;
+handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
+%%% ------------------------------------------------------------------------------------------------ %%%
+
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:

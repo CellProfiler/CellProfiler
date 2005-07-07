@@ -178,65 +178,86 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = The movies to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR01 = 1
-NumberInSet1 = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = The movies to be loaded are located in what position in each set?
+%choiceVAR01 = 1
+%choiceVAR01 = 2
+%choiceVAR01 = 3
+%choiceVAR01 = 4
+NumberInSet{1} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
+%inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the images loaded from these movies?
 %infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
-MovieName1 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+MovieName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = The movies to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR03 = 0
-NumberInSet2 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = The movies to be loaded are located in what position in each set?
+%choiceVAR03 = N/A
+%choiceVAR03 = 1
+%choiceVAR03 = 2
+%choiceVAR03 = 3
+%choiceVAR03 = 4
+NumberInSet{2} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the images loaded from these movies?
 %infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigGreen
-MovieName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+MovieName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = The movies to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR05 = 0
-NumberInSet3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = The movies to be loaded are located in what position in each set?
+%choiceVAR05 = N/A
+%choiceVAR05 = 1
+%choiceVAR05 = 2
+%choiceVAR05 = 3
+%choiceVAR05 = 4
+NumberInSet{3} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = What do you want to call the images loaded from these movies?
 %infotypeVAR06 = imagegroup indep
 %defaultVAR06 = OrigRed
-MovieName3 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+MovieName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = The movies to be loaded are located in what position in each set? (1,2,3,...)
-%defaultVAR07 = 0
-NumberInSet4 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = The movies to be loaded are located in what position in each set?
+%choiceVAR07 = N/A
+%choiceVAR07 = 1
+%choiceVAR07 = 2
+%choiceVAR07 = 3
+%choiceVAR07 = 4
+NumberInSet{4} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%inputtypeVAR07 = popupmenu
 
 %textVAR08 = What do you want to call the images loaded from these movies?
 %infotypeVAR08 = imagegroup indep
-%defaultVAR08 = OrigOther1
-MovieName4 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%defaultVAR08 = OrigOther
+MovieName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If an image slot above is not being used, type a zero in the box.
+%textVAR09 = How many movies are there in each set (i.e. each field of view)?
+%choiceVAR09 = 1
+%choiceVAR09 = 2
+%choiceVAR09 = 3
+%choiceVAR09 = 4
+MoviesPerSet = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
+%inputtypeVAR09 = popupmenu
 
-%textVAR10 = Enter the movie file format (avi or stk)
-%defaultVAR10 = avi
+%textVAR10 = Enter the movie file format
+%choiceVAR10 = avi
+%choiceVAR10 = stk
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
-%textVAR11 = How many movies are there in each set (i.e. each field of view)?
-%defaultVAR11 = 3
-MoviesPerSet = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = Analyze all subdirectories within the selected directory?
+%choiceVAR11 = No
+%choiceVAR11 = Yes
+AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
-%textVAR12 = Analyze all subdirectories within the selected directory (Y or N)?
-%choiceVAR12 = No
-%choiceVAR12 = Yes
-AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+%textVAR12 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
+%defaultVAR12 = .
+Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
-%defaultVAR13 = .
-Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-
-%textVAR14 = CellProfiler can currently read only certain types of avi and stk movie files. For more details, see the help for this module.
-
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -245,36 +266,26 @@ drawnow
 
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-MoviesPerSet = str2double(MoviesPerSet);
-%%% If the user left boxes blank, sets the values to 0.
-if isempty(NumberInSet1) == 1
-    NumberInSet1 = '0';
+
+%%% Remove slashes entries with N/A or no filename from the input,
+%%% i.e., store only valid entries
+tmp1 = {};
+tmp2 = {};
+for n = 1:length(MovieName)
+    if ~isempty(NumberInSet{n}) && ~strcmp(MovieName{n}, '/') && ~isempty(MovieName{n})
+        tmp1{end+1} = NumberInSet{n};
+        tmp2{end+1} = MovieName{n};
+    end
 end
-if isempty(NumberInSet2) == 1
-    NumberInSet2 = '0';
-end
-if isempty(NumberInSet3) == 1
-    NumberInSet3 = '0';
-end
-if isempty(NumberInSet4) == 1
-    NumberInSet4 = '0';
-end
-%%% Stores the text the user entered into cell arrays.
-NumberInSet{1} = str2double(NumberInSet1);
-NumberInSet{2} = str2double(NumberInSet2);
-NumberInSet{3} = str2double(NumberInSet3);
-NumberInSet{4} = str2double(NumberInSet4);
+NumberInSet = tmp1;
+MovieName = tmp2;
+
+
 %%% Checks whether the position in set exceeds the number per set.
-Max12 = max(NumberInSet{1}, NumberInSet{2});
-Max34 = max(NumberInSet{3}, NumberInSet{4});
-Max1234 = max(Max12, Max34);
-if MoviesPerSet < Max1234
-    error(['Image processing was canceled during the Load Movies Order module because the position of one of the movie types within each movie set exceeds the number of movies per set that you entered (', num2str(MoviesPerSet), ').'])
+if MoviesPerSet < max([NumberInSet{:}])
+    error(['Image processing was canceled during the LoadMoviesOrder module because the position of one of the movie types within each image set exceeds the number of movies per set that you entered (', num2str(MoviesPerSet), ').'])
 end
-MovieName{1} = MovieName1;
-MovieName{2} = MovieName2;
-MovieName{3} = MovieName3;
-MovieName{4} = MovieName4;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
@@ -295,88 +306,77 @@ MovieName{4} = MovieName4;
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
 if SetBeingAnalyzed == 1
-    if strcmp(Pathname, '.') == 1
+
+    %%% Get the pathname and check that it exists
+    if strcmp(Pathname, '.')
         Pathname = handles.Current.DefaultImageDirectory;
     end
     SpecifiedPathname = Pathname;
-    %%% For all 4 movie slots, extracts the file names.
-    for n = 1:4
-        %%% Checks whether the two variables required have been entered by
-        %%% the user.
-        if NumberInSet{n} ~= 0 && isempty(MovieName{n}) == 0
-            %%% If a directory was typed in, retrieves the filenames
-            %%% from the chosen directory.
-            if exist(SpecifiedPathname) ~= 7
-                error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-            end
-            FileNames = CPretrieveMediaFileNames(SpecifiedPathname,'',AnalyzeSubDir,'Regular','Movie');
-            %%% Checks whether any files have been specified.
-            if isempty(FileNames) == 1
-                error(['Image processing was canceled because there are no movie files of type "', MovieName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Movies Order module.'])
-            end
-            %%% Determines the number of movie sets to be analyzed.
-            NumberOfMovieSets = fix(length(FileNames)/MoviesPerSet);
-            if length(FileNames) < MoviesPerSet
-                error(['Image processing was canceled because there are fewer files of type "', MovieName{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), than the number of files per set, according to the Load Movies Order module.'])
-            end
-            handles.Current.NumberOfMovieSets = NumberOfMovieSets;
-            %%% Loops through the names in the FileNames listing,
-            %%% creating a new list of files.
-            for i = 1:NumberOfMovieSets
-                Number = (i - 1) .* MoviesPerSet + NumberInSet{n};
-                FileList(i) = FileNames(Number);
-            end
-            StartingPositionForThisMovie = 0;
-            for MovieFileNumber = 1:length(FileList)
-                CurrentMovieFileName = char(FileList(MovieFileNumber));
-                if strcmpi(FileFormat,'avi') == 1
-                    try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                    catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
-                    end
-                    NumFrames = MovieAttributes.NumFrames;
+    if ~exist(SpecifiedPathname,'dir')
+        errordlg(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    end
+
+    % Get all filenames in the specified directory wich contains the specified extension (e.g., .avi or .stk).
+    % Note that there is no check that the extensions actually is the last part of the filename.
+    FileNames = CPretrieveMediaFileNames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Movie');
+
+    %%% Checks whether any files have been found
+    if isempty(FileNames)
+        errordlg(['Image processing was canceled because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesOrder module.'])
+    end
+
+    %%% Determines the number of movie sets to be analyzed.
+    NumberOfMovieSets = fix(length(FileNames)/MoviesPerSet);
+    if rem(NumberOfMovieSets,1) ~= 0
+        errordlg(sprintf('Image processing was canceled because because the number of movie files (%d) found in the specified directory is not a multiple of the number of movies per set (%d), according to the LoadMoviesOrder module.',length(FileNames),MoviesPerSet));
+    end
+    handles.Current.NumberOfMovieSets = NumberOfMovieSets;
+
+    %%% For all valid movie slots, extracts the file names.
+    for n = 1:length(MovieName)
+        % Get the list of filenames
+        FileList = FileNames(NumberInSet{n}:MoviesPerSet:end);
+
+        StartingPositionForThisMovie = 0;
+        for MovieFileNumber = 1:length(FileList)
+            CurrentMovieFileName = char(FileList(MovieFileNumber));
+            if strcmpi(FileFormat,'avi') == 1
+                try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
+                catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                end
+                NumFrames = MovieAttributes.NumFrames;
+                for FrameNumber = 1:NumFrames
+                    %%% Puts the file name into the FrameByFrameFileList in the first row.
+                    FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
+                    %%% Puts the frame number into the FrameByFrameFileList in the second row.
+                    FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                end
+            elseif strcmpi(FileFormat,'stk') == 1
+                try
+                    %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
+                    [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
                     for FrameNumber = 1:NumFrames
                         %%% Puts the file name into the FrameByFrameFileList in the first row.
                         FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                         %%% Puts the frame number into the FrameByFrameFileList in the second row.
                         FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                     end
-                elseif strcmpi(FileFormat,'stk') == 1
-                    try
-                        %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
-                        [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
-                        for FrameNumber = 1:NumFrames
-                            %%% Puts the file name into the FrameByFrameFileList in the first row.
-                            FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
-                            %%% Puts the frame number into the FrameByFrameFileList in the second row.
-                            FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
-                        end
-                    catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a stk file.'])
-                    end
-                else
-                    error('CellProfiler can currently read only avi or stk movie files.')
+                catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a stk file.'])
                 end
-                StartingPositionForThisMovie = StartingPositionForThisMovie + NumFrames;
             end
-            %%% Saves the File Lists and Path Names to the handles structure.
-            fieldname = ['FileList', MovieName{n}];
-            handles.Pipeline.(fieldname) = FrameByFrameFileList{n};
-            fieldname = ['Pathname', MovieName{n}];
-            handles.Pipeline.(fieldname) = SpecifiedPathname;
-            %% for reference in saved files
-            handles.Measurements.Image.(fieldname) = SpecifiedPathname;
-            NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
-            clear FileList % Prevents confusion when loading this value later, for each movie set.
+            StartingPositionForThisMovie = StartingPositionForThisMovie + NumFrames;
         end
+
+        %%% Saves the File Lists and Path Names to the handles structure.
+        fieldname = ['FileList', MovieName{n}];
+        handles.Pipeline.(fieldname) = FrameByFrameFileList{n};
+        fieldname = ['Pathname', MovieName{n}];
+        handles.Pipeline.(fieldname) = SpecifiedPathname;
+        NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
     end
-    %%% Determines which slots are empty.  None should be zero, because there is
-    %%% an error check for that when looping through n = 1:5.
-    for g = 1: length(NumberOfFiles)
-        LogicalSlotsToBeDeleted(g) =  isempty(NumberOfFiles{g});
-    end
-    %%% Removes the empty slots from both the Number of Files array and the
-    %%% Image Name array.
-    NumberOfFiles = NumberOfFiles(~LogicalSlotsToBeDeleted);
-    MovieName2 = MovieName(~LogicalSlotsToBeDeleted);
+    clear FileNames
+
+
     %%% Determines how many unique numbers of files there are.  If all
     %%% the movie types have loaded the same number of images, there
     %%% should only be one unique number, which is the number of image
@@ -384,7 +384,7 @@ if SetBeingAnalyzed == 1
     UniqueNumbers = unique(NumberOfFiles);
     %%% If NumberOfFiles is not all the same number at each position, generate an error.
     if length(UniqueNumbers) ~= 1
-        CharMovieName = char(MovieName2);
+        CharMovieName = char(MovieName);
         CharNumberOfFiles = char(NumberOfFiles);
         Number = length(CharNumberOfFiles);
         for f = 1:Number
@@ -396,6 +396,7 @@ if SetBeingAnalyzed == 1
         error('In the Load Movies Order module, the number of movies identified for each movie type is not equal.  In the window under this box you will see how many movie have been found for each movie type.')
     end
     NumberOfImageSets = str2double(UniqueNumbers{1});
+
     %%% Checks whether another load images module has already recorded a
     %%% number of image sets.  If it has, it will not be set at the default
     %%% of 1.  Then, it checks whether the number already stored as the
@@ -414,6 +415,9 @@ if SetBeingAnalyzed == 1
     handles.Current.NumberOfImageSets = NumberOfImageSets;
 end % Goes with: if SetBeingAnalyzed == 1
 
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -421,46 +425,87 @@ end % Goes with: if SetBeingAnalyzed == 1
 for n = 1:4
     %%% This try/catch will catch any problems in the load movies module.
     try
-        if NumberInSet{n} ~= 0 && isempty(MovieName{n}) == 0
-            %%% Determines which movie to analyze.
-            fieldname = ['FileList', MovieName{n}];
-            FileList = handles.Pipeline.(fieldname);
-            %%% Determines the file name of the movie you want to analyze.
-            CurrentFileName = FileList(:,SetBeingAnalyzed);
-            %%% Determines the directory to switch to.
-            fieldname = ['Pathname', MovieName{n}];
-            Pathname = handles.Pipeline.(fieldname);
-            if strcmpi(FileFormat,'avi') == 1
-                LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
-                LoadedImage = im2double(LoadedRawImage.cdata);
-            elseif strcmpi(FileFormat,'stk') == 1
-                LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
-                LoadedImage = im2double(LoadedRawImage.data);
-            end
-            %%% Saves the original movie file name to the handles
-            %%% structure.  The field is named appropriately based on
-            %%% the user's input, in the Pipeline substructure so that
-            %%% this field will be deleted at the end of the analysis
-            %%% batch.
-            fieldname = ['Filename', MovieName{n}];
-            [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(char(CurrentFileName(1)));
-            CurrentFileNameWithFrame = [BareFileName, '_', num2str(cell2mat(CurrentFileName(2))),ext];
-            handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
-            %%% Also saved to the handles.Measurements structure for reference in output files.
-            handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
-            %%% Saves the loaded image to the handles structure.  The field is named
-            %%% appropriately based on the user's input, and put into the Pipeline
-            %%% substructure so it will be deleted at the end of the analysis batch.
-            handles.Pipeline.(MovieName{n}) = LoadedImage;
+        %%% Determines which movie to analyze.
+        fieldname = ['FileList', MovieName{n}];
+        FileList = handles.Pipeline.(fieldname);
+        %%% Determines the file name of the movie you want to analyze.
+        CurrentFileName = FileList(:,SetBeingAnalyzed);
+        %%% Determines the directory to switch to.
+        fieldname = ['Pathname', MovieName{n}];
+        Pathname = handles.Pipeline.(fieldname);
+        if strcmpi(FileFormat,'avi') == 1
+            LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+            LoadedImage = im2double(LoadedRawImage.cdata);
+        elseif strcmpi(FileFormat,'stk') == 1
+            LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+            LoadedImage = im2double(LoadedRawImage.data);
         end
+        %%% Saves the original movie file name to the handles
+        %%% structure.  The field is named appropriately based on
+        %%% the user's input, in the Pipeline substructure so that
+        %%% this field will be deleted at the end of the analysis
+        %%% batch.
+        fieldname = ['Filename', MovieName{n}];
+        [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(char(CurrentFileName(1)));
+        CurrentFileNameWithFrame = [BareFileName, '_', num2str(cell2mat(CurrentFileName(2))),ext];
+        handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
+        %%% Also saved to the handles.Measurements structure for reference in output files.
+        handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
+        %%% Saves the loaded image to the handles structure.  The field is named
+        %%% appropriately based on the user's input, and put into the Pipeline
+        %%% substructure so it will be deleted at the end of the analysis batch.
+        handles.Pipeline.(MovieName{n}) = LoadedImage;
     catch ErrorMessage = lasterr;
-        ErrorNumber(1) = {'first'};
-        ErrorNumber(2) = {'second'};
-        ErrorNumber(3) = {'third'};
-        ErrorNumber(4) = {'fourth'};
+        ErrorNumber = {'first','second','third','fourth'};
         error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of movies using the Load Movies Order module. Please check the settings. A common problem is that there are non-movie files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
+
+    % Create a cell array with the filenames
+    FileNames(n) = CurrentFileNameWithFrame;
 end
+
+%%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
+%%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
+
+%%% First, fix feature names and the pathname
+PathNames = cell(1,length(MovieName));
+FileNamesText = cell(1,length(MovieName));
+PathNamesText = cell(1,length(MovieName));
+for n = 1:length(MovieName)
+    PathNames{n} = Pathname;
+    FileNamesText{n} = ['Filename ', MovieName{n}];
+    PathNamesText{n} = ['Path ', MovieName{n}];
+end
+
+%%% Since there may be several load modules in the pipeline which all write to the
+%%% handles.Measurements.Image.FileName field, we have store filenames in an "appending" style.
+%%% Here we check if any of the modules above the current module in the pipline has written to
+%%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
+%%% names to the already written ones.
+if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
+        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+    % Get existing file/path names. Returns a cell array of names
+    ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
+    ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+    ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
+    ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+
+    % Append current file names to existing file names
+    FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
+    FileNames     = cat(2,ExistingFileNames,FileNames);
+    PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
+    PathNames     = cat(2,ExistingPathNames,PathNames);
+end
+
+%%% Write to the handles.Measurements.Image structure
+handles.Measurements.Image.FileNamesText                   = FileNamesText;
+handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
+handles.Measurements.Image.PathNamesText                   = PathNamesText;
+handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
+%%% ------------------------------------------------------------------------------------------------ %%%
+
+
+
 
 % PROGRAMMING NOTE
 % HANDLES STRUCTURE:
@@ -666,16 +711,16 @@ TIF.samples_per_pixel = 1;
 TIF.BOS               = 'l';          %byte order string
 
 if  isempty(findstr(filename,'.'))
-   filename=[filename,'.tif'];
+    filename=[filename,'.tif'];
 end
 
 [TIF.file, message] = fopen(filename,'r','l');
 if TIF.file == -1
-   filename = strrep(filename, '.tif', '.stk');
-   [TIF.file, message] = fopen(filename,'r','l');
-   if TIF.file == -1
-      error(['file <',filename,'> not found.']);
-   end
+    filename = strrep(filename, '.tif', '.stk');
+    [TIF.file, message] = fopen(filename,'r','l');
+    if TIF.file == -1
+        error(['file <',filename,'> not found.']);
+    end
 end
 
 
@@ -683,11 +728,11 @@ end
 % read byte order: II = little endian, MM = big endian
 byte_order = setstr(fread(TIF.file, 2, 'uchar'));
 if ( strcmp(byte_order', 'II') )
-   TIF.BOS = 'l';                                %normal PC format
+    TIF.BOS = 'l';                                %normal PC format
 elseif ( strcmp(byte_order','MM') )
-   TIF.BOS = 'b';
+    TIF.BOS = 'b';
 else
-   error('This is not a TIFF file (no MM or II).');
+    error('This is not a TIFF file (no MM or II).');
 end
 
 %----- read in a number which identifies file as TIFF format
@@ -699,143 +744,143 @@ ifd_pos = fread(TIF.file,1,'uint32', TIF.BOS);
 
 while (ifd_pos ~= 0)
 
-   clear TIFIM;
-   TIFIM.filename = [ pwd, '\', filename ];
-   % move in the file to the first IFD
-   fseek(TIF.file, ifd_pos,-1);
-   %disp(strcat('reading img at pos :',num2str(ifd_pos)));
+    clear TIFIM;
+    TIFIM.filename = [ pwd, '\', filename ];
+    % move in the file to the first IFD
+    fseek(TIF.file, ifd_pos,-1);
+    %disp(strcat('reading img at pos :',num2str(ifd_pos)));
 
-   %read in the number of IFD entries
-   num_entries = fread(TIF.file,1,'uint16', TIF.BOS);
-   %disp(strcat('num_entries =', num2str(num_entries)));
+    %read in the number of IFD entries
+    num_entries = fread(TIF.file,1,'uint16', TIF.BOS);
+    %disp(strcat('num_entries =', num2str(num_entries)));
 
-   %read and process each IFD entry
-   for i = 1:num_entries
-      file_pos  = ftell(TIF.file);                     % save the current position in the file
-      TIF.entry_tag = fread(TIF.file, 1, 'uint16', TIF.BOS);      % read entry tag
-      entry = readIFDentry(TIF);
-      %disp(strcat('reading entry <',num2str(entry_tag),'>:'));
+    %read and process each IFD entry
+    for i = 1:num_entries
+        file_pos  = ftell(TIF.file);                     % save the current position in the file
+        TIF.entry_tag = fread(TIF.file, 1, 'uint16', TIF.BOS);      % read entry tag
+        entry = readIFDentry(TIF);
+        %disp(strcat('reading entry <',num2str(entry_tag),'>:'));
 
-      switch TIF.entry_tag
-      case 254
-          TIFIM.NewSubfiletype = entry.val;
-      case 256         % image width - number of column
-          TIFIM.width          = entry.val;
-      case 257         % image height - number of row
-          TIFIM.height         = entry.val;
-      case 258         % bits per sample
-          TIFIM.bits           = entry.val;
-          TIF.bytes_per_pixel  = entry.val / 8;
-          %disp(sprintf('%i bits per pixels', entry.val));
-      case 259         % compression
-          if (entry.val ~= 1) error('Compression format not supported.'); end
-      case 262         % photometric interpretatio
-          TIFIM.photo_type     = entry.val;
-      case 269
-          TIFIM.document_name  = entry.val;
-      case 270         % comment:
-          TIFIM.info           = entry.val;
-      case 271
-          TIFIM.make           = entry.val;
-      case 273         % strip offset
-          TIF.strip_offsets    = entry.val;
-          TIF.num_strips       = entry.cnt;
-          %disp(strcat('num_strips =', num2str(TIF.num_strips)));
-      case 277         % sample_per pixel
-          TIF.samples_per_pixel = entry.val;
-          if (TIF.samples_per_pixel ~= 1) error('color not supported'); end
-      case 278         % rows per strip
-          TIF.rows_per_strip   = entry.val;
-      case 279         % strip byte counts - number of bytes in each strip after any compressio
-          TIF.strip_bytes      = entry.val;
-      case 282        % X resolution
-          TIFIM.x_resolution   = entry.val;
-      case 283         % Y resolution
-          TIFIM.y_resolution   = entry.val;
-      case 296        % resolution unit
-          TIFIM.resolution_unit= entry.val;
-      case 305         % software
-          TIFIM.software       = entry.val;
-      case 306         % datetime
-          TIFIM.datetime       = entry.val;
-      case 315
-          TIFIM.artist         = entry.val;
-      case 317        %predictor for compression
-          if (entry.val ~= 1) error('unsuported predictor value'); end
-      case 320         % color map
-          TIFIM.cmap          = entry.val;
-          TIFIM.colors        = entry.cnt/3;
-      case 339
-          TIF.sample_format   = entry.val;
-          if ( TIF.sample_format > 2 )
-              error(sprintf('unsuported sample format = %i', TIF.sample_format));
-          end
-      case 33628       %metamorph specific data
-          TIFIM.MM_private1   = entry.val;
-      case 33629       %metamorph stack data?
-          TIFIM.MM_stack      = entry.val;
-          stack_cnt           = entry.cnt;
-  %        disp([num2str(stack_cnt), ' frames, read:      ']);
-      case 33630       %metamorph stack data: wavelength
-          TIFIM.MM_wavelength = entry.val;
-      case 33631       %metamorph stack data: gain/background?
-          TIFIM.MM_private2   = entry.val;
-      otherwise
-          disp(sprintf('ignored tiff entry with tag %i cnt %i', TIF.entry_tag, entry.cnt));
-      end
-      % move to next IFD entry in the file
-      fseek(TIF.file, file_pos+12,-1);
-  end
+        switch TIF.entry_tag
+            case 254
+                TIFIM.NewSubfiletype = entry.val;
+            case 256         % image width - number of column
+                TIFIM.width          = entry.val;
+            case 257         % image height - number of row
+                TIFIM.height         = entry.val;
+            case 258         % bits per sample
+                TIFIM.bits           = entry.val;
+                TIF.bytes_per_pixel  = entry.val / 8;
+                %disp(sprintf('%i bits per pixels', entry.val));
+            case 259         % compression
+                if (entry.val ~= 1) error('Compression format not supported.'); end
+            case 262         % photometric interpretatio
+                TIFIM.photo_type     = entry.val;
+            case 269
+                TIFIM.document_name  = entry.val;
+            case 270         % comment:
+                TIFIM.info           = entry.val;
+            case 271
+                TIFIM.make           = entry.val;
+            case 273         % strip offset
+                TIF.strip_offsets    = entry.val;
+                TIF.num_strips       = entry.cnt;
+                %disp(strcat('num_strips =', num2str(TIF.num_strips)));
+            case 277         % sample_per pixel
+                TIF.samples_per_pixel = entry.val;
+                if (TIF.samples_per_pixel ~= 1) error('color not supported'); end
+            case 278         % rows per strip
+                TIF.rows_per_strip   = entry.val;
+            case 279         % strip byte counts - number of bytes in each strip after any compressio
+                TIF.strip_bytes      = entry.val;
+            case 282        % X resolution
+                TIFIM.x_resolution   = entry.val;
+            case 283         % Y resolution
+                TIFIM.y_resolution   = entry.val;
+            case 296        % resolution unit
+                TIFIM.resolution_unit= entry.val;
+            case 305         % software
+                TIFIM.software       = entry.val;
+            case 306         % datetime
+                TIFIM.datetime       = entry.val;
+            case 315
+                TIFIM.artist         = entry.val;
+            case 317        %predictor for compression
+                if (entry.val ~= 1) error('unsuported predictor value'); end
+            case 320         % color map
+                TIFIM.cmap          = entry.val;
+                TIFIM.colors        = entry.cnt/3;
+            case 339
+                TIF.sample_format   = entry.val;
+                if ( TIF.sample_format > 2 )
+                    error(sprintf('unsuported sample format = %i', TIF.sample_format));
+                end
+            case 33628       %metamorph specific data
+                TIFIM.MM_private1   = entry.val;
+            case 33629       %metamorph stack data?
+                TIFIM.MM_stack      = entry.val;
+                stack_cnt           = entry.cnt;
+                %        disp([num2str(stack_cnt), ' frames, read:      ']);
+            case 33630       %metamorph stack data: wavelength
+                TIFIM.MM_wavelength = entry.val;
+            case 33631       %metamorph stack data: gain/background?
+                TIFIM.MM_private2   = entry.val;
+            otherwise
+                disp(sprintf('ignored tiff entry with tag %i cnt %i', TIF.entry_tag, entry.cnt));
+        end
+        % move to next IFD entry in the file
+        fseek(TIF.file, file_pos+12,-1);
+    end
 
-   %read the next IFD address:
-   ifd_pos = fread(TIF.file, 1, 'uint32', TIF.BOS);
-   %if (ifd_pos) disp(['next ifd at', num2str(ifd_pos)]); end
+    %read the next IFD address:
+    ifd_pos = fread(TIF.file, 1, 'uint32', TIF.BOS);
+    %if (ifd_pos) disp(['next ifd at', num2str(ifd_pos)]); end
 
-   if ( img_last > stack_cnt ) img_last = stack_cnt; end
+    if ( img_last > stack_cnt ) img_last = stack_cnt; end
 
 
-   stack_pos = 0;
+    stack_pos = 0;
 
-   for i=1:stack_cnt
+    for i=1:stack_cnt
 
-      if ( img_skip + 1 >= img_first )
-         img_read = img_read + 1;
-         %disp(sprintf('reading MM frame %i at %i',num2str(img_read),num2str(TIF.strip_offsets(1)+stack_pos)));
-         if ( stack_cnt > 1 ) disp(sprintf('\b\b\b\b\b%4i', img_read)); end
-         TIFIM.data = read_strips(TIF, TIF.strip_offsets + stack_pos, TIFIM.width, TIFIM.height);
-         S( img_read ) = TIFIM;
+        if ( img_skip + 1 >= img_first )
+            img_read = img_read + 1;
+            %disp(sprintf('reading MM frame %i at %i',num2str(img_read),num2str(TIF.strip_offsets(1)+stack_pos)));
+            if ( stack_cnt > 1 ) disp(sprintf('\b\b\b\b\b%4i', img_read)); end
+            TIFIM.data = read_strips(TIF, TIF.strip_offsets + stack_pos, TIFIM.width, TIFIM.height);
+            S( img_read ) = TIFIM;
 
-         %==============distribute the metamorph infos to each frame:
-         if  isfield( TIFIM, 'MM_stack' )
-             x = length(TIFIM.MM_stack) / stack_cnt;
-             if  rem(x, 1) == 0
-                 S( img_read ).MM_stack = TIFIM.MM_stack( 1+x*(img_read-1) : x*img_read );
-                 if  isfield( TIFIM, 'info' )
-                     x = length(TIFIM.info) / stack_cnt;
-                     if rem(x, 1) == 0
-                         S( img_read ).info = TIFIM.info( 1+x*(img_read-1) : x*img_read );
-                     end
-                 end
-             end
-         end
-         if  isfield( TIFIM, 'MM_wavelength' )
-             x = length(TIFIM.MM_wavelength) / stack_cnt;
-             if rem(x, 1) == 0
-                 S( img_read ).MM_wavelength = TIFIM.MM_wavelength( 1+x*(img_read-1) : x*img_read );
-             end
-         end
+            %==============distribute the metamorph infos to each frame:
+            if  isfield( TIFIM, 'MM_stack' )
+                x = length(TIFIM.MM_stack) / stack_cnt;
+                if  rem(x, 1) == 0
+                    S( img_read ).MM_stack = TIFIM.MM_stack( 1+x*(img_read-1) : x*img_read );
+                    if  isfield( TIFIM, 'info' )
+                        x = length(TIFIM.info) / stack_cnt;
+                        if rem(x, 1) == 0
+                            S( img_read ).info = TIFIM.info( 1+x*(img_read-1) : x*img_read );
+                        end
+                    end
+                end
+            end
+            if  isfield( TIFIM, 'MM_wavelength' )
+                x = length(TIFIM.MM_wavelength) / stack_cnt;
+                if rem(x, 1) == 0
+                    S( img_read ).MM_wavelength = TIFIM.MM_wavelength( 1+x*(img_read-1) : x*img_read );
+                end
+            end
 
-         if ( img_skip + img_read >= img_last )
-              fclose(TIF.file);
-              return;
-         end
-     else
-         %disp('skiping strips');
-         img_skip = img_skip + 1;
-         skip_strips(TIF, TIF.strip_offsets + stack_pos);
-     end
-      stack_pos = ftell(TIF.file) - TIF.strip_offsets(1);
-   end
+            if ( img_skip + img_read >= img_last )
+                fclose(TIF.file);
+                return;
+            end
+        else
+            %disp('skiping strips');
+            img_skip = img_skip + 1;
+            skip_strips(TIF, TIF.strip_offsets + stack_pos);
+        end
+        stack_pos = ftell(TIF.file) - TIF.strip_offsets(1);
+    end
 
 end
 
@@ -851,97 +896,97 @@ return;
 
 function data = read_strips(TIF, strip_offsets, width, height)
 
-   % compute the width of each row in bytes:
-   numRows     = width * TIF.samples_per_pixel;
-   width_bytes = numRows * TIF.bytes_per_pixel;
-   numCols     = sum( TIF.strip_bytes / width_bytes );
+% compute the width of each row in bytes:
+numRows     = width * TIF.samples_per_pixel;
+width_bytes = numRows * TIF.bytes_per_pixel;
+numCols     = sum( TIF.strip_bytes / width_bytes );
 
-   typecode = sprintf('int%i', 8 * TIF.bytes_per_pixel / TIF.samples_per_pixel );
-   if TIF.sample_format == 1
-       typecode = [ 'u', typecode ];
-   end
+typecode = sprintf('int%i', 8 * TIF.bytes_per_pixel / TIF.samples_per_pixel );
+if TIF.sample_format == 1
+    typecode = [ 'u', typecode ];
+end
 
-   % Preallocate strip matrix:
-   data = eval( [ typecode, '(zeros(numRows, numCols));'] );
+% Preallocate strip matrix:
+data = eval( [ typecode, '(zeros(numRows, numCols));'] );
 
-   colIndx = 1;
-   for i = 1:TIF.num_strips
-       fseek(TIF.file, strip_offsets(i), -1);
-       strip = fread( TIF.file, TIF.strip_bytes(i) ./ TIF.bytes_per_pixel, typecode, TIF.BOS );
-       if TIF.sample_format == 2
-           %strip == bitcmp( strip );
-       end
+colIndx = 1;
+for i = 1:TIF.num_strips
+    fseek(TIF.file, strip_offsets(i), -1);
+    strip = fread( TIF.file, TIF.strip_bytes(i) ./ TIF.bytes_per_pixel, typecode, TIF.BOS );
+    if TIF.sample_format == 2
+        %strip == bitcmp( strip );
+    end
 
-       if length(strip) ~= TIF.strip_bytes(i) / TIF.bytes_per_pixel
-           error('End of file reached unexpectedly.');
-       end
-       stripCols = TIF.strip_bytes(i) ./ width_bytes;
-       data(:, colIndx:(colIndx+stripCols-1)) = reshape(strip, numRows, stripCols);
-       colIndx = colIndx + stripCols;
-   end
-   % Extract valid part of data
-   if ~all(size(data) == [width height]),
-      data = data(1:width, 1:height);
-      disp('extracting data');
-   end
-   % transpose the image
-   data = data';
+    if length(strip) ~= TIF.strip_bytes(i) / TIF.bytes_per_pixel
+        error('End of file reached unexpectedly.');
+    end
+    stripCols = TIF.strip_bytes(i) ./ width_bytes;
+    data(:, colIndx:(colIndx+stripCols-1)) = reshape(strip, numRows, stripCols);
+    colIndx = colIndx + stripCols;
+end
+% Extract valid part of data
+if ~all(size(data) == [width height]),
+    data = data(1:width, 1:height);
+    disp('extracting data');
+end
+% transpose the image
+data = data';
 return;
 
 
 function skip_strips(TIF, strip_offsets)
-   fseek(TIF.file, strip_offsets(TIF.num_strips) + TIF.strip_bytes(TIF.num_strips),-1);
+fseek(TIF.file, strip_offsets(TIF.num_strips) + TIF.strip_bytes(TIF.num_strips),-1);
 return;
 
 %===================sub-functions that reads an IFD entry:===================
 
 
 function [nbbytes, typechar] = matlabtype(tifftypecode)
-   switch (tifftypecode)
-   case 1
-      nbbytes=1;
-      typechar='uint8';
-   case 2
-      nbbytes=1;
-      typechar='uchar';
-   case 3
-      nbbytes=2;
-      typechar='uint16';
-   case 4
-      nbbytes=4;
-      typechar='uint32';
-   case 5
-      nbbytes=8;
-      typechar='uint32';
-   otherwise
-      error('tiff type not supported')
-   end
+switch (tifftypecode)
+    case 1
+        nbbytes=1;
+        typechar='uint8';
+    case 2
+        nbbytes=1;
+        typechar='uchar';
+    case 3
+        nbbytes=2;
+        typechar='uint16';
+    case 4
+        nbbytes=4;
+        typechar='uint32';
+    case 5
+        nbbytes=8;
+        typechar='uint32';
+    otherwise
+        error('tiff type not supported')
+end
 return;
 
 
 function  entry = readIFDentry(TIF)
 
-   entry.typecode = fread(TIF.file, 1, 'uint16', TIF.BOS);
-   entry.cnt      = fread(TIF.file, 1, 'uint32', TIF.BOS);
-   %disp(strcat('typecode =', num2str(entry.typecode),', cnt = ',num2str(entry.cnt)));
-   [ entry.nbbytes, entry.typechar ] = matlabtype(entry.typecode);
-   if entry.nbbytes * entry.cnt > 4
-      % next field contains an offset:
-      offset = fread(TIF.file, 1, 'uint32', TIF.BOS);
-      %disp(strcat('offset = ', num2str(offset)));
-      fseek(TIF.file, offset, -1);
-   end
+entry.typecode = fread(TIF.file, 1, 'uint16', TIF.BOS);
+entry.cnt      = fread(TIF.file, 1, 'uint32', TIF.BOS);
+%disp(strcat('typecode =', num2str(entry.typecode),', cnt = ',num2str(entry.cnt)));
+[ entry.nbbytes, entry.typechar ] = matlabtype(entry.typecode);
+if entry.nbbytes * entry.cnt > 4
+    % next field contains an offset:
+    offset = fread(TIF.file, 1, 'uint32', TIF.BOS);
+    %disp(strcat('offset = ', num2str(offset)));
+    fseek(TIF.file, offset, -1);
+end
 
-   if TIF.entry_tag == 33629   %special metamorph 'rationals'
-       entry.val = fread(TIF.file, 6*entry.cnt, entry.typechar, TIF.BOS);
-   else
-       if entry.typecode == 5
-           entry.val = fread(TIF.file, 2*entry.cnt, entry.typechar, TIF.BOS);
-       else
-           entry.val = fread(TIF.file, entry.cnt, entry.typechar, TIF.BOS);
-       end
-   end
-   if ( entry.typecode == 2 ) entry.val = char(entry.val'); end
+if TIF.entry_tag == 33629   %special metamorph 'rationals'
+    entry.val = fread(TIF.file, 6*entry.cnt, entry.typechar, TIF.BOS);
+else
+    if entry.typecode == 5
+        entry.val = fread(TIF.file, 2*entry.cnt, entry.typechar, TIF.BOS);
+    else
+        entry.val = fread(TIF.file, entry.cnt, entry.typechar, TIF.BOS);
+    end
+end
+if ( entry.typecode == 2 ) entry.val = char(entry.val'); end
 
 return;
 

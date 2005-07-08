@@ -1,5 +1,5 @@
 function handles = IdentifyEasy(handles)
-% Sorry, no help yet
+% Category: Object Identification
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -20,21 +20,22 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Approximate diameter of objects (pixels)
-%defaultVAR03 = 10
-Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Min,Max diameter of objects (pixels):
+%choiceVAR03 = 1,Inf
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Min,Max area of objects (pixels):
-%choiceVAR04 = 1,Inf
-SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = Threshold in the range [0,1].
+%choiceVAR04 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Threshold in the range [0,1].
-%choiceVAR05 = Automatic
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu custom
+%textVAR05 = Minimum eccentricity of objects in the range [0,1]
+%defaultVAR05 = 0.8
+MinEccentricity = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%%%VariableRevisionNumber = 1
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -58,37 +59,37 @@ if ndims(OrigImage) ~= 2
 end
 
 %%% Checks that the Diameter has a valid value
-Diameter = str2double(Diameter);
-if isnan(Diameter) | Diameter <= 0
-    error('The Diameter parameter in the Segmentation module is invalid.')
+if isnan(MinEccentricity) | isempty(MinEccentricity) | MinEccentricity < 0 | MinEccentricity > 1
+    error('The MinEccentricity parameter in the IdentifyEasy module is invalid.')
 end
 
-%%% Checks that the Min and Max area parameters have valid values
+%%% Checks that the Min and Max diameter parameters have valid values
 index = strfind(SizeRange,',');
-if isempty(index),error('The Min and Max size entry in the Segmentation module is invalid.'),end
-MinArea = SizeRange(1:index-1);
-MaxArea = SizeRange(index+1:end);
+if isempty(index),error('The Min and Max size entry in the IdentifyEasy module is invalid.'),end
+MinDiameter = SizeRange(1:index-1);
+MaxDiameter = SizeRange(index+1:end);
 
-MinArea = str2double(MinArea);
-if isnan(MinArea) | MinArea < 0
-    error('The Min area entry in the Segmentation module is invalid.')
+MinDiameter = str2double(MinDiameter);
+if isnan(MinDiameter) | MinDiameter < 0
+    error('The Min dimater entry in the IdentifyEasy module is invalid.')
 end
 
-if strcmp(MaxArea,'Inf') ,MaxArea = Inf;
+if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
 else
-    MaxArea = str2double(MaxArea);
-    if isnan(MaxArea) | MaxArea < 0
-        error('The Max area entry in the Segmentation module is invalid.')
+    MaxDiameter = str2double(MaxDiameter);
+    if isnan(MaxDiameter) | MaxDiameter < 0
+        error('The Max Diameter entry in the IdentifyEasy module is invalid.')
     end
 end
-if MinArea > MaxArea, error('Min area larger the Max area in the Segmentation module.'),end
+if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyEasy module.'),end
+Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
 %%% Checks that the Threshold parameter has a valid value
 if ~strcmp(Threshold,'Automatic')
-        Threshold = str2double(Threshold);
-        if isnan(Threshold) | Threshold > 1 | Threshold < 0
-            error('The threshold entered in the Segmentation module is out of range.')
-        end
+    Threshold = str2double(Threshold);
+    if isnan(Threshold) | Threshold > 1 | Threshold < 0
+        error('The threshold entered in the IdentifyEasy module is out of range.')
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -96,47 +97,49 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 
 %%% Blurs the image using a separable Gaussian filtering.
-sigma = (Diameter/8)/2.35;                                                 % Convert from FWHM to sigma
+sigma = (Diameter/4)/2.35;                                                 % Convert from FWHM to sigma
 FiltLength = max(1,ceil(3*sigma));                                         % Determine filter length
-f = exp(-linspace(-FiltLength,FiltLength,2*FiltLength+1).^2/(2*sigma^2));  % 1D Gaussian filter kernel
-f = f/sum(f(:));                                                           % Normalize
-BlurredImage = conv2(f,f,OrigImage,'same');                            % Separable filtering
+[x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);
+f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));
+fx = x.*f;
+fy = y.*f;
+BlurredImage = conv2(OrigImage,f,'same');
+EdgeImage = abs(conv2(OrigImage,fx)) + abs(conv2(OrigImage,fy));
 
 %%% Extract object markers by finding local maxima in the blurred image
 MaximaImage = BlurredImage;
-MaximaMask = getnhood(strel('disk', max(1,floor(Diameter/4))));
+MaximaMask = getnhood(strel('disk', max(1,floor(Diameter/8))));
 MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-
 
 %%% Thresholds the image to eliminate dim maxima.
 if strcmp(Threshold,'Automatic'),
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
-    %%% Replaced the following line to accomodate calculating the
-    %%% threshold for images that have been masked.
-    % Threshold = CPgraythresh(OrigImage);
 end
 MaximaImage = MaximaImage > Threshold;
+
 
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
 %%% there are black dots on top of each dark nucleus on a white background.
 Overlaid = imimposemin(1 - BlurredImage,MaximaImage);
 WatershedBoundaries = watershed(Overlaid) > 0;
-
-Objects = OrigImage > Threshold;                          % Threshold image
+Objects = OrigImage > Threshold;                              % Threshold image
 Objects = imfill(Objects,'holes');                            % Fill holes
 Objects = Objects.*WatershedBoundaries;                       % Cut objects along the watershed lines
 Objects = bwlabel(Objects);                                   % Label the objects
 
-%%% Remove objects with area outside the specified range
-tmp = regionprops(Objects,'Area');                            % Get areas of the objects
-areas = [0;cat(1,tmp.Area)];
-MedianArea = median(areas);
-AreaMap = areas(Objects+1);                                   % Create image with object intensity equal to the area
+% Try to merge objects
+%MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter],MinEccentrity)
+
+
+%%% Locate objects with diameter outside the specified range
+MedianDiameter = median(Diameters);
+Diameters = [0;cat(1,tmp.EquivDiameter)];
+DiameterMap = Diameters(Objects+1);                                   % Create image with object intensity equal to the diameter
 tmp = Objects;
-Objects(AreaMap > MaxArea) = 0;                               % Remove objects that are too big
-Objects(AreaMap < MinArea) = 0;                               % Remove objects that are too small
-AreaExcludedObjects = tmp - Objects ;                         % Store objects that fall outside area range for display
-NumOfAreaObjects = length(unique(AreaExcludedObjects(:)))-1;  % Count the objects
+Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
+Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
+DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
+NumOfDiameterObjects = length(unique(DiameterExcludedObjects(:)))-1;  % Count the objects
 
 %%% Remove objects along the border of the image
 tmp = Objects;
@@ -144,23 +147,16 @@ Objects = imclearborder(Objects);
 BorderObjects = tmp - Objects;
 NumOfBorderObjects = length(unique(BorderObjects(:)))-1;
 
-%%% Remove objects with no marker in it
-List = setdiff(unique(Objects(:)),0);
-for k = 1:length(List)
-    index = find(Objects==List(k));                       % Get index for Object nr k pixels
-    if sum(MaximaImage(index)) == 0                       % If there is no maxima in these pixels, exclude object
+%%% Remove objects with no marker in them
+tmp = regionprops(Objects,'PixelIdxList');                              % This is a very fast way to get pixel indexes for the objects
+for k = 1:length(tmp)
+    if sum(MaximaImage(tmp(k).PixelIdxList)) == 0                       % If there is no maxima in these pixels, exclude object
         Objects(index) = 0;
     end
 end
 
 %%% Relabel the objects
 [Objects,NumOfObjects] = bwlabel(Objects > 0);
-
-
-%%% Merge objects
-%for k = 1:NumOfObjects
-%    NeighborIndex = setdiff(unique(bwmorph(Objects==k,'dilate').*Objects),[0 k]);
-%end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -192,10 +188,10 @@ if any(findobj == ThisModuleFigureNumber)
     OutlinedObjectsG = tmp;
     OutlinedObjectsB = tmp;
     PerimObjects = bwperim(Objects > 0);
-    PerimArea   = bwperim(AreaExcludedObjects > 0);
+    PerimDiameter   = bwperim(DiameterExcludedObjects > 0);
     PerimBorder = bwperim(BorderObjects > 0);
     OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-    OutlinedObjectsR(PerimArea)   = 1; OutlinedObjectsG(PerimArea)   = 0; OutlinedObjectsB(PerimArea)   = 0;
+    OutlinedObjectsR(PerimDiameter)   = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
     OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
     hy = subplot(2,2,3);
     ImageHandle = image(cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB));
@@ -214,12 +210,12 @@ if any(findobj == ThisModuleFigureNumber)
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.12 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Median area (pixels): ' num2str(MedianArea)],'FontSize',handles.Current.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Median diameter (pixels): ' num2str(MedianDiameter)],'FontSize',handles.Current.FontSize);
 
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of objects outside area range: %d',NumOfAreaObjects),'FontSize',handles.Current.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of objects outside diameter range: %d',NumOfDiameterObjects),'FontSize',handles.Current.FontSize);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -233,3 +229,146 @@ handles.Pipeline.(fieldname) = Objects;
 %%% Saves the Threshold value to the handles structure.
 fieldname = ['ImageThreshold', ObjectName];
 handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Threshold};
+
+
+
+
+
+
+
+
+
+
+function Objects = MergeObjects(Objects,OrigImage,Diameters,MinEccentricity)
+
+%%% Find the object that we should try to merge with other objects. The object
+%%% numbers of these objects are stored in the variable 'MergeIndex'.
+props = regionprops(Objects,'EquivDiameter','PixelIdxList','Eccentricity');   % Get diameters of the objects
+EquivDiameters = cat(1,props.EquivDiameter);
+Eccentricities = cat(1,props.Eccentricity);
+IndexDiameter = find(EquivDiameters < MinDiameter);
+IndexEccentrity = find(Eccentricities < MinEccentricity)
+MergeIndex = unique([IndexDiameter;IndexEccentricity]);
+
+% Repeat until there are no more objects left to merge
+[sr,sc] = size(OrigImage);
+while ~isempty(MergeIndex)
+
+    % Get next object to merge
+    ObjectNbr = MergeIndex(1);
+
+    %%% Identify neighbors
+    %%% Cut a patch so we don't have to work with the entire image
+    [r,c] = ind2sub([sr sc],props(ObjectNbr).PixelIdxList);
+    rmax = min(sr,max(r) + 3);
+    rmin = max(1,min(r) - 3);
+    cmax = min(sc,max(c) + 3);
+    cmin = max(1,min(c) - 3);
+    ObjectsPatch = Objects(rmin:rmax,cmin:cmax);
+    BinaryPatch = double(ObjectsPatch == ObjectNbr);
+    GrownBinaryPatch = conv2(BinaryPatch,double(getnhood(strel('disk',2))),'same') > 0;
+    Neighbors = ObjectsPatch .*GrownBinaryPatch;
+    NeighborsNbr = setdiff(unique(Neighbors(:)),[0 ObjectNbr]);
+
+
+    %%% For each neighbor, calculate a set of criteria based on which we decide if to merge
+    LikelihoodRatio    = zeros(length(NeighborsNbr),1);
+    MergedEccentricity = zeros(length(NeighborsNbr),1);
+    for j = 1:length(NeighborsNbr)
+
+        %%% Get Neigbor number
+        NeighborNbr = NeighborsNbr(j);
+
+        %%% Cut patch which contains both original object and the current neighbor
+        [r,c] = ind2sub([sr sc],[props(ObjectNbr).PixelIdxList;props(NeighborNbr).PixelIdxList]);
+        rmax = min(sr,max(r) + 3);
+        rmin = max(1,min(r) - 3);
+        cmax = min(sc,max(c) + 3);
+        cmin = max(1,min(c) - 3);
+        ObjectsPatch = Objects(rmin:rmax,cmin:cmax);
+        OrigImagePatch = OrigImage(rmin:rmax,cmin:cmax);
+
+        %%% Identify object interiors, background and interface voxels
+        BinaryNeighborPatch      = double(ObjectsPatch == NeighborNbr);
+        BinaryObjectPatch        = double(ObjectsPatch == ObjectNbr);
+        GrownBinaryNeighborPatch = conv2(BinaryNeighborPatch,ones(3),'same') > 0;
+        GrownBinaryObjectPatch   = conv2(BinaryObjectPatch,ones(3),'same') > 0;
+        Interface                = GrownObject.*GrownNeighbor;
+        Background               = ((GrownObject + GrownNeighbor) > 0) - BinaryNeighborPatch - BinaryObjectPatch - Interface;
+        WithinObjectIndex        = find(BinaryNeighborPatch + BinaryObjectPatch);
+        InterfaceIndex           = find(Interface);
+        BackgroundIndex          = find(Background);
+
+        %%% Calculate likelihood of the interface belonging to the background or to an object.
+        WithinObjectClassMean   = mean(OrigImagePatch(WithinObjectIndex));
+        WithinObjectClassStd    = std(OrigImagePatch(WithinObjectIndex));
+        BackgroundClassMean     = mean(OrigImagePatch(BackgroundIndex));
+        BackgroundClassStd      = std(OrigImagePatch(BackgroundIndex));
+        InterfaceMean           = mean(OrigImagePatch(InterfaceIndex));
+        LogLikelihoodObject     = -log(WithinbjectClassStd^2) - (InterfaceMean - WithinObjectClassMean)^2/(2*WithinObjectClassStd^2);
+        LogLikelihoodBackground = -log(BackgroundClassStd^2) - (InterfaceMean - BackgroundClassMean)^2/(2*BackgroundClassStd^2);
+        LikelihoodRatio(j)      =  LogLikelihoodObject - LogLikelihoodBackground;
+
+        %%% Calculate the eccentrity of the object obtained if we merge the current object
+        %%% with the current neighbor.
+        MergedObject =  (BinaryNeighborPatch + BinaryObjectPatch + Interface) > 0;
+        tmp = regionprops(MergedObject,'Eccentricity');
+        MergedEccentricity(j) = tmp(1).Eccentricity;
+    
+        %%% Get indexes for the interface pixels in original image.
+        %%% These indexes are required if we need to merge the object with
+        %%% the current neighbor.
+        tmp = zeros(size(OrigImage));
+        tmp(rmin:rmax,cmin:cmax) = Interface;
+        tmp = regionprops(tmp,'PixelIdxList');
+        OrigInterfaceIndex{j} = cat(1,tmp.PixelIdxList);
+    end
+
+    %%% Let each feature rank which neighbor to merge with. Then calculate
+    %%% a score for each neighbor. If the neighbors is ranked 1st, it will get
+    %%% 1 point; 2nd, it will get 2 points; and so on. The lower score the better.
+    [ignore,LikelihoodRank]   = sort(LikelihoodRatio,'descend');                  % The higher the LikelihoodRatio the better
+    [ignore,EccentricityRank] = sort(MergedEccentricity,'ascend');                % The lower the eccentricity the better
+    for j = 1:length(NeighborsNbr)
+        NeighborScore(j) = find(LikelihoodRank == j) +  find(EccentricityRank == j);
+    end
+
+    %%% Go through the neighbors, starting with the highest ranked, and merge
+    %%% with the first neighbor for which certain basic criteria are fulfilled.
+    %%% If no neighbor fulfil the basic criteria, there will be no merge.
+    [ignore,TotalRank] = sort(NeigborScore);
+    for j = 1:length(NeighborsNbr)
+        NeighborNbr = NeighborsNbr(TotalRank(j));
+
+        %%% To merge, the interface between objects must be more likely to belong to the object class
+        %%% than the background class. The eccentricity of the merged object must also be lower than
+        %%% for the original object.
+        if LikelihoodRatio(TotalRank(j)) > 0 && MergedEccentricity(TotalRank(j)) < Eccentricities(ObjectNbr)
+            
+            %%% OK, let's merge!
+            %%% Assign the neighbor number to the current object
+            Objects(props(ObjectNbr).PixelIdxList) = NeighborNbr;
+            
+            %%% Assign the neighbor number to the interface pixels between the current object and the neigbor
+            Objects(OrigInterfaceIndex{TotalRank(j)}) = NeighborNbr;
+            
+            %%% Add the pixel indexes to the neigbor index list
+            props(NeighborNbr).PixelIdxList = cat(1,...
+                props(Neighbor).PixelIdxList,...
+                props(ObjectNbr).PixelIdxList,...
+                OrigInterfaceIndex{TotalRank(j)});
+            
+            %%% Remove the neighbor from the list of objects to be merged (if it's there).
+            MergeIndex = setdiff(MergeIndex,MergeNbr);
+        end
+    end
+    
+    %%% OK, we are done with the current object, let's go to the next
+    MergeIndex = MergeIndex(2:end-1);
+end
+
+%%% Finally, relabel the objects
+Objects = bwlabel(Objects > 0);
+
+
+

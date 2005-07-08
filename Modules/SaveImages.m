@@ -149,7 +149,7 @@ ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = N
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = In what file format do you want to save images? Do not include a period
+%textVAR04 = In what file format do you want to save images?
 %defaultVAR04 = tif
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -255,11 +255,14 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     end
 
     %%% Checks whether the file format the user entered is readable by Matlab.
+    if strcmp(FileFormat,'.')
+        FileFormat = FileFormat(2:end);
+    end
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
         if strcmpi(FileFormat,'mat') ~= 1
             if strcmpi(FileFormat,'avi') ~= 1
-                error('The image file type entered in the Save Images module is not recognized by Matlab. Or, you may have entered a period in the box. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
+                error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
             end
         end
     end

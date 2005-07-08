@@ -150,6 +150,7 @@ LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %textVAR08 = What fraction should the images be sized (the resolution will be changed)?
 %defaultVAR08 = .1
 SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+SizeChange = str2num(SizeChange);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -381,6 +382,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    colormap(gray);
     %%% Displays the image.
     imagesc(TiledImage)
     %%% Sets the figure to take up most of the screen.

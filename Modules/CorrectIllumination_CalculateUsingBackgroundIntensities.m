@@ -173,7 +173,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the illumination function?
-%infotypeVAR02 = imagegroup indep
+%infotypeVAR02 = IllumFnc indep
 %defaultVAR02 = IllumBlue
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

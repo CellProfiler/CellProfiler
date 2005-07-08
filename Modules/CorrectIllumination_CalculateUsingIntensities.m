@@ -166,6 +166,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the illumination function?
+%infotypeVAR02 = IllumFnc indep
 %defaultVAR02 = IllumBlue
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -242,7 +243,6 @@ drawnow
 % imwrite(uint8(BlurredImage), FileName, FileFormat);
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
-
 ReadyFlag = 'Not Ready';
 if strcmp(EachOrAll,'All') == 1
     try
@@ -292,7 +292,7 @@ end
 
 %%% The resulting illumination image is rescaled to be in the range 1
 %%% to infinity, if requested.
-if strcmp(RescaleOption,'Yes',1) == 1
+if strcmp(RescaleOption,'Yes') == 1
     %%% To save time, the handles argument is not fed to this
     %%% subfunction because it is not needed.
     [ignore,IlluminationImage] = CPrescale('',IlluminationImage,'G',[]);

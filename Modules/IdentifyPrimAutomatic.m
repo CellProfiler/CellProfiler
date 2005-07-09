@@ -1,5 +1,53 @@
 function handles = IdentifyEasy(handles)
-% Category: Object Identification
+
+% Help for the Identify Primary Intensity Intensity module: 
+% Category: Object Identification and Modification
+% 
+% This image analysis module works best for objects that are brighter
+% towards the interior; the objects can be any shape, so they need not
+% be round and uniform in size as would be required for a
+% distance-based module.  The dividing lines between clumped objects
+% should be dim. The module is more successful when then objects have
+% a smooth texture, although increasing the blur radius can improve
+% the outcome on lumpy-textured objects.
+%
+% Settings:
+%
+% Size range: You may exclude objects that are smaller or bigger than
+% the size range you specify. A comma should be placed between the
+% lower size limit and the upper size limit. The units here are pixels
+% so that it is easy to zoom in on found objects and determine the
+% size of what you think should be excluded.
+%
+% Threshold: The threshold affects the stringency of the lines between
+% the objects and the background. You may enter an absolute number
+% between 0 and 1 for the threshold (use 'Show pixel data' to see the
+% pixel intensities for your images in the appropriate range of 0 to
+% 1), or you may have it calculated for each image individually by
+% typing 0.  There are advantages either way.  An absolute number
+% treats every image identically, but an automatically calculated
+% threshold is more realistic/accurate, though occasionally subject to
+% artifacts.  The threshold which is used for each image is recorded
+% as a measurement in the output file, so if you find unusual
+% measurements from one of your images, you might check whether the
+% automatically calculated threshold was unusually high or low
+% compared to the remaining images.  When an automatic threshold is
+% selected, it may consistently be too stringent or too lenient, so an
+% adjustment factor can be entered as well. The number 1 means no
+% adjustment, 0 to 1 makes the threshold more lenient and greater than
+% 1 (e.g. 1.3) makes the threshold more stringent.
+%
+% How it works: 
+% This image analysis module identifies objects by finding peaks in
+% intensity, after the image has been blurred to remove texture (based
+% on blur radius).  Once a marker for each object has been identified
+% in this way, a watershed function identifies the lines between
+% objects that are touching each other by looking for the dimmest
+% points between them. To identify the edges of non-clumped objects, a
+% simple threshold is applied. Objects on the border of the image are
+% ignored, and the user can select a size range, outside which objects
+% will be ignored.
+
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -20,22 +68,22 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Min,Max diameter of objects (pixels):
-%choiceVAR03 = 1,Inf
-SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Threshold in the range [0,1].
+%choiceVAR03 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Threshold in the range [0,1].
-%choiceVAR04 = Automatic
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu custom
+%textVAR04 = Threshold correction factor
+%defaultVAR04 = 1.2
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = Minimum eccentricity of objects in the range [0,1]
-%defaultVAR05 = 0.8
-MinEccentricity = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = Min,Max diameter of objects (pixels):
+%choiceVAR05 = 15,35
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
 
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -58,10 +106,6 @@ if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
-%%% Checks that the Diameter has a valid value
-if isnan(MinEccentricity) | isempty(MinEccentricity) | MinEccentricity < 0 | MinEccentricity > 1
-    error('The MinEccentricity parameter in the IdentifyEasy module is invalid.')
-end
 
 %%% Checks that the Min and Max diameter parameters have valid values
 index = strfind(SizeRange,',');
@@ -92,23 +136,28 @@ if ~strcmp(Threshold,'Automatic')
     end
 end
 
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
 %%% Blurs the image using a separable Gaussian filtering.
-sigma = (Diameter/4)/2.35;                                                 % Convert from FWHM to sigma
+sigma = (MinDiameter/4)/2.35;                                                 % Convert from FWHM to sigma
 FiltLength = max(1,ceil(3*sigma));                                         % Determine filter length
 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);
 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));
-fx = x.*f;
-fy = y.*f;
 BlurredImage = conv2(OrigImage,f,'same');
-EdgeImage = abs(conv2(OrigImage,fx)) + abs(conv2(OrigImage,fy));
+
+% This code produces an image with edges. Currently not used
+%fx = x.*f;
+%fy = y.*f;
+%EdgeImage = abs(conv2(OrigImage,fx,'same')).^2 + abs(conv2(OrigImage,fy,'same')).^2;
+%EdgeImage = EdgeImage > graythresh(EdgeImage);
+%EdgeImage = bwmorph(EdgeImage > graythresh(EdgeImage),'skel',inf);
 
 %%% Extract object markers by finding local maxima in the blurred image
 MaximaImage = BlurredImage;
-MaximaMask = getnhood(strel('disk', max(1,floor(Diameter/8))));
+MaximaMask = getnhood(strel('disk', max(1,floor(MinDiameter/1.5))));
 MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
 
 %%% Thresholds the image to eliminate dim maxima.
@@ -116,7 +165,6 @@ if strcmp(Threshold,'Automatic'),
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
 end
 MaximaImage = MaximaImage > Threshold;
-
 
 %%% Overlays the nuclear markers (maxima) on the inverted original image so
 %%% there are black dots on top of each dark nucleus on a white background.
@@ -127,25 +175,8 @@ Objects = imfill(Objects,'holes');                            % Fill holes
 Objects = Objects.*WatershedBoundaries;                       % Cut objects along the watershed lines
 Objects = bwlabel(Objects);                                   % Label the objects
 
-% Try to merge objects
-%MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter],MinEccentrity)
-
-
-%%% Locate objects with diameter outside the specified range
-MedianDiameter = median(Diameters);
-Diameters = [0;cat(1,tmp.EquivDiameter)];
-DiameterMap = Diameters(Objects+1);                                   % Create image with object intensity equal to the diameter
-tmp = Objects;
-Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
-Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
-DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
-NumOfDiameterObjects = length(unique(DiameterExcludedObjects(:)))-1;  % Count the objects
-
-%%% Remove objects along the border of the image
-tmp = Objects;
-Objects = imclearborder(Objects);
-BorderObjects = tmp - Objects;
-NumOfBorderObjects = length(unique(BorderObjects(:)))-1;
+%%% Merge small objects
+Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
 
 %%% Remove objects with no marker in them
 tmp = regionprops(Objects,'PixelIdxList');                              % This is a very fast way to get pixel indexes for the objects
@@ -155,8 +186,41 @@ for k = 1:length(tmp)
     end
 end
 
+%%% Will be stored to the handles structure
+PrelimLabelMatrixImage1 = Objects;
+
+%%% Get diameters of objects and calculate the interval
+%%% that contains 90% of the objects
+tmp = regionprops(Objects,'EquivDiameter');
+Diameters = [0;cat(1,tmp.EquivDiameter)];
+SortedDiameters = sort(Diameters);
+NbrInTails = max(round(0.05*length(Diameters)),1);
+Lower90Limit = SortedDiameters(NbrInTails);
+Upper90Limit = SortedDiameters(end-NbrInTails+1);
+
+figure,imagesc(Objects)
+%%% Locate objects with diameter outside the specified range
+DiameterMap = Diameters(Objects+1);                                   % Create image with object intensity equal to the diameter
+tmp = Objects;
+Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
+Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
+DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
+figure,imagesc(DiameterExcludedObjects)
+
+NumOfDiameterObjects = length(unique(DiameterExcludedObjects(:)))-1;  % Count the objects
+
+%%% Will be stored to the handles structure
+PrelimLabelMatrixImage2 = Objects;
+
+%%% Remove objects along the border of the image
+tmp = Objects;
+Objects = imclearborder(Objects);
+BorderObjects = tmp - Objects;
+NumOfBorderObjects = length(unique(BorderObjects(:)))-1;
+
 %%% Relabel the objects
 [Objects,NumOfObjects] = bwlabel(Objects > 0);
+FinalLabelMatrixImage = Objects;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -191,7 +255,7 @@ if any(findobj == ThisModuleFigureNumber)
     PerimDiameter   = bwperim(DiameterExcludedObjects > 0);
     PerimBorder = bwperim(BorderObjects > 0);
     OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-    OutlinedObjectsR(PerimDiameter)   = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+    OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
     OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
     hy = subplot(2,2,3);
     ImageHandle = image(cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB));
@@ -209,78 +273,148 @@ if any(findobj == ThisModuleFigureNumber)
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.12 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Median diameter (pixels): ' num2str(MedianDiameter)],'FontSize',handles.Current.FontSize);
+    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range:[%0.1f, %0.1f] pixels',Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
 
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of objects outside diameter range: %d',NumOfDiameterObjects),'FontSize',handles.Current.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of small objects: %d',NumOfDiameterObjects),'FontSize',handles.Current.FontSize);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Saves the segmented image, not edited for objects along the edges or
+%%% for size, to the handles structure.
+fieldname = ['PrelimSegmented',ObjectName];
+handles.Pipeline.(fieldname) = PrelimLabelMatrixImage1;
+
+%%% Saves the segmented image, only edited for small objects, to the
+%%% handles structure.
+fieldname = ['PrelimSmallSegmented',ObjectName];
+handles.Pipeline.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];
-handles.Pipeline.(fieldname) = Objects;
+handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+
 
 %%% Saves the Threshold value to the handles structure.
-fieldname = ['ImageThreshold', ObjectName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {Threshold};
+%%% Storing the threshold is a little more complicated than storing other measurements
+%%% because several different modules will write to the handles.Measurements.Image.Threshold
+%%% structure, and we should therefore probably append the current threshold to an existing structure.
+% First, if the Threshold fields don't exist, initialize them
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+    handles.Measurements.Image.ThresholdFeatures = {};
+    handles.Measurements.Image.Threshold = {};
+end
+% Search the ThresholdFeatures to find the column for this object type
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));  
+% If column is empty it means that this particular object has not been segmented before. This will
+% typically happen for the first image set. Append the feature name in the
+% handles.Measurements.Image.ThresholdFeatures matrix
+if isempty(column)
+    handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};
+    column = length(handles.Measurements.Image.ThresholdFeatures);
+end
+handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
 
 
+%%% Saves the ObjectCount, i.e., the number of segmented objects.
+%%% See comments for the Threshold saving above
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
 
 
+%%% Saves the location of each segmented object
+handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
 
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+% try
+%     if ~strcmp(SaveColored,'Do not save')
+%         if strcmp(SaveMode,'RGB')
+%             handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+%         else
+%             handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+%         end
+%     end
+%     if ~strcmp(SaveOutlined,'Do not save')
+%         handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
+%     end
+% catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+% end
 
 
-
-
-function Objects = MergeObjects(Objects,OrigImage,Diameters,MinEccentricity)
+function Objects = MergeObjects(Objects,OrigImage,Diameters)
 
 %%% Find the object that we should try to merge with other objects. The object
-%%% numbers of these objects are stored in the variable 'MergeIndex'.
+%%% numbers of these objects are stored in the variable 'MergeIndex'. The objects
+%%% that we will try to merge are either the ones that fall below the specified
+%%% MinDiameter threshold, or relatively small objects that are above the MaxEccentricity 
+%%% threshold. These latter objects are likely to be cells where two maxima have been
+%%% found and the watershed transform has divided cells into two parts.
+MinDiameter = Diameters(1);
+MaxDiameter = Diameters(2);
+MaxEccentricity = 0.75;      % Empirically determined value
 props = regionprops(Objects,'EquivDiameter','PixelIdxList','Eccentricity');   % Get diameters of the objects
 EquivDiameters = cat(1,props.EquivDiameter);
 Eccentricities = cat(1,props.Eccentricity);
+IndexEccentricity = intersect(find(Eccentricities > MaxEccentricity),find(EquivDiameters < (MinDiameter + (MaxDiameter - MinDiameter)/4)));
 IndexDiameter = find(EquivDiameters < MinDiameter);
-IndexEccentrity = find(Eccentricities < MinEccentricity)
 MergeIndex = unique([IndexDiameter;IndexEccentricity]);
 
-% Repeat until there are no more objects left to merge
+% Try to merge until there are no objects left in the 'MergeIndex' list.
 [sr,sc] = size(OrigImage);
 while ~isempty(MergeIndex)
 
     % Get next object to merge
-    ObjectNbr = MergeIndex(1);
+    CurrentObjectNbr = MergeIndex(1);
 
-    %%% Identify neighbors
+    %%% Identify neighbors and put their label numbers in a list 'NeighborsNbr'
     %%% Cut a patch so we don't have to work with the entire image
-    [r,c] = ind2sub([sr sc],props(ObjectNbr).PixelIdxList);
+    [r,c] = ind2sub([sr sc],props(CurrentObjectNbr).PixelIdxList);
     rmax = min(sr,max(r) + 3);
     rmin = max(1,min(r) - 3);
     cmax = min(sc,max(c) + 3);
     cmin = max(1,min(c) - 3);
     ObjectsPatch = Objects(rmin:rmax,cmin:cmax);
-    BinaryPatch = double(ObjectsPatch == ObjectNbr);
+    BinaryPatch = double(ObjectsPatch == CurrentObjectNbr);
     GrownBinaryPatch = conv2(BinaryPatch,double(getnhood(strel('disk',2))),'same') > 0;
     Neighbors = ObjectsPatch .*GrownBinaryPatch;
-    NeighborsNbr = setdiff(unique(Neighbors(:)),[0 ObjectNbr]);
+    NeighborsNbr = setdiff(unique(Neighbors(:)),[0 CurrentObjectNbr]);
 
 
-    %%% For each neighbor, calculate a set of criteria based on which we decide if to merge
+    %%% For each neighbor, calculate a set of criteria based on which we decide if to merge.
+    %%% Currently, two criteria are used. The first is a Likelihood ratio that indicates whether
+    %%% the interface pixels between the object to merge and its neighbor belong to a background
+    %%% class or to an object class. The background class and object class are modeled as Gaussian
+    %%% distributions with mean and variance estimated from the image. The Likelihood ratio determines
+    %%% to which of the distributions the interface voxels most likely belong to. The second criterion
+    %%% is the eccentrity of the object resulting from a merge. The more circular, i.e., the lower the
+    %%% eccentricity, the better.
     LikelihoodRatio    = zeros(length(NeighborsNbr),1);
     MergedEccentricity = zeros(length(NeighborsNbr),1);
     for j = 1:length(NeighborsNbr)
 
         %%% Get Neigbor number
-        NeighborNbr = NeighborsNbr(j);
+        CurrentNeighborNbr = NeighborsNbr(j);
 
         %%% Cut patch which contains both original object and the current neighbor
-        [r,c] = ind2sub([sr sc],[props(ObjectNbr).PixelIdxList;props(NeighborNbr).PixelIdxList]);
+        [r,c] = ind2sub([sr sc],[props(CurrentObjectNbr).PixelIdxList;props(CurrentNeighborNbr).PixelIdxList]);
         rmax = min(sr,max(r) + 3);
         rmin = max(1,min(r) - 3);
         cmax = min(sc,max(c) + 3);
@@ -289,12 +423,12 @@ while ~isempty(MergeIndex)
         OrigImagePatch = OrigImage(rmin:rmax,cmin:cmax);
 
         %%% Identify object interiors, background and interface voxels
-        BinaryNeighborPatch      = double(ObjectsPatch == NeighborNbr);
-        BinaryObjectPatch        = double(ObjectsPatch == ObjectNbr);
+        BinaryNeighborPatch      = double(ObjectsPatch == CurrentNeighborNbr);
+        BinaryObjectPatch        = double(ObjectsPatch == CurrentObjectNbr);
         GrownBinaryNeighborPatch = conv2(BinaryNeighborPatch,ones(3),'same') > 0;
         GrownBinaryObjectPatch   = conv2(BinaryObjectPatch,ones(3),'same') > 0;
-        Interface                = GrownObject.*GrownNeighbor;
-        Background               = ((GrownObject + GrownNeighbor) > 0) - BinaryNeighborPatch - BinaryObjectPatch - Interface;
+        Interface                = GrownBinaryNeighborPatch.*GrownBinaryObjectPatch;
+        Background               = ((GrownBinaryNeighborPatch + GrownBinaryObjectPatch) > 0) - BinaryNeighborPatch - BinaryObjectPatch - Interface;
         WithinObjectIndex        = find(BinaryNeighborPatch + BinaryObjectPatch);
         InterfaceIndex           = find(Interface);
         BackgroundIndex          = find(Background);
@@ -305,13 +439,13 @@ while ~isempty(MergeIndex)
         BackgroundClassMean     = mean(OrigImagePatch(BackgroundIndex));
         BackgroundClassStd      = std(OrigImagePatch(BackgroundIndex));
         InterfaceMean           = mean(OrigImagePatch(InterfaceIndex));
-        LogLikelihoodObject     = -log(WithinbjectClassStd^2) - (InterfaceMean - WithinObjectClassMean)^2/(2*WithinObjectClassStd^2);
+        LogLikelihoodObject     = -log(WithinObjectClassStd^2) - (InterfaceMean - WithinObjectClassMean)^2/(2*WithinObjectClassStd^2);
         LogLikelihoodBackground = -log(BackgroundClassStd^2) - (InterfaceMean - BackgroundClassMean)^2/(2*BackgroundClassStd^2);
         LikelihoodRatio(j)      =  LogLikelihoodObject - LogLikelihoodBackground;
 
         %%% Calculate the eccentrity of the object obtained if we merge the current object
         %%% with the current neighbor.
-        MergedObject =  (BinaryNeighborPatch + BinaryObjectPatch + Interface) > 0;
+        MergedObject =  double((BinaryNeighborPatch + BinaryObjectPatch + Interface) > 0);
         tmp = regionprops(MergedObject,'Eccentricity');
         MergedEccentricity(j) = tmp(1).Eccentricity;
     
@@ -320,7 +454,7 @@ while ~isempty(MergeIndex)
         %%% the current neighbor.
         tmp = zeros(size(OrigImage));
         tmp(rmin:rmax,cmin:cmax) = Interface;
-        tmp = regionprops(tmp,'PixelIdxList');
+        tmp = regionprops(double(tmp),'PixelIdxList');
         OrigInterfaceIndex{j} = cat(1,tmp.PixelIdxList);
     end
 
@@ -329,6 +463,7 @@ while ~isempty(MergeIndex)
     %%% 1 point; 2nd, it will get 2 points; and so on. The lower score the better.
     [ignore,LikelihoodRank]   = sort(LikelihoodRatio,'descend');                  % The higher the LikelihoodRatio the better
     [ignore,EccentricityRank] = sort(MergedEccentricity,'ascend');                % The lower the eccentricity the better
+    NeighborScore = zeros(length(NeighborsNbr),1);
     for j = 1:length(NeighborsNbr)
         NeighborScore(j) = find(LikelihoodRank == j) +  find(EccentricityRank == j);
     end
@@ -336,30 +471,31 @@ while ~isempty(MergeIndex)
     %%% Go through the neighbors, starting with the highest ranked, and merge
     %%% with the first neighbor for which certain basic criteria are fulfilled.
     %%% If no neighbor fulfil the basic criteria, there will be no merge.
-    [ignore,TotalRank] = sort(NeigborScore);
+    [ignore,TotalRank] = sort(NeighborScore);
     for j = 1:length(NeighborsNbr)
-        NeighborNbr = NeighborsNbr(TotalRank(j));
+        CurrentNeighborNbr = NeighborsNbr(TotalRank(j));
 
         %%% To merge, the interface between objects must be more likely to belong to the object class
         %%% than the background class. The eccentricity of the merged object must also be lower than
         %%% for the original object.
-        if LikelihoodRatio(TotalRank(j)) > 0 && MergedEccentricity(TotalRank(j)) < Eccentricities(ObjectNbr)
+        if LikelihoodRatio(TotalRank(j)) > 0 && MergedEccentricity(TotalRank(j)) < Eccentricities(CurrentObjectNbr)
+            [CurrentObjectNbr CurrentNeighborNbr]
             
             %%% OK, let's merge!
             %%% Assign the neighbor number to the current object
-            Objects(props(ObjectNbr).PixelIdxList) = NeighborNbr;
+            Objects(props(CurrentObjectNbr).PixelIdxList) = CurrentNeighborNbr;
             
             %%% Assign the neighbor number to the interface pixels between the current object and the neigbor
-            Objects(OrigInterfaceIndex{TotalRank(j)}) = NeighborNbr;
+            Objects(OrigInterfaceIndex{TotalRank(j)}) = CurrentNeighborNbr;
             
             %%% Add the pixel indexes to the neigbor index list
-            props(NeighborNbr).PixelIdxList = cat(1,...
-                props(Neighbor).PixelIdxList,...
-                props(ObjectNbr).PixelIdxList,...
+            props(CurrentNeighborNbr).PixelIdxList = cat(1,...
+                props(CurrentNeighborNbr).PixelIdxList,...
+                props(CurrentObjectNbr).PixelIdxList,...
                 OrigInterfaceIndex{TotalRank(j)});
             
             %%% Remove the neighbor from the list of objects to be merged (if it's there).
-            MergeIndex = setdiff(MergeIndex,MergeNbr);
+            MergeIndex = setdiff(MergeIndex,CurrentNeighborNbr);
         end
     end
     

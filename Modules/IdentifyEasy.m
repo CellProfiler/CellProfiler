@@ -479,7 +479,6 @@ while ~isempty(MergeIndex)
         %%% than the background class. The eccentricity of the merged object must also be lower than
         %%% for the original object.
         if LikelihoodRatio(TotalRank(j)) > 0 && MergedEccentricity(TotalRank(j)) < Eccentricities(CurrentObjectNbr)
-            [CurrentObjectNbr CurrentNeighborNbr]
             
             %%% OK, let's merge!
             %%% Assign the neighbor number to the current object

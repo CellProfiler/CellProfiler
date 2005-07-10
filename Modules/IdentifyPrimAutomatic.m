@@ -1,8 +1,8 @@
 function handles = IdentifyEasy(handles)
 
-% Help for the Identify Primary Intensity Intensity module: 
+% Help for the Identify Primary Intensity Intensity module:
 % Category: Object Identification and Modification
-% 
+%
 % This image analysis module works best for objects that are brighter
 % towards the interior; the objects can be any shape, so they need not
 % be round and uniform in size as would be required for a
@@ -37,7 +37,7 @@ function handles = IdentifyEasy(handles)
 % adjustment, 0 to 1 makes the threshold more lenient and greater than
 % 1 (e.g. 1.3) makes the threshold more stringent.
 %
-% How it works: 
+% How it works:
 % This image analysis module identifies objects by finding peaks in
 % intensity, after the image has been blurred to remove texture (based
 % on blur radius).  Once a marker for each object has been identified
@@ -68,20 +68,32 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Threshold in the range [0,1].
-%choiceVAR03 = Automatic
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Min,Max diameter of objects (pixels):
+%choiceVAR03 = 15,35
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Threshold correction factor
-%defaultVAR04 = 1.2
-ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR04 = Threshold in the range [0,1].
+%choiceVAR04 = Automatic
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Min,Max diameter of objects (pixels):
-%choiceVAR05 = 15,35
-SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu custom
+%textVAR05 = Threshold correction factor
+%defaultVAR05 = 1.2
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
+%textVAR06 = Apply watershed transform? Use maxima in intensity or distance transform as centers?
+%choiceVAR06 = Intensity
+%choiceVAR06 = Distance
+%choiceVAR06 = Do not apply
+LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
+
+%textVAR07 = Try to merge too small objects into larger objects?
+%choiceVAR07 = Yes
+%choiceVAR07 = No
+MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR07 = popupmenu
 
 %%%VariableRevisionNumber = 4
 
@@ -99,13 +111,11 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 OrigImage = handles.Pipeline.(fieldname);
 
-
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
     error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
-
 
 %%% Checks that the Min and Max diameter parameters have valid values
 index = strfind(SizeRange,',');
@@ -141,49 +151,67 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
-%%% Blurs the image using a separable Gaussian filtering.
-sigma = (MinDiameter/4)/2.35;                                                 % Convert from FWHM to sigma
-FiltLength = max(1,ceil(3*sigma));                                         % Determine filter length
-[x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);
-f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));
-BlurredImage = conv2(OrigImage,f,'same');
-
-% This code produces an image with edges. Currently not used
-%fx = x.*f;
-%fy = y.*f;
-%EdgeImage = abs(conv2(OrigImage,fx,'same')).^2 + abs(conv2(OrigImage,fy,'same')).^2;
-%EdgeImage = EdgeImage > graythresh(EdgeImage);
-%EdgeImage = bwmorph(EdgeImage > graythresh(EdgeImage),'skel',inf);
-
-%%% Extract object markers by finding local maxima in the blurred image
-MaximaImage = BlurredImage;
-MaximaMask = getnhood(strel('disk', max(1,floor(MinDiameter/1.5))));
-MaximaImage(BlurredImage < ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-
-%%% Thresholds the image to eliminate dim maxima.
+%%% STEP 1. Find threshold and apply to image
 if strcmp(Threshold,'Automatic'),
     Threshold = CPgraythresh(OrigImage,handles,ImageName);
 end
-MaximaImage = MaximaImage > Threshold;
-
-%%% Overlays the nuclear markers (maxima) on the inverted original image so
-%%% there are black dots on top of each dark nucleus on a white background.
-Overlaid = imimposemin(1 - BlurredImage,MaximaImage);
-WatershedBoundaries = watershed(Overlaid) > 0;
+Threshold = ThresholdCorrection*Threshold;
+%%% Apply threshold
 Objects = OrigImage > Threshold;                              % Threshold image
 Objects = imfill(Objects,'holes');                            % Fill holes
-Objects = Objects.*WatershedBoundaries;                       % Cut objects along the watershed lines
-Objects = bwlabel(Objects);                                   % Label the objects
+
+%%% STEP 2. Extract local maxima and apply watershed transform
+if ~strcmp(LocalMaximaType,'Do not apply')
+    MaximaMask = getnhood(strel('disk', max(1,floor(MinDiameter/1.5))));
+
+    if strcmp(LocalMaximaType,'Intensity')
+        %%% Find maxima in a blurred version of the original image
+        sigma = (MinDiameter/4)/2.35;                                              % Translate between minimum diamter of objects to sigma
+        FiltLength = max(1,ceil(3*sigma));                                         % Determine filter size
+        [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);           % Filter kernel grid
+        f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                         % Gaussian filter kernel
+        BlurredImage = conv2(OrigImage,f,'same');                                  % Blur original image
+        MaximaImage = BlurredImage;                                                % Initialize MaximaImage
+        MaximaImage(BlurredImage < ...                                             % Save only local maxima
+            ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        MaximaImage = MaximaImage > Threshold;                                     % Remove dim maxima
+    
+    elseif strcmp(LocalMaximaType,'Distance')
+        DistanceTransformedImage = bwdist(~Objects);                               % Calculate distance transform                                  
+        DistanceTransformedImage = DistanceTransformedImage + ...                  % Add some noise to get distinct maxima
+            0.001*rand(size(DistanceTransformedImage));
+        MaximaImage = ones(size(OrigImage));                                       % Initialize MaximaImage                           
+        MaximaImage(DistanceTransformedImage < ...                                 % Set all pixels that are not local maxima to zero
+            ordfilt2(DistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        MaximaImage(~Objects) = 0;                                                 % We are only interested in maxima within thresholded objects
+    end
+
+    %%% Overlays the nuclear markers (maxima) on the inverted original image so
+    %%% there are black dots on top of each dark nucleus on a white background.
+    Overlaid = imimposemin(1 - OrigImage,MaximaImage);
+    
+    %%% Calculate the watershed transform and cut objects along the boundaries
+    WatershedBoundaries = watershed(Overlaid) > 0;
+    Objects = Objects.*WatershedBoundaries;                       
+
+    %%% Label the objects
+    Objects = bwlabel(Objects);
+
+    %%% Remove objects with no marker in them (this happens occasionally)
+    tmp = regionprops(Objects,'PixelIdxList');                              % This is a very fast way to get pixel indexes for the objects
+    for k = 1:length(tmp)
+        if sum(MaximaImage(tmp(k).PixelIdxList)) == 0                       % If there is no maxima in these pixels, exclude object
+            Objects(index) = 0;
+        end
+    end
+end
+
+%%% Label the objects
+Objects = bwlabel(Objects);
 
 %%% Merge small objects
-Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
-
-%%% Remove objects with no marker in them
-tmp = regionprops(Objects,'PixelIdxList');                              % This is a very fast way to get pixel indexes for the objects
-for k = 1:length(tmp)
-    if sum(MaximaImage(tmp(k).PixelIdxList)) == 0                       % If there is no maxima in these pixels, exclude object
-        Objects(index) = 0;
-    end
+if strcmp(MergeChoice,'Yes')
+    Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
 end
 
 %%% Will be stored to the handles structure
@@ -198,15 +226,12 @@ NbrInTails = max(round(0.05*length(Diameters)),1);
 Lower90Limit = SortedDiameters(NbrInTails);
 Upper90Limit = SortedDiameters(end-NbrInTails+1);
 
-figure,imagesc(Objects)
 %%% Locate objects with diameter outside the specified range
 DiameterMap = Diameters(Objects+1);                                   % Create image with object intensity equal to the diameter
 tmp = Objects;
 Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
 Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
 DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
-figure,imagesc(DiameterExcludedObjects)
-
 NumOfDiameterObjects = length(unique(DiameterExcludedObjects(:)))-1;  % Count the objects
 
 %%% Will be stored to the handles structure
@@ -305,12 +330,12 @@ handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 %%% because several different modules will write to the handles.Measurements.Image.Threshold
 %%% structure, and we should therefore probably append the current threshold to an existing structure.
 % First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')                        
+if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
     handles.Measurements.Image.ThresholdFeatures = {};
     handles.Measurements.Image.Threshold = {};
 end
 % Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
 % typically happen for the first image set. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
@@ -323,11 +348,11 @@ handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column)
 
 %%% Saves the ObjectCount, i.e., the number of segmented objects.
 %%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);
@@ -364,7 +389,7 @@ function Objects = MergeObjects(Objects,OrigImage,Diameters)
 %%% Find the object that we should try to merge with other objects. The object
 %%% numbers of these objects are stored in the variable 'MergeIndex'. The objects
 %%% that we will try to merge are either the ones that fall below the specified
-%%% MinDiameter threshold, or relatively small objects that are above the MaxEccentricity 
+%%% MinDiameter threshold, or relatively small objects that are above the MaxEccentricity
 %%% threshold. These latter objects are likely to be cells where two maxima have been
 %%% found and the watershed transform has divided cells into two parts.
 MinDiameter = Diameters(1);
@@ -448,7 +473,7 @@ while ~isempty(MergeIndex)
         MergedObject =  double((BinaryNeighborPatch + BinaryObjectPatch + Interface) > 0);
         tmp = regionprops(MergedObject,'Eccentricity');
         MergedEccentricity(j) = tmp(1).Eccentricity;
-    
+
         %%% Get indexes for the interface pixels in original image.
         %%% These indexes are required if we need to merge the object with
         %%% the current neighbor.
@@ -479,25 +504,25 @@ while ~isempty(MergeIndex)
         %%% than the background class. The eccentricity of the merged object must also be lower than
         %%% for the original object.
         if LikelihoodRatio(TotalRank(j)) > 0 && MergedEccentricity(TotalRank(j)) < Eccentricities(CurrentObjectNbr)
-            
+
             %%% OK, let's merge!
             %%% Assign the neighbor number to the current object
             Objects(props(CurrentObjectNbr).PixelIdxList) = CurrentNeighborNbr;
-            
+
             %%% Assign the neighbor number to the interface pixels between the current object and the neigbor
             Objects(OrigInterfaceIndex{TotalRank(j)}) = CurrentNeighborNbr;
-            
+
             %%% Add the pixel indexes to the neigbor index list
             props(CurrentNeighborNbr).PixelIdxList = cat(1,...
                 props(CurrentNeighborNbr).PixelIdxList,...
                 props(CurrentObjectNbr).PixelIdxList,...
                 OrigInterfaceIndex{TotalRank(j)});
-            
+
             %%% Remove the neighbor from the list of objects to be merged (if it's there).
             MergeIndex = setdiff(MergeIndex,CurrentNeighborNbr);
         end
     end
-    
+
     %%% OK, we are done with the current object, let's go to the next
     MergeIndex = MergeIndex(2:end-1);
 end

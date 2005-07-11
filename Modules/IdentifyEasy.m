@@ -73,27 +73,38 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Threshold in the range [0,1].
-%choiceVAR04 = Automatic
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu custom
+%textVAR04 = Approximately how much of the image is covered by objects:
+%choiceVAR04 = 20%
+%choiceVAR04 = 50%
+%choiceVAR04 = 80%
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
-%textVAR05 = Threshold correction factor
-%defaultVAR05 = 1.2
-ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Apply watershed transform? Use maxima in intensity or distance transform as centers?
-%choiceVAR06 = Intensity
-%choiceVAR06 = Distance
-%choiceVAR06 = Do not apply
-LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu
+%textVAR05 = Select thresholing method or enter a threshold in the range [0,1].
+%choiceVAR05 = Global Otsu
+%choiceVAR05 = Global MoG
+%choiceVAR05 = Adaptive Otsu
+%choiceVAR05 = Adaptive MoG
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
 
-%textVAR07 = Try to merge too small objects into larger objects?
-%choiceVAR07 = Yes
-%choiceVAR07 = No
-MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Threshold correction factor
+%defaultVAR06 = 1.2
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+%textVAR07 = Use maxima in intensity or distance transform as centers in Watershed transform?
+%choiceVAR07 = Intensity
+%choiceVAR07 = Distance
+%choiceVAR07 = Do not apply
+LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
+
+%textVAR08 = Try to merge too small objects into larger objects?
+%choiceVAR08 = Yes
+%choiceVAR08 = No
+MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
 %%%VariableRevisionNumber = 4
 
@@ -139,12 +150,12 @@ if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the
 Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
 %%% Checks that the Threshold parameter has a valid value
-if ~strcmp(Threshold,'Automatic')
-    Threshold = str2double(Threshold);
-    if isnan(Threshold) | Threshold > 1 | Threshold < 0
-        error('The threshold entered in the IdentifyEasy module is out of range.')
-    end
-end
+%if ~strcmp(Threshold,'Automatic')
+%    Threshold = str2double(Threshold);
+%    if isnan(Threshold) | Threshold > 1 | Threshold < 0
+%        error('The threshold entered in the IdentifyEasy module is out of range.')
+%    end
+%end
 
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -152,10 +163,63 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 
 %%% STEP 1. Find threshold and apply to image
-if strcmp(Threshold,'Automatic'),
-    Threshold = CPgraythresh(OrigImage,handles,ImageName);
+if strfind(Threshold,'Global')
+    if strfind(Threshold,'Otsu')
+        Threshold = CPgraythresh(OrigImage,handles,ImageName);
+    elseif strfind(Threshold,'MoG')
+        Threshold = MixtureOfGaussian(OrigImage,pObject)
+    end
+elseif strfind(Threshold,'Adaptive')
+
+    %%% Choose the block size that best covers the original image in the sense
+    %%% that the number of extra rows and columns is minimal.
+    %%% Get size of image
+    [m,n] = size(OrigImage);
+
+    %%% Calculates the MinimumThreshold automatically as 0.7 times the
+    %%% global threshold calculated by Otsu's method
+    MinimumThreshold = 0.7*graythresh(OrigImage);
+
+    %%% Calculates a range of acceptable block sizes as plus minus 10% of the suggested block size.
+    BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
+    [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
+    BestBlockSize = BlockSizeRange(index);
+
+    %%% Pads the image so that the blocks fit properly.
+    RowsToAdd = BestBlockSize*ceil(m/BestBlockSize) - m;
+    ColumnsToAdd = BestBlockSize*ceil(n/BestBlockSize) - n;
+    RowsToAddPre = round(RowsToAdd/2);
+    RowsToAddPost = RowsToAdd - RowsToAddPre;
+    ColumnsToAddPre = round(ColumnsToAdd/2);
+    ColumnsToAddPost = ColumnsToAdd - ColumnsToAddPre;
+    PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
+    PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
+
+    if strfind(Threshold,'Otsu')
+        %%% Calculates the threshold for each block in the image.
+        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
+
+
+    elseif strfind(Threshold,'MoG')
+    end
+    %%% Resizes the block-produced image to be the size of the padded image.
+    %%% Bilinear prevents dipping below zero. The crop the image
+    %%% get rid of the padding, to make the result the same size as the original image.
+    ThresholdImage = imresize(ThresholdImage, size(PaddedImage), 'bilinear');
+    ThresholdImage = ThresholdImage(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
+
+    %%% For any of the threshold values that is lower than the user-specified
+    %%% minimum threshold, set to equal the minimum threshold.  Thus, if there
+    %%% are no objects within a block (e.g. if cells are very sparse), an
+    %%% unreasonable threshold will be overridden by the minimum threshold.
+    ThresholdImage(ThresholdImage <= MinimumThreshold) = MinimumThreshold;
+
 end
+
+%%% Correct the threshold using the correction factor given by the user
 Threshold = ThresholdCorrection*Threshold;
+
+
 %%% Apply threshold
 Objects = OrigImage > Threshold;                              % Threshold image
 Objects = imfill(Objects,'holes');                            % Fill holes
@@ -175,12 +239,12 @@ if ~strcmp(LocalMaximaType,'Do not apply')
         MaximaImage(BlurredImage < ...                                             % Save only local maxima
             ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
         MaximaImage = MaximaImage > Threshold;                                     % Remove dim maxima
-    
+
     elseif strcmp(LocalMaximaType,'Distance')
-        DistanceTransformedImage = bwdist(~Objects);                               % Calculate distance transform                                  
+        DistanceTransformedImage = bwdist(~Objects);                               % Calculate distance transform
         DistanceTransformedImage = DistanceTransformedImage + ...                  % Add some noise to get distinct maxima
             0.001*rand(size(DistanceTransformedImage));
-        MaximaImage = ones(size(OrigImage));                                       % Initialize MaximaImage                           
+        MaximaImage = ones(size(OrigImage));                                       % Initialize MaximaImage
         MaximaImage(DistanceTransformedImage < ...                                 % Set all pixels that are not local maxima to zero
             ordfilt2(DistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
         MaximaImage(~Objects) = 0;                                                 % We are only interested in maxima within thresholded objects
@@ -189,10 +253,10 @@ if ~strcmp(LocalMaximaType,'Do not apply')
     %%% Overlays the nuclear markers (maxima) on the inverted original image so
     %%% there are black dots on top of each dark nucleus on a white background.
     Overlaid = imimposemin(1 - OrigImage,MaximaImage);
-    
+
     %%% Calculate the watershed transform and cut objects along the boundaries
     WatershedBoundaries = watershed(Overlaid) > 0;
-    Objects = Objects.*WatershedBoundaries;                       
+    Objects = Objects.*WatershedBoundaries;
 
     %%% Label the objects
     Objects = bwlabel(Objects);
@@ -299,7 +363,7 @@ if any(findobj == ThisModuleFigureNumber)
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range:[%0.1f, %0.1f] pixels',Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range[%0.1f, %0.1f] pixels',Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
 
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
@@ -382,6 +446,64 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %     end
 % catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 % end
+
+
+
+
+function Threshold = MixtureOfGaussians(OrigImage,pObject)
+
+%%% Transform the image into a vector
+OrigImage = OrigImage(:);
+
+%%% Get the probability for a background pixel
+pBackground = 1 - pObject;
+
+%%% Initialize mean and standard deviations of the two Gaussian distributions
+%%% by looking at the pixel intensities in the original image and by considering
+%%% the percentage of the image that is covered by object pixels. The means of
+%%% the Object class and Background class are calculated as the (1-pObject/2) and 
+%%% pBackground/2 percentiles of the original pixel intensities respectively. The
+%%% initial standard deviations are then initialized so that the distributions
+%%% don't overlap too much
+SortedIntensities = sort(OrigImage);
+MeanObject = SortedIntensities(length(OrigImage)*(1 - pObject/2));
+MeanBackground = SortedIntensities(length(OrigImage)*pBackground/2);
+StdObject = (MeanObject - MeanBackground)/4;
+StdBackground = (MeanObject - MeanBackground)/4;
+
+%%% Expectation-Maximization algorithm for fitting the two Gaussian distributions
+%%% to the data. Iterate until parameters don't change anymore.
+delta = 1;
+while delta > 0.001
+    %%% Store old parameter value to monitor change
+    oldMeanObject = MeanObject;
+    
+    %%% Update probabilities of a pixel belonging to the background or object
+    pPixelBackground = pBackground * 1/sqrt(2*pi*StdBackground^2) * exp(-(OrigImage - MeanBackground).^2/(2*StdBackground^2));
+    pPixelObject     = pObject * 1/sqrt(2*pi*StdObject^2) * exp(-(OrigImage - MeanObject).^2/(2*StdObject^2));
+    pPixelBackground = pPixelBackground./(pPixelBackground+pPixelObject);
+    pPixelObject     = pPixelObject./(pPixelBackground+pPixelObject);
+
+    %%% Update parameters in Gaussian distributions
+    MeanBackground = sum(pPixelBackground.*OrigImage)/sum(pPixelBackground);
+    MeanObject     = sum(pPixelObject.*OrigImage)/sum(pPixelObject);
+    StdBackground  = sqrt(sum(pPixelBackground.*(OrigImage - MeanBackground).^2)/sum(pPixelBackground));
+    StdObject      = sqrt(sum(pPixelObject.*(OrigImage - MeanObject).^2)/sum(pPixelObject));
+    pBackground = mean(pPixelBackground);
+    pObject     = mean(pPixelObject);
+
+    %%% Calculate change
+    delta = abs(MeanBackground - oldMeanBackground);
+end
+
+Threshold = 
+
+
+
+
+
+
+
 
 
 function Objects = MergeObjects(Objects,OrigImage,Diameters)

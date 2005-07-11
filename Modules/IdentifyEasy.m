@@ -73,7 +73,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Approximately how much of the image is covered by objects:
+%textVAR04 = Approximate percentage of image covered by objects:
 %choiceVAR04 = 20%
 %choiceVAR04 = 50%
 %choiceVAR04 = 80%
@@ -81,19 +81,19 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 
-%textVAR05 = Select thresholing method or enter a threshold in the range [0,1].
-%choiceVAR05 = Global Otsu
-%choiceVAR05 = Global MoG
-%choiceVAR05 = Adaptive Otsu
-%choiceVAR05 = Adaptive MoG
+%textVAR05 = Select thresholding method or enter a threshold in the range [0,1].
+%choiceVAR05 = Otsu Global
+%choiceVAR05 = Otsu Adaptive
+%choiceVAR05 = MoG Global
+%choiceVAR05 = MoG Adaptive
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
 %textVAR06 = Threshold correction factor
-%defaultVAR06 = 1.2
+%defaultVAR06 = 1
 ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Use maxima in intensity or distance transform as centers in Watershed transform?
+%textVAR07 = Use intensity or distance transform maxima as centers in Watershed transform?
 %choiceVAR07 = Intensity
 %choiceVAR07 = Distance
 %choiceVAR07 = Do not apply
@@ -157,29 +157,39 @@ Diameter = min((MinDiameter + MaxDiameter)/2,50);
 %    end
 %end
 
-
+%%% Convert user-specified percentage of image covered by objects to a prior probability
+%%% of a pixel being part of an object.
+pObject = str2num(pObject(1:2))/100;                  
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
+%%% TODO: Add maximum threshold for adaptive thresholding
+%%% TODO: Fix blocksize, should probably be at least 50x50
+
 %%% STEP 1. Find threshold and apply to image
-pObject = str2num(pObject(1:2))/100;
 if strfind(Threshold,'Global')
     if strfind(Threshold,'Otsu')
         Threshold = CPgraythresh(OrigImage,handles,ImageName);
     elseif strfind(Threshold,'MoG')
         Threshold = MixtureOfGaussians(OrigImage,pObject);
     end
+
 elseif strfind(Threshold,'Adaptive')
 
-    BlockSize = 100;
     
     %%% Choose the block size that best covers the original image in the sense
     %%% that the number of extra rows and columns is minimal.
     %%% Get size of image
     [m,n] = size(OrigImage);
-
+    
+    %%% Deduce a suitable block size based on the image size and the percentage of image
+    %%% covered by objects. We want blocks to be big enough to contain both background and
+    %%% objects. The more uneven the ratio between background pixels and object pixels the
+    %%% larger the block size need to be. The minimum block size is about 30x30 pixels.
+    BlockSize = max(30,min(round(m/10),round(n/10)));   %NOTE: THIS SHOULD BE MODIFIED
+    
     %%% Calculates a range of acceptable block sizes as plus-minus 10% of the suggested block size.
     BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
     [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
@@ -201,7 +211,7 @@ elseif strfind(Threshold,'Adaptive')
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
     elseif strfind(Threshold,'MoG')
         MinimumThreshold = 0.7*MixtureOfGaussians(OrigImage,pObject);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject)
+        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject);
     end
     %%% Resizes the block-produced image to be the size of the padded image.
     %%% Bilinear prevents dipping below zero. The crop the image
@@ -216,13 +226,13 @@ elseif strfind(Threshold,'Adaptive')
     Threshold(Threshold <= MinimumThreshold) = MinimumThreshold;
 
 end
-figure,imagesc(Threshold)
 %%% Correct the threshold using the correction factor given by the user
 Threshold = ThresholdCorrection*Threshold;
 
 
 %%% Apply threshold
 Objects = OrigImage > Threshold;                              % Threshold image
+Threshold = mean(Threshold(:));                               % Use average threshold downstreams
 Objects = imfill(Objects,'holes');                            % Fill holes
 
 %%% STEP 2. Extract local maxima and apply watershed transform

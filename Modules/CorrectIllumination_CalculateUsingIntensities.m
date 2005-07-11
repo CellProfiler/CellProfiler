@@ -223,8 +223,10 @@ if (strcmp(EachOrAll,'All') == 1 && handles.Current.SetBeingAnalyzed ~= 1 && str
     return
 end
 
-try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
-catch error('In the Correct Illumination_Calculate Using Intensities module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
+try
+    NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
+catch
+    error('In the Correct Illumination_Calculate Using Intensities module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -244,7 +246,7 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 ReadyFlag = 'Not Ready';
-if strcmp(EachOrAll,'All') == 1
+if strcmp(EachOrAll,'All')
     try
         if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1
             %%% The first time the module is run, the projection image is
@@ -258,7 +260,7 @@ if strcmp(EachOrAll,'All') == 1
     catch [ErrorMessage, ErrorMessage2] = lasterr;
         error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
-elseif strcmp(EachOrAll,'Each') == 1
+elseif strcmp(EachOrAll,'Each')
     %%% Retrieves the current image.
     OrigImage = handles.Pipeline.(ImageName);
     %%% Checks that the original image is two-dimensional (i.e. not a
@@ -278,7 +280,7 @@ if strcmp(ReadyFlag, 'Ready') == 1
         ProjectionImage = IlluminationImage;
         IlluminationImage = CPdilatebinaryobjects(IlluminationImage, NumericalObjectDilationRadius);
     end
-    if strcmp(SmoothingMethod,'No smoothing') ~= 1
+    if ~strcmp(SmoothingMethod,'No smoothing')
         %%% Smooths the projection image, if requested, but saves a raw copy
         %%% first.
         DilatedProjectionImage = IlluminationImage;
@@ -335,29 +337,32 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
-    if exist('OrigImage','var') == 1
-    subplot(2,2,1); imagesc(OrigImage); colormap(gray)
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    if exist('OrigImage','var')
+        subplot(2,2,1); imagesc(OrigImage); colormap(gray)
+        title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        CPFixAspectRatio(OrigImage);
     end
     %%% Whether these images exist depends on whether the images have
     %%% been calculated yet (if running in pipeline mode, this won't occur
     %%% until the last image set is processed).  It also depends on
     %%% whether the user has chosen to dilate or smooth the projection
     %%% image.
-    if exist('ProjectionImage','var') == 1
+    if exist('ProjectionImage','var')
         subplot(2,2,2); imagesc(ProjectionImage); colormap(gray)
         title('Raw projection image prior to dilation');
     end
-    if exist('DilatedProjectionImage','var') == 1
+    if exist('DilatedProjectionImage','var')
         subplot(2,2,3); imagesc(DilatedProjectionImage); colormap(gray)
         title('Projection image prior to smoothing');
     end
-    subplot(2,2,4); imagesc(IlluminationImage); colormap(gray)
-    if strcmp(ReadyFlag, 'Ready') == 1
+    subplot(2,2,4);
+    imagesc(IlluminationImage);
+    colormap(gray);
+    if strcmp(ReadyFlag, 'Ready')
         title('Final illumination correction function');
-    else title('Projection calculated so far');
+    else
+        title('Projection calculated so far');
     end
-    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

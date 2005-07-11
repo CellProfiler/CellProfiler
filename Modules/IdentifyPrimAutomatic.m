@@ -77,7 +77,7 @@ SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = 20%
 %choiceVAR04 = 50%
 %choiceVAR04 = 80%
-SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+pObject = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 
@@ -158,29 +158,29 @@ Diameter = min((MinDiameter + MaxDiameter)/2,50);
 %end
 
 
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
 %%% STEP 1. Find threshold and apply to image
+pObject = str2num(pObject(1:2))/100;
 if strfind(Threshold,'Global')
     if strfind(Threshold,'Otsu')
         Threshold = CPgraythresh(OrigImage,handles,ImageName);
     elseif strfind(Threshold,'MoG')
-        Threshold = MixtureOfGaussian(OrigImage,pObject)
+        Threshold = MixtureOfGaussians(OrigImage,pObject);
     end
 elseif strfind(Threshold,'Adaptive')
 
+    BlockSize = 100;
+    
     %%% Choose the block size that best covers the original image in the sense
     %%% that the number of extra rows and columns is minimal.
     %%% Get size of image
     [m,n] = size(OrigImage);
 
-    %%% Calculates the MinimumThreshold automatically as 0.7 times the
-    %%% global threshold calculated by Otsu's method
-    MinimumThreshold = 0.7*graythresh(OrigImage);
-
-    %%% Calculates a range of acceptable block sizes as plus minus 10% of the suggested block size.
+    %%% Calculates a range of acceptable block sizes as plus-minus 10% of the suggested block size.
     BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
     [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
     BestBlockSize = BlockSizeRange(index);
@@ -195,27 +195,28 @@ elseif strfind(Threshold,'Adaptive')
     PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
     PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
 
+    %%% Calculates the threshold for each block in the image.
     if strfind(Threshold,'Otsu')
-        %%% Calculates the threshold for each block in the image.
+        MinimumThreshold = 0.7*graythresh(OrigImage);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
-
-
     elseif strfind(Threshold,'MoG')
+        MinimumThreshold = 0.7*MixtureOfGaussians(OrigImage,pObject);
+        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject)
     end
     %%% Resizes the block-produced image to be the size of the padded image.
     %%% Bilinear prevents dipping below zero. The crop the image
     %%% get rid of the padding, to make the result the same size as the original image.
-    ThresholdImage = imresize(ThresholdImage, size(PaddedImage), 'bilinear');
-    ThresholdImage = ThresholdImage(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
+    Threshold = imresize(Threshold, size(PaddedImage), 'bilinear');
+    Threshold = Threshold(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
 
     %%% For any of the threshold values that is lower than the user-specified
     %%% minimum threshold, set to equal the minimum threshold.  Thus, if there
     %%% are no objects within a block (e.g. if cells are very sparse), an
     %%% unreasonable threshold will be overridden by the minimum threshold.
-    ThresholdImage(ThresholdImage <= MinimumThreshold) = MinimumThreshold;
+    Threshold(Threshold <= MinimumThreshold) = MinimumThreshold;
 
 end
-
+figure,imagesc(Threshold)
 %%% Correct the threshold using the correction factor given by the user
 Threshold = ThresholdCorrection*Threshold;
 
@@ -451,9 +452,25 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 
 
 function Threshold = MixtureOfGaussians(OrigImage,pObject)
+%%% This function finds a suitable threshold for the input image
+%%% OrigImage. It assumes that the pixels in the image belong to either
+%%% a background class or an object class. 'pObject' is an initial guess
+%%% of the prior probability of an object pixel, or equivalently, the fraction
+%%% of the image that is covered by objects. It's assumed that each
+%%% pixel has been drawn from a Gaussian distribution with a mean and standard
+%%% deviation specific for each class. This function estimates the parameters
+%%% for the Gaussian distribution for the background class and Gaussian 
+%%% distribution for the object class via the Expectation-Maximization (EM)
+%%% algorithm, and sets the threshold to the intensity where the distributions
+%%% intersect.
 
-%%% Transform the image into a vector
+%%% Transform the image into a vector. Also, if the image is very
+%%% large (larger than 1000x1000), select a subset of 1 million voxels.
 OrigImage = OrigImage(:);
+if length(OrigImage) > 1000^2
+    indexes = randperm(length(OrigImage));
+    OrigImage = OrigImage(indexes(1:1000^2));
+end
 
 %%% Get the probability for a background pixel
 pBackground = 1 - pObject;
@@ -464,11 +481,11 @@ pBackground = 1 - pObject;
 %%% the Object class and Background class are calculated as the (1-pObject/2) and 
 %%% pBackground/2 percentiles of the original pixel intensities respectively. The
 %%% initial standard deviations are then initialized so that the distributions
-%%% don't overlap too much
+%%% don't overlap too much. The object class is given a larger initial std.
 SortedIntensities = sort(OrigImage);
-MeanObject = SortedIntensities(length(OrigImage)*(1 - pObject/2));
-MeanBackground = SortedIntensities(length(OrigImage)*pBackground/2);
-StdObject = (MeanObject - MeanBackground)/4;
+MeanObject = SortedIntensities(round(length(OrigImage)*(1 - pObject/2)));
+MeanBackground = SortedIntensities(round(length(OrigImage)*pBackground/2));
+StdObject = (MeanObject - MeanBackground)/2;
 StdBackground = (MeanObject - MeanBackground)/4;
 
 %%% Expectation-Maximization algorithm for fitting the two Gaussian distributions
@@ -477,12 +494,13 @@ delta = 1;
 while delta > 0.001
     %%% Store old parameter value to monitor change
     oldMeanObject = MeanObject;
+    oldMeanBackground = MeanBackground;
     
     %%% Update probabilities of a pixel belonging to the background or object
     pPixelBackground = pBackground * 1/sqrt(2*pi*StdBackground^2) * exp(-(OrigImage - MeanBackground).^2/(2*StdBackground^2));
     pPixelObject     = pObject * 1/sqrt(2*pi*StdObject^2) * exp(-(OrigImage - MeanObject).^2/(2*StdObject^2));
-    pPixelBackground = pPixelBackground./(pPixelBackground+pPixelObject);
-    pPixelObject     = pPixelObject./(pPixelBackground+pPixelObject);
+    pPixelBackground = pPixelBackground./(pPixelBackground+pPixelObject + eps);
+    pPixelObject     = pPixelObject./(pPixelBackground+pPixelObject + eps);
 
     %%% Update parameters in Gaussian distributions
     MeanBackground = sum(pPixelBackground.*OrigImage)/sum(pPixelBackground);
@@ -493,12 +511,20 @@ while delta > 0.001
     pObject     = mean(pPixelObject);
 
     %%% Calculate change
-    delta = abs(MeanBackground - oldMeanBackground);
+    delta = abs(MeanObject - oldMeanObject) + abs(MeanBackground - oldMeanBackground);
 end
 
-Threshold = 
-
-
+%%% Search for a threshold between the two means of the Gaussian distribution. Right now the
+%%% threshold is set to the intensity where the two distributions intersect each other. This
+%%% might not be the best solution. The Gaussian model probably fits the background class
+%%% better than the object class because in reality the object class probably consists of several
+%%% classes. Therefore, it might be better to select the threshold based on the background class
+%%% alone, e.g., to MeanBackground + 3*MeanStd, but this also has some dangers.
+Threshold = linspace(MeanBackground,MeanObject,10000);
+ObjectGaussian = pObject * 1/sqrt(2*pi*StdObject^2) * exp(-(Threshold - MeanObject).^2/(2*StdObject^2));
+BackgroundGaussian = pBackground * 1/sqrt(2*pi*StdBackground^2) * exp(-(Threshold - MeanBackground).^2/(2*StdBackground^2));
+[ignore,index] = min(abs(ObjectGaussian-BackgroundGaussian));
+Threshold = Threshold(index);
 
 
 

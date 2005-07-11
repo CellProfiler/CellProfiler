@@ -1108,8 +1108,11 @@ if ModuleNamedotm ~= 0,
             clear StrSet
         elseif (strncmp(output,'%infotypeVAR',12) == 1) && (OptionInCode == SelectedOption);
             lastVariableCheck = str2double(output(13:14));
-            set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData', output(18:end));
-            
+            try
+                set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData', output(18:end));
+            catch
+                keyboard;
+            end
             handles.Settings.VariableInfoTypes(ModuleNums, lastVariableCheck) = {output(18:end)};
             guidata(handles.figure1,handles);
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
@@ -2392,7 +2395,6 @@ else
                 set(handles.CloseWindowsButton,'enable','off')
                 set(handles.OutputFileNameEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
                 set(handles.AnalyzeImagesButton,'enable','off')
-                % FIXME: This should loop just over the number of actual variables in the display.
                 set(cat(2,handles.VariableBox{:}),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
                 %%% In the following code, the Timer window and
                 %%% timer_text is created.  Each time around the loop,
@@ -2485,8 +2487,7 @@ else
                 set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
 
-                %%% Label we attach to figures (as UserData) so we know
-                %%% they are ours
+
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
                         handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...

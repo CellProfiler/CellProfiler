@@ -159,14 +159,11 @@ Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
 %%% Convert user-specified percentage of image covered by objects to a prior probability
 %%% of a pixel being part of an object.
-pObject = str2num(pObject(1:2))/100;                  
+pObject = str2num(pObject(1:2))/100;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
-%%% TODO: Add maximum threshold for adaptive thresholding
-%%% TODO: Fix blocksize, should probably be at least 50x50
 
 %%% STEP 1. Find threshold and apply to image
 if strfind(Threshold,'Global')
@@ -178,18 +175,19 @@ if strfind(Threshold,'Global')
 
 elseif strfind(Threshold,'Adaptive')
 
-    
     %%% Choose the block size that best covers the original image in the sense
     %%% that the number of extra rows and columns is minimal.
     %%% Get size of image
     [m,n] = size(OrigImage);
-    
+
     %%% Deduce a suitable block size based on the image size and the percentage of image
     %%% covered by objects. We want blocks to be big enough to contain both background and
     %%% objects. The more uneven the ratio between background pixels and object pixels the
-    %%% larger the block size need to be. The minimum block size is about 30x30 pixels.
-    BlockSize = max(30,min(round(m/10),round(n/10)));   %NOTE: THIS SHOULD BE MODIFIED
-    
+    %%% larger the block size need to be. The minimum block size is about 50x50 pixels.
+    %%% The line below divides the image in 10x10 blocks, and makes sure that the block size is
+    %%% at least 50x50 pixels.
+    BlockSize = max(50,min(round(m/10),round(n/10)));
+
     %%% Calculates a range of acceptable block sizes as plus-minus 10% of the suggested block size.
     BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
     [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
@@ -205,12 +203,13 @@ elseif strfind(Threshold,'Adaptive')
     PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
     PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
 
-    %%% Calculates the threshold for each block in the image.
+    %%% Calculates the threshold for each block in the image, and a global threshold used
+    %%% to constrain the adaptive threshholds.
     if strfind(Threshold,'Otsu')
-        MinimumThreshold = 0.7*graythresh(OrigImage);
+        GlobalThreshold = graythresh(OrigImage);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
     elseif strfind(Threshold,'MoG')
-        MinimumThreshold = 0.7*MixtureOfGaussians(OrigImage,pObject);
+        GlobalThreshold = MixtureOfGaussians(OrigImage,pObject);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject);
     end
     %%% Resizes the block-produced image to be the size of the padded image.
@@ -223,29 +222,28 @@ elseif strfind(Threshold,'Adaptive')
     %%% minimum threshold, set to equal the minimum threshold.  Thus, if there
     %%% are no objects within a block (e.g. if cells are very sparse), an
     %%% unreasonable threshold will be overridden by the minimum threshold.
-    Threshold(Threshold <= MinimumThreshold) = MinimumThreshold;
-
+    Threshold(Threshold <= 0.7*GlobalThreshold) = 0.7*GlobalThreshold;
+    Threshold(Threshold >= 1.5*GlobalThreshold) = 1.5*GlobalThreshold;
 end
 %%% Correct the threshold using the correction factor given by the user
 Threshold = ThresholdCorrection*Threshold;
 
 
-%%% Apply threshold
-Objects = OrigImage > Threshold;                              % Threshold image
-Threshold = mean(Threshold(:));                               % Use average threshold downstreams
-Objects = imfill(Objects,'holes');                            % Fill holes
+%%% Smooth images slightly and apply threshold
+sigma = (MinDiameter/8)/2.35;                                         % Translate between minimum diamter of objects to sigma
+FiltLength = max(1,ceil(3*sigma));                                    % Determine filter size
+[x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+Objects = BlurredImage > Threshold;                                   % Threshold image
+Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
+Objects = imfill(Objects,'holes');                                    % Fill holes
 
 %%% STEP 2. Extract local maxima and apply watershed transform
 if ~strcmp(LocalMaximaType,'Do not apply')
-    MaximaMask = getnhood(strel('disk', max(1,floor(MinDiameter/1.5))));
+    MaximaMask = getnhood(strel('disk', max(1,floor(MinDiameter/1.5))));           % Local maxima defined in this neighborhood
 
     if strcmp(LocalMaximaType,'Intensity')
-        %%% Find maxima in a blurred version of the original image
-        sigma = (MinDiameter/4)/2.35;                                              % Translate between minimum diamter of objects to sigma
-        FiltLength = max(1,ceil(3*sigma));                                         % Determine filter size
-        [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);           % Filter kernel grid
-        f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                         % Gaussian filter kernel
-        BlurredImage = conv2(OrigImage,f,'same');                                  % Blur original image
         MaximaImage = BlurredImage;                                                % Initialize MaximaImage
         MaximaImage(BlurredImage < ...                                             % Save only local maxima
             ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
@@ -291,6 +289,7 @@ end
 
 %%% Will be stored to the handles structure
 PrelimLabelMatrixImage1 = Objects;
+ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
 
 %%% Get diameters of objects and calculate the interval
 %%% that contains 90% of the objects
@@ -374,12 +373,15 @@ if any(findobj == ThisModuleFigureNumber)
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range[%0.1f, %0.1f] pixels',Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
-
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range[%0.1f, %0.1f] pixels',...
+        Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
+    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of small objects: %d',NumOfDiameterObjects),'FontSize',handles.Current.FontSize);
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -469,7 +471,7 @@ function Threshold = MixtureOfGaussians(OrigImage,pObject)
 %%% of the image that is covered by objects. It's assumed that each
 %%% pixel has been drawn from a Gaussian distribution with a mean and standard
 %%% deviation specific for each class. This function estimates the parameters
-%%% for the Gaussian distribution for the background class and Gaussian 
+%%% for the Gaussian distribution for the background class and Gaussian
 %%% distribution for the object class via the Expectation-Maximization (EM)
 %%% algorithm, and sets the threshold to the intensity where the distributions
 %%% intersect.
@@ -488,7 +490,7 @@ pBackground = 1 - pObject;
 %%% Initialize mean and standard deviations of the two Gaussian distributions
 %%% by looking at the pixel intensities in the original image and by considering
 %%% the percentage of the image that is covered by object pixels. The means of
-%%% the Object class and Background class are calculated as the (1-pObject/2) and 
+%%% the Object class and Background class are calculated as the (1-pObject/2) and
 %%% pBackground/2 percentiles of the original pixel intensities respectively. The
 %%% initial standard deviations are then initialized so that the distributions
 %%% don't overlap too much. The object class is given a larger initial std.
@@ -505,7 +507,7 @@ while delta > 0.001
     %%% Store old parameter value to monitor change
     oldMeanObject = MeanObject;
     oldMeanBackground = MeanBackground;
-    
+
     %%% Update probabilities of a pixel belonging to the background or object
     pPixelBackground = pBackground * 1/sqrt(2*pi*StdBackground^2) * exp(-(OrigImage - MeanBackground).^2/(2*StdBackground^2));
     pPixelObject     = pObject * 1/sqrt(2*pi*StdObject^2) * exp(-(OrigImage - MeanObject).^2/(2*StdObject^2));

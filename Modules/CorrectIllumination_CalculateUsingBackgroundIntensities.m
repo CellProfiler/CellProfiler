@@ -357,7 +357,7 @@ elseif strcmp(EachOrAll,'Each') == 1
     %%% Not sure why this line differed from the one above for 'A'
     %%% mode, so I changed it to use the padarray version.
     % MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'min(x(x>0))');
-    MiniIlluminationImage = blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
+    MiniIlluminationImage = blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(min(x))');
     drawnow
     %%% The coarse estimate is then expanded in size so that it is the same
     %%% size as the original image. Bilinear interpolation is used to ensure the
@@ -425,7 +425,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,1); imagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     if exist('IlluminationImage','var') == 1
-        subplot(2,2,4); imagesc(IlluminationImage); colormap(gray)
+        subplot(2,2,4);
+        imagesc(IlluminationImage);
+        colormap(gray)
         title('Final illumination correction function');
     else subplot(2,2,4);
         title('Illumination correction function is not yet calculated');

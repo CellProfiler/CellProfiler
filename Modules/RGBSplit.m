@@ -97,17 +97,17 @@ CurrentModuleNum = str2double(CurrentModule);
 RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the image that was red?
+%textVAR02 = What do you want to call the image that was the red part?
 %infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigRed
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the image that was green?
+%textVAR03 = What do you want to call the image that was the green part?
 %infotypeVAR03 = imagegroup indep
 %defaultVAR03 = OrigGreen
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call the image that was blue?
+%textVAR04 = What do you want to call the image that was the blue part?
 %infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigBlue
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -137,10 +137,10 @@ RGBImage = handles.Pipeline.(fieldname);
 
 Size = size(RGBImage);
 if length(Size) ~= 3
-    error('Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  Is it a color image?  This module was only tested with TIF and BMP images.')
+    error('Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  Is it a color image?')
 end
 if Size(3) ~= 3
-    error('Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.  This module was only tested with TIF and BMP images.')
+    error('Image processing was canceled because the RGB image you specified in the RGB Split module could not be separated into three layers of image data.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -162,17 +162,20 @@ drawnow
 
 %%% Determines whether the user has specified an image to be loaded in
 %%% blue.
-if strcmp(upper(RedImageName), 'N') == 0
+if ~strcmp(upper(RedImageName), 'N')
     RedImage = RGBImage(:,:,1);
-else RedImage = zeros(size(RGBImage(:,:,1)));
+else
+    RedImage = zeros(size(RGBImage(:,:,1)));
 end
-if strcmp(upper(GreenImageName), 'N') == 0
+if ~strcmp(upper(GreenImageName), 'N')
     GreenImage = RGBImage(:,:,2);
-else GreenImage = zeros(size(RGBImage(:,:,1)));
+else
+    GreenImage = zeros(size(RGBImage(:,:,1)));
 end
-if strcmp(upper(BlueImageName), 'N') == 0
+if ~strcmp(upper(BlueImageName), 'N')
     BlueImage = RGBImage(:,:,3);
-else BlueImage = zeros(size(RGBImage(:,:,1)));
+else
+    BlueImage = zeros(size(RGBImage(:,:,1)));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

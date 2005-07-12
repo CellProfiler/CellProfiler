@@ -146,11 +146,11 @@ drawnow
 
 %%% Determines whether the user has specified an image to be loaded in
 %%% blue.
-if strcmp(BlueImageName, 'Leave this black') == 0
+if ~strcmp(BlueImageName, 'Leave this black')
     %%% Read (open) the images and assign them to variables.
     fieldname = ['', BlueImageName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
+    if ~isfield(handles.Pipeline, fieldname)
         %%% If the image is not there, an error message is produced.  The error
         %%% is not displayed: The error function halts the current function and
         %%% returns control to the calling function (the analyze all images
@@ -162,7 +162,8 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% Reads the image.
     BlueImage = handles.Pipeline.(fieldname);
     BlueImageExists = 1;
-else BlueImageExists = 0;
+else
+    BlueImageExists = 0;
 end
 
 drawnow

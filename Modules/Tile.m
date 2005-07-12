@@ -114,42 +114,48 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the tiled image?
-%infotypeVAR02 = imagegroup indep
-%defaultVAR02 = TiledImage
-TiledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What were the images called when the were originally loaded?
+%infotypeVAR02 = imagegroup
+OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
-%textVAR03 = Number of rows to display.
-%choiceVAR03 = Automatic
-NumberRows = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Number of columns to display.
+%textVAR03 = What do you want to call the tiled image?
+%infotypeVAR03 = imagegroup indep
+%defaultVAR03 = TiledImage
+TiledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%textVAR04 = Number of rows to display.
 %choiceVAR04 = Automatic
-NumberColumns = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+NumberRows = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Are the first two images arranged in a row or a column?
-%choiceVAR05 = Column
-%choiceVAR05 = Row
-RowOrColumn = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+%textVAR05 = Number of columns to display.
+%choiceVAR05 = Automatic
+NumberColumns = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
 
-%textVAR06 = Is the first image at the bottom or the top?
-%choiceVAR06 = Top
-%choiceVAR06 = Bottom
-TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Are the first two images arranged in a row or a column?
+%choiceVAR06 = Column
+%choiceVAR06 = Row
+RowOrColumn = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = Is the first image at the left or the right?
-%choiceVAR07 = Left
-%choiceVAR07 = Right
-LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Is the first image at the bottom or the top?
+%choiceVAR07 = Top
+%choiceVAR07 = Bottom
+TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = What fraction should the images be sized (the resolution will be changed)?
-%defaultVAR08 = .1
-SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = Is the first image at the left or the right?
+%choiceVAR08 = Left
+%choiceVAR08 = Right
+LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
+
+%textVAR09 = What fraction should the images be sized (the resolution will be changed)?
+%defaultVAR09 = .1
+SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 SizeChange = str2num(SizeChange);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -192,13 +198,13 @@ drawnow
 if handles.Current.SetBeingAnalyzed == 1
     %%% Retrieves the path where the images are stored from the handles
     %%% structure.
-    fieldname = ['Pathname', ImageName];
+    fieldname = ['Pathname', OrigImageName];
     try Pathname = handles.Pipeline.(fieldname);
     catch error('Image processing was canceled because the Image Tiler module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Image Tiler module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Image Tiler module onward.')
     end
     %%% Retrieves the list of filenames where the images are stored from the
     %%% handles structure.
-    fieldname = ['FileList', ImageName];
+    fieldname = ['FileList', OrigImageName];
     FileList = handles.Pipeline.(fieldname);
     NumberOfImages = length(FileList);
     if strcmp(NumberRows,'Automatic') == 1 && strcmp(NumberColumns,'Automatic')== 1
@@ -220,401 +226,397 @@ if handles.Current.SetBeingAnalyzed == 1
     if NumberRows*NumberColumns > NumberOfImages;
         Answer = CPquestdlg(['You have specified ', num2str(NumberRows), ' rows and ', num2str(NumberColumns), ' columns (=',num2str(NumberRows*NumberColumns),' images), but there are ', num2str(length(FileList)), ' images loaded. The image locations at the end of the grid for which there is no image data will be displayed as black. Do you want to continue?'],'Continue?','Yes','No','Yes');
         if strcmp(Answer,'No') == 1
-            %%% This line will "cancel" processing after the first time through this
-            %%% module.  Without the following cancel line, the module will run X
-            %%% times, where X is the number of files in the current directory.
-            set(handles.timertexthandle,'string','Cancel')
             return
         end
         FileList(length(FileList)+1:NumberRows*NumberColumns) = {'none'};
     elseif NumberRows*NumberColumns < NumberOfImages;
         Answer = CPquestdlg(['You have specified ', num2str(NumberRows), ' rows and ', num2str(NumberColumns), ' columns (=',num2str(NumberRows*NumberColumns),' images), but there are ', num2str(length(FileList)), ' images loaded. Images at the end of the list will not be displayed. Do you want to continue?'],'Continue?','Yes','No','Yes');
         if strcmp(Answer,'No') == 1
-            %%% This line will "cancel" processing after the first time through this
-            %%% module.  Without the following cancel line, the module will run X
-            %%% times, where X is the number of files in the current directory.
-            set(handles.timertexthandle,'string','Cancel')
             return
         end
         FileList(NumberRows*NumberColumns+1:NumberOfImages) = [];
     end
-    if strcmp(RowOrColumn,'Row') == 1
-        NewFileList = reshape(FileList, NumberColumns, NumberRows);
+    
+    if strcmp(RowOrColumn,'Row')
+        NewFileList = reshape(FileList,NumberColumns,NumberRows);
         NewFileList = NewFileList';
-    else
-        NewFileList = reshape(FileList, NumberRows, NumberColumns);
+    elseif strcmp(RowOrColumn,'Column')
+        NewFileList = reshape(FileList,NumberRows,NumberColumns);
     end
+    if strcmp(LeftOrRight,'Right')
+        NewFileList = fliplr(NewFileList);
+    end
+    if strcmp(TopOrBottom,'Bottom')
+        NewFileList = flipud(NewFileList);
+    end
+    
+    
     NumberOfImages = NumberColumns*NumberRows;
-    WaitbarHandle = waitbar(0,'Tiling images...','Color',[.7 .7 .9]);
-    WaitbarPosition = get(WaitbarHandle,'position');
-    CancelButton_handle = uicontrol('Style', 'pushbutton', ...
-        'String', 'Cancel', ...
-        'Position', [10 WaitbarPosition(4)-22 100 20], ...
-        'parent',WaitbarHandle, ...
-        'FontSize',handles.Current.FontSize, ...
-        'BackgroundColor',[.7 .7 .9]);
-    set(CancelButton_handle, 'HandleVisibility','on')
-    CancelButtonFunction = ['set(',num2str(CancelButton_handle*8192), '/8192,''string'',''Canceling'')'];
-    set(CancelButton_handle,'Callback', CancelButtonFunction);
-    set(WaitbarHandle, 'CloseRequestFcn', CancelButtonFunction);
-    [LoadedImage, handles] = CPimread(fullfile(Pathname,char(NewFileList(1,1))), handles);
+    
+    LoadedImage = handles.Pipeline.(ImageName);
     ImageSize = size(imresize(LoadedImage,SizeChange));
     ImageHeight = ImageSize(1);
     ImageWidth = ImageSize(2);
     TotalWidth = NumberColumns*ImageWidth;
     TotalHeight = NumberRows*ImageHeight;
-    TiledImage(TotalHeight,TotalWidth) = 0;
-    for i = 1:NumberRows,
-        for j = 1:NumberColumns,
-            FileName = NewFileList(i,j);
-            %%% In case there are more image slots than there are images,
-            %%% the 'none' images are displayed as all black (zeros).
-            if strcmp(char(FileName),'none') == 1
-                CurrentImage = imresize(zeros(size(CurrentImage)),SizeChange);
-            else
-                [LoadedImage, handles] = CPimread(fullfile(Pathname,char(FileName)), handles);
-                CurrentImage = imresize(LoadedImage,SizeChange);
-                %%% Flips the image left to right or top to bottom if
-                %%% necessary.  The entire image will be flipped at the
-                %%% end.
-                if strcmp(LeftOrRight,'Right') == 1
-                    CurrentImage = fliplr(CurrentImage);
-                end
-                if strcmp(TopOrBottom,'Bottom') == 1
-                    CurrentImage = flipud(CurrentImage);
-                end
-            end
-            TiledImage((ImageHeight*(i-1))+(1:ImageHeight),(ImageWidth*(j-1))+(1:ImageWidth)) = CurrentImage;
-            ImageNumber = (i-1)*NumberColumns + j;
-            waitbar(ImageNumber/NumberOfImages, WaitbarHandle)
-            CurrentText = get(CancelButton_handle, 'string');
-            if strcmp(CurrentText, 'Canceling') == 1
-                delete(WaitbarHandle)
-                %%% Determines the figure number to delete.
-                fieldname = ['FigureNumberForModule',CurrentModule];
-                ThisModuleFigureNumber = handles.Current.(fieldname);
-                delete(ThisModuleFigureNumber)
-                error('Image tiling was canceled')
-            end
-            drawnow
-        end
-    end
-    if strcmp(LeftOrRight,'Right') == 1
-        NewFileList = fliplr(NewFileList);
-        TiledImage = fliplr(TiledImage);
-    end
-    if strcmp(TopOrBottom,'Bottom') == 1
-        NewFileList = flipud(NewFileList);
-        TiledImage = flipud(TiledImage);
-    end
-    delete(WaitbarHandle)
-    %%% This line will "cancel" processing after the first time through this
-    %%% module.  Without the following cancel line, the module will run X
-    %%% times, where X is the number of files in the current directory.
-    set(handles.timertexthandle,'string','Cancel')
-end
+    TiledImage(TotalHeight,TotalWidth,size(LoadedImage,3)) = 0;
 
-%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-% PROGRAMMING NOTE
-% DISPLAYING RESULTS:
-% Some calculations produce images that are used only for display or
-% for saving to the hard drive, and are not used by downstream
-% modules. To speed processing, these calculations are omitted if the
-% figure window is closed and the user does not want to save the
-% images.
-
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-% PROGRAMMING NOTE
-% DRAWNOW BEFORE FIGURE COMMAND:
-% The "drawnow" function executes any pending figure window-related
-% commands.  In general, Matlab does not update figure windows until
-% breaks between image analysis modules, or when a few select commands
-% are used. "figure" and "drawnow" are two of the commands that allow
-% Matlab to pause and carry out any pending figure window- related
-% commands (like zooming, or pressing timer pause or cancel buttons or
-% pressing a help button.)  If the drawnow command is not used
-% immediately prior to the figure(ThisModuleFigureNumber) line, then
-% immediately after the figure line executes, the other commands that
-% have been waiting are executed in the other windows.  Then, when
-% Matlab returns to this module and goes to the subplot line, the
-% figure which is active is not necessarily the correct one. This
-% results in strange things like the subplots appearing in the timer
-% window or in the wrong figure window, or in help dialog boxes.
-    drawnow
-    %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
-    colormap(gray);
-    %%% Displays the image.
-    imagesc(TiledImage)
-    %%% Sets the figure to take up most of the screen.
-    ScreenSize = get(0,'ScreenSize');
-    Font = handles.Current.FontSize;
-    NewFigureSize = [60,250, ScreenSize(3)-200, ScreenSize(4)-350];
-    set(ThisModuleFigureNumber, 'Position', NewFigureSize)
-    axis image
+    ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns = NumberColumns;
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows = NumberRows;
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight = ImageHeight;
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth = ImageWidth;
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList = NewFileList;
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalWidth = TotalWidth;
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalHeight = TotalHeight; 
+    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage; 
     
-    ToggleGridButtonFunction = ...
-    ['Handles = findobj(''type'',''line'');'...
-        'button = findobj(''Tag'',''ToggleGridButton'');'...
-        'if strcmp(get(button,''String''),''Hide''),'...
-            'set(button,''String'',''Show'');'...
-            'set(Handles,''visible'',''off'');'...
-        'else,'...
-            'set(button,''String'',''Hide'');'...
-            'set(Handles,''visible'',''on'');'...
-        'end,'...
-        'clear Handles button'];
-    uicontrol('Style', 'pushbutton', ...
-        'String', 'Hide', 'Position', [10 6 45 20], 'BackgroundColor',[.7 .7 .9],...
-        'Callback', ToggleGridButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font,'Tag','ToggleGridButton');
-    ChangeGridButtonFunction = 'Handles = findobj(''type'',''line''); propedit(Handles); clear Handles';
-    uicontrol('Style', 'pushbutton', ...
-        'String', 'Change', 'Position', [60 6 45 20],'BackgroundColor',[.7 .7 .9], ...
-        'Callback', ChangeGridButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font);
-
-    ToggleFileNamesButtonFunction = ...
-    ['Handles = findobj(''UserData'',''FileNameTextHandles'');'...
-        'button = findobj(''Tag'',''ToggleFileNamesButton'');'...
-        'if strcmp(get(button,''String''),''Hide''),'...
-            'set(button,''String'',''Show'');'...
-            'set(Handles,''visible'',''off'');'...
-        'else,'...
-            'set(button,''String'',''Hide'');'...
-            'set(Handles,''visible'',''on'');'...
-        'end,'...
-        'clear Handles button'];
-    uicontrol('Style', 'pushbutton', ...
-        'String', 'Show', 'Position', [120 6 45 20], 'BackgroundColor',[.7 .7 .9],...
-        'Callback', ToggleFileNamesButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font,'Tag','ToggleFileNamesButton');
-    ChangeFileNamesButtonFunction = 'Handles = findobj(''UserData'',''FileNameTextHandles''); propedit(Handles); clear Handles';
-    uicontrol('Style', 'pushbutton', 'BackgroundColor',[.7 .7 .9],...
-        'String', 'Change', 'Position', [170 6 45 20], ...
-        'Callback', ChangeFileNamesButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font);
-
-    ChangeColormapButtonFunction = 'ImageHandle = findobj(gca, ''type'',''image''); propedit(ImageHandle)';
-    uicontrol('Style', 'pushbutton', ...
-        'String', 'Change', 'Position', [230 6 45 20], 'BackgroundColor',[.7 .7 .9],...
-        'Callback', ChangeColormapButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font);
-  
-    uicontrol('Parent',ThisModuleFigureNumber, ...
-        'BackgroundColor',get(ThisModuleFigureNumber,'Color'), ...
-        'Position',[10 28 95 14], ...
-        'HorizontalAlignment','center', ...
-        'String','Gridlines:', ...
-        'Style','text', ...
-        'FontSize',Font);
-    uicontrol('Parent',ThisModuleFigureNumber, ...
-        'BackgroundColor',get(ThisModuleFigureNumber,'Color'), ...
-        'Position',[120 28 95 14], ...
-        'HorizontalAlignment','center', ...
-        'String','File names:', ...
-        'Style','text', ...
-        'FontSize',Font);
-    uicontrol('Parent',ThisModuleFigureNumber, ...
-        'BackgroundColor',get(ThisModuleFigureNumber,'Color'), ...
-        'Position',[230 28 55 14], ...
-        'HorizontalAlignment','center', ...
-        'String','Colormap:', ...
-        'Style','text', ...
-        'FontSize',Font);
-
-
-    %%% Draws the grid on the image.  The 0.5 accounts for the fact that
-    %%% pixels are labeled where the middle of the pixel is a whole number,
-    %%% and the left hand side of each pixel is 0.5.
-    X(1:2,:) = [(0.5:ImageWidth:TotalWidth+0.5);(0.5:ImageWidth:TotalWidth+0.5)];
-    NumberVerticalLines = size(X');
-    NumberVerticalLines = NumberVerticalLines(1);
-    Y(1,:) = repmat(0,1,NumberVerticalLines);
-    Y(2,:) = repmat(TotalHeight,1,NumberVerticalLines);
-    line(X,Y)
-
-    NewY(1:2,:) = [(0.5:ImageHeight:TotalHeight+0.5);(0.5:ImageHeight:TotalHeight+0.5)];
-    NumberHorizontalLines = size(NewY');
-    NumberHorizontalLines = NumberHorizontalLines(1);
-    NewX(1,:) = repmat(0,1,NumberHorizontalLines);
-    NewX(2,:) = repmat(TotalWidth,1,NumberHorizontalLines);
-    line(NewX,NewY)
-
-    Handles = findobj('type','line');
-    set(Handles, 'color',[.15 .15 .15])
-
-    %%% Sets the location of Tick marks.
-    set(gca, 'XTick', ImageWidth/2:ImageWidth:TotalWidth-ImageWidth/2)
-    set(gca, 'YTick', ImageHeight/2:ImageHeight:TotalHeight-ImageHeight/2)
-
-    %%% Sets the Tick Labels.
-    if strcmp(LeftOrRight,'Right') == 1
-        set(gca, 'XTickLabel',fliplr(1:NumberColumns))
-    else
-        set(gca, 'XTickLabel', 1:NumberColumns)
-    end
-    if strcmp(TopOrBottom,'Bottom') == 1
-        set(gca, 'YTickLabel',fliplr(1:NumberRows))
-    else
-        set(gca, 'YTickLabel', 1:NumberRows)
-    end
-
-    %%% Calculates where to display the file names on the tiled image.
-    %%% Provides the i,j coordinates of the file names.  The
-    %%% cellfun(length) part is just a silly way to get a number for every
-    %%% entry in the NewFileList so that the find function can find it.
-    %%% find does not work directly on strings in cell arrays.
-    [i,j] = find(cellfun('length',NewFileList));
-    YLocations = i*ImageHeight - ImageHeight/2;
-    XLocations = j*ImageWidth - ImageWidth/2;
-    OneColumnNewFileList = reshape(NewFileList,[],1);
-    PrintableOneColumnNewFileList = strrep(OneColumnNewFileList,'_','\_');
-    %%% Creates FileNameText
-    text(XLocations, YLocations, PrintableOneColumnNewFileList,...
-        'HorizontalAlignment','center', 'color', 'white','visible','off', ...
-        'UserData','FileNameTextHandles') 
-    set(ThisModuleFigureNumber,'toolbar','figure')
+    %stores data on main GUI
+    setappdata(handles.figure1,'ImageTilerData',ImageTilerData);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+%gets data from main GUI
+ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
 
-% PROGRAMMING NOTE
-% HANDLES STRUCTURE:
-%       In CellProfiler (and Matlab in general), each independent
-% function (module) has its own workspace and is not able to 'see'
-% variables produced by other modules. For data or images to be shared
-% from one module to the next, they must be saved to what is called
-% the 'handles structure'. This is a variable, whose class is
-% 'structure', and whose name is handles. The contents of the handles
-% structure are printed out at the command line of Matlab using the
-% Tech Diagnosis button. The only variables present in the main
-% handles structure are handles to figures and gui elements.
-% Everything else should be saved in one of the following
-% substructures:
-%
-% handles.Settings:
-%       Everything in handles.Settings is stored when the user uses
-% the Save pipeline button, and these data are loaded into
-% CellProfiler when the user uses the Load pipeline button. This
-% substructure contains all necessary information to re-create a
-% pipeline, including which modules were used (including variable
-% revision numbers), their setting (variables), and the pixel size.
-%   Fields currently in handles.Settings: PixelSize, ModuleNames,
-% VariableValues, NumbersOfVariables, VariableRevisionNumbers.
-%
-% handles.Pipeline:
-%       This substructure is deleted at the beginning of the
-% analysis run (see 'Which substructures are deleted prior to an
-% analysis run?' below). handles.Pipeline is for storing data which
-% must be retrieved by other modules. This data can be overwritten as
-% each image set is processed, or it can be generated once and then
-% retrieved during every subsequent image set's processing, or it can
-% be saved for each image set by saving it according to which image
-% set is being analyzed, depending on how it will be used by other
-% modules. Any module which produces or passes on an image needs to
-% also pass along the original filename of the image, named after the
-% new image name, so that if the SaveImages module attempts to save
-% the resulting image, it can be named by appending text to the
-% original file name.
-%   Example fields in handles.Pipeline: FileListOrigBlue,
-% PathnameOrigBlue, FilenameOrigBlue, OrigBlue (which contains the actual image).
-%
-% handles.Current:
-%       This substructure contains information needed for the main
-% CellProfiler window display and for the various modules to
-% function. It does not contain any module-specific data (which is in
-% handles.Pipeline).
-%   Example fields in handles.Current: NumberOfModules,
-% StartupDirectory, DefaultOutputDirectory, DefaultImageDirectory,
-% FilenamesInImageDir, CellProfilerPathname, ImageToolHelp,
-% DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
-% SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
-%
-% handles.Preferences:
-%       Everything in handles.Preferences is stored in the file
-% CellProfilerPreferences.mat when the user uses the Set Preferences
-% button. These preferences are loaded upon launching CellProfiler.
-% The PixelSize, DefaultImageDirectory, and DefaultOutputDirectory
-% fields can be changed for the current session by the user using edit
-% boxes in the main CellProfiler window, which changes their values in
-% handles.Current. Therefore, handles.Current is most likely where you
-% should retrieve this information if needed within a module.
-%   Fields currently in handles.Preferences: PixelSize, FontSize,
-% DefaultModuleDirectory, DefaultOutputDirectory,
-% DefaultImageDirectory.
-%
-% handles.Measurements
-%      Data extracted from input images are stored in the
-% handles.Measurements substructure for exporting or further analysis.
-% This substructure is deleted at the beginning of the analysis run
-% (see 'Which substructures are deleted prior to an analysis run?'
-% below). The Measurements structure is organized in two levels. At
-% the first level, directly under handles.Measurements, there are
-% substructures (fields) containing measurements of different objects.
-% The names of the objects are specified by the user in the Identify
-% modules (e.g. 'Cells', 'Nuclei', 'Colonies').  In addition to these
-% object fields is a field called 'Image' which contains information
-% relating to entire images, such as filenames, thresholds and
-% measurements derived from an entire image. That is, the Image field
-% contains any features where there is one value for the entire image.
-% As an example, the first level might contain the fields
-% handles.Measurements.Image, handles.Measurements.Cells and
-% handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices
-% with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
-% writes shape measurements of 'Cells' in
-% handles.Measurements.Cells.AreaShape. An associated cell array of
-% dimension [1 x #features] with suffix 'Features' contains the names
-% or descriptions of the measurements. The export data tools, e.g.
-% ExportData, triggers on this 'Features' suffix. Measurements or data
-% that do not follow the convention described above, or that should
-% not be exported via the conventional export tools, can thereby be
-% stored in the handles.Measurements structure by leaving out the
-% '....Features' field. This data will then be invisible to the
-% existing export tools.
-%      Following is an example where we have measured the area and
-% perimeter of 3 cells in the first image and 4 cells in the second
-% image. The first column contains the Area measurements and the
-% second column contains the Perimeter measurements.  Each row
-% contains measurements for a different cell:
-% handles.Measurements.Cells.AreaShapeFeatures = {'Area' 'Perimeter'}
-% handles.Measurements.Cells.AreaShape{1} = 	40		20
-%                                               100		55
-%                                              	200		87
-% handles.Measurements.Cells.AreaShape{2} = 	130		100
-%                                               90		45
-%                                               100		67
-%                                               45		22
-%
-% Which substructures are deleted prior to an analysis run?
-%       Anything stored in handles.Measurements or handles.Pipeline
-% will be deleted at the beginning of the analysis run, whereas
-% anything stored in handles.Settings, handles.Preferences, and
-% handles.Current will be retained from one analysis to the next. It
-% is important to think about which of these data should be deleted at
-% the end of an analysis run because of the way Matlab saves
-% variables: For example, a user might process 12 image sets of nuclei
-% which results in a set of 12 measurements ("ImageTotalNucArea")
-% stored in handles.Measurements. In addition, a processed image of
-% nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
-% happens to have the same measurement output name "ImageTotalNucArea"
-% to analyze 4 image sets, the 4 measurements will overwrite the first
-% 4 measurements of the previous analysis, but the remaining 8
-% measurements will still be present. So, the user will end up with 12
-% measurements from the 4 sets. Another potential problem is that if,
-% in the second analysis run, the user runs only a module which
-% depends on the output "SegmNucImg" but does not run a module that
-% produces an image by that name, the module will run just fine: it
-% will just repeatedly use the processed image of nuclei leftover from
-% the last image set, which was left in handles.Pipeline.
+TiledImage = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage;
+NumberColumns = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
+ImageHeight = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight;
+ImageWidth = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth;
+NumberColumns = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
+NumberRows = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows;
 
-%%% Saves the tiled image to the handles structure so it can be used by
-%%% subsequent modules.
-handles.Pipeline.(TiledImageName) = TiledImage;
+CurrentImage = handles.Pipeline.(ImageName);
+CurrentImage = imresize(CurrentImage,SizeChange);
+
+if strcmp(RowOrColumn,'Column')
+    HorzPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberRows);
+    VertPos = handles.Current.SetBeingAnalyzed - HorzPos*NumberRows-1;
+elseif strcmp(RowOrColumn,'Row')
+    VertPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberColumns);
+    HorzPos = handles.Current.SetBeingAnalyzed - VertPos*NumberColumns-1;
+end
+
+if strcmp(TopOrBottom,'Bottom')
+    VertPos = NumberRows - VertPos-1;
+end
+
+if strcmp(LeftOrRight,'Right')
+    HorzPos = NumberColumns - HorzPos-1;
+end
+
+
+TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
+
+ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage;
+
+setappdata(handles.figure1,'ImageTilerData',ImageTilerData);
+
+if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+    %%%%%%%%%%%%%%%%%%%%%%
+    %%% DISPLAY RESULTS %%%
+    %%%%%%%%%%%%%%%%%%%%%%
+    drawnow
+    
+    ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
+    
+    TiledImage = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage;
+    NumberColumns = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
+    NumberRows = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows;
+    ImageHeight = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight;
+    ImageWidth = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth;
+    TotalWidth = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalWidth;
+    TotalHeight = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalHeight;
+    NewFileList = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList;
+    
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    if any(findobj == ThisModuleFigureNumber) == 1;
+    % PROGRAMMING NOTE
+    % DRAWNOW BEFORE FIGURE COMMAND:
+    % The "drawnow" function executes any pending figure window-related
+    % commands.  In general, Matlab does not update figure windows until
+    % breaks between image analysis modules, or when a few select commands
+    % are used. "figure" and "drawnow" are two of the commands that allow
+    % Matlab to pause and carry out any pending figure window- related
+    % commands (like zooming, or pressing timer pause or cancel buttons or
+    % pressing a help button.)  If the drawnow command is not used
+    % immediately prior to the figure(ThisModuleFigureNumber) line, then
+    % immediately after the figure line executes, the other commands that
+    % have been waiting are executed in the other windows.  Then, when
+    % Matlab returns to this module and goes to the subplot line, the
+    % figure which is active is not necessarily the correct one. This
+    % results in strange things like the subplots appearing in the timer
+    % window or in the wrong figure window, or in help dialog boxes.
+        drawnow
+        %%% Activates the appropriate figure window.
+        CPfigure(handles,ThisModuleFigureNumber);
+        colormap(gray);
+        %%% Displays the image.
+        imagesc(TiledImage)
+        %%% Sets the figure to take up most of the screen.
+        ScreenSize = get(0,'ScreenSize');
+        Font = handles.Current.FontSize;
+        NewFigureSize = [60,250, ScreenSize(3)-200, ScreenSize(4)-350];
+        set(ThisModuleFigureNumber, 'Position', NewFigureSize)
+        axis image
+
+        ToggleGridButtonFunction = ...
+        ['Handles = findobj(''type'',''line'');'...
+            'button = findobj(''Tag'',''ToggleGridButton'');'...
+            'if strcmp(get(button,''String''),''Hide''),'...
+                'set(button,''String'',''Show'');'...
+                'set(Handles,''visible'',''off'');'...
+            'else,'...
+                'set(button,''String'',''Hide'');'...
+                'set(Handles,''visible'',''on'');'...
+            'end,'...
+            'clear Handles button'];
+        uicontrol('Style', 'pushbutton', ...
+            'String', 'Hide', 'Position', [10 6 45 20], 'BackgroundColor',[.7 .7 .9],...
+            'Callback', ToggleGridButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font,'Tag','ToggleGridButton');
+        ChangeGridButtonFunction = 'Handles = findobj(''type'',''line''); propedit(Handles); clear Handles';
+        uicontrol('Style', 'pushbutton', ...
+            'String', 'Change', 'Position', [60 6 45 20],'BackgroundColor',[.7 .7 .9], ...
+            'Callback', ChangeGridButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font);
+
+        ToggleFileNamesButtonFunction = ...
+        ['Handles = findobj(''UserData'',''FileNameTextHandles'');'...
+            'button = findobj(''Tag'',''ToggleFileNamesButton'');'...
+            'if strcmp(get(button,''String''),''Hide''),'...
+                'set(button,''String'',''Show'');'...
+                'set(Handles,''visible'',''off'');'...
+            'else,'...
+                'set(button,''String'',''Hide'');'...
+                'set(Handles,''visible'',''on'');'...
+            'end,'...
+            'clear Handles button'];
+        uicontrol('Style', 'pushbutton', ...
+            'String', 'Show', 'Position', [120 6 45 20], 'BackgroundColor',[.7 .7 .9],...
+            'Callback', ToggleFileNamesButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font,'Tag','ToggleFileNamesButton');
+        ChangeFileNamesButtonFunction = 'Handles = findobj(''UserData'',''FileNameTextHandles''); propedit(Handles); clear Handles';
+        uicontrol('Style', 'pushbutton', 'BackgroundColor',[.7 .7 .9],...
+            'String', 'Change', 'Position', [170 6 45 20], ...
+            'Callback', ChangeFileNamesButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font);
+
+        ChangeColormapButtonFunction = 'ImageHandle = findobj(gca, ''type'',''image''); propedit(ImageHandle)';
+        uicontrol('Style', 'pushbutton', ...
+            'String', 'Change', 'Position', [230 6 45 20], 'BackgroundColor',[.7 .7 .9],...
+            'Callback', ChangeColormapButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',Font);
+
+        uicontrol('Parent',ThisModuleFigureNumber, ...
+            'BackgroundColor',get(ThisModuleFigureNumber,'Color'), ...
+            'Position',[10 28 95 14], ...
+            'HorizontalAlignment','center', ...
+            'String','Gridlines:', ...
+            'Style','text', ...
+            'FontSize',Font);
+        uicontrol('Parent',ThisModuleFigureNumber, ...
+            'BackgroundColor',get(ThisModuleFigureNumber,'Color'), ...
+            'Position',[120 28 95 14], ...
+            'HorizontalAlignment','center', ...
+            'String','File names:', ...
+            'Style','text', ...
+            'FontSize',Font);
+        uicontrol('Parent',ThisModuleFigureNumber, ...
+            'BackgroundColor',get(ThisModuleFigureNumber,'Color'), ...
+            'Position',[230 28 55 14], ...
+            'HorizontalAlignment','center', ...
+            'String','Colormap:', ...
+            'Style','text', ...
+            'FontSize',Font);
+
+
+        %%% Draws the grid on the image.  The 0.5 accounts for the fact that
+        %%% pixels are labeled where the middle of the pixel is a whole number,
+        %%% and the left hand side of each pixel is 0.5.
+        X(1:2,:) = [(0.5:ImageWidth:TotalWidth+0.5);(0.5:ImageWidth:TotalWidth+0.5)];
+        NumberVerticalLines = size(X');
+        NumberVerticalLines = NumberVerticalLines(1);
+        Y(1,:) = repmat(0,1,NumberVerticalLines);
+        Y(2,:) = repmat(TotalHeight,1,NumberVerticalLines);
+        line(X,Y)
+
+        NewY(1:2,:) = [(0.5:ImageHeight:TotalHeight+0.5);(0.5:ImageHeight:TotalHeight+0.5)];
+        NumberHorizontalLines = size(NewY');
+        NumberHorizontalLines = NumberHorizontalLines(1);
+        NewX(1,:) = repmat(0,1,NumberHorizontalLines);
+        NewX(2,:) = repmat(TotalWidth,1,NumberHorizontalLines);
+        line(NewX,NewY)
+
+        Handles = findobj('type','line');
+        set(Handles, 'color',[.15 .15 .15])
+
+        %%% Sets the location of Tick marks.
+        set(gca, 'XTick', ImageWidth/2:ImageWidth:TotalWidth-ImageWidth/2)
+        set(gca, 'YTick', ImageHeight/2:ImageHeight:TotalHeight-ImageHeight/2)
+
+        %%% Sets the Tick Labels.
+        if strcmp(LeftOrRight,'Right') == 1
+            set(gca, 'XTickLabel',fliplr(1:NumberColumns))
+        else
+            set(gca, 'XTickLabel', 1:NumberColumns)
+        end
+        if strcmp(TopOrBottom,'Bottom') == 1
+            set(gca, 'YTickLabel',fliplr(1:NumberRows))
+        else
+            set(gca, 'YTickLabel', 1:NumberRows)
+        end
+
+        %%% Calculates where to display the file names on the tiled image.
+        %%% Provides the i,j coordinates of the file names.  The
+        %%% cellfun(length) part is just a silly way to get a number for every
+        %%% entry in the NewFileList so that the find function can find it.
+        %%% find does not work directly on strings in cell arrays.
+        [i,j] = find(cellfun('length',NewFileList));
+        YLocations = i*ImageHeight - ImageHeight/2;
+        XLocations = j*ImageWidth - ImageWidth/2;
+        OneColumnNewFileList = reshape(NewFileList,[],1);
+        PrintableOneColumnNewFileList = strrep(OneColumnNewFileList,'_','\_');
+        %%% Creates FileNameText
+        text(XLocations, YLocations, PrintableOneColumnNewFileList,...
+            'HorizontalAlignment','center', 'color', 'white','visible','off', ...
+            'UserData','FileNameTextHandles') 
+        set(ThisModuleFigureNumber,'toolbar','figure')
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% SAVE DATA TO HANDLES STRUCTURE %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    drawnow
+
+    % PROGRAMMING NOTE
+    % HANDLES STRUCTURE:
+    %       In CellProfiler (and Matlab in general), each independent
+    % function (module) has its own workspace and is not able to 'see'
+    % variables produced by other modules. For data or images to be shared
+    % from one module to the next, they must be saved to what is called
+    % the 'handles structure'. This is a variable, whose class is
+    % 'structure', and whose name is handles. The contents of the handles
+    % structure are printed out at the command line of Matlab using the
+    % Tech Diagnosis button. The only variables present in the main
+    % handles structure are handles to figures and gui elements.
+    % Everything else should be saved in one of the following
+    % substructures:
+    %
+    % handles.Settings:
+    %       Everything in handles.Settings is stored when the user uses
+    % the Save pipeline button, and these data are loaded into
+    % CellProfiler when the user uses the Load pipeline button. This
+    % substructure contains all necessary information to re-create a
+    % pipeline, including which modules were used (including variable
+    % revision numbers), their setting (variables), and the pixel size.
+    %   Fields currently in handles.Settings: PixelSize, ModuleNames,
+    % VariableValues, NumbersOfVariables, VariableRevisionNumbers.
+    %
+    % handles.Pipeline:
+    %       This substructure is deleted at the beginning of the
+    % analysis run (see 'Which substructures are deleted prior to an
+    % analysis run?' below). handles.Pipeline is for storing data which
+    % must be retrieved by other modules. This data can be overwritten as
+    % each image set is processed, or it can be generated once and then
+    % retrieved during every subsequent image set's processing, or it can
+    % be saved for each image set by saving it according to which image
+    % set is being analyzed, depending on how it will be used by other
+    % modules. Any module which produces or passes on an image needs to
+    % also pass along the original filename of the image, named after the
+    % new image name, so that if the SaveImages module attempts to save
+    % the resulting image, it can be named by appending text to the
+    % original file name.
+    %   Example fields in handles.Pipeline: FileListOrigBlue,
+    % PathnameOrigBlue, FilenameOrigBlue, OrigBlue (which contains the actual image).
+    %
+    % handles.Current:
+    %       This substructure contains information needed for the main
+    % CellProfiler window display and for the various modules to
+    % function. It does not contain any module-specific data (which is in
+    % handles.Pipeline).
+    %   Example fields in handles.Current: NumberOfModules,
+    % StartupDirectory, DefaultOutputDirectory, DefaultImageDirectory,
+    % FilenamesInImageDir, CellProfilerPathname, ImageToolHelp,
+    % DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
+    % SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
+    %
+    % handles.Preferences:
+    %       Everything in handles.Preferences is stored in the file
+    % CellProfilerPreferences.mat when the user uses the Set Preferences
+    % button. These preferences are loaded upon launching CellProfiler.
+    % The PixelSize, DefaultImageDirectory, and DefaultOutputDirectory
+    % fields can be changed for the current session by the user using edit
+    % boxes in the main CellProfiler window, which changes their values in
+    % handles.Current. Therefore, handles.Current is most likely where you
+    % should retrieve this information if needed within a module.
+    %   Fields currently in handles.Preferences: PixelSize, FontSize,
+    % DefaultModuleDirectory, DefaultOutputDirectory,
+    % DefaultImageDirectory.
+    %
+    % handles.Measurements
+    %      Data extracted from input images are stored in the
+    % handles.Measurements substructure for exporting or further analysis.
+    % This substructure is deleted at the beginning of the analysis run
+    % (see 'Which substructures are deleted prior to an analysis run?'
+    % below). The Measurements structure is organized in two levels. At
+    % the first level, directly under handles.Measurements, there are
+    % substructures (fields) containing measurements of different objects.
+    % The names of the objects are specified by the user in the Identify
+    % modules (e.g. 'Cells', 'Nuclei', 'Colonies').  In addition to these
+    % object fields is a field called 'Image' which contains information
+    % relating to entire images, such as filenames, thresholds and
+    % measurements derived from an entire image. That is, the Image field
+    % contains any features where there is one value for the entire image.
+    % As an example, the first level might contain the fields
+    % handles.Measurements.Image, handles.Measurements.Cells and
+    % handles.Measurements.Nuclei.
+    %      In the second level, the measurements are stored in matrices
+    % with dimension [#objects x #features]. Each measurement module
+    % writes its own block; for example, the MeasureAreaShape module
+    % writes shape measurements of 'Cells' in
+    % handles.Measurements.Cells.AreaShape. An associated cell array of
+    % dimension [1 x #features] with suffix 'Features' contains the names
+    % or descriptions of the measurements. The export data tools, e.g.
+    % ExportData, triggers on this 'Features' suffix. Measurements or data
+    % that do not follow the convention described above, or that should
+    % not be exported via the conventional export tools, can thereby be
+    % stored in the handles.Measurements structure by leaving out the
+    % '....Features' field. This data will then be invisible to the
+    % existing export tools.
+    %      Following is an example where we have measured the area and
+    % perimeter of 3 cells in the first image and 4 cells in the second
+    % image. The first column contains the Area measurements and the
+    % second column contains the Perimeter measurements.  Each row
+    % contains measurements for a different cell:
+    % handles.Measurements.Cells.AreaShapeFeatures = {'Area' 'Perimeter'}
+    % handles.Measurements.Cells.AreaShape{1} = 	40		20
+    %                                               100		55
+    %                                              	200		87
+    % handles.Measurements.Cells.AreaShape{2} = 	130		100
+    %                                               90		45
+    %                                               100		67
+    %                                               45		22
+    %
+    % Which substructures are deleted prior to an analysis run?
+    %       Anything stored in handles.Measurements or handles.Pipeline
+    % will be deleted at the beginning of the analysis run, whereas
+    % anything stored in handles.Settings, handles.Preferences, and
+    % handles.Current will be retained from one analysis to the next. It
+    % is important to think about which of these data should be deleted at
+    % the end of an analysis run because of the way Matlab saves
+    % variables: For example, a user might process 12 image sets of nuclei
+    % which results in a set of 12 measurements ("ImageTotalNucArea")
+    % stored in handles.Measurements. In addition, a processed image of
+    % nuclei from the last image set is left in the handles structure
+    % ("SegmNucImg"). Now, if the user uses a different algorithm which
+    % happens to have the same measurement output name "ImageTotalNucArea"
+    % to analyze 4 image sets, the 4 measurements will overwrite the first
+    % 4 measurements of the previous analysis, but the remaining 8
+    % measurements will still be present. So, the user will end up with 12
+    % measurements from the 4 sets. Another potential problem is that if,
+    % in the second analysis run, the user runs only a module which
+    % depends on the output "SegmNucImg" but does not run a module that
+    % produces an image by that name, the module will run just fine: it
+    % will just repeatedly use the processed image of nuclei leftover from
+    % the last image set, which was left in handles.Pipeline.
+
+    %%% Saves the tiled image to the handles structure so it can be used by
+    %%% subsequent modules.
+    handles.Pipeline.(TiledImageName) = TiledImage;
+end

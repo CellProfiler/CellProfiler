@@ -29,6 +29,7 @@ cvs add filename.m\
 \ulnone cvs add and cvs commit as if it were a file. Then login to oblique by ssh, navigate to the directory containing the new directory and change its group to cellprofiler. Also, change the group of the contents of that directory:\ul \
 \ulnone carpenter@oblique:/home/CellProfiler/CellProfiler/DeveloperDropBox$ chgrp cellprofiler NewFolderName\
 \ul If there are conflicts,\ulnone  your local copy of the file will have the conflicts identified by lots of equal signs, the lines marked with the file name is my own version.  Correct any conflicts by hand and then commit again.\
+\
 \ul To back out changes:\
 \ulnone Do a google search for backing out cvs. It's a bit complicated.\
 \

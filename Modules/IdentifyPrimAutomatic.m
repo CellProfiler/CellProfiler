@@ -74,9 +74,11 @@ SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Approximate percentage of image covered by objects:
-%choiceVAR04 = 20%
+%choiceVAR04 = 10%
+%choiceVAR04 = 30%
 %choiceVAR04 = 50%
-%choiceVAR04 = 80%
+%choiceVAR04 = 70%
+%choiceVAR04 = 90%
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
@@ -138,7 +140,6 @@ MinDiameter = str2double(MinDiameter);
 if isnan(MinDiameter) | MinDiameter < 0
     error('The Min dimater entry in the IdentifyEasy module is invalid.')
 end
-
 if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
 else
     MaxDiameter = str2double(MaxDiameter);
@@ -149,17 +150,10 @@ end
 if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyEasy module.'),end
 Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
-%%% Checks that the Threshold parameter has a valid value
-%if ~strcmp(Threshold,'Automatic')
-%    Threshold = str2double(Threshold);
-%    if isnan(Threshold) | Threshold > 1 | Threshold < 0
-%        error('The threshold entered in the IdentifyEasy module is out of range.')
-%    end
-%end
-
 %%% Convert user-specified percentage of image covered by objects to a prior probability
 %%% of a pixel being part of an object.
 pObject = str2num(pObject(1:2))/100;
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -224,13 +218,22 @@ elseif strfind(Threshold,'Adaptive')
     %%% unreasonable threshold will be overridden by the minimum threshold.
     Threshold(Threshold <= 0.7*GlobalThreshold) = 0.7*GlobalThreshold;
     Threshold(Threshold >= 1.5*GlobalThreshold) = 1.5*GlobalThreshold;
+
+else
+    %%% The threshold is manually set by the user
+    %%% Checks that the Threshold parameter has a valid value
+    Threshold = str2double(Threshold);
+    if isnan(Threshold) | Threshold > 1 | Threshold < 0
+        errordlg('The threshold entered in the IdentifyEasy module is out of range.')
+    end
 end
+
 %%% Correct the threshold using the correction factor given by the user
 Threshold = ThresholdCorrection*Threshold;
 
 
 %%% Smooth images slightly and apply threshold
-sigma = (MinDiameter/8)/2.35;                                         % Translate between minimum diamter of objects to sigma
+sigma = MinDiameter/4;                                                 % Translate between minimum diamter of objects to sigma
 FiltLength = max(1,ceil(3*sigma));                                    % Determine filter size
 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
@@ -289,7 +292,7 @@ end
 
 %%% Will be stored to the handles structure
 PrelimLabelMatrixImage1 = Objects;
-ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
+
 
 %%% Get diameters of objects and calculate the interval
 %%% that contains 90% of the objects
@@ -351,7 +354,7 @@ if any(findobj == ThisModuleFigureNumber)
     OutlinedObjectsG = tmp;
     OutlinedObjectsB = tmp;
     PerimObjects = bwperim(Objects > 0);
-    PerimDiameter   = bwperim(DiameterExcludedObjects > 0);
+    PerimDiameter = bwperim(DiameterExcludedObjects > 0);
     PerimBorder = bwperim(BorderObjects > 0);
     OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
     OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
@@ -373,15 +376,11 @@ if any(findobj == ThisModuleFigureNumber)
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range[%0.1f, %0.1f] pixels',...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range [%0.1f, %0.1f] pixels',...
         Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
+    ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of border objects: %d',NumOfBorderObjects),'FontSize',handles.Current.FontSize);
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of small objects: %d',NumOfDiameterObjects),'FontSize',handles.Current.FontSize);
-
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -461,83 +460,101 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 % end
 
 
-
-
 function Threshold = MixtureOfGaussians(OrigImage,pObject)
 %%% This function finds a suitable threshold for the input image
 %%% OrigImage. It assumes that the pixels in the image belong to either
 %%% a background class or an object class. 'pObject' is an initial guess
 %%% of the prior probability of an object pixel, or equivalently, the fraction
-%%% of the image that is covered by objects. It's assumed that each
-%%% pixel has been drawn from a Gaussian distribution with a mean and standard
-%%% deviation specific for each class. This function estimates the parameters
-%%% for the Gaussian distribution for the background class and Gaussian
-%%% distribution for the object class via the Expectation-Maximization (EM)
-%%% algorithm, and sets the threshold to the intensity where the distributions
-%%% intersect.
+%%% of the image that is covered by objects. Essentially, there are two steps.
+%%% First, a number of Gaussian distributions are estimated to match the
+%%% distribution of pixel intensities in OrigImage. Currently 3 Gaussian
+%%% distributions are fitted, one corresponding to a background class, one
+%%% corresponding to an object class, and one distribution for an intermediate
+%%% class. The distributions are fitted using the Expectation-Maximization (EM)
+%%% algorithm, a procedure referred to as Mixture of Gaussians modeling. When
+%%% the 3 Gaussian distributions have been fitted, it's decided whether the
+%%% intermediate class models background pixels or object pixels based on the
+%%% probability of an object pixel 'pObject' given by the user.
 
-%%% Transform the image into a vector. Also, if the image is very
-%%% large (larger than 1000x1000), select a subset of 1 million voxels.
+%%% The number of classes is set to 3
+NumberOfClasses = 3;
+
+%%% Transform the image into a vector. Also, if the image is (larger than 512x512),
+%%% select a subset of 512^2 pixels for speed. This should be enough to capture the
+%%% statistics in the image.
 OrigImage = OrigImage(:);
-if length(OrigImage) > 1000^2
+if length(OrigImage) > 512^2
     indexes = randperm(length(OrigImage));
-    OrigImage = OrigImage(indexes(1:1000^2));
+    OrigImage = OrigImage(indexes(1:512^2));
 end
 
 %%% Get the probability for a background pixel
 pBackground = 1 - pObject;
 
-%%% Initialize mean and standard deviations of the two Gaussian distributions
+%%% Initialize mean and standard deviations of the three Gaussian distributions
 %%% by looking at the pixel intensities in the original image and by considering
-%%% the percentage of the image that is covered by object pixels. The means of
-%%% the Object class and Background class are calculated as the (1-pObject/2) and
-%%% pBackground/2 percentiles of the original pixel intensities respectively. The
-%%% initial standard deviations are then initialized so that the distributions
-%%% don't overlap too much. The object class is given a larger initial std.
+%%% the percentage of the image that is covered by object pixels. Class 1 is the
+%%% background class and Class 3 is the object class. Class 2 is an intermediate
+%%% class and we will decide later if it encodes background or object pixels.
 SortedIntensities = sort(OrigImage);
-MeanObject = SortedIntensities(round(length(OrigImage)*(1 - pObject/2)));
-MeanBackground = SortedIntensities(round(length(OrigImage)*pBackground/2));
-StdObject = (MeanObject - MeanBackground)/2;
-StdBackground = (MeanObject - MeanBackground)/4;
+ClassMean(1) = SortedIntensities(round(length(OrigImage)*pBackground/2));             %%% Initialize background class
+ClassMean(3) = SortedIntensities(round(length(OrigImage)*(1 - pObject/2)));           %%% Initialize object class
+ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                       %%% Initialize intermediate class
+%%% Initialize standard deviations of the Gaussians. They should be the same to avoid problems.
+ClassStd(1:3) = 0.1;
+%%% Initialize prior probabilities of a pixel belonging to each class. The intermediate
+%%% class is gets some probability from the background and object classes.
+pClass(1) = 3/4*pBackground;
+pClass(2) = 1/4*pBackground + 1/4*pObject;
+pClass(3) = 3/4*pObject;
 
-%%% Expectation-Maximization algorithm for fitting the two Gaussian distributions
-%%% to the data. Iterate until parameters don't change anymore.
+%%% Expectation-Maximization algorithm for fitting the three Gaussian distributions/classes
+%%% to the data. Note, the code below is general and works for any number of classes.
+%%% Iterate until parameters don't change anymore.
 delta = 1;
 while delta > 0.001
-    %%% Store old parameter value to monitor change
-    oldMeanObject = MeanObject;
-    oldMeanBackground = MeanBackground;
+    %%% Store old parameter values to monitor change
+    oldClassMean = ClassMean;
 
-    %%% Update probabilities of a pixel belonging to the background or object
-    pPixelBackground = pBackground * 1/sqrt(2*pi*StdBackground^2) * exp(-(OrigImage - MeanBackground).^2/(2*StdBackground^2));
-    pPixelObject     = pObject * 1/sqrt(2*pi*StdObject^2) * exp(-(OrigImage - MeanObject).^2/(2*StdObject^2));
-    pPixelBackground = pPixelBackground./(pPixelBackground+pPixelObject + eps);
-    pPixelObject     = pPixelObject./(pPixelBackground+pPixelObject + eps);
+    %%% Update probabilities of a pixel belonging to the background or object1 or object2
+    for k = 1:NumberOfClasses
+        pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(OrigImage - ClassMean(k)).^2/(2*ClassStd(k)^2));
+    end
+    pPixelClass = pPixelClass ./ repmat(sum(pPixelClass,2) + eps,[1 NumberOfClasses]);
 
     %%% Update parameters in Gaussian distributions
-    MeanBackground = sum(pPixelBackground.*OrigImage)/sum(pPixelBackground);
-    MeanObject     = sum(pPixelObject.*OrigImage)/sum(pPixelObject);
-    StdBackground  = sqrt(sum(pPixelBackground.*(OrigImage - MeanBackground).^2)/sum(pPixelBackground));
-    StdObject      = sqrt(sum(pPixelObject.*(OrigImage - MeanObject).^2)/sum(pPixelObject));
-    pBackground = mean(pPixelBackground);
-    pObject     = mean(pPixelObject);
+    for k = 1:NumberOfClasses
+        ClassMean(k) = sum(pPixelClass(:,k).*OrigImage)/sum(pPixelClass(:,k));
+        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(OrigImage - ClassMean(k)).^2)/sum(pPixelClass(:,k)));
+        pClass(k) = mean(pPixelClass(:,k));
+    end
 
     %%% Calculate change
-    delta = abs(MeanObject - oldMeanObject) + abs(MeanBackground - oldMeanBackground);
+    delta = sum(abs(ClassMean - oldClassMean));
 end
 
-%%% Search for a threshold between the two means of the Gaussian distribution. Right now the
-%%% threshold is set to the intensity where the two distributions intersect each other. This
-%%% might not be the best solution. The Gaussian model probably fits the background class
-%%% better than the object class because in reality the object class probably consists of several
-%%% classes. Therefore, it might be better to select the threshold based on the background class
-%%% alone, e.g., to MeanBackground + 3*MeanStd, but this also has some dangers.
-Threshold = linspace(MeanBackground,MeanObject,10000);
-ObjectGaussian = pObject * 1/sqrt(2*pi*StdObject^2) * exp(-(Threshold - MeanObject).^2/(2*StdObject^2));
-BackgroundGaussian = pBackground * 1/sqrt(2*pi*StdBackground^2) * exp(-(Threshold - MeanBackground).^2/(2*StdBackground^2));
-[ignore,index] = min(abs(ObjectGaussian-BackgroundGaussian));
-Threshold = Threshold(index);
+%%% Now the Gaussian distributions are fitted and we can describe the histogram of the pixel
+%%% intensities as the sum of these Gaussian distributions. To find a threshold we first have
+%%% to decide if the intermediate class 2 encodes background or object pixels. This is done by
+%%% choosing the combination of class probabilities 'pClass' that best matches the user input 'pObject'.
+Threshold = linspace(ClassMean(1),ClassMean(3),10000);
+Class1Gaussian = pClass(1) * 1/sqrt(2*pi*ClassStd(1)^2) * exp(-(Threshold - ClassMean(1)).^2/(2*ClassStd(1)^2));
+Class2Gaussian = pClass(2) * 1/sqrt(2*pi*ClassStd(2)^2) * exp(-(Threshold - ClassMean(2)).^2/(2*ClassStd(2)^2));
+Class3Gaussian = pClass(3) * 1/sqrt(2*pi*ClassStd(3)^2) * exp(-(Threshold - ClassMean(3)).^2/(2*ClassStd(3)^2));
+if abs(pClass(2) + pClass(3) - pObject) < abs(pClass(3) - pObject)
+    %%% Intermediate class 2 encodes object pixels
+    BackgroundDistribution = Class1Gaussian;
+    ObjectDistribution = Class2Gaussian + Class3Gaussian;
+else
+    %%% Intermediate class 2 encodes background pixels
+    BackgroundDistribution = Class1Gaussian + Class2Gaussian;
+    ObjectDistribution = Class3Gaussian;
+end
 
+%%% Now, find the threshold at the intersection of the background distribution
+%%% and the object distribution.
+[ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution));
+Threshold = Threshold(index);
 
 
 

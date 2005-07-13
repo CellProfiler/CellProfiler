@@ -1,4 +1,4 @@
-{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf100
+{\rtf1\mac\ansicpg10000\cocoartf102
 {\fonttbl\f0\fswiss\fcharset77 Helvetica;\f1\fmodern\fcharset77 Courier;}
 {\colortbl;\red255\green255\blue255;}
 \margl1440\margr1440\vieww10680\viewh9120\viewkind0
@@ -9,16 +9,22 @@ Overall, to reconcile your local copy with the central cvs copy, first update yo
 \
 In terminal, change to the directory where CellProfiler resides.\
 \ul To update:\ulnone  cvs update\
+\
 \ul To show what differences exist between your copy and the last central copy you checked out: \ulnone cvs diff\
+\
 \ul To show what differences exist between particular revision numbers\ulnone \
 cvs diff -r REVNUMBER REVNUMBER  (providing only one revision number will compare to your locally modified copy, I think)\
+\
 \ul To obtain revision numbers:\
 \ulnone cvs log Filename.m\
+\
 \ul To commit changes one by one: (\ulnone leave off the specific filename to commit all)\
-cvs commit -m "Description of this change" filename.m\ul \
+cvs commit -m "Description of this change" filename.m\
+\ul \
 To add a file which is not already in the central copy:\ulnone \
 cvs add filename.m\
 (this only adds it to your local cvs list, not the central one, so the next step is to cvs commit)\
+\
 \ul To add a directory\
 \ulnone cvs add and cvs commit as if it were a file. Then login to oblique by ssh, navigate to the directory containing the new directory and change its group to cellprofiler. Also, change the group of the contents of that directory:\ul \
 \ulnone carpenter@oblique:/home/CellProfiler/CellProfiler/DeveloperDropBox$ chgrp cellprofiler NewFolderName\

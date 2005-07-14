@@ -82,7 +82,6 @@ SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-
 %textVAR05 = Select thresholding method or enter a threshold in the range [0,1].
 %choiceVAR05 = Otsu Global
 %choiceVAR05 = Otsu Adaptive
@@ -95,20 +94,51 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 1
 ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Use intensity or distance transform maxima as centers in Watershed transform?
-%choiceVAR07 = Intensity
-%choiceVAR07 = Distance
-%choiceVAR07 = Do not apply
-LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
+%textVAR07 = Lower bound on threshold in the range [0,1].
+%choiceVAR07 = Do not use
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu custom
 
-%textVAR08 = Try to merge too small objects into larger objects?
-%choiceVAR08 = Yes
-%choiceVAR08 = No
-MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = Use intensity or distance transform maxima as centers in Watershed transform?
+%choiceVAR08 = Intensity
+%choiceVAR08 = Distance
+%choiceVAR08 = Do not use
+LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%%%VariableRevisionNumber = 4
+%textVAR09 = Try to merge too small objects into larger objects?
+%choiceVAR09 = Yes
+%choiceVAR09 = No
+MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%textVAR10 = Exclude objects touching the border of the image?
+%choiceVAR10 = Yes
+%choiceVAR10 = No
+ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
+
+%textVAR11 = What do you want to call the image of the outlines of the objects?
+%choiceVAR11 = Do not save
+%choiceVAR11 = OutlinedNuclei
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu custom
+
+%textVAR12 =  What do you want to call the labeled matrix image?
+%choiceVAR12 = Do not save
+%choiceVAR12 = LabeledNuclei
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
+
+%textVAR13 = Do you want to save the labeled matrix image in RGB or grayscale?
+%choiceVAR13 = RGB
+%choiceVAR13 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -154,6 +184,16 @@ Diameter = min((MinDiameter + MaxDiameter)/2,50);
 %%% of a pixel being part of an object.
 pObject = str2num(pObject(1:2))/100;
 
+%%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
+%%% Otherwise make sure that the user gave a valid input.
+if strcmp(MinimumThreshold,'Do not use')
+    MinimumThreshold = 0;
+else
+    MinimumThreshold = str2double(MinimumThreshold);
+    if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
+        error('The Minimum threshold entry in the IdentifyEasy module is invalid.')
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -229,8 +269,9 @@ else
 end
 
 %%% Correct the threshold using the correction factor given by the user
+%%% and make sure that the threshold is not larger than the minimum threshold
 Threshold = ThresholdCorrection*Threshold;
-
+Threshold = max(Threshold,MinimumThreshold);
 
 %%% Smooth images slightly and apply threshold
 sigma = MinDiameter/4;                                                 % Translate between minimum diamter of objects to sigma
@@ -309,16 +350,16 @@ tmp = Objects;
 Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
 Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
 DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
-NumOfDiameterObjects = length(unique(DiameterExcludedObjects(:)))-1;  % Count the objects
 
 %%% Will be stored to the handles structure
 PrelimLabelMatrixImage2 = Objects;
 
-%%% Remove objects along the border of the image
+%%% Remove objects along the border of the image (depends on user input)
 tmp = Objects;
-Objects = imclearborder(Objects);
+if strcmp(ExcludeBorderObjects,'Yes')
+    Objects = imclearborder(Objects);
+end
 BorderObjects = tmp - Objects;
-NumOfBorderObjects = length(unique(BorderObjects(:)))-1;
 
 %%% Relabel the objects
 [Objects,NumOfObjects] = bwlabel(Objects > 0);
@@ -360,7 +401,8 @@ if any(findobj == ThisModuleFigureNumber)
     OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
     OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
     hy = subplot(2,2,3);
-    ImageHandle = image(cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB));
+    OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+    ImageHandle = image(OutlinedObjects);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
     title('Outlined objects','fontsize',8);
     axis image,set(gca,'fontsize',8)
@@ -445,19 +487,25 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
-% try
-%     if ~strcmp(SaveColored,'Do not save')
-%         if strcmp(SaveMode,'RGB')
-%             handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-%         else
-%             handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-%         end
-%     end
-%     if ~strcmp(SaveOutlined,'Do not save')
-%         handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
-%     end
-% catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
-% end
+try
+    if ~strcmp(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            if sum(sum(FinalLabelMatrixImage)) >= 1
+                ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+            else
+                ColoredLabelMatrixImage = FinalLabelMatrixImage;
+            end
+            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+        else
+            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+        end
+    end
+    if ~strcmp(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = OutlinedObjects;
+    end
+catch
+    errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+end
 
 
 function Threshold = MixtureOfGaussians(OrigImage,pObject)
@@ -482,10 +530,10 @@ NumberOfClasses = 3;
 %%% Transform the image into a vector. Also, if the image is (larger than 512x512),
 %%% select a subset of 512^2 pixels for speed. This should be enough to capture the
 %%% statistics in the image.
-OrigImage = OrigImage(:);
-if length(OrigImage) > 512^2
-    indexes = randperm(length(OrigImage));
-    OrigImage = OrigImage(indexes(1:512^2));
+Intensities = OrigImage(:);
+if length(Intensities) > 512^2
+    indexes = randperm(length(Intensities));
+    Intensities = Intensities(indexes(1:512^2));
 end
 
 %%% Get the probability for a background pixel
@@ -496,10 +544,14 @@ pBackground = 1 - pObject;
 %%% the percentage of the image that is covered by object pixels. Class 1 is the
 %%% background class and Class 3 is the object class. Class 2 is an intermediate
 %%% class and we will decide later if it encodes background or object pixels.
-SortedIntensities = sort(OrigImage);
-ClassMean(1) = SortedIntensities(round(length(OrigImage)*pBackground/2));             %%% Initialize background class
-ClassMean(3) = SortedIntensities(round(length(OrigImage)*(1 - pObject/2)));           %%% Initialize object class
-ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                       %%% Initialize intermediate class
+%%% Also, for robustness the we remove 1% of the smallest and highest intensities
+%%% in case there are any quantization effects that have resulted in unaturally many
+%%% 0:s or 1:s in the image.
+Intensities = sort(Intensities);
+Intensities = Intensities(round(length(Intensities)*0.01):round(length(Intensities)*0.99));
+ClassMean(1) = Intensities(round(length(Intensities)*pBackground/2));                      %%% Initialize background class
+ClassMean(3) = Intensities(round(length(Intensities)*(1 - pObject/2)));                    %%% Initialize object class
+ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
 %%% Initialize standard deviations of the Gaussians. They should be the same to avoid problems.
 ClassStd(1:3) = 0.1;
 %%% Initialize prior probabilities of a pixel belonging to each class. The intermediate
@@ -507,6 +559,14 @@ ClassStd(1:3) = 0.1;
 pClass(1) = 3/4*pBackground;
 pClass(2) = 1/4*pBackground + 1/4*pObject;
 pClass(3) = 3/4*pObject;
+
+
+%%% Apply transformation.  a < x < b, transform to log((x-a)/(b-x)).
+%a = - 0.000001;
+%b = 1.000001;
+%Intensities = log((Intensities-a)./(b-Intensities));
+%ClassMean = log((ClassMean-a)./(b - ClassMean))
+%ClassStd(1:3) = [1 1 1];
 
 %%% Expectation-Maximization algorithm for fitting the three Gaussian distributions/classes
 %%% to the data. Note, the code below is general and works for any number of classes.
@@ -518,19 +578,20 @@ while delta > 0.001
 
     %%% Update probabilities of a pixel belonging to the background or object1 or object2
     for k = 1:NumberOfClasses
-        pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(OrigImage - ClassMean(k)).^2/(2*ClassStd(k)^2));
+        pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(Intensities - ClassMean(k)).^2/(2*ClassStd(k)^2));
     end
     pPixelClass = pPixelClass ./ repmat(sum(pPixelClass,2) + eps,[1 NumberOfClasses]);
 
     %%% Update parameters in Gaussian distributions
     for k = 1:NumberOfClasses
-        ClassMean(k) = sum(pPixelClass(:,k).*OrigImage)/sum(pPixelClass(:,k));
-        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(OrigImage - ClassMean(k)).^2)/sum(pPixelClass(:,k)));
         pClass(k) = mean(pPixelClass(:,k));
+        ClassMean(k) = sum(pPixelClass(:,k).*Intensities)/(length(Intensities)*pClass(k));
+        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(Intensities - ClassMean(k)).^2)/(length(Intensities)*pClass(k)));
     end
 
     %%% Calculate change
     delta = sum(abs(ClassMean - oldClassMean));
+    [ClassMean' ClassStd'];
 end
 
 %%% Now the Gaussian distributions are fitted and we can describe the histogram of the pixel
@@ -556,6 +617,8 @@ end
 [ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution));
 Threshold = Threshold(index);
 
+%%% Inverse transformation to log((x-a)/(b-x)) is (a+b*exp(t))/(1+exp(t))
+%Threshold = (a + b*exp(Threshold))/(1+exp(Threshold));
 
 
 

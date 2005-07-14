@@ -126,11 +126,8 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the secondary objects identified by this module?
 %infotypeVAR02 = objectgroup indep
-%choiceVAR02 = Nuclei
-%choiceVAR02 = Cells
-%choiceVAR02 = Spots
+%defaultVAR02 = Cells
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = On which image would you like to display the outlines of the secondary objects?
 %infotypeVAR03 = imagegroup

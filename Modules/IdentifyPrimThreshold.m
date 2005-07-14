@@ -169,11 +169,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this module?
 %infotypeVAR02 = objectgroup indep
+%defaultVAR02 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%choiceVAR02 = Nuclei
-%choiceVAR02 = Cells
-%choiceVAR02 = Spots
-%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
 %choiceVAR03 = 1,99999

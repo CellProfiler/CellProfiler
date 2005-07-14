@@ -173,11 +173,8 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
 %infotypeVAR03 = objectgroup indep
-%choiceVAR03 = Nuclei
-%choiceVAR03 = Cells
-%choiceVAR03 = Spots
+%defaultVAR03 = Cells
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Enter the threshold (Positive number, Max = 1):
 %choiceVAR04 = Automatic

@@ -183,6 +183,7 @@ CurrentOptionSelect = handles.Settings.OptionSelect(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

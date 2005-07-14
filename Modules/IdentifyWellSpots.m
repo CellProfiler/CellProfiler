@@ -32,12 +32,9 @@ PrevObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this module?
 %infotypeVAR02 = objectgroup indep
-%choiceVAR02 = Nuclei
-%choiceVAR02 = Cells
-%choiceVAR02 = Spots
-%choiceVAR02 = Cytoplasm
+%defaultVAR02 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu custom
+
 
 %textVAR03 = How many rows of spots?
 %defaultVAR03 = 8

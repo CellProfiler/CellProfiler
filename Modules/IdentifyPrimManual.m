@@ -136,7 +136,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this module?
 %infotypeVAR02 = objectgroup indep
-%defaultVAR02 = Nuclei
+%defaultVAR02 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Resize the image to this size before manual identification (pixels)

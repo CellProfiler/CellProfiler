@@ -194,16 +194,12 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects segmented by this module?
 %infotypeVAR02 = objectgroup indep
-%choiceVAR02 = Nuclei
-%choiceVAR02 = Cells
-%choiceVAR02 = Spots
+%defaultVAR02 = Cells
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%choiceVAR03 = 1,99999
+%defaultVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Enter the threshold (Positive number, Max = 1):
 %choiceVAR04 = Automatic

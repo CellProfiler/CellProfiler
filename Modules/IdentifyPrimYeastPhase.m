@@ -209,9 +209,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
-%choiceVAR03 = 1,99999
+%defaultVAR03 = 1,99999
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Enter the threshold (Positive number, Max = 1):
 %choiceVAR04 = Automatic

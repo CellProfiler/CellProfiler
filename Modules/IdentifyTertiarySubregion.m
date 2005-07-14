@@ -123,12 +123,8 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What do you want to call the new subregions?
 %infotypeVAR03 = objectgroup indep
-%choiceVAR03 = Cytoplasm
-%choiceVAR03 = Nuclei
-%choiceVAR03 = Cells
-%choiceVAR03 = Spots
+%defautVAR03 = Cells
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 =  What do you want to call the labeled matrix image?
 %infotypeVAR04 = imagegroup indep

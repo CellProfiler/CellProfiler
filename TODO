@@ -36,10 +36,6 @@ WANT IT NOW:
 	
 - Test and annotate in each module's help which modules work for grayscale vs color images.
 
-- Make a module using code from ImageJ
-       http://rsb.info.nih.gov/ij/plugins/ called Segmentation using
-       k-means clustering.
-
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 [Do the following prior to releasing:

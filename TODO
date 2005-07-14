@@ -6,7 +6,9 @@ JUNE 15, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
-- Popup menu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module.
+- Scrollbar bug: To reproduce, add LoadImagesText and IdentifyPrimIntensIntens to the pipeline. Use the scrollbar in the IdentifyPrimIntensIntens module and then select LoadImagesText. The variable boxes will then be shifted for LoadImagesText too.
+
+- Popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module.
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 

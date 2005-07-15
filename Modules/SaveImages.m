@@ -145,8 +145,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = OrigBlue
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter text to append to the image name, or leave "N" to keep the name the same except for the file extension.
-%defaultVAR03 = N
+%textVAR03 = Enter text to append to the image name, or leave "\" to keep the name the same except for the file extension.
+%defaultVAR03 = \
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = In what file format do you want to save images?
@@ -255,15 +255,13 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     end
 
     %%% Checks whether the file format the user entered is readable by Matlab.
-    if strcmp(FileFormat,'.')
+    if strcmp(FileFormat(1),'.')
         FileFormat = FileFormat(2:end);
     end
     IsFormat = imformats(FileFormat);
     if isempty(IsFormat) == 1
-        if strcmpi(FileFormat,'mat') ~= 1
-            if strcmpi(FileFormat,'avi') ~= 1
-                error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "imformats" (no quotes) at the command line in Matlab.')
-            end
+        if strcmpi(FileFormat,'mat') && strcmpi(FileFormat,'avi') &&strcmpi(FileFormat,'dib')
+            error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
         end
     end
 
@@ -339,10 +337,13 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             end
         end
         %%% Assembles the new image name.
-        if strcmp(upper(Appendage), 'N') == 1
-            Appendage = [];
+        if strcmp(Appendage, '\')
+            NewImageName = [BareFileName '.' FileFormat];
+        elseif strcmp(Appendage(1),'\')
+            NewImageName = [Appendage(2:end) '.' FileFormat];
+        else
+            NewImageName = [BareFileName Appendage '.' FileFormat];
         end
-        NewImageName = [BareFileName,Appendage,'.',FileFormat];
     else
         %%% Otherwise, use the filename the user entered.
         NewImageName = [OverrideFileName,'.',FileFormat];

@@ -1,6 +1,10 @@
 function [LoadedImage, handles] = CPimread(varargin)
 
-if nargin == 2,
+if nargin == 0 %returns the vaild image extensions
+    formats = imformats;
+    LoadedImage = [cat(2, formats.ext) 'dib']; %LoadedImage is not a image here, but rather a set
+    return
+elseif nargin == 2,
     CurrentFileName = varargin{1};
     handles = varargin{2};
     %%% Handles a non-Matlab readable file format.

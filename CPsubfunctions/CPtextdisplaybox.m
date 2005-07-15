@@ -10,8 +10,12 @@ set(helpFig,'units','characters','color',[0.7 0.7 0.9]);
 helpFigPos = get(helpFig,'position');
 set(helpFig,'position',[helpFigPos(1),helpFigPos(2),87,helpFigPos(4)]);
 
-handles = guidata(findobj('Tag','figure1'));
-FontSize = handles.Current.FontSize;
+try
+    handles = guidata(findobj('Tag','figure1'));
+    FontSize = handles.Current.FontSize;
+catch
+    FontSize = 11;
+end
 
 helpUI = uicontrol(...
     'Parent',helpFig,...

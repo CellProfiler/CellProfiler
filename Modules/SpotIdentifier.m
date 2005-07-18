@@ -1,7 +1,7 @@
 function handles = SpotIdentifier(handles)
 
 % Help for the Spot Identifier module:
-% Category: Other
+% Category: Object Identification and Modification
 %
 % Sorry, this module has not yet been documented. Its purpose is to
 % label spots of cell microarrays with gene information or sample
@@ -126,22 +126,33 @@ RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 RotateMethod = RotateMethod(1);
 %inputtypeVAR02 = popupmenu
 
+
 %textVAR03 = What do you want to call the rotated image?
 %infotypeVAR03 = imagegroup indep
 %defaultVAR03 = RotatedImage
 RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 
-%textVAR04 = Mark the control spot by coordinates or by mouse?
-%choiceVAR04 = Coordinates
-%choiceVAR04 = Mouse
-MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-MarkingMethod = MarkingMethod(1);
-%inputtypeVAR04 = popupmenu
+%textVAR04 = What do you want to call the objects identified by this module?
+%infotypeVAR04 = objectgroup indep
+%defaultVAR04 = Spots
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the number of rows, columns
-%defaultVAR05 = 40,140
-RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = What is the radius of each object in pixals?
+%defaultVAR05 = 80
+RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+
+%textVAR06 = Mark the control spot by coordinates or by mouse?
+%choiceVAR06 = Coordinates
+%choiceVAR06 = Mouse
+MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+MarkingMethod = MarkingMethod(1);
+%inputtypeVAR06 = popupmenu
+
+%textVAR07 = Enter the number of rows, columns
+%defaultVAR07 = 40,140
+RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%% Extracts the rows and columns from the user's input.
 try
     RowsColumnsNumerical = str2num(RowsColumns);%#ok We want to ignore MLint error checking for this line.
@@ -150,9 +161,9 @@ try
 catch error('Image processing was canceled because your entry for rows, columns in the Spot Identifier module was not understood.')
 end
 
-%textVAR06 = Enter the spacing between rows, columns (vertical spacing, horizontal spacing)
-%defaultVAR06 = 57,57
-HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR08 = Enter the spacing between rows, columns (vertical spacing, horizontal spacing)
+%defaultVAR08 = 57,57
+HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% Extracts the vertical and horizontal spacing from the user's input.
 try
     HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
@@ -161,15 +172,15 @@ try
 catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
 end
 
-%textVAR07 = Would you like the distance units (the next option) be in pixals or spots?
-%choiceVAR07 = Pixals
-%choiceVAR07 = Spots
-SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
+%textVAR09 = Would you like the distance units (the next option) be in pixals or spots?
+%choiceVAR09 = Pixals
+%choiceVAR09 = Spots
+SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
 
-%textVAR08 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
-%defaultVAR08 = 57,0
-HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR10 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
+%defaultVAR10 = 57,0
+HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%% Extracts the vertical and horizontal offset from the user's input.
 try
     HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
@@ -182,31 +193,31 @@ if strcmp(SpacingUnits,'Spots')
     HorizOffset = HorizOffset*HorizSpacing;
 end
 
-%textVAR09 = Is the first spot at the Left or Right?
-%choiceVAR09 = Left
-%choiceVAR09 = Right
-LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR11 = Is the first spot at the Left or Right?
+%choiceVAR11 = Left
+%choiceVAR11 = Right
+LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 LeftOrRight = LeftOrRight(1);
-%inputtypeVAR09 = popupmenu
-
-%textVAR10 = Is the first spot at the Bottom or Top?
-%choiceVAR10 = Top
-%choiceVAR10 = Bottom
-TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-TopOrBottom = TopOrBottom(1);
-%inputtypeVAR10 = popupmenu
-
-%textVAR11 = Would you like to count by rows or columns?
-%choiceVAR11 = Rows
-%choiceVAR11 = Columns
-RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = From where do you want to load spot information (if you select now, it will be assumed to be from the first sheet of the excel file)?
-%choiceVAR12 = Don't Load
-%choiceVAR12 = Browse each time through
-LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu custom
+%textVAR12 = Is the first spot at the Bottom or Top?
+%choiceVAR12 = Top
+%choiceVAR12 = Bottom
+TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+TopOrBottom = TopOrBottom(1);
+%inputtypeVAR12 = popupmenu
+
+%textVAR13 = Would you like to count by rows or columns?
+%choiceVAR13 = Rows
+%choiceVAR13 = Columns
+RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+%textVAR14 = From where do you want to load spot information (if you select now, it will be assumed to be from the first sheet of the excel file)?
+%choiceVAR14 = Don't Load
+%choiceVAR14 = Browse each time through
+LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu custom
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -233,17 +244,18 @@ if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(ImageName);
+FinalLabelMatrix = zeros(size(OrigImage));
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number to display in.
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    FigureHandle = CPfigure(handles,ThisModuleFigureNumber); ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
+    FigureHandle = CPfigure(handles,ThisModuleFigureNumber);subplot(2,3,[1 2 4 5]);ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
 else
     %%% A new figure is opened each time through the pipeline so that the
     %%% resulting labeled figures are all available to the user for
     %%% viewing.
-    FigureHandle = figure; ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
+    FigureHandle = figure; subplot(2,3,[1 2 4 5]);ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
     %%% Tag new figure so "Close Windows" knows to delete it.
     userData.Application = 'CellProfiler';
     set(FigureHandle,'UserData',userData);
@@ -274,7 +286,11 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
-    figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image;
+    figure(FigureHandle); 
+    subplot(2,3,[1 2 4 5]);
+    ImageHandle = imagesc(RotatedImage); 
+    colormap(gray);
+    axis image;
     title('Rotated Image');
     pixval off;
     try %#ok We want to ignore MLint error checking for this line.
@@ -302,8 +318,12 @@ elseif strncmp(RotateMethod, 'C',1) == 1
     PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
-    figure(FigureHandle); ImageHandle = imagesc(RotatedImage); colormap(gray), axis image
-    title('Rotated Image')
+    figure(FigureHandle); 
+    subplot(2,3,[1 2 4 5]);
+    ImageHandle = imagesc(RotatedImage);
+    colormap(gray);
+    axis image;
+    title('Rotated Image');
     pixval off;
     try, delete(PatienceHandle), end %#ok We want to ignore MLint error checking for this line.
 else
@@ -396,6 +416,18 @@ text(XLocations, YLocations, PositionList, ...
     'HorizontalAlignment','center', 'Color', 'red','visible','off', ...
     'UserData','PositionListHandles');
 drawnow
+
+r = str2num(RadiusSize);
+circle = getnhood(strel('disk',r));
+for i = 1:length(LinearNumbers)
+    FinalLabelMatrix(YLocations(i)-r+1:YLocations(i)+r-1,XLocations(i)-r+1:XLocations(i)+r-1)=LinearNumbers(i)*circle;
+end
+subplot(2,3,3);
+FinalColorLabelMatrix=label2rgb(FinalLabelMatrix,'jet', 'k', 'shuffle');
+ObjectImageHandle = imagesc(FinalColorLabelMatrix); 
+title(['Segmented ',ObjectName]);
+
+
 %%% Retrieves the spot identifying info from a file, if requested.
 if ~strcmp(LoadSpotIdentifiers,'Don''t Load')
     if strcmp(LoadSpotIdentifiers,'Browse each time through')
@@ -576,7 +608,10 @@ VertLinesX = VertLinesX - HorizSpacing/2;
 VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1);
 VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
 figure(FigureHandle);
-line(VertLinesX,VertLinesY)
+axes(get(ImageHandle,'parent'));
+line(VertLinesX,VertLinesY);
+axes(get(ObjectImageHandle,'parent'));
+line(VertLinesX,VertLinesY);
 
 %%% Draws the Horizontal Lines.
 HorizLinesY(1,:) = [GridYLocations(:,1)',GridYLocations(end,1)+VertSpacing];
@@ -585,7 +620,10 @@ HorizLinesY = HorizLinesY - VertSpacing/2;
 HorizLinesX(1,:) = repmat(0,1,size(GridXLocations,1)+1);
 HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridXLocations,1)+1);
 figure(FigureHandle);
-line(HorizLinesX,HorizLinesY)
+axes(get(ImageHandle,'parent'));
+line(HorizLinesX,HorizLinesY);
+axes(get(ObjectImageHandle,'parent'));
+line(HorizLinesX,HorizLinesY);
 
 %%% Sets the line color.
 Handles = findobj('type','line');
@@ -772,12 +810,27 @@ handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftX};
 fieldname = ['ImageTopLeftY', ImageName];
 handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftY};
 
-% PROGRAMMING NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
-% PROGRAMMING NOTE
-% DISPLAYING RESULTS:
-% Some calculations produce images that are used only for display or
-% for saving to the hard drive, and are not used by downstream
-% modules. To speed processing, these calculations are omitted if the
-% figure window is closed and the user does not want to save the
-% images.
+
+fieldname = ['Segmented',ObjectName];
+handles.Pipeline.(fieldname) = FinalLabelMatrix;
+
+
+%%% Saves the ObjectCount, i.e. the number of segmented objects.
+%%% See comments for the Threshold saving above
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')                        
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));  
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrix(:));
+
+%%% Saves the location of each segmented object
+handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(FinalLabelMatrix,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 

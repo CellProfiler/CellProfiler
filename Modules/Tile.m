@@ -194,7 +194,6 @@ drawnow
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 
-%%% The first time the module is run, the tiling is performed.
 if handles.Current.SetBeingAnalyzed == 1
     %%% Retrieves the path where the images are stored from the handles
     %%% structure.

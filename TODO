@@ -6,6 +6,12 @@ JUNE 15, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- Put in toggle buttons for red, green, and blue if an image is color.  Maybe in CPfigure, or maybe just in specific places like spot identifier.
+
+- Put in some way to save a figure (either a moduele or ImageTool).
+
+- Combine Load Images and Movies into a single module.
+
 - In several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
 - Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Trying to load the current ExampleFlySettings revealed a potentially serious problem - with the new way of showing settings (drop down menus, etc), I think it makes it frequently fail to load old pipelines properly.  So we should figure out if we can make CellProfiler more robust to loading old pipelines, otherwise everything we've worked on up to this point is going to be un-loadable.

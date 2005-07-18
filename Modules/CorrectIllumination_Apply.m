@@ -305,8 +305,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3); imagesc(IllumCorrectFunctionImage);
     title(['Illumination Correction Function Image']);
     colormap(gray)
-    text(1,50,['Min Value: ' num2str(min(min(IlluminationImage)))],'Color','red');
-    text(1,150,['Max Value: ' num2str(max(max(IlluminationImage)))],'Color','red');
+    text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
+    text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');
     CPFixAspectRatio(OrigImage);
 end
 

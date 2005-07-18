@@ -6,6 +6,12 @@ JUNE 15, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
+
+- When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?
+
+- LoadImagesOrder shows the text "LongBox" in the variable description. The syntax must be a little messed up.
+
 - Make spot identifier crop out the background to just leave the plate.
 
 - Put RGBsplit and RGPtoGray a single module (like IdentifyPrim AdaptThreshold)

@@ -6,6 +6,15 @@ JUNE 15, 2005  IN ORDER OF PRIORITY
 
 WANT IT NOW:
 
+- Make spot identifier crop out the background to just leave the plate.
+
+- Put RGBsplit and RGPtoGray a single module (like IdentifyPrim AdaptThreshold)
+
+- Put in the help menus for ImageTools and DataTools.
+
+
+- Make the timer output just print the time for the modules with the first image sets and the average for each modules with the rest of the image sets.  Right now it prints every time.
+
 - Scrollbar bug: To reproduce, add LoadImagesText and IdentifyPrimIntensIntens to the pipeline. Use the scrollbar in the IdentifyPrimIntensIntens module and then select LoadImagesText. The variable boxes will then be shifted for LoadImagesText too.
 
 - Popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module.
@@ -26,17 +35,10 @@ WANT IT NOW:
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
-- Image Tiler: We haven't checked this module in a while. Main GUI's error catching is causing problems when
-       sample info is loaded.  Allow zoom in on thumbnail: get
-       filename (GET COORDINATES) and display high res image.  Needs
-       error catching for images to be the same size.  Display window
-       stays open. See tooltips code. Make manual page.  Fails if
-       there are fewer images than the total grid.
-
 - Make another primary object identification module based on
        Intensity then distance. 
 	
-- Test and annotate in each module's help which modules work for grayscale vs color images.
+- Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
@@ -72,7 +74,18 @@ POST-PUBLIC RELEASE SUPPORT:
      - Present at conferences
 
 ---------------------------------------------------
-LONG-TERM, 20% TIME PROJECTS:
+LONG-TERM:
+
+GUI 1 (Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
+
+GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
+
+- Make it possible to use data from previous modules as the arguments of later modules.  Also make it possible for entire modules to be entered as arguments (with all their individual variables).  For instance, it would be nice if spot identifier took in an identify module that could identify each spot specifically and then create a grid to match it.
+
+---------------------------------------------------
+
+PROBABLY DO NOT WANT TO INVEST TIME IN THESE:
+
 
 VISION 2 +++ Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
 Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
@@ -84,14 +97,6 @@ Re-estimate illumination variation from the background and correct the original 
 Re-segment cells
 Repeat until convergence.
 The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
-
-GUI 1 (Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
-
-GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot. 
-
----------------------------------------------------
-
-PROBABLY DO NOT WANT TO INVEST TIME IN THESE:
 
 ++ Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
 
@@ -156,7 +161,7 @@ DONE DURING IAP>>>>>>>
 
      DONE!! - Allow the Save Images module to deal with different bit depths, in case the user wants to save images in 16-bit (e.g. with PNG or JPG). Also allow the user to save an image as a binary (black/white rather than grayscale, so that any nonzero pixels = 1, most useful for viewing a label matrix).
 
-     -Almost done- Timer: Have the time for first set separate from the time for
+     -Almost done- : Have the time for first set separate from the time for
        subsequent sets. 
 
      -Done- Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).

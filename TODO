@@ -8,7 +8,9 @@ WANT IT NOW:
 
 - In several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
-- Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
+- Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Trying to load the current ExampleFlySettings revealed a potentially serious problem - with the new way of showing settings (drop down menus, etc), I think it makes it frequently fail to load old pipelines properly.  So we should figure out if we can make CellProfiler more robust to loading old pipelines, otherwise everything we've worked on up to this point is going to be un-loadable.
+
+- Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
 
 - When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?
 

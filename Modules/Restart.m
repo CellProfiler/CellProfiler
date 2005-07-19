@@ -1,9 +1,9 @@
 function handles = Restart(handles)
 
 % Help for the Restart module:
-% Category: Image Processing
+% Category: File handling
 %
-% Restarts an Analysis Run where it left off.
+% Restarts an analysis run where it left off.
 % To use: Start CellProfiler and insert Restart as the only module.
 % Click Analyze images. When the dialog "Choose a settings or output file"
 % appears, select the output file of the incomplete run. Click ok and

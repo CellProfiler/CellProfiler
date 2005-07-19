@@ -1134,6 +1134,9 @@ if ModuleNamedotm ~= 0,
     end
     
     fclose(fid);
+    if ~isfield(handles.Settings,'VariableInfoTypes')||size(handles.Settings.VariableInfoTypes,1)==size(handles.Settings.VariableValues,1)-1
+        handles.Settings.VariableInfoTypes(size(handles.Settings.VariableValues,1),:)={[]};
+    end
     
     for i=1:lastVariableCheck
         if strcmp(get(handles.VariableBox{ModuleNums}(i),'style'),'edit')

@@ -92,27 +92,27 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be split into black and white images?
+%textVAR01 = What did you call the color image to be split into grayscale images?
 %infotypeVAR01 = imagegroup
 RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the image that was the red part?
+%textVAR02 = What do you want to call the image that was red? Type N to ignore red.
 %infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigRed
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the image that was the green part?
+%textVAR03 = What do you want to call the image that was green? Type N to ignore green.
 %infotypeVAR03 = imagegroup indep
 %defaultVAR03 = OrigGreen
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call the image that was the blue part?
+%textVAR04 = What do you want to call the image that was blue? Type N to ignore blue.
 %infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigBlue
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Type "N" in any slots above to ignore that color.
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -133,7 +133,6 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 %%% Reads the image.
 RGBImage = handles.Pipeline.(fieldname);
-
 
 Size = size(RGBImage);
 if length(Size) ~= 3

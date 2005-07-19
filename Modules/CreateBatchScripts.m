@@ -438,9 +438,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
     BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
 
-    fprintf(BatchFile, 'path(''%s'',path);\n', fullfile(BatchCellProfilerPath, 'Modules'));
-    fprintf(BatchFile, 'path(''%s'',path);\n', fullfile(BatchCellProfilerPath, 'DataTools'));
-    fprintf(BatchFile, 'path(''%s'',path);\n', BatchCellProfilerPath);
+    fprintf(BatchFile, 'addpath(genpath(''%s''));\n', BatchCellProfilerPath);
     fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);
     fprintf(BatchFile, 'EndImage = %d;\n', EndImage);

@@ -1436,6 +1436,7 @@ if (length(ModuleHighlighted) > 0)
         %%% If panel location gets changed in GUIDE, must change the
         %%% position values here as well.
         set(handles.variablepanel, 'position', [238 0 563 346]);
+        set(handles.slider1,'value',get(handles.slider1,'min'));
         set(handles.slider1,'visible','off');
         
         %%% 2.5 Checks whether a module is loaded in this slot.

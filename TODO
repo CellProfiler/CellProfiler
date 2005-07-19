@@ -12,7 +12,7 @@ WANT IT NOW:
 
 - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
-- For OpenNewImageFile Image tool, make use of CPimread's ability to tell us which files it can read when deciding what file types to display in the uigetfile line.  Right now, the file types are hard-coded.
+- For OpenNewImageFile Image tool, make use of CPimread's ability to tell us which files it can read when deciding what file types to display in the uigetfile line.  Right now, the file types are hard-coded.  Also, when the user is selecting a file format for images in, for example, the SaveImages module, currently the user types in the file format into the edit box. Can we make this a popupmenu whose choices are determined by the output of CPimread (with no arguments, CPimread tells us which file formats it can read)?
 
 - Put in toggle buttons for red, green, and blue if an image is color.  Maybe in CPfigure, or maybe just in specific places like spot identifier.
 
@@ -28,9 +28,9 @@ WANT IT NOW:
 
 - When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?
 
-- LoadImagesOrder shows the text "LongBox" in the variable description. The syntax must be a little messed up.
+- It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.
 
-- Make spot identifier crop out the background to just leave the plate.
+- Make spot identifier crop out the background to just leave the plate. [Actually, Anne thinks we should adapt the Crop module to take in an object  (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object becomes black).  The result of this can then be fed to the SpotIdentifier module].
 
 - Put RGBsplit and RGPtoGray a single module (like IdentifyPrim AdaptThreshold)
 

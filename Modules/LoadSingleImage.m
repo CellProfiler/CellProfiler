@@ -103,7 +103,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
-%defaultVAR01 = IllumCorrImgBlue1
+%defaultVAR01 = IllumBlue.mat
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call that image?
@@ -141,11 +141,11 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %textVAR09 = If an image slot is not being used, type a slash  /  in the box.
 
 %textVAR10 = Type the file format of the images
-%choiceVAR10 = tif
+%choiceVAR10 = mat
 %choiceVAR10 = bmp
 %choiceVAR10 = gif
 %choiceVAR10 = jpg
-%choiceVAR10 = mat
+%choiceVAR10 = tif
 %choiceVAR10 = DIB
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu

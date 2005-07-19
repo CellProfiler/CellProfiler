@@ -1,12 +1,14 @@
     CellProfiler cell image analysis software development 
-JUNE 15, 2005  IN ORDER OF PRIORITY
+JULY 19, 2005  IN ORDER OF PRIORITY
 
 (+ sign indicates more challenging projects)
 ---------------------------------------------------
 
 WANT IT NOW:
 
-- The SaveImages module doesn't take advantage of the new dropdown menus for choosing which image to save.
+- The error dialogs are not proper CP color.
+
+- There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected.
 
 - Sometimes we save images (using the SaveImages module, for example) in matlab .mat format. We can then load them into CP using LoadSingleImage, but none of the other LoadImages modules, nor the OpenNewImageFile Image tool, nor CPimread itself have been adapted to read images stored in .mat files.
 

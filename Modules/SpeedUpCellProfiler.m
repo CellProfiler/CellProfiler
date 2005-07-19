@@ -96,7 +96,37 @@ CurrentModuleNum = str2double(CurrentModule);
 %defaultVAR01 = 1
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
+%textVAR02 = Which images would you like to save?
+%infotypeVAR02 = imagegroup
+%choiceVAR02 = Do not use
+ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
+
+%textVAR03 =
+%infotypeVAR03 = imagegroup
+%choiceVAR03 = Do not use
+ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
+
+%textVAR04 =
+%infotypeVAR04 = imagegroup
+%choiceVAR04 = Do not use
+ImageNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
+
 %%%VariableRevisionNumber = 1
+
+
+ListOfFields = fieldnames(handles.Pipeline);
+tempPipe = handles.Pipeline;
+for i = 1:length(ListOfFields)
+    if all(size(tempPipe.(ListOfFields{i}))~=1) && ~any(strcmp(ImageNameList,ListOfFields{i}))
+        tempPipe = rmfield(tempPipe,ListOfFields(i));
+    end
+end
+handles.Pipeline = tempPipe;
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%

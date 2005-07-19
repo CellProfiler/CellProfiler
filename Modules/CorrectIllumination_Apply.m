@@ -211,13 +211,13 @@ end
 
 if strcmp(RescaleOption,'No rescaling') == 1
     MethodSpecificArguments = [];
-    RescaleOption = 'N'
+    RescaleOption = 'N';
 elseif strcmp(RescaleOption,'Stretch 0 to 1') == 1
     MethodSpecificArguments = [];
-    RescaleOption = 'S'
+    RescaleOption = 'S';
 elseif strcmp(RescaleOption,'Match maximums') == 1
     MethodSpecificArguments = OrigImage;
-    RescaleOption = 'M'
+    RescaleOption = 'M';
 end
 
 %%%%%%%%%%%%%%%%%%%%%

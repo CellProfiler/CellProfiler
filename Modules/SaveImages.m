@@ -138,12 +138,14 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the images you want to save?
-%defaultVAR01 = OrigBlue
+%infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = Which image's original filename do you want to use as a base to create the new file name? Type N to use sequential numbers.
-%defaultVAR02 = OrigBlue
+%infotypeVAR02 = imagegroup
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Enter text to append to the image name, or leave "\" to keep the name the same except for the file extension.
 %defaultVAR03 = \
@@ -157,17 +159,25 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = .
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Enter the bit depth at which to save the images (8, 12, or 16: some image formats do not support saving at a bit depth of 12 or 16; see Matlab's imwrite function for more details.)
-%defaultVAR06 = 8
+%textVAR06 = Enter the bit depth at which to save the images (Note: some image formats do not support saving at a bit depth of 12 or 16; see Matlab's imwrite function for more details.)
+%choiceVAR06 = 8
+%choiceVAR06 = 12
+%choiceVAR06 = 16
 BitDepth = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
 %textVAR07 = Do you want to always check whether you will be overwriting a file when saving images?
-%defaultVAR07 = Y
+%choiceVAR07 = Yes
+%choiceVAR07 = No
 CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
-%textVAR08 = At what point in the pipeline do you want to save the image? Enter E for every time through the pipeline (every image set), F for first, and L for last. When saving in movie format, set this option as E.
-%defaultVAR08 = E
+%textVAR08 = At what point in the pipeline do you want to save the image? When saving in movie format, choose Every cycle.
+%choiceVAR08 = Every cycle
+%choiceVAR08 = First cycle
+%choiceVAR08 = Last cycle
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
 %textVAR09 = If you are only saving the image once (e.g. last or first option), enter the filename to use (with no extension). To use the automatically determined filename (derived from the source images), enter A.
 %defaultVAR09 = A
@@ -178,8 +188,10 @@ OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Do you want to rescale the images to use a full 8 bit (256 graylevel) dynamic range (Y or N)?
-%defaultVAR11 = N
+%choiceVAR11 = No
+%choiceVAR11 = Yes
 RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
 %textVAR12 = For grayscale images, specify the colormap to use (e.g. gray, jet, bone) if you are saving movie (avi) files.
 %defaultVAR12 = gray
@@ -193,7 +205,7 @@ UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
 %textVAR14 = Warning! It is possible to overwrite existing files using this module!
 
-%%%VariableRevisionNumber = 8
+%%%VariableRevisionNumber = 10
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

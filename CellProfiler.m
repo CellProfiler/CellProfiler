@@ -1150,7 +1150,7 @@ if ModuleNamedotm ~= 0,
             if ~RunInBG
                 handles.Settings.VariableValues{ModuleNums, i} = OptList{1};
             else
-                PPos = strmatch(handles.Settings.VariableValues{ModuleNums,i},OptList);
+                PPos = find(strcmp(handles.Settings.VariableValues{ModuleNums,i},OptList));
                 if isempty(PPos)
                     set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);
                 else

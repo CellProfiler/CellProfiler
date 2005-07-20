@@ -30,7 +30,10 @@ if strcmp(Answer,'All folders') == 1
     ModulesFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Modules'));
     DataToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'DataTools'));
     ImageToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'ImageTools'));
-    AlgorithmFileNames = horzcat(ModulesFileNames, DataToolsFileNames, ImageToolsFileNames);
+    CPsubfunctionsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'CPsubfunctions'));
+    HelpFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Help'));
+    OutdatedFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Outdated'));
+    AlgorithmFileNames = horzcat(ModulesFileNames, DataToolsFileNames, ImageToolsFileNames, CPsubfunctionsFileNames, HelpFileNames, OutdatedFileNames);
 else
     PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
     if PathName == 0

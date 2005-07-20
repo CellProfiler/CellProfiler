@@ -143,7 +143,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module with the 'Single Image' option)?
-%infotypeVAR03 = IllumFnc
+%infotypeVAR03 = imagegroup
 IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 

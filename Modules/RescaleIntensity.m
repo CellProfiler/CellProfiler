@@ -24,7 +24,15 @@ function handles = RescaleIntensity(handles)
 % scaled.
 % (G) rescale the image so that all pixels are equal to or Greater
 % than one.
-% (M) Match the maximum of one image to the maximum of another
+% (M) Match the maximum of one image to the maximum of another.
+% (C) Convert to 8 bit: Images in CellProfiler are
+% normally stored as numerical class double in the range of 0 to 1.
+% This option converts these images to class uint8, meaning an 8 bit
+% integer in the range of 0 to 1. This is useful to reduce the amount
+% of memory required to store the image. Warning: Most CellProfiler
+% modules require the incoming image to be in the standard 0 to 1
+% range, so this conversion may cause downstream modules to behave
+% unexpectedly.
 %
 % SAVING IMAGES: The rescaled images produced by this module can be
 % easily saved using the Save Images module, using the name you
@@ -124,6 +132,7 @@ RescaledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Enter min/max below
 %choiceVAR03 = Greater than one
 %choiceVAR03 = Match Maximum
+%choiceVAR03 = Convert to 8 bit
 RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 RescaleOption = RescaleOption(1);
 %inputtypeVAR03 = popupmenu
@@ -215,6 +224,8 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     MethodSpecificArguments{3} = LowestPixelRescale;
     MethodSpecificArguments{4} = HighestPixelRescale;
     MethodSpecificArguments{5} = ImageName;
+elseif strncmpi(RescaleOption,'C',1) == 1
+    MethodSpecificArguments = [];
 end
 
 %%% Uses a CellProfiler subfunction.

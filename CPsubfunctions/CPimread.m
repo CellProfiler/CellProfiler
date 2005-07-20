@@ -46,6 +46,13 @@ elseif nargin == 2,
             LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
         end
         fclose(fid);
+    elseif strcmp('.MAT',upper(ext))
+        load(CurrentFileName);
+        if exist('Image')
+            LoadedImage = Image; 
+        else
+            error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
+        end
     else 
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,

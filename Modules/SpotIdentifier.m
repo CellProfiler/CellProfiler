@@ -244,7 +244,7 @@ if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(ImageName);
-FinalLabelMatrix = zeros(size(OrigImage));
+FinalLabelMatrix = zeros(size(OrigImage,1),size(OrigImage,2));
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Determines the figure number to display in.
@@ -330,6 +330,7 @@ else
     error('Image processing was canceled because your entry relating to image rotation was not one of the options: No, C, or M.')
 end
 drawnow
+set(ImageHandle,'Tag','MainImage');
 if strncmp(MarkingMethod,'C',1) == 1
     %%% Sets the top, left of the grid based on user-entered coordinates.
     Prompts = {'Enter the X coordinate of the top left marker', 'Enter the Y coordinate of the top left marker'};
@@ -492,7 +493,7 @@ end
 drawnow
 %%% Sets the figure to take up most of the screen.
 ScreenSize = get(0,'ScreenSize');
-NewFigureSize = [30,60, ScreenSize(3)-60, ScreenSize(4)-150];
+NewFigureSize = [ScreenSize(3)*1/6,ScreenSize(4)*1/3, ScreenSize(3)*2/3, ScreenSize(4)*2/3];
 set(FigureHandle, 'Position', NewFigureSize)
 
 %PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
@@ -555,6 +556,7 @@ uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [490 6 45 20], ...
     'Callback', ChangeColormapButtonFunction, 'parent',FigureHandle, ...
     'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
+
 %%% Text1
 uicontrol('Parent',FigureHandle, ...
     'BackgroundColor',get(FigureHandle,'Color'), ...
@@ -593,8 +595,30 @@ TotalHeight = SizeOfImage(1);
 TotalWidth = SizeOfImage(2);
 
 if length(SizeOfImage) == 3
+    ToggleColorR = 'ImageHandle = findobj(gcf,''Tag'',''MainImage'');data=get(ImageHandle,''CData'');button=findobj(gcf,''tag'',''ToggleColorR'');if get(button,''value'')==0,set(button,''UserData'',data(:,:,1));data(:,:,1)=0;set(ImageHandle,''CData'',data);else,data(:,:,1)=get(button,''UserData'');set(ImageHandle,''CData'',data);end;clear data button ImageHandle;';
+    uicontrol('Style', 'checkbox', ...
+        'Position', [550 6 30 20], ...
+        'Callback', ToggleColorR, 'parent',FigureHandle, ...
+        'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
+        'max',1,'value',1,'tag','ToggleColorR','string','R');
+    
+    ToggleColorG = 'ImageHandle = findobj(gcf,''Tag'',''MainImage'');data=get(ImageHandle,''CData'');button=findobj(gcf,''tag'',''ToggleColorG'');if get(button,''value'')==0,set(button,''UserData'',data(:,:,2));data(:,:,2)=0;set(ImageHandle,''CData'',data);else,data(:,:,2)=get(button,''UserData'');set(ImageHandle,''CData'',data);end;clear data button ImageHandle;';
+    uicontrol('Style', 'checkbox', ...
+        'Position', [580 6 30 20], ...
+        'Callback', ToggleColorG, 'parent',FigureHandle, ...
+        'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
+        'max',1,'value',1,'tag','ToggleColorG','string','G');
+    
+    ToggleColorB = 'ImageHandle = findobj(gcf,''Tag'',''MainImage'');data=get(ImageHandle,''CData'');button=findobj(gcf,''tag'',''ToggleColorB'');if get(button,''value'')==0,set(button,''UserData'',data(:,:,3));data(:,:,3)=0;set(ImageHandle,''CData'',data);else,data(:,:,3)=get(button,''UserData'');set(ImageHandle,''CData'',data);end;clear data button ImageHandle;';
+    uicontrol('Style', 'checkbox', ...
+        'Position', [610 6 30 20], ...
+        'Callback', ToggleColorB, 'parent',FigureHandle, ...
+        'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
+        'max',1,'value',1,'tag','ToggleColorB','string','B');
+   
     set(ImageHandle,'UserData','Color')
-else set(ImageHandle,'UserData','Gray')
+else
+    set(ImageHandle,'UserData','Gray')
 end
 
 %%% Draws the grid on the image.  The 0.5 accounts for the fact that

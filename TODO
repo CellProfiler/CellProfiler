@@ -8,8 +8,6 @@ WANT IT NOW:
 
 - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
-- The error dialogs are not proper CP color.
-
 - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected.
 
 - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
@@ -57,12 +55,17 @@ WANT IT NOW:
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
+- Move the help contents of IdentifySecPropagateSubfunction to the help for 
+ IdentifySecPropagate and then remove IdentifySecPropagateSubfunction.m from cvs (i.e. delete it), because it contains no code but appears as a module to load in the pipeline when you click the AddModule button.
+
 - Save Image As tool: does not work well for all kinds of
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
 - Make another primary object identification module based on
        Intensity then distance. 
+
+- The error dialogs are not proper CP color.
 	
 - Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
 

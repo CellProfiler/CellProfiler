@@ -2018,11 +2018,12 @@ if exist(pathname,'dir') ~= 0
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
-    handles = RetrieveImageFileNames(handles,pathname);
+    FileNames = CPretrieveMediaFileNames(pathname,'','No','Exact','Image');
     %%% Test whether this is during CellProfiler launching or during
     %%% the image analysis run itself (by looking at some of the GUI
     %%% elements). If either is the case, the message is NOT
     %%% shown.
+    handles.Current.FilenamesInImageDir = FileNames;
     ListBoxContents = get(handles.FilenamesListBox,'String');
     IsStartup = strcmp(ListBoxContents(1),'Listbox');
     IsAnalysisRun = strcmp(get(handles.PipelineOfModulesText,'visible'),'off');
@@ -2061,59 +2062,6 @@ end
 %%% Updates the handles structure.
 guidata(hObject,handles)
 
-%%% SUBFUNCTION %%%
-function handles = RetrieveImageFileNames(handles, Pathname)
-%%% Lists all the contents of that path into a structure which includes the
-%%% name of each object as well as whether the object is a file or
-%%% directory.
-FilesAndDirsStructure = dir(Pathname);
-%%% Puts the names of each object into a list.
-FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
-%%% Puts the logical value of whether each object is a directory into a list.
-LogicalIsDirectory = [FilesAndDirsStructure.isdir];
-%%% Eliminates directories from the list of file names.
-FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-
-if isempty(FileNamesNoDir) == 1
-    handles.Current.FilenamesInImageDir = [];
-else
-    %%% Makes a logical array that marks with a "1" all file names that start
-    %%% with a period (hidden files):
-    DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
-    %%% Makes logical arrays that mark with a "1" all file names that have
-    %%% particular suffixes (mat, m, m~, and frk). The dollar sign indicates
-    %%% that the pattern must be at the end of the string in order to count as
-    %%% matching.  The first line of each set finds the suffix and marks its
-    %%% location in a cell array with the index of where that suffix begins;
-    %%% the third line converts this cell array of numbers into a logical
-    %%% array of 1's and 0's.   cellfun only works on arrays of class 'cell',
-    %%% so there is a check to make sure the class is appropriate.  When there
-    %%% are very few files in the directory (I think just one), the class is
-    %%% not cell for some reason.
-    DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|rtf|txt|csv)$', 'once');
-    if strcmp(class(DiscardsByExtension), 'cell')
-        DiscardsByExtension = cellfun('prodofsize',DiscardsByExtension);
-    else
-        DiscardsByExtension = [];
-    end
-    %%% Combines all of the DiscardLogical arrays into one.
-    DiscardLogical = DiscardLogical1 | DiscardsByExtension;
-    %%% Eliminates filenames to be discarded.
-    if isempty(DiscardLogical)
-        FileNames = FileNamesNoDir;
-    else
-        FileNames = FileNamesNoDir(~DiscardLogical);
-    end
-    %%% Checks whether any files are left.
-    if isempty(FileNames)
-        handles.Current.FilenamesInImageDir = [];
-    else
-        %%% Stores the final list of file names in the handles structure
-        handles.Current.FilenamesInImageDir = FileNames;
-        guidata(handles.figure1,handles);
-    end
-end
-guidata(handles.figure1,handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% BROWSE DEFAULT OUTPUT DIRECTORY BUTTON %%%

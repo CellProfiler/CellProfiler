@@ -18,7 +18,7 @@ else
     
     if strncmpi(ImageOrMovie,'I',1)
         formats = imformats;
-        MediaExtensions = cat(2,formats.ext,{'dib'});
+        MediaExtensions = CPimread;
     elseif strncmpi(ImageOrMovie,'M',1)
         MediaExtensions = {'avi' 'stk'};
     else
@@ -46,12 +46,12 @@ else
     for i=1:length(NotYetTextMatchedFileNames)
         if ~isempty(TextToFind)
             if strncmpi(ExactOrRegExp,'E',1)
-                if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind),
+                if findstr(char(NotYetTextMatchedFileNames(i)), TextToFind)||isempty(TextToFind)
                     FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                     Count = Count + 1;
                 end
             elseif strncmpi(ExactOrRegExp,'R',1)
-                if regexp(char(NotYetTextMatchedFileNames(i)), TextToFind),
+                if regexp(char(NotYetTextMatchedFileNames(i)), TextToFind)||isempty(TextToFind)
                     FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                     Count = Count + 1;
                 end

@@ -12,8 +12,6 @@ WANT IT NOW:
 
 - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
-- For OpenNewImageFile Image tool, make use of CPimread's ability to tell us which files it can read when deciding what file types to display in the uigetfile line.  Right now, the file types are hard-coded.  Also, when the user is selecting a file format for images in, for example, the SaveImages module, currently the user types in the file format into the edit box. Can we make this a popupmenu whose choices are determined by the output of CPimread (with no arguments, CPimread tells us which file formats it can read)?
-
 - Put in toggle buttons for red, green, and blue if an image is color.  Maybe in CPfigure, or maybe just in specific places like spot identifier.
 
 - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
@@ -504,3 +502,5 @@ subfunction called RetrieveImageFileNames, but it's slightly different when used
 - Done (Colin) - Scrollbar bug: To reproduce, add LoadImagesText and IdentifyPrimIntensIntens to the pipeline. Use the scrollbar in the IdentifyPrimIntensIntens module and then select LoadImagesText. The variable boxes will then be shifted for LoadImagesText too.
 
 - Done (Colin) - Sometimes we save images (using the SaveImages module, for example) in matlab .mat format. We can then load them into CP using LoadSingleImage, but none of the other LoadImages modules, nor the OpenNewImageFile Image tool, nor CPimread itself have been adapted to read images stored in .mat files.
+
+- Done (Colin) - For OpenNewImageFile Image tool, make use of CPimread's ability to tell us which files it can read when deciding what file types to display in the uigetfile line.  Right now, the file types are hard-coded.  Also, when the user is selecting a file format for images in, for example, the SaveImages module, currently the user types in the file format into the edit box. Can we make this a popupmenu whose choices are determined by the output of CPimread (with no arguments, CPimread tells us which file formats it can read)?

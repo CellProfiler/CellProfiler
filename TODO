@@ -10,8 +10,6 @@ WANT IT NOW:
 
 - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected.
 
-- Sometimes we save images (using the SaveImages module, for example) in matlab .mat format. We can then load them into CP using LoadSingleImage, but none of the other LoadImages modules, nor the OpenNewImageFile Image tool, nor CPimread itself have been adapted to read images stored in .mat files.
-
 - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
 - For OpenNewImageFile Image tool, make use of CPimread's ability to tell us which files it can read when deciding what file types to display in the uigetfile line.  Right now, the file types are hard-coded.  Also, when the user is selecting a file format for images in, for example, the SaveImages module, currently the user types in the file format into the edit box. Can we make this a popupmenu whose choices are determined by the output of CPimread (with no arguments, CPimread tells us which file formats it can read)?
@@ -499,3 +497,5 @@ subfunction called RetrieveImageFileNames, but it's slightly different when used
 - Done (Joo Han) - Created and polished up IdentifyWellSpots.m, according to collaborators' request. I originally made this to be a stand-alone module, but this made it less flexible, so now it should be used with other modules, including FilterObjectsAreaShape.
 
 - Done (Colin) - Scrollbar bug: To reproduce, add LoadImagesText and IdentifyPrimIntensIntens to the pipeline. Use the scrollbar in the IdentifyPrimIntensIntens module and then select LoadImagesText. The variable boxes will then be shifted for LoadImagesText too.
+
+- Done (Colin) - Sometimes we save images (using the SaveImages module, for example) in matlab .mat format. We can then load them into CP using LoadSingleImage, but none of the other LoadImages modules, nor the OpenNewImageFile Image tool, nor CPimread itself have been adapted to read images stored in .mat files.

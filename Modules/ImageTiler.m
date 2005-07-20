@@ -119,7 +119,6 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-
 %textVAR03 = What do you want to call the tiled image?
 %infotypeVAR03 = imagegroup indep
 %defaultVAR03 = TiledImage
@@ -247,8 +246,7 @@ if handles.Current.SetBeingAnalyzed == 1
     end
     if strcmp(TopOrBottom,'Bottom')
         NewFileList = flipud(NewFileList);
-    end
-    
+    end    
     
     NumberOfImages = NumberColumns*NumberRows;
     
@@ -258,8 +256,12 @@ if handles.Current.SetBeingAnalyzed == 1
     ImageWidth = ImageSize(2);
     TotalWidth = NumberColumns*ImageWidth;
     TotalHeight = NumberRows*ImageHeight;
-    TiledImage(TotalHeight,TotalWidth,size(LoadedImage,3)) = 0;
-
+    %%% Packs the workspace to free up memory since a large variable is about to be produced.
+    pack;
+    %%% Preallocates the array to improve speed. The data class for
+    %%% the tiled image is set to match the incoming image's class.
+    TiledImage = zeros(TotalHeight,TotalWidth,size(LoadedImage,3),class(LoadedImage));
+    
     ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
     ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns = NumberColumns;
     ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows = NumberRows;

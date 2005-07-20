@@ -271,29 +271,28 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% the tiled image is set to match the incoming image's class.
     TiledImage = zeros(TotalHeight,TotalWidth,size(LoadedImage,3),class(LoadedImage));
     
-    ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns = NumberColumns;
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows = NumberRows;
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight = ImageHeight;
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth = ImageWidth;
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList = NewFileList;
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalWidth = TotalWidth;
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalHeight = TotalHeight; 
-    ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage; 
+    ImageTilerDataToSave.NumberColumns = NumberColumns;
+    ImageTilerDataToSave.NumberRows = NumberRows;
+    ImageTilerDataToSave.ImageHeight = ImageHeight;
+    ImageTilerDataToSave.ImageWidth = ImageWidth;
+    ImageTilerDataToSave.NewFileList = NewFileList;
+    ImageTilerDataToSave.TotalWidth = TotalWidth;
+    ImageTilerDataToSave.TotalHeight = TotalHeight; 
+    ImageTilerDataToSave.TiledImage = TiledImage; 
     
-    %stores data on main GUI
-    setappdata(handles.figure1,'ImageTilerData',ImageTilerData);
+    %stores data in handles
+    handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]) = ImageTilerDataToSave;
 end
 
-%gets data from main GUI
-ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
+%gets data from handles
+RetrievedImageTilerData = handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]);
 
-TiledImage = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage;
-NumberColumns = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
-ImageHeight = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight;
-ImageWidth = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth;
-NumberColumns = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
-NumberRows = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows;
+TiledImage = RetrievedImageTilerData.TiledImage;
+NumberColumns = RetrievedImageTilerData.NumberColumns;
+ImageHeight = RetrievedImageTilerData.ImageHeight;
+ImageWidth = RetrievedImageTilerData.ImageWidth;
+NumberColumns = RetrievedImageTilerData.NumberColumns;
+NumberRows = RetrievedImageTilerData.NumberRows;
 
 CurrentImage = handles.Pipeline.(ImageName);
 CurrentImage = imresize(CurrentImage,SizeChange);
@@ -314,30 +313,29 @@ if strcmp(LeftOrRight,'Right')
     HorzPos = NumberColumns - HorzPos-1;
 end
 
-
+%%% Memory errors can occur here if the tiled image is too big.
 TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
-
-ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage;
-
-setappdata(handles.figure1,'ImageTilerData',ImageTilerData);
+handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage;
 
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+
     %%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
     %%%%%%%%%%%%%%%%%%%%%%
     drawnow
-    
-    ImageTilerData = getappdata(handles.figure1,'ImageTilerData');
-    
-    TiledImage = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage;
-    NumberColumns = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
-    NumberRows = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows;
-    ImageHeight = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight;
-    ImageWidth = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth;
-    TotalWidth = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalWidth;
-    TotalHeight = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TotalHeight;
-    NewFileList = ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList;
-    
+
+    %gets data from handles
+    RetrievedImageTilerData = handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]);
+    TiledImage = RetrievedImageTilerData.TiledImage;
+    NumberColumns = RetrievedImageTilerData.NumberColumns;
+    ImageHeight = RetrievedImageTilerData.ImageHeight;
+    ImageWidth = RetrievedImageTilerData.ImageWidth;
+    NumberColumns = RetrievedImageTilerData.NumberColumns;
+    NumberRows = RetrievedImageTilerData.NumberRows;
+    TotalWidth = ImageTilerData.TotalWidth;
+    TotalHeight = ImageTilerData.TotalHeight;
+    NewFileList = ImageTilerData.NewFileList;
+
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
     if any(findobj == ThisModuleFigureNumber) == 1;

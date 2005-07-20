@@ -32,9 +32,18 @@ function OpenNewImageFile(handles)
 %%% name for the image to be shown.
 %%% Current directory temporarily changed to default image directory 
 %%% for image selection and then immediately restored
+
+ListOfExtensions = CPimread;
+ImageExtCat = ['*.' ListOfExtensions{1}];
+for i = 2:length(ListOfExtensions)
+    ImageExtCat = [ImageExtCat ';*.' ListOfExtensions{i}];
+end
+
+
+
 TempCD=cd;
 cd(handles.Current.DefaultImageDirectory);
-[FileName,Pathname] = uigetfile({'*.bmp;*.BMP;*.cur;*.CUR;*.fts;*.FTS;*.fits;*.FITS;*.gif;*.GIF;*.hdf;*.HDF;*.ico;*.ICO;*.jpg;*.JPG;*.jpeg;*.JPEG;*.pbm;*.PBM;*.pcx;*.PCX;*.pgm;*.PGM;*.png;*.PNG;*.pnm;*.PNM;*.ppm;*.PPM;*.ras;*.RAS;*.tif;*.TIF;*.tiff;*.TIFF;*.xwd;*.XWD;*.dib;*.DIB', 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');
+[FileName,Pathname] = uigetfile({ImageExtCat, 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');
 cd(TempCD);
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.

@@ -13,17 +13,17 @@ function handles = ImageTiler(handles)
 % opened by any image software anyway. Matlab has a limit to the
 % amount of data it can open which prevents you from creating such a
 % gigantic, high resolution file.  There are several ways to allow a
-% larger image to be produced, given memory
-% limitations: (1) Decrease the
-% resolution of each image tile by entering a fraction where requested.
-% Then, in the window which pops open after ImageTiler finishes, you
-% can use the 'Get high res image' button to retrieve the original
-% high resolution image. (This button is not yet functional). (2) Use the SpeedUpCellProfiler module to clear out
+% larger image to be produced, given memory limitations: (1) Decrease
+% the resolution of each image tile by entering a fraction where
+% requested. Then, in the window which pops open after ImageTiler
+% finishes, you can use the 'Get high res image' button to retrieve
+% the original high resolution image. (This button is not yet
+% functional). (2) Use the SpeedUpCellProfiler module to clear out
 % images that are stored in memory. Place this module just prior to
 % the ImageTiler module and ask it to retain only those images which
 % are needed for downstream modules.  (3) Rescale the images to 8 bit
-% format by putting in the RescaleImages module just prior to
-% the ImageTiler module. Normally images are stored in memory as class
+% format by putting in the RescaleImages module just prior to the
+% ImageTiler module. Normally images are stored in memory as class
 % "double" which takes about 10 times the space of class "uint8" which
 % is 8 bits.  You will lose resolution in terms of the number of
 % different graylevels - this will be limited to 256 - but you will
@@ -332,9 +332,9 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     ImageWidth = RetrievedImageTilerData.ImageWidth;
     NumberColumns = RetrievedImageTilerData.NumberColumns;
     NumberRows = RetrievedImageTilerData.NumberRows;
-    TotalWidth = ImageTilerData.TotalWidth;
-    TotalHeight = ImageTilerData.TotalHeight;
-    NewFileList = ImageTilerData.NewFileList;
+    TotalWidth = RetrievedImageTilerData.TotalWidth;
+    TotalHeight = RetrievedImageTilerData.TotalHeight;
+    NewFileList = RetrievedImageTilerData.NewFileList;
 
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);

@@ -249,7 +249,7 @@ HelpMenu=uimenu('Label','Help');
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','Take Snapshot','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Save CellProfiler files','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
@@ -3213,7 +3213,7 @@ function OpenImage_Callback(hObject, eventdata, handles)
 OpenNewImageFile(handles);
 
 function ZipFiles_Callback(hObject, eventdata, handles)
-TempListOfThingsToSave = {'DataTools' 'ImageTools' 'Modules' 'Help' 'CellProfiler.m' 'CellProfiler.fig'};
+TempListOfThingsToSave = {'CPsubfunctions' 'DataTools' 'ImageTools' 'Modules' 'Help' 'CellProfiler.m' 'CellProfiler.fig'};
 ListOfThingsToSave = {};
 for(i=[1:length(TempListOfThingsToSave)])
     if(exist(char(TempListOfThingsToSave(i)),'file'))
@@ -3221,7 +3221,7 @@ for(i=[1:length(TempListOfThingsToSave)])
     end
 end
 try
-    zip([handles.Current.DefaultOutputDirectory '/CellProfiler_SNAPSHOT.zip'],['CP*.m' ListOfThingsToSave],handles.Current.CellProfilerPathname);
+    zip([handles.Current.DefaultOutputDirectory '/CellProfiler_SNAPSHOT.zip'],ListOfThingsToSave,handles.Current.CellProfilerPathname);
 catch
     helpdlg(['The Files were unable to save.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
 end

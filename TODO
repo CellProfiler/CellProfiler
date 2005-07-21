@@ -32,6 +32,7 @@ WANT IT NOW:
 
 - Put in the help menus for ImageTools and DataTools.
 
+- For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
 
 - Make the timer output just print the time for the modules with the first image sets and the average for each modules with the rest of the image sets.  Right now it prints every time.
 

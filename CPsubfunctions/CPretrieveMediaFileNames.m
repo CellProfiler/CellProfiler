@@ -68,7 +68,7 @@ if(strncmpi(recurse,'Y',1))
     DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
     if (length(DirNames) > 0)
         for i=1:length(DirNames),
-            MoreFileNames = CPretrieveMediaFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse, ExactOrRegExp);
+            MoreFileNames = CPretrieveMediaFileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse, ExactOrRegExp, ImageOrMovie);
             for j = 1:length(MoreFileNames)
                 MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
             end

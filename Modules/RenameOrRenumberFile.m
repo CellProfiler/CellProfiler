@@ -145,7 +145,7 @@ for n = 1:length(FileNames)
     if strcmp(TextToAdd,'/') == 0
         InterFilename = [Prefix,TextToAdd,Suffix];
     else
-        InterFilename = OldFilename;
+        InterFilename = [Prefix,Suffix];
     end
 
     %Renumbering Stage
@@ -166,7 +166,7 @@ for n = 1:length(FileNames)
     NewFilename = [Prefix,TextToAdd,Suffix];
 
     if n == 1
-        DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.'];
+        DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.  The remaining files will be converted without asking for confirmation.'];
         Answer = CPquestdlg(DialogText, 'Confirm file name change','OK','Cancel','Cancel');
         if strcmp(Answer, 'Cancel') == 1
             error('File renaming was canceled at your request.')

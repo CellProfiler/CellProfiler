@@ -1,5 +1,9 @@
 function handles = CreateWebPage(handles)
 
+% Sorry, this module has not yet been documented. I think the
+% thumbnails and the images must be in the same directory for the web
+% page to work.
+
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
@@ -226,7 +230,7 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
 
     if ~strcmp(ZipFileName,'Do not use')
         zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
-        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ(ZipFileName),'>Download All Images</A></CENTER>']);
+        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download All Images</A></CENTER>']);
     end
 
     Lines = strvcat(Lines,'</BODY>');

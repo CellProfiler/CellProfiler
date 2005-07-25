@@ -1,20 +1,26 @@
     CellProfiler cell image analysis software development 
-JULY 19, 2005  IN ORDER OF PRIORITY
+JULY 25, 2005  IN ORDER OF PRIORITY
 
 (+ sign indicates more challenging projects)
 ---------------------------------------------------
 
 WANT IT NOW:
 
-- Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
-
 - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected.
+
+- Popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module.
+
+- Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
+
+- We've lost the regular Matlab toolbar that shows up in figures - the one that has save, print, zoom, add text, etc. Can we add it back?
+
+- Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
 - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
 - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
-- Combine Load Images and Movies into a single module.
+- Combine Load Images and Movies into a single module.  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 
 - In several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
@@ -28,17 +34,13 @@ WANT IT NOW:
 
 - Make spot identifier crop out the background to just leave the plate. [Actually, Anne thinks we should adapt the Crop module to take in an object  (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object becomes black).  The result of this can then be fed to the SpotIdentifier module].
 
-- Put RGBsplit and RGPtoGray a single module (like IdentifyPrim AdaptThreshold)
+- Put RGBsplit and RGBtoGray a single module (like IdentifyPrim AdaptThreshold)
 
 - Put in the help menus for ImageTools and DataTools.
 
 - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
 
-- Make the timer output just print the time for the modules with the first image sets and the average for each modules with the rest of the image sets.  Right now it prints every time.
-
-- Popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module.
-
-- Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
+- Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
@@ -62,8 +64,14 @@ WANT IT NOW:
 - Make another primary object identification module based on
        Intensity then distance. 
 
+- RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
+
 - The error dialogs are not proper CP color.
-	
+
+- Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
+
+- The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle.
+
 - Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.

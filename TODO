@@ -64,6 +64,8 @@ WANT IT NOW:
 
 - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
 
+- When Saving a pipeline, after you confirm the filename change (adding SET or PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.
+
 - The error dialogs are not proper CP color.
 
 - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.

@@ -117,7 +117,7 @@ ThumbBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 CreateNewWindow = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Specify a filename to create a ZIP file containing all full size images and link at the end of webpage for download.
+%textVAR14 = Specify a filename to create a ZIP file containing all full size images and link at the end of webpage for download. The '.zip' file extension will be added automatically.
 %choiceVAR14 = Do not use
 ZipFileName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu custom

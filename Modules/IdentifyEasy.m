@@ -95,9 +95,8 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %textVAR07 = Lower bound on threshold in the range [0,1].
-%choiceVAR07 = Do not use
+%defaultVAR07 = 0
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu custom
 
 %textVAR08 = Use intensity or distance transform maxima as centers in Watershed transform?
 %choiceVAR08 = Intensity
@@ -120,13 +119,11 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,10}
 
 %textVAR11 = What do you want to call the image of the outlines of the objects?
 %choiceVAR11 = Do not save
-%choiceVAR11 = OutlinedNuclei
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu custom
 
 %textVAR12 =  What do you want to call the labeled matrix image?
 %choiceVAR12 = Do not save
-%choiceVAR12 = LabeledNuclei
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu custom
 

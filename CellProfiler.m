@@ -1975,15 +1975,24 @@ function BrowseImageDirectoryButton_Callback(hObject, eventdata, handles) %#ok W
 %%% Opens a dialog box to allow the user to choose a directory and loads
 %%% that directory name into the edit box.  Also, changes the current
 %%% directory to the chosen directory.
-if exist(handles.Current.DefaultImageDirectory, 'dir')
-    pathname = uigetdir(handles.Current.DefaultImageDirectory,'Choose the directory of images to be analyzed');
-    pause(.1);
-    figure(handles.figure1);
-else
-    pathname = uigetdir('','Choose the directory of images to be analyzed');
-    pause(.1);
-    figure(handles.figure1);
-end
+% if exist(handles.Current.DefaultImageDirectory, 'dir')
+%     pathname = uigetdir(handles.Current.DefaultImageDirectory,'Choose the directory of images to be analyzed');
+%     pause(.1);
+%     figure(handles.figure1);
+% else
+%     pathname = uigetdir('','Choose the directory of images to be analyzed');
+%     pause(.1);
+%     figure(handles.figure1);
+% end
+%%% The if/else statement is removed because if the directory doesn't
+%%% exist, matlab automatically recovers (see uigetdir for details).
+%%% By contrast, using uigetdir with the starting path '' (empty
+%%% string) failed on the mac platform, even though it's not supposed
+%%% to.
+pathname = uigetdir(handles.Current.DefaultImageDirectory,'Choose the directory of images to be analyzed');
+pause(.1);
+figure(handles.figure1);
+
 %%% If the user presses "Cancel", the pathname will = 0 and nothing will
 %%% happen.
 if pathname == 0

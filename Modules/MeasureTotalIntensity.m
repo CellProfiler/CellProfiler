@@ -109,8 +109,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the staining measured by this module?
-%infotypeVAR02 = objectgroup indep
-%defaultVAR02 = Sytox
+%defaultVAR02 = Fluorescence
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Ignore pixels below this intensity level (Range = 0-1)
@@ -128,7 +127,7 @@ ExpansionDistance = str2double(char(handles.Settings.VariableValues{CurrentModul
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

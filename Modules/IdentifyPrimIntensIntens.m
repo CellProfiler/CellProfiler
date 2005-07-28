@@ -226,12 +226,12 @@ BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = What do you want to call the image of the outlines of the objects?
-%choiceVAR10 = Do not save
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
-%inputtypeVAR10 = popupmenu custom
-
 %%% The following code yields errors when you try to type a custom entry in:
+% %textVAR10 = What do you want to call the image of the outlines of the objects?
+% %choiceVAR10 = Do not save
+% SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+% %inputtypeVAR10 = popupmenu custom
+
 % %textVAR11 =  What do you want to call the labeled matrix image?
 % %infotypeVAR11 = imagegroup indep
 % %choiceVAR11 = Do not save
@@ -258,6 +258,11 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 
 %%% So, for now, I have changed it to this:
+%textVAR10 = What do you want to call the image of the outlines of the objects?
+%infotypeVAR10 = imagegroup indep
+%defaultVAR10 = Do not save
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+
 %textVAR11 =  What do you want to call the labeled matrix image?
 %infotypeVAR11 = imagegroup indep
 %defaultVAR11 = Do not save

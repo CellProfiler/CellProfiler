@@ -127,7 +127,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = RescaledBlue
 RescaledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. See the help for details.
+%textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. See the help for details.
 %choiceVAR03 = Stretch 0 to 1
 %choiceVAR03 = Enter min/max below
 %choiceVAR03 = Greater than one

@@ -1,9 +1,9 @@
 CellProfiler cell image analysis software development 
 JULY 28, 2005  IN ORDER OF PRIORITY
 
-- cvs remove everything the the DeveloperDropBox except the CVS folder (of course!) and TiledImage.mat, TiledImage.fig, and SpotID6SET.mat
+- cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
 
-- SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a list of information) and then reshape it to fit the proper grid.
+- SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
 
 - Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
 

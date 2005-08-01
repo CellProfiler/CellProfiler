@@ -138,7 +138,7 @@ RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = Spots
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What is the radius of each object in pixals?
+%textVAR05 = What is the radius of each object in pixels?
 %defaultVAR05 = 80
 RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -172,8 +172,8 @@ try
 catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
 end
 
-%textVAR09 = Would you like the distance units (the next option) be in pixals or spots?
-%choiceVAR09 = Pixals
+%textVAR09 = Will you be specifying the distance (the next option) in units of pixels or spots?
+%choiceVAR09 = Pixels
 %choiceVAR09 = Spots
 SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
@@ -213,11 +213,19 @@ TopOrBottom = TopOrBottom(1);
 RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = From where do you want to load spot information (if you select now, it will be assumed to be from the first sheet of the excel file)?
-%choiceVAR14 = Don't Load
-%choiceVAR14 = Browse each time through
+%textVAR14 = Enter the Excel file name from which to load spot information (you can type a file name here if the file is in the default image directory and if you want to use the first sheet of the file).
+%choiceVAR14 = No spot information
+%choiceVAR14 = Browse each cycle
 LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu custom
+
+%textVAR15 = Do you want to label the spots only (takes less memory) or will you be using them in downstream modules (e.g. saving an image of them or measuring them)?
+%choiceVAR15 = Label only
+%choiceVAR15 = Use downstream
+LabelOrUseDownstream = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -352,8 +360,10 @@ elseif strncmp(MarkingMethod,'M',1) == 1
     if length(x) ~=1
         error('SpotIdentifier was canceled because you must click on one point then press enter.')
     end
-    TopLeftX = x(1);
-    TopLeftY = y(1);
+    %%% The numbers must be rounded to the nearest integer to prevent
+    %%% errors.
+    TopLeftX = round(x(1));
+    TopLeftY = round(y(1));
 else
     error('Image processing was canceled because your entry relating to marking the top, left corner of the grid was not one of the options: C or M.')
 end
@@ -384,6 +394,7 @@ for i = 1:length(LinearNumbers)
     PositionList{i} = num2str(LinearNumbers(i));
 end
 drawnow
+
 %%% Calculates the locations for all the sample labelings (whether it is
 %%% numbers, spot identifying information, or coordinates).
 GridXLocations = NumbersGridShape;
@@ -418,25 +429,28 @@ text(XLocations, YLocations, PositionList, ...
     'UserData','PositionListHandles');
 drawnow
 
-r = str2num(RadiusSize);
-circle = getnhood(strel('disk',r));
-for i = 1:length(LinearNumbers)
-    FinalLabelMatrix(YLocations(i)-r+1:YLocations(i)+r-1,XLocations(i)-r+1:XLocations(i)+r-1)=LinearNumbers(i)*circle;
+%%% Identifies the spots as objects for use by downstream modules, if
+%%% desired.
+if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
+    r = str2num(RadiusSize);
+    circle = getnhood(strel('disk',r));
+    for i = 1:length(LinearNumbers)
+        FinalLabelMatrix(YLocations(i)-r+1:YLocations(i)+r-1,XLocations(i)-r+1:XLocations(i)+r-1)=LinearNumbers(i)*circle;
+    end
+    subplot(2,3,3);
+    FinalColorLabelMatrix=label2rgb(FinalLabelMatrix,'jet', 'k', 'shuffle');
+    ObjectImageHandle = imagesc(FinalColorLabelMatrix);
+    title(['Segmented ',ObjectName]);
 end
-subplot(2,3,3);
-FinalColorLabelMatrix=label2rgb(FinalLabelMatrix,'jet', 'k', 'shuffle');
-ObjectImageHandle = imagesc(FinalColorLabelMatrix); 
-title(['Segmented ',ObjectName]);
-
 
 %%% Retrieves the spot identifying info from a file, if requested.
-if ~strcmp(LoadSpotIdentifiers,'Don''t Load')
-    if strcmp(LoadSpotIdentifiers,'Browse each time through')
-        [FileName,Pathname] = uigetfile('*.xls', 'Choose the file containing the spot identifying information.');
+if ~strcmp(LoadSpotIdentifiers,'No spot information')
+    if strcmp(LoadSpotIdentifiers,'Browse each cycle')
+        [FileName,Pathname] = uigetfile('*.xls', 'Choose the Excel file containing the spot identifying information.');
         if FileName == 0
             error('Image processing was canceled during the Spot Identifier module.')
         end
-        Answer = inputdlg('What is the name of the Excel sheet with the data of interest?');
+        Answer = inputdlg('What is the name of the sheet within that Excel file that contains the data of interest? Leave blank to automatically select the first sheet of the file.');
     else
         FileName=LoadSpotIdentifiers;
         Pathname=handles.Current.DefaultImageDirectory;
@@ -613,7 +627,9 @@ VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
 figure(FigureHandle);
 axes(get(ImageHandle,'parent'));
 line(VertLinesX,VertLinesY);
-axes(get(ObjectImageHandle,'parent'));
+if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
+    axes(get(ObjectImageHandle,'parent'));
+end
 line(VertLinesX,VertLinesY);
 
 %%% Draws the Horizontal Lines.
@@ -625,7 +641,9 @@ HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridXLocations,1)+1);
 figure(FigureHandle);
 axes(get(ImageHandle,'parent'));
 line(HorizLinesX,HorizLinesY);
-axes(get(ObjectImageHandle,'parent'));
+if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
+    axes(get(ObjectImageHandle,'parent'));
+end
 line(HorizLinesX,HorizLinesY);
 
 %%% Sets the line color.
@@ -813,10 +831,10 @@ handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftX};
 fieldname = ['ImageTopLeftY', ImageName];
 handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftY};
 
-
-fieldname = ['Segmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrix;
-
+if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
+    fieldname = ['Segmented',ObjectName];
+    handles.Pipeline.(fieldname) = FinalLabelMatrix;
+end
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 %%% See comments for the Threshold saving above

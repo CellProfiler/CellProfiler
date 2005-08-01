@@ -1,7 +1,11 @@
 CellProfiler cell image analysis software development 
 JULY 28, 2005  IN ORDER OF PRIORITY
 
-- Pixels is misspelled 'pixals' in SpotID - check other code to see if it's misspelled elsewhere too.
+- cvs remove everything the the DeveloperDropBox except the CVS folder (of course!) and TiledImage.mat, TiledImage.fig, and SpotID6SET.mat
+
+- SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a list of information) and then reshape it to fit the proper grid.
+
+- Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
 
 - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected.
 

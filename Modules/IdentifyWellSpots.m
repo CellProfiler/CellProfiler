@@ -3,8 +3,42 @@ function handles = IdentifyWellSpots(handles)
 % Help for the Identify Well Spots module:
 % Category: Object Identification and Modification
 %
-% This module allows you to identify well spots in a grid. The resulting
-% well spots are ordered by columns and then rows, e.g:
+% This module allows you to identify well spots in a grid. 
+% To identify spots, there are two main choices:
+% 
+% (1) MANUAL (using SpotIdentifier module) In this mode, you manually
+% mark a known location in the grid and have the rest of the positions
+% calculated from those marks, no matter what the image itself looks
+% like.  This mode requires manually clicking on a marker spot for
+% each image (if it is not visible you have to click where it ought to
+% be). Or, if your images are perfectly aligned you can just type in
+% the pixel coordinates of the control spots once for all the images.
+% This mode requires that the diameter of spots and distance between
+% spots (in pixels) is consistent for every image - you type in these
+% values before beginning. Right now the top left spot is the marker
+% spot which must be used, but we could write code to allow any spot
+% to be clicked (e.g. bottom right corner, or an arbitrary spot for
+% each different image).  We could also write code so that you
+% manually click on two control spots in each image and the
+% spot-to-spot distance is calculated automatically.
+% 
+% (2) AUTOMATIC - (using IdentifyWellSpots module) Have the computer
+% automatically identify all the spots - right now this requires that
+% there is at least one nice spot present and easily visible to the
+% software in the top and bottom row, and at least one nice spot in
+% left and right columns. The computer will find as many spots as
+% possible (some will initially not be found if they are faint due to
+% the experiment). It will then calculate the average diameter of all
+% spots that were found (or you can manually override this value). If
+% the spots are slightly out of alignment with each other, this allows
+% the identification to be a bit flexible and adapt to the real shape
+% of the spots. Also, this method allows measuring the size of each
+% spot (in theory - right now it’s overriden by the average diameter
+% size because it assumes you want to measure intensity even if a spot
+% is missing or faint. We could write new code to allow you to not
+% override the natural shape and size of the spot).
+%
+% In this module, the identified spots are ordered by columns and then rows, e.g:
 % 1 5 9  13
 % 2 6 10 14
 % 3 7 11 15
@@ -16,9 +50,10 @@ function handles = IdentifyWellSpots(handles)
 % This module should be used after an Identify Primary module to first
 % identify objects. Then, a crop module or MeasureAreaShape +
 % FilterObjectsAreaShape modules may be needed to eliminate the border or
-% misidentified objects.
+% misidentified objects
+%
 % See also IDENTIFYPRIMINTENSINTENS, IDENTIFYPRIMSHAPEINTENS, CROP,
-% MEASUREAREASHAPE, FILTEROBJECTSAREASHAPE.
+% MEASUREAREASHAPE, FILTEROBJECTSAREASHAPE, SPOTIDENTIFIER.
 
 %%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.

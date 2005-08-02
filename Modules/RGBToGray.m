@@ -124,6 +124,8 @@ GreenIntensity = str2double(char(handles.Settings.VariableValues{CurrentModuleNu
 %defaultVAR05 = 1
 BlueIntensity = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
+%%%VariableRevisionNumber = 1
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -32,9 +32,8 @@ PrevObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the objects identified by this module?
 %infotypeVAR02 = objectgroup indep
-%defaultVAR02 = Cells
+%defaultVAR02 = Spots
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-
 
 %textVAR03 = How many rows of spots?
 %defaultVAR03 = 8
@@ -59,7 +58,23 @@ LeftCoord = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 RightCoord = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
-%%%VariableRevisionNumber = 1
+%textVAR08 = What do you want to call the image of the outlines of the objects?
+%infotypeVAR08 = imagegroup indep
+%defaultVAR08 = Do not save
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
+
+%textVAR09 =  What do you want to call the label matrix image?
+%infotypeVAR09 = imagegroup indep
+%defaultVAR09 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
+
+%textVAR10 = Do you want to save the label matrix image in RGB or grayscale?
+%choiceVAR10 = RGB
+%choiceVAR10 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+%inputtypeVAR10 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 FinalLabelMatrixImage = handles.Pipeline.(['Segmented' PrevObjectName]);
 
@@ -86,7 +101,7 @@ end
 %Assuming the user declared the number of rows and cols
 XDiv = (Rightmost - Leftmost)/(Cols - 1);
 YDiv = (Lowermost - Uppermost)/(Rows - 1);
-
+%%% Should this not be hard-coded as 8,12???
 LocationTable = cell(8,12);
 %LocationTable(:,:) = {zeros(1,2)};
 XTable = zeros(Rows,Cols);
@@ -166,14 +181,28 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1 || strncmpi(SaveColored,'Y',1) == 1 || strncmpi(SaveOutlined,'Y',1) == 1
+
+if any(findobj == ThisModuleFigureNumber) == 1 | strcmpi(SaveColored,'Do not save') ~= 1 | strcmpi(SaveOutlined,'Do not save') ~= 1
+    %%% Calculates the ColoredLabelMatrixImage.
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    if sum(sum(FinalAlignedMatrixImage)) >= 1
+        ColoredLabelMatrixImage = label2rgb(FinalAlignedMatrixImage, 'jet', 'k', 'shuffle');
+    else  ColoredLabelMatrixImage = FinalAlignedMatrixImage;
+    end
+    %%% Calculates the object outlines.
+    %%% Creates the structuring element that will be used for dilation.
+    StructuringElement = strel('square',3);
+    %%% Converts the FinalLabelMatrixImage to binary.
+    FinalBinaryImage = im2bw(FinalAlignedMatrixImage,.5);
+    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
+    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
+    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
+    %%% which leaves the ObjectOutlines.
+    ObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
+
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-    if sum(sum(FinalLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = label2rgb(FinalAlignedMatrixImage, 'jet', 'k', 'shuffle');
-    else
-        ColoredLabelMatrixImage = FinalAlignedMatrixImage;
-    end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); imagesc(FinalLabelMatrixImage);colormap(gray);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
@@ -321,3 +350,18 @@ drawnow
     
 fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = FinalAlignedMatrixImage;
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+try
+    if ~strcmpi(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+        else
+            handles.Pipeline.(SaveColored) = FinalAlignedMatrixImage;
+        end
+    end
+    if ~strcmpi(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = ObjectOutlines;
+    end
+catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+end

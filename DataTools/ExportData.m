@@ -34,17 +34,24 @@ if RawFileName == 0
     return
 end
 
-%%% Load the specified CellProfiler output file
-load(fullfile(RawPathname, RawFileName));
+%%% Load the specified CellProfiler output file.
+Loaded = load(fullfile(RawPathname, RawFileName));
 
-%%% Quick check if it seems to be a CellProfiler file or not
-if ~exist('handles','var')
+%%% Check if it seems to be a CellProfiler output file or not.
+if isfield(Loaded,'handles')
+    handles = Loaded.handles;
+    clear Loaded
+else
+    
     errordlg('The selected file does not seem to be a CellProfiler output file.')
     return
 end
 
 %%% Opens a window that lets the user chose what to export
-ExportInfo = ObjectsToExport(handles,RawFileName);
+try ExportInfo = ObjectsToExport(handles,RawFileName);
+catch errordlg(lasterr)
+    return
+end
 
 %%% Indicates that the Cancel button was pressed
 if isempty(ExportInfo.ObjectNames)
@@ -57,12 +64,19 @@ waitbarhandle = waitbar(0,'');
 
 %%% Export process info
 if strcmp(ExportInfo.ExportProcessInfo,'Yes')
-    WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
+    try WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
+    catch errordlg(lasterr)
+        return
+    end
 end
+
 
 %%% Export measurements
 if ~isempty(ExportInfo.MeasurementFilename)
-    WriteMeasurements(handles,ExportInfo,RawPathname);
+    try WriteMeasurements(handles,ExportInfo,RawPathname);
+    catch errordlg(lasterr)
+        return
+    end
 end
 
 %%% Done!
@@ -87,8 +101,8 @@ end
 filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
 fid = fopen(fullfile(RawPathname,filename),'w');
 if fid == -1
-    errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
-    return
+    error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+    
 end
 
 fprintf(fid,'Processing info for file: %s\n',fullfile(RawPathname, RawFileName));
@@ -195,7 +209,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
             try
                 CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
             catch
-                errordlg('Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.');
+                error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
+                
             end
             if length(Measurements) == 0
                 Measurements = CellArray;
@@ -221,7 +236,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
             try
                 CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-4));
             catch
-                errordlg('Error in handles.Measurements structure. The field ',fields{k},' does not have an associated text field.');
+                error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated text field.']);
+                
             end
 
             %%% If this is the first measurement structure encounterered we have to initialize instead of concatenate
@@ -260,8 +276,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
     filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
     fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
-        errordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
-        return
+        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+        
     end
 
     % Get the measurements and feature names to export
@@ -458,8 +474,8 @@ FontSize = handles.Current.FontSize;
 % Get measurement object fields
 fields = fieldnames(handles.Measurements);
 if length(fields) > 20
-    errordlg('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')
-    return
+    error('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')
+    
 end
 
 % Create Export window

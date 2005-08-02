@@ -3,12 +3,46 @@ function handles = SpotIdentifier(handles)
 % Help for the Spot Identifier module:
 % Category: Object Identification and Modification
 %
-% Sorry, this module has not yet been documented. Its purpose is to
+% Sorry, this module has not yet been fully documented. Its purpose is to
 % label spots of cell microarrays with gene information or sample
 % numbers so that interesting spots can be easily identified.
 %
+% To identify spots, there are two main choices:
+% 
+% (1) MANUAL (using SpotIdentifier module) In this mode, you manually
+% mark a known location in the grid and have the rest of the positions
+% calculated from those marks, no matter what the image itself looks
+% like.  This mode requires manually clicking on a marker spot for
+% each image (if it is not visible you have to click where it ought to
+% be). Or, if your images are perfectly aligned you can just type in
+% the pixel coordinates of the control spots once for all the images.
+% This mode requires that the diameter of spots and distance between
+% spots (in pixels) is consistent for every image - you type in these
+% values before beginning. Right now the top left spot is the marker
+% spot which must be used, but we could write code to allow any spot
+% to be clicked (e.g. bottom right corner, or an arbitrary spot for
+% each different image).  We could also write code so that you
+% manually click on two control spots in each image and the
+% spot-to-spot distance is calculated automatically.
+% 
+% (2) AUTOMATIC - (using IdentifyWellSpots module) Have the computer
+% automatically identify all the spots - right now this requires that
+% there is at least one nice spot present and easily visible to the
+% software in the top and bottom row, and at least one nice spot in
+% left and right columns. The computer will find as many spots as
+% possible (some will initially not be found if they are faint due to
+% the experiment). It will then calculate the average diameter of all
+% spots that were found (or you can manually override this value). If
+% the spots are slightly out of alignment with each other, this allows
+% the identification to be a bit flexible and adapt to the real shape
+% of the spots. Also, this method allows measuring the size of each
+% spot (in theory - right now itÕs overriden by the average diameter
+% size because it assumes you want to measure intensity even if a spot
+% is missing or faint. We could write new code to allow you to not
+% override the natural shape and size of the spot).
+% 
 % It works for our basic needs right now, but improvements/fixes need
-% to be made:
+% to be made (in addition to the ones mentioned above):
 % (0) I have not tested all of the various ways to rotate and mark the
 % top, left corner spot.
 % (1) I am not confident that the offsets and flipping left/right and
@@ -126,12 +160,10 @@ RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 RotateMethod = RotateMethod(1);
 %inputtypeVAR02 = popupmenu
 
-
 %textVAR03 = What do you want to call the rotated image?
 %infotypeVAR03 = imagegroup indep
 %defaultVAR03 = RotatedImage
 RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-
 
 %textVAR04 = What do you want to call the objects identified by this module?
 %infotypeVAR04 = objectgroup indep
@@ -141,7 +173,6 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = What is the radius of each object in pixels?
 %defaultVAR05 = 80
 RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
 
 %textVAR06 = Mark the control spot by coordinates or by mouse?
 %choiceVAR06 = Coordinates
@@ -225,7 +256,23 @@ LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,14})
 LabelOrUseDownstream = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR16 = If you are using the spots downstream, what do you want to call the image of the outlines of the objects?
+%infotypeVAR16 = imagegroup indep
+%defaultVAR16 = Do not save
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,16}); 
+
+%textVAR17 =  If you are using the spots downstream, what do you want to call the label matrix image?
+%infotypeVAR17 = imagegroup indep
+%defaultVAR17 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,17}); 
+
+%textVAR18 = If you are using the spots downstream and saving the label matrix image, do you want to save it in RGB or grayscale?
+%choiceVAR18 = RGB
+%choiceVAR18 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18}); 
+%inputtypeVAR18 = popupmenu
+
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -273,7 +320,7 @@ RotateMethod = upper(RotateMethod);
 if strncmp(RotateMethod, 'N',1) == 1
     RotatedImage = OrigImage;
 elseif strncmp(RotateMethod, 'M',1) == 1
-    Answer2 = CPquestdlg('After closing this window by clicking OK, click on the lower left marker in the image, then the lower right marker, then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.','Rotate image using the mouse','OK','Cancel','OK');
+    Answer2 = CPquestdlg('After closing this window by clicking OK, click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points.','Rotate image using the mouse','OK','Cancel','OK');
     waitfor(Answer2)
     if strcmp(Answer2, 'Cancel') == 1
         error('Image processing was canceled during the Spot Identifier module.')
@@ -291,7 +338,7 @@ elseif strncmp(RotateMethod, 'M',1) == 1
     Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
     AngleToRotateRadians = asin(VertLeg/Hypotenuse);
     AngleToRotateDegrees = AngleToRotateRadians*180/pi;
-    PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
+    PatienceHandle = CPmsgbox('Image rotation in progress');
     drawnow
     RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
     figure(FigureHandle); 
@@ -351,7 +398,7 @@ if strncmp(MarkingMethod,'C',1) == 1
     TopLeftY = str2double(Answers{2});
 elseif strncmp(MarkingMethod,'M',1) == 1
     %%% Sets the top, left of the grid based on mouse clicks.
-    Answer3 = CPquestdlg('After closing this window by clicking OK, click on the top left marker in the image then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.', 'Choose marker point', 'OK', 'Cancel', 'OK');
+    Answer3 = CPquestdlg('After closing this window by clicking OK, click on the top left marker in the image then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point.  You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker point.', 'Choose marker point', 'OK', 'Cancel', 'OK');
     if strcmp(Answer3, 'Cancel') == 1
         error('Image processing was canceled during the Spot Identifier module.')
     end
@@ -404,7 +451,6 @@ end
 %%% Converts to a single column.
 XLocations = reshape(GridXLocations, 1, NumberSpots);
 
-    
 % %%% Shifts if necessary.
 % if strcmp(LeftOrRight,'R') == 1
 % XLocations = XLocations - (NumberRows-1)*VertSpacing;
@@ -433,14 +479,42 @@ drawnow
 %%% desired.
 if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
     r = str2num(RadiusSize);
-    circle = getnhood(strel('disk',r));
+    %%% N = 0 is used for the final argument of strel because it makes
+    %%% more round-looking disks. It is much slower and so perhaps
+    %%% ought to be avoided.
+    circle = getnhood(strel('disk',r,0));
     for i = 1:length(LinearNumbers)
-        FinalLabelMatrix(YLocations(i)-r+1:YLocations(i)+r-1,XLocations(i)-r+1:XLocations(i)+r-1)=LinearNumbers(i)*circle;
+        FinalLabelMatrix(YLocations(i)-r:YLocations(i)+r,XLocations(i)-r:XLocations(i)+r)=LinearNumbers(i)*circle;
     end
+    %%% It's possible that the boundaries of some objects will be outside
+    %%% the bounds of the original image, which might cause downstream
+    %%% modules to fail, so an error check is performed and notifies the
+    %%% user.  Image processing is not canceled because it may not be
+    %%% a problem that some objects are outside.
+    if size(OrigImage) ~= size(FinalLabelMatrix)
+        errordlg(['Image processing will continue, but some objects identified using the SpotIdentifier module are outside the boundaries of the image. This may cause downstream modules to fail. For example, it is impossible to measure the intensity of an object when part of it lies outside the image.  The size of the original image is (height, width): ', num2str(size(OrigImage)), ' but the farthest object boundaries are at: ', num2str(size(FinalLabelMatrix))])
+    end
+    figure(FigureHandle);
     subplot(2,3,3);
     FinalColorLabelMatrix=label2rgb(FinalLabelMatrix,'jet', 'k', 'shuffle');
     ObjectImageHandle = imagesc(FinalColorLabelMatrix);
+    axis image
     title(['Segmented ',ObjectName]);
+    %%% Calculates the object outlines.
+    %%% Creates the structuring element that will be used for dilation.
+    StructuringElement = strel('square',3);
+    %%% Converts the FinalLabelMatrixImage to binary.
+    FinalBinaryImage = im2bw(FinalLabelMatrix,.5);
+    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
+    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
+    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
+    %%% which leaves the ObjectOutlines.
+    ObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
+    figure(FigureHandle);
+    subplot(2,3,6);
+    ObjectOutlinesHandle = imagesc(ObjectOutlines);
+    title(['Outlined ',ObjectName]);
+    axis image
 end
 
 %%% Retrieves the spot identifying info from a file, if requested.
@@ -811,29 +885,75 @@ drawnow
 %%% subsequent modules.
 handles.Pipeline.(RotatedImageName) = RotatedImage;
 
-if strncmp(RotateMethod, 'N', 1) ~= 1
-%%% Saves the Rotation coordinates to the handles structure so they are
-%%% saved in the measurements file.
-fieldname = ['ImageRotationLowerLeftX', ImageName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerLeftX};
-fieldname = ['ImageRotationLowerRightX', ImageName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerRightX};
-fieldname = ['ImageRotationLowerLeftY', ImageName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerLeftY};
-fieldname = ['ImageRotationLowerRightY', ImageName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {LowerRightY};
-end
-
-%%% Saves the top, left marker locations to the handles structure so they are
-%%% saved in the measurements file.
-fieldname = ['ImageTopLeftX', ImageName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftX};
-fieldname = ['ImageTopLeftY', ImageName];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TopLeftY};
-
+%%% Saves the label matrix image to the handles if requested.
 if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
     fieldname = ['Segmented',ObjectName];
     handles.Pipeline.(fieldname) = FinalLabelMatrix;
+end
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+try
+    if ~strcmpi(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            handles.Pipeline.(SaveColored) = FinalColorLabelMatrix;
+        else
+            handles.Pipeline.(SaveColored) = FinalLabelMatrix;
+        end
+    end
+    if ~strcmpi(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = ObjectOutlines;
+    end
+catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+end
+
+%%% Storing the MarkerSpotLocation XY locations is a little more complicated
+%%% than storing other measurements because several different modules
+%%% might write to the handles.Measurements.Image.MarkerSpotLocation
+%%% structure, and we should therefore append the current
+%%% measurements to an existing structure.
+%%% First, if the MarkerSpotLocation fields don't exist, initialize them.
+if ~isfield(handles.Measurements.Image,'MarkerSpotLocationFeatures')                        
+    handles.Measurements.Image.MarkerSpotLocationFeatures = {};
+    handles.Measurements.Image.MarkerSpotLocation = {};
+end
+%%% Search the MarkerSpotLocationFeatures to find the column for this object
+%%% type.
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.MarkerSpotLocationFeatures,ObjectName)));  
+%%% If column is empty it means that this particular object has not been segmented before. This will
+%%% typically happen for the first image set. Append the feature name in the
+%%% handles.Measurements.Image.MarkerSpotLocationFeatures matrix
+if isempty(column)
+    handles.Measurements.Image.MarkerSpotLocationFeatures(end+1) = {['TopLeftX ' ObjectName]};
+    handles.Measurements.Image.MarkerSpotLocationFeatures(end+1) = {['TopLeftY ' ObjectName]};
+end
+%%% Search the MarkerSpotLocationFeatures again to find the column for this
+%%% object type. It should now exist under all circumstances.
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.MarkerSpotLocationFeatures,ObjectName)));  
+%%% There will be two fields found with the ObjectName (TopLeftX and
+%%% TopLeftY). TopLeftX will always be the first one found and TopLeftY
+%%% will always be one column after it.
+handles.Measurements.Image.MarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(1)) = TopLeftX;
+handles.Measurements.Image.MarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(2)) = TopLeftY;
+
+%%% Saves the Rotation coordinates to the handles structure in a similar manner.
+if strncmp(RotateMethod, 'N', 1) ~= 1
+    if ~isfield(handles.Measurements.Image,'RotatingMarkerSpotLocationFeatures')
+        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures = {};
+        handles.Measurements.Image.RotatingMarkerSpotLocation = {};
+    end
+    column = find(~cellfun('isempty',strfind(handles.Measurements.Image.RotatingMarkerSpotLocationFeatures,ObjectName)));
+    if isempty(column)
+        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerLeftX ' ObjectName]};
+        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerRightX ' ObjectName]};
+        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerLeftY ' ObjectName]};
+        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerRightY ' ObjectName]};
+    end
+    column = find(~cellfun('isempty',strfind(handles.Measurements.Image.RotatingMarkerSpotLocationFeatures,ObjectName)));
+    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(1)) = LowerLeftX;
+    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(2)) = LowerRightX;
+    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(3)) = LowerLeftY;
+    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(4)) = LowerRightY;
 end
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
@@ -854,4 +974,3 @@ handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
 tmp = regionprops(FinalLabelMatrix,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-

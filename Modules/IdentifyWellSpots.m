@@ -136,9 +136,7 @@ end
 %Assuming the user declared the number of rows and cols
 XDiv = (Rightmost - Leftmost)/(Cols - 1);
 YDiv = (Lowermost - Uppermost)/(Rows - 1);
-%%% Should this not be hard-coded as 8,12???
-LocationTable = cell(8,12);
-%LocationTable(:,:) = {zeros(1,2)};
+LocationTable = cell(Rows,Cols);
 XTable = zeros(Rows,Cols);
 YTable = zeros(Rows,Cols);
 for i=1:Cols

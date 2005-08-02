@@ -121,7 +121,7 @@ ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %choiceVAR04 = Do not use
 %inputtypeVAR04 = popupmenu
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
 %%% Set up the window for displaying the results
 fieldname = ['FigureNumberForModule',CurrentModule];

@@ -60,7 +60,7 @@ while FinalOK == 0
     TextToDisply = cell(NbrOfImageSets,1);
     for ImageSet = 1:NbrOfImageSets
         
-        % Numeric of text?
+        % Numeric or text?
         if strcmp(Suffix{SuffixNbr},'Features')
             info = num2str(mean(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}(:,FeatureNbr)));
         elseif strcmp(Suffix{SuffixNbr},'Text')

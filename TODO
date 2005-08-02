@@ -1,19 +1,23 @@
 CellProfiler cell image analysis software development 
 JULY 28, 2005  IN ORDER OF PRIORITY
 
-- cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
-
 - SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
 
 - Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
 
-- There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected.
+- There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
 
-- Popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module.
+- Loading pipelines bug: When loading a pipeline, the old settings do not seem completely cleared away. For example the old pipeline had module #2 with 15 variables and the new pipeline's module 2 has only 5. In handles.Settings.VariableValues, variables 6-15 for old module 2 are still present.  These variables are showing up in the main GUI when you click on the module, but this only happens sometimes - I can't pin it down.  Also, I loaded a pipeline into a 'fresh' CellProfiler, and canceled at the second module when it asked me whether to load saved or default variables (due to an old variable revision number). Then I looked at the handles.Settings and this is what was there (instead of it being empty):
+                  PixelSize: '1'
+                ModuleNames: {1x13 cell}
+             SelectedOption: [0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+         NumbersOfVariables: [12 5 5]
+             VariableValues: {2x12 cell}
+    VariableRevisionNumbers: [3 2]
 
 - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
 
-- variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the question - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.
+- variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.
 
 - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
@@ -25,9 +29,21 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 - Put in the help menus for ImageTools and DataTools.
 
+- There is an incompatibility between the Write Measurements subfunction of the ExportData DataTool and the MeasureTexture module. This error is produced when trying to export data from an output file that contains measurements made by the MeasureTexture module: Error using ==> ExportData> WriteMeasurements. Error in handles.Measurements structure. The field Texture_CorrectedGray does not have an associated text field.
+
+- SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
+
+- Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
+
+- cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
+
 - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
 - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
+
+- IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  
+
+- SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
 
 - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 
@@ -58,6 +74,10 @@ JULY 28, 2005  IN ORDER OF PRIORITY
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
+- SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
+
+- Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't produce outlines on an original image).  To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17).
+
 - Make another primary object identification module based on
        Intensity then distance. 
 
@@ -71,9 +91,19 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
+- In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
+
 - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle.
 
 - Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
+
+- The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
+??? Error using ==> set
+Index exceeds matrix dimensions.
+??? Error using ==> set
+Error while evaluating uicontrol Callback.
+
+- It would be nice if the Crop module would allow you to draw a rectangle (rather than an ellipse) on each image as it cycles through.
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
@@ -515,3 +545,5 @@ subfunction called RetrieveImageFileNames, but it's slightly different when used
 - Done (Colin) - Put in toggle buttons for red, green, and blue if an image is color.  Maybe in CPfigure, or maybe just in specific places like spot identifier.
 
 - Done (Colin) - Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Trying to load the current ExampleFlySettings revealed a potentially serious problem - with the new way of showing settings (drop down menus, etc), I think it makes it frequently fail to load old pipelines properly.  So we should figure out if we can make CellProfiler more robust to loading old pipelines, otherwise everything we've worked on up to this point is going to be un-loadable.
+
+Done - Anne - SpotIdentifier is storing a value with the handles field named "ImageTopLeftXCorrectedGray" which should instead be stored in a subfield of "Image".

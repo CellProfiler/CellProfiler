@@ -74,6 +74,15 @@ JULY 28, 2005  IN ORDER OF PRIORITY
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
+- When figures produced by SpotIdentifier are saved as matlab fig files and opened later, when CellProfiler itself is not open, and then you click on SpotIdentifying Info - Show, an error is produced (at least when no spot identifying info has been loaded):
+??? Error using ==> guidata
+H must be the handle to a figure or figure descendent.
+Error in ==> CPmsgbox at 198
+handles = guidata(findobj('Tag','figure1'));
+Error in ==> CPwarndlg at 42
+handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
+??? Error while evaluating uicontrol Callback.
+
 - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
 - Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't produce outlines on an original image).  To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17).

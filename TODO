@@ -122,6 +122,8 @@ Error while evaluating uicontrol Callback.
 
 - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
+- Make the download new modules work.
+
 [Do the following prior to releasing:
 - Smart Indent
 - M Lint error checking

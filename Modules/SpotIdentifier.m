@@ -67,7 +67,7 @@ function handles = SpotIdentifier(handles)
 % (see the SaveImages module help) and then use the Save Images
 % module.
 %
-% See also IMAGETILER.
+% See also IMAGETILER or IDENTIFYWELLSPOTS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

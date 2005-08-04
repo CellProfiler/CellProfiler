@@ -399,6 +399,14 @@ catch
     handles.Settings.SelectedOption = zeros(1,NumberOfModules);
 end
 
+handles.Settings.VariableValues = {};
+handles.Settings.VariableInfoTypes = {};
+handles.Settings.VariableRevisionNumbers = [];
+delete(get(handles.variablepanel,'children'));
+handles.VariableBox = {};
+handles.VariableDescription = {};
+
+
 ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
 %%% Checks to make sure that the modules have not changed
 if exist(ModuleNamedotm,'file')
@@ -525,18 +533,6 @@ else
             handles.Settings = tempSettings;
         end
     end
-end
-
-%%% After everything has been loaded, we make sure that any excess
-%%% modules are removed.  The total number of modules used is
-%%% retrieved from ModuleNum (see loop above).  There may not actually
-%%% be any excess modules, so the following are each enclosed in a
-%%% try/end.
-try handles.Settings.VariableValues(ModuleNum+1:end,:) = [];
-end
-try handles.Settings.NumbersOfVariables(ModuleNum+1:end) = [];
-end
-try handles.Settings.VariableRevisionNumbers(ModuleNum+1:end) = [];
 end
 
 %%% SUBFUNCTION %%%
@@ -731,9 +727,9 @@ end
 %%% Allows canceling.
 if FileName ~= 0
     [Temp,FileNom,FileExt,Temp2] = fileparts(FileName);
-    AutoName = CPquestdlg(['Do you want to rather name the file as ', FileNom, 'SET', FileExt, ' in order to prevent confusion with output files?'],'Rename file?','Yes');
+    AutoName = CPquestdlg(['Do you want to rather name the file as ', FileNom, 'PIPE', FileExt, ' in order to prevent confusion with output files?'],'Rename file?','Yes');
     if strcmp(AutoName,'Yes')
-        FileName = [FileNom,'SET',FileExt];
+        FileName = [FileNom,'PIPE',FileExt];
     elseif strcmp(AutoName,'Cancel')
         return
     end
@@ -2172,6 +2168,7 @@ if strcmp(SelectedTool, PopUpMenuLabel) == 1
 elseif strcmp(SelectedTool, NoneLoadedText) == 1
     errordlg(['There are no tools loaded, because CellProfiler could not find the ',ToolsFolder, ' directory, which should be located within the directory where the current CellProfiler.m resides.']);
 else
+    warning off
     try eval(['handles = ', SelectedTool,'(handles);'])
     catch 
         %%% TODO: We should implement something where if
@@ -2459,7 +2456,7 @@ else
 
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
-                        handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
+                        handles.Current.FigureNumbersForModules(i) = ...
                             CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
                             'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
                             'color',[0.7,0.7,0.7]);
@@ -2553,7 +2550,7 @@ else
                         for i=1:length(openFig),
                             ModuleNumber = openFig(i);
                             try
-                                ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
+                                ThisFigureNumber = handles.Current.FigureNumbersForModules(ModuleNumber);
                                 figure(ThisFigureNumber);
                                 set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display']);
                                 set(ThisFigureNumber, 'Position',[(ScreenWidth*((ModuleNumber-1)/12)) (ScreenHeight-522) 560 442]);
@@ -2593,7 +2590,7 @@ else
                     for i=1:length(closeFig),
                         ModuleNumber = closeFig(i);
                         try
-                            ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
+                            ThisFigureNumber = handles.Current.FigureNumbersForModules(ModuleNumber);
                             delete(ThisFigureNumber);
                         catch
                         end
@@ -2604,7 +2601,7 @@ else
                     for i=1:length(openFig),
                         ModuleNumber = openFig(i);
                         try
-                            ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
+                            ThisFigureNumber = handles.Current.FigureNumbersForModules(ModuleNumber);
                             figure(ThisFigureNumber);
                             set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display']);
                             set(ThisFigureNumber, 'Position',[(ScreenWidth*((ModuleNumber-1)/12)) (ScreenHeight-522) 560 442]);
@@ -2857,10 +2854,9 @@ else
                 %%% see if it exists or else an error occurs.
     
                 for i=1:handles.Current.NumberOfModules
-                    ModuleNum = TwoDigitString(i);
-                    if isfield(handles.Current,['FigureNumberForModule' ModuleNum]) ==1
-                        if any(findobj == handles.Current.(['FigureNumberForModule' ModuleNum])) == 1;
-                            properhandle = handles.Current.(['FigureNumberForModule' ModuleNum]);
+                    if isfield(handles.Current,'FigureNumbersForModules')
+                        if any(findobj == handles.Current.FigureNumbersForModules(i))
+                            properhandle = handles.Current.FigureNumbersForModules(i);
                             set(properhandle,'CloseRequestFcn','delete(gcf)');
                         end
                     end

@@ -3,17 +3,7 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 - SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
 
-- Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
-
 - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
-
-- Loading pipelines bug: When loading a pipeline, the old settings do not seem completely cleared away. For example the old pipeline had module #2 with 15 variables and the new pipeline's module 2 has only 5. In handles.Settings.VariableValues, variables 6-15 for old module 2 are still present.  These variables are showing up in the main GUI when you click on the module, but this only happens sometimes - I can't pin it down.  Also, I loaded a pipeline into a 'fresh' CellProfiler, and canceled at the second module when it asked me whether to load saved or default variables (due to an old variable revision number). Then I looked at the handles.Settings and this is what was there (instead of it being empty):
-                  PixelSize: '1'
-                ModuleNames: {1x13 cell}
-             SelectedOption: [0 0 0 0 0 0 0 0 0 0 0 0 0 0]
-         NumbersOfVariables: [12 5 5]
-             VariableValues: {2x12 cell}
-    VariableRevisionNumbers: [3 2]
 
 - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
 
@@ -99,8 +89,6 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
 
 - When Saving a pipeline, after you confirm the filename change (adding SET or PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.
-
-- When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?  Also, it should check whether the filename the user typed in already has 'SET' at the end - if so, skip the dialog box asking whether to add it.
 
 - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
@@ -564,3 +552,15 @@ subfunction called RetrieveImageFileNames, but it's slightly different when used
 - Done (Colin) - Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Trying to load the current ExampleFlySettings revealed a potentially serious problem - with the new way of showing settings (drop down menus, etc), I think it makes it frequently fail to load old pipelines properly.  So we should figure out if we can make CellProfiler more robust to loading old pipelines, otherwise everything we've worked on up to this point is going to be un-loadable.
 
 Done - Anne - SpotIdentifier is storing a value with the handles field named "ImageTopLeftXCorrectedGray" which should instead be stored in a subfield of "Image".
+
+- Done (Colin) - Loading pipelines bug: When loading a pipeline, the old settings do not seem completely cleared away. For example the old pipeline had module #2 with 15 variables and the new pipeline's module 2 has only 5. In handles.Settings.VariableValues, variables 6-15 for old module 2 are still present.  These variables are showing up in the main GUI when you click on the module, but this only happens sometimes - I can't pin it down.  Also, I loaded a pipeline into a 'fresh' CellProfiler, and canceled at the second module when it asked me whether to load saved or default variables (due to an old variable revision number). Then I looked at the handles.Settings and this is what was there (instead of it being empty):
+                  PixelSize: '1'
+                ModuleNames: {1x13 cell}
+             SelectedOption: [0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+         NumbersOfVariables: [12 5 5]
+             VariableValues: {2x12 cell}
+    VariableRevisionNumbers: [3 2]
+
+- Done (Colin) - Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
+
+- Done (Colin) - When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?  Also, it should check whether the filename the user typed in already has 'SET' at the end - if so, skip the dialog box asking whether to add it.

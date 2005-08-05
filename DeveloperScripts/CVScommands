@@ -54,7 +54,7 @@ cvs commit filename.m\
 \ul To see a list of all files and their status:\
 \ulnone cvs status\
 \
-\ul To set up a computer with the CellProfiler directory cvs'd:\
+\ul To set up a computer with the CellProfiler directory cvs'd (for Mac):\
 \ulnone In Terminal:   \
 ssh-keygen -t dsa, then Enter to allow the defaults it suggests (no passphrase).\
 cd .ssh\
@@ -68,6 +68,18 @@ or typing "
 \f1 echo "export CVS_RSH=ssh" >> ~/.profile" into the terminal\
 Now, if you type "env | grep CVS", "CVS_RSH=ssh" should be printed\
 Type "cvs -d :ext:cellprofiler@oblique.csail.mit.edu:/home/CellProfiler co"\
+\
+
+\f0 \ul To set up a computer with the CellProfiler directory cvs'd (for PC):\
+
+\f1 \ulnone Download and install TortoiseCVS from www.tortoisecvs.org\
+Download and install puttygen from www.chiark.greenend.org.uk/~sgtatham/putty/download.html\
+Generate a private/public key pair using puttygen and email Ray the public one\
+Download and install pageant from the same website you downloaded puttygen\
+Add the private key from puttygen to pageant\
+After Ray adds the public key, right click on a windows folder and click CVS checkout\
+type :ext:cellprofiler@oblique.csail.mit.edu:/home/CellProfiler for CVSRoot\
+and CellProfiler for module\
 
 \f0 \
 \

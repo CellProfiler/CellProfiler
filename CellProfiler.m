@@ -392,6 +392,13 @@ catch
     return
 end
 
+handles.Settings.VariableValues = {};
+handles.Settings.VariableInfoTypes = {};
+handles.Settings.VariableRevisionNumbers = [];
+delete(get(handles.variablepanel,'children'));
+handles.VariableBox = {};
+handles.VariableDescription = {};
+
 handles.Settings.ModuleNames = Settings.ModuleNames;
 try
     handles.Settings.SelectedOption = Settings.SelectedOption;
@@ -1470,6 +1477,7 @@ function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 
 InfoType = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'UserData');
 StrSet = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'string');
+type = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'Style');
 
 if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     PrevValue = handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber));
@@ -2456,7 +2464,7 @@ else
 
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
-                        handles.Current.FigureNumbersForModules(i) = ...
+                        handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
                             CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
                             'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
                             'color',[0.7,0.7,0.7]);
@@ -2550,7 +2558,7 @@ else
                         for i=1:length(openFig),
                             ModuleNumber = openFig(i);
                             try
-                                ThisFigureNumber = handles.Current.FigureNumbersForModules(ModuleNumber);
+                                ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
                                 figure(ThisFigureNumber);
                                 set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display']);
                                 set(ThisFigureNumber, 'Position',[(ScreenWidth*((ModuleNumber-1)/12)) (ScreenHeight-522) 560 442]);
@@ -2590,7 +2598,7 @@ else
                     for i=1:length(closeFig),
                         ModuleNumber = closeFig(i);
                         try
-                            ThisFigureNumber = handles.Current.FigureNumbersForModules(ModuleNumber);
+                            ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
                             delete(ThisFigureNumber);
                         catch
                         end
@@ -2601,7 +2609,7 @@ else
                     for i=1:length(openFig),
                         ModuleNumber = openFig(i);
                         try
-                            ThisFigureNumber = handles.Current.FigureNumbersForModules(ModuleNumber);
+                            ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
                             figure(ThisFigureNumber);
                             set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display']);
                             set(ThisFigureNumber, 'Position',[(ScreenWidth*((ModuleNumber-1)/12)) (ScreenHeight-522) 560 442]);
@@ -2854,9 +2862,9 @@ else
                 %%% see if it exists or else an error occurs.
     
                 for i=1:handles.Current.NumberOfModules
-                    if isfield(handles.Current,'FigureNumbersForModules')
-                        if any(findobj == handles.Current.FigureNumbersForModules(i))
-                            properhandle = handles.Current.FigureNumbersForModules(i);
+                    if isfield(handles.Current,['FigureNumberForModule' TwoDigitString(i)])
+                        if any(findobj == handles.Current.(['FigureNumberForModule' TwoDigitString(i)]))
+                            properhandle = handles.Current.(['FigureNumberForModule' TwoDigitString(i)]);
                             set(properhandle,'CloseRequestFcn','delete(gcf)');
                         end
                     end

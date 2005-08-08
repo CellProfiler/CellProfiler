@@ -1,7 +1,160 @@
 CellProfiler cell image analysis software development 
 JULY 28, 2005  IN ORDER OF PRIORITY
 
+- Adapt the crop module to allow an option to specify how many pixels to remove from each edge of the image (top,bottom,left,right). This is helpful if you don't know the size of the image but want to remove a certain number of pixels from the edge. We can already do this for the top and left edges by typing in the pixel at which to start and leaving the endpoint as "end" but we can't do it for the bottom and right if we don't know the incoming size of images. This will allow us to crop rectangular plate edges away.
+
+- Remove the code for rotating an image from the SpotIdentifier module and make it into a separate image processing module "RotateImage". There should be several methods to choose from in a popup menu:
+1. Type in a set of pixel coordinates for two points that should be aligned horizontally.
+2. Type in a set of pixel coordinates for two points that should be aligned vertically.
+3. Click spots that should be aligned horizontally with mouse 
+4. Click spots that should be aligned vertically with mouse 
+5. Type in the rotation in units of degrees.
+6. Automatic, based on identified objects - this would be a new, sophisticated option where identified objects that look like they're in a grid or some sort of lines would be rotated to be squared up to the image. Not sure if this is feasible, but it would be cool. We can make this a more long-term part of the project.
+All of these options would be converted to a single number - degree of rotation - so the same code can then be used to actually rotate the image no matter which option was chosen.  This degree of rotation (or however you want to store it) should be saved in handles.Measurements.Image because it may be of interest to the user and also so that it can be retrieved in case you want to apply the rotation from the first image set to subsequent sets (see next option).
+
+Another option - do you want the rotation for the first image to be applied to all image sets or do you want to determine the rotation for each image individually as you cycle through? 
+
+Another option - do you want to crop away the rotated edges?  (Otherwise, the rotated edges with missing pixel information are just black pixels).
+
 - SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
+[[[Colin & Anne decided to make a new module (undecided name, but something like LoadTextData) that allows text data to be imported, one bit of text for each image set. When this is done, remove the code from SpotIdentifier and instead ask "What did you call the imported text data you would like to use to label each spot (optional; use the LoadTextData module)?"]]]
+
+- Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
+
+newVAR = Do you want the grid of objects to be found automatically or do you want to specify the grid manually?
+%choiceVAR02 = Automatic mode
+%choiceVAR02 = Manual mode
+%inputtypeVAR01 = popupmenu
+
+newVAR = For automatic mode, you must previously have run an Identify module to do a rough identification of the objects. What did you call the identified objects?
+[popupmenu of objects]
+
+%textVAR01 = What did you call the grayscale image to be used in this module? If you choose display mode, this is the image that will be overlaid with the identified grid of objects.  If you choose manual mode, this will specify the size of the image on which the grid of objects will be placed.  If you are using automatic mode and display mode, this grayscale image must be the same size as the image used to identify objects. If you are using automatic mode and non-display mode, you do not absolutely need to select an image here because the identified objects themselves specify the size of the image on which the grid will be identified.
+%infotypeVAR01 = imagegroup
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
+
+%textVAR04 = What do you want to call the objects identified by this module?
+%infotypeVAR04 = objectgroup indep
+%defaultVAR04 = Spots
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+newVAR = Do you want to show the results in a display window?
+Yes
+No
+
+%textVAR11 = For numbering purposes, is the first spot at the Left or Right?
+%choiceVAR11 = Left
+%choiceVAR11 = Right
+LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+LeftOrRight = LeftOrRight(1);
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 = For numbering purposes, is the first spot at the Bottom or Top?
+%choiceVAR12 = Top
+%choiceVAR12 = Bottom
+TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+TopOrBottom = TopOrBottom(1);
+%inputtypeVAR12 = popupmenu
+
+%textVAR13 = Would you like to count by rows or columns?
+%choiceVAR13 = Rows
+%choiceVAR13 = Columns
+RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+newVAR = Are the objects circular or rectangular?
+We don't currently have the rectangular grid shape option, this would be a new feature where the objects should expand to fill up the rectangular grid shape.
+
+%textVAR05 = What is the diameter [[Note, I have changed this to diameter rather than radius]] of each object, in pixels?  This cannot be set to automatic if you are using manual mode + circular mode.
+%defaultVAR05 = 80
+RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+should be popupmenu custom, with these options:
+'Automatic' 
+'Custom...'
+
+%textVAR07 = Enter the number of rows, columns
+%defaultVAR07 = 40,140
+RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%%% Extracts the rows and columns from the user's input.
+try
+    RowsColumnsNumerical = str2num(RowsColumns);%#ok We want to ignore MLint error checking for this line.
+    NumberRows = RowsColumnsNumerical(1);
+    NumberColumns = RowsColumnsNumerical(2);
+catch error('Image processing was canceled because your entry for rows, columns in the Spot Identifier module was not understood.')
+end
+[[[Can this be automatic if we are in automatic mode?]]]
+
+%textVAR08 = For manual mode, enter the spacing between rows, columns (vertical spacing, horizontal spacing).
+%defaultVAR08 = 57,57
+HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%%% Extracts the vertical and horizontal spacing from the user's input.
+try
+    HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
+    VertSpacing = HorizVertSpacingNumerical(1);
+    HorizSpacing = HorizVertSpacingNumerical(2);
+catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
+end
+[[[We might add an option here where you click on two control spots (top left & bottom right or top right and bottom left) and the spacing is automatically determined, but it's a bit unlikely to be used that often.]]]
+
+%textVAR06 = For manual mode, you must specify the location of a control spot - do you want to enter the pixel coordinates or click with a mouse? 
+%choiceVAR06 = Coordinates
+%choiceVAR06 = Mouse
+MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+MarkingMethod = MarkingMethod(1);
+%inputtypeVAR06 = popupmenu
+
+%textVAR09 = For manual mode, will you be specifying the distance (the next option) in units of pixels or spots?
+%choiceVAR09 = Pixels
+%choiceVAR09 = Spots
+SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%textVAR10 = For manual mode, enter the distance from the control spot to the center of the top left spot of the grid (vertical, horizontal). Enter 0,0 if the control spot *is* the top left spot of the grid.
+%defaultVAR10 = 57,0
+HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%%% Extracts the vertical and horizontal offset from the user's input.
+try
+    HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
+    VertOffset = HorizVertOffsetNumerical(1);
+    HorizOffset = HorizVertOffsetNumerical(2);
+catch error('Image processing was canceled because your entry for the distance from the top left marker to the center of the nearest spot (vertical, horizontal) in the Spot Identifier module was not understood.')
+end
+if strcmp(SpacingUnits,'Spots')
+    VertOffset = VertOffset*VertSpacing;
+    HorizOffset = HorizOffset*HorizSpacing;
+end
+
+%textVAR15 = Do you want to label the spots only (takes less memory) or will you be using them in downstream modules (e.g. saving an image of them or measuring them)?
+%choiceVAR15 = Label only
+%choiceVAR15 = Use downstream
+LabelOrUseDownstream = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
+
+%textVAR16 = If you are using the spots downstream, what do you want to call the image of the outlines of the objects?
+%infotypeVAR16 = imagegroup indep
+%defaultVAR16 = Do not save
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,16}); 
+
+%textVAR17 =  If you are using the spots downstream, what do you want to call the label matrix image?
+%infotypeVAR17 = imagegroup indep
+%defaultVAR17 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,17}); 
+
+%textVAR18 = If you are using the spots downstream and saving the label matrix image, do you want to save it in RGB or grayscale?
+%choiceVAR18 = RGB
+%choiceVAR18 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18}); 
+%inputtypeVAR18 = popupmenu
+
+
+
+
+
+
+
+
+
 
 - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
 

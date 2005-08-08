@@ -79,7 +79,7 @@ SelectedFiles = SelectedFiles(~cellfun('isempty',strfind(SelectedFiles,'OUT')));
 if ~ok, return, end
 SelectedFiles = SelectedFiles(selection);
 
-
+FieldName = inputdlg('What would you like the save the data as?');
 
 %%% Loop over the selected files and remove the selected feature
 %%% An cell array is used to indicated any errors in the processing
@@ -101,12 +101,15 @@ for FileNbr = 1:length(SelectedFiles)
         continue
     end
     
-    tempVarValues=handles.Settings.VariableValues{1,1};
+    tempVarValues=handles.Settings.VariableValues;
     tempModuleNumber = handles.Current.CurrentModuleNumber;
     handles.Settings.VariableValues{1,1}=fullfile(pathname,filename);
+    handles.Settings.VariableValues{1,2}=FieldName;
     handles.Current.CurrentModuleNumber='01';
+    
     handles = AddTextInfo(handles);
-    handles.Settings.VariableValues{1,1}=tempVarValues;
+    
+    handles.Settings.VariableValues=tempVarValues;
     handles.Current.CurrentModuleNumber=tempModuleNumber;
     
     

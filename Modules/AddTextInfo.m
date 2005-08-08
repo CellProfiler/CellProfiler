@@ -3,17 +3,16 @@ function handles = AddTextInfo(handles)
 % Help for the Add Text Information:
 % Category: Other
 %
-% Use this tool if you would like text information about each image to
-% be recorded in the output file along with measurements (e.g. Gene
-% names, accession numbers, or sample numbers). 
+% Use this tool if you would like text information.  The information could
+% be referring to each image set, each object, or anything else the user
+% would like.
 % The text information must be specified in a separate text file
 % with the following syntax:
 %
-% IDENTIFIER <identfier> 
 % DESCRIPTION <description>
-% <Text info for image set #1>
-% <Text info for image set #2>
-% <Text info for image set #3>
+% <Text info>
+% <Text info>
+% <Text info>
 %              .
 %              .
 %
@@ -23,7 +22,6 @@ function handles = AddTextInfo(handles)
 %
 % For example:
 %
-% IDENTIFIER GeneNames
 % DESCRIPTION Gene names
 % Gene X
 % Gene Y
@@ -61,6 +59,11 @@ CurrentModuleNum = str2double(CurrentModule);
 TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
+%textVAR02 = What would you like to call the data?
+%infotypeVAR02 = datagroup indep
+%defaultVAR02 = names
+FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+
 %%%VariableRevisionNumber = 1
 
 
@@ -68,7 +71,7 @@ TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+if handles.Current.SetBeingAnalyzed == 1
     %%% Select file with text information to be added
     if strcmp(TextFileName,'Browse while running')
         if exist(handles.Current.DefaultOutputDirectory, 'dir')
@@ -92,16 +95,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         errordlg('Could not open file.  It might not exist or you might not have given its valid path.');
     end
 
-    % The first 10 characters must equal 'IDENTIFIER'
-    s = fgets(fid,10);
-    if ~strcmp(s,'IDENTIFIER')
-        errordlg('The first line in the text information file must be of the format ''IDENTIFIER <identifiername>''.')
-    end
-    s = fgetl(fid); s = s(2:end);
-    if sum(isspace(s)) > 0
-        errordlg('Entry after IDENTIFIER on the first line contains white spaces.')
-    end
-    FieldName = s;
 
     % Get description
     s = fgets(fid,11);
@@ -112,7 +105,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     Description = Description(2:end);       % Remove space
 
     % Read following lines into a cell array
-    Text = {};
+    Text = [];
     while 1
         s = fgetl(fid);
         if ~ischar(s), break, end
@@ -122,24 +115,15 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     end
     fclose(fid);
 
-    %%% Check that the number of processed file names equals the number of text entries
-    if handles.Current.NumberOfImageSets ~= length(Text)
-        error(sprintf('The number of processed image sets (%d) does not match the number of entries in text information file (%d)',handles.Current.NumberOfImageSets,length(Text)));
-    end
-
     %%% Add the data
     %%% If the entered field doesn't exist  (This is the convenient way of doing it. Takes time for large ouput files??)
     if ~isfield(handles.Measurements.Image,FieldName)
         handles.Measurements.Image.([FieldName,'Text']) = {Description};
-        for imageset = 1:length(Text)
-            handles.Measurements.Image.(FieldName){imageset} = Text(imageset);
-        end
+        handles.Measurements.Image.(FieldName) = Text;
      %%% If the entered field already exists we have to append to this field
     else
         handles.Measurements.Image.([FieldName,'Text']) = cat(2,handles.Measurements.Image.([FieldName,'Text']),{Description});
-        for imageset = 1:length(Text)
-            handles.Measurements.Image.(FieldName){imageset} = cat(2,handles.Measurements.Image.(FieldName){imageset},Text(imageset));
-        end
+        handles.Measurements.Image.(FieldName) = cat(2,handles.Measurements.Image.(FieldName),Text);
     end
 end
 

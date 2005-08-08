@@ -245,10 +245,10 @@ RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
 %textVAR14 = Enter the Excel file name from which to load spot information (you can type a file name here if the file is in the default image directory and if you want to use the first sheet of the file).
-%choiceVAR14 = No spot information
-%choiceVAR14 = Browse each cycle
-LoadSpotIdentifiers = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-%inputtypeVAR14 = popupmenu custom
+%choiceVAR14 = Do not load
+%infotypeVAR14 = datagroup
+DataName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
 
 %textVAR15 = Do you want to label the spots only (takes less memory) or will you be using them in downstream modules (e.g. saving an image of them or measuring them)?
 %choiceVAR15 = Label only
@@ -518,41 +518,58 @@ if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
 end
 
 %%% Retrieves the spot identifying info from a file, if requested.
-if ~strcmp(LoadSpotIdentifiers,'No spot information')
-    if strcmp(LoadSpotIdentifiers,'Browse each cycle')
-        [FileName,Pathname] = uigetfile('*.xls', 'Choose the Excel file containing the spot identifying information.');
-        if FileName == 0
-            error('Image processing was canceled during the Spot Identifier module.')
-        end
-        Answer = inputdlg('What is the name of the sheet within that Excel file that contains the data of interest? Leave blank to automatically select the first sheet of the file.');
-    else
-        FileName=LoadSpotIdentifiers;
-        Pathname=handles.Current.DefaultImageDirectory;
-        Answer=[];
-    end
-    warning off %Because matlab warns when you open an excel in a non-windows platform
-    if isempty(Answer)
-        [ignore SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName));
-    else
-        SheetName = Answer{1};
-        [ignore SpotIdentifyingInfo]=xlsread(fullfile(Pathname,FileName),SheetName); %#ok We want to ignore MLint error checking for this line.
-    end
-    warning on
-    %SpotIdentifyingInfo = SpotIdentifyingInfo(:,2:end);
-    %SpotIdentifyingInfo = SpotIdentifyingInfo(2:end,:);
-    %%% Determines the number of rows and columns for later use.
+if ~strcmp(DataName,'Do not load')
+    SpotIdentifyingInfo = handles.Measurements.Image.(DataName);  
+    
     [NumberRowsSpotIdentifyingInfo, NumberColumnsSpotIdentifyingInfo] = size(SpotIdentifyingInfo);
-    if NumberRowsSpotIdentifyingInfo ~= NumberRows
-        CPwarndlg('NumberRowsSpotIdentifyingInfo does not match NumberRows.')
-        error(['There were ', num2str(NumberRowsSpotIdentifyingInfo), ' rows and ', num2str(NumberColumnsSpotIdentifyingInfo), ' columns of data imported, but you specified that there are ', num2str(NumberRows), ' rows and ', num2str(NumberColumns), ' columns.']);
+    if NumberRowsSpotIdentifyingInfo*NumberColumnsSpotIdentifyingInfo ~= NumberRows*NumberColumns
+        error(['There were ', num2str(NumberRowsSpotIdentifyingInfo*NumberColumnsSpotIdentifyingInfo), ' imported data entries, but you specified that there are ', num2str(NumberRows*NumberColumns), ' data entries.']);
     end
-    if NumberColumnsSpotIdentifyingInfo ~= NumberColumns
-        CPwarndlg('NumberColumnsSpotIdentifyingInfo does not match NumberColumns.')
-        error(['There were ', num2str(NumberRowsSpotIdentifyingInfo), ' rows and ', NumberColumnsSpotIdentifyingInfo, ' columns of data imported, but you specified that there are ', NumberRows, ' rows and ', NumberColumns, ' .']);
+    
+    if strcmp(RowsOrColumns,'Columns')
+        SpotIdentifyingInfo = reshape(SpotIdentifyingInfo, NumberRows, NumberColumns);
+    elseif strcmp(RowsOrColumns,'Rows')
+        SpotIdentifyingInfo = reshape(SpotIdentifyingInfo,NumberColumns,NumberRows);
+        SpotIdentifyingInfo = SpotIdentifyingInfo';
     end
+    if strcmp(TopOrBottom,'B')
+        SpotIdentifyingInfo = flipud(SpotIdentifyingInfo);
+    end
+    if strcmp(LeftOrRight,'R')
+        SpotIdentifyingInfo = fliplr(SpotIdentifyingInfo);
+    end
+    %%% Converts to a single column.
+    SpotIdentifyingInfo = reshape(SpotIdentifyingInfo, 1, NumberSpots);
+    
     %%% Draws the SpotIdentifyingInfo, though they are initially invisible until the
     %%% user clicks "Show".
     figure(FigureHandle);
+    
+    %%% Text3
+    uicontrol('Parent',FigureHandle, ...
+        'BackgroundColor',get(FigureHandle,'Color'), ...
+        'Position',[330 28 145 14], ...
+        'HorizontalAlignment','center', ...
+        'String','Spot identifying info:', ...
+        'Style','text', ...
+        'FontSize',handles.Current.FontSize,'BackgroundColor',[.7,.7,.9]);
+    
+    ShowSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''on''); end, clear Handles';
+    uicontrol('Style', 'pushbutton', ...
+        'String', 'Show', 'Position', [330 6 45 20], ...
+        'Callback', ShowSpotIdentifyingInfoButtonFunction, 'parent',FigureHandle, ...
+        'FontSize',handles.Current.FontSize,'BackgroundColor',[.7,.7,.9]);
+    HideSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''off''); end, clear Handles';
+    uicontrol('Style', 'pushbutton', ...
+        'String', 'Hide', 'Position', [380 6 45 20], ...
+        'Callback', HideSpotIdentifyingInfoButtonFunction, 'parent',FigureHandle, ...
+        'FontSize',handles.Current.FontSize,'BackgroundColor',[.7,.7,.9]);
+    ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
+    uicontrol('Style', 'pushbutton', ...
+        'String', 'Change', 'Position', [430 6 45 20], ...
+        'Callback', ChangeSpotIdentifyingInfoButtonFunction, 'parent',FigureHandle, ...
+        'FontSize',handles.Current.FontSize,'BackgroundColor',[.7,.7,.9]);
+
     text(XLocations, YLocations, SpotIdentifyingInfo, ...
         'HorizontalAlignment','center', 'Color', 'white','visible','off', ...
         'UserData','SpotIdentifyingInfoHandles');
@@ -623,22 +640,6 @@ uicontrol('Style', 'pushbutton', ...
     'Callback', ChangeCoordinatesButtonFunction, 'parent',FigureHandle, ...
     'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
 
-ShowSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''on''); end, clear Handles';
-uicontrol('Style', 'pushbutton', ...
-    'String', 'Show', 'Position', [330 6 45 20], ...
-    'Callback', ShowSpotIdentifyingInfoButtonFunction, 'parent',FigureHandle, ...
-    'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
-HideSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else set(Handles,''visible'',''off''); end, clear Handles';
-uicontrol('Style', 'pushbutton', ...
-    'String', 'Hide', 'Position', [380 6 45 20], ...
-    'Callback', HideSpotIdentifyingInfoButtonFunction, 'parent',FigureHandle, ...
-    'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
-ChangeSpotIdentifyingInfoButtonFunction = 'Handles = findobj(''UserData'',''SpotIdentifyingInfoHandles''); if isempty(Handles) == 1, CPwarndlg(''No Spot Identifying information was loaded.''), else try, propedit(Handles), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; end, clear Handles';
-uicontrol('Style', 'pushbutton', ...
-    'String', 'Change', 'Position', [430 6 45 20], ...
-    'Callback', ChangeSpotIdentifyingInfoButtonFunction, 'parent',FigureHandle, ...
-    'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
-
 ChangeColormapButtonFunction = 'ImageHandle = findobj(gca, ''type'',''image''); if strcmp(get(ImageHandle,''UserData''),''Color'') == 1, CPmsgbox(''This image was loaded as a color image, so the colormap cannot be changed. You can use an RGB Split or RGB to Grayscale module to change the format of the image prior to running the Spot Identifier module.''), else propedit(ImageHandle), end';
 uicontrol('Style', 'pushbutton', ...
     'String', 'Change', 'Position', [490 6 45 20], ...
@@ -659,14 +660,6 @@ uicontrol('Parent',FigureHandle, ...
     'Position',[170 28 145 14], ...
     'HorizontalAlignment','center', ...
     'String','Coordinates:', ...
-    'Style','text', ...
-    'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
-%%% Text3
-uicontrol('Parent',FigureHandle, ...
-    'BackgroundColor',get(FigureHandle,'Color'), ...
-    'Position',[330 28 145 14], ...
-    'HorizontalAlignment','center', ...
-    'String','Spot identifying info:', ...
     'Style','text', ...
     'FontSize',Font,'BackgroundColor',[.7,.7,.9]);
 %%% Text4

@@ -3074,6 +3074,11 @@ function slider1_ButtonDownFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 function DownloadModules_Callback(hObject, eventdata, handles)
+%%% TEMPORARY
+CPwarndlg('Sorry, the ftp site has not yet been established to allow downloading modules.');
+return
+
+
 try
     CPServer = ftp('cellprofiler.org');
 catch

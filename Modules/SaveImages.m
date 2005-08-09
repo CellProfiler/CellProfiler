@@ -443,7 +443,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             handles.Pipeline.(fieldname)(handles.Current.NumberOfImageSets) = struct('colormap',[],'cdata',[]);
         else
             Movie = handles.Pipeline.(fieldname);
-            NumberExistingFrames = size(Movie,2)
+            NumberExistingFrames = size(Movie,2);
         end
         %%% Determines whether the image is RGB.
         if size(Image,3) == 3
@@ -495,7 +495,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
                 %%% Specifying the size of the colormap is critical
                 %%% to prevent a bunch of annoying weird errors. I assume
                 %%% the avi format is always 8-bit (=256 levels).
-                eval(['ChosenColormap = colormap(',ColorMap,'(256))']);
+                eval(['ChosenColormap = colormap(',ColorMap,'(256));']);
                 try movie2avi(Movie,NewFileAndPathName,'colormap',ChosenColormap)
                 catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
                 end

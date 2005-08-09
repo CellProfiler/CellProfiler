@@ -22,15 +22,15 @@ Another option - do you want to crop away the rotated edges?  (Otherwise, the ro
 ******************
 - Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
 
-newVAR = Do you want the grid of objects to be found automatically or do you want to specify the grid manually?
-%choiceVAR02 = Automatic mode
-%choiceVAR02 = Manual mode
+newVAR = Do you want the grid of objects to be found automatically or do you want to specify the grid manually?  In manual grid mode, you mark a known location in the grid and have the rest of the positions calculated from those marks, no matter what the image itself looks like.  In automatic mode, you must previously have run an Identify module to do a rough identification of the objects which is used to automatically find the grid.
+%choiceVAR02 = Automatic grid
+%choiceVAR02 = Manual grid
 %inputtypeVAR01 = popupmenu
 
-newVAR = For automatic mode, you must previously have run an Identify module to do a rough identification of the objects. What did you call the identified objects?
+newVAR = For automatic grid mode, what did you call the roughly identified objects?
 [popupmenu of objects]
 
-%textVAR01 = What did you call the grayscale image to be used in this module? If you choose display mode, this is the image that will be overlaid with the identified grid of objects.  If you choose manual mode, this will specify the size of the image on which the grid of objects will be placed.  If you are using automatic mode and display mode, this grayscale image must be the same size as the image used to identify objects. If you are using automatic mode and non-display mode, you do not absolutely need to select an image here because the identified objects themselves specify the size of the image on which the grid will be identified.
+%textVAR01 = What did you call the grayscale image to be used in this module? If you choose display mode, this is the image that will be overlaid with the identified grid of objects.  If you choose manual mode, this will specify the size of the image on which the grid of objects will be placed.  If you are using automatic grid mode and display mode, this grayscale image must be the same size as the image used to identify objects. If you are using automatic grid mode and non-display mode, you do not absolutely need to select an image here because the identified objects themselves specify the size of the image on which the grid will be identified.
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -64,15 +64,19 @@ TopOrBottom = TopOrBottom(1);
 RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-newVAR = Are the objects circular or rectangular?
-We don't currently have the rectangular grid shape option, this would be a new feature where the objects should expand to fill up the rectangular grid shape.
+newVAR = Do you want the objects to be (1) circles with a particular diameter (see next option), (2) rectangles that fill the entire grid you have defined or (3) retain their natural size and shape (automatic grid mode only)?
+choiceVAR = circles
+choiceVAR = rectangles
+choiceVAR = natural shape & size
+[[We don't currently have the rectangle or "natural shape" options. Not sure how useful the rectangle option will be, we can wait on implementing it. The natural shape one will definitely be useful eventually. In this case, we simply want to 'polish up' the objects that have been identified in the previous identify module - we should basically superimpose the gridlines onto the identified objects to divide objects that span two grid rectangles and if there is more than one object within a grid rectangle we should merge all objects within the grid rectangle together. If there is no object within a particular grid rectangle, we don't want to create one there, but we still need to force the numbering system to remain properly lined up with the other spots. As a result, some numbers in the label matrix will be missing - I am not sure if this will cause downstream problems so a temporary fix might be: if there is no object within a particular grid rectangle, set the central one pixel to be the object.  The user will know that if the area of an object = 1 pixel then an object was not actually found]].
 
-%textVAR05 = What is the diameter [[Note, I have changed this to diameter rather than radius]] of each object, in pixels?  This cannot be set to automatic if you are using manual mode + circular mode.
+%textVAR05 = For circle mode, what is the diameter [[Note, I have changed this to diameter rather than radius]] of each object, in pixels?  This cannot be set to automatic if you are using manual grid mode.
 %defaultVAR05 = 80
 RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 should be popupmenu custom, with these options:
 'Automatic' 
 'Custom...'
+[[We might add an option eventually 'Maximum size that still fits in the grid' - not sure if it would come in handy that often, though.]]
 
 %textVAR07 = Enter the number of rows, columns
 %defaultVAR07 = 40,140
@@ -86,7 +90,7 @@ catch error('Image processing was canceled because your entry for rows, columns 
 end
 [[[Can this be automatic if we are in automatic mode?]]]
 
-%textVAR08 = For manual mode, enter the spacing between rows, columns (vertical spacing, horizontal spacing).
+%textVAR08 = For manual grid mode, enter the spacing between rows, columns (vertical spacing, horizontal spacing).
 %defaultVAR08 = 57,57
 HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% Extracts the vertical and horizontal spacing from the user's input.
@@ -98,20 +102,20 @@ catch error('Image processing was canceled because your entry for the spacing be
 end
 [[[We might add an option here where you click on two control spots (top left & bottom right or top right and bottom left) and the spacing is automatically determined, but it's a bit unlikely to be used that often.]]]
 
-%textVAR06 = For manual mode, you must specify the location of a control spot - do you want to enter the pixel coordinates or click with a mouse? 
+%textVAR06 = For manual grid mode, you must specify the location of a control spot - do you want to enter the pixel coordinates or click with a mouse? 
 %choiceVAR06 = Coordinates
 %choiceVAR06 = Mouse
 MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 MarkingMethod = MarkingMethod(1);
 %inputtypeVAR06 = popupmenu
 
-%textVAR09 = For manual mode, will you be specifying the distance (the next option) in units of pixels or spots?
+%textVAR09 = For manual grid mode, will you be specifying the distance (the next option) in units of pixels or spots?
 %choiceVAR09 = Pixels
 %choiceVAR09 = Spots
 SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = For manual mode, enter the distance from the control spot to the center of the top left spot of the grid (vertical, horizontal). Enter 0,0 if the control spot *is* the top left spot of the grid.
+%textVAR10 = For manual grid mode, enter the distance from the control spot to the center of the top left spot of the grid (vertical, horizontal). Enter 0,0 if the control spot *is* the top left spot of the grid.
 %defaultVAR10 = 57,0
 HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%% Extracts the vertical and horizontal offset from the user's input.

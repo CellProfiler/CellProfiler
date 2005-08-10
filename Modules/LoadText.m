@@ -54,10 +54,8 @@ function handles = AddTextInfo(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What is the textfile that you want to add?
-%choiceVAR01 = Browse while running
+%filenametextVAR01 = What is the textfile that you want to add?
 TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = What would you like to call the data?
 %infotypeVAR02 = datagroup indep
@@ -72,24 +70,8 @@ FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if handles.Current.SetBeingAnalyzed == 1
-    %%% Select file with text information to be added
-    if strcmp(TextFileName,'Browse while running')
-        if exist(handles.Current.DefaultOutputDirectory, 'dir')
-            [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.*'),'Pick file with text information');
-        else
-            [filename, pathname] = uigetfile('*.*','Pick file with text information');
-        end
-
-        if filename == 0 %User canceled
-            return;
-        end
-    else
-        [pathname filename extension]=fileparts(TextFileName);
-        filename = [filename extension];
-    end
-
     %%% Parse text file %%%
-    fid = fopen(fullfile(pathname,filename),'r');
+    fid = fopen(TextFileName,'r');
 
     if fid == -1
         errordlg('Could not open file.  It might not exist or you might not have given its valid path.');
@@ -117,13 +99,13 @@ if handles.Current.SetBeingAnalyzed == 1
 
     %%% Add the data
     %%% If the entered field doesn't exist  (This is the convenient way of doing it. Takes time for large ouput files??)
-    if ~isfield(handles.Measurements.Image,FieldName)
-        handles.Measurements.Image.([FieldName,'Text']) = {Description};
-        handles.Measurements.Image.(FieldName) = Text;
+    if ~isfield(handles.Measurements,FieldName)
+        handles.Measurements.([FieldName,'Text']) = {Description};
+        handles.Measurements.(FieldName) = Text;
      %%% If the entered field already exists we have to append to this field
     else
-        handles.Measurements.Image.([FieldName,'Text']) = cat(2,handles.Measurements.Image.([FieldName,'Text']),{Description});
-        handles.Measurements.Image.(FieldName) = cat(2,handles.Measurements.Image.(FieldName),Text);
+        handles.Measurements.([FieldName,'Text']) = cat(2,handles.Measurements.([FieldName,'Text']),{Description});
+        handles.Measurements.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
     end
 end
 

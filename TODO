@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 JULY 28, 2005  IN ORDER OF PRIORITY
 
-- Adapt the crop module to allow an option to specify how many pixels to remove from each edge of the image (top,bottom,left,right). This is helpful if you don't know the size of the image but want to remove a certain number of pixels from the edge. We can already do this for the top and left edges by typing in the pixel at which to start and leaving the endpoint as "end" but we can't do it for the bottom and right if we don't know the incoming size of images. This will allow us to crop rectangular plate edges away.
-
 - Remove the code for rotating an image from the SpotIdentifier module and make it into a separate image processing module "RotateImage". There should be several methods to choose from in a popup menu:
 1. Type in a set of pixel coordinates for two points that should be aligned horizontally.
 2. Type in a set of pixel coordinates for two points that should be aligned vertically.
@@ -16,10 +14,6 @@ Another option - do you want the rotation for the first image to be applied to a
 
 Another option - do you want to crop away the rotated edges?  (Otherwise, the rotated edges with missing pixel information are just black pixels).
 
-- SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
-[[[Colin & Anne decided to make a new module (undecided name, but something like LoadTextData) that allows text data to be imported, one bit of text for each image set. When this is done, remove the code from SpotIdentifier and instead ask "What did you call the imported text data you would like to use to label each spot (optional; use the LoadTextData module)?"]]]
-
-******************
 - Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
 
 newVAR = Do you want the grid of objects to be found automatically or do you want to specify the grid manually?  In manual grid mode, you mark a known location in the grid and have the rest of the positions calculated from those marks, no matter what the image itself looks like.  In automatic mode, you must previously have run an Identify module to do a rough identification of the objects which is used to automatically find the grid.
@@ -717,3 +711,8 @@ Done - Anne - SpotIdentifier is storing a value with the handles field named "Im
 - Done (Colin) - Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
 
 - Done (Colin) - When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?  Also, it should check whether the filename the user typed in already has 'SET' at the end - if so, skip the dialog box asking whether to add it.
+
+- Done (Colin) - SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
+[[[Colin & Anne decided to make a new module (undecided name, but something like LoadTextData) that allows text data to be imported, one bit of text for each image set. When this is done, remove the code from SpotIdentifier and instead ask "What did you call the imported text data you would like to use to label each spot (optional; use the LoadTextData module)?"]]]
+
+- Done (Colin) - Adapt the crop module to allow an option to specify how many pixels to remove from each edge of the image (top,bottom,left,right). This is helpful if you don't know the size of the image but want to remove a certain number of pixels from the edge. We can already do this for the top and left edges by typing in the pixel at which to start and leaving the endpoint as "end" but we can't do it for the bottom and right if we don't know the incoming size of images. This will allow us to crop rectangular plate edges away.

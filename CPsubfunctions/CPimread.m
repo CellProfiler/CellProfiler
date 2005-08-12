@@ -2,7 +2,7 @@ function [LoadedImage, handles] = CPimread(varargin)
 
 if nargin == 0 %returns the vaild image extensions
     formats = imformats;
-    LoadedImage = [cat(2, formats.ext) 'dib' 'mat']; %LoadedImage is not a image here, but rather a set
+    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin == 2,
     CurrentFileName = varargin{1};

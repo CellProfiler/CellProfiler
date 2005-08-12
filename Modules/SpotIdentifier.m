@@ -43,8 +43,6 @@ function handles = SpotIdentifier(handles)
 % 
 % It works for our basic needs right now, but improvements/fixes need
 % to be made (in addition to the ones mentioned above):
-% (0) I have not tested all of the various ways to rotate and mark the
-% top, left corner spot.
 % (1) I am not confident that the offsets and flipping left/right and
 % top/bottom are accurate at the moment.
 % (2) Loading gene names from an Excel file works only for a PC at the
@@ -60,12 +58,6 @@ function handles = SpotIdentifier(handles)
 % figure window and toggle between them, so that controls and
 % different wavelength images can be compared.
 %
-% SAVING IMAGES: The rotated image produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
 %
 % See also IMAGETILER or IDENTIFYWELLSPOTS.
 
@@ -82,108 +74,42 @@ function handles = SpotIdentifier(handles)
 %
 % $Revision$
 
-% PROGRAMMING NOTE
-% HELP:
-% The first unbroken block of lines will be extracted as help by
-% CellProfiler's 'Help for this analysis module' button as well as Matlab's
-% built in 'help' and 'doc' functions at the command line. It will also be
-% used to automatically generate a manual page for the module. An example
-% image demonstrating the function of the module can also be saved in tif
-% format, using the same name as the module, and it will automatically be
-% included in the manual page as well.  Follow the convention of: purpose
-% of the module, description of the variables and acceptable range for
-% each, how it works (technical description), info on which images can be
-% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
-% information should be separated from the help lines with a blank line so
-% that it does not show up in the help displays.  Do not change the
-% programming notes in any modules! These are standard across all modules
-% for maintenance purposes, so anything module-specific should be kept
-% separate.
 
-% PROGRAMMING NOTE
-% DRAWNOW:
-% The 'drawnow' function allows figure windows to be updated and
-% buttons to be pushed (like the pause, cancel, help, and view
-% buttons).  The 'drawnow' function is sprinkled throughout the code
-% so there are plenty of breaks where the figure windows/buttons can
-% be interacted with.  This does theoretically slow the computation
-% somewhat, so it might be reasonable to remove most of these lines
-% when running jobs on a cluster where speed is important.
-drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-% PROGRAMMING NOTE
-% VARIABLE BOXES AND TEXT:
-% The '%textVAR' lines contain the variable descriptions which are
-% displayed in the CellProfiler main window next to each variable box.
-% This text will wrap appropriately so it can be as long as desired.
-% The '%defaultVAR' lines contain the default values which are
-% displayed in the variable boxes when the user loads the module.
-% The line of code after the textVAR and defaultVAR extracts the value
-% that the user has entered from the handles structure and saves it as
-% a variable in the workspace of this module with a descriptive
-% name. The syntax is important for the %textVAR and %defaultVAR
-% lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown.
-% CellProfiler uses VariableRevisionNumbers to help programmers notify
-% users when something significant has changed about the variables.
-% For example, if you have switched the position of two variables,
-% loading a pipeline made with the old version of the module will not
-% behave as expected when using the new version of the module, because
-% the settings (variables) will be mixed up. The line should use this
-% syntax, with a two digit number for the VariableRevisionNumber:
-% '%%%VariableRevisionNumber = 01'  If the module does not have this
-% line, the VariableRevisionNumber is assumed to be 00.  This number
-% need only be incremented when a change made to the modules will affect
-% a user's previously saved settings. There is a revision number at
-% the end of the license info at the top of the m-file for revisions
-% that do not affect the user's previously saved settings files.
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the image to be rotated and labeled with spot information?
+%textVAR01 = What did you call the image to be labeled with spot information?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Choose rotation method.
-%choiceVAR02 = No rotation
-%choiceVAR02 = Coordinates
-%choiceVAR02 = Mouse
-RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-RotateMethod = RotateMethod(1);
-%inputtypeVAR02 = popupmenu
+%textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
+%defaultVAR02 = Spots
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the rotated image?
-%infotypeVAR03 = imagegroup indep
-%defaultVAR03 = RotatedImage
-RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = What is the radius of each object in pixels?
+%defaultVAR03 = 20
+RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call the objects identified by this module?
-%infotypeVAR04 = objectgroup indep
-%defaultVAR04 = Spots
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%textVAR05 = What is the radius of each object in pixels?
-%defaultVAR05 = 80
-RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
-%textVAR06 = Mark the control spot by coordinates or by mouse?
-%choiceVAR06 = Coordinates
-%choiceVAR06 = Mouse
-MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR04 = Mark the control spot by coordinates or by mouse?
+%choiceVAR04 = Coordinates
+%choiceVAR04 = Mouse
+MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 MarkingMethod = MarkingMethod(1);
-%inputtypeVAR06 = popupmenu
+%inputtypeVAR04 = popupmenu
 
-%textVAR07 = Enter the number of rows, columns
-%defaultVAR07 = 40,140
-RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR05 = Enter the number of rows, columns
+%defaultVAR05 = 3,8
+RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %%% Extracts the rows and columns from the user's input.
 try
     RowsColumnsNumerical = str2num(RowsColumns);%#ok We want to ignore MLint error checking for this line.
@@ -192,9 +118,9 @@ try
 catch error('Image processing was canceled because your entry for rows, columns in the Spot Identifier module was not understood.')
 end
 
-%textVAR08 = Enter the spacing between rows, columns (vertical spacing, horizontal spacing)
-%defaultVAR08 = 57,57
-HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR06 = Enter the spacing between rows, columns (vertical spacing, horizontal spacing)
+%defaultVAR06 = 57,57
+HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%% Extracts the vertical and horizontal spacing from the user's input.
 try
     HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
@@ -203,15 +129,15 @@ try
 catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
 end
 
-%textVAR09 = Will you be specifying the distance (the next option) in units of pixels or spots?
-%choiceVAR09 = Pixels
-%choiceVAR09 = Spots
-SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%textVAR07 = Will you be specifying the distance (the next option) in units of pixels or spots?
+%choiceVAR07 = Pixels
+%choiceVAR07 = Spots
+SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
-%textVAR10 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
-%defaultVAR10 = 57,0
-HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR08 = Enter the distance from the top left marker to the center of the nearest spot (vertical, horizontal)
+%defaultVAR08 = 57,57
+HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% Extracts the vertical and horizontal offset from the user's input.
 try
     HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
@@ -224,53 +150,53 @@ if strcmp(SpacingUnits,'Spots')
     HorizOffset = HorizOffset*HorizSpacing;
 end
 
-%textVAR11 = Is the first spot at the Left or Right?
-%choiceVAR11 = Left
-%choiceVAR11 = Right
-LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR09 = Is the first spot at the Left or Right?
+%choiceVAR09 = Left
+%choiceVAR09 = Right
+LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 LeftOrRight = LeftOrRight(1);
+%inputtypeVAR09 = popupmenu
+
+%textVAR10 = Is the first spot at the Bottom or Top?
+%choiceVAR10 = Top
+%choiceVAR10 = Bottom
+TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+TopOrBottom = TopOrBottom(1);
+%inputtypeVAR10 = popupmenu
+
+%textVAR11 = Would you like to count by rows or columns?
+%choiceVAR11 = Rows
+%choiceVAR11 = Columns
+RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = Is the first spot at the Bottom or Top?
-%choiceVAR12 = Top
-%choiceVAR12 = Bottom
-TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-TopOrBottom = TopOrBottom(1);
+%textVAR12 = Enter the Excel file name from which to load spot information (you can type a file name here if the file is in the default image directory and if you want to use the first sheet of the file).
+%choiceVAR12 = Do not load
+%infotypeVAR12 = datagroup
+DataName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = Would you like to count by rows or columns?
-%choiceVAR13 = Rows
-%choiceVAR13 = Columns
-RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%textVAR13 = Do you want to label the spots only (takes less memory) or will you be using them in downstream modules (e.g. saving an image of them or measuring them)?
+%choiceVAR13 = Label only
+%choiceVAR13 = Use downstream
+LabelOrUseDownstream = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Enter the Excel file name from which to load spot information (you can type a file name here if the file is in the default image directory and if you want to use the first sheet of the file).
-%choiceVAR14 = Do not load
-%infotypeVAR14 = datagroup
-DataName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-%inputtypeVAR14 = popupmenu
+%textVAR14 = If you are using the spots downstream, what do you want to call the image of the outlines of the objects?
+%infotypeVAR14 = imagegroup indep
+%defaultVAR14 = Do not save
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,14}); 
 
-%textVAR15 = Do you want to label the spots only (takes less memory) or will you be using them in downstream modules (e.g. saving an image of them or measuring them)?
-%choiceVAR15 = Label only
-%choiceVAR15 = Use downstream
-LabelOrUseDownstream = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-%inputtypeVAR15 = popupmenu
+%textVAR15 =  If you are using the spots downstream, what do you want to call the label matrix image?
+%infotypeVAR15 = imagegroup indep
+%defaultVAR15 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,15}); 
 
-%textVAR16 = If you are using the spots downstream, what do you want to call the image of the outlines of the objects?
-%infotypeVAR16 = imagegroup indep
-%defaultVAR16 = Do not save
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,16}); 
-
-%textVAR17 =  If you are using the spots downstream, what do you want to call the label matrix image?
-%infotypeVAR17 = imagegroup indep
-%defaultVAR17 = Do not save
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,17}); 
-
-%textVAR18 = If you are using the spots downstream and saving the label matrix image, do you want to save it in RGB or grayscale?
-%choiceVAR18 = RGB
-%choiceVAR18 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18}); 
-%inputtypeVAR18 = popupmenu
+%textVAR16 = If you are using the spots downstream and saving the label matrix image, do you want to save it in RGB or grayscale?
+%choiceVAR16 = RGB
+%choiceVAR16 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,16}); 
+%inputtypeVAR16 = popupmenu
 
 %%%VariableRevisionNumber = 4
 
@@ -280,17 +206,6 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 drawnow
 
 
-% PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
-% figure, imshow(BlurredImage, []), title('BlurredImage')
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
-% imwrite(BlurredImage, FileName, FileFormat);
-% Note that you may have to alter the format of the image before
-% saving.  If the image is not saved correctly, for example, try
-% adding the uint8 command:
-% imwrite(uint8(BlurredImage), FileName, FileFormat);
-% To routinely save images produced by this module, see the help in
-% the SaveImages module.
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
@@ -310,79 +225,10 @@ else
     %%% A new figure is opened each time through the pipeline so that the
     %%% resulting labeled figures are all available to the user for
     %%% viewing.
-    FigureHandle = figure; subplot(2,3,[1 2 4 5]);ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
+    FigureHandle = CPfigure; subplot(2,3,[1 2 4 5]);ImageHandle = imagesc(OrigImage); colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
     %%% Tag new figure so "Close Windows" knows to delete it.
     userData.Application = 'CellProfiler';
     set(FigureHandle,'UserData',userData);
-end
-drawnow
-RotateMethod = upper(RotateMethod);
-if strncmp(RotateMethod, 'N',1) == 1
-    RotatedImage = OrigImage;
-elseif strncmp(RotateMethod, 'M',1) == 1
-    Answer2 = CPquestdlg('After closing this window by clicking OK, click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points.','Rotate image using the mouse','OK','Cancel','OK');
-    waitfor(Answer2)
-    if strcmp(Answer2, 'Cancel') == 1
-        error('Image processing was canceled during the Spot Identifier module.')
-    end
-    [x,y] = getpts(FigureHandle);
-    if length(x) ~=2
-        error('The Spot Identifier was canceled because you must click on two points then press enter.')
-    end
-    LowerLeftX = x(1);
-    LowerRightX = x(2);
-    LowerLeftY = y(1);
-    LowerRightY = y(2);
-    HorizLeg = LowerRightX - LowerLeftX;
-    VertLeg = LowerLeftY - LowerRightY;
-    Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
-    AngleToRotateRadians = asin(VertLeg/Hypotenuse);
-    AngleToRotateDegrees = AngleToRotateRadians*180/pi;
-    PatienceHandle = CPmsgbox('Image rotation in progress');
-    drawnow
-    RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
-    figure(FigureHandle); 
-    subplot(2,3,[1 2 4 5]);
-    ImageHandle = imagesc(RotatedImage); 
-    colormap(gray);
-    axis image;
-    title('Rotated Image');
-    pixval off;
-    try %#ok We want to ignore MLint error checking for this line.
-        delete(PatienceHandle)
-    end
-elseif strncmp(RotateMethod, 'C',1) == 1
-    %%% Rotates the image based on user-entered coordinates.
-    Prompts = {'Enter the X coordinate of the lower left marker', 'Enter the Y coordinate of the lower left marker', 'Enter the X coordinate of the lower right marker', 'Enter the Y coordinate of the lower right marker'};
-    Height = size(OrigImage,1);
-    Width = size(OrigImage,2);
-    Defaults = {'0', num2str(Height), num2str(Width), num2str(Height)};
-    Answers = inputdlg(Prompts, 'Enter coordinates', 1, Defaults);
-    if isempty(Answers) == 1
-        error('Image processing was canceled during the Spot Identifier module.')
-    end
-    LowerLeftX = str2double(Answers{1});
-    LowerLeftY = str2double(Answers{2});
-    LowerRightX = str2double(Answers{3});
-    LowerRightY = str2double(Answers{4});
-    HorizLeg = LowerRightX - LowerLeftX;
-    VertLeg = LowerLeftY - LowerRightY;
-    Hypotenuse = sqrt(HorizLeg^2 + VertLeg^2);
-    AngleToRotateRadians = asin(VertLeg/Hypotenuse);
-    AngleToRotateDegrees = AngleToRotateRadians*180/pi;
-    PatienceHandle = CPmsgbox('Please be patient; Image rotation in progress');
-    drawnow
-    RotatedImage = imrotate(OrigImage, -AngleToRotateDegrees);
-    figure(FigureHandle); 
-    subplot(2,3,[1 2 4 5]);
-    ImageHandle = imagesc(RotatedImage);
-    colormap(gray);
-    axis image;
-    title('Rotated Image');
-    pixval off;
-    try, delete(PatienceHandle), end %#ok We want to ignore MLint error checking for this line.
-else
-    error('Image processing was canceled because your entry relating to image rotation was not one of the options: No, C, or M.')
 end
 drawnow
 set(ImageHandle,'Tag','MainImage');
@@ -742,142 +588,6 @@ set(FigureHandle,'toolbar','figure')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% PROGRAMMING NOTE
-% HANDLES STRUCTURE:
-%       In CellProfiler (and Matlab in general), each independent
-% function (module) has its own workspace and is not able to 'see'
-% variables produced by other modules. For data or images to be shared
-% from one module to the next, they must be saved to what is called
-% the 'handles structure'. This is a variable, whose class is
-% 'structure', and whose name is handles. The contents of the handles
-% structure are printed out at the command line of Matlab using the
-% Tech Diagnosis button. The only variables present in the main
-% handles structure are handles to figures and gui elements.
-% Everything else should be saved in one of the following
-% substructures:
-%
-% handles.Settings:
-%       Everything in handles.Settings is stored when the user uses
-% the Save pipeline button, and these data are loaded into
-% CellProfiler when the user uses the Load pipeline button. This
-% substructure contains all necessary information to re-create a
-% pipeline, including which modules were used (including variable
-% revision numbers), their setting (variables), and the pixel size.
-%   Fields currently in handles.Settings: PixelSize, ModuleNames,
-% VariableValues, NumbersOfVariables, VariableRevisionNumbers.
-%
-% handles.Pipeline:
-%       This substructure is deleted at the beginning of the
-% analysis run (see 'Which substructures are deleted prior to an
-% analysis run?' below). handles.Pipeline is for storing data which
-% must be retrieved by other modules. This data can be overwritten as
-% each image set is processed, or it can be generated once and then
-% retrieved during every subsequent image set's processing, or it can
-% be saved for each image set by saving it according to which image
-% set is being analyzed, depending on how it will be used by other
-% modules. Any module which produces or passes on an image needs to
-% also pass along the original filename of the image, named after the
-% new image name, so that if the SaveImages module attempts to save
-% the resulting image, it can be named by appending text to the
-% original file name.
-%   Example fields in handles.Pipeline: FileListOrigBlue,
-% PathnameOrigBlue, FilenameOrigBlue, OrigBlue (which contains the actual image).
-%
-% handles.Current:
-%       This substructure contains information needed for the main
-% CellProfiler window display and for the various modules to
-% function. It does not contain any module-specific data (which is in
-% handles.Pipeline).
-%   Example fields in handles.Current: NumberOfModules,
-% StartupDirectory, DefaultOutputDirectory, DefaultImageDirectory,
-% FilenamesInImageDir, CellProfilerPathname, ImageToolHelp,
-% DataToolHelp, FigureNumberForModule01, NumberOfImageSets,
-% SetBeingAnalyzed, TimeStarted, CurrentModuleNumber.
-%
-% handles.Preferences:
-%       Everything in handles.Preferences is stored in the file
-% CellProfilerPreferences.mat when the user uses the Set Preferences
-% button. These preferences are loaded upon launching CellProfiler.
-% The PixelSize, DefaultImageDirectory, and DefaultOutputDirectory
-% fields can be changed for the current session by the user using edit
-% boxes in the main CellProfiler window, which changes their values in
-% handles.Current. Therefore, handles.Current is most likely where you
-% should retrieve this information if needed within a module.
-%   Fields currently in handles.Preferences: PixelSize, FontSize,
-% DefaultModuleDirectory, DefaultOutputDirectory,
-% DefaultImageDirectory.
-%
-% handles.Measurements
-%      Data extracted from input images are stored in the
-% handles.Measurements substructure for exporting or further analysis.
-% This substructure is deleted at the beginning of the analysis run
-% (see 'Which substructures are deleted prior to an analysis run?'
-% below). The Measurements structure is organized in two levels. At
-% the first level, directly under handles.Measurements, there are
-% substructures (fields) containing measurements of different objects.
-% The names of the objects are specified by the user in the Identify
-% modules (e.g. 'Cells', 'Nuclei', 'Colonies').  In addition to these
-% object fields is a field called 'Image' which contains information
-% relating to entire images, such as filenames, thresholds and
-% measurements derived from an entire image. That is, the Image field
-% contains any features where there is one value for the entire image.
-% As an example, the first level might contain the fields
-% handles.Measurements.Image, handles.Measurements.Cells and
-% handles.Measurements.Nuclei.
-%      In the second level, the measurements are stored in matrices
-% with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
-% writes shape measurements of 'Cells' in
-% handles.Measurements.Cells.AreaShape. An associated cell array of
-% dimension [1 x #features] with suffix 'Features' contains the names
-% or descriptions of the measurements. The export data tools, e.g.
-% ExportData, triggers on this 'Features' suffix. Measurements or data
-% that do not follow the convention described above, or that should
-% not be exported via the conventional export tools, can thereby be
-% stored in the handles.Measurements structure by leaving out the
-% '....Features' field. This data will then be invisible to the
-% existing export tools.
-%      Following is an example where we have measured the area and
-% perimeter of 3 cells in the first image and 4 cells in the second
-% image. The first column contains the Area measurements and the
-% second column contains the Perimeter measurements.  Each row
-% contains measurements for a different cell:
-% handles.Measurements.Cells.AreaShapeFeatures = {'Area' 'Perimeter'}
-% handles.Measurements.Cells.AreaShape{1} = 	40		20
-%                                               100		55
-%                                              	200		87
-% handles.Measurements.Cells.AreaShape{2} = 	130		100
-%                                               90		45
-%                                               100		67
-%                                               45		22
-%
-% Which substructures are deleted prior to an analysis run?
-%       Anything stored in handles.Measurements or handles.Pipeline
-% will be deleted at the beginning of the analysis run, whereas
-% anything stored in handles.Settings, handles.Preferences, and
-% handles.Current will be retained from one analysis to the next. It
-% is important to think about which of these data should be deleted at
-% the end of an analysis run because of the way Matlab saves
-% variables: For example, a user might process 12 image sets of nuclei
-% which results in a set of 12 measurements ("ImageTotalNucArea")
-% stored in handles.Measurements. In addition, a processed image of
-% nuclei from the last image set is left in the handles structure
-% ("SegmNucImg"). Now, if the user uses a different algorithm which
-% happens to have the same measurement output name "ImageTotalNucArea"
-% to analyze 4 image sets, the 4 measurements will overwrite the first
-% 4 measurements of the previous analysis, but the remaining 8
-% measurements will still be present. So, the user will end up with 12
-% measurements from the 4 sets. Another potential problem is that if,
-% in the second analysis run, the user runs only a module which
-% depends on the output "SegmNucImg" but does not run a module that
-% produces an image by that name, the module will run just fine: it
-% will just repeatedly use the processed image of nuclei leftover from
-% the last image set, which was left in handles.Pipeline.
-
-%%% Saves the adjusted image to the handles structure so it can be used by
-%%% subsequent modules.
-handles.Pipeline.(RotatedImageName) = RotatedImage;
-
 %%% Saves the label matrix image to the handles if requested.
 if strcmpi(LabelOrUseDownstream,'Use downstream') == 1
     fieldname = ['Segmented',ObjectName];
@@ -929,25 +639,6 @@ column = find(~cellfun('isempty',strfind(handles.Measurements.Image.MarkerSpotLo
 handles.Measurements.Image.MarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(1)) = TopLeftX;
 handles.Measurements.Image.MarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(2)) = TopLeftY;
 
-%%% Saves the Rotation coordinates to the handles structure in a similar manner.
-if strncmp(RotateMethod, 'N', 1) ~= 1
-    if ~isfield(handles.Measurements.Image,'RotatingMarkerSpotLocationFeatures')
-        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures = {};
-        handles.Measurements.Image.RotatingMarkerSpotLocation = {};
-    end
-    column = find(~cellfun('isempty',strfind(handles.Measurements.Image.RotatingMarkerSpotLocationFeatures,ObjectName)));
-    if isempty(column)
-        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerLeftX ' ObjectName]};
-        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerRightX ' ObjectName]};
-        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerLeftY ' ObjectName]};
-        handles.Measurements.Image.RotatingMarkerSpotLocationFeatures(end+1) = {['LowerRightY ' ObjectName]};
-    end
-    column = find(~cellfun('isempty',strfind(handles.Measurements.Image.RotatingMarkerSpotLocationFeatures,ObjectName)));
-    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(1)) = LowerLeftX;
-    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(2)) = LowerRightX;
-    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(3)) = LowerLeftY;
-    handles.Measurements.Image.RotatingMarkerSpotLocation{handles.Current.SetBeingAnalyzed}(1,column(4)) = LowerRightY;
-end
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 %%% See comments for the Threshold saving above

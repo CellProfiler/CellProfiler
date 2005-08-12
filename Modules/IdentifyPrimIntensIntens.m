@@ -226,47 +226,17 @@ BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}
 IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 %inputtypeVAR09 = popupmenu
 
-%%% The following code yields errors when you try to type a custom entry in:
-% %textVAR10 = What do you want to call the image of the outlines of the objects?
-% %choiceVAR10 = Do not save
-% SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
-% %inputtypeVAR10 = popupmenu custom
-
-% %textVAR11 =  What do you want to call the labeled matrix image?
-% %infotypeVAR11 = imagegroup indep
-% %choiceVAR11 = Do not save
-% SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
-% %inputtypeVAR11 = popupmenu custom
-
-%%% Here is the error:
-% % % ??? Error using ==> strcmp
-% % % Inputs must be the same size or either one can be a scalar.
-% % % 
-% % % Error in ==> CellProfiler>storevariable at 1485
-% % %     ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet)));
-% % % 
-% % % Error in ==> CellProfiler>VariableBox_Callback at 1565
-% % %     storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
-% % % 
-% % % Error in ==> gui_mainfcn at 75
-% % %         feval(varargin{:});
-% % % 
-% % % Error in ==> CellProfiler at 47
-% % %     gui_mainfcn(gui_State, varargin{:});
-% % % 
-% % % ??? Error while evaluating uicontrol Callback.
-
-
-%%% So, for now, I have changed it to this:
 %textVAR10 = What do you want to call the image of the outlines of the objects?
 %infotypeVAR10 = imagegroup indep
-%defaultVAR10 = Do not save
+%choiceVAR10 = Do not save
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
+%inputtypeVAR10 = popupmenu custom
 
 %textVAR11 =  What do you want to call the labeled matrix image?
 %infotypeVAR11 = imagegroup indep
-%defaultVAR11 = Do not save
+%choiceVAR11 = Do not save
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%inputtypeVAR11 = popupmenu custom
 
 %textVAR12 = Do you want to save the labeled matrix image in RGB or grayscale?
 %choiceVAR12 = RGB

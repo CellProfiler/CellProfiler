@@ -99,15 +99,15 @@ ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModule
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Use intensity or distance transform maxima as centers in Watershed transform?
+%choiceVAR08 = Do not use
 %choiceVAR08 = Intensity
 %choiceVAR08 = Distance
-%choiceVAR08 = Do not use
 LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 = Try to merge too small objects into larger objects?
-%choiceVAR09 = Yes
 %choiceVAR09 = No
+%choiceVAR09 = Yes
 MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
@@ -135,7 +135,7 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
 
 
-%%%VariableRevisionNumber = 5
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -271,18 +271,23 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 
 %%% Smooth images slightly and apply threshold
-sigma = MinDiameter/4;                                                 % Translate between minimum diamter of objects to sigma
-FiltLength = max(1,ceil(3*sigma));                                    % Determine filter size
+sigma = MinDiameter/4;                                                % Translate between minimum diamter of objects to sigma. 
+FiltLength = min(30,max(1,ceil(3*sigma)));                            % Determine filter size, min 3 pixels, max 61 
 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
 BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
 Objects = BlurredImage > Threshold;                                   % Threshold image
 Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
-Objects = imfill(Objects,'holes');                                    % Fill holes
+Objects = imfill(double(Objects),'holes');                            % Fill holes
 
 %%% STEP 2. Extract local maxima and apply watershed transform
-if ~strcmp(LocalMaximaType,'Do not apply')
-    MaximaMask = getnhood(strel('disk', max(1,floor(MinDiameter/1.5))));           % Local maxima defined in this neighborhood
+if ~strcmp(LocalMaximaType,'Do not use')
+    
+    %%% NOTE: If the image is big and the objects are big, the maxima suppression
+    %%% takes forever! The image should be resized with imresize() and the maxima
+    %%% suppression should be made in the lower resolution image!
+    %%% Below the max MaximaMask is set to max 50, but it will still take time.
+    MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));     % Local maxima defined in this neighborhood
 
     if strcmp(LocalMaximaType,'Intensity')
         MaximaImage = BlurredImage;                                                % Initialize MaximaImage
@@ -637,7 +642,7 @@ EquivDiameters = cat(1,props.EquivDiameter);
 Eccentricities = cat(1,props.Eccentricity);
 IndexEccentricity = intersect(find(Eccentricities > MaxEccentricity),find(EquivDiameters < (MinDiameter + (MaxDiameter - MinDiameter)/4)));
 IndexDiameter = find(EquivDiameters < MinDiameter);
-MergeIndex = unique([IndexDiameter;IndexEccentricity]);
+MergeIndex = unique([IndexDiameter;IndexEccentricity])
 
 % Try to merge until there are no objects left in the 'MergeIndex' list.
 [sr,sc] = size(OrigImage);

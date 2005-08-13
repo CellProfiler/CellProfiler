@@ -1,4 +1,4 @@
-function handles = ViewData(handles)
+function ViewData(handles)
 
 % Help for the View Data tool:
 % Category: Data Tools
@@ -51,13 +51,14 @@ while FinalOK == 0
     %%% Let the user select which feature to view
     Suffix = {'Features','Text'};
     [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,Suffix);
-
+    if isempty(ObjectTypename),return,end
+    
     %%% Get the description
     Description = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]){FeatureNbr};
     
     %%% Generate a cell array with strings to display
     NbrOfImageSets = length(handles.Measurements.(ObjectTypename).(FeatureType));
-    TextToDisply = cell(NbrOfImageSets,1);
+    TextToDisplay = cell(NbrOfImageSets,1);
     for ImageSet = 1:NbrOfImageSets
         
         % Numeric or text?
@@ -67,12 +68,22 @@ while FinalOK == 0
             info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}{FeatureNbr};
         end
         
-        TextToDisplay{ImageSet} = sprintf('Image set #%d, Filename: %s:     %s',...
+        TextToDisplay{ImageSet} = sprintf('#%d, %s:     %s',...
             ImageSet,...
             handles.Measurements.Image.FileNames{ImageSet}{1},...
             info);
     end
-
+    
+    %%% Produce an infostring that explains what is displayed
+    if strcmp(Suffix{SuffixNbr},'Text')
+        InfoString = 'Image set #,  <filename>:     <text>';
+    elseif strcmp(ObjectTypename,'Image')
+        InfoString = 'Image set #,  <filename>:     <value>';
+    else
+        InfoString = 'Image set #,  <filename>:     <mean value>';
+    end
+    TextToDisplay = cat(2,{InfoString},{''},TextToDisplay);
+ 
     % Display data in a list dialog box
     [Selection, FinalOK] = listdlg('ListString',TextToDisplay, 'ListSize', [600 400],...
         'Name',['Information for ',Description],...

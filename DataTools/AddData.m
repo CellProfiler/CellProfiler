@@ -47,7 +47,7 @@ function AddData(handles)
 
 %%% Select file with text information to be added
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'*.*'),'Pick file with text information');
+    [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.*'),'Pick file with text information');
 else
     [filename, pathname] = uigetfile('*.*','Pick file with text information');
 end
@@ -130,7 +130,7 @@ if isempty(error_index)
 else
     %%% Show a warning dialog box for each error
     for k = 1:length(error_index)
-        msgbox(errors{error_index(k)},'Add Data failure')
+        CPmsgbox(errors{error_index(k)},'Add Data failure')
     end
 end
 

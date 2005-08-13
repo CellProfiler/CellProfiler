@@ -70,7 +70,7 @@ Suffix = {'Features','Text'};
 if isempty(ObjectTypename),return,end
 
 %%% Ask the user if he really wants to clear the selected feature
-Confirmation = questdlg('Are you sure you want to delete the selected feature?','Confirmation','Yes','Cancel','Cancel');
+Confirmation = CPquestdlg('Are you sure you want to delete the selected feature?','Confirmation','Yes','Cancel','Cancel');
 if strcmp(Confirmation,'Cancel')
     return
 end

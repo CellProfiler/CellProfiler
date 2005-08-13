@@ -642,7 +642,7 @@ EquivDiameters = cat(1,props.EquivDiameter);
 Eccentricities = cat(1,props.Eccentricity);
 IndexEccentricity = intersect(find(Eccentricities > MaxEccentricity),find(EquivDiameters < (MinDiameter + (MaxDiameter - MinDiameter)/4)));
 IndexDiameter = find(EquivDiameters < MinDiameter);
-MergeIndex = unique([IndexDiameter;IndexEccentricity])
+MergeIndex = unique([IndexDiameter;IndexEccentricity]);
 
 % Try to merge until there are no objects left in the 'MergeIndex' list.
 [sr,sc] = size(OrigImage);

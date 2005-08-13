@@ -1,4 +1,4 @@
-function handles = ExportData(handles)
+function ExportData(handles)
 
 % Help for the Export Data tool:
 % Category: Data Tools
@@ -42,7 +42,6 @@ if isfield(Loaded,'handles')
     handles = Loaded.handles;
     clear Loaded
 else
-    
     errordlg('The selected file does not seem to be a CellProfiler output file.')
     return
 end

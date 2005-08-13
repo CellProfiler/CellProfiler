@@ -1,4 +1,4 @@
-function handles = ExportSQL(handles)
+function ExportSQL(handles)
 
 % Help for the ExportSQl tool:
 % Category: Data Tools
@@ -40,17 +40,12 @@ function handles = ExportSQL(handles)
 % $Revision$
 
 
-%%% Clear the handles structure that is sent to this function.
-oldhandles = handles;
-clear handles
-
-
 %%% ---------------------------------------------------------------------- %%%
 %%%                     Initial file handling                              %%%
 %%% ---------------------------------------------------------------------- %%%
 %%% Let the user select one output file to indicate the directory
 [ExampleFile, DataPath] = uigetfile('*.mat','Select one CellProfiler output file');
-if ~DataPath;handles = oldhandles;return;end                                     % CellProfiler expects a handles structure as output
+if ~DataPath;return;end                                     
 
 %%% Get all files with .mat extension in the chosen directory.
 %%% If the selected file name contains an 'OUT', it is assumed
@@ -65,17 +60,16 @@ end
 %%% Let the user select the files to be exported
 [selection,ok] = listdlg('liststring',Files,'name','Export SQL',...
     'PromptString','Select files to export. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
-if ~ok,handles = oldhandles;return,end
+if ~ok,return,end
 CellProfilerDataFileNames = Files(selection);
 
 %%% Ask for database name and name of SQL script
 answer = inputdlg({'Database to use:','SQL script name:'},'Export SQL',1,{'','SQLScript.SQL'});
-if isempty(answer),handles = oldhandles;return;end
+if isempty(answer),return;end
 DatabaseName = answer{1};
 SQLScriptFileName = fullfile(DataPath,answer{2});
 if isempty(DatabaseName) | isempty(SQLScriptFileName)
     errordlg('A database name and an SQL script name must be specified!');
-    handles = oldhandles;
     return
 end
 

@@ -1,4 +1,4 @@
-function handles = MeasurementCalculator(handles)
+function MeasurementCalculator(handles)
 
 % Help for the Measurement Calculator tool:
 % Category: Data Tools

@@ -1,4 +1,4 @@
-function handles = Histogram(handles)
+function Histogram(handles)
 
 % Help for the Histogram tool:
 % Category: Data Tools

@@ -1,4 +1,4 @@
-function handles = ExportSQL2(handles)
+function ExportSQL2(handles)
 
 % Help for the ExportSQl tool:
 % Category: Data Tools
@@ -36,9 +36,6 @@ function handles = ExportSQL2(handles)
 %   In Han Kang    <inthek@mit.edu>
 %
 % $Revision$
-
-%%% Save the incoming handles structure so we can restore it before exiting
-oldhandles = handles;
 
 %%% Determine if this function is called from the WriteSQLFiles module
 %%% In this case the required input data can be found in the handles structure
@@ -87,7 +84,7 @@ else
 
     %%% Ask for database name and name of SQL script
     answer = inputdlg({'Database to use:','SQL script name:'},'Export SQL',1,{'Default','SQLScript.SQL'});
-    if isempty(answer),handles = oldhandles;return;end
+    if isempty(answer),return;end
     DatabaseName = answer{1};
     SQLScriptFileName = fullfile(DataPath,answer{2});
     if isempty(DatabaseName) | isempty(SQLScriptFileName)
@@ -241,4 +238,4 @@ if ~ModuleCall
     CPmsgbox('Exporting is completed.')
 end
 fclose(SQLScriptFid);
-handles = oldhandles;
+

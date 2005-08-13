@@ -1,4 +1,4 @@
-function handles = MergeOutputFiles(handles)
+function MergeOutputFiles(handles)
 
 % Help for the MergeOutputFiles tool:
 % Category: Data Tools
@@ -21,17 +21,9 @@ function handles = MergeOutputFiles(handles)
 % $Revision$
 
 
-%%% Clear the handles structure that is sent to this function,
-%%% it is not needed. 
-oldhandles = handles;
-clear handles
-
 %%% Let the user select one output file to indicate the directory
 [ExampleFile, Pathname] = uigetfile('*.mat','Select one CellProfiler output file');
-if ~Pathname
-    handles = oldhandles;          % CellProfiler expects an output
-    return
-end
+if ~Pathname,return,end
 
 %%% Get all files with .mat extension in the chosen directory.
 %%% If the selected file name contains an 'OUT', it is assumed
@@ -46,19 +38,13 @@ end
 %%% Let the user select the files to be merged
 [selection,ok] = listdlg('liststring',files,'name','Merge Output Files',...
     'PromptString','Select files to merge. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
-if ~ok, handles = oldhandles; return, end
-%if length(selection) < 2
-%    errordlg('At least two files must be selected.')
-%    handles = oldhandles;
-%    return
-%end
+if ~ok,return, end
 files = files(selection);
 
 %%% Load the first file and check if it seems to be a CellProfiler file
 load(fullfile(Pathname, files{1}));
 if ~exist('handles','var')
     errordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{1}))
-    handles = oldhandles;
     return
 end
 
@@ -75,7 +61,7 @@ supermodules = superhandles.Settings.ModuleNames;
 valid = 0;
 while valid == 0
     answer = inputdlg({'Name for merged output file:'},'Merge output files',1,{'MergedOUT.mat'});
-    if isempty(answer),handles = oldhandles;return;end
+    if isempty(answer),return;end
     if length(answer{1})< 4 | ~strcmp(answer{1}(end-3:end),'.mat')
         msg = CPmsgbox('The filename must have a .mat extension.');
         uiwait(msg);
@@ -100,7 +86,6 @@ for fileno = 2:length(files)
     load(fullfile(Pathname, files{fileno}));
     if ~exist('handles','var')
         errordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{fileno}))
-        handles = oldhandles;
         return
     end
 
@@ -109,13 +94,11 @@ for fileno = 2:length(files)
     modulenames = handles.Settings.ModuleNames;
     if length(modulenames) ~= length(supermodules)
         errordlg(sprintf('Inconsistency in file %s.',files{fileno}))
-        handles = oldhandles;
         return
     end
     for j = 1:length(modulenames)
         if ~strcmp(modulenames{j},supermodules{j})
             errordlg(sprintf('Inconsistency in file %s.',files{fileno}))
-            handles = oldhandles;
             return
         end
     end
@@ -148,5 +131,4 @@ close(waitbarhandle)
 CPmsgbox('Merging is completed.')
 handles = superhandles;
 save(fullfile(Pathname,OutputFileName),'handles');
-handles = oldhandles;
 

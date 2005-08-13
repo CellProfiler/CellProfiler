@@ -1,4 +1,4 @@
-function handles = DataLayout(handles)
+function DataLayout(handles)
 
 % Help for the Data Layout tool:
 % Category: Data Tools

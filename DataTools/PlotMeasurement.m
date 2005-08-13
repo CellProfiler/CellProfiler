@@ -1,4 +1,4 @@
-function handles = PlotMeasurement(handles)
+function PlotMeasurement(handles)
 
 % Help for the Plot Measurement tool:
 % Category: Data Tools

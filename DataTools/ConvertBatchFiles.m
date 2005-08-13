@@ -1,4 +1,4 @@
-function handles = ConvertBatchFiles(handles)
+function ConvertBatchFiles(handles)
 %
 % ConvertBatchFiles is a temporary tool that converts
 % batch files to regular CellProfiler output files.
@@ -7,17 +7,9 @@ function handles = ConvertBatchFiles(handles)
 % with 'Converted' as a prefix in the filename.
 %
 
-%%% Clear the handles structure that is sent to this function,
-%%% it is not needed. 
-oldhandles = handles;
-clear handles
-
 %%% Let the user select one output file to indicate the directory
 [ExampleFile, Pathname] = uigetfile('*.mat','Select one Batch output file');
-if ~Pathname
-    handles = oldhandles;          % CellProfiler expects an output
-    return
-end
+if ~Pathname,return,end
 
 %%% Get all files with .mat extension in the chosen directory.
 %%% If the selected file name contains an 'OUT', it is assumed
@@ -32,7 +24,7 @@ end
 %%% Let the user select the files to be converted
 [selection,ok] = listdlg('liststring',files,'name','Convert Batch Files',...
     'PromptString','Select files to convert. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
-if ~ok, handles = oldhandles; return, end
+if ~ok, return, end
 files = files(selection);
 
 %%% Open the files, remove empty entries in the handles.Measurements structure

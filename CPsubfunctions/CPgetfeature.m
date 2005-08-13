@@ -18,7 +18,7 @@ end
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~isfield(handles,'Measurements')
     errordlg('The selected file does not contain any measurements.')
-    ObjectTypename = [];FeatureType = [];FeatureNbr = [];
+    ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
     return
 end
 
@@ -28,7 +28,7 @@ MeasFieldnames = fieldnames(handles.Measurements);
 %%% Error detection.
 if isempty(MeasFieldnames)
     errordlg('No measurements were found.')
-    ObjectTypename = [];FeatureType = [];FeatureNbr = [];
+    ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
     return
 end
 
@@ -42,7 +42,7 @@ while dlgno < 4
                 'CancelString','Cancel',...
                 'SelectionMode','single');
             if ok == 0
-                ObjectTypename = [];FeatureType = [];FeatureNbr = [];
+                ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
                 return
             end
             ObjectTypename = MeasFieldnames{Selection};

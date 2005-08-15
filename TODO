@@ -198,7 +198,38 @@ _ It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic ve
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
-- (Ola is working on this) We have made a ton of changes and not checked user-imported data in a long time.  Check and see that Add/View/Clear are still working and that they pay attention to having the proper number of entries when adding your own sample info to an existing output file.  i think we may want to remove the 'memory' option or we need to alter code to accommodate it, because at the moment i think it will be cleared from the handles structure at the beginning of a run. ViewData should work on numerical data too, not just imported data.
+- Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
+organelles or speckles within nuclei or cells).
+This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
+
+	From: 	  friman@bwh.harvard.edu
+	Subject: 	Storing subobjects
+	Date: 	August 13, 2005 3:03:31 PM EDT
+	To: 	  carpenter@wi.mit.edu
+
+One simple way to store subobjects that fits into the current way
+of saving measurements is simply to have a "feature/measurement" that
+indicates the number of the parent object.
+For example, to have a structure handles.Measurements.Nucleoli that in addition
+to the usual measurements contains a handles.Meaurements.Nucleoli.Parent field
+where the number of the corresponding parent object is stored, and a handles.Measurements.Nucleoli.ParentFeatures
+which indicate the name of the parent (e.g. 'Cells' or 'Nuclei'). It is not straightforward to have a
+similar entry for the parent objects since the parent objects (e.g. Cells) can have
+a different number of children (while each child only has one parent object). Storing the numbers of the
+children of a parent is not straightforward in the current measurement system, because the parent
+objects can have a different number of children. This would require storing a cell array with
+the numbers of the children for each parent object, and that would
+cause problems for all data tools that don't know how to handle this cell array when
+they encounter it. However, I guess there can be a handles.Measurements.Cells.Children field which contains
+the names of the children objects (e.g. 'Nucleoli', 'Organelles', 'Speckles'....) but not corresponding numbers.
+If one wants to find the children of a  certain Cell object with number K, one must then look in
+handles.Measurements.Cells.Children to find the  name of the children (e.g. 'Nucleoli', 'Organelles', 'Speckles'....)
+and then search e.g. handles.Meaurements.Nucleoli.Parent for the Nucleoli objects that have object K as parent.
+It think it would be quite simple to introduce the above system in the IdentifyPrimary/IdentifySecondary/IndentifyTertiary
+way of identifying objects.
+
+Best,
+Ola
 
 - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 

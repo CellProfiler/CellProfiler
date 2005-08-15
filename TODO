@@ -164,6 +164,8 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 - Put in the help menus for ImageTools and DataTools.
 
+- There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
+
 - There is an incompatibility between the Write Measurements subfunction of the ExportData DataTool and the MeasureTexture module. This error is produced when trying to export data from an output file that contains measurements made by the MeasureTexture module: Error using ==> ExportData> WriteMeasurements. Error in handles.Measurements structure. The field Texture_CorrectedGray does not have an associated text field.
 
 - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.

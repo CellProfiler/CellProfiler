@@ -319,6 +319,7 @@ end
 %%% and make sure that the threshold is not larger than the minimum threshold
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
+drawnow
 
 %%% Smooth images slightly and apply threshold
 sigma = MinDiameter/4;                                                % Translate between minimum diamter of objects to sigma. 
@@ -329,7 +330,7 @@ BlurredImage = conv2(OrigImage,f,'same');                             % Blur ori
 Objects = BlurredImage > Threshold;                                   % Threshold image
 Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
 Objects = imfill(double(Objects),'holes');                            % Fill holes
-
+drawnow
 
 
 
@@ -337,29 +338,44 @@ Objects = imfill(double(Objects),'holes');                            % Fill hol
 %%% to separate neighboring objects.
 if ~strcmp(LocalMaximaType,'Do not use') & ~strcmp(WatershedTransformImageType,'Do not use')
     
-    %%% NOTE: If the image is big and the objects are big, the maxima suppression
-    %%% takes forever! The image should be resized with imresize() and the maxima
-    %%% suppression should be made in the lower resolution image!
-    %%% Below the max MaximaMask is set to max 50, but it will still take time.
-    MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));     % Local maxima defined in this neighborhood
-
-    %%% Get local maxima
+    %%% Get local maxima, where the definition of local depends on the user-provided object size.
+    %%% This will (usually) be done in a lower-resolution image for speed. The ordfilt2()
+    %%% function is very slow for large images containing large objects. Therefore, image is resized
+    %%% to a size where the smallest objects are about 10 pixels wide. Local maxima within a radius
+    %%% of 4-5 pixels are then extracted. It might be necessary to tune this parameter.
+    ImageResizeFactor = 10/MinDiameter;                                               
+    MaximaMask = getnhood(strel('disk', 5));
     if strcmp(LocalMaximaType,'Intensity')
-        MaximaImage = BlurredImage;                                                % Initialize MaximaImage
-        MaximaImage(BlurredImage < ...                                             % Save only local maxima
-            ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        
+        % Old code without image resizing
+        %MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));     
+        %MaximaImage = BlurredImage;                                         % Initialize MaximaImage
+        %MaximaImage(BlurredImage < ...                                      % Save only local maxima
+        %    ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        %MaximaImage = MaximaImage > Threshold;                              % Remove dim maxima
+       
+        ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear'); % Find local maxima in a lower resoulution image
+        MaximaImage = ResizedBlurredImage;                                         % Initialize MaximaImage
+        MaximaImage(ResizedBlurredImage < ...                                      % Save only local maxima
+            ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');         % Restore image size
         MaximaImage = MaximaImage > Threshold;                                     % Remove dim maxima
-
+        MaximaImage = bwmorph(MaximaImage,'shrink',inf);                           % Shrink to points (needed because of the resizing)
+          
     elseif strcmp(LocalMaximaType,'Distance')
         DistanceTransformedImage = bwdist(~Objects);                               % Calculate distance transform
         DistanceTransformedImage = DistanceTransformedImage + ...                  % Add some noise to get distinct maxima
             0.001*rand(size(DistanceTransformedImage));
-        MaximaImage = ones(size(OrigImage));                                       % Initialize MaximaImage
-        MaximaImage(DistanceTransformedImage < ...                                 % Set all pixels that are not local maxima to zero
-            ordfilt2(DistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
+        MaximaImage = ones(size(ResizedDistanceTransformedImage));                 % Initialize MaximaImage
+        MaximaImage(ResizedDistanceTransformedImage < ...                          % Set all pixels that are not local maxima to zero
+            ordfilt2(ResizedDistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+        MaximaImage = imresize(MaximaImage,size(Objects),'bilinear');              % Restore image size
         MaximaImage(~Objects) = 0;                                                 % We are only interested in maxima within thresholded objects
+        MaximaImage = bwmorph(MaximaImage,'shrink',inf);                           % Shrink to points (needed because of the resizing)
     end
 
+    
     %%% Overlay the maxima on either the original image or a distance transformed image
     if strcmp(WatershedTransformImageType,'Intensity')
         %%% Overlays the nuclear markers (maxima) on the inverted original image so
@@ -373,9 +389,7 @@ if ~strcmp(LocalMaximaType,'Do not use') & ~strcmp(WatershedTransformImageType,'
         if ~exist('DistanceTransformedImage','var')
             DistanceTransformedImage = bwdist(~Objects);                               
         end
-        figure,imagesc(DistanceTransformedImage)
         Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
-        figure,imagesc(Overlaid)
     end
     
     %%% Calculate the watershed transform and cut objects along the boundaries
@@ -393,6 +407,7 @@ if ~strcmp(LocalMaximaType,'Do not use') & ~strcmp(WatershedTransformImageType,'
         end
     end
 end
+drawnow
 
 %%% Label the objects
 Objects = bwlabel(Objects);
@@ -404,7 +419,6 @@ end
 
 %%% Will be stored to the handles structure
 PrelimLabelMatrixImage1 = Objects;
-
 
 %%% Get diameters of objects and calculate the interval
 %%% that contains 90% of the objects
@@ -437,6 +451,7 @@ BorderObjects = tmp - Objects;
 FinalLabelMatrixImage = Objects;
 
 
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -456,7 +471,7 @@ if any(findobj == ThisModuleFigureNumber)
 
    
     hx = subplot(2,2,2);
-    cmap = jet(max(Objects(:)));
+    cmap = jet(max(64,max(Objects(:))));
     im = label2rgb(Objects, cmap, 'k', 'shuffle');
     ImageHandle = image(im);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))

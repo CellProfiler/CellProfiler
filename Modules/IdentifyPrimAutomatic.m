@@ -3,50 +3,89 @@ function handles = IdentifyEasy(handles)
 % Help for the Identify Primary Intensity Intensity module:
 % Category: Object Identification and Modification
 %
-% This image analysis module works best for objects that are brighter
-% towards the interior; the objects can be any shape, so they need not
-% be round and uniform in size as would be required for a
-% distance-based module.  The dividing lines between clumped objects
-% should be dim. The module is more successful when then objects have
-% a smooth texture, although increasing the blur radius can improve
-% the outcome on lumpy-textured objects.
+% General module for segmenting primary objects. The objects
+% must be bright on a dark background, otherwise the image intensity
+% should be inverted.
 %
 % Settings:
 %
-% Size range: You may exclude objects that are smaller or bigger than
+% Min,Max diameter of objects: 
+% The smoothing applied to the image is based on the minimum size of 
+% the objects. Objects outside the entered range will be excluded.
+% You may exclude objects that are smaller or bigger than
 % the size range you specify. A comma should be placed between the
 % lower size limit and the upper size limit. The units here are pixels
 % so that it is easy to zoom in on found objects and determine the
 % size of what you think should be excluded.
 %
-% Threshold: The threshold affects the stringency of the lines between
+% Approximate percentage covered by objects:
+% An estimate of how much of the image is covered with objects. This
+% information is currently only used in the Mixture of Gaussian 
+% thresholding, see below.
+%
+% Select thresholding method:
+% The threshold affects the stringency of the lines between
 % the objects and the background. You may enter an absolute number
 % between 0 and 1 for the threshold (use 'Show pixel data' to see the
 % pixel intensities for your images in the appropriate range of 0 to
-% 1), or you may have it calculated for each image individually by
-% typing 0.  There are advantages either way.  An absolute number
+% 1), or you may have it calculated determined automatically.
+% There are advantages either way.  An absolute number
 % treats every image identically, but an automatically calculated
 % threshold is more realistic/accurate, though occasionally subject to
 % artifacts.  The threshold which is used for each image is recorded
 % as a measurement in the output file, so if you find unusual
 % measurements from one of your images, you might check whether the
 % automatically calculated threshold was unusually high or low
-% compared to the remaining images.  When an automatic threshold is
+% compared to the remaining images. There are two methods for finding
+% thresholds automatically, the Otsu method and the Mixture of Gaussian
+% method. The user can also choose between global and adaptive thresholding,
+% where global means that one threshold is used for the entire image and
+% adaptive means that the threshold can vary across the image.
+%
+% Threshold correction factor:
+% When an automatic threshold is
 % selected, it may consistently be too stringent or too lenient, so an
 % adjustment factor can be entered as well. The number 1 means no
 % adjustment, 0 to 1 makes the threshold more lenient and greater than
-% 1 (e.g. 1.3) makes the threshold more stringent.
+% 1 (e.g. 1.3) makes the threshold more stringent. This information is
+% essentially equivalent to the information given in "Approximate percentage
+% covered by objects" above. For example, the Otsu automatic thresholding
+% inherently assumes that 50% of the image is covered by objects. If a larger
+% percentage of the image is covered, the Otsu method will give a slightly
+% biased threshold that may have to be corrected. In a future version,
+% the 'Threshold correction factor' may be removed and the "Approximate percentage
+% covered by objects" information used instead.
 %
-% How it works:
-% This image analysis module identifies objects by finding peaks in
-% intensity, after the image has been blurred to remove texture (based
-% on blur radius).  Once a marker for each object has been identified
-% in this way, a watershed function identifies the lines between
-% objects that are touching each other by looking for the dimmest
-% points between them. To identify the edges of non-clumped objects, a
-% simple threshold is applied. Objects on the border of the image are
-% ignored, and the user can select a size range, outside which objects
-% will be ignored.
+% Lower bound on threshold:
+% Can be used as a safety precaution when automatic thresholding is utilized. If
+% there are no objects in the field of view, the automatic threshold will be
+% unreasonably low. In such case the lower bound will override this threshold.
+%
+% Use intensity or distance transform maxima as sources in Watershed transform:
+% This functionality allows neighboring objects to be separated. There are three 
+% options: 'Do not use', 'Intensity' and 'Distance'. If the 'Do not use' option is 
+% chosen a plain thresholding is applied to the image. If 'Intensity' is chosen,
+% local bright maxima will be used as sources in a Watershed transform. If 'Distance'
+% is chosen, a distance transform is applied to the binary thresholded image, and
+% the maxima within segemented objects are assumed to be centers in individual objects
+% and used as sources in the Watershed transform.
+%
+% Apply Watershed transform to Intensity image or Distance tranformed image:
+% This option determines if the Watershed transform will be applied to the original
+% 'Intensity' image or to the 'Distance' transformed binary image obtained after the 
+% tresholding.
+% 
+%
+% Try to merge too small objects into larger objects:
+% This is an experimental functionality that tries to merge objects that fall below
+% the Minimum diameter bound with other surrounding objects. For example, it happens
+% that the watershed transform divides objects into two halves if two local maxima
+% are found within the same object.
+%
+% Exclude objects touching the border of the image:
+% Measurements extracted from objects that are not fully within the field of view
+% are uncertain. Such objects should in general be excluded from further processing.
+%
 
 
 %%%%%%%%%%%%%%%%
@@ -102,40 +141,47 @@ ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModule
 %defaultVAR07 = 0
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Use intensity or distance transform maxima as centers in Watershed transform?
+%textVAR08 = Use intensity or distance transform maxima as sources in Watershed transform?
 %choiceVAR08 = Do not use
 %choiceVAR08 = Intensity
 %choiceVAR08 = Distance
 LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Try to merge too small objects into larger objects?
-%choiceVAR09 = No
-%choiceVAR09 = Yes
-MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Apply Watershed transform to Intensity image or Distance tranformed image?
+%choiceVAR09 = Do not use
+%choiceVAR09 = Intensity
+%choiceVAR09 = Distance
+WatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Exclude objects touching the border of the image?
-%choiceVAR10 = Yes
+%textVAR10 = Try to merge too small objects into larger objects?
 %choiceVAR10 = No
-ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%choiceVAR10 = Yes
+MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = What do you want to call the image of the outlines of the objects?
-%choiceVAR11 = Do not save
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu custom
+%textVAR11 = Exclude objects touching the border of the image?
+%choiceVAR11 = Yes
+%choiceVAR11 = No
+ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
-%textVAR12 =  What do you want to call the labeled matrix image?
+%textVAR12 = What do you want to call the image of the outlines of the objects?
 %choiceVAR12 = Do not save
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu custom
 
-%textVAR13 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR13 = RGB
-%choiceVAR13 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
+%textVAR13 =  What do you want to call the labeled matrix image?
+%choiceVAR13 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu custom
+
+%textVAR14 = Do you want to save the labeled matrix image in RGB or grayscale?
+%choiceVAR14 = RGB
+%choiceVAR14 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
 
 
 
@@ -151,14 +197,14 @@ fieldname = ['',  ImageName];
 
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Intensity module cannot find this image.']);
+    error(['Image processing has been canceled. Prior to running the IdentifyEasy Intensity module, you must have previously run a module to load an image. You specified in the IdentifyEasy module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyEasy module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error('Image processing was canceled because the IdentifyEasy module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%% Checks that the Min and Max diameter parameters have valid values
@@ -284,8 +330,12 @@ Objects = BlurredImage > Threshold;                                   % Threshol
 Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
 Objects = imfill(double(Objects),'holes');                            % Fill holes
 
-%%% STEP 2. Extract local maxima and apply watershed transform
-if ~strcmp(LocalMaximaType,'Do not use')
+
+
+
+%%% STEP 2. If user wants, extract local maxima and apply watershed transform
+%%% to separate neighboring objects.
+if ~strcmp(LocalMaximaType,'Do not use') & ~strcmp(WatershedTransformImageType,'Do not use')
     
     %%% NOTE: If the image is big and the objects are big, the maxima suppression
     %%% takes forever! The image should be resized with imresize() and the maxima
@@ -293,6 +343,7 @@ if ~strcmp(LocalMaximaType,'Do not use')
     %%% Below the max MaximaMask is set to max 50, but it will still take time.
     MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));     % Local maxima defined in this neighborhood
 
+    %%% Get local maxima
     if strcmp(LocalMaximaType,'Intensity')
         MaximaImage = BlurredImage;                                                % Initialize MaximaImage
         MaximaImage(BlurredImage < ...                                             % Save only local maxima
@@ -309,10 +360,24 @@ if ~strcmp(LocalMaximaType,'Do not use')
         MaximaImage(~Objects) = 0;                                                 % We are only interested in maxima within thresholded objects
     end
 
-    %%% Overlays the nuclear markers (maxima) on the inverted original image so
-    %%% there are black dots on top of each dark nucleus on a white background.
-    Overlaid = imimposemin(1 - OrigImage,MaximaImage);
-
+    %%% Overlay the maxima on either the original image or a distance transformed image
+    if strcmp(WatershedTransformImageType,'Intensity')
+        %%% Overlays the nuclear markers (maxima) on the inverted original image so
+        %%% there are black dots on top of each dark nucleus on a white background.
+        Overlaid = imimposemin(1 - OrigImage,MaximaImage);
+    
+    elseif strcmp(WatershedTransformImageType,'Distance')
+        %%% Overlays the nuclear markers (maxima) on the inverted DistanceTransformedImage so
+        %%% there are black dots on top of each dark nucleus on a white background.
+        %%% We may have to calculated the distance transform:
+        if ~exist('DistanceTransformedImage','var')
+            DistanceTransformedImage = bwdist(~Objects);                               
+        end
+        figure,imagesc(DistanceTransformedImage)
+        Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
+        figure,imagesc(Overlaid)
+    end
+    
     %%% Calculate the watershed transform and cut objects along the boundaries
     WatershedBoundaries = watershed(Overlaid) > 0;
     Objects = Objects.*WatershedBoundaries;
@@ -378,7 +443,7 @@ FinalLabelMatrixImage = Objects;
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
-
+    
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
 
@@ -389,8 +454,11 @@ if any(findobj == ThisModuleFigureNumber)
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',8);
     set(gca,'fontsize',8)
 
+   
     hx = subplot(2,2,2);
-    ImageHandle = image(label2rgb(Objects, 'jet', 'k', 'shuffle'));
+    cmap = jet(max(Objects(:)));
+    im = label2rgb(Objects, cmap, 'k', 'shuffle');
+    ImageHandle = image(im);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
     title(sprintf('Segmented %s',ObjectName),'fontsize',8);
     axis image,set(gca,'fontsize',8)
@@ -448,6 +516,9 @@ handles.Pipeline.(fieldname) = PrelimLabelMatrixImage2;
 fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
+%%% Store outlines of objects in the handles structure
+handles.PipelineObjectOutlines = PerimObjects;
+    
 
 %%% Saves the Threshold value to the handles structure.
 %%% Storing the threshold is a little more complicated than storing other measurements

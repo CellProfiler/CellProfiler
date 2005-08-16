@@ -164,6 +164,10 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
 
+- On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
+
+- The crop module seems to fail for RGB images at the moment.
+
 - Put in the help menus for ImageTools and DataTools.
 
 - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
@@ -199,6 +203,8 @@ _ It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic ve
 - Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.
 
 - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
+
+- For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
 
 - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
 organelles or speckles within nuclei or cells).

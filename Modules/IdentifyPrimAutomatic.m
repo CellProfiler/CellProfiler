@@ -75,9 +75,13 @@ SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Approximate percentage of image covered by objects:
 %choiceVAR04 = 10%
+%choiceVAR04 = 20%
 %choiceVAR04 = 30%
+%choiceVAR04 = 40%
 %choiceVAR04 = 50%
+%choiceVAR04 = 60%
 %choiceVAR04 = 70%
+%choiceVAR04 = 80%
 %choiceVAR04 = 90%
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu

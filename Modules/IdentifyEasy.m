@@ -69,7 +69,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Min,Max diameter of objects (pixels):
-%choiceVAR03 = 15,35
+%choiceVAR03 = 10,30
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 

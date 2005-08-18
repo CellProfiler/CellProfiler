@@ -6,12 +6,12 @@
 
 \f0\fs24 \cf0 Susan's TODO list\
 \
-- The new WriteSQL module also doesn't match the current ExportSQL2.m Data tool,\
+- (Requested by Anne) - The new WriteSQL module also doesn't match the current ExportSQL2.m Data tool,\
 which should be changed to use CPConvertSQL.m as well.\
 When everything is finished, we might consider making the ExportSQL2.m function an\
 option in the regular ExportData DataTool.\
 \
-- CPConvertSQL automatically creates column names for the DB from the\
+- (Requested by Anne) -  CPConvertSQL automatically creates column names for the DB from the\
 hierarchy in handles.  Sometimes these column names are too long.\
 Currently, all it does is print a warning if this happens.  This may\
 be sufficient, but perhaps it should be more forceful.  In general,\

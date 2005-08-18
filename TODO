@@ -3,7 +3,7 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 [[[NOTE: WE WILL BE COMBINING ALL OF THE IDENTIFY MODULES INTO A SINGLE MODULE IDENTIFYEASY SOON]]]
 
-- Remove the code for rotating an image from the SpotIdentifier module and make it into a separate image processing module "RotateImage". There should be several methods to choose from in a popup menu:
+- (Requested by Anne) - Remove the code for rotating an image from the SpotIdentifier module and make it into a separate image processing module "RotateImage". There should be several methods to choose from in a popup menu:
 1. Type in a set of pixel coordinates for two points that should be aligned horizontally.
 2. Type in a set of pixel coordinates for two points that should be aligned vertically.
 3. Click spots that should be aligned horizontally with mouse 
@@ -16,7 +16,7 @@ Another option - do you want the rotation for the first image to be applied to a
 
 Another option - do you want to crop away the rotated edges?  (Otherwise, the rotated edges with missing pixel information are just black pixels).
 
-- Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
+- (Requested by Anne) - Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
 
 newVAR = Do you want the grid of objects to be found automatically or do you want to specify the grid manually?  In manual grid mode, you mark a known location in the grid and have the rest of the positions calculated from those marks, no matter what the image itself looks like.  In automatic mode, you must previously have run an Identify module to do a rough identification of the objects which is used to automatically find the grid.
 %choiceVAR02 = Automatic grid
@@ -150,63 +150,63 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 ******************
 
-- There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
+- (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
 
-- Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
+- (Requested by Anne) - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
 
-- variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.
+- (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.
 
-- In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
+- (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
-- It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.
+- (Requested by Anne) - It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.
 
-- We've lost the regular Matlab toolbar that shows up in figures - the one that has save, print, zoom, add text, etc. Can we add it back?
+- (Requested by Anne) - We've lost the regular Matlab toolbar that shows up in figures - the one that has save, print, zoom, add text, etc. Can we add it back?
 
-- For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
+- (Requested by Anne) - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
 
-- On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
+- (Requested by Anne) - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
 
-- The crop module seems to fail for RGB images at the moment.
+- (Requested by Anne) - The crop module seems to fail for RGB images at the moment.
 
-- Put in the help menus for ImageTools and DataTools.
+- (Requested by Anne) - Put in the help menus for ImageTools and DataTools.
 
-- There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
+- (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
 
-- SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
+- (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
 
-- Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
+- (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
 
-- cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
+- (Requested by Anne) - cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
 
-- Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
+- (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
-- Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
+- (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
-_ It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
+_ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
 
-- Should we rename all the Identify modules? The Primary/Secondary nomenclature is quite meaningful but maybe not that user friendly.
+- (Requested by Anne) - Should we rename all the Identify modules? The Primary/Secondary nomenclature is quite meaningful but maybe not that user friendly.
 
-- Combine all IdentifySec options into one module.
+- (Requested by Anne) - Combine all IdentifySec options into one module.
 
-- IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
+- (Requested by Anne) - IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
 
-- SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
+- (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
 
-- Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
+- (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 
-- Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
+- (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
 
-- Make spot identifier crop out the background to just leave the plate. [Actually, Anne thinks we should adapt the Crop module to take in an object  (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object becomes black).  The result of this can then be fed to the SpotIdentifier module].
+- (Requested by Anne) - Make spot identifier crop out the background to just leave the plate. [Actually, Anne thinks we should adapt the Crop module to take in an object  (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object becomes black).  The result of this can then be fed to the SpotIdentifier module].
 
-- Put RGBsplit and RGBtoGray a single module (like IdentifyPrim AdaptThreshold - But does that work?). Call the resulting module RGBtoGray and move RGBSplit to Outdated.
+- (Requested by Anne) - Put RGBsplit and RGBtoGray a single module (like IdentifyPrim AdaptThreshold - But does that work?). Call the resulting module RGBtoGray and move RGBSplit to Outdated.
 
-- Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.
+- (Requested by Anne) - Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.
 
-- Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
+- (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
-- For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
+- (Requested by Anne) - For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
 
-- Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
+- (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
 organelles or speckles within nuclei or cells).
 This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
 
@@ -239,22 +239,22 @@ way of identifying objects.
 Best,
 Ola
 
-- For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
+- (Requested by Anne) - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
-- Whenever anything is saved to the hard drive, add an error
+- (Requested by Anne) - Whenever anything is saved to the hard drive, add an error
        check to see whether the user has permission to write to that
        location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
-- Move the help contents of IdentifySecPropagateSubfunction to the help for 
+- (Requested by Anne) - Move the help contents of IdentifySecPropagateSubfunction to the help for 
  IdentifySecPropagate and then remove IdentifySecPropagateSubfunction.m from cvs (i.e. delete it), because it contains no code but appears as a module to load in the pipeline when you click the AddModule button.
 
-- Save Image As tool: does not work well for all kinds of
+- (Requested by Anne) - Save Image As tool: does not work well for all kinds of
        displayed images (e.g. The mean image produced by correct illum
        divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
-- When figures produced by SpotIdentifier are saved as matlab fig files and opened later, when CellProfiler itself is not open, and then you click on SpotIdentifying Info - Show, an error is produced (at least when no spot identifying info has been loaded):
+- (Requested by Anne) - When figures produced by SpotIdentifier are saved as matlab fig files and opened later, when CellProfiler itself is not open, and then you click on SpotIdentifying Info - Show, an error is produced (at least when no spot identifying info has been loaded):
 ??? Error using ==> guidata
 H must be the handle to a figure or figure descendent.
 Error in ==> CPmsgbox at 198
@@ -263,44 +263,44 @@ Error in ==> CPwarndlg at 42
 handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 ??? Error while evaluating uicontrol Callback.
 
-- SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
+- (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
-- Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't display outlines on an original image). It also reduces the size of the image stored in the handles structure, since it would be a logical format rather than full 8 bit, but that's a minor advantage. To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17). [Ola may adapt this for the IdentifyPrim modules, so check before starting work on this.]
+- (Requested by Anne) - Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't display outlines on an original image). It also reduces the size of the image stored in the handles structure, since it would be a logical format rather than full 8 bit, but that's a minor advantage. To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17). [Ola may adapt this for the IdentifyPrim modules, so check before starting work on this.]
 
-- In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space) and instead have the SaveImages module have an option to convert a label matrix to color. Perhaps we can then also have an option in SaveImages to choose the colormap to be used for this conversion. It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
+- (Requested by Anne) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space) and instead have the SaveImages module have an option to convert a label matrix to color. Perhaps we can then also have an option in SaveImages to choose the colormap to be used for this conversion. It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
 
-- Make another primary object identification module based on
+- (Requested by Anne) - Make another primary object identification module based on
        Intensity then distance. 
 
-- RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
+- (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
 
-- It would be nice to allow CellProfiler to be used by different people and each one could have their own user preferences.  Right now preferences can be saved (File > Save preferences), but we should allow the user to choose whether to save these preferences as the default preferences (in CellProfilerPreferences.mat), or alternately, to name the preferences file something unique (e.g. AnneCellProfilerPreferences.mat). Then the user could load their preferences by using: File > Load preferences.
+- (Requested by Anne) - It would be nice to allow CellProfiler to be used by different people and each one could have their own user preferences.  Right now preferences can be saved (File > Save preferences), but we should allow the user to choose whether to save these preferences as the default preferences (in CellProfilerPreferences.mat), or alternately, to name the preferences file something unique (e.g. AnneCellProfilerPreferences.mat). Then the user could load their preferences by using: File > Load preferences.
 
-- When Saving a pipeline, after you confirm the filename change (adding SET or PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.
+- (Requested by Anne) - When Saving a pipeline, after you confirm the filename change (adding SET or PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.
 
-- The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
+- (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
-- Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
+- (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
-- In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
+- (Requested by Anne) - In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
 
-- The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle.
+- (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle.
 
-- Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
+- (Requested by Anne) - Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
 
-- The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
+- (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
 ??? Error using ==> set
 Index exceeds matrix dimensions.
 ??? Error using ==> set
 Error while evaluating uicontrol Callback.
 
-- It would be nice if the Crop module would allow you to draw a rectangle (rather than an ellipse) on each image as it cycles through.
+- (Requested by Anne) - It would be nice if the Crop module would allow you to draw a rectangle (rather than an ellipse) on each image as it cycles through.
 
-- Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
+- (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
-- Make the download new modules work.
+- (Requested by Anne) - Make the download new modules work.
 
-[Do the following prior to releasing:
+[Do the following prior to releasing:  (Requested by Anne) -
 - Smart Indent
 - M Lint error checking
 - Check for TODO's
@@ -334,17 +334,17 @@ POST-PUBLIC RELEASE SUPPORT:
 ---------------------------------------------------
 LONG-TERM:
 
-GUI 1 (Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
+GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
 
-GUI 3 +++ Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
+GUI 3 +++  (Requested by Anne) -Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
-- Make it possible to use data from previous modules as the arguments of later modules.  Also make it possible for entire modules to be entered as arguments (with all their individual variables).  For instance, it would be nice if spot identifier took in an identify module that could identify each spot specifically and then create a grid to match it.
+- (Requested by Anne) - Make it possible to use data from previous modules as the arguments of later modules.  Also make it possible for entire modules to be entered as arguments (with all their individual variables).  For instance, it would be nice if spot identifier took in an identify module that could identify each spot specifically and then create a grid to match it.
 
 ---------------------------------------------------
 
 PROBABLY DO NOT WANT TO INVEST TIME IN THESE:
 
-VISION 2 +++ Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
+VISION 2 +++  (Requested by Anne) -Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
 Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
 The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
 Segment cells
@@ -355,17 +355,17 @@ Re-segment cells
 Repeat until convergence.
 The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
 
-++ Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
+++  (Requested by Anne) -Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
 
-++ Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
+++  (Requested by Anne) -Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
 
-+++ Try to get code for yeast segmentation from this paper, and
++++  (Requested by Anne) -Try to get code for yeast segmentation from this paper, and
        incorporate it into CellProfiler: SCMD: Saccharomyces
        cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
        1;32 Database issue:D319-22. PMID: 14681423  
 Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
 
-+++ Make a user-scoring module that allows the user to view and
++++  (Requested by Anne) -Make a user-scoring module that allows the user to view and
        annotate each image manually. Show control side by side (1-4 at
        a time) and add that assessment to the data structure. Maybe
        allow randomizing (to do blind tests). Allow clicking
@@ -373,23 +373,23 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
        third image in a gigantic image set).  Whether the file name
        and/or sample info is shown should be optional. 
 
-+++ Allow data to be exported to Open Microscopy Environment
++++  (Requested by Anne) -Allow data to be exported to Open Microscopy Environment
        databases.  (Being worked on by Tony Scelfo in Peter Sorger's lab).
 
-+++ Port to python so we don't need to use Matlab anymore.
++++  (Requested by Anne) -Port to python so we don't need to use Matlab anymore.
 
-+++ Binucleate cells: figure out how to identify and count them
++++  (Requested by Anne) -Binucleate cells: figure out how to identify and count them
 
-+++ Make modules to identify objects in transmitted light/DIC images.
++++  (Requested by Anne) -Make modules to identify objects in transmitted light/DIC images.
 
-+++ Align/resize stack of images (like yeast plates). See Matlab
++++  (Requested by Anne) -Align/resize stack of images (like yeast plates). See Matlab
        demo on image registration. Did Chris already do this? 
 
-+++ Neurite outgrowth module
++++ (Requested by Anne) - Neurite outgrowth module
 
-+++ Particle tracking over time module
++++  (Requested by Anne) -Particle tracking over time module
 
-- Add background masking to the identify sec distance module
+- (Requested by Anne) - Add background masking to the identify sec distance module
        (make it optional in case a cell stain image is not
        available). 
 
@@ -403,7 +403,3 @@ Settings =      ModuleNames: {1x6 cell}
 
 [ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.
-
----------------------------------------------------
-
-DONE from 2005_08_10 Onwards:

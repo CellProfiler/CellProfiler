@@ -8,5 +8,12 @@
 \
 Put your name and the date preceding each entry!\
 \
-- \
-}
+\
+- (Colin 8/18) - Remove the code for rotating an image from the SpotIdentifier module and make it into a separate image processing module "RotateImage". There should be several methods to choose from in a popup menu:\
+1. Type in a set of pixel coordinates for two points that should be aligned horizontally.\
+2. Type in a set of pixel coordinates for two points that should be aligned vertically.\
+3. Click spots that should be aligned horizontally with mouse \
+4. Click spots that should be aligned vertically with mouse \
+5. Type in the rotation in units of degrees.\
+6. Automatic, based on identified objects - this would be a new, sophisticated option where identified objects that look like they're in a grid or some sort of lines would be rotated to be squared up to the image. Not sure if this is feasible, but it would be cool. We can make this a more long-term part of the project.\
+All of these options would be converted to a single number - degree of rotation - so the same code can then be used to actually rotate the image no matter which option was chosen.  This degree of rotation (or however you want to store it) should be saved in handles.Measurements.Image because it may be of interest to the user and also so that it can be retrieved in case you want to apply the rotation from the first image set to subsequent sets (see next option).}

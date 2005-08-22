@@ -1,7 +1,7 @@
 {\rtf1\mac\ansicpg10000\cocoartf102
 {\fonttbl\f0\fswiss\fcharset77 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
-\vieww12000\viewh15840\viewkind0
+\vieww12000\viewh15440\viewkind0
 \deftab720
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ql\qnatural
 
@@ -13,6 +13,19 @@
 - (Requested by Anne) - Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.\
 \
 - (Requested by Anne) - In the Add Module window, there is no directory listed next to the text "You are currently looking in". It's because the text wraps to two lines so we need to make that text box big enough to display two lines.\
+\
+- (Requested by Anne) - Make this information available via a "?" button in the Add Module selection window next to the "Object Identification" header:\\\
+% Identify Primary modules identify objects without relying on any\\\
+% information other than a single grayscale input image (e.g. nuclei\\\
+% are typically primary objects). Identify Secondary modules require a\\\
+% grayscale image plus an image where primary objects have already\\\
+% been identified, because the secondary objects' locations are\\\
+% determined in part based on the primary objects (e.g. cells can be\\\
+% secondary objects). Identify Tertiary modules require images where\\\
+% two sets of objects have already been identified (e.g. nuclei and\\\
+% cell regions are used to define the cytoplasm objects, which are\\\
+% tertiary objects).\\\
+\
 \
 \pard\pardeftab720\ql\qnatural
 \cf0 - (Requested by Anne) - The crop module seems to fail for RGB images at the moment.\
@@ -35,4 +48,17 @@
    Mike Lamprecht\
    Susan Ma\
 \
-- (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.}
+- (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.\
+\
+- (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):\\\
+    %%% This method of calculating a colormap to use prevented some\\\
+    %%% errors relating to colormaps. For one thing, the label2rgb\\\
+    %%% function fails if there are no objects in the label matrix\\\
+    %%% image. Also, there is a bug for some of the colormaps that\\\
+    %%% fails when there are only 1 or 2 objects in the image, I\\\
+    %%% think.\\\
+    cmap = jet(max(64,max(Objects(:))));\\\
+    im = label2rgb(Objects, cmap, 'k', 'shuffle');\\\
+\
+- (Requested by Anne 8-22-05) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of options and show the results in a single large window to help the user choose among the options.  I particularly want to see these results and show them to Ola before he leaves for Germany to make sure they are giving the results he expects.\}\
+}

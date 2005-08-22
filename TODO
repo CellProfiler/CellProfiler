@@ -191,7 +191,7 @@ _ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyW
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
-- (Requested by Anne) - Should we rename all the Identify modules? The Primary/Secondary nomenclature is quite meaningful but maybe not that user friendly. Similarly, should we subdivide Measure modules that work on objects vs. Measure modules that work on Images?  Maybe this would involve different subcategories in the AddModule window.
+- (Requested by Anne) - the IdentifySecPropagatesubfunction needs to not show up in the AddModule window.  Is there a smart way to make it not appear?  perhaps we should exclude any files ending in "subfunction" in case we have other similar situations in the future.
 
 - (Requested by Anne) - Combine all IdentifySec options into one module.
 

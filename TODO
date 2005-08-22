@@ -3,150 +3,6 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 [[[NOTE: WE WILL BE COMBINING ALL OF THE IDENTIFY MODULES INTO A SINGLE MODULE IDENTIFYEASY SOON]]]
 
-Another option - do you want the rotation for the first image to be applied to all image sets or do you want to determine the rotation for each image individually as you cycle through? 
-
-Another option - do you want to crop away the rotated edges?  (Otherwise, the rotated edges with missing pixel information are just black pixels).
-
-- (Requested by Anne) - Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
-
-newVAR = Do you want the grid of objects to be found automatically or do you want to specify the grid manually?  In manual grid mode, you mark a known location in the grid and have the rest of the positions calculated from those marks, no matter what the image itself looks like.  In automatic mode, you must previously have run an Identify module to do a rough identification of the objects which is used to automatically find the grid.
-%choiceVAR02 = Automatic grid
-%choiceVAR02 = Manual grid
-%inputtypeVAR01 = popupmenu
-
-newVAR = For automatic grid mode, what did you call the roughly identified objects?
-[popupmenu of objects]
-
-%textVAR01 = What did you call the grayscale image to be used in this module? If you choose display mode, this is the image that will be overlaid with the identified grid of objects.  If you choose manual mode, this will specify the size of the image on which the grid of objects will be placed.  If you are using automatic grid mode and display mode, this grayscale image must be the same size as the image used to identify objects. If you are using automatic grid mode and non-display mode, you do not absolutely need to select an image here because the identified objects themselves specify the size of the image on which the grid will be identified.
-%infotypeVAR01 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
-
-%textVAR04 = What do you want to call the objects identified by this module?
-%infotypeVAR04 = objectgroup indep
-%defaultVAR04 = Spots
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-newVAR = Do you want to show the results in a display window?
-Yes
-No
-
-%textVAR11 = For numbering purposes, is the first spot at the Left or Right?
-%choiceVAR11 = Left
-%choiceVAR11 = Right
-LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-LeftOrRight = LeftOrRight(1);
-%inputtypeVAR11 = popupmenu
-
-%textVAR12 = For numbering purposes, is the first spot at the Bottom or Top?
-%choiceVAR12 = Top
-%choiceVAR12 = Bottom
-TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-TopOrBottom = TopOrBottom(1);
-%inputtypeVAR12 = popupmenu
-
-%textVAR13 = Would you like to count by rows or columns?
-%choiceVAR13 = Rows
-%choiceVAR13 = Columns
-RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
-
-newVAR = Do you want the objects to be (1) circles with a particular diameter (see next option), (2) rectangles that fill the entire grid you have defined or (3) retain their natural size and shape (automatic grid mode only)?
-choiceVAR = circles
-choiceVAR = rectangles
-choiceVAR = natural shape & size
-[[We don't currently have the rectangle or "natural shape" options. Not sure how useful the rectangle option will be, we can wait on implementing it. The natural shape one will definitely be useful eventually. In this case, we simply want to 'polish up' the objects that have been identified in the previous identify module - we should basically superimpose the gridlines onto the identified objects to divide objects that span two grid rectangles and if there is more than one object within a grid rectangle we should merge all objects within the grid rectangle together. If there is no object within a particular grid rectangle, we don't want to create one there, but we still need to force the numbering system to remain properly lined up with the other spots. As a result, some numbers in the label matrix will be missing - I am not sure if this will cause downstream problems so a temporary fix might be: if there is no object within a particular grid rectangle, set the central one pixel to be the object.  The user will know that if the area of an object = 1 pixel then an object was not actually found]].
-
-%textVAR05 = For circle mode, what is the diameter [[Note, I have changed this to diameter rather than radius]] of each object, in pixels?  This cannot be set to automatic if you are using manual grid mode.
-%defaultVAR05 = 80
-RadiusSize = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-should be popupmenu custom, with these options:
-'Automatic' 
-'Custom...'
-[[We might add an option eventually 'Maximum size that still fits in the grid' - not sure if it would come in handy that often, though.]]
-
-%textVAR07 = Enter the number of rows, columns
-%defaultVAR07 = 40,140
-RowsColumns = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%%% Extracts the rows and columns from the user's input.
-try
-    RowsColumnsNumerical = str2num(RowsColumns);%#ok We want to ignore MLint error checking for this line.
-    NumberRows = RowsColumnsNumerical(1);
-    NumberColumns = RowsColumnsNumerical(2);
-catch error('Image processing was canceled because your entry for rows, columns in the Spot Identifier module was not understood.')
-end
-[[[Can this be automatic if we are in automatic mode?]]]
-
-%textVAR08 = For manual grid mode, enter the spacing between rows, columns (vertical spacing, horizontal spacing).
-%defaultVAR08 = 57,57
-HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%%% Extracts the vertical and horizontal spacing from the user's input.
-try
-    HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
-    VertSpacing = HorizVertSpacingNumerical(1);
-    HorizSpacing = HorizVertSpacingNumerical(2);
-catch error('Image processing was canceled because your entry for the spacing between rows, columns (vertical spacing, horizontal spacing) in the Spot Identifier module was not understood.')
-end
-[[[We might add an option here where you click on two control spots (top left & bottom right or top right and bottom left) and the spacing is automatically determined, but it's a bit unlikely to be used that often.]]]
-
-%textVAR06 = For manual grid mode, you must specify the location of a control spot - do you want to enter the pixel coordinates or click with a mouse? 
-%choiceVAR06 = Coordinates
-%choiceVAR06 = Mouse
-MarkingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-MarkingMethod = MarkingMethod(1);
-%inputtypeVAR06 = popupmenu
-
-%textVAR09 = For manual grid mode, will you be specifying the distance (the next option) in units of pixels or spots?
-%choiceVAR09 = Pixels
-%choiceVAR09 = Spots
-SpacingUnits = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
-
-%textVAR10 = For manual grid mode, enter the distance from the control spot to the center of the top left spot of the grid (vertical, horizontal). Enter 0,0 if the control spot *is* the top left spot of the grid.
-%defaultVAR10 = 57,0
-HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%%% Extracts the vertical and horizontal offset from the user's input.
-try
-    HorizVertOffsetNumerical = str2num(HorizVertOffset);%#ok We want to ignore MLint error checking for this line.
-    VertOffset = HorizVertOffsetNumerical(1);
-    HorizOffset = HorizVertOffsetNumerical(2);
-catch error('Image processing was canceled because your entry for the distance from the top left marker to the center of the nearest spot (vertical, horizontal) in the Spot Identifier module was not understood.')
-end
-if strcmp(SpacingUnits,'Spots')
-    VertOffset = VertOffset*VertSpacing;
-    HorizOffset = HorizOffset*HorizSpacing;
-end
-
-%textVAR15 = Do you want to label the spots only (takes less memory) or will you be using them in downstream modules (e.g. saving an image of them or measuring them)?
-%choiceVAR15 = Label only
-%choiceVAR15 = Use downstream
-LabelOrUseDownstream = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-%inputtypeVAR15 = popupmenu
-
-%textVAR16 = If you are using the spots downstream, what do you want to call the image of the outlines of the objects?
-%infotypeVAR16 = imagegroup indep
-%defaultVAR16 = Do not save
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,16}); 
-
-%textVAR17 =  If you are using the spots downstream, what do you want to call the label matrix image?
-%infotypeVAR17 = imagegroup indep
-%defaultVAR17 = Do not save
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,17}); 
-
-%textVAR18 = If you are using the spots downstream and saving the label matrix image, do you want to save it in RGB or grayscale?
-%choiceVAR18 = RGB
-%choiceVAR18 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18}); 
-%inputtypeVAR18 = popupmenu
-
-_ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
-
-- (Requested by Anne) - IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
-
-- (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
-
-******************
-
 
 
 - (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
@@ -155,13 +11,10 @@ _ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyW
 
 - (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.  Note: We have replaced IdentifyPrimIntenIntens with IdentifyEasy recently. We still want to fix the problem because a similar thing occurs in IdentifyEasy but you will still want to take a look at the code in IdentifyPrimIntenIntens because the bug is described in detail in there (see Outdated folder).
 
-- (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
 - (Requested by Anne) - It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.
 
-- (Requested by Anne) - We've lost the regular Matlab toolbar that shows up in figures - the one that has save, print, zoom, add text, etc. Can we add it back?
 
-- (Requested by Anne) - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
 
 - (Requested by Anne) [[[Ola might be able to help on this - Anne emailed him monday]]] - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
 
@@ -171,19 +24,6 @@ _ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyW
 
 - (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
 
-- (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
- 
-- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
- Authors (in order of joining the project):
-   Anne E. Carpenter
-   Thouis Ray Jones
-   In Han Kang
-   Ola Friman
-   Steve Lowe
-   Joo Han Chang
-   Colin Clarke
-   Mike Lamprecht
-   Susan Ma
 
 - (Requested by Anne) - cvs remove Profiler for Anne folder from the DeveloperDropBox. removing a directory requires a special procedure - i don't know how.
 
@@ -197,17 +37,14 @@ _ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyW
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 
-- (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
 
 - (Requested by Anne) - Make spot identifier crop out the background to just leave the plate. [Actually, Anne thinks we should adapt the Crop module to take in an object  (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object becomes black).  The result of this can then be fed to the SpotIdentifier module].
 
 - (Requested by Anne) - Put RGBsplit and RGBtoGray a single module (like IdentifyPrim AdaptThreshold - But does that work?). Call the resulting module RGBtoGray and move RGBSplit to Outdated.
 
-- (Requested by Anne) - Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.
 
 - (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
-- (Requested by Anne) - For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
 
 - (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
 organelles or speckles within nuclei or cells).

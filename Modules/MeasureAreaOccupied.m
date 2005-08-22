@@ -129,14 +129,9 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the objects measured by this module?
-%infotypeVAR02 = objectgroup indep
-%choiceVAR02 = Nuclei
-%choiceVAR02 = Cells
-%choiceVAR02 = Spots
-%choiceVAR02 = Cytoplasm
+%textVAR02 = What do you want to call the region measured by this module?
+%defaultVAR02 = StainedRegion
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = Enter the threshold (Positive number, Max = 1):
 %choiceVAR03 = Automatic
@@ -150,7 +145,7 @@ ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{Curr
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

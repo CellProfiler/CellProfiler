@@ -110,7 +110,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CropBlue
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Into which shape would you like to crop?
+%textVAR03 = Into which shape would you like to crop? To crop to a shape based on another image you have loaded, type its name here (see help for details).
 %choiceVAR03 = Rectangle
 %choiceVAR03 = Ellipse
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});

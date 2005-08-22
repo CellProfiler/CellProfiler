@@ -145,7 +145,7 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 - (Requested by Anne) - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
 
-- (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.
+- (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.  Note: We have replaced IdentifyPrimIntenIntens with IdentifyEasy recently. We still want to fix the problem because a similar thing occurs in IdentifyEasy but you will still want to take a look at the code in IdentifyPrimIntenIntens because the bug is described in detail in there (see Outdated folder).
 
 - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 
@@ -155,7 +155,7 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 - (Requested by Anne) - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
 
-- (Requested by Anne) - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
+- (Requested by Anne) [[[Ola might be able to help on this - Anne emailed him monday]]] - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
 
 - (Requested by Anne) - The crop module seems to fail for RGB images at the moment.
 
@@ -166,6 +166,18 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 - (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
 
 - (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
+ 
+- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
+ Authors (in order of joining the project):
+   Anne E. Carpenter
+   Thouis Ray Jones
+   In Han Kang
+   Ola Friman
+   Steve Lowe
+   Joo Han Chang
+   Colin Clarke
+   Mike Lamprecht
+   Susan Ma
 
 - (Requested by Anne) - cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
 
@@ -256,7 +268,8 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
-- (Requested by Anne) - Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't display outlines on an original image). It also reduces the size of the image stored in the handles structure, since it would be a logical format rather than full 8 bit, but that's a minor advantage. To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17). [Ola may adapt this for the IdentifyPrim modules, so check before starting work on this.]
+- (Requested by Anne) - Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't display outlines on an original image). It also reduces the size of the image stored in the handles structure, since it would be a logical format rather than full 8 bit, but that's a minor advantage. To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17). We have already made this change for IdentifyEasy but we need to do a similar thing for the other IdentifyPrim and Sec and Tertiary modules (there is currently a push in progress to merge all identifyprim modules into IdentifyEasy and all IdentifySec modules into one, so perhaps check that first).
+This also affects the "SAVING IMAGES" portion of the help for each module, so update the other modules' help using IdentifyEasy's as a template.
 
 - (Requested by Anne) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space) and instead have the SaveImages module have an option to convert a label matrix to color. Perhaps we can then also have an option in SaveImages to choose the colormap to be used for this conversion. It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
 
@@ -285,13 +298,68 @@ Index exceeds matrix dimensions.
 ??? Error using ==> set
 Error while evaluating uicontrol Callback.
 
-- (Requested by Anne) - It would be nice if the Crop module would allow you to draw a rectangle (rather than an ellipse) on each image as it cycles through.
+- (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through.
+
+- (Requested by Anne) - In the Add Module window, there is no directory listed next to the text "You are currently looking in".
+
+- (Requested by Anne) - In File > Open Image, underscores in the file name are not displayed as underscores - instead they make the character after the underscore appear as a subscript. We have fixed this elsewhere (I think in the histogram tool).
+
+- (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.
+
+- (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):
+    %%% This method of calculating a colormap to use prevented some
+    %%% errors relating to colormaps. For one thing, the label2rgb
+    %%% function fails if there are no objects in the label matrix
+    %%% image. Also, there is a bug for some of the colormaps that
+    %%% fails when there are only 1 or 2 objects in the image, I
+    %%% think.
+    cmap = jet(max(64,max(Objects(:))));
+    im = label2rgb(Objects, cmap, 'k', 'shuffle');
+
+
+- (Requested by Anne) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of options and show the results in a single  large window to help the user choose among the options.
+
+- (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyEasy: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyEasy.
+
+- (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyEasy. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
+
+- (Requested by Anne) - Can IdentifyLaplacianOfGaussian be merged into IdentifyEasy?
+
+- (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyEasy.
+
+- (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyEAsy:
+% Threshold correction factor:
+% When the threshold is calculated automatically, it may consistently
+% be too stringent or too lenient.  For example, the Otsu automatic
+% thresholding inherently assumes that 50% of the image is covered by
+% objects. If a larger percentage of the image is covered, the Otsu
+% method will give a slightly biased threshold that may have to be
+% corrected. In a future version, the 'Threshold correction factor'
+% may be removed and the "Approximate percentage covered by objects"
+% information used instead.  For now, however, you may need to enter an
+% adjustment factor which you empirically determine is suitable for
+% your images. The number 1 means no adjustment, 0 to 1 makes the
+% threshold more lenient and greater than 1 (e.g. 1.3) makes the
+% threshold more stringent.
+
+- (Requested by Anne) - Make this information available via a "?" button in the Add Module selection window:
+% Identify Primary modules identify objects without relying on any
+% information other than a single grayscale input image (e.g. nuclei
+% are typically primary objects). Identify Secondary modules require a
+% grayscale image plus an image where primary objects have already
+% been identified, because the secondary objects' locations are
+% determined in part based on the primary objects (e.g. cells can be
+% secondary objects). Identify Tertiary modules require images where
+% two sets of objects have already been identified (e.g. nuclei and
+% cell regions are used to define the cytoplasm objects, which are
+% tertiary objects).
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
-- (Requested by Anne) - Make the download new modules work.
+- (Requested by Anne) - Look over the changes suggested in TempMattTudor. He said there were a couple of bugs that he fixed.
 
 [Do the following prior to releasing:  (Requested by Anne) -
+- Make the download new modules work.
 - Smart Indent
 - M Lint error checking
 - Check for TODO's

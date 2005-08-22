@@ -310,12 +310,12 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['dOTPrelimSegmented',ObjectName];
+fieldname = ['dOTUneditedSegmented',ObjectName];
 handles.(fieldname) = PrelimLabelMatrixImage1;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['dOTPrelimSmallSegmented',ObjectName];
+fieldname = ['dOTSmallRemovedSegmented',ObjectName];
 handles.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.
@@ -704,12 +704,12 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['dOTPrelimSegmented',ObjectName];
+fieldname = ['dOTUneditedSegmented',ObjectName];
 handles.(fieldname) = PrelimLabelMatrixImage1;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['dOTPrelimSmallSegmented',ObjectName];
+fieldname = ['dOTSmallRemovedSegmented',ObjectName];
 handles.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.

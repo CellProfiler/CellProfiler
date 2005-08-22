@@ -438,12 +438,12 @@ end
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['PrelimSegmented',ExpandedObjectName];
+fieldname = ['UneditedSegmented',ExpandedObjectName];
 handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['PrelimSmallSegmented',ExpandedObjectName];
+fieldname = ['SmallRemovedSegmented',ExpandedObjectName];
 handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
 
 %%% Saves the final segmented label matrix image to the handles structure.

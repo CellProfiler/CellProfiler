@@ -8,4 +8,4 @@
 \
 - (Requested by Anne) - In the Add Module window, there is no directory listed next to the text "You are currently looking in". It's because the text wraps to two lines so we need to make that text box big enough to display two lines.\
 \
-}
+- (Requested by Anne) - The crop module seems to fail for RGB images at the moment.}

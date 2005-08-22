@@ -304,19 +304,6 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.
 
-- (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):
-    %%% This method of calculating a colormap to use prevented some
-    %%% errors relating to colormaps. For one thing, the label2rgb
-    %%% function fails if there are no objects in the label matrix
-    %%% image. Also, there is a bug for some of the colormaps that
-    %%% fails when there are only 1 or 2 objects in the image, I
-    %%% think.
-    cmap = jet(max(64,max(Objects(:))));
-    im = label2rgb(Objects, cmap, 'k', 'shuffle');
-
-
-- (Requested by Anne) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of options and show the results in a single  large window to help the user choose among the options.
-
 - (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyEasy: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyEasy.
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyEasy. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
@@ -339,18 +326,6 @@ Error while evaluating uicontrol Callback.
 % your images. The number 1 means no adjustment, 0 to 1 makes the
 % threshold more lenient and greater than 1 (e.g. 1.3) makes the
 % threshold more stringent.
-
-- (Requested by Anne) - Make this information available via a "?" button in the Add Module selection window:
-% Identify Primary modules identify objects without relying on any
-% information other than a single grayscale input image (e.g. nuclei
-% are typically primary objects). Identify Secondary modules require a
-% grayscale image plus an image where primary objects have already
-% been identified, because the secondary objects' locations are
-% determined in part based on the primary objects (e.g. cells can be
-% secondary objects). Identify Tertiary modules require images where
-% two sets of objects have already been identified (e.g. nuclei and
-% cell regions are used to define the cytoplasm objects, which are
-% tertiary objects).
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

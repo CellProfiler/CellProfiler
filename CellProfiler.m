@@ -7,7 +7,7 @@ function varargout = CellProfiler(varargin)
 % quantitatively measure phenotypes from thousands of images
 % automatically. CellProfiler.m and CellProfiler.fig work together to
 % create a user interface which allows the analysis of large numbers
-% of images.  New modules can be written for the software using
+% of images.  New moduless can be written for the software using
 % Matlab.
 %
 %  Typing CellProfiler at the command line launches the program.
@@ -249,7 +249,7 @@ HelpMenu=uimenu('Label','Help');
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','Save CellProfiler files','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Save current CellProfiler code','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
@@ -3377,11 +3377,12 @@ for(i=[1:length(TempListOfThingsToSave)])
     end
 end
 try
-    zip([handles.Current.DefaultOutputDirectory '/CellProfiler_SNAPSHOT.zip'],ListOfThingsToSave,handles.Current.CellProfilerPathname);
+    ZipFileName = [handles.Current.DefaultOutputDirectory '/CellProfilerCode_',date,'.zip'];
+    zip(ZipFileName,ListOfThingsToSave,handles.Current.CellProfilerPathname);
 catch
-    helpdlg(['The Files were unable to save.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
+    helpdlg(['The Files could not be saved for some reason.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
 end
-CPmsgbox(['The files have been saved to ' handles.Preferences.DefaultOutputDirectory '/CellProfiler_SNAPSHOT.zip.  You can change the name of this if you want.']);
+CPmsgbox(['The files have been saved to ', ZipFileName, '.']);
 
 % --- Executes just before AddModuleWindow_export is made visible.
 function AddModuleWindow_OpeningFcn(hObject, eventdata, AddModuleWindowHandles, varargin)

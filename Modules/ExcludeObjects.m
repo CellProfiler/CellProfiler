@@ -26,11 +26,11 @@ function handles = ExcludeObjects(handles)
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
 % the image and objects that are outside the size range can be saved
-% using the name: PrelimSegmented + whatever you called the objects
-% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% using the name: UneditedSegmented + whatever you called the objects
+% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
 % which excludes objects smaller than your selected size range can be
-% saved using the name: PrelimSmallSegmented + whatever you called the
-% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
@@ -159,14 +159,14 @@ SegmentedObjectImage = handles.Pipeline.(fieldname);
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
-fieldname = ['PrelimSegmented',ObjectName];
+fieldname = ['UneditedSegmented',ObjectName];
 if isfield(handles.Pipeline, fieldname) == 1
-    PrelimSegmentedObjectImage = handles.Pipeline.(fieldname);
+    UneditedSegmentedObjectImage = handles.Pipeline.(fieldname);
 end
 
-fieldname = ['PrelimSmallSegmented',ObjectName];
+fieldname = ['SmallRemovedSegmented',ObjectName];
 if isfield(handles.Pipeline, fieldname) == 1
-    PrelimSmallSegmentedObjectImage = handles.Pipeline.(fieldname);
+    SmallRemovedSegmentedObjectImage = handles.Pipeline.(fieldname);
 end
 
 %%% The final, edited version of the Masked objects is the only one
@@ -212,18 +212,18 @@ end
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
-if exist('PrelimSegmentedObjectImage','var') == 1
-    NewPrelimSegmentedObjectImage = PrelimSegmentedObjectImage;
-    NewPrelimSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+if exist('UneditedSegmentedObjectImage','var') == 1
+    NewUneditedSegmentedObjectImage = UneditedSegmentedObjectImage;
+    NewUneditedSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
     if strcmp(Renumber,'Renumber') == 1
-        NewPrelimSegmentedObjectImage = bwlabel(NewPrelimSegmentedObjectImage);
+        NewUneditedSegmentedObjectImage = bwlabel(NewUneditedSegmentedObjectImage);
     end
 end
-if exist('PrelimSmallSegmentedObjectImage','var') == 1
-    NewPrelimSmallSegmentedObjectImage = PrelimSmallSegmentedObjectImage;
-    NewPrelimSmallSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+if exist('SmallRemovedSegmentedObjectImage','var') == 1
+    NewSmallRemovedSegmentedObjectImage = SmallRemovedSegmentedObjectImage;
+    NewSmallRemovedSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
     if strcmp(Renumber,'Renumber') == 1
-        NewPrelimSmallSegmentedObjectImage = bwlabel(NewPrelimSmallSegmentedObjectImage);
+        NewSmallRemovedSegmentedObjectImage = bwlabel(NewSmallRemovedSegmentedObjectImage);
     end
 end
 
@@ -435,15 +435,15 @@ handles.Pipeline.(fieldname) = NewSegmentedObjectImage;
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
-if exist('NewPrelimSegmentedObjectImage','var') == 1
+if exist('NewUneditedSegmentedObjectImage','var') == 1
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['PrelimSegmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewPrelimSegmentedObjectImage;
+fieldname = ['UneditedSegmented',RemainingObjectName];
+handles.Pipeline.(fieldname) = NewUneditedSegmentedObjectImage;
 end
-if exist('NewPrelimSmallSegmentedObjectImage','var') == 1
+if exist('NewSmallRemovedSegmentedObjectImage','var') == 1
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['PrelimSmallSegmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewPrelimSmallSegmentedObjectImage;
+fieldname = ['SmallRemovedSegmented',RemainingObjectName];
+handles.Pipeline.(fieldname) = NewSmallRemovedSegmentedObjectImage;
 end

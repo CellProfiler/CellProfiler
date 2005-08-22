@@ -15,18 +15,6 @@ function handles = ExpandOrShrinkSecondaryObjects(handles)
 % the secondary objects completely enclose Secondary objects. This is
 % handy when the two images are not aligned perfectly, for example.
 %
-% What does Secondary mean?
-% Identify Secondary modules identify objects without relying on any
-% information other than a single grayscale input image (e.g. nuclei
-% are typically Secondary objects). Identify Secondary modules require a
-% grayscale image plus an image where Secondary objects have already
-% been identified, because the secondary objects' locations are
-% determined in part based on the Secondary objects (e.g. cells can be
-% secondary objects). Identify Tertiary modules require images where
-% two sets of objects have already been identified (e.g. nuclei and
-% cell regions are used to define the cytoplasm objects, which are
-% tertiary objects).
-%
 % SAVING IMAGES: In addition to the object outlines and the
 % pseudo-colored object images that can be saved using the
 % instructions in the main CellProfiler window for this module,
@@ -35,20 +23,18 @@ function handles = ExpandOrShrinkSecondaryObjects(handles)
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
 % the image and objects that are outside the size range can be saved
-% using the name: PrelimSegmented + whatever you called the objects
-% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% using the name: UneditedSegmented + whatever you called the objects
+% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
 % which excludes objects smaller than your selected size range can be
-% saved using the name: PrelimSmallSegmented + whatever you called the
-% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-% Additional image(s) are normally calculated for display only,
-% including the object outlines alone. These images can be saved by
-% altering the code for this module to save those images to the
-% handles structure (see the SaveImages module help) and then using
-% the Save Images module.
+%    Additional image(s) are calculated by this module and can be 
+% saved by altering the code for the module (see the SaveImages module
+% help for instructions).
 %
 % See also any identify Secondary module.
 
@@ -212,8 +198,8 @@ elseif strcmp(ShrinkOrExpand,'Expand') == 1
         %%% (or leaves it as Inf otherwise).
         try ShrinkingNumber = str2double(ShrinkingNumber); end
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
-%        ShrunkenPrelimSegmentedImage = imdilate(PrelimSegmentedImage, strel('ball', ShrinkingNumber);
- %       ShrunkenPrelimSmallSegmentedImage = imdilate(PrelimSmallSegmentedImage, strel('ball', ShrinkingNumber);
+%        ShrunkenUneditedSegmentedImage = imdilate(UneditedSegmentedImage, strel('ball', ShrinkingNumber);
+ %       ShrunkenSmallRemovedSegmentedImage = imdilate(SmallRemovedSegmentedImage, strel('ball', ShrinkingNumber);
   %      ShrunkenSegmentedImage = imdilate(SegmentedImage, strel('ball', ShrinkingNumber);
     catch error('Image processing was canceled because the value entered in the Expand Or Shrink Secondary Objects module must either be a number or the text "Inf" (no quotes).')
     end

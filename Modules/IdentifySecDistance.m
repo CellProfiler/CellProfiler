@@ -13,18 +13,6 @@ function handles = IdentifySecDistance(handles)
 % is known as the 'donut' or 'annulus' approach for identifying the
 % cytoplasmic compartment.
 %
-% What does Secondary mean?
-% Identify Primary modules identify objects without relying on any
-% information other than a single grayscale input image (e.g. nuclei
-% are typically primary objects). Identify Secondary modules require a
-% grayscale image plus an image where primary objects have already
-% been identified, because the secondary objects' locations are
-% determined in part based on the primary objects (e.g. cells can be
-% secondary objects). Identify Tertiary modules require images where
-% two sets of objects have already been identified (e.g. nuclei and
-% cell regions are used to define the cytoplasm objects, which are
-% tertiary objects).
-%
 % SAVING IMAGES: In addition to the object outlines and the
 % pseudo-colored object images that can be saved using the
 % instructions in the main CellProfiler window for this module, this
@@ -33,11 +21,9 @@ function handles = IdentifySecDistance(handles)
 % name: Segmented + whatever you called the objects (e.g.
 % SegmentedCells).
 %
-% Additional image(s) are normally calculated for display only,
-% including the object outlines alone. These images can be saved by
-% altering the code for this module to save those images to the
-% handles structure (see the SaveImages module help) and then using
-% the Save Images module.
+%    Additional image(s) are calculated by this module and can be 
+% saved by altering the code for the module (see the SaveImages module
+% help for instructions).
 %
 % See also IDENTIFYSECPROPAGATE, IDENTIFYSECWATERSHED.
 
@@ -194,7 +180,7 @@ PrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 %%% that are smaller than a certain size.  This image
 %%% will be used as markers to segment the secondary objects with this
 %%% module.  Checks first to see whether the appropriate image exists.
-fieldname = ['PrelimSmallSegmented', PrimaryObjectName];
+fieldname = ['SmallRemovedSegmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing has been canceled. Prior to running the Identify Secondary Distance module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Distance module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Distance module cannot locate this image.']);

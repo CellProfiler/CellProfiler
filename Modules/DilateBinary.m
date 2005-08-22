@@ -13,11 +13,11 @@ function handles = DilateBinaryObjects(handles)
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
 % the image and objects that are outside the size range can be saved
-% using the name: PrelimSegmented + whatever you called the objects
-% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% using the name: UneditedSegmented + whatever you called the objects
+% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
 % which excludes objects smaller than your selected size range can be
-% saved using the name: PrelimSmallSegmented + whatever you called the
-% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)

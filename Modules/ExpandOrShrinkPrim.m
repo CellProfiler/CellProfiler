@@ -15,18 +15,6 @@ function handles = ExpandOrShrinkPrimaryObjects(handles)
 % the secondary objects completely enclose primary objects. This is
 % handy when the two images are not aligned perfectly, for example.
 %
-% What does Primary mean?
-% Identify Primary modules identify objects without relying on any
-% information other than a single grayscale input image (e.g. nuclei
-% are typically primary objects). Identify Secondary modules require a
-% grayscale image plus an image where primary objects have already
-% been identified, because the secondary objects' locations are
-% determined in part based on the primary objects (e.g. cells can be
-% secondary objects). Identify Tertiary modules require images where
-% two sets of objects have already been identified (e.g. nuclei and
-% cell regions are used to define the cytoplasm objects, which are
-% tertiary objects).
-%
 % SAVING IMAGES: In addition to the object outlines and the
 % pseudo-colored object images that can be saved using the
 % instructions in the main CellProfiler window for this module,
@@ -35,20 +23,18 @@ function handles = ExpandOrShrinkPrimaryObjects(handles)
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
 % the image and objects that are outside the size range can be saved
-% using the name: PrelimSegmented + whatever you called the objects
-% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% using the name: UneditedSegmented + whatever you called the objects
+% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
 % which excludes objects smaller than your selected size range can be
-% saved using the name: PrelimSmallSegmented + whatever you called the
-% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-% Additional image(s) are normally calculated for display only,
-% including the object outlines alone. These images can be saved by
-% altering the code for this module to save those images to the
-% handles structure (see the SaveImages module help) and then using
-% the Save Images module.
+%    Additional image(s) are calculated by this module and can be 
+% saved by altering the code for the module (see the SaveImages module
+% help for instructions).
 %
 % See also any identify primary module.
 
@@ -163,20 +149,20 @@ drawnow
 
 %%% Retrieves the segmented image, not edited for objects along the edges or
 %%% for size.
-fieldname = ['PrelimSegmented', ObjectName];
+fieldname = ['UneditedSegmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
-PrelimSegmentedImage = handles.Pipeline.(fieldname);
+UneditedSegmentedImage = handles.Pipeline.(fieldname);
 
 %%% Retrieves the segmented image, only edited for small objects.
-fieldname = ['PrelimSmallSegmented', ObjectName];
+fieldname = ['SmallRemovedSegmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
-PrelimSmallSegmentedImage = handles.Pipeline.(fieldname);
+SmallRemovedSegmentedImage = handles.Pipeline.(fieldname);
 
 
 %%% Retrieves the final segmented label matrix image.
@@ -217,13 +203,13 @@ if strcmp(ShrinkOrExpand),'Shrink') == 1
     %%% Therefore, if the user wants a single pixel for each object, the
     %%% "shrink" option is used; otherwise, the "thin" option is used.
     if strcmp(ShrinkingNumber,'Inf') == 1
-        ShrunkenPrelimSegmentedImage = bwmorph(PrelimSegmentedImage, 'shrink', Inf);
-        ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'shrink', Inf);
+        ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'shrink', Inf);
+        ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'shrink', Inf);
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'shrink', Inf);
     else
         try ShrinkingNumber = str2double(ShrinkingNumber);
-            ShrunkenPrelimSegmentedImage = bwmorph(PrelimSegmentedImage, 'thin', ShrinkingNumber);
-            ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'thin', ShrinkingNumber);
+            ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thin', ShrinkingNumber);
+            ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thin', ShrinkingNumber);
             ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thin', ShrinkingNumber);
         catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
         end
@@ -232,11 +218,11 @@ elseif strcmp(ShrinkOrExpand,'Expand') == 1
     try %%% Converts the ShrinkingNumber entry to a number if possible
         %%% (or leaves it as Inf otherwise).
         try ShrinkingNumber = str2double(ShrinkingNumber); end
-        ShrunkenPrelimSegmentedImage = bwmorph(PrelimSegmentedImage, 'thicken', ShrinkingNumber);
-        ShrunkenPrelimSmallSegmentedImage = bwmorph(PrelimSmallSegmentedImage, 'thicken', ShrinkingNumber);
+        ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thicken', ShrinkingNumber);
+        ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thicken', ShrinkingNumber);
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
-%        ShrunkenPrelimSegmentedImage = imdilate(PrelimSegmentedImage, strel('ball', ShrinkingNumber);
- %       ShrunkenPrelimSmallSegmentedImage = imdilate(PrelimSmallSegmentedImage, strel('ball', ShrinkingNumber);
+%        ShrunkenUneditedSegmentedImage = imdilate(UneditedSegmentedImage, strel('ball', ShrinkingNumber);
+ %       ShrunkenSmallRemovedSegmentedImage = imdilate(SmallRemovedSegmentedImage, strel('ball', ShrinkingNumber);
   %      ShrunkenSegmentedImage = imdilate(SegmentedImage, strel('ball', ShrinkingNumber);
     catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
     end
@@ -252,26 +238,26 @@ end
 %%% the order of these objects will be exactly the same as the shrunk
 %%% objects, which may go on to be used to identify secondary objects.
 if strcmp(ShrinkOrExpand,'Shrink')
-    FinalShrunkenPrelimSegmentedImage = ShrunkenPrelimSegmentedImage.*PrelimSegmentedImage;
-    FinalShrunkenPrelimSmallSegmentedImage = ShrunkenPrelimSmallSegmentedImage.*PrelimSmallSegmentedImage;
+    FinalShrunkenUneditedSegmentedImage = ShrunkenUneditedSegmentedImage.*UneditedSegmentedImage;
+    FinalShrunkenSmallRemovedSegmentedImage = ShrunkenSmallRemovedSegmentedImage.*SmallRemovedSegmentedImage;
     FinalShrunkenSegmentedImage = ShrunkenSegmentedImage.*SegmentedImage;
 elseif strcmp(ShrinkOrExpand,'Expand')
-    [L,num] = bwlabel(ShrunkenPrelimSegmentedImage);       % Generate new temporal labeling of the expanded objects
-    FinalShrunkenPrelimSegmentedImage = zeros(size(ShrunkenPrelimSegmentedImage));
+    [L,num] = bwlabel(ShrunkenUneditedSegmentedImage);       % Generate new temporal labeling of the expanded objects
+    FinalShrunkenUneditedSegmentedImage = zeros(size(ShrunkenUneditedSegmentedImage));
     for k = 1:num                                          % Loop over the objects to give them a new label
         index = find(L==k);                                % Get index for expanded object temporarily numbered k
-        OriginalLabel = PrelimSegmentedImage(index);       % In the original labeled image, index indexes either zeros or the original label
+        OriginalLabel = UneditedSegmentedImage(index);       % In the original labeled image, index indexes either zeros or the original label
         fooindex = find(OriginalLabel);                    % Find index to a nonzero element, i.e. to the original label number
-        FinalShrunkenPrelimSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+        FinalShrunkenUneditedSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
     end
 
-    [L,num] = bwlabel(ShrunkenPrelimSmallSegmentedImage);
-    FinalShrunkenPrelimSmallSegmentedImage = zeros(size(ShrunkenPrelimSmallSegmentedImage));
+    [L,num] = bwlabel(ShrunkenSmallRemovedSegmentedImage);
+    FinalShrunkenSmallRemovedSegmentedImage = zeros(size(ShrunkenSmallRemovedSegmentedImage));
     for k = 1:num
         index = find(L==k);                                 % Get index for expanded object temporarily numbered k
-        OriginalLabel = PrelimSmallSegmentedImage(index);   % In the original labeled image, index indexes either zeros or the original label
+        OriginalLabel = SmallRemovedSegmentedImage(index);   % In the original labeled image, index indexes either zeros or the original label
         fooindex = find(OriginalLabel);                     % Find index to a nonzero element, i.e. to the original label number
-        FinalShrunkenPrelimSmallSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+        FinalShrunkenSmallRemovedSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
     end
 
     [L,num] = bwlabel(ShrunkenSegmentedImage);
@@ -488,13 +474,13 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['PrelimSegmented',ShrunkenObjectName];
-handles.Pipeline.(fieldname) = FinalShrunkenPrelimSegmentedImage;
+fieldname = ['UneditedSegmented',ShrunkenObjectName];
+handles.Pipeline.(fieldname) = FinalShrunkenUneditedSegmentedImage;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['PrelimSmallSegmented',ShrunkenObjectName];
-handles.Pipeline.(fieldname) = FinalShrunkenPrelimSmallSegmentedImage;
+fieldname = ['SmallRemovedSegmented',ShrunkenObjectName];
+handles.Pipeline.(fieldname) = FinalShrunkenSmallRemovedSegmentedImage;
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ShrunkenObjectName];

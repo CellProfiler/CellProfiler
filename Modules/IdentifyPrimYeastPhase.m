@@ -77,18 +77,6 @@ function handles = IdentifyPrimYeastPhase(handles)
 % ignored, and the user can select a size range, outside which objects
 % will be ignored.
 %
-% What does Primary mean?
-% Identify Primary modules identify objects without relying on any
-% information other than a single grayscale input image (e.g. nuclei
-% are typically primary objects). Identify Secondary modules require a
-% grayscale image plus an image where primary objects have already
-% been identified, because the secondary objects' locations are
-% determined in part based on the primary objects (e.g. cells can be
-% secondary objects). Identify Tertiary modules require images where
-% two sets of objects have already been identified (e.g. nuclei and
-% cell regions are used to define the cytoplasm objects, which are
-% tertiary objects).
-%
 % SAVING IMAGES: In addition to the object outlines and the
 % pseudo-colored object images that can be saved using the
 % instructions in the main CellProfiler window for this module,
@@ -97,20 +85,18 @@ function handles = IdentifyPrimYeastPhase(handles)
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
 % the image and objects that are outside the size range can be saved
-% using the name: PrelimSegmented + whatever you called the objects
-% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% using the name: UneditedSegmented + whatever you called the objects
+% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
 % which excludes objects smaller than your selected size range can be
-% saved using the name: PrelimSmallSegmented + whatever you called the
-% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-% Additional image(s) are normally calculated for display only,
-% including the object outlines alone. These images can be saved by
-% altering the code for this module to save those images to the
-% handles structure (see the SaveImages module help) and then using
-% the Save Images module.
+%    Additional image(s) are calculated by this module and can be 
+% saved by altering the code for the module (see the SaveImages module
+% help for instructions).
 %
 % See also IDENTIFYPRIMADAPTTHRESHOLDA,
 % IDENTIFYPRIMADAPTTHRESHOLDB,
@@ -617,12 +603,12 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['PrelimSegmented',ObjectName];
+fieldname = ['UneditedSegmented',ObjectName];
 handles.Pipeline.(fieldname) = PrelimLabelMatrixImage1;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['PrelimSmallSegmented',ObjectName];
+fieldname = ['SmallRemovedSegmented',ObjectName];
 handles.Pipeline.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.

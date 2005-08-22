@@ -86,11 +86,11 @@ function handles = IdentifyPrimShapeDist(handles)
 % images where each object is a different intensity. (1) The
 % preliminary segmented image, which includes objects on the edge of
 % the image and objects that are outside the size range can be saved
-% using the name: PrelimSegmented + whatever you called the objects
-% (e.g. PrelimSegmentedNuclei). (2) The preliminary segmented image
+% using the name: UneditedSegmented + whatever you called the objects
+% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
 % which excludes objects smaller than your selected size range can be
-% saved using the name: PrelimSmallSegmented + whatever you called the
-% objects (e.g. PrelimSmallSegmented Nuclei) (3) The final segmented
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
 % image which excludes objects on the edge of the image and excludes
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
@@ -631,12 +631,12 @@ drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or
 %%% for size, to the handles structure.
-fieldname = ['PrelimSegmented',ObjectName];
+fieldname = ['UneditedSegmented',ObjectName];
 handles.Pipeline.(fieldname) = PrelimLabelMatrixImage1;
 
 %%% Saves the segmented image, only edited for small objects, to the
 %%% handles structure.
-fieldname = ['PrelimSmallSegmented',ObjectName];
+fieldname = ['SmallRemovedSegmented',ObjectName];
 handles.Pipeline.(fieldname) = PrelimLabelMatrixImage2;
 
 %%% Saves the final segmented label matrix image to the handles structure.

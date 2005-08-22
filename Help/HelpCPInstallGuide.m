@@ -1,5 +1,5 @@
-function CPInstallGuide
-helpdlg(help('CPInstallGuide'))
+function HelpCPInstallGuide
+helpdlg(help('HelpCPInstallGuide'))
 
 % CellProfilerTM Installation Guide
 % 
@@ -14,9 +14,9 @@ helpdlg(help('CPInstallGuide'))
 % computer (any location is fine).  Do not move or rename this folder or any
 % folders containing it, or you will have to repeat the following steps.
 % 
-% 3. In Matlab, go to File > Set Path.  Choose ÒAdd with SubfoldersÓ and
-% navigate to select the CellProfiler folder you just made.  Click ÒOKÓ,
-% then ÒSaveÓ, then ÒCloseÓ.
+% 3. In Matlab, go to File > Set Path.  Choose 'Add with Subfolders' and
+% navigate to select the CellProfiler folder you just made.  Click 'OK',
+% then 'Save', then 'Close'.
 % 
 % 4. In the command window of Matlab, type the following to start:
 % 		CellProfiler
@@ -40,7 +40,7 @@ helpdlg(help('CPInstallGuide'))
 %    output file Temp1OUT.mat, which you can explore using the Data
 %    Tools.
 % 
-% 6. For Mac OSX, open the Mac application called "Terminal"
+% 6. For Mac OSX, open the Mac application called 'Terminal'
 % (Applications > Utilities > Terminal) and type the following at the
 % command line to ensure that display windows behave properly:
 % defaults write com.apple.x11 wm_click_through -bool true

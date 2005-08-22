@@ -139,7 +139,15 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18}); 
 %inputtypeVAR18 = popupmenu
 
+_ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
+
+- (Requested by Anne) - IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
+
+- (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
+
 ******************
+
+
 
 - (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
 
@@ -179,21 +187,15 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
    Mike Lamprecht
    Susan Ma
 
-- (Requested by Anne) - cvs remove everything the the DeveloperDropBox except TiledImage.mat, TiledImage.fig, SpotID6SET.mat and the CVS folder (of course!).
+- (Requested by Anne) - cvs remove Profiler for Anne folder from the DeveloperDropBox. removing a directory requires a special procedure - i don't know how.
 
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
-_ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
-
 - (Requested by Anne) - Should we rename all the Identify modules? The Primary/Secondary nomenclature is quite meaningful but maybe not that user friendly.
 
 - (Requested by Anne) - Combine all IdentifySec options into one module.
-
-- (Requested by Anne) - IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
-
-- (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 

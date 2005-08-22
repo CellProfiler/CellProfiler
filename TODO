@@ -302,8 +302,6 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through.
 
-- (Requested by Anne) - In the Add Module window, there is no directory listed next to the text "You are currently looking in".
-
 - (Requested by Anne) - In File > Open Image, underscores in the file name are not displayed as underscores - instead they make the character after the underscore appear as a subscript. We have fixed this elsewhere (I think in the histogram tool).
 
 - (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.

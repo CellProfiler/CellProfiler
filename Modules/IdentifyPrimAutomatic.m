@@ -240,7 +240,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
-%choiceVAR03 = 10,30
+%choiceVAR03 = 10,40
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
@@ -263,10 +263,10 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6})
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
-%choiceVAR07 = Otsu Global
-%choiceVAR07 = Otsu Adaptive
 %choiceVAR07 = MoG Global
 %choiceVAR07 = MoG Adaptive
+%choiceVAR07 = Otsu Global
+%choiceVAR07 = Otsu Adaptive
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
@@ -292,16 +292,16 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
 %textVAR11 = Method to distinguish clumped objects (see help for details):
-%choiceVAR11 = None
 %choiceVAR11 = Intensity
 %choiceVAR11 = Shape
+%choiceVAR11 = None
 LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
 %textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
-%choiceVAR12 = None
 %choiceVAR12 = Intensity
 %choiceVAR12 = Distance
+%choiceVAR12 = None
 WatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
@@ -316,8 +316,8 @@ MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14
 %inputtypeVAR14 = popupmenu custom
 
 %textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
-%choiceVAR15 = No
 %choiceVAR15 = Yes
+%choiceVAR15 = No
 UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 

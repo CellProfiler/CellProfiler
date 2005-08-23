@@ -7,16 +7,16 @@ function handles = IdentifyEasy(handles)
 % grayscale images that show bright objects on a dark background. The
 % module has many options which vary in terms of speed and
 % sophistication.
-% 
-% Requirements for the images to be fed into this module: 
+%
+% Requirements for the images to be fed into this module:
 % * If the objects are dark on a light background, use the
-% InvertIntensity module prior to running this module. 
+% InvertIntensity module prior to running this module.
 % * If you are working with color images, they must first be converted
 % to grayscale using the RGBSplit or RGBToGray module.
 %
 % Settings:
 %
-% Min,Max diameter of objects: 
+% Min,Max diameter of objects:
 % Most modules use this estimate of the size range of the objects in
 % order to distinguish them from noise in the image. For
 % example, for some of the identification methods, the smoothing
@@ -32,7 +32,7 @@ function handles = IdentifyEasy(handles)
 % Note that for non-round
 % objects, the diameter here is actually the 'equivalent diameter',
 % meaning the diameter of a circle with the same area as the object.
-% 
+%
 % Discard objects outside the size range:
 % Objects outside the specified range of diameters will be discarded.
 % This allows you to exclude small objects like dust, noise, and
@@ -46,7 +46,7 @@ function handles = IdentifyEasy(handles)
 %
 % Approximate percentage covered by objects:
 % An estimate of how much of the image is covered with objects. This
-% information is currently only used in the MoG (Mixture of Gaussian) 
+% information is currently only used in the MoG (Mixture of Gaussian)
 % thresholding but may be used for other thresholding methods in the
 % future (see below). This is not a very sensitive parameter so your
 % estimate need not be precise.
@@ -69,7 +69,7 @@ function handles = IdentifyEasy(handles)
 % measurement in the output file, so if you find unusual measurements
 % from one of your images, you might check whether the automatically
 % calculated threshold was unusually high or low compared to the
-% other images. 
+% other images.
 %    There are two methods for finding thresholds automatically,
 % Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu
 % method uses CPgraythresh, which is a modification of the Matlab
@@ -79,14 +79,14 @@ function handles = IdentifyEasy(handles)
 % if you don't know anything about the image. But if you can supply
 % the object coverage percentage the MoG can be better, especially if
 % the coverage percentage differs much from 50%. Note however that the
-% MoG function is experimental and has not been thoroughly validated. 
-%    You can also choose between global and adaptive thresholding, 
+% MoG function is experimental and has not been thoroughly validated.
+%    You can also choose between global and adaptive thresholding,
 % where global means that one threshold is used for the entire image
 % and adaptive means that the threshold varies across the image.
 % Adaptive is slower to calculate but provides more accurate edge
 % determination which may help to separate clumps, especially if you
 % are not using a clump-separation method (see below).
-% 
+%
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently
 % be too stringent or too lenient.  For example, the Otsu automatic
@@ -139,7 +139,7 @@ function handles = IdentifyEasy(handles)
 % objects. Using the 'None' option, the thresholded image will be used
 % to identify objects.
 % * Intensity - works best where the dividing lines between clumped
-% objects are dim.  
+% objects are dim.
 % * Distance - Dividing lines between clumped objects are halfway
 % between the 'center' of each object.  The intensity patterns in the
 % original image are irrelevant - the cells need not be dimmer along
@@ -164,7 +164,7 @@ function handles = IdentifyEasy(handles)
 % actually two lumpy parts of the same object, and they will be
 % merged. Note that increasing the blur radius increases
 % the processing time exponentially.
-% 
+%
 %
 %
 % Try to merge 'too small' objects with nearby larger objects:
@@ -201,7 +201,7 @@ function handles = IdentifyEasy(handles)
 % white (binary) image of the objects identified can be saved in the
 % SaveImages module simply by entering the object name (e.g. 'Nuclei')
 % in the SaveImages module.
-%    Additional image(s) are calculated by this module and can be 
+%    Additional image(s) are calculated by this module and can be
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
 %
@@ -209,10 +209,10 @@ function handles = IdentifyEasy(handles)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
-% 
+%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
-% 
+%
 % Authors:
 %   Anne Carpenter
 %   Thouis Jones
@@ -512,7 +512,7 @@ drawnow
 %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
 %%% to separate neighboring objects.
 if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
-    
+
     %%% Get local maxima, where the definition of local depends on the user-provided object size.
     %%% This will (usually) be done in a lower-resolution image for speed. The ordfilt2()
     %%% function is very slow for large images containing large objects. Therefore, image is resized
@@ -536,7 +536,7 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
         end
     end
 
-    
+
     if strcmp(LocalMaximaType,'Intensity')
 
         % Old code without image resizing
@@ -596,7 +596,7 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
         end
         Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
     end
-    
+
     %%% Calculate the watershed transform and cut objects along the boundaries
     WatershedBoundaries = watershed(Overlaid) > 0;
     Objects = Objects.*WatershedBoundaries;
@@ -606,10 +606,10 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
 
     %%% Remove objects with no marker in them (this happens occasionally)
     %%% This is a very fast way to get pixel indexes for the objects
-    tmp = regionprops(Objects,'PixelIdxList');                              
+    tmp = regionprops(Objects,'PixelIdxList');
     for k = 1:length(tmp)
         %%% If there is no maxima in these pixels, exclude object
-        if sum(MaximaImage(tmp(k).PixelIdxList)) == 0                       
+        if sum(MaximaImage(tmp(k).PixelIdxList)) == 0
             Objects(index) = 0;
         end
     end
@@ -637,24 +637,29 @@ Lower90Limit = SortedDiameters(NbrInTails);
 Upper90Limit = SortedDiameters(end-NbrInTails+1);
 
 %%% Locate objects with diameter outside the specified range
+tmp = Objects;
 if strcmp(ExcludeSize,'Yes')
-    DiameterMap = Diameters(Objects+1);                                   % Create image with object intensity equal to the diameter
-    tmp = Objects;
-    Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
+    %%% Create image with object intensity equal to the diameter
+    DiameterMap = Diameters(Objects+1);
+    %%% Remove objects that are too small
+    Objects(DiameterMap < MinDiameter) = 0;
     %%% Will be stored to the handles structure
     SmallRemovedLabelMatrixImage = Objects;
-    Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
-    DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
+    %%% Remove objects that are too big
+    Objects(DiameterMap > MaxDiameter) = 0;
 else
     %%% Will be stored to the handles structure even if it's unedited.
     SmallRemovedLabelMatrixImage = Objects;
 end
+%%% Store objects that fall outside diameter range for display
+DiameterExcludedObjects = tmp - Objects;
 
 %%% Remove objects along the border of the image (depends on user input)
 tmp = Objects;
 if strcmp(ExcludeBorderObjects,'Yes')
     Objects = imclearborder(Objects);
 end
+%%% Store objects that touch the border for display
 BorderObjects = tmp - Objects;
 
 %%% Relabel the objects
@@ -668,7 +673,7 @@ FinalLabelMatrixImage = Objects;
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
-    
+
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
 

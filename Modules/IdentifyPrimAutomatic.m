@@ -70,15 +70,23 @@ function handles = IdentifyEasy(handles)
 % from one of your images, you might check whether the automatically
 % calculated threshold was unusually high or low compared to the
 % other images. 
-%    There are two methods for finding thresholds automatically, the 
-% Otsu method and the Mixture of Gaussian method. The user can also
-% choose between global and adaptive thresholding, where global means
-% that one threshold is used for the entire image and adaptive means
-% that the threshold varies across the image. Adaptive is slower to
-% calculate but provides more accurate edge determination which may
-% help to separate clumps, especially if you are not using a
-% clump-separation method (see below).
-%
+%    There are two methods for finding thresholds automatically,
+% Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu
+% method uses CPgraythresh, which is a modification of the Matlab
+% function 'graythresh'. Our modifications include taking into account
+% the max and min values in the image and log-transforming the image
+% prior to calculating the threshold. Otsu's method is probably better
+% if you don't know anything about the image. But if you can supply
+% the object coverage percentage the MoG can be better, especially if
+% the coverage percentage differs much from 50%. Note however that the
+% MoG function is experimental and has not been thoroughly validated. 
+%    You can also choose between global and adaptive thresholding, 
+% where global means that one threshold is used for the entire image
+% and adaptive means that the threshold varies across the image.
+% Adaptive is slower to calculate but provides more accurate edge
+% determination which may help to separate clumps, especially if you
+% are not using a clump-separation method (see below).
+% 
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently
 % be too stringent or too lenient.  For example, the Otsu automatic
@@ -231,90 +239,110 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = Nuclei
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Min,Max diameter of objects (pixels):
+%textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
 %choiceVAR03 = 10,30
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Approximate percentage of image covered by objects (for MoG thresholding only):
-%choiceVAR04 = 10%
-%choiceVAR04 = 20%
-%choiceVAR04 = 30%
-%choiceVAR04 = 40%
-%choiceVAR04 = 50%
-%choiceVAR04 = 60%
-%choiceVAR04 = 70%
-%choiceVAR04 = 80%
-%choiceVAR04 = 90%
-pObject = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = Exclude objects outside the diameter range?
+%choiceVAR04 = Yes
+%choiceVAR04 = No
+ExcludeSize = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Select thresholding method or enter a threshold in the range [0,1].
-%choiceVAR05 = Otsu Global
-%choiceVAR05 = Otsu Adaptive
-%choiceVAR05 = MoG Global
-%choiceVAR05 = MoG Adaptive
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu custom
+%textVAR05 = Try to merge too small objects into larger objects?
+%choiceVAR05 = No
+%choiceVAR05 = Yes
+MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
-%textVAR06 = Threshold correction factor
-%defaultVAR06 = 1
-ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = Exclude objects touching the border of the image?
+%choiceVAR06 = Yes
+%choiceVAR06 = No
+ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
-%textVAR07 = Lower bound on threshold in the range [0,1].
-%defaultVAR07 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
+%choiceVAR07 = Otsu Global
+%choiceVAR07 = Otsu Adaptive
+%choiceVAR07 = MoG Global
+%choiceVAR07 = MoG Adaptive
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu custom
 
-%textVAR08 = Method to distinguish clumped objects (see help for details):
-%choiceVAR08 = None
-%choiceVAR08 = Intensity
-%choiceVAR08 = Shape
-LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
+%textVAR08 = Threshold correction factor
+%defaultVAR08 = 1
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 =  Method to draw dividing lines between clumped objects (see help for details):
-%choiceVAR09 = None
-%choiceVAR09 = Intensity
-%choiceVAR09 = Distance
-WatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%textVAR09 = Lower bound on threshold in the range [0,1].
+%defaultVAR09 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Try to merge too small objects into larger objects?
-%choiceVAR10 = No
-%choiceVAR10 = Yes
-MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
+%choiceVAR10 = 10%
+%choiceVAR10 = 20%
+%choiceVAR10 = 30%
+%choiceVAR10 = 40%
+%choiceVAR10 = 50%
+%choiceVAR10 = 60%
+%choiceVAR10 = 70%
+%choiceVAR10 = 80%
+%choiceVAR10 = 90%
+pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = Exclude objects touching the border of the image?
-%choiceVAR11 = Yes
-%choiceVAR11 = No
-ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = Method to distinguish clumped objects (see help for details):
+%choiceVAR11 = None
+%choiceVAR11 = Intensity
+%choiceVAR11 = Shape
+LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = What do you want to call the image of the outlines of the objects?
-%infotypeVAR12 = imagegroup indep
-%choiceVAR12 = Do not save
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu custom
+%textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
+%choiceVAR12 = None
+%choiceVAR12 = Intensity
+%choiceVAR12 = Distance
+WatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
 
-%textVAR13 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
-%infotypeVAR13 = imagegroup indep
-%choiceVAR13 = Do not save
-SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
+%choiceVAR13 = Automatic
+SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
 
-%textVAR14 =  What do you want to call the labeled matrix image?
-%choiceVAR14 = Do not save
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%textVAR14 = Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)
+%choiceVAR14 = Automatic
+MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu custom
 
-%textVAR15 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR15 = RGB
-%choiceVAR15 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
+%choiceVAR15 = No
+%choiceVAR15 = Yes
+UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%%%VariableRevisionNumber = 1
+%textVAR16 = What do you want to call the image of the outlines of the objects?
+%infotypeVAR16 = imagegroup indep
+%defaultVAR16 = Do not save
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+
+%textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
+%infotypeVAR17 = imagegroup indep
+%defaultVAR17 = Do not save
+SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+
+%textVAR18 =  What do you want to call the labeled matrix image?
+%infotypeVAR18 = imagegroup indep
+%defaultVAR18 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+
+%textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
+%choiceVAR19 = RGB
+%choiceVAR19 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
+%inputtypeVAR19 = popupmenu
+
+%%%VariableRevisionNumber = 8
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -368,6 +396,22 @@ else
     MinimumThreshold = str2double(MinimumThreshold);
     if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
         error('The Minimum threshold entry in the IdentifyEasy module is invalid.')
+    end
+end
+
+%%% Check the smoothing filter size parameter
+if ~strcmp(SizeOfSmoothingFilter,'Automatic')
+    SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
+    if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage))
+        error('The specified size of the smoothing filter in the IdentifyEasy module is not valid or unreasonable.')
+    end
+end
+
+%%% Check the maxima suppression size parameter
+if ~strcmp(MaximaSuppressionSize,'Automatic')
+    MaximaSuppressionSize = str2double(MaximaSuppressionSize);
+    if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0
+        error('The specified maxima suppression size in the IdentifyEasy module is not valid or unreasonable.')
     end
 end
 
@@ -450,25 +494,20 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 drawnow
 
-%%% Smooth images slightly and apply threshold
-%%% Translate between minimum diameter of objects to sigma.
-sigma = MinDiameter/4;
-%%% Determine filter size, min 3 pixels, max 61
-FiltLength = min(30,max(1,ceil(3*sigma)));
-%%% Filter kernel grid
-[x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);
-%%% Gaussian filter kernel
-f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));
-%%% Blur original image
-BlurredImage = conv2(OrigImage,f,'same');
-%%% Threshold image
-Objects = BlurredImage > Threshold;
-%%% Use average threshold downstreams
-Threshold = mean(Threshold(:));
-%%% Fill holes
-Objects = imfill(double(Objects),'holes');
+%%% Smooth images and apply threshold
+if strcmp(SizeOfSmoothingFilter,'Automatic')
+    sigma = MinDiameter/3;                                            % Translate between minimum diameter of objects to sigma.
+else
+    sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
+end
+FiltLength = min(30,max(1,ceil(3*sigma)));                            % Determine filter size, min 3 pixels, max 61
+[x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+Objects = BlurredImage > Threshold;                                   % Threshold image
+Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
+Objects = imfill(double(Objects),'holes');                            % Fill holes
 drawnow
-
 
 %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
 %%% to separate neighboring objects.
@@ -478,9 +517,26 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
     %%% This will (usually) be done in a lower-resolution image for speed. The ordfilt2()
     %%% function is very slow for large images containing large objects. Therefore, image is resized
     %%% to a size where the smallest objects are about 10 pixels wide. Local maxima within a radius
-    %%% of 4-5 pixels are then extracted. It might be necessary to tune this parameter.
-    ImageResizeFactor = 10/MinDiameter;
-    MaximaMask = getnhood(strel('disk', 5));
+    %%% of 5-6 pixels are then extracted. It might be necessary to
+    %%% tune this parameter. The MaximaSuppressionSize must be an
+    %%% integer.
+    if strcmp(UseLowRes,'Yes')
+        ImageResizeFactor = 10/MinDiameter;
+        if strcmp(MaximaSuppressionSize,'Automatic')
+            MaximaMask = getnhood(strel('disk', 6));
+        else
+            MaximaMask = getnhood(strel('disk', round(MaximaSuppressionSize*ImageResizeFactor)));
+        end
+    elseif strcmp(UseLowRes,'No')
+        ImageResizeFactor = 1;
+        if strcmp(MaximaSuppressionSize,'Automatic')
+            MaximaMask = getnhood(strel('disk', round(MinDiameter/1.5)));
+        else
+            MaximaMask = getnhood(strel('disk', round(MaximaSuppressionSize)));
+        end
+    end
+
+    
     if strcmp(LocalMaximaType,'Intensity')
 
         % Old code without image resizing
@@ -506,7 +562,6 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
         MaximaImage = MaximaImage > Threshold;
         %%% Shrink to points (needed because of the resizing)
         MaximaImage = bwmorph(MaximaImage,'shrink',inf);
-        
     elseif strcmp(LocalMaximaType,'Shape')
         %%% Calculate distance transform
         DistanceTransformedImage = bwdist(~Objects);
@@ -527,19 +582,17 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
         MaximaImage = bwmorph(MaximaImage,'shrink',inf);
     end
 
-
     %%% Overlay the maxima on either the original image or a distance transformed image
     if strcmp(WatershedTransformImageType,'Intensity')
         %%% Overlays the objects markers (maxima) on the inverted original image so
         %%% there are black dots on top of each dark object on a white background.
         Overlaid = imimposemin(1 - OrigImage,MaximaImage);
-    
     elseif strcmp(WatershedTransformImageType,'Distance')
         %%% Overlays the object markers (maxima) on the inverted DistanceTransformedImage so
         %%% there are black dots on top of each dark object on a white background.
         %%% We may have to calculate the distance transform:
         if ~exist('DistanceTransformedImage','var')
-            DistanceTransformedImage = bwdist(~Objects);                               
+            DistanceTransformedImage = bwdist(~Objects);
         end
         Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
     end
@@ -584,17 +637,18 @@ Lower90Limit = SortedDiameters(NbrInTails);
 Upper90Limit = SortedDiameters(end-NbrInTails+1);
 
 %%% Locate objects with diameter outside the specified range
-%%% Create image with object intensity equal to the diameter
-DiameterMap = Diameters(Objects+1);
-tmp = Objects;
-%%% Remove objects that are too small
-Objects(DiameterMap < MinDiameter) = 0;
-%%% Will be stored to the handles structure
-SmallRemovedLabelMatrixImage = Objects;
-%%% Remove objects that are too big
-Objects(DiameterMap > MaxDiameter) = 0;
-%%% Store objects that fall outside diameter range for display
-DiameterExcludedObjects = tmp - Objects ;
+if strcmp(ExcludeSize,'Yes')
+    DiameterMap = Diameters(Objects+1);                                   % Create image with object intensity equal to the diameter
+    tmp = Objects;
+    Objects(DiameterMap < MinDiameter) = 0;                               % Remove objects that are too small
+    %%% Will be stored to the handles structure
+    SmallRemovedLabelMatrixImage = Objects;
+    Objects(DiameterMap > MaxDiameter) = 0;                               % Remove objects that are too big
+    DiameterExcludedObjects = tmp - Objects ;                             % Store objects that fall outside diameter range for display
+else
+    %%% Will be stored to the handles structure even if it's unedited.
+    SmallRemovedLabelMatrixImage = Objects;
+end
 
 %%% Remove objects along the border of the image (depends on user input)
 tmp = Objects;
@@ -692,6 +746,9 @@ handles.Pipeline.(fieldname) = SmallRemovedLabelMatrixImage;
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];
 handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+
+%%% Store outlines of objects in the handles structure
+handles.PipelineObjectOutlines = PerimObjects;
 
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.

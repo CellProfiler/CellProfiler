@@ -13,7 +13,8 @@ function handles = SmoothImage(handles)
 % (option = a number). In filtering mode, the user enters an even
 % number for the artifact width, and this number is divided by two to
 % obtain the radius of a disk shaped structuring element which is used
-% for filtering.
+% for filtering. Values over ~50 take substantial amounts of time to
+% process.
 %
 % SAVING IMAGES: The smoothed images produced by this module can be
 % easily saved using the Save Images module, using the name you

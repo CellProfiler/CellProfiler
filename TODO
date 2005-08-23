@@ -120,7 +120,7 @@ This also affects the "SAVING IMAGES" portion of the help for each module, so up
 
 - (Requested by Anne) - In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
 
-- (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle.
+- (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle. The popup window is the wrong color at the end after the html file is saved.
 
 - (Requested by Anne) - Test each modules on color vs grayscale and make sure they all work or have some type of error catching.
 
@@ -166,6 +166,8 @@ Error while evaluating uicontrol Callback.
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyEasy for thresholding code).
+
+- (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

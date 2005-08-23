@@ -1,9 +1,7 @@
 CellProfiler cell image analysis software development 
-JULY 28, 2005  IN ORDER OF PRIORITY
+AUGUST 23, 2005  IN ORDER OF PRIORITY
 
 [[[NOTE: WE WILL BE COMBINING ALL OF THE IDENTIFY MODULES INTO A SINGLE MODULE IDENTIFYEASY SOON]]]
-
-
 
 - (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
 
@@ -11,10 +9,7 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.  Note: We have replaced IdentifyPrimIntenIntens with IdentifyEasy recently. We still want to fix the problem because a similar thing occurs in IdentifyEasy but you will still want to take a look at the code in IdentifyPrimIntenIntens because the bug is described in detail in there (see Outdated folder).
 
-
 - (Requested by Anne) - It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.
-
-
 
 - (Requested by Anne) [[[Ola might be able to help on this - Anne emailed him monday]]] - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  Also, error/help box text didn't fit in their windows and so was not visible.
 
@@ -23,7 +18,6 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 - (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
 
 - (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
-
 
 - (Requested by Anne) - cvs remove Profiler for Anne folder from the DeveloperDropBox. removing a directory requires a special procedure - i don't know how.
 
@@ -37,14 +31,11 @@ JULY 28, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 
-
 - (Requested by Anne) - Make spot identifier crop out the background to just leave the plate. [Actually, Anne thinks we should adapt the Crop module to take in an object  (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object becomes black).  The result of this can then be fed to the SpotIdentifier module].
 
 - (Requested by Anne) - Put RGBsplit and RGBtoGray a single module (like IdentifyPrim AdaptThreshold - But does that work?). Call the resulting module RGBtoGray and move RGBSplit to Outdated.
 
-
 - (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
-
 
 - (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
 organelles or speckles within nuclei or cells).
@@ -163,6 +154,8 @@ Error while evaluating uicontrol Callback.
 % your images. The number 1 means no adjustment, 0 to 1 makes the
 % threshold more lenient and greater than 1 (e.g. 1.3) makes the
 % threshold more stringent.
+
+- (Requested by Anne) - In the CreateWebPage module, move the link for the zip file to the top of the page so it's more visible.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

@@ -2443,6 +2443,7 @@ sum = 0; %%% Initial value.
 for i = 1:handles.Current.NumberOfModules;
     sum = sum + iscellstr(handles.Settings.ModuleNames(i));
 end
+TimerStart = 0;
 if sum == 0
     errordlg('You do not have any analysis modules loaded');
 else    
@@ -2710,20 +2711,20 @@ else
                         %%% Finds and records total time to run module.
                         a=clock;
                         finish=a(5:6);
+                        TotalModuleTime = round(60*(finish(1)-begin(1))+(finish(2)-begin(2)));
+                        
+                        if TimerStart < handles.Current.NumberOfModules
+                            ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) =  TotalModuleTime;
+                            TimerStart = TimerStart + 1;
+                        else
+                            ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) = ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) + TotalModuleTime;
+                        end
+                        
                         TotalModuleTime = num2str(round(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
                         while numel(TotalModuleTime) <=5
                             TotalModuleTime = [TotalModuleTime ' '];
                         end
-                        
-                        moduletime_text = ['Module' handles.Current.CurrentModuleNumber ': ' TotalModuleTime];
-                        if (setbeinganalyzed) == startingImageSet
-                            moduletime_text_all = moduletime_text;
-                       ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)= {moduletime_text_all};
-                        else
-                            moduletime_text_all = [char(ModuleTime(str2num(handles.Current.CurrentModuleNumber),:)) ' ' moduletime_text];
-                            ModuleTime(str2num(handles.Current.CurrentModuleNumber), :)= {moduletime_text_all};
-                        end
-                        
+                                           
                     end %%% ends loop over slot number
 
                     %%% Completes the breakout to the image loop.
@@ -2970,14 +2971,21 @@ else
                 %%% Show seperate calcualtion times for each image set.
                 try
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
-                
                 show_time_elapsed = {['Time elapsed for cycle ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
                 if handles.Current.NumberOfImageSets > 1
-                    show_time_elapsed(2) = {['Average time elapsed for other cycles = ' num2str((total_time_elapsed_num - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
+                    show_time_elapsed(2) = {['Average time elapsed for other cycles = ' num2str((round(10*toc)/10 - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
                 end
-                show_time_elapsed = char(show_time_elapsed);    
-                module_times = char(ModuleTime);
-                split_time_elapsed = strvcat(show_time_elapsed, show_set_text, module_times);
+                
+                ModCount=1;
+                while ModCount<=handles.Current.NumberOfModules
+                    AvgTimeAdd(ModCount) = ModuleTimeAdd(ModCount)/(handles.Current.NumberOfImageSets);
+                    show_avg_mod(ModCount) = {['Module ' num2str(ModCount) ' (seconds): ' num2str(AvgTimeAdd(ModCount))]};
+                    ModCount=ModCount+1;
+                end
+                
+                show_avg_mod = char(show_avg_mod);
+                show_time_elapsed = char(show_time_elapsed);
+                split_time_elapsed = strvcat(show_time_elapsed, 'The following is the average time for each cycle broken down by module:', show_avg_mod);
                 timebox = CPmsgbox(split_time_elapsed);
                 end
 

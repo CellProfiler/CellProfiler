@@ -15,7 +15,9 @@ AUGUST 23, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne) - Put in the help menus for ImageTools and DataTools.
 
-- (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.
+- (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.  Check through all other modules and tools - I think DataLayout tool is also using a hard coded font size.
+
+- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
 - (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
 
@@ -158,6 +160,10 @@ Error while evaluating uicontrol Callback.
 % threshold more stringent.
 
 - (Requested by Anne) - In the CreateWebPage module, move the link for the zip file to the top of the page so it's more visible.
+
+- (Requested by Anne 8-23-05) - The Histogram DataTool spits out the value "Suffix" at the command line in the first few steps of using the tool.
+
+- (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

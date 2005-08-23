@@ -2544,7 +2544,7 @@ else
                     'String', 'Pause', 'Position', [5 10 40 30], ...
                     'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelAfterImageSetButton_handle = uicontrol('Style', 'pushbutton', ...
-                    'String', 'Cancel after image set', 'Position', [50 10 120 30], ...
+                    'String', 'Cancel after cycle', 'Position', [50 10 120 30], ...
                     'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Times','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelAfterModuleButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after module', 'Position', [175 10 115 30], ...
@@ -2768,20 +2768,35 @@ else
                     
                     %%% Make calculations for the Timer window. Round to
                     %%% 1/10:th of seconds
-                    time_elapsed = num2str(round(toc*10)/10);
+                    time_elapsed = round(toc*10)/10;
+                    
                     %% Add variable to hold time elapsed for each image
                     %% set. 
                     %set_time_elapsed(handles.Current.SetBeingAnalyzed) = str2num(time_elapsed);
-                    timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
-                    number_analyzed = ['Number of image sets analyzed = ',...
-                            num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
+                    if (time_elapsed > 60)
+                        if (time_elapsed > 3600)
+                            time_elapsed = time_elapsed/3600;
+                            time_elapsed = num2str(round(time_elapsed*10)/10);
+                            timer_elapsed_text =  ['Time elapsed (hours) = ',time_elapsed];
+                        else
+                            time_elapsed = time_elapsed/60;
+                            time_elapsed = num2str(round(time_elapsed*10)/10);
+                            timer_elapsed_text =  ['Time elapsed (minutes) = ',time_elapsed];
+                        end
+                    else
+                        time_elapsed = num2str(round(toc*10)/10);
+                        timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
+                    end                                                      
+                           
+                    number_analyzed = ['Number of cycles completed = ',...
+                    num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
                     if setbeinganalyzed ~=0
-                        time_per_set = ['Time per image set (seconds) = ', ...
+                        time_per_set = ['Time per cycle (seconds) = ', ...
                                 num2str(round(10*toc/setbeinganalyzed)/10)];
-                    else time_per_set = 'Time per image set (seconds) = none completed'; 
+                    else time_per_set = 'Time per cycle (seconds) = none completed'; 
                     end
                     if setbeinganalyzed == startingImageSet+1
-                    time_set1 = ['Time for first image set = ' num2str(TotalSetTime)];
+                    time_set1 = ['Time for first cycle (seconds) = ' num2str(TotalSetTime)];
                     elseif setbeinganalyzed <=startingImageSet+1
                         time_set1 = '  ';
                     end
@@ -2897,8 +2912,8 @@ else
                             HeadingsErrorMessage(1) = {'Some of the sample info you'};
                             HeadingsErrorMessage(2) = {'loaded does not have the'};
                             HeadingsErrorMessage(3) = {'same number of entries as'};
-                            HeadingsErrorMessage(4) = {'the number of image sets'};
-                            HeadingsErrorMessage(5) = {['analyzed (which is ', num2str(setbeinganalyzed), ').']};
+                            HeadingsErrorMessage(4) = {'the number of cycles'};
+                            HeadingsErrorMessage(5) = {['completed (which is ', num2str(setbeinganalyzed), ').']};
                             HeadingsErrorMessage(6) = {'This mismatch will prevent'};
                             HeadingsErrorMessage(7) = {'the extract data button from'};
                             HeadingsErrorMessage(8) = { 'working, so the following'};
@@ -2919,15 +2934,29 @@ else
 
                 %%% Calculate total time elapsed and display Complete in the Timer window.
                 total_time_elapsed_num = round(10*toc)/10;
-                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(total_time_elapsed_num)];
-                number_analyzed = ['Number of image sets analyzed = ',...
+                
+                if (total_time_elapsed_num > 60)
+                    if (total_time_elapsed_num > 3600)
+                        total_time_elapsed_num = round((total_time_elapsed_num))/3600;
+                        total_time_elapsed = ['Total time elapsed (hours) = ',num2str(total_time_elapsed_num)];
+                    else
+                        total_time_elapsed_num = round((total_time_elapsed_num))/60;
+                        total_time_elapsed = ['Total time elapsed (minutes) = ',num2str(total_time_elapsed_num)];
+                    end
+                else
+                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(total_time_elapsed_num)];    
+                end              
+           
+                number_analyzed = ['Number of cycles completed = ',...
                         num2str(setbeinganalyzed - 1)];
                     
                 if setbeinganalyzed ~=1 
-                    time_per_set = ['Time per image set (seconds) = ', ...
+                    time_per_set = ['Time per cycle (seconds) = ', ...
                             num2str(round(10*toc/(setbeinganalyzed - 1))/10)];                        
-                else time_per_set = 'Time per image set (seconds) = none completed'; 
+                else time_per_set = 'Time per cycle (seconds) = none completed'; 
                 end
+                
+                
                 
 
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
@@ -2942,9 +2971,9 @@ else
                 try
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
                 
-                show_time_elapsed = {['Time elapsed for image set ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
+                show_time_elapsed = {['Time elapsed for cycle ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
                 if handles.Current.NumberOfImageSets > 1
-                    show_time_elapsed(2) = {['Average time elapsed for other image sets = ' num2str((total_time_elapsed_num - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
+                    show_time_elapsed(2) = {['Average time elapsed for other cycles = ' num2str((total_time_elapsed_num - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
                 end
                 show_time_elapsed = char(show_time_elapsed);    
                 module_times = char(ModuleTime);

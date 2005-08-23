@@ -165,6 +165,8 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
+- (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyEasy for thresholding code).
+
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 - (Requested by Anne) - Look over the changes suggested in TempMattTudor. He said there were a couple of bugs that he fixed.

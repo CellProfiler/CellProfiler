@@ -544,7 +544,9 @@ BinEdges = linspace(0,1,Levels+1);
 intensities = im(mask);
 Imax = max(intensities);
 Imin = min(intensities);
-im = (im - Imin)/(Imax-Imin);
+if Imax ~= Imin                     % Avoid divide by zero
+    im = (im - Imin)/(Imax-Imin);
+end
 
 % Do the quantization
 qim = zeros(size(im));

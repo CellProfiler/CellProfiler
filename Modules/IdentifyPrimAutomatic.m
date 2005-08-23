@@ -16,24 +16,24 @@ function handles = IdentifyEasy(handles)
 %
 % Settings:
 %
-% Min,Max diameter of objects:
-% Most modules use this estimate of the size range of the objects in
-% order to distinguish them from noise in the image. For
-% example, for some of the identification methods, the smoothing
-% applied to the image is based on the minimum size of
-% the objects.  A comma should be placed between the
-% minimum and the maximum diameters. The units here are pixels
-% so that it is easy to zoom in on found objects and determine the
-% size of what you think should be excluded. To measure distances
-% easily, use the CellProfiler Image Tool, 'Show Or Hide Pixel Data', in
-% any open window. Once this tool is activated, you can draw a line
-% across objects in your image and the length of the line will be
-% shown in pixel units.
-% Note that for non-round
-% objects, the diameter here is actually the 'equivalent diameter',
-% meaning the diameter of a circle with the same area as the object.
+% Typical diameter of objects, in pixel units (Min,Max):
+% This is a very important parameter which tells the module what you
+% are looking for. Most options within this module use this estimate
+% of the size range of the objects in order to distinguish them from
+% noise in the image. For example, for some of the identification
+% methods, the smoothing applied to the image is based on the minimum
+% size of the objects.  A comma should be placed between the minimum
+% and the maximum diameters. The units here are pixels so that it is
+% easy to zoom in on found objects and determine the size of what you
+% think should be excluded. To measure distances easily, use the
+% CellProfiler Image Tool, 'Show Or Hide Pixel Data', in any open
+% window. Once this tool is activated, you can draw a line across
+% objects in your image and the length of the line will be shown in
+% pixel units. Note that for non-round objects, the diameter here is
+% actually the 'equivalent diameter', meaning the diameter of a circle
+% with the same area as the object.
 %
-% Discard objects outside the size range:
+% Discard objects outside the diameter range:
 % Objects outside the specified range of diameters will be discarded.
 % This allows you to exclude small objects like dust, noise, and
 % debris, or large objects like clumps if desired. See also the
@@ -44,14 +44,21 @@ function handles = IdentifyEasy(handles)
 % their size, and objects outlined in yellow were discarded because
 % they touch the border.
 %
-% Approximate percentage covered by objects:
-% An estimate of how much of the image is covered with objects. This
-% information is currently only used in the MoG (Mixture of Gaussian)
-% thresholding but may be used for other thresholding methods in the
-% future (see below). This is not a very sensitive parameter so your
-% estimate need not be precise.
+% Try to merge 'too small' objects with nearby larger objects:
+% This is an experimental functionality that takes objects that were
+% discarded because they were smaller than the specified Minimum
+% diameter and tries to merge them with other surrounding objects.
+% This is helpful in cases when an object was incorrectly split into
+% two objects, one of which is actually just a tiny piece of the
+% larger object.
 %
-% Select thresholding method:
+% Discard objects touching the border of the image:
+% For most applications, you do not want to make measurements of
+% objects that are not fully within the field of view (because, for
+% example, the area would not be accurate) so they should be
+% discarded.
+%
+% Select thresholding method or enter a threshold:
 %    The threshold affects the stringency of the lines between the
 % objects and the background. You may enter an absolute number between
 % 0 and 1 for the threshold (in any image window use the CellProfiler
@@ -107,11 +114,14 @@ function handles = IdentifyEasy(handles)
 % automatic threshold will be unreasonably low. In such case the lower
 % bound you enter here will override the automatic threshold.
 %
+% Approximate percentage covered by objects:
+% An estimate of how much of the image is covered with objects. This
+% information is currently only used in the MoG (Mixture of Gaussian)
+% thresholding but may be used for other thresholding methods in the
+% future (see below). This is not a very sensitive parameter so your
+% estimate need not be precise.
+%
 % Method to distinguish clumped objects:
-% * None (fastest option) - If objects are far apart and are very well
-% separated, it may be unnecessary to attempt to separate clumped
-% objects. Using the 'None' option, the thresholded image will be used
-% to identify objects.
 % * Intensity - For objects that tend to have only one peak of
 % brightness per object (e.g. objects that are brighter towards their
 % interiors), this option counts each intensity peak as a separate
@@ -132,54 +142,62 @@ function handles = IdentifyEasy(handles)
 % for the Intensity option. Technical description: The binary
 % thresholded image is distance-transformed and object centers are
 % defined as peaks in this image.
-%
-% Method to draw dividing lines between clumped objects:
 % * None (fastest option) - If objects are far apart and are very well
 % separated, it may be unnecessary to attempt to separate clumped
 % objects. Using the 'None' option, the thresholded image will be used
 % to identify objects.
+%
+% Method to draw dividing lines between clumped objects:
 % * Intensity - works best where the dividing lines between clumped
 % objects are dim.
 % * Distance - Dividing lines between clumped objects are halfway
 % between the 'center' of each object.  The intensity patterns in the
 % original image are irrelevant - the cells need not be dimmer along
 % the lines between clumped objects.
+% * None (fastest option) - If objects are far apart and are very well
+% separated, it may be unnecessary to attempt to separate clumped
+% objects. Using the 'None' option, the thresholded image will be used
+% to identify objects.
 %
+% Size of smoothing filter, in pixel units:
+% If you are distinguishing between clumped objects, the image is
+% smoothed based on the specified minimum object diameter that you
+% have entered, but you may want to override the automatically
+% calculated value here. Reducing the texture of objects by increasing
+% the smoothing increases the chance that each real, distinct object
+% has only one peak of intensity but also increases the chance that
+% two distinct objects will be recognized as only one object. Note
+% that increasing the blur radius increases the processing time
+% exponentially.
+% This variable affects whether objects close by each other are
+% considered a single object or multiple objects. It does not affect
+% the dividing lines between an object and the background.  If you see
+% too many objects merged that ought to be separate, the value should
+% be lower. If you see too many objects split up that ought to be
+% merged, the value should be higher.
 %
+% Suppress local maxima within this distance (a positive
+% integer, in pixel units):
+% If you are distinguishing between clumped objects, object markers
+% are suppressed based on the specified minimum object diameter that
+% you have entered, but you may want to override the automatically
+% calculated value here. The maxima suppression distance should be
+% set to be roughly equivalent to the minimum radius of a real object
+% of interest. Basically, any distinct 'objects' which are found but
+% are within two times this distance from each other will be assumed
+% to be actually two lumpy parts of the same object, and they will be
+% merged. 
+% This variable affects whether objects close by each other are
+% considered a single object or multiple objects. It does not affect
+% the dividing lines between an object and the background.  If you see
+% too many objects merged that ought to be separate, the value should
+% be lower. If you see too many objects split up that ought to be
+% merged, the value should be higher.
 %
-% Here's some help copied from IntensIntens: (when ola adds back the
-% blur option):
-% Maxima suppression neighborhood & blur radius: These variables
-% affect whether objects close by each other are considered a single
-% object or multiple objects. They do not affect the dividing lines
-% between an object and the background.  If you see too many objects
-% merged that ought to be separate, the values should be lower. If you
-% see too many objects split up that ought to be merged, the values
-% should be higher. The blur radius tries to reduce the texture of
-% objects so that each real, distinct object has only one peak of
-% intensity. The maxima suppression neighborhood should be set to be
-% roughly equivalent to the minimum radius of a real object of
-% interest. Basically, any distinct 'objects' which are found but are
-% within two times this distance from each other will be assumed to be
-% actually two lumpy parts of the same object, and they will be
-% merged. Note that increasing the blur radius increases
-% the processing time exponentially.
-%
-%
-%
-% Try to merge 'too small' objects with nearby larger objects:
-% This is an experimental functionality that takes objects that were
-% discarded because they were smaller than the specified Minimum
-% diameter and tries to merge them with other surrounding objects.
-% This is helpful in cases when an object was incorrectly split into
-% two objects, one of which is actually just a tiny piece of the
-% larger object.
-%
-% Discard objects touching the border of the image:
-% For most applications, you do not want to make measurements of
-% objects that are not fully within the field of view (because, for
-% example, the area would not be accurate) so they should be
-% discarded.
+% Speed up by using lower-resolution image to find local maxima?
+% If you are distinguishing between clumped objects
+% If you have entered a minimum object diameter of 10 or less, setting this
+% option to Yes will have no effect.
 %
 % SAVING IMAGES (What do you want to call the image... ?):
 %    The object outlines, the object outlines overlaid on the original
@@ -244,19 +262,19 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Exclude objects outside the diameter range?
+%textVAR04 = Discard objects outside the diameter range?
 %choiceVAR04 = Yes
 %choiceVAR04 = No
 ExcludeSize = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Try to merge too small objects into larger objects?
+%textVAR05 = Try to merge too small objects with nearby larger objects?
 %choiceVAR05 = No
 %choiceVAR05 = Yes
 MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Exclude objects touching the border of the image?
+%textVAR06 = Discard objects touching the border of the image?
 %choiceVAR06 = Yes
 %choiceVAR06 = No
 ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -520,7 +538,7 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
     %%% of 5-6 pixels are then extracted. It might be necessary to
     %%% tune this parameter. The MaximaSuppressionSize must be an
     %%% integer.
-    if strcmp(UseLowRes,'Yes')
+    if strcmp(UseLowRes,'Yes') && MinDiameter > 10
         ImageResizeFactor = 10/MinDiameter;
         if strcmp(MaximaSuppressionSize,'Automatic')
             MaximaMask = getnhood(strel('disk', 6));

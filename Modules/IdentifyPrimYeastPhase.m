@@ -49,22 +49,25 @@ function handles = IdentifyPrimYeastPhase(handles)
 % the first thresholding step sometimes objects appear a bit smaller
 % than their final, actual size.
 %
-% Several other variables are adjustable in the code itself; we may
-% make these easily user-adjustable in the future, but here is some
-% information about them:
+% Several other variables are ill-defined so far; they were
+% empirically determined.  They probably have
+% some relationship to the typical object's diameter, but we haven't
+% characterized them well yet.....
 %
-% CODE: disks=[8 14];
+% SmallValue1 LargeValue1:
+% Used in this line:   disks=[SmallValue1 LargeValue1];
 % These are masks passed over the image to select for objects with a
-% radius in the range of 8-14 pixels. These can be thought of as the
+% radius in the range of SmallValue1-LargeValue1 pixels. These can be thought of as the
 % smallest and largest feasible radii
 %
-% CODE:
-% OrigImageMinima = imopen(BWerode,strel('disk', 2));
-% BWsmoothed  = imclose(BW,strel('disk',3));
-% PrelimLabelMatrixImage1 = imopen(WS,strel('disk', 6))
-%   Each of these lines uses an integer at the end. They probably have
-% some relationship to the typical object's diameter, but we haven't
-% characterized them well yet.
+% Value2:
+% Used in this line:   OrigImageMinima = imopen(BWerode,strel('disk', Value2));
+%
+% Value3:
+% Used in this line:   BWsmoothed  = imclose(BW,strel('disk', Value3));
+%
+% Value4:
+% Used in this line:   PrelimLabelMatrixImage1 = imopen(WS,strel('disk', Value4))
 %
 % How it works:
 % This image analysis module identifies objects by finding peaks in
@@ -190,7 +193,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = imagegroup indep
+%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Yeast
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -215,30 +218,47 @@ MinimumThreshold = str2double(char(handles.Settings.VariableValues{CurrentModule
 %defaultVAR07 = 7
 ErodeSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR09 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
-%choiceVAR09 = No
-%choiceVAR09 = Yes
-IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%textVAR08 = Do you want to include objects touching the edge (border) of the image? (Yes or No)
+%choiceVAR08 = No
+%choiceVAR08 = Yes
+IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
-%textVAR10 = What do you want to call the image of the outlines of the objects?
-%choiceVAR10 = Do not save
-%choiceVAR10 = OutlinedNuclei
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
-%inputtypeVAR10 = popupmenu custom
+%textVAR09 = What do you want to call the image of the outlines of the objects?
+%infotypeVAR09 = imagegroup indep
+%defaultVAR09 = Do not save
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
-%textVAR11 =  What do you want to call the labeled matrix image?
-%infotypeVAR11 = imagegroup indep
-%choiceVAR11 = Do not save
-%choiceVAR11 = LabeledNuclei
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
-%inputtypeVAR11 = popupmenu custom
+%textVAR10 =  What do you want to call the labeled matrix image?
+%infotypeVAR10 = imagegroup indep
+%defaultVAR10 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 
-%textVAR12 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR12 = RGB
-%choiceVAR12 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,12}); 
-%inputtypeVAR12 = popupmenu
+%textVAR11 = Do you want to save the labeled matrix image in RGB or grayscale?
+%choiceVAR11 = RGB
+%choiceVAR11 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 = Enter the SmallValue1 (even number, in pixels)
+%defaultVAR12 = 8
+SmallValue1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,12}));
+
+%textVAR13 = Enter the LargeValue1 (even number, in pixels)
+%defaultVAR13 = 14
+LargeValue1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
+
+%textVAR14 = Enter the Value2 (integer, in pixels)
+%defaultVAR14 = 3
+Value2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,14}));
+
+%textVAR15 = Enter the Value3 (integer, in pixels)
+%defaultVAR15 = 3
+Value3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
+
+%textVAR16 = Enter the Value4 (integer, in pixels)
+%defaultVAR16 = 6
+Value4 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,16}));
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
@@ -295,7 +315,7 @@ InvertedOrigImage = imcomplement(OrigImage);
 
 %% Enhance image for objects of a given size range
 EnhancedInvertedImage = InvertedOrigImage;
-disks=[8 14];  %%% POSSIBLY MAKE THIS A VARIABLE
+disks=[SmallValue1 LargeValue1];
 for i=1:length(disks)
     mask        = strel('disk',disks(i));
     top         = imtophat(InvertedOrigImage,mask);
@@ -303,6 +323,7 @@ for i=1:length(disks)
     EnhancedInvertedImage    = imsubtract(imadd(EnhancedInvertedImage,top), bot);
     drawnow
 end
+figure, imshow(EnhancedInvertedImage)
 
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
@@ -326,26 +347,29 @@ BW = EnhancedInvertedImage;
 BW(BW>Threshold) = 1;
 BW(BW<=Threshold) = 0;
 drawnow
+figure, imshow(BW)
 
 %%  2. Erode edges so only centers remain
 BWerode = imerode(BW,strel('disk', ErodeSize));
 drawnow
-
+figure, imshow(BWerode)
 %%  3. Clean it up
-OrigImageMinima = imopen(BWerode,strel('disk', 2)); %%% POSSIBLY MAKE THIS A VARIABLE
+OrigImageMinima = imopen(BWerode,strel('disk', Value2));
 drawnow
 
 %% Segment the image with watershed
 WS = watershed(imcomplement(OrigImageMinima));
-
+figure, imshow(OrigImageMinima)
 %% Watershed regions are irregularly shaped.
 %% To fix the edges: Smooth BW border, then impose this border onto the WS
-BWsmoothed  = imclose(BW,strel('disk',3)); %%% POSSIBLY MAKE THIS A VARIABLE
+BWsmoothed  = imclose(BW,strel('disk',Value3));
 WS          = immultiply(WS,BW);
 drawnow
+figure, imshow(WS)
 
 %% Smooth the edges
-PrelimLabelMatrixImage1 = imopen(WS,strel('disk', 6)); %%% POSSIBLY MAKE THIS A VARIABLE
+PrelimLabelMatrixImage1 = imopen(WS,strel('disk', Value4));
+figure, imshow(PrelimLabelMatrixImage1)
 drawnow
 
 %%% Fills holes, then identifies objects in the binary image.

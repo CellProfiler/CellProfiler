@@ -123,8 +123,8 @@ CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 = Would you like to crop each image individually?
-%choiceVAR05 = Individually
 %choiceVAR05 = Just Once
+%choiceVAR05 = Individually
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 

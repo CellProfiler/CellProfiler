@@ -343,8 +343,8 @@ if SetBeingAnalyzed == 1
             %% for reference in saved files
             handles.Measurements.Image.(fieldname) = SpecifiedPathname;
             NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
-            clear FileList % Prevents confusion when loading this value later, for each movie set.
         end
+            clear FileList % Prevents confusion when loading this value later, for each movie set.
     end
     %%% Determines which slots are empty.  None should be zero, because there is
     %%% an error check for that when looping through n = 1:5.
@@ -454,7 +454,7 @@ end
 %%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
 %%% names to the already written ones.
 if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+        isfield(handles.Measurements.Image,'FileNames') &&  length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
     % Get existing file/path names. Returns a cell array of names
     ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
     ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};

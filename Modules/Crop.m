@@ -315,8 +315,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             x2 = Pixel2(1:index-1);
             y2 = Pixel2(index+1:end);
             
-            masksize = size(ImageToBeCropped);
-            BinaryCropImage = zeros(masksize);
+            [a b c] = size(ImageToBeCropped);
+            BinaryCropImage = zeros(a,b);
             eval(['BinaryCropImage(min(' y1 ',' y2 '):max(' y1 ',' y2 '),min(' x1 ',' x2 '):max(' x1 ',' x2 ')) = 1;']);
             
         elseif strcmp(CropMethod,'Mouse')

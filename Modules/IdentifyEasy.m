@@ -502,7 +502,7 @@ else
     %%% Checks that the Threshold parameter has a valid value
     Threshold = str2double(Threshold);
     if isnan(Threshold) | Threshold > 1 | Threshold < 0
-        errordlg('The threshold entered in the IdentifyEasy module is out of range.')
+        error('The threshold entered in the IdentifyEasy module is not a number, or is outside the acceptable range of 0 to 1.')
     end
 end
 

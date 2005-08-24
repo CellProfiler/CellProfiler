@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 8/24) (Requested by Anne) - The crop module seems to fail for RGB images at the moment.
+
 -(Mike 8/24) (Requested by Anne) - For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
 
 -(Mike 8/24) (Requested by Anne) - Make this information available via a "?" button in the Add Module selection window next to the "Object Identification" header:\

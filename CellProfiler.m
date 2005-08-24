@@ -214,6 +214,27 @@ end
 %%% Checks figure handles for current open windows.
 handles.Current.CurrentHandles = findobj;
 
+
+%%% Note on the use of "8192" when retrieving handles...
+%%% Apparently, referring to a handle in a callback by converting the numerical
+%%% handle value to a string does not work, due to a precision problem in
+%%% Matlab, according to this newsgroup: 
+%%% http://groups.google.com/groups?hl=en&lr=&safe=off&selm=3lglao%242pi%40borg.svpal.org
+%%% Here's what that site says:
+% I have successfully used the following technique to convert a handle to 
+% a string:  str_h =  sprintf('%d',8192*handle) 
+% Then to retreive it:  handle = eval(str_h) / 8192 
+% This works (at least under MatLab for Windows) because handles are always 
+% multiples of 8192. I found that Duane's method is not reliable due to 
+% accuracy problems with MatLab's decimal to binary conversion. 
+% 
+% Duane Hanselman (dua...@eece.maine.edu) wrote: 
+% : In article <3l6dm0$...@hardy.ee.gatech.edu>, "Mark A. Yoder" <Mark.A.Yo...@Rose-Hulman.edu> says: 
+% : Mark: 
+% : Have you tried sprintf(%.15f,handle) to convert the handle to string? 
+% : Then you can use handle=eval(string_handle) to convert the string back 
+% : to a number.
+
 %%% Sets up the main program window (Main GUI window) so that it asks for
 %%% confirmation prior to closing.
 %%% First, obtains the handle for the main GUI window (aka figure1).

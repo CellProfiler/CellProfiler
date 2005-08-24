@@ -553,9 +553,9 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
         if strcmp(MaximaSuppressionSize,'Automatic')
             MaximaSuppressionSize = 7;             % ~ 10/1.5
         else
-            MaximaSuppressionSize = MaximaSuppressionSize*ImageResizeFactor
+            MaximaSuppressionSize = MaximaSuppressionSize*ImageResizeFactor;
         end
-    elseif strcmp(UseLowRes,'No')
+    else
         ImageResizeFactor = 1;
         if strcmp(MaximaSuppressionSize,'Automatic')
             MaximaSuppressionSize = round(MinDiameter/1.5);

@@ -167,7 +167,11 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyEasy for thresholding code).
 
+- (Requested by Anne 8-23-05) - The Cancel & Close CellProfiler doesn't seem to work.
+
 - (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
+
+- (Requested by Anne 8-24-05) - All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use error('error message goes here'), *not* errordlg(''), return. We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
 
 - (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:  SCMD: Saccharomyces
        cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan

@@ -203,7 +203,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
         % Suffix 'Features' indicates that we have found a cell array with measurements, i.e.,
         % where each cell contains a matrix of size
         % [(Nbr of objects in image) x (Number of features of this feature type)]
-        if ~isempty(strfind(fields{k},'Features'))
+        if length(fields{k}) > 8 & strcmp(fields{k}(end-7:end),'Features')
             % Get the associated cell array of measurements
             try
                 CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
@@ -229,7 +229,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
             % Suffix 'Text' indicates that we have found a cell array with text information, i.e.,
             % where each cell contains a cell array of strings
-        elseif ~isempty(strfind(fields{k},'Text'))
+        elseif length(fields{k}) > 4 & strcmp(fields{k}(end-3:end),'Text')
 
             % Get the associated cell array of measurements
             try

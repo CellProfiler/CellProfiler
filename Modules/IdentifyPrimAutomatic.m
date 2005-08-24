@@ -541,13 +541,19 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
     f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
     BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
     
-    %%% Get local maxima, where the definition of local depends on the user-provided object size.
-    %%% This will (usually) be done in a lower-resolution image for speed. The ordfilt2()
-    %%% function is very slow for large images containing large objects. Therefore, image is resized
-    %%% to a size where the smallest objects are about 10 pixels wide. Local maxima within a radius
+    %%% Get local maxima, where the definition of local depends on the
+    %%% user-provided object size. This will (usually) be done in a
+    %%% lower-resolution image for speed. The ordfilt2() function is
+    %%% very slow for large images containing large objects.
+    %%% Therefore, image is resized to a size where the smallest
+    %%% objects are about 10 pixels wide. Local maxima within a radius
     %%% of 5-6 pixels are then extracted. It might be necessary to
     %%% tune this parameter. The MaximaSuppressionSize must be an
-    %%% integer.
+    %%% integer.  The MaximaSuppressionSize should be equal to the
+    %%% minimum acceptable radius if the objects are perfectly
+    %%% circular with local maxima in the center. In practice, the
+    %%% MinDiameter is divided by 1.5 because this allows the local
+    %%% maxima to be shifted somewhat from the center of the object.
     if strcmp(UseLowRes,'Yes') && MinDiameter > 10
         ImageResizeFactor = 10/MinDiameter;
         if strcmp(MaximaSuppressionSize,'Automatic')

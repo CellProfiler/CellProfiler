@@ -512,13 +512,12 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 drawnow
 
-%%% Smooth images and apply threshold
-if strcmp(SizeOfSmoothingFilter,'Automatic')
-    sigma = MinDiameter/3;                                            % Translate between minimum diameter of objects to sigma.
-else
-    sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
-end
-FiltLength = min(30,max(1,ceil(3*sigma)));                            % Determine filter size, min 3 pixels, max 61
+%%% Apply a slight smoothing before thresholding to remove
+%%% 1-pixel objects and to smooth the edges of the objects.
+%%% Note that this smoothing is hard-coded, and not controlled 
+%%% by the user.
+sigma = 1; 
+FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
 BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
@@ -531,6 +530,17 @@ drawnow
 %%% to separate neighboring objects.
 if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
 
+    %%% Smooth images for maxima suppression
+    if strcmp(SizeOfSmoothingFilter,'Automatic')
+        sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.S
+    else
+        sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
+    end
+    FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
+    [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+    f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+    BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+    
     %%% Get local maxima, where the definition of local depends on the user-provided object size.
     %%% This will (usually) be done in a lower-resolution image for speed. The ordfilt2()
     %%% function is very slow for large images containing large objects. Therefore, image is resized
@@ -541,19 +551,19 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
     if strcmp(UseLowRes,'Yes') && MinDiameter > 10
         ImageResizeFactor = 10/MinDiameter;
         if strcmp(MaximaSuppressionSize,'Automatic')
-            MaximaMask = getnhood(strel('disk', 6));
+            MaximaSuppressionSize = 7;             % ~ 10/1.5
         else
-            MaximaMask = getnhood(strel('disk', round(MaximaSuppressionSize*ImageResizeFactor)));
+            MaximaSuppressionSize = MaximaSuppressionSize*ImageResizeFactor
         end
     elseif strcmp(UseLowRes,'No')
         ImageResizeFactor = 1;
         if strcmp(MaximaSuppressionSize,'Automatic')
-            MaximaMask = getnhood(strel('disk', round(MinDiameter/1.5)));
+            MaximaSuppressionSize = round(MinDiameter/1.5);
         else
-            MaximaMask = getnhood(strel('disk', round(MaximaSuppressionSize)));
+            MaximaSuppressionSize = round(MaximaSuppressionSize);
         end
     end
-
+    MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
 
     if strcmp(LocalMaximaType,'Intensity')
 
@@ -750,6 +760,12 @@ if any(findobj == ThisModuleFigureNumber)
     ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
+    if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
+        uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Current.FontSize);
+        uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Current.FontSize);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -894,7 +910,7 @@ ClassMean(1) = Intensities(round(length(Intensities)*pBackground/2));           
 ClassMean(3) = Intensities(round(length(Intensities)*(1 - pObject/2)));                    %%% Initialize object class
 ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
 %%% Initialize standard deviations of the Gaussians. They should be the same to avoid problems.
-ClassStd(1:3) = 0.1;
+ClassStd(1:3) = 0.15;
 %%% Initialize prior probabilities of a pixel belonging to each class. The intermediate
 %%% class is gets some probability from the background and object classes.
 pClass(1) = 3/4*pBackground;
@@ -926,12 +942,11 @@ while delta > 0.001
     for k = 1:NumberOfClasses
         pClass(k) = mean(pPixelClass(:,k));
         ClassMean(k) = sum(pPixelClass(:,k).*Intensities)/(length(Intensities)*pClass(k));
-        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(Intensities - ClassMean(k)).^2)/(length(Intensities)*pClass(k)));
+        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(Intensities - ClassMean(k)).^2)/(length(Intensities)*pClass(k))) + sqrt(eps);    % Add sqrt(eps) to avoid division by zero
     end
 
     %%% Calculate change
     delta = sum(abs(ClassMean - oldClassMean));
-    [ClassMean' ClassStd'];
 end
 
 %%% Now the Gaussian distributions are fitted and we can describe the histogram of the pixel
@@ -1037,9 +1052,9 @@ while ~isempty(MergeIndex)
 
         %%% Calculate likelihood of the interface belonging to the background or to an object.
         WithinObjectClassMean   = mean(OrigImagePatch(WithinObjectIndex));
-        WithinObjectClassStd    = std(OrigImagePatch(WithinObjectIndex));
+        WithinObjectClassStd    = std(OrigImagePatch(WithinObjectIndex)) + sqrt(eps);
         BackgroundClassMean     = mean(OrigImagePatch(BackgroundIndex));
-        BackgroundClassStd      = std(OrigImagePatch(BackgroundIndex));
+        BackgroundClassStd      = std(OrigImagePatch(BackgroundIndex)) + sqrt(eps);
         InterfaceMean           = mean(OrigImagePatch(InterfaceIndex));
         LogLikelihoodObject     = -log(WithinObjectClassStd^2) - (InterfaceMean - WithinObjectClassMean)^2/(2*WithinObjectClassStd^2);
         LogLikelihoodBackground = -log(BackgroundClassStd^2) - (InterfaceMean - BackgroundClassMean)^2/(2*BackgroundClassStd^2);

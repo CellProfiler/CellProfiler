@@ -80,19 +80,23 @@ Fieldnames = fieldnames(handles.Measurements.Image);
 PotentialImageNames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
 %%% Error detection.
 if isempty(PotentialImageNames)
-    errordlg('CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.')
+    h = errordlg('CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.')
+    ImageFileName = [];
+else
+    %%% Allows the user to select a filename from the list.
+    [Selection, ok] = listdlg('ListString',PotentialImageNames, 'ListSize', [300 300],...
+        'Name','Choose the image whose filename you want to display',...
+        'PromptString','Choose the image whose filename you want to display','CancelString','Cancel',...
+        'SelectionMode','single');
+    if ok == 0
+        return
+    end
+    SelectedImageName = char(PotentialImageNames(Selection));
+    ImageFileName = handles.Measurements.Image.(SelectedImageName){SampleNumber};
+    %%% Prompts the user with the image file name.
+    h = CPmsgbox(['Browse to find the image called ', ImageFileName,'.']);
 end
-%%% Allows the user to select a filename from the list.
-[Selection, ok] = listdlg('ListString',PotentialImageNames, 'ListSize', [300 300],...
-    'Name','Choose the image whose filename you want to display',...
-    'PromptString','Choose the image whose filename you want to display','CancelString','Cancel',...
-    'SelectionMode','single');
-if ok == 0,return,end
 
-SelectedImageName = char(PotentialImageNames(Selection));
-ImageFileName = handles.Measurements.Image.(SelectedImageName){SampleNumber};
-%%% Prompts the user with the image file name.
-h = CPmsgbox(['Browse to find the image called ', ImageFileName,'.']);
 %%% Opens a user interface window which retrieves a file name and path
 %%% name for the image to be displayed.
 [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');

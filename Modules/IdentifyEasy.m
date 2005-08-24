@@ -223,6 +223,12 @@ function handles = IdentifyEasy(handles)
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
 %
+% Technical notes: The initial step of identifying local maxima is
+% performed on the user-controlled heavily smoothed image, the
+% foreground/background is done on a hard-coded slightly smoothed
+% image, and the dividing lines between clumped objects (watershed) is
+% done on the non-smoothed image.
+%
 % See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -532,15 +538,19 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
 
     %%% Smooth images for maxima suppression
     if strcmp(SizeOfSmoothingFilter,'Automatic')
-        sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.S
+        sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.
     else
         sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
     end
     FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
     [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
     f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-    BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
-    
+    %%% The original image is blurred. Prior to this blurring, the
+    %%% image is padded with values at the edges so that the values
+    %%% around the edge of the image are not artificially low.  After
+    %%% blurring, these extra padded rows and columns are removed.
+    BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
+    BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
     %%% Get local maxima, where the definition of local depends on the
     %%% user-provided object size. This will (usually) be done in a
     %%% lower-resolution image for speed. The ordfilt2() function is
@@ -616,7 +626,10 @@ if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
         MaximaImage = bwmorph(MaximaImage,'shrink',inf);
     end
 
-    %%% Overlay the maxima on either the original image or a distance transformed image
+    %%% Overlay the maxima on either the original image or a distance
+    %%% transformed image. The watershed is currently done on
+    %%% non-smoothed versions of these image. We may want to try to do
+    %%% the watershed in the slightly smoothed image.
     if strcmp(WatershedTransformImageType,'Intensity')
         %%% Overlays the objects markers (maxima) on the inverted original image so
         %%% there are black dots on top of each dark object on a white background.

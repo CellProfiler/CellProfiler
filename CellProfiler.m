@@ -3406,13 +3406,16 @@ function OpenImage_Callback(hObject, eventdata, handles)
 OpenNewImageFile(handles);
 
 function ZipFiles_Callback(hObject, eventdata, handles)
-TempListOfThingsToSave = {'CPsubfunctions' 'DataTools' 'ImageTools' 'Modules' 'Help' 'CellProfiler.m' 'CellProfiler.fig'};
-ListOfThingsToSave = {};
-for(i=[1:length(TempListOfThingsToSave)])
-    if(exist(char(TempListOfThingsToSave(i)),'file'))
-        ListOfThingsToSave(length(ListOfThingsToSave)+1) = TempListOfThingsToSave(i);
-    end
-end
+%%%Not sure why list of things to save is put in loop with this code.
+%%%
+%%%TempListOfThingsToSave = {'CPsubfunctions' 'DataTools' 'ImageTools' 'Modules' 'Help' 'CellProfiler.m' 'CellProfiler.fig'};
+%%%ListOfThingsToSave = {};
+%%%for(i=[1:length(TempListOfThingsToSave)])
+%%%    if(exist(char(TempListOfThingsToSave(i)),'file'))
+%%%        ListOfThingsToSave(length(ListOfThingsToSave)+1) = TempListOfThingsToSave(i);
+%%%    end
+%%%end
+ListOfThingsToSave = {'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.m' 'Help\*.m' 'CellProfiler.m' 'CellProfiler.fig'}
 try
     ZipFileName = [handles.Current.DefaultOutputDirectory '/CellProfilerCode_',date,'.zip'];
     zip(ZipFileName,ListOfThingsToSave,handles.Current.CellProfilerPathname);

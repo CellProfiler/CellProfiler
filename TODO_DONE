@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 8/24) - (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
+
+-(Colin 8/24) - (Requested by Anne) - IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
+
+-(Colin 8/24) _ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
+
+-(Colin 8/24) -- (Requested by Anne) - Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
 -(Mike 8/24) (Requested by Anne) - The crop module seems to fail for RGB images at the moment.
 
 -(Mike 8/24) (Requested by Anne) - For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).

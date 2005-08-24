@@ -7,9 +7,9 @@
 \red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 Normal;}
 {\*\cs10 \additive \ssemihidden Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid2363978\rsid7030630\rsid8223179\rsid15352067}
-{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy23\hr15\min25}{\revtim\yr2005\mo8\dy24\hr8\min39}{\version5}{\edmins73}{\nofpages2}{\nofwords358}{\nofchars2044}{\*\company WIBR}
-{\nofcharsws2398}{\vern16389}}\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3
+\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid1180567\rsid2363978\rsid4592306\rsid7030630\rsid8223179\rsid15352067}
+{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy23\hr15\min25}{\revtim\yr2005\mo8\dy24\hr9\min11}{\version7}{\edmins74}{\nofpages2}{\nofwords336}{\nofchars1917}{\*\company WIBR}
+{\nofcharsws2249}{\vern16389}}\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3
 \jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot2363978 \fet0\sectd \linex0\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3
 \pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}
 {\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ql \li0\ri0\nowidctlpar
@@ -19,10 +19,6 @@
 \par - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
 \par 
 \par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f4\insrsid2363978 - (Requested by Anne) - The crop module seems to fail for RGB images at the moment.
-\par 
-\par 
-\par - (Requested by Anne) - For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
-\par 
 \par 
 \par - (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
 \par 
@@ -38,9 +34,9 @@
 \par    Mike Lamprecht
 \par    Susan Ma
 \par 
-\par - (Requested by Anne) - In several places there is text informat
-ion entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the varia
-ble box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
+\par - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corres
+ponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it
+ is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
 \par 
 \par - (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):\\
 \par     %%% This method of calculating a colormap to use prevented some\\
@@ -52,6 +48,6 @@ ble box doesn't appear if it is n/a?  I think maybe the reason it is done this w
 \par     cmap = jet(max(64,max(Objects(:))));\\
 \par     im = label2rgb(Objects, cmap, 'k', 'shuffle');\\
 \par 
-\par - (Requested by Anne 8-22-05) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of opti
-ons and show the results in a single large window to help the user choose among the options.  I particularly want to see these results and show them to Ola before he leaves for Germany to make sure they are giving the results he expects.\}
+\par - (Requested by Anne 8-22-05) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of options
+ and show the results in a single large window to help the user choose among the options.  I particularly want to see these results and show them to Ola before he leaves for Germany to make sure they are giving the results he expects.\}
 \par }}

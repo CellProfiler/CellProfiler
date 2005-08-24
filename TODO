@@ -100,13 +100,15 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
+****************
 - (Requested by Anne) - Many of the identify modules produce object outlines on top of the original image. I would like to change all of these so that the outlines only (without the underlying grayscale image) are saved in the handles structure (maybe as logical/binary images?) and then you can overlay them on an image using a separate module. This allows more flexibility. (for example, identify well spots doesn't know what the 'original image' is so it can't display outlines on an original image). It also reduces the size of the image stored in the handles structure, since it would be a logical format rather than full 8 bit, but that's a minor advantage. To accomplish this, we should make a module 'AddImages' that can add two images' pixel values in the normal manner but also has an option to make one of the images' nonzero values be either (a) the maximum allowed value for a particular image format (e.g. 255 for 8 bit images) or (b) the maximum of the grayscale image (e.g. if an image has values from 0 to 0.17, the binary outlines would be assigned the value 0.17). We have already made this change for IdentifyEasy but we need to do a similar thing for the other IdentifyPrim and Sec and Tertiary modules (there is currently a push in progress to merge all identifyprim modules into IdentifyEasy and all IdentifySec modules into one, so perhaps check that first).
 This also affects the "SAVING IMAGES" portion of the help for each module, so update the other modules' help using IdentifyEasy's as a template.
 
 - (Requested by Anne) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space) and instead have the SaveImages module have an option to convert a label matrix to color. Perhaps we can then also have an option in SaveImages to choose the colormap to be used for this conversion. It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
 
-- (Requested by Anne) - Make another primary object identification module based on
-       Intensity then distance. 
+- (Requested by Anne 8-24-05) I HAVE STARTED ADDRESSING THE ABOVE CONCERNS IN THIS MANNER - I have written QuickFixConvertObjectsToImage module. We should develop this further so that it can be used to convert objects into images that are savable by SaveImages. It should also be able to convert objects to images in order to pass them down the pipeline (because if you wanted to process a label matrix image downstream, you can't select its object name in downstream modules because only imagegroup members are selectable in downstream modules). The ability to use this module with the SaveImages module will replace the last few variables and related code from each individual Identify module which will be more streamlined. This module should include options (1) convert entire objects or just outlines, (2) binary, grayscale in range 0 to 1 (be sure to think about what happens if there's more than 256 objects), or RGB. For RGB, allow the user to choose which colormap (e.g. jet, bone, autumn, etc).  We might even include an option to allow overlaying outlines on some image, because that's really handy.
+
+********************
 
 - (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
 
@@ -177,6 +179,16 @@ Error while evaluating uicontrol Callback.
        cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
        1;32 Database issue:D319-22. PMID: 14681423  
 Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
+
+- (Requested by Anne 8-24-05) - The SaveImageAs ImageTool gave this error when I tried to use it on a IdentifyEasy figure window that was saved as a matlab fig file and then reopened later:
+??? Invalid handle object.
+Error in ==> SaveImageAs at 29
+    MainWinPos = get(handles.figure1,'Position');
+??? Error while evaluating uimenu Callback.
+
+- (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames.
+
+- (Requested by Anne 8-24-05) - The FilterObjectsAreaShape window should have the bottom left and top right displays switched in their positions (the final filtered image should be in the top right and the outlines on input image should be at the lower right.)  Why is there an input image for this module?  Is it only for showing the outlines on the original image? If that is the case, it should be made optional. FilterObjectsAreaShape needs full documentation and so forth, and it needs its method for saving outlines and colored images to be consistent with other modules (like IdentifyEasy).
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

@@ -169,6 +169,11 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
 
+- (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:  SCMD: Saccharomyces
+       cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
+       1;32 Database issue:D319-22. PMID: 14681423  
+Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
+
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 - (Requested by Anne) - Look over the changes suggested in TempMattTudor. He said there were a couple of bugs that he fixed.
@@ -232,12 +237,6 @@ The iterations can be performed on a low-resolution version of the original imag
 ++  (Requested by Anne) -Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
 
 ++  (Requested by Anne) -Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
-
-+++  (Requested by Anne) -Try to get code for yeast segmentation from this paper, and
-       incorporate it into CellProfiler: SCMD: Saccharomyces
-       cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
-       1;32 Database issue:D319-22. PMID: 14681423  
-Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
 
 +++  (Requested by Anne) -Make a user-scoring module that allows the user to view and
        annotate each image manually. Show control side by side (1-4 at

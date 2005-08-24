@@ -150,8 +150,7 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = Enter the path name to the folder where the images to be loaded are located. Leave a period (.) to retrieve images from the default image directory #LongBox#
-%defaultVAR11 = .
+%pathnametextVAR11 = Enter the path name to the folder where the images to be loaded are located.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 3

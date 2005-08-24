@@ -37,7 +37,7 @@ FreqRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 LogOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Enter any optional commands or leave a period. #LongBox#
+%textVAR06 = Enter any optional commands or leave a period.
 OptionalCmds = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR06 = .
 

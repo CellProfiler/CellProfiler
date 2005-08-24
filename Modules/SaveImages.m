@@ -155,8 +155,7 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = tif
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the pathname to the directory where you want to save the images. Type a period (.) to save images in the default output directory, or type I to save images in the default image directory, or type S to save images in the same Subdirectory where the original files are located. #LongBox#
-%defaultVAR05 = .
+%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the bit depth at which to save the images (Note: some image formats do not support saving at a bit depth of 12 or 16; see Matlab's imwrite function for more details.)

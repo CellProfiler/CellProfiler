@@ -111,11 +111,10 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What is the path to the directory where the batch files were saved? Leave a period (.) to retrieve images from the default output directory #LongBox#
-%defaultVAR01 = .
+%pathnametextVAR01 = What is the path to the directory where the batch files were saved?
 BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What was the prefix of the batch files? #LongBox#
+%textVAR02 = What was the prefix of the batch files?
 %defaultVAR02 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

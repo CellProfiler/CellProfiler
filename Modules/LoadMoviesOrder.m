@@ -253,8 +253,7 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
-%defaultVAR12 = .
+%pathnametextVAR12 = Enter the path name to the folder where the movies to be loaded are located.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 3

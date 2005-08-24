@@ -104,8 +104,7 @@ ThirdImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = YFP
 FifthImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Enter the directory path name where the images are saved.#LongBox#
-%defaultVAR04 = Default directory - leave this text to retrieve images from the directory specified above
+%pathnametextVAR04 = Enter the directory path name where the images are saved.
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

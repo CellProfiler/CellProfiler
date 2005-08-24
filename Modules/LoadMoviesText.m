@@ -242,8 +242,7 @@ ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = Enter the path name to the folder where the movies to be loaded are located. Leave a period (.) to retrieve movies from the default image directory #LongBox#
-%defaultVAR13 = .
+%pathnametextVAR13 = Enter the path name to the folder where the movies to be loaded are located.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
 %textVAR14 = CellProfiler can currently read only certain types of avi and stk movie files. For more details, see the help for this module.

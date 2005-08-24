@@ -92,11 +92,11 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Send e-mails to these e-mail addresses #LongBox#
+%textVAR01 = Send e-mails to these e-mail addresses
 %defaultVAR01 = default@default.com
 AddressEmail = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Send e-mails from this e-mail address #LongBox#
+%textVAR02 = Send e-mails from this e-mail address
 %defaultVAR02 = youremail@address.com
 AddressFrom = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

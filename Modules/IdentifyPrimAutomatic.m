@@ -248,10 +248,24 @@ function handles = IdentifyEasy(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
+
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+
+if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,20}),'Yes')
+    LocalMaximaTypeList = {'Intensity' 'Shape' 'None'};
+    WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
+else
+    LocalMaximaTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,11})};
+    WatershedTransformImageTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,12})};
+end
+
+for LocalMaximaTypeNumber = [1:length(LocalMaximaTypeList)]
+for WatershedTransformImageTypeNumber = [1:length(WatershedTransformImageTypeList)]
+
+        
 
 %textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
@@ -319,15 +333,20 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %choiceVAR11 = Intensity
 %choiceVAR11 = Shape
 %choiceVAR11 = None
-LocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
+
+LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
+
 
 %textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
 %choiceVAR12 = Intensity
 %choiceVAR12 = Distance
 %choiceVAR12 = None
-WatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
+
+WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
 %textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
 %choiceVAR13 = Automatic
@@ -365,6 +384,12 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 %choiceVAR19 = Grayscale
 SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
 %inputtypeVAR19 = popupmenu
+
+%textVAR20 = Test Mode?
+%choiceVAR20 = No
+%choiceVAR20 = Yes
+TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
+%inputtypeVAR20 = popupmenu
 
 %%%VariableRevisionNumber = 8
 
@@ -531,6 +556,8 @@ Objects = BlurredImage > Threshold;                                   % Threshol
 Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
 Objects = imfill(double(Objects),'holes');                            % Fill holes
 drawnow
+
+
 
 %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
 %%% to separate neighboring objects.
@@ -717,6 +744,8 @@ FinalLabelMatrixImage = Objects;
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
+if strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType)
+
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
@@ -879,6 +908,60 @@ handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
 tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
+end
+
+if strcmp(TestMode,'Yes')
+    drawnow;
+    SegmentedFigures = findobj('Tag','SegmentedFigure');
+    if isempty(SegmentedFigures)
+        SegFig=CPfigure('Tag','SegmentedFigure');
+        uicontrol('style','text','units','normalized','string','Test images for Segmented Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
+    else
+        SegFig = CPfigure(SegmentedFigures(1));
+    end
+    
+    subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+    cmap = jet(max(64,max(Objects(:))));
+    im = label2rgb(Objects, cmap, 'k', 'shuffle');
+    ImageHandle = imagesc(im);
+    
+    title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
+
+   
+    
+    OutlinedFigures = findobj('Tag','OutlinedFigure');
+    if isempty(OutlinedFigures)
+        OutFig=CPfigure('Tag','OutlinedFigure');
+        uicontrol('style','text','units','normalized','string','Test images for Outlined Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
+
+    else
+        OutFig = CPfigure(OutlinedFigures(1));
+    end
+    
+    tmp = OrigImage/max(OrigImage(:));
+    OutlinedObjectsR = tmp;
+    OutlinedObjectsG = tmp;
+    OutlinedObjectsB = tmp;
+    PerimObjects = bwperim(Objects > 0);
+    PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+    PerimBorder = bwperim(BorderObjects > 0);
+    OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+    OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+    OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+    
+    subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+    OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+    ImageHandle = imagesc(OutlinedObjects);
+    title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
+
+    
+    
+end
+    
+    
+end
+end
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

@@ -210,7 +210,8 @@ end
 %%% requested expansion.
 
 if sum(sum(IncomingLabelMatrixImage)) >= 1
-    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,'jet', 'k', 'shuffle');
+    cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
+    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
 else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
 end
 

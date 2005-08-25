@@ -248,15 +248,18 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(NewSegmentedObjectImage)) >= 1
-        ColoredNewSegmentedObjectImage = label2rgb(NewSegmentedObjectImage, 'jet', 'k', 'shuffle');
+        cmap = jet(max(64,max(NewSegmentedObjectImage(:))));
+        ColoredNewSegmentedObjectImage = label2rgb(NewSegmentedObjectImage, cmap, 'k', 'shuffle');
     else  ColoredNewSegmentedObjectImage = NewSegmentedObjectImage;
     end
     if sum(sum(MaskRegionObjectImage)) >= 1
-        ColoredMaskRegionObjectImage = label2rgb(MaskRegionObjectImage, 'jet', 'k', 'shuffle');
+        cmap = jet(max(64,max(MaskRegionObjectImage(:))));
+        ColoredMaskRegionObjectImage = label2rgb(MaskRegionObjectImage, cmap, 'k', 'shuffle');
     else  ColoredMaskRegionObjectImage = MaskRegionObjectImage;
     end
     if sum(sum(SegmentedObjectImage)) >= 1
-        ColoredSegmentedObjectImage = label2rgb(SegmentedObjectImage, 'jet', 'k', 'shuffle');
+        cmap = jet(max(64,max(SegmentedObjectImage(:))));
+        ColoredSegmentedObjectImage = label2rgb(SegmentedObjectImage, cmap, 'k', 'shuffle');
     else  ColoredSegmentedObjectImage = SegmentedObjectImage;
     end
 

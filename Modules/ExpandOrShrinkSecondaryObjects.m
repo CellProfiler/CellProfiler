@@ -250,7 +250,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SegmentedImage)) >= 1
-        OriginalColoredLabelMatrixImage = label2rgb(SegmentedImage,'jet', 'k', 'shuffle');
+        cmap = jet(max(64,max(SegmentedImage(:))));
+        OriginalColoredLabelMatrixImage = label2rgb(SegmentedImage,cmap, 'k', 'shuffle');
     else  OriginalColoredLabelMatrixImage = SegmentedImage;
     end
     %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
@@ -258,7 +259,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SegmentedImage)) >= 1
-        ShrunkenColoredLabelMatrixImage = label2rgb(FinalShrunkenSegmentedImage,'jet', 'k', 'shuffle');
+        cmap = jet(max(64,max(FinalShrunkenSegmentedImage(:))));
+        ShrunkenColoredLabelMatrixImage = label2rgb(FinalShrunkenSegmentedImage,cmap, 'k', 'shuffle');
     else  ShrunkenColoredLabelMatrixImage = FinalShrunkenSegmentedImage;
     end
 % PROGRAMMING NOTE

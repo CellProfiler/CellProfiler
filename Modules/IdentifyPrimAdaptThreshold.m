@@ -438,7 +438,8 @@ if(CurrentOptionSelect == 1)
         %%% Note that the label2rgb function doesn't work when there are no objects
         %%% in the label matrix image, so there is an "if".
         if sum(sum(FinalLabelMatrixImage)) >= 1
-            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
+            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
         else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
         end
         drawnow
@@ -759,7 +760,8 @@ elseif CurrentOptionSelect == 2
         %%% Note that the label2rgb function doesn't work when there are no objects
         %%% in the label matrix image, so there is an "if".
         if sum(sum(FinalLabelMatrixImage)) >= 1
-            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
+            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
         else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
         end
         %%% Calculates the object outlines, which are overlaid on the original
@@ -1092,7 +1094,8 @@ elseif CurrentOptionSelect == 3
         %%% Note that the label2rgb function doesn't work when there are no objects
         %%% in the label matrix image, so there is an "if".
         if sum(sum(FinalLabelMatrixImage)) >= 1
-            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
+            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
         else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
         end
         %%% Calculates the PreThresholdedImage for displaying in the figure
@@ -1390,7 +1393,8 @@ elseif CurrentOptionSelect == 4
         %%% Note that the label2rgb function doesn't work when there are no objects
         %%% in the label matrix image, so there is an "if".
         if sum(sum(FinalLabelMatrixImage)) >= 1
-            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
+            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
         else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
         end
         %%% Calculates the object outlines, which are overlaid on the original

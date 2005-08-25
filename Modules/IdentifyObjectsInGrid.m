@@ -206,6 +206,7 @@ handles.Pipeline.(['Segmented' NewObjectName]) = FinalLabelMatrixImage;
 if ~strcmp(LabelMatrixImageName,'Do Not Save')
     if strcmp(RGBorGray,'RGB')
         if sum(sum(FinalLabelMatrixImage)) >= 1
+            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
             ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
         else
             ColoredLabelMatrixImage = FinalLabelMatrixImage;

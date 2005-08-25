@@ -857,7 +857,8 @@ if ~strcmp(SaveColored,'Do not save')
     try
         if strcmp(SaveMode,'RGB')
             if sum(sum(FinalLabelMatrixImage)) >= 1
-                ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
+                cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
+                ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
             else
                 ColoredLabelMatrixImage = FinalLabelMatrixImage;
             end

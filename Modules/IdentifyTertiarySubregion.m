@@ -222,7 +222,8 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SubregionObjectImage)) >= 1
-    ColoredLabelMatrixImage = label2rgb(SubregionObjectImage,'jet', 'k', 'shuffle');
+        cmap = jet(max(64,max(SubregionObjectImage(:))));
+        ColoredLabelMatrixImage = label2rgb(SubregionObjectImage,cmap, 'k', 'shuffle');
     else  ColoredLabelMatrixImage = SubregionObjectImage;
     end
     %%% Converts the label matrix to a colored label matrix for display and saving

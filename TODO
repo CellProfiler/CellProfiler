@@ -188,6 +188,8 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne 8-24-05) - The FilterObjectsAreaShape window should have the bottom left and top right displays switched in their positions (the final filtered image should be in the top right and the outlines on input image should be at the lower right.)  Why is there an input image for this module?  Is it only for showing the outlines on the original image? If that is the case, it should be made optional. FilterObjectsAreaShape needs full documentation and to be made to look like all the other modules, and it needs its method for saving outlines and colored images to be consistent with other modules (like IdentifyEasy).  I think we also need a FilterObjectsIntensity and FilterObjectsTexture module (the last one is probably not going to be used much, but it's just to be complete).
 
+- (Requested by Anne 8-24-05) - The help for the crop module is out of date. In addition, the variable descriptions referring to the first pixel and second pixel are confusing.  Perhaps it should be restructured to ask for the first and last X pixel in one box and then the first and last Y pixel in the second box.  It should tell the user that they can enter 'end' (or maybe it should be 'last') if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
+
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 - (Requested by Anne) - Look over the changes suggested in TempMattTudor. He said there were a couple of bugs that he fixed.

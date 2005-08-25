@@ -3,10 +3,16 @@ function handles = IdentifyObjectsInGrid(handles)
 % Help for the Identify Objects In Grid module:
 % Category: Object Identification and Modification
 %
-% Sorry, this module has not yet been fully documented.
+% This module identifies objects what are in a grid.  It requires that you
+% create a grid in an earlier module using the DefineGrid module.  If you
+% are using natural shape, the module need to use objects that are already
+% identified.  It will merge objects if they were accidentally seperated,
+% and properly numbers the objects according to how the grid was originally
+% defined.  Note that if an object does not exist, it will create an object
+% with a single pixel in the middle of the grid square.
 %
 %
-% See also n/a.
+% See also DefineGrid.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -82,8 +88,12 @@ RGBorGray = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-Grid = handles.Pipeline.(['Grid_' GridName]);
-
+try
+    Grid = handles.Pipeline.(['Grid_' GridName]);
+catch
+    error('IdentifyObjectsInGrid is unable to open the grid.  Make sure you properly defined it using the DefineGrid module earlier.');
+end
+    
 TotalHeight = Grid.TotalHeight;
 TotalWidth = Grid.TotalWidth;
 Cols = Grid.Cols;

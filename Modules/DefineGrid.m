@@ -3,9 +3,14 @@ function handles = DefineGrid(handles)
 % Help for the Define Grid module:
 % Category: Other
 %
-% This module defines a grid that can be used by modules downstream.
+% This module defines a grid that can be used by modules downstream.  If
+% you would like the grid to be identified automatically, then you need to
+% identify objects before.  If you are using manual, you still need some
+% type of picture to get height and width of the image.  Note that
+% automatic mode will create a skewed grid if there is an object on the far
+% left or far right that is not supposed to be there.
 %
-% See also n/a.
+% See also IdentifyObjectsInGrid.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

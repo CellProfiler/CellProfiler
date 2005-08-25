@@ -3,10 +3,14 @@ function handles = DisplayGridInfo(handles)
 % Help for the Display Grid Information module:
 % Category: Other
 %
-% Sorry, this module has not yet been fully documented.
+% This module will display text information in a grid pattern.  It requires
+% that you define a grid in an earlier module using the DefineGrid module
+% and also load text data using the AddTextData module.  The data need to
+% have the same number of entries as there are grid locations (grid
+% squares).
 %
 %
-% See also n/a.
+% See also DefineGrid.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

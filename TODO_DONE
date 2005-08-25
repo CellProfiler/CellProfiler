@@ -2,6 +2,16 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 8/25)  (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):\
+    %%% This method of calculating a colormap to use prevented some\
+    %%% errors relating to colormaps. For one thing, the label2rgb\
+    %%% function fails if there are no objects in the label matrix\
+    %%% image. Also, there is a bug for some of the colormaps that\
+    %%% fails when there are only 1 or 2 objects in the image, I\
+    %%% think.\
+    cmap = jet(max(64,max(Objects(:))));\
+    im = label2rgb(Objects, cmap, 'k', 'shuffle');\
+
 -(Colin + Mike 8/24) (Requested by Anne 8-22-05) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of options and show the results in a single large window to help the user choose among the options.  I particularly want to see these results and show them to Ola before he leaves for Germany to make sure they are giving the results he expects.}
 
 -(Colin 8/24) - (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.

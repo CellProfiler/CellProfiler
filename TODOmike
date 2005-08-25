@@ -8,8 +8,8 @@
 {\*\cs10 \additive \ssemihidden Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
 \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid1180567\rsid1377656\rsid2363978\rsid4592306\rsid7030630\rsid8223179
-\rsid14511374\rsid15352067}{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy23\hr15\min25}{\revtim\yr2005\mo8\dy24\hr15\min59}{\version9}{\edmins212}{\nofpages1}{\nofwords258}
-{\nofchars1474}{\*\company WIBR}{\nofcharsws1729}{\vern16389}}\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3
+\rsid10645458\rsid14511374\rsid15352067}{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy23\hr15\min25}{\revtim\yr2005\mo8\dy25\hr13\min46}{\version10}{\edmins252}{\nofpages1}
+{\nofwords163}{\nofchars930}{\*\company WIBR}{\nofcharsws1091}{\vern16389}}\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3
 \jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot2363978 \fet0\sectd \linex0\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3
 \pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}
 {\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ql \li0\ri0\nowidctlpar
@@ -35,14 +35,4 @@
 \par - (Requested by Anne) - In several places there is text information entered as a variable description tha
 t does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I t
 hink maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
-\par 
-\par - (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):\\
-\par     %%% This method of calculating a colormap to use prevented some\\
-\par     %%% errors relating to colormaps. For one thing, the label2rgb\\
-\par     %%% function fails if there are no objects in the label matrix\\
-\par     %%% image. Also, there is a bug for some of the colormaps that\\
-\par     %%% fails when there are only 1 or 2 objects in the image, I\\
-\par     %%% think.\\
-\par     cmap = jet(max(64,max(Objects(:))));\\
-\par     im = label2rgb(Objects, cmap, 'k', 'shuffle');\\
 \par }}

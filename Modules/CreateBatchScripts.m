@@ -310,31 +310,31 @@ BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,1})
 %defaultVAR02 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory. (To change the default module directory, use the Set Preferences button).#LongBox#
+%pathnametextVAR03 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory.
 %defaultVAR03 = .
 BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What is the path to the image directory on the cluster machines? Leave a period (.) to use the default image directory.#LongBox#
+%pathnametextVAR04 = What is the path to the image directory on the cluster machines? Leave a period (.) to use the default image directory.
 %defaultVAR04 = .
 BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What is the path to the directory where batch output should be written on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
+%pathnametextVAR05 = What is the path to the directory where batch output should be written on the cluster machines? Leave a period (.) to use the default output directory.
 %defaultVAR05 = .
 BatchOutputPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What is the path to the directory where you want to save the batch files? Leave a period (.) to use the default output directory.#LongBox#
+%pathnametextVAR06 = What is the path to the directory where you want to save the batch files? Leave a period (.) to use the default output directory.
 %defaultVAR06 = .
 BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What is the path to the directory where the batch data file will be saved on the cluster machines? Leave a period (.) to use the default output directory.#LongBox#
+%pathnametextVAR07 = What is the path to the directory where the batch data file will be saved on the cluster machines? Leave a period (.) to use the default output directory.
 %defaultVAR07 = .
 BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)#LongBox#
+%pathnametextVAR08 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)
 %defaultVAR08 = .
 OldPathname = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)#LongBox#
+%pathnametextVAR09 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)
 %defaultVAR09 = .
 NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 

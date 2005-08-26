@@ -51,12 +51,13 @@ NewObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Would you like the object to retain their natural shape, be circles with a particular diameter, or rectangles that fill the entire grid?
 %choiceVAR03 = Natural Shape
-%choiceVAR03 = Circle
+%choiceVAR03 = Circle Natural Location
+%choiceVAR03 = Circle Forced Location
 %choiceVAR03 = Rectangle
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If you are using natural shape or using a circle with an automatically calculated diameter, what did you call the objects that were already identified?
+%textVAR04 = If you are using natural shape, a Circle with a Natural Location, or using a circle with an automatically calculated diameter, what did you call the objects that were already identified?
 %infotypeVAR04 = objectgroup
 OldObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
@@ -109,7 +110,7 @@ HorizLinesX = Grid.HorizLinesX;
 HorizLinesY = Grid.HorizLinesY;
 
 
-if strcmp(Shape,'Natural Shape') || strcmp(Shape,'Circle') && strcmp(Diameter,'Automatic')
+if strcmp(Shape,'Natural Shape') || strcmp(Shape,'Circle Natural Location') || strcmp(Shape,'Circle Forced Location') && strcmp(Diameter,'Automatic')
     Image = handles.Pipeline.(['Segmented' OldObjectName]);
 end
 
@@ -142,8 +143,31 @@ for i=1:Cols
             else
                 subregion(subregion>0) = SpotTable(j,i);
             end
-        elseif strcmp(Shape,'Circle') 
+        elseif strcmp(Shape,'Circle Forced Location') 
             subregion(floor(end/2)-radius:floor(end/2)+radius,floor(end/2)-radius:floor(end/2)+radius)=SpotTable(j,i)*getnhood(strel('disk',radius,0));
+        elseif strcmp(Shape,'Circle Natural Location')
+            subregion = Image(max(1,Topmost - floor(YDiv/2) + (j-1)*YDiv+1):min(Topmost - floor(YDiv/2) + j*YDiv,end),max(1,Leftmost - floor(XDiv/2) + (i-1)*XDiv+1):min(Leftmost - floor(XDiv/2) + i*XDiv,end));
+            subregion=bwlabel(subregion>0);
+            props = regionprops(subregion,'Centroid');
+            loc = cat(1,props.Centroid);
+            for k = [1:size(loc,1)]
+                if loc(k,1) < size(subregion,2)*.1 || loc(k,1) > size(subregion,2)*.9 || loc(k,2) < size(subregion,1)*.1 || loc(k,2) > size(subregion,1)*.9
+                    subregion(subregion == subregion(floor(loc(k,2)),floor(loc(k,1)))) = 0;
+                end
+            end
+            if max(max(subregion))==0
+                subregion(floor(end/2)-radius:floor(end/2)+radius,floor(end/2)-radius:floor(end/2)+radius)=SpotTable(j,i)*getnhood(strel('disk',radius,0));
+            else
+                subregion(subregion>0)=1;
+                props = regionprops(subregion,'Centroid');
+                circle = SpotTable(j,i)*getnhood(strel('disk',radius,0));
+                Ymin = max(1,floor(props.Centroid(2))-radius);
+                Ymax = min(size(subregion,1),floor(props.Centroid(2))+radius);
+                Xmin = max(1,floor(props.Centroid(1))-radius);
+                Xmax = min(size(subregion,2),floor(props.Centroid(1))+radius);
+                subregion(:,:) = 0;
+                subregion(Ymin:Ymax,Xmin:Xmax)=circle(radius-floor(props.Centroid(2))+1+Ymin:radius-floor(props.Centroid(2))+1+Ymax,radius-floor(props.Centroid(1))+1+Xmin:radius-floor(props.Centroid(1))+1+Xmax);
+            end
         elseif strcmp(Shape,'Rectangle')
             subregion(:,:) = SpotTable(j,i);
         else

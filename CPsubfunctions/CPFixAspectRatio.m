@@ -1,4 +1,5 @@
 function CPFixAspectRatio(OrigImage)
+FigPosOrig = get(gcf,'Position');
 FigPos = get(gcf,'Position');
 SubPos = size(OrigImage);
 ScSize = get(0,'ScreenSize');
@@ -21,4 +22,9 @@ if(HorRatio > .8) || (VerRatio > .8)
     end
 end        
 
-set(gcf,'Position',FigPos);
+if FigPos(4) > FigPosOrig(4)
+    FigPos(2) = ScSize(4) - (FigPos(4)+80);
+    set(gcf,'Position',FigPos);
+else
+    set(gcf,'Position',FigPos);
+end

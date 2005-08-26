@@ -2,6 +2,9 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+
+-(Mike 8/26)  (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
+
 -(Mike 8/25)  (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):\
     %%% This method of calculating a colormap to use prevented some\
     %%% errors relating to colormaps. For one thing, the label2rgb\

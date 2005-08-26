@@ -7,9 +7,9 @@
 \red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 Normal;}
 {\*\cs10 \additive \ssemihidden Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid1180567\rsid1377656\rsid2363978\rsid4592306\rsid7030630\rsid8223179
-\rsid10645458\rsid14511374\rsid15352067}{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy23\hr15\min25}{\revtim\yr2005\mo8\dy25\hr13\min46}{\version10}{\edmins252}{\nofpages1}
-{\nofwords163}{\nofchars930}{\*\company WIBR}{\nofcharsws1091}{\vern16389}}\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3
+\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid1180567\rsid1377656\rsid2363978\rsid2449430\rsid4592306\rsid7030630
+\rsid8223179\rsid10645458\rsid14511374\rsid15352067}{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy23\hr15\min25}{\revtim\yr2005\mo8\dy26\hr10\min2}{\version11}{\edmins252}
+{\nofpages1}{\nofwords142}{\nofchars810}{\*\company WIBR}{\nofcharsws951}{\vern16389}}\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3
 \jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot2363978 \fet0\sectd \linex0\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3
 \pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}
 {\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ql \li0\ri0\nowidctlpar
@@ -17,9 +17,7 @@
 \par 
 \par 
 \par - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding).
-\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0\pararsid1377656 {\f4\insrsid1377656 
-\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f4\insrsid2363978 - (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
-\par 
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f4\insrsid2363978 
 \par - (Requested by Anne) - Adjust the boilerplate of authors in each m file:
 \par  Authors (in order of joining the project):
 \par    Anne E. Carpenter

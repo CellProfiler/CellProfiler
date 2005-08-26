@@ -107,7 +107,7 @@ for FileNbr = 1:length(SelectedFiles)
     handles.Settings.VariableValues{1,2}=FieldName;
     handles.Current.CurrentModuleNumber='01';
     
-    handles = AddTextInfo(handles);
+    handles = LoadText(handles);
     
     handles.Settings.VariableValues=tempVarValues;
     handles.Current.CurrentModuleNumber=tempModuleNumber;

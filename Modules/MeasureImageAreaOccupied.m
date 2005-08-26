@@ -1,6 +1,6 @@
-function handles = MeasureAreaOccupied(handles)
+function handles = MeasureImageAreaOccupied(handles)
 
-% Help for the Measure Area Occupied module:
+% Help for the Measure Image Area Occupied module:
 % Category: Measurement
 %
 % This module simply measures the total area covered by stain in an
@@ -350,7 +350,7 @@ drawnow
 % handles.Measurements.Nuclei.
 %      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
+% writes its own block; for example, the MeasureObjectAreaShape module
 % writes shape measurements of 'Cells' in
 % handles.Measurements.Cells.AreaShape. An associated cell array of
 % dimension [1 x #features] with suffix 'Features' contains the names

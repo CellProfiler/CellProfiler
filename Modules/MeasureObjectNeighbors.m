@@ -1,6 +1,6 @@
-function handles = MeasureNeighbors(handles)
+function handles = MeasureObjectNeighbors(handles)
 
-% Help for the Measure Neighbors module:
+% Help for the Measure Object Neighbors module:
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
@@ -132,7 +132,7 @@ drawnow
 fieldname = ['Segmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if ~isfield(handles.Pipeline,fieldname)
-    error(['Image processing has been canceled. Prior to running the Measure Neighbors module, you must have previously run a segmentation module.  You specified in the MeasureNeighbors module that the desired image was named ', IncomingLabelMatrixImageName(10:end), ', the Measure Neighbors module cannot locate this image.']);
+    error(['Image processing has been canceled. Prior to running the Measure Neighbors module, you must have previously run a segmentation module.  You specified in the MeasureObjectNeighbors module that the desired image was named ', IncomingLabelMatrixImageName(10:end), ', the Measure Neighbors module cannot locate this image.']);
 end
 IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -312,7 +312,7 @@ drawnow
 % handles.Measurements.Nuclei.
 %      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
+% writes its own block; for example, the MeasureObjectAreaShape module
 % writes shape measurements of 'Cells' in
 % handles.Measurements.Cells.AreaShape. An associated cell array of
 % dimension [1 x #features] with suffix 'Features' contains the names

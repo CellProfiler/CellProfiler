@@ -1,6 +1,6 @@
-function handles = MeasureAreaShape(handles)
+function handles = MeasureObjectAreaShape(handles)
 
-% Help for the Measure Shape module:
+% Help for the Measure Object Shape module:
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
@@ -15,7 +15,7 @@ function handles = MeasureAreaShape(handles)
 % matrix image, the image should be converted to binary and re-made into a
 % label matrix image before feeding into this module.
 %
-% See also MeasureTexture, MeasureIntensity, MeasureCorrelation
+% See also MeasureObjectTexture, MeasureObjectIntensity, MeasureCorrelation
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

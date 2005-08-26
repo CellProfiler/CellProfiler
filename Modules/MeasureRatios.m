@@ -318,7 +318,7 @@ end
 % handles.Measurements.Nuclei.
 %      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
+% writes its own block; for example, the MeasureObjectAreaShape module
 % writes shape measurements of 'Cells' in
 % handles.Measurements.Cells.AreaShape. An associated cell array of
 % dimension [1 x #features] with suffix 'Features' contains the names

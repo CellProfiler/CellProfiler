@@ -1,6 +1,6 @@
-function handles = MeasureTotalIntensity(handles)
+function handles = MeasureImageIntensity(handles)
 
-% Help for the Total Intensity module:
+% Help for the Measure Image Intensity module:
 % Category: Measurement
 %
 % Measures the total intensity of staining in an image by adding up
@@ -341,7 +341,7 @@ drawnow
 % handles.Measurements.Nuclei.
 %      In the second level, the measurements are stored in matrices
 % with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
+% writes its own block; for example, the MeasureObjectAreaShape module
 % writes shape measurements of 'Cells' in
 % handles.Measurements.Cells.AreaShape. An associated cell array of
 % dimension [1 x #features] with suffix 'Features' contains the names

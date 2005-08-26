@@ -1,4 +1,4 @@
-function handles = ImageTiler(handles)
+function handles = Tile(handles)
 
 % Help for the Image Tiler module:
 % Category: Image Processing
@@ -15,15 +15,15 @@ function handles = ImageTiler(handles)
 % gigantic, high resolution file.  There are several ways to allow a
 % larger image to be produced, given memory limitations: (1) Decrease
 % the resolution of each image tile by entering a fraction where
-% requested. Then, in the window which pops open after ImageTiler
+% requested. Then, in the window which pops open after Tile
 % finishes, you can use the 'Get high res image' button to retrieve
 % the original high resolution image. (This button is not yet
 % functional). (2) Use the SpeedUpCellProfiler module to clear out
 % images that are stored in memory. Place this module just prior to
-% the ImageTiler module and ask it to retain only those images which
+% the Tile module and ask it to retain only those images which
 % are needed for downstream modules.  (3) Rescale the images to 8 bit
 % format by putting in the RescaleImages module just prior to the
-% ImageTiler module. Normally images are stored in memory as class
+% Tile module. Normally images are stored in memory as class
 % "double" which takes about 10 times the space of class "uint8" which
 % is 8 bits.  You will lose resolution in terms of the number of
 % different graylevels - this will be limited to 256 - but you will
@@ -271,28 +271,28 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% the tiled image is set to match the incoming image's class.
     TiledImage = zeros(TotalHeight,TotalWidth,size(LoadedImage,3),class(LoadedImage));
     
-    ImageTilerDataToSave.NumberColumns = NumberColumns;
-    ImageTilerDataToSave.NumberRows = NumberRows;
-    ImageTilerDataToSave.ImageHeight = ImageHeight;
-    ImageTilerDataToSave.ImageWidth = ImageWidth;
-    ImageTilerDataToSave.NewFileList = NewFileList;
-    ImageTilerDataToSave.TotalWidth = TotalWidth;
-    ImageTilerDataToSave.TotalHeight = TotalHeight; 
-    ImageTilerDataToSave.TiledImage = TiledImage; 
+    TileDataToSave.NumberColumns = NumberColumns;
+    TileDataToSave.NumberRows = NumberRows;
+    TileDataToSave.ImageHeight = ImageHeight;
+    TileDataToSave.ImageWidth = ImageWidth;
+    TileDataToSave.NewFileList = NewFileList;
+    TileDataToSave.TotalWidth = TotalWidth;
+    TileDataToSave.TotalHeight = TotalHeight; 
+    TileDataToSave.TiledImage = TiledImage; 
     
     %stores data in handles
-    handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]) = ImageTilerDataToSave;
+    handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]) = TileDataToSave;
 end
 
 %gets data from handles
-RetrievedImageTilerData = handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]);
+RetrievedTileData = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]);
 
-TiledImage = RetrievedImageTilerData.TiledImage;
-NumberColumns = RetrievedImageTilerData.NumberColumns;
-ImageHeight = RetrievedImageTilerData.ImageHeight;
-ImageWidth = RetrievedImageTilerData.ImageWidth;
-NumberColumns = RetrievedImageTilerData.NumberColumns;
-NumberRows = RetrievedImageTilerData.NumberRows;
+TiledImage = RetrievedTileData.TiledImage;
+NumberColumns = RetrievedTileData.NumberColumns;
+ImageHeight = RetrievedTileData.ImageHeight;
+ImageWidth = RetrievedTileData.ImageWidth;
+NumberColumns = RetrievedTileData.NumberColumns;
+NumberRows = RetrievedTileData.NumberRows;
 
 CurrentImage = handles.Pipeline.(ImageName);
 CurrentImage = imresize(CurrentImage,SizeChange);
@@ -315,7 +315,7 @@ end
 
 %%% Memory errors can occur here if the tiled image is too big.
 TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
-handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage;
+handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage;
 
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
@@ -325,16 +325,16 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     drawnow
 
     %gets data from handles
-    RetrievedImageTilerData = handles.Pipeline.ImageTilerData.(['Module' handles.Current.CurrentModuleNumber]);
-    TiledImage = RetrievedImageTilerData.TiledImage;
-    NumberColumns = RetrievedImageTilerData.NumberColumns;
-    ImageHeight = RetrievedImageTilerData.ImageHeight;
-    ImageWidth = RetrievedImageTilerData.ImageWidth;
-    NumberColumns = RetrievedImageTilerData.NumberColumns;
-    NumberRows = RetrievedImageTilerData.NumberRows;
-    TotalWidth = RetrievedImageTilerData.TotalWidth;
-    TotalHeight = RetrievedImageTilerData.TotalHeight;
-    NewFileList = RetrievedImageTilerData.NewFileList;
+    RetrievedTileData = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]);
+    TiledImage = RetrievedTileData.TiledImage;
+    NumberColumns = RetrievedTileData.NumberColumns;
+    ImageHeight = RetrievedTileData.ImageHeight;
+    ImageWidth = RetrievedTileData.ImageWidth;
+    NumberColumns = RetrievedTileData.NumberColumns;
+    NumberRows = RetrievedTileData.NumberRows;
+    TotalWidth = RetrievedTileData.TotalWidth;
+    TotalHeight = RetrievedTileData.TotalHeight;
+    NewFileList = RetrievedTileData.NewFileList;
 
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -576,7 +576,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     % handles.Measurements.Nuclei.
     %      In the second level, the measurements are stored in matrices
     % with dimension [#objects x #features]. Each measurement module
-    % writes its own block; for example, the MeasureAreaShape module
+    % writes its own block; for example, the MeasureObjectAreaShape module
     % writes shape measurements of 'Cells' in
     % handles.Measurements.Cells.AreaShape. An associated cell array of
     % dimension [1 x #features] with suffix 'Features' contains the names

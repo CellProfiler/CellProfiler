@@ -1,10 +1,10 @@
-function handles = FilterObjectsAreaShape(handles)
+function handles = FilterByAreaShape(handles)
 
 % Help for the Filter Objects by AreaShape module: 
 % Category: Object Identification and Modification
 %
 % This module applies a filter using statistics measured by the 
-% MeasureAreaShape module to select objects with desired area or shape. For
+% MeasureObjectAreaShape module to select objects with desired area or shape. For
 % example, it can be used to eliminate objects with a Solidity value below
 % a certain threshold.
 %
@@ -28,7 +28,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What feature do you want to  use as a filter? Please run this module after MeasureAreaShape module.
+%textVAR04 = What feature do you want to  use as a filter? Please run this module after MeasureObjectAreaShape module.
 %choiceVAR04 = Area
 %choiceVAR04 = Eccentricity
 %choiceVAR04 = Solidity
@@ -231,7 +231,7 @@ drawnow
 % handles.Measurements.Nuclei.
 %      In the second level, the measurements are stored in matrices 
 % with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
+% writes its own block; for example, the MeasureObjectAreaShape module
 % writes shape measurements of 'Cells' in
 % handles.Measurements.Cells.AreaShape. An associated cell array of
 % dimension [1 x #features] with suffix 'Features' contains the names

@@ -1,6 +1,6 @@
-function handles = MeasureIntensity(handles)
+function handles = MeasureObjectIntensity(handles)
 
-% Help for the Measure Intensity module:
+% Help for the Measure Object Intensity module:
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
@@ -149,7 +149,7 @@ for i = 1:3
     fieldname = ['', ImageName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing has been canceled. Prior to running the Measure Intensity module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureIntensity module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
+        error(['Image processing has been canceled. Prior to running the Measure Intensity module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureObjectIntensity module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
     end
     OrigImage = handles.Pipeline.(fieldname);
 
@@ -262,7 +262,7 @@ for i = 1:3
 % handles.Measurements.Nuclei.
 %      In the second level, the measurements are stored in matrices 
 % with dimension [#objects x #features]. Each measurement module
-% writes its own block; for example, the MeasureAreaShape module
+% writes its own block; for example, the MeasureObjectAreaShape module
 % writes shape measurements of 'Cells' in
 % handles.Measurements.Cells.AreaShape. An associated cell array of
 % dimension [1 x #features] with suffix 'Features' contains the names

@@ -1,6 +1,6 @@
-function handles = AddTextInfo(handles)
+function handles = LoadText(handles)
 
-% Help for the Add Text Information:
+% Help for the Load Text module:
 % Category: File Handling
 %
 % Use this tool if you would like text information.  The information could

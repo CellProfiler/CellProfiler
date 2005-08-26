@@ -1,6 +1,6 @@
-function handles = IdentifyEasy(handles)
+function handles = IdentifyPrimAutomatic(handles)
 
-% Help for the Identify Easy module:
+% Help for the Identify Primary Automatic module:
 % Category: Object Identification and Modification
 %
 % General module for identifying (segmenting) primary objects in
@@ -37,7 +37,7 @@ function handles = IdentifyEasy(handles)
 % Objects outside the specified range of diameters will be discarded.
 % This allows you to exclude small objects like dust, noise, and
 % debris, or large objects like clumps if desired. See also the
-% FilterObjectsAreaShape module to further discard objects based on
+% FilterByAreaShape module to further discard objects based on
 % some other Area or Shape measurement. During processing, the window
 % for this module will show that objects outlined in green were an
 % acceptable size, objects outlined in red were discarded based on
@@ -403,34 +403,34 @@ fieldname = ['',  ImageName];
 
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the IdentifyEasy Intensity module, you must have previously run a module to load an image. You specified in the IdentifyEasy module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyEasy module cannot find this image.']);
+    error(['Image processing has been canceled. Prior to running the IdentifyPrimAutomatic Intensity module, you must have previously run a module to load an image. You specified in the IdentifyPrimAutomatic module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the IdentifyEasy module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error('Image processing was canceled because the IdentifyPrimAutomatic module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
 end
 
 %%% Checks that the Min and Max diameter parameters have valid values
 index = strfind(SizeRange,',');
-if isempty(index),error('The Min and Max size entry in the IdentifyEasy module is invalid.'),end
+if isempty(index),error('The Min and Max size entry in the IdentifyPrimAutomatic module is invalid.'),end
 MinDiameter = SizeRange(1:index-1);
 MaxDiameter = SizeRange(index+1:end);
 
 MinDiameter = str2double(MinDiameter);
 if isnan(MinDiameter) | MinDiameter < 0
-    error('The Min dimater entry in the IdentifyEasy module is invalid.')
+    error('The Min dimater entry in the IdentifyPrimAutomatic module is invalid.')
 end
 if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
 else
     MaxDiameter = str2double(MaxDiameter);
     if isnan(MaxDiameter) | MaxDiameter < 0
-        error('The Max Diameter entry in the IdentifyEasy module is invalid.')
+        error('The Max Diameter entry in the IdentifyPrimAutomatic module is invalid.')
     end
 end
-if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyEasy module.'),end
+if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyPrimAutomatic module.'),end
 Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
 %%% Convert user-specified percentage of image covered by objects to a prior probability
@@ -444,7 +444,7 @@ if strcmp(MinimumThreshold,'Do not use')
 else
     MinimumThreshold = str2double(MinimumThreshold);
     if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
-        error('The Minimum threshold entry in the IdentifyEasy module is invalid.')
+        error('The Minimum threshold entry in the IdentifyPrimAutomatic module is invalid.')
     end
 end
 
@@ -452,7 +452,7 @@ end
 if ~strcmp(SizeOfSmoothingFilter,'Automatic')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
     if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage))
-        error('The specified size of the smoothing filter in the IdentifyEasy module is not valid or unreasonable.')
+        error('The specified size of the smoothing filter in the IdentifyPrimAutomatic module is not valid or unreasonable.')
     end
 end
 
@@ -460,7 +460,7 @@ end
 if ~strcmp(MaximaSuppressionSize,'Automatic')
     MaximaSuppressionSize = str2double(MaximaSuppressionSize);
     if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0
-        error('The specified maxima suppression size in the IdentifyEasy module is not valid or unreasonable.')
+        error('The specified maxima suppression size in the IdentifyPrimAutomatic module is not valid or unreasonable.')
     end
 end
 
@@ -533,7 +533,7 @@ else
     %%% Checks that the Threshold parameter has a valid value
     Threshold = str2double(Threshold);
     if isnan(Threshold) | Threshold > 1 | Threshold < 0
-        error('The threshold entered in the IdentifyEasy module is not a number, or is outside the acceptable range of 0 to 1.')
+        error('The threshold entered in the IdentifyPrimAutomatic module is not a number, or is outside the acceptable range of 0 to 1.')
     end
 end
 
@@ -842,14 +842,14 @@ handles.PipelineObjectOutlines = PerimObjects;
 if ~strcmp(SaveOutlines,'Do not save')
     try    handles.Pipeline.(SaveOutlines) = PerimObjects;
     catch
-        errordlg('The object outlines were not calculated by the IdentifyEasy module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
     end
 end
 
 if ~strcmp(SaveOutlinedOnOriginal,'Do not save')
     try    handles.Pipeline.(SaveOutlinedOnOriginal) = OutlinedObjects;
     catch
-        errordlg('The object outlines overlaid on the original image were not calculated by the IdentifyEasy module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg('The object outlines overlaid on the original image were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
     end
 end
 
@@ -867,7 +867,7 @@ if ~strcmp(SaveColored,'Do not save')
             handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
         end
     catch
-        errordlg('The label matrix image was not calculated by the IdentifyEasy module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg('The label matrix image was not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
     end
 end
 

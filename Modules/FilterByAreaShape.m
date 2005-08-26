@@ -134,7 +134,7 @@ if any(findobj == ThisModuleFigureNumber) == 1
     subplot(2,2,2); imagesc(label2rgb(LabelMatrixImage, cmap, 'k', 'shuffle')); title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    cmap = jet(max(64,max(FinalLabalMatrixImage(:))));
+    cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
     ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
     subplot(2,2,3); imagesc(ColoredLabelMatrixImage); title(['Filtered ' ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original

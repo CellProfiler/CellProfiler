@@ -63,6 +63,11 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %choiceVAR08 = Yes
 %inputtypeVAR08 = popupmenu
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 1
+
+
+
 OrigImage = handles.Pipeline.(ImageName);
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 FilterType = strmatch(FeatureName1, handles.Measurements.(ObjectName).AreaShapeFeatures);

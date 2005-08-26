@@ -1,33 +1,17 @@
 CellProfiler cell image analysis software development 
 AUGUST 23, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Colin) - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
-
-- (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
-
-- (Requested by Anne) - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
-
-- (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.  Note: We have replaced IdentifyPrimIntenIntens with IdentifyEasy recently. We still want to fix the problem because a similar thing occurs in IdentifyEasy but you will still want to take a look at the code in IdentifyPrimIntenIntens because the bug is described in detail in there (see Outdated folder).
-
-NOTE FOR THE ABOVE BUGS: There is a line marked FIXME in CellProfiler.m that might explain some of these issues.
-
-- (Requested by Anne) [[[Ola might be able to help on this - Anne emailed him monday]]] - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  I've no idea whether it's related to the CPFixAspectRatio function (based on the 4 modules I checked there is a correlation, but it's not definitive). We should figure out what the point of CPFixAspectRatio is and document its code with some help to describe it.  We may also need to incorporate it throughout the code - some modules use it and others don't, so we ought to make things consistent.  Also (a separate issue, i think), error/help box text didn't fit in their windows and so was not visible. 
-
-- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
+- (Requested by Anne) - Combine all IdentifySec options into one module.
 
 - (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
 
-- (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to dooublecheck.
-
-- (Requested by Anne) - cvs remove Profiler for Anne folder from the DeveloperDropBox. removing a directory requires a special procedure - i don't know how.
+- (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to doublecheck.
 
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
 - (Requested by Anne) - the IdentifySecPropagatesubfunction needs to not show up in the AddModule window.  Is there a smart way to make it not appear?  perhaps we should exclude any files ending in "subfunction" in case we have other similar situations in the future.
-
-- (Requested by Anne) - Combine all IdentifySec options into one module.
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
 
@@ -191,6 +175,8 @@ Error in ==> SaveImageAs at 29
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?
 
 - (Requested by Anne 8-25-05) - Can DilateBinaryObjects be combined with ExpandOrShrinkPrim or ExpandOrShrinkSec?
+
+- (Requested by Colin) - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

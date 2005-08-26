@@ -176,17 +176,7 @@ OrigImage = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% PROGRAMMING NOTE
-% TO TEMPORARILY SHOW IMAGES DURING DEBUGGING:
-% figure, imshow(BlurredImage, []), title('BlurredImage')
-% TO TEMPORARILY SAVE IMAGES DURING DEBUGGING:
-% imwrite(BlurredImage, FileName, FileFormat);
-% Note that you may have to alter the format of the image before
-% saving.  If the image is not saved correctly, for example, try
-% adding the uint8 command:
-% imwrite(uint8(BlurredImage), FileName, FileFormat);
-% To routinely save images produced by this module, see the help in
-% the SaveImages module.
+
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually')
     

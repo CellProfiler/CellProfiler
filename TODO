@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 AUGUST 23, 2005  IN ORDER OF PRIORITY
 
-[[[NOTE: WE WILL BE COMBINING ALL OF THE IDENTIFY MODULES INTO A SINGLE MODULE IDENTIFYEASY SOON]]]
-
 - (Requested by Colin) - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
 
 - (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.

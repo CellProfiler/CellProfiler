@@ -266,131 +266,133 @@ end
 for LocalMaximaTypeNumber = [1:length(LocalMaximaTypeList)]
     for WatershedTransformImageTypeNumber = [1:length(WatershedTransformImageTypeList)]
 
-        %textVAR01 = What did you call the images you want to process?
-        %infotypeVAR01 = imagegroup
-        ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-        %inputtypeVAR01 = popupmenu
+%%% NOTE: We cannot indent the variables or they will not be read
+%%% properly.
+        
+%textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
-        %textVAR02 = What do you want to call the objects identified by this module?
-        %infotypeVAR02 = objectgroup indep
-        %defaultVAR02 = Nuclei
-        ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the objects identified by this module?
+%infotypeVAR02 = objectgroup indep
+%defaultVAR02 = Nuclei
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-        %textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
-        %choiceVAR03 = 10,40
-        SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-        %inputtypeVAR03 = popupmenu custom
+%textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
+%choiceVAR03 = 10,40
+SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu custom
 
-        %textVAR04 = Discard objects outside the diameter range?
-        %choiceVAR04 = Yes
-        %choiceVAR04 = No
-        ExcludeSize = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-        %inputtypeVAR04 = popupmenu
+%textVAR04 = Discard objects outside the diameter range?
+%choiceVAR04 = Yes
+%choiceVAR04 = No
+ExcludeSize = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
-        %textVAR05 = Try to merge too small objects with nearby larger objects?
-        %choiceVAR05 = No
-        %choiceVAR05 = Yes
-        MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-        %inputtypeVAR05 = popupmenu
+%textVAR05 = Try to merge too small objects with nearby larger objects?
+%choiceVAR05 = No
+%choiceVAR05 = Yes
+MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
-        %textVAR06 = Discard objects touching the border of the image?
-        %choiceVAR06 = Yes
-        %choiceVAR06 = No
-        ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-        %inputtypeVAR06 = popupmenu
+%textVAR06 = Discard objects touching the border of the image?
+%choiceVAR06 = Yes
+%choiceVAR06 = No
+ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
-        %textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
-        %choiceVAR07 = MoG Global
-        %choiceVAR07 = MoG Adaptive
-        %choiceVAR07 = Otsu Global
-        %choiceVAR07 = Otsu Adaptive
-        Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-        %inputtypeVAR07 = popupmenu custom
+%textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
+%choiceVAR07 = MoG Global
+%choiceVAR07 = MoG Adaptive
+%choiceVAR07 = Otsu Global
+%choiceVAR07 = Otsu Adaptive
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu custom
 
-        %textVAR08 = Threshold correction factor
-        %defaultVAR08 = 1
-        ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+%textVAR08 = Threshold correction factor
+%defaultVAR08 = 1
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-        %textVAR09 = Lower bound on threshold in the range [0,1].
-        %defaultVAR09 = 0
-        MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Lower bound on threshold in the range [0,1].
+%defaultVAR09 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-        %textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
-        %choiceVAR10 = 10%
-        %choiceVAR10 = 20%
-        %choiceVAR10 = 30%
-        %choiceVAR10 = 40%
-        %choiceVAR10 = 50%
-        %choiceVAR10 = 60%
-        %choiceVAR10 = 70%
-        %choiceVAR10 = 80%
-        %choiceVAR10 = 90%
-        pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-        %inputtypeVAR10 = popupmenu
+%textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
+%choiceVAR10 = 10%
+%choiceVAR10 = 20%
+%choiceVAR10 = 30%
+%choiceVAR10 = 40%
+%choiceVAR10 = 50%
+%choiceVAR10 = 60%
+%choiceVAR10 = 70%
+%choiceVAR10 = 80%
+%choiceVAR10 = 90%
+pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
-        %textVAR11 = Method to distinguish clumped objects (see help for details):
-        %choiceVAR11 = Intensity
-        %choiceVAR11 = Shape
-        %choiceVAR11 = None
-        OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-        %inputtypeVAR11 = popupmenu
+%textVAR11 = Method to distinguish clumped objects (see help for details):
+%choiceVAR11 = Intensity
+%choiceVAR11 = Shape
+%choiceVAR11 = None
+OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
-        LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
+LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
 
+%textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
+%choiceVAR12 = Intensity
+%choiceVAR12 = Distance
+%choiceVAR12 = None
+OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
 
-        %textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
-        %choiceVAR12 = Intensity
-        %choiceVAR12 = Distance
-        %choiceVAR12 = None
-        OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-        %inputtypeVAR12 = popupmenu
+WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
-        WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
+%textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
+%choiceVAR13 = Automatic
+SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu custom
 
-        %textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
-        %choiceVAR13 = Automatic
-        SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-        %inputtypeVAR13 = popupmenu custom
+%textVAR14 = Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)
+%choiceVAR14 = Automatic
+MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu custom
 
-        %textVAR14 = Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)
-        %choiceVAR14 = Automatic
-        MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-        %inputtypeVAR14 = popupmenu custom
+%textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
+%choiceVAR15 = Yes
+%choiceVAR15 = No
+UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
 
-        %textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
-        %choiceVAR15 = Yes
-        %choiceVAR15 = No
-        UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-        %inputtypeVAR15 = popupmenu
+%textVAR16 = What do you want to call the image of the outlines of the objects?
+%infotypeVAR16 = imagegroup indep
+%defaultVAR16 = Do not save
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
-        %textVAR16 = What do you want to call the image of the outlines of the objects?
-        %infotypeVAR16 = imagegroup indep
-        %defaultVAR16 = Do not save
-        SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
+%infotypeVAR17 = imagegroup indep
+%defaultVAR17 = Do not save
+SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
-        %textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
-        %infotypeVAR17 = imagegroup indep
-        %defaultVAR17 = Do not save
-        SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%textVAR18 =  What do you want to call the labeled matrix image?
+%infotypeVAR18 = imagegroup indep
+%defaultVAR18 = Do not save
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
-        %textVAR18 =  What do you want to call the labeled matrix image?
-        %infotypeVAR18 = imagegroup indep
-        %defaultVAR18 = Do not save
-        SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+%textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
+%choiceVAR19 = RGB
+%choiceVAR19 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
+%inputtypeVAR19 = popupmenu
 
-        %textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
-        %choiceVAR19 = RGB
-        %choiceVAR19 = Grayscale
-        SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
-        %inputtypeVAR19 = popupmenu
+%textVAR20 = Test Mode?
+%choiceVAR20 = No
+%choiceVAR20 = Yes
+TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
+%inputtypeVAR20 = popupmenu
 
-        %textVAR20 = Test Mode?
-        %choiceVAR20 = No
-        %choiceVAR20 = Yes
-        TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
-        %inputtypeVAR20 = popupmenu
-
-        %%%VariableRevisionNumber = 8
+%%%VariableRevisionNumber = 8
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%

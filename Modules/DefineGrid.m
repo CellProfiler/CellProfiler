@@ -208,7 +208,6 @@ if strcmp(TopOrBottom,'Bottom')
     SpotTable = flipud(SpotTable);
 end
 
-
 %%% Calculates the locations for all the sample labelings (whether it is
 %%% numbers, spot identifying information, or coordinates).
 GridXLocations = SpotTable;
@@ -228,10 +227,19 @@ for h = 1:size(GridYLocations,1)
     GridYLocations(h,:) = Topmost + (h-1)*YDiv - floor(YDiv/2);
 end
 YLocations = reshape(GridYLocations, 1, []);
-
     
 TotalHeight = size(FinalLabelMatrixImage,1);
 TotalWidth = size(FinalLabelMatrixImage,2);
+
+%%% Calculates the lines.
+VertLinesX(1,:) = [GridXLocations(1,:),GridXLocations(1,end)+XDiv];
+VertLinesX(2,:) = [GridXLocations(1,:),GridXLocations(1,end)+XDiv];
+VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1);
+VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
+HorizLinesY(1,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YDiv];
+HorizLinesY(2,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YDiv];
+HorizLinesX(1,:) = repmat(0,1,size(GridXLocations,1)+1);
+HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridXLocations,1)+1);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -241,28 +249,12 @@ TotalWidth = size(FinalLabelMatrixImage,2);
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 
-if any(findobj == ThisModuleFigureNumber)
-    
-    CPfigure(handles,ThisModuleFigureNumber);
-    
-    imagesc(FinalLabelMatrixImage);
-    
-    %%% Draws the Vertical Lines.
-    VertLinesX(1,:) = [GridXLocations(1,:),GridXLocations(1,end)+XDiv];
-    VertLinesX(2,:) = [GridXLocations(1,:),GridXLocations(1,end)+XDiv];
-    VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1);
-    VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
-
+if any(findobj == ThisModuleFigureNumber)    
+    CPfigure(handles,ThisModuleFigureNumber);    
+    imagesc(FinalLabelMatrixImage);    
+    %%% Draws the lines.
     line(VertLinesX,VertLinesY);
-
-    %%% Draws the Horizontal Lines.
-    HorizLinesY(1,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YDiv];
-    HorizLinesY(2,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YDiv];
-    HorizLinesX(1,:) = repmat(0,1,size(GridXLocations,1)+1);
-    HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridXLocations,1)+1);
-  
     line(HorizLinesX,HorizLinesY);
-    
     set(findobj('type','line'), 'color',[.15 .15 .15])
 end
 

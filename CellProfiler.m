@@ -54,9 +54,6 @@ end
 % --- Executes just before CellProfiler is made visible.
 function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin) %#ok We want to ignore MLint error checking for this line.
 
-% Creates the variable panel.
-handles = createVariablePanel(handles);
-
 % Chooses default command line output for CellProfiler
 handles.output = hObject;
 
@@ -1618,9 +1615,6 @@ end
 %%% MODULE PIPELINE LISTBOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% --- Executes during object creation, after setting all properties.
-function ModulePipelineListBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-
 % --- Executes on selection change in ModulePipelineListBox.
 function ModulePipelineListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
@@ -1811,17 +1805,9 @@ for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
 end
 guidata(handles.figure1,handles);
 
-
-function slider1_CreateFcn(hObject, eventdata, handles)
-
-function handles = createVariablePanel(handles)
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PIXEL SIZE EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% --- Executes during object creation, after setting all properties.
-function PixelSizeEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 function PixelSizeEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Checks to see whether the user input is a number, and generates an
@@ -2219,8 +2205,6 @@ end
 %%% DEFAULT IMAGE DIRECTORY EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% --- Executes during object creation, after setting all properties.
-function DefaultImageDirectoryEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 function handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Retrieves the text that was typed in.
@@ -2306,9 +2290,6 @@ end
 %%% DEFAULT OUTPUT DIRECTORY EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% --- Executes during object creation, after setting all properties.
-function DefaultOutputDirectoryEditBox_CreateFcn(hObject, eventdata, handles)
-
 function DefaultOutputDirectoryEditBox_Callback(hObject, eventdata, handles)
 %%% Retrieves the text that was typed in.
 pathname = get(handles.DefaultOutputDirectoryEditBox,'string');
@@ -2333,9 +2314,6 @@ guidata(hObject,handles)
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE LIST BOX %%%
 %%%%%%%%%%%%%%%%%%%%%
-
-% --- Executes during object creation, after setting all properties.
-function FilenamesListBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 % --- Executes on selection change in FilenamesListBox.
 function FilenamesListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -2389,9 +2367,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OUTPUT FILE NAME EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% --- Executes during object creation, after setting all properties.
-function OutputFileNameEditBox_CreateFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 function OutputFileNameEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -3227,22 +3202,14 @@ function AnalyzeImagesHelp_Callback(hObject, eventdata, handles) %#ok We want to
 HelpText = help('HelpAnalyzeImages.m');
 CPtextdisplaybox(HelpText,'CellProfiler Help');
 
+
+function HelpButtonOI_Callback(hObject, eventdata, handles)
+GeneralHelpButtonOIText = help('HelpOI');
+CPtextdisplaybox(GeneralHelpButtonOIText,'Help for Object Identification');
+
+
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%
  
-
-% --- Executes when variablepanel is resized.
-function variablepanel_ResizeFcn(hObject, eventdata, handles)
-% hObject    handle to variablepanel (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over slider1.
-function slider1_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 function DownloadModules_Callback(hObject, eventdata, handles)
 %%% TEMPORARY
@@ -3443,18 +3410,6 @@ load_listbox(handles.Preferences.DefaultModuleDirectory,AddModuleWindowHandles);
 % UIWAIT makes AddModuleWindow_export wait for user response (see UIRESUME)
 % uiwait(AddModuleWindowHandles.figure1);
 
-
-% --- Outputs from this function are returned to the command line.
-function varargout = AddModuleWindow_OutputFcn(hObject, eventdata, AddModuleWindowHandles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% AddModuleWindowHandles    structure with AddModuleWindowHandles and user data (see GUIDATA)
-
-% Get default command line output from AddModuleWindowHandles structure
-varargout{1} = AddModuleWindowHandles.output;
-
-
 % --- Executes on selection change in PreProcessingListBox.
 function AddModuleListBox_Callback(hObject, eventdata, AddModuleWindowHandles)
 % hObject    handle to PreProcessingListBox (see GCBO)
@@ -3494,58 +3449,6 @@ if strcmp(get(gcf,'SelectionType'),'open')
 	filename = [file_list{index_selected} '.m'];
     PutModuleInListBox(filename,handles.Preferences.DefaultModuleDirectory,guidata(AddModuleWindowHandles.figure1),0);
 end
-% --- Executes during object creation, after setting all properties.
-function PreProcessingListBox_CreateFcn(hObject, eventdata, AddModuleWindowHandles)
-% hObject    handle to PreProcessingListBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% AddModuleWindowHandles    empty - AddModuleWindowHandles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function MeasurementListBox_CreateFcn(hObject, eventdata, AddModuleWindowHandles)
-% hObject    handle to MeasurementListBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% AddModuleWindowHandles    empty - AddModuleWindowHandles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function ObjectIdentificationListBox_CreateFcn(hObject, eventdata, AddModuleWindowHandles)
-% hObject    handle to ObjectIdentificationListBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% AddModuleWindowHandles    empty - AddModuleWindowHandles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-% --- Executes during object creation, after setting all properties.
-function OtherListBox_CreateFcn(hObject, eventdata, AddModuleWindowHandles)
-% hObject    handle to OtherListBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% AddModuleWindowHandles    empty - AddModuleWindowHandles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 
 % --- Executes on button press in ModuleHelpButton.
@@ -3585,18 +3488,6 @@ function ModuleHelpButton_Callback(hObject, eventdata, AddModuleWindowHandles)
          CPtextdisplaybox(help(filename),'CellProfiler image analysis module help');
    end
 
-
-% --- Executes during object creation, after setting all properties.
-function FileHandlingListBox_CreateFcn(hObject, eventdata, AddModuleWindowHandles)
-% hObject    handle to FileHandlingListBox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% AddModuleWindowHandles    empty - AddModuleWindowHandles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 function BrowseButton_Callback(hObject, eventdata, AddModuleWindowHandles)
@@ -3753,7 +3644,6 @@ AddModuleWindowHandles.FileHandlingListBox = uicontrol(...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''FileHandlingListBox_CreateFcn'',gcbo,[],guidata(gcf))', appdata} ,...
 'Tag','FileHandlingListBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -3773,7 +3663,6 @@ AddModuleWindowHandles.PreProcessingListBox = uicontrol(...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''PreProcessingListBox_CreateFcn'',gcbo,[],guidata(gcf))', appdata} ,...
 'Tag','PreProcessingListBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -3793,7 +3682,6 @@ AddModuleWindowHandles.ObjectIdentificationListBox = uicontrol(...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''ObjectIdentificationListBox_CreateFcn'',gcbo,[],guidata(gcf))', appdata} ,...
 'Tag','ObjectIdentificationListBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -3813,7 +3701,6 @@ AddModuleWindowHandles.MeasurementListBox = uicontrol(...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''MeasurementListBox_CreateFcn'',gcbo,[],guidata(gcf))', appdata} ,...
 'Tag','MeasurementListBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -3833,7 +3720,6 @@ AddModuleWindowHandles.OtherListBox = uicontrol(...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''OtherListBox_CreateFcn'',gcbo,[],guidata(gcf))', appdata} ,...
 'Tag','OtherListBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -4112,10 +3998,6 @@ function c = file_in_category(filename, category)
 h = help(filename);
 c = strfind(h, ['Category: ' category]);
 
-function HelpButtonOI_Callback(hObject, eventdata, handles)
-GeneralHelpButtonOIText = help('HelpOI');
-CPtextdisplaybox(GeneralHelpButtonOIText,'Help for Object Identification');
-
 
 % --- Executes on button press in PixelSizeHelp.
 function PixelSizeHelp_Callback(hObject, eventdata, handles)
@@ -4326,7 +4208,6 @@ h10 = uicontrol(...
 'String',{  'No Modules Loaded' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''ModulePipelineListBox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','ModulePipelineListBox',...
 'UserData',[],...
 'Behavior',get(0,'defaultuicontrolBehavior'));
@@ -4359,7 +4240,6 @@ h12 = uicontrol(...
 'Style','slider',...
 'SliderStep',[0.02 0.1],...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''slider1_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','slider1',...
 'Behavior',get(0,'defaultuicontrolBehavior'),...
 'Visible','off');
@@ -4482,7 +4362,6 @@ h20 = uicontrol(...
 'Position',[335 70 420 24],...
 'String','',...
 'Style','edit',...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''DefaultImageDirectoryEditBox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','DefaultImageDirectoryEditBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -4527,7 +4406,6 @@ h23 = uicontrol(...
 'Position',[510 8 170 22],...
 'String','',...
 'Style','edit',...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''OutputFileNameEditBox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','OutputFileNameEditBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -4542,7 +4420,6 @@ h24 = uicontrol(...
 'String',{  'Listbox' },...
 'Style','listbox',...
 'Value',1,...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''FilenamesListBox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','FilenamesListBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -4589,7 +4466,6 @@ h27 = uicontrol(...
 'Position',[335 42 420 24],...
 'String','',...
 'Style','edit',...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''DefaultOutputDirectoryEditBox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','DefaultOutputDirectoryEditBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 
@@ -4634,7 +4510,6 @@ h30 = uicontrol(...
 'Position',[410 8 25 22],...
 'String','1',...
 'Style','edit',...
-'CreateFcn', {@local_CreateFcn, 'CellProfiler(''PixelSizeEditBox_CreateFcn'',gcbo,[],guidata(gcbo))', appdata} ,...
 'Tag','PixelSizeEditBox',...
 'Behavior',get(0,'defaultuicontrolBehavior'));
 

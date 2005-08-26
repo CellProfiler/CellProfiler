@@ -1,6 +1,6 @@
 function handles = MeasureObjectAreaShape(handles)
 
-% Help for the Measure Object Shape module:
+% Help for the Measure Object Area Shape module:
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this

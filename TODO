@@ -134,6 +134,8 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.
 
+- (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
+
 - (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently
@@ -179,7 +181,6 @@ Error in ==> SaveImageAs at 29
 - Check for TODO's
 - Test every module & button
 - Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed.
-- Check whether closing & opening figure windows works.
 - Prepare updated manual
 - Check whether canceling works 
 - Make reference sheet with short descriptions of the modules.

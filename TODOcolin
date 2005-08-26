@@ -6,6 +6,8 @@
 
 \f0\fs24 \cf0 Colin's TODO list\
 \
+- (Requested by Anne 8-26-05) - it looks like we have a slight peek-through problem - I noticed it on the Crop module that it's showing up behind the default image directory edit box.  Also, change 'Directory' to 'folder' in the main GUI.\
+\
 - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.\
 \
 - (Requested by Anne) - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.\

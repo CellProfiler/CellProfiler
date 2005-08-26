@@ -12,6 +12,8 @@ WANT IT ASAP:
 
 - (Requested by Anne 8-24-05) - All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use error('error message goes here'), *not* errordlg(''), return. We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
 
+- (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
+
 - (Requested by Anne) - Combine all IdentifySec options into one module.
 
 - (Requested by Anne) - Combine RGBsplit and RGBtoGray into a single module - that is, with the two methods (split or combine) being options within a single module. Call the resulting module RGBtoGray and move RGBSplit to Outdated.
@@ -38,7 +40,7 @@ WANT IT ASAP:
 
 - (Requested by Anne 8-24-05) - The FilterObjectsAreaShape window should have the bottom left and top right displays switched in their positions (the final filtered image should be in the top right and the outlines on input image should be at the lower right.)  Why is there an input image for this module?  Is it only for showing the outlines on the original image? If that is the case, it should be made optional. FilterObjectsAreaShape needs full documentation and to be made to look like all the other modules, and it needs its method for saving outlines and colored images to be consistent with other modules (like IdentifyPrimAutomatic).  I think we also need a FilterObjectsIntensity and FilterObjectsTexture module (the last one is probably not going to be used much, but it's just to be complete).
 
-- (Requested by Anne 8-24-05) - The help for the crop module is out of date. In addition, the variable descriptions referring to the first pixel and second pixel are confusing.  Perhaps it should be restructured to ask for the first and last X pixel in one box and then the first and last Y pixel in the second box.  It should tell the user that they can enter 'end' (or maybe it should be 'last') if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
+- (Requested by Anne 8-24-05) - The help for the crop module is out of date. The variable descriptions should tell the user that they can enter 'end' (or maybe it should be 'last') instead of a numerical value for the pixel position if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
@@ -147,8 +149,6 @@ Error while evaluating uicontrol Callback.
 % threshold more lenient and greater than 1 (e.g. 1.3) makes the
 % threshold more stringent.
 
-- (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).
-
 - (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
 
 - (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:  SCMD: Saccharomyces
@@ -161,6 +161,8 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 Error in ==> SaveImageAs at 29
     MainWinPos = get(handles.figure1,'Position');
 ??? Error while evaluating uimenu Callback.
+
+- (Requested by Anne 8-26-05) - If there is available space, check that each display window for each module shows the image set # at the top.
 
 - (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames.
 
@@ -176,8 +178,10 @@ Error in ==> SaveImageAs at 29
 - M Lint error checking
 - Check for TODO's
 - Test every module & button
-- Especially, try canceling and closing & opening figure windows
+- Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed.
+- Check whether closing & opening figure windows works.
 - Prepare updated manual
+- Check whether canceling works 
 - Make reference sheet with short descriptions of the modules.
 - Make "applications" technical notes and automatic settings
        files to give a good starting place for common applications

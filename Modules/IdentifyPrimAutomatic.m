@@ -186,7 +186,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % of interest. Basically, any distinct 'objects' which are found but
 % are within two times this distance from each other will be assumed
 % to be actually two lumpy parts of the same object, and they will be
-% merged. 
+% merged.
 % This variable affects whether objects close by each other are
 % considered a single object or multiple objects. It does not affect
 % the dividing lines between an object and the background.  If you see
@@ -254,6 +254,7 @@ function handles = IdentifyPrimAutomatic(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
+%%% Sets up loop for test mode.
 if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,20}),'Yes')
     LocalMaximaTypeList = {'Intensity' 'Shape' 'None'};
     WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
@@ -263,705 +264,692 @@ else
 end
 
 for LocalMaximaTypeNumber = [1:length(LocalMaximaTypeList)]
-for WatershedTransformImageTypeNumber = [1:length(WatershedTransformImageTypeList)]
+    for WatershedTransformImageTypeNumber = [1:length(WatershedTransformImageTypeList)]
 
-        
+        %textVAR01 = What did you call the images you want to process?
+        %infotypeVAR01 = imagegroup
+        ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+        %inputtypeVAR01 = popupmenu
 
-%textVAR01 = What did you call the images you want to process?
-%infotypeVAR01 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
+        %textVAR02 = What do you want to call the objects identified by this module?
+        %infotypeVAR02 = objectgroup indep
+        %defaultVAR02 = Nuclei
+        ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = objectgroup indep
-%defaultVAR02 = Nuclei
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+        %textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
+        %choiceVAR03 = 10,40
+        SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+        %inputtypeVAR03 = popupmenu custom
 
-%textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
-%choiceVAR03 = 10,40
-SizeRange = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
+        %textVAR04 = Discard objects outside the diameter range?
+        %choiceVAR04 = Yes
+        %choiceVAR04 = No
+        ExcludeSize = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+        %inputtypeVAR04 = popupmenu
 
-%textVAR04 = Discard objects outside the diameter range?
-%choiceVAR04 = Yes
-%choiceVAR04 = No
-ExcludeSize = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+        %textVAR05 = Try to merge too small objects with nearby larger objects?
+        %choiceVAR05 = No
+        %choiceVAR05 = Yes
+        MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+        %inputtypeVAR05 = popupmenu
 
-%textVAR05 = Try to merge too small objects with nearby larger objects?
-%choiceVAR05 = No
-%choiceVAR05 = Yes
-MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+        %textVAR06 = Discard objects touching the border of the image?
+        %choiceVAR06 = Yes
+        %choiceVAR06 = No
+        ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+        %inputtypeVAR06 = popupmenu
 
-%textVAR06 = Discard objects touching the border of the image?
-%choiceVAR06 = Yes
-%choiceVAR06 = No
-ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu
+        %textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
+        %choiceVAR07 = MoG Global
+        %choiceVAR07 = MoG Adaptive
+        %choiceVAR07 = Otsu Global
+        %choiceVAR07 = Otsu Adaptive
+        Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+        %inputtypeVAR07 = popupmenu custom
 
-%textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
-%choiceVAR07 = MoG Global
-%choiceVAR07 = MoG Adaptive
-%choiceVAR07 = Otsu Global
-%choiceVAR07 = Otsu Adaptive
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu custom
+        %textVAR08 = Threshold correction factor
+        %defaultVAR08 = 1
+        ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR08 = Threshold correction factor
-%defaultVAR08 = 1
-ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+        %textVAR09 = Lower bound on threshold in the range [0,1].
+        %defaultVAR09 = 0
+        MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR09 = Lower bound on threshold in the range [0,1].
-%defaultVAR09 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+        %textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
+        %choiceVAR10 = 10%
+        %choiceVAR10 = 20%
+        %choiceVAR10 = 30%
+        %choiceVAR10 = 40%
+        %choiceVAR10 = 50%
+        %choiceVAR10 = 60%
+        %choiceVAR10 = 70%
+        %choiceVAR10 = 80%
+        %choiceVAR10 = 90%
+        pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+        %inputtypeVAR10 = popupmenu
 
-%textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
-%choiceVAR10 = 10%
-%choiceVAR10 = 20%
-%choiceVAR10 = 30%
-%choiceVAR10 = 40%
-%choiceVAR10 = 50%
-%choiceVAR10 = 60%
-%choiceVAR10 = 70%
-%choiceVAR10 = 80%
-%choiceVAR10 = 90%
-pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+        %textVAR11 = Method to distinguish clumped objects (see help for details):
+        %choiceVAR11 = Intensity
+        %choiceVAR11 = Shape
+        %choiceVAR11 = None
+        OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+        %inputtypeVAR11 = popupmenu
 
-%textVAR11 = Method to distinguish clumped objects (see help for details):
-%choiceVAR11 = Intensity
-%choiceVAR11 = Shape
-%choiceVAR11 = None
-OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu
-
-LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
+        LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
 
 
-%textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
-%choiceVAR12 = Intensity
-%choiceVAR12 = Distance
-%choiceVAR12 = None
-OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+        %textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
+        %choiceVAR12 = Intensity
+        %choiceVAR12 = Distance
+        %choiceVAR12 = None
+        OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+        %inputtypeVAR12 = popupmenu
 
-WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
+        WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
-%textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
-%choiceVAR13 = Automatic
-SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu custom
+        %textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
+        %choiceVAR13 = Automatic
+        SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+        %inputtypeVAR13 = popupmenu custom
 
-%textVAR14 = Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)
-%choiceVAR14 = Automatic
-MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-%inputtypeVAR14 = popupmenu custom
+        %textVAR14 = Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)
+        %choiceVAR14 = Automatic
+        MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+        %inputtypeVAR14 = popupmenu custom
 
-%textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
-%choiceVAR15 = Yes
-%choiceVAR15 = No
-UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-%inputtypeVAR15 = popupmenu
+        %textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
+        %choiceVAR15 = Yes
+        %choiceVAR15 = No
+        UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+        %inputtypeVAR15 = popupmenu
 
-%textVAR16 = What do you want to call the image of the outlines of the objects?
-%infotypeVAR16 = imagegroup indep
-%defaultVAR16 = Do not save
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+        %textVAR16 = What do you want to call the image of the outlines of the objects?
+        %infotypeVAR16 = imagegroup indep
+        %defaultVAR16 = Do not save
+        SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
-%textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
-%infotypeVAR17 = imagegroup indep
-%defaultVAR17 = Do not save
-SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+        %textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
+        %infotypeVAR17 = imagegroup indep
+        %defaultVAR17 = Do not save
+        SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
-%textVAR18 =  What do you want to call the labeled matrix image?
-%infotypeVAR18 = imagegroup indep
-%defaultVAR18 = Do not save
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+        %textVAR18 =  What do you want to call the labeled matrix image?
+        %infotypeVAR18 = imagegroup indep
+        %defaultVAR18 = Do not save
+        SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
-%textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR19 = RGB
-%choiceVAR19 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
-%inputtypeVAR19 = popupmenu
+        %textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
+        %choiceVAR19 = RGB
+        %choiceVAR19 = Grayscale
+        SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
+        %inputtypeVAR19 = popupmenu
 
-%textVAR20 = Test Mode?
-%choiceVAR20 = No
-%choiceVAR20 = Yes
-TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
-%inputtypeVAR20 = popupmenu
+        %textVAR20 = Test Mode?
+        %choiceVAR20 = No
+        %choiceVAR20 = Yes
+        TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
+        %inputtypeVAR20 = popupmenu
 
-%%%VariableRevisionNumber = 8
+        %%%VariableRevisionNumber = 8
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImage".
-fieldname = ['',  ImageName];
+        %%% Reads (opens) the image you want to analyze and assigns it to a variable,
+        %%% "OrigImage".
+        fieldname = ['',  ImageName];
 
-%%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the IdentifyPrimAutomatic Intensity module, you must have previously run a module to load an image. You specified in the IdentifyPrimAutomatic module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
-end
-OrigImage = handles.Pipeline.(fieldname);
+        %%% Checks whether the image exists in the handles structure.
+        if isfield(handles.Pipeline, fieldname)==0,
+            error(['Image processing has been canceled. Prior to running the IdentifyPrimAutomatic Intensity module, you must have previously run a module to load an image. You specified in the IdentifyPrimAutomatic module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
+        end
+        OrigImage = handles.Pipeline.(fieldname);
 
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the IdentifyPrimAutomatic module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
-end
+        %%% Checks that the original image is two-dimensional (i.e. not a color
+        %%% image), which would disrupt several of the image functions.
+        if ndims(OrigImage) ~= 2
+            error('Image processing was canceled because the IdentifyPrimAutomatic module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+        end
 
-%%% Checks that the Min and Max diameter parameters have valid values
-index = strfind(SizeRange,',');
-if isempty(index),error('The Min and Max size entry in the IdentifyPrimAutomatic module is invalid.'),end
-MinDiameter = SizeRange(1:index-1);
-MaxDiameter = SizeRange(index+1:end);
+        %%% Checks that the Min and Max diameter parameters have valid values
+        index = strfind(SizeRange,',');
+        if isempty(index),error('The Min and Max size entry in the IdentifyPrimAutomatic module is invalid.'),end
+        MinDiameter = SizeRange(1:index-1);
+        MaxDiameter = SizeRange(index+1:end);
 
-MinDiameter = str2double(MinDiameter);
-if isnan(MinDiameter) | MinDiameter < 0
-    error('The Min dimater entry in the IdentifyPrimAutomatic module is invalid.')
-end
-if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
-else
-    MaxDiameter = str2double(MaxDiameter);
-    if isnan(MaxDiameter) | MaxDiameter < 0
-        error('The Max Diameter entry in the IdentifyPrimAutomatic module is invalid.')
-    end
-end
-if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyPrimAutomatic module.'),end
-Diameter = min((MinDiameter + MaxDiameter)/2,50);
-
-%%% Convert user-specified percentage of image covered by objects to a prior probability
-%%% of a pixel being part of an object.
-pObject = str2num(pObject(1:2))/100;
-
-%%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
-%%% Otherwise make sure that the user gave a valid input.
-if strcmp(MinimumThreshold,'Do not use')
-    MinimumThreshold = 0;
-else
-    MinimumThreshold = str2double(MinimumThreshold);
-    if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
-        error('The Minimum threshold entry in the IdentifyPrimAutomatic module is invalid.')
-    end
-end
-
-%%% Check the smoothing filter size parameter
-if ~strcmp(SizeOfSmoothingFilter,'Automatic')
-    SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-    if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage))
-        error('The specified size of the smoothing filter in the IdentifyPrimAutomatic module is not valid or unreasonable.')
-    end
-end
-
-%%% Check the maxima suppression size parameter
-if ~strcmp(MaximaSuppressionSize,'Automatic')
-    MaximaSuppressionSize = str2double(MaximaSuppressionSize);
-    if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0
-        error('The specified maxima suppression size in the IdentifyPrimAutomatic module is not valid or unreasonable.')
-    end
-end
-
-%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
-
-%%% STEP 1. Find threshold and apply to image
-if strfind(Threshold,'Global')
-    if strfind(Threshold,'Otsu')
-        Threshold = CPgraythresh(OrigImage,handles,ImageName);
-    elseif strfind(Threshold,'MoG')
-        Threshold = MixtureOfGaussians(OrigImage,pObject);
-    end
-
-elseif strfind(Threshold,'Adaptive')
-
-    %%% Choose the block size that best covers the original image in the sense
-    %%% that the number of extra rows and columns is minimal.
-    %%% Get size of image
-    [m,n] = size(OrigImage);
-
-    %%% Deduce a suitable block size based on the image size and the percentage of image
-    %%% covered by objects. We want blocks to be big enough to contain both background and
-    %%% objects. The more uneven the ratio between background pixels and object pixels the
-    %%% larger the block size need to be. The minimum block size is about 50x50 pixels.
-    %%% The line below divides the image in 10x10 blocks, and makes sure that the block size is
-    %%% at least 50x50 pixels.
-    BlockSize = max(50,min(round(m/10),round(n/10)));
-
-    %%% Calculates a range of acceptable block sizes as plus-minus 10% of the suggested block size.
-    BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
-    [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
-    BestBlockSize = BlockSizeRange(index);
-
-    %%% Pads the image so that the blocks fit properly.
-    RowsToAdd = BestBlockSize*ceil(m/BestBlockSize) - m;
-    ColumnsToAdd = BestBlockSize*ceil(n/BestBlockSize) - n;
-    RowsToAddPre = round(RowsToAdd/2);
-    RowsToAddPost = RowsToAdd - RowsToAddPre;
-    ColumnsToAddPre = round(ColumnsToAdd/2);
-    ColumnsToAddPost = ColumnsToAdd - ColumnsToAddPre;
-    PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
-    PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
-
-    %%% Calculates the threshold for each block in the image, and a global threshold used
-    %%% to constrain the adaptive threshholds.
-    if strfind(Threshold,'Otsu')
-        GlobalThreshold = graythresh(OrigImage);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
-    elseif strfind(Threshold,'MoG')
-        GlobalThreshold = MixtureOfGaussians(OrigImage,pObject);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject);
-    end
-    %%% Resizes the block-produced image to be the size of the padded image.
-    %%% Bilinear prevents dipping below zero. The crop the image
-    %%% get rid of the padding, to make the result the same size as the original image.
-    Threshold = imresize(Threshold, size(PaddedImage), 'bilinear');
-    Threshold = Threshold(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
-
-    %%% For any of the threshold values that is lower than the user-specified
-    %%% minimum threshold, set to equal the minimum threshold.  Thus, if there
-    %%% are no objects within a block (e.g. if cells are very sparse), an
-    %%% unreasonable threshold will be overridden by the minimum threshold.
-    Threshold(Threshold <= 0.7*GlobalThreshold) = 0.7*GlobalThreshold;
-    Threshold(Threshold >= 1.5*GlobalThreshold) = 1.5*GlobalThreshold;
-
-else
-    %%% The threshold is manually set by the user
-    %%% Checks that the Threshold parameter has a valid value
-    Threshold = str2double(Threshold);
-    if isnan(Threshold) | Threshold > 1 | Threshold < 0
-        error('The threshold entered in the IdentifyPrimAutomatic module is not a number, or is outside the acceptable range of 0 to 1.')
-    end
-end
-
-%%% Correct the threshold using the correction factor given by the user
-%%% and make sure that the threshold is not larger than the minimum threshold
-Threshold = ThresholdCorrection*Threshold;
-Threshold = max(Threshold,MinimumThreshold);
-drawnow
-
-%%% Apply a slight smoothing before thresholding to remove
-%%% 1-pixel objects and to smooth the edges of the objects.
-%%% Note that this smoothing is hard-coded, and not controlled 
-%%% by the user.
-sigma = 1; 
-FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
-[x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
-Objects = BlurredImage > Threshold;                                   % Threshold image
-Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
-Objects = imfill(double(Objects),'holes');                            % Fill holes
-drawnow
-
-
-
-%%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
-%%% to separate neighboring objects.
-if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
-
-    %%% Smooth images for maxima suppression
-    if strcmp(SizeOfSmoothingFilter,'Automatic')
-        sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.
-    else
-        sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
-    end
-    FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
-    [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-    f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-    %%% The original image is blurred. Prior to this blurring, the
-    %%% image is padded with values at the edges so that the values
-    %%% around the edge of the image are not artificially low.  After
-    %%% blurring, these extra padded rows and columns are removed.
-    BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
-    BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
-    %%% Get local maxima, where the definition of local depends on the
-    %%% user-provided object size. This will (usually) be done in a
-    %%% lower-resolution image for speed. The ordfilt2() function is
-    %%% very slow for large images containing large objects.
-    %%% Therefore, image is resized to a size where the smallest
-    %%% objects are about 10 pixels wide. Local maxima within a radius
-    %%% of 5-6 pixels are then extracted. It might be necessary to
-    %%% tune this parameter. The MaximaSuppressionSize must be an
-    %%% integer.  The MaximaSuppressionSize should be equal to the
-    %%% minimum acceptable radius if the objects are perfectly
-    %%% circular with local maxima in the center. In practice, the
-    %%% MinDiameter is divided by 1.5 because this allows the local
-    %%% maxima to be shifted somewhat from the center of the object.
-    if strcmp(UseLowRes,'Yes') && MinDiameter > 10
-        ImageResizeFactor = 10/MinDiameter;
-        if strcmp(MaximaSuppressionSize,'Automatic')
-            MaximaSuppressionSize = 7;             % ~ 10/1.5
+        MinDiameter = str2double(MinDiameter);
+        if isnan(MinDiameter) | MinDiameter < 0
+            error('The Min dimater entry in the IdentifyPrimAutomatic module is invalid.')
+        end
+        if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
         else
-            MaximaSuppressionSize = MaximaSuppressionSize*ImageResizeFactor;
-        end
-    else
-        ImageResizeFactor = 1;
-        if strcmp(MaximaSuppressionSize,'Automatic')
-            MaximaSuppressionSize = round(MinDiameter/1.5);
-        else
-            MaximaSuppressionSize = round(MaximaSuppressionSize);
-        end
-    end
-    MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
-
-    if strcmp(LocalMaximaType,'Intensity')
-
-        % Old code without image resizing
-        %MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));
-        % Initialize MaximaImage
-        %MaximaImage = BlurredImage;
-        % Save only local maxima
-        %MaximaImage(BlurredImage < ...
-        %    ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-        % Remove dim maxima
-        %MaximaImage = MaximaImage > Threshold;
-
-        %%% Find local maxima in a lower resolution image
-        ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
-        %%% Initialize MaximaImage
-        MaximaImage = ResizedBlurredImage;
-        %%% Save only local maxima
-        MaximaImage(ResizedBlurredImage < ...
-            ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-        %%% Restore image size
-        MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
-        %%% Remove dim maxima
-        MaximaImage = MaximaImage > Threshold;
-        %%% Shrink to points (needed because of the resizing)
-        MaximaImage = bwmorph(MaximaImage,'shrink',inf);
-    elseif strcmp(LocalMaximaType,'Shape')
-        %%% Calculate distance transform
-        DistanceTransformedImage = bwdist(~Objects);
-        %%% Add some noise to get distinct maxima
-        DistanceTransformedImage = DistanceTransformedImage + ...
-            0.001*rand(size(DistanceTransformedImage));
-        ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
-        %%% Initialize MaximaImage
-        MaximaImage = ones(size(ResizedDistanceTransformedImage));
-        %%% Set all pixels that are not local maxima to zero
-        MaximaImage(ResizedDistanceTransformedImage < ...
-            ordfilt2(ResizedDistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-        %%% Restore image size
-        MaximaImage = imresize(MaximaImage,size(Objects),'bilinear');
-        %%% We are only interested in maxima within thresholded objects
-        MaximaImage(~Objects) = 0;
-        %%% Shrink to points (needed because of the resizing)
-        MaximaImage = bwmorph(MaximaImage,'shrink',inf);
-    end
-
-    %%% Overlay the maxima on either the original image or a distance
-    %%% transformed image. The watershed is currently done on
-    %%% non-smoothed versions of these image. We may want to try to do
-    %%% the watershed in the slightly smoothed image.
-    if strcmp(WatershedTransformImageType,'Intensity')
-        %%% Overlays the objects markers (maxima) on the inverted original image so
-        %%% there are black dots on top of each dark object on a white background.
-        Overlaid = imimposemin(1 - OrigImage,MaximaImage);
-    elseif strcmp(WatershedTransformImageType,'Distance')
-        %%% Overlays the object markers (maxima) on the inverted DistanceTransformedImage so
-        %%% there are black dots on top of each dark object on a white background.
-        %%% We may have to calculate the distance transform:
-        if ~exist('DistanceTransformedImage','var')
-            DistanceTransformedImage = bwdist(~Objects);
-        end
-        Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
-    end
-
-    %%% Calculate the watershed transform and cut objects along the boundaries
-    WatershedBoundaries = watershed(Overlaid) > 0;
-    Objects = Objects.*WatershedBoundaries;
-
-    %%% Label the objects
-    Objects = bwlabel(Objects);
-
-    %%% Remove objects with no marker in them (this happens occasionally)
-    %%% This is a very fast way to get pixel indexes for the objects
-    tmp = regionprops(Objects,'PixelIdxList');
-    for k = 1:length(tmp)
-        %%% If there is no maxima in these pixels, exclude object
-        if sum(MaximaImage(tmp(k).PixelIdxList)) == 0
-            Objects(index) = 0;
-        end
-    end
-end
-drawnow
-
-%%% Label the objects
-Objects = bwlabel(Objects);
-
-%%% Merge small objects
-if strcmp(MergeChoice,'Yes')
-    Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
-end
-
-%%% Will be stored to the handles structure
-UneditedLabelMatrixImage = Objects;
-
-%%% Get diameters of objects and calculate the interval
-%%% that contains 90% of the objects
-tmp = regionprops(Objects,'EquivDiameter');
-Diameters = [0;cat(1,tmp.EquivDiameter)];
-SortedDiameters = sort(Diameters);
-NbrInTails = max(round(0.05*length(Diameters)),1);
-Lower90Limit = SortedDiameters(NbrInTails);
-Upper90Limit = SortedDiameters(end-NbrInTails+1);
-
-%%% Locate objects with diameter outside the specified range
-tmp = Objects;
-if strcmp(ExcludeSize,'Yes')
-    %%% Create image with object intensity equal to the diameter
-    DiameterMap = Diameters(Objects+1);
-    %%% Remove objects that are too small
-    Objects(DiameterMap < MinDiameter) = 0;
-    %%% Will be stored to the handles structure
-    SmallRemovedLabelMatrixImage = Objects;
-    %%% Remove objects that are too big
-    Objects(DiameterMap > MaxDiameter) = 0;
-else
-    %%% Will be stored to the handles structure even if it's unedited.
-    SmallRemovedLabelMatrixImage = Objects;
-end
-%%% Store objects that fall outside diameter range for display
-DiameterExcludedObjects = tmp - Objects;
-
-%%% Remove objects along the border of the image (depends on user input)
-tmp = Objects;
-if strcmp(ExcludeBorderObjects,'Yes')
-    Objects = imclearborder(Objects);
-end
-%%% Store objects that touch the border for display
-BorderObjects = tmp - Objects;
-
-%%% Relabel the objects
-[Objects,NumOfObjects] = bwlabel(Objects > 0);
-FinalLabelMatrixImage = Objects;
-
-%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
-
-if strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType)
-
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber)
-
-    drawnow
-    CPfigure(handles,ThisModuleFigureNumber);
-
-    subplot(2,2,1)
-    ImageHandle = imagesc(OrigImage);colormap(gray)
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
-    axis image
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',8);
-    set(gca,'fontsize',8)
-
-    hx = subplot(2,2,2);
-    %%% This method of calculating a colormap to use prevented some
-    %%% errors relating to colormaps. For one thing, the label2rgb
-    %%% function fails if there are no objects in the label matrix
-    %%% image. Also, there is a bug for some of the colormaps that
-    %%% fails when there are only 1 or 2 objects in the image, I
-    %%% think.
-    cmap = jet(max(64,max(Objects(:))));
-    im = label2rgb(Objects, cmap, 'k', 'shuffle');
-    ImageHandle = image(im);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
-    title(sprintf('Segmented %s',ObjectName),'fontsize',8);
-    axis image,set(gca,'fontsize',8)
-
-    %%% Indicate objects in original image and color excluded objects in red
-    tmp = OrigImage/max(OrigImage(:));
-    OutlinedObjectsR = tmp;
-    OutlinedObjectsG = tmp;
-    OutlinedObjectsB = tmp;
-    PerimObjects = bwperim(Objects > 0);
-    PerimDiameter = bwperim(DiameterExcludedObjects > 0);
-    PerimBorder = bwperim(BorderObjects > 0);
-    OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-    OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
-    OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
-    hy = subplot(2,2,3);
-    OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-    ImageHandle = image(OutlinedObjects);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
-    title('Outlined objects','fontsize',8);
-    axis image,set(gca,'fontsize',8)
-
-    CPFixAspectRatio(OrigImage);
-
-    %%% Report numbers
-    posx = get(hx,'Position');
-    posy = get(hy,'Position');
-    bgcolor = get(ThisModuleFigureNumber,'Color');
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Current.FontSize);
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range [%0.1f, %0.1f] pixels',...
-        Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
-    ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
-    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
-    if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
-        uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Current.FontSize);
-        uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Current.FontSize);
-    end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% Saves the segmented image, not edited for objects along the edges or
-%%% for size, to the handles structure.
-fieldname = ['UneditedSegmented',ObjectName];
-handles.Pipeline.(fieldname) = UneditedLabelMatrixImage;
-
-%%% Saves the segmented image, only edited for small objects, to the
-%%% handles structure.
-fieldname = ['SmallRemovedSegmented',ObjectName];
-handles.Pipeline.(fieldname) = SmallRemovedLabelMatrixImage;
-
-%%% Saves the final segmented label matrix image to the handles structure.
-fieldname = ['Segmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
-
-%%% Store outlines of objects in the handles structure
-handles.PipelineObjectOutlines = PerimObjects;
-
-%%% Saves images to the handles structure so they can be saved to the hard
-%%% drive, if the user requested.
-if ~strcmp(SaveOutlines,'Do not save')
-    try    handles.Pipeline.(SaveOutlines) = PerimObjects;
-    catch
-        errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
-    end
-end
-
-if ~strcmp(SaveOutlinedOnOriginal,'Do not save')
-    try    handles.Pipeline.(SaveOutlinedOnOriginal) = OutlinedObjects;
-    catch
-        errordlg('The object outlines overlaid on the original image were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
-    end
-end
-
-if ~strcmp(SaveColored,'Do not save')
-    try
-        if strcmp(SaveMode,'RGB')
-            if sum(sum(FinalLabelMatrixImage)) >= 1
-                cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
-                ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
-            else
-                ColoredLabelMatrixImage = FinalLabelMatrixImage;
+            MaxDiameter = str2double(MaxDiameter);
+            if isnan(MaxDiameter) | MaxDiameter < 0
+                error('The Max Diameter entry in the IdentifyPrimAutomatic module is invalid.')
             end
-            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-        else
-            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
         end
-    catch
-        errordlg('The label matrix image was not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyPrimAutomatic module.'),end
+        Diameter = min((MinDiameter + MaxDiameter)/2,50);
+
+        %%% Convert user-specified percentage of image covered by objects to a prior probability
+        %%% of a pixel being part of an object.
+        pObject = str2num(pObject(1:2))/100;
+
+        %%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
+        %%% Otherwise make sure that the user gave a valid input.
+        if strcmp(MinimumThreshold,'Do not use')
+            MinimumThreshold = 0;
+        else
+            MinimumThreshold = str2double(MinimumThreshold);
+            if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
+                error('The Minimum threshold entry in the IdentifyPrimAutomatic module is invalid.')
+            end
+        end
+
+        %%% Check the smoothing filter size parameter
+        if ~strcmp(SizeOfSmoothingFilter,'Automatic')
+            SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
+            if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage))
+                error('The specified size of the smoothing filter in the IdentifyPrimAutomatic module is not valid or unreasonable.')
+            end
+        end
+
+        %%% Check the maxima suppression size parameter
+        if ~strcmp(MaximaSuppressionSize,'Automatic')
+            MaximaSuppressionSize = str2double(MaximaSuppressionSize);
+            if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0
+                error('The specified maxima suppression size in the IdentifyPrimAutomatic module is not valid or unreasonable.')
+            end
+        end
+
+        %%%%%%%%%%%%%%%%%%%%%
+        %%% IMAGE ANALYSIS %%%
+        %%%%%%%%%%%%%%%%%%%%%
+
+        %%% STEP 1. Find threshold and apply to image
+        if strfind(Threshold,'Global')
+            if strfind(Threshold,'Otsu')
+                Threshold = CPgraythresh(OrigImage,handles,ImageName);
+            elseif strfind(Threshold,'MoG')
+                Threshold = MixtureOfGaussians(OrigImage,pObject);
+            end
+
+        elseif strfind(Threshold,'Adaptive')
+
+            %%% Choose the block size that best covers the original image in the sense
+            %%% that the number of extra rows and columns is minimal.
+            %%% Get size of image
+            [m,n] = size(OrigImage);
+
+            %%% Deduce a suitable block size based on the image size and the percentage of image
+            %%% covered by objects. We want blocks to be big enough to contain both background and
+            %%% objects. The more uneven the ratio between background pixels and object pixels the
+            %%% larger the block size need to be. The minimum block size is about 50x50 pixels.
+            %%% The line below divides the image in 10x10 blocks, and makes sure that the block size is
+            %%% at least 50x50 pixels.
+            BlockSize = max(50,min(round(m/10),round(n/10)));
+
+            %%% Calculates a range of acceptable block sizes as plus-minus 10% of the suggested block size.
+            BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
+            [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
+            BestBlockSize = BlockSizeRange(index);
+
+            %%% Pads the image so that the blocks fit properly.
+            RowsToAdd = BestBlockSize*ceil(m/BestBlockSize) - m;
+            ColumnsToAdd = BestBlockSize*ceil(n/BestBlockSize) - n;
+            RowsToAddPre = round(RowsToAdd/2);
+            RowsToAddPost = RowsToAdd - RowsToAddPre;
+            ColumnsToAddPre = round(ColumnsToAdd/2);
+            ColumnsToAddPost = ColumnsToAdd - ColumnsToAddPre;
+            PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
+            PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
+
+            %%% Calculates the threshold for each block in the image, and a global threshold used
+            %%% to constrain the adaptive threshholds.
+            if strfind(Threshold,'Otsu')
+                GlobalThreshold = graythresh(OrigImage);
+                Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
+            elseif strfind(Threshold,'MoG')
+                GlobalThreshold = MixtureOfGaussians(OrigImage,pObject);
+                Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject);
+            end
+            %%% Resizes the block-produced image to be the size of the padded image.
+            %%% Bilinear prevents dipping below zero. The crop the image
+            %%% get rid of the padding, to make the result the same size as the original image.
+            Threshold = imresize(Threshold, size(PaddedImage), 'bilinear');
+            Threshold = Threshold(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
+
+            %%% For any of the threshold values that is lower than the user-specified
+            %%% minimum threshold, set to equal the minimum threshold.  Thus, if there
+            %%% are no objects within a block (e.g. if cells are very sparse), an
+            %%% unreasonable threshold will be overridden by the minimum threshold.
+            Threshold(Threshold <= 0.7*GlobalThreshold) = 0.7*GlobalThreshold;
+            Threshold(Threshold >= 1.5*GlobalThreshold) = 1.5*GlobalThreshold;
+
+        else
+            %%% The threshold is manually set by the user
+            %%% Checks that the Threshold parameter has a valid value
+            Threshold = str2double(Threshold);
+            if isnan(Threshold) | Threshold > 1 | Threshold < 0
+                error('The threshold entered in the IdentifyPrimAutomatic module is not a number, or is outside the acceptable range of 0 to 1.')
+            end
+        end
+
+        %%% Correct the threshold using the correction factor given by the user
+        %%% and make sure that the threshold is not larger than the minimum threshold
+        Threshold = ThresholdCorrection*Threshold;
+        Threshold = max(Threshold,MinimumThreshold);
+        drawnow
+
+        %%% Apply a slight smoothing before thresholding to remove
+        %%% 1-pixel objects and to smooth the edges of the objects.
+        %%% Note that this smoothing is hard-coded, and not controlled
+        %%% by the user.
+        sigma = 1;
+        FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
+        [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+        f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+        BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+        Objects = BlurredImage > Threshold;                                   % Threshold image
+        Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
+        Objects = imfill(double(Objects),'holes');                            % Fill holes
+        drawnow
+
+
+
+        %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
+        %%% to separate neighboring objects.
+        if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
+
+            %%% Smooth images for maxima suppression
+            if strcmp(SizeOfSmoothingFilter,'Automatic')
+                sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.
+            else
+                sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
+            end
+            FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
+            [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+            f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+            %%% The original image is blurred. Prior to this blurring, the
+            %%% image is padded with values at the edges so that the values
+            %%% around the edge of the image are not artificially low.  After
+            %%% blurring, these extra padded rows and columns are removed.
+            BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
+            BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
+            %%% Get local maxima, where the definition of local depends on the
+            %%% user-provided object size. This will (usually) be done in a
+            %%% lower-resolution image for speed. The ordfilt2() function is
+            %%% very slow for large images containing large objects.
+            %%% Therefore, image is resized to a size where the smallest
+            %%% objects are about 10 pixels wide. Local maxima within a radius
+            %%% of 5-6 pixels are then extracted. It might be necessary to
+            %%% tune this parameter. The MaximaSuppressionSize must be an
+            %%% integer.  The MaximaSuppressionSize should be equal to the
+            %%% minimum acceptable radius if the objects are perfectly
+            %%% circular with local maxima in the center. In practice, the
+            %%% MinDiameter is divided by 1.5 because this allows the local
+            %%% maxima to be shifted somewhat from the center of the object.
+            if strcmp(UseLowRes,'Yes') && MinDiameter > 10
+                ImageResizeFactor = 10/MinDiameter;
+                if strcmp(MaximaSuppressionSize,'Automatic')
+                    MaximaSuppressionSize = 7;             % ~ 10/1.5
+                else
+                    MaximaSuppressionSize = MaximaSuppressionSize*ImageResizeFactor;
+                end
+            else
+                ImageResizeFactor = 1;
+                if strcmp(MaximaSuppressionSize,'Automatic')
+                    MaximaSuppressionSize = round(MinDiameter/1.5);
+                else
+                    MaximaSuppressionSize = round(MaximaSuppressionSize);
+                end
+            end
+            MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
+
+            if strcmp(LocalMaximaType,'Intensity')
+
+                % Old code without image resizing
+                %MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));
+                % Initialize MaximaImage
+                %MaximaImage = BlurredImage;
+                % Save only local maxima
+                %MaximaImage(BlurredImage < ...
+                %    ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+                % Remove dim maxima
+                %MaximaImage = MaximaImage > Threshold;
+
+                %%% Find local maxima in a lower resolution image
+                ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
+                %%% Initialize MaximaImage
+                MaximaImage = ResizedBlurredImage;
+                %%% Save only local maxima
+                MaximaImage(ResizedBlurredImage < ...
+                    ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+                %%% Restore image size
+                MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
+                %%% Remove dim maxima
+                MaximaImage = MaximaImage > Threshold;
+                %%% Shrink to points (needed because of the resizing)
+                MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+            elseif strcmp(LocalMaximaType,'Shape')
+                %%% Calculate distance transform
+                DistanceTransformedImage = bwdist(~Objects);
+                %%% Add some noise to get distinct maxima
+                DistanceTransformedImage = DistanceTransformedImage + ...
+                    0.001*rand(size(DistanceTransformedImage));
+                ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
+                %%% Initialize MaximaImage
+                MaximaImage = ones(size(ResizedDistanceTransformedImage));
+                %%% Set all pixels that are not local maxima to zero
+                MaximaImage(ResizedDistanceTransformedImage < ...
+                    ordfilt2(ResizedDistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
+                %%% Restore image size
+                MaximaImage = imresize(MaximaImage,size(Objects),'bilinear');
+                %%% We are only interested in maxima within thresholded objects
+                MaximaImage(~Objects) = 0;
+                %%% Shrink to points (needed because of the resizing)
+                MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+            end
+
+            %%% Overlay the maxima on either the original image or a distance
+            %%% transformed image. The watershed is currently done on
+            %%% non-smoothed versions of these image. We may want to try to do
+            %%% the watershed in the slightly smoothed image.
+            if strcmp(WatershedTransformImageType,'Intensity')
+                %%% Overlays the objects markers (maxima) on the inverted original image so
+                %%% there are black dots on top of each dark object on a white background.
+                Overlaid = imimposemin(1 - OrigImage,MaximaImage);
+            elseif strcmp(WatershedTransformImageType,'Distance')
+                %%% Overlays the object markers (maxima) on the inverted DistanceTransformedImage so
+                %%% there are black dots on top of each dark object on a white background.
+                %%% We may have to calculate the distance transform:
+                if ~exist('DistanceTransformedImage','var')
+                    DistanceTransformedImage = bwdist(~Objects);
+                end
+                Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
+            end
+
+            %%% Calculate the watershed transform and cut objects along the boundaries
+            WatershedBoundaries = watershed(Overlaid) > 0;
+            Objects = Objects.*WatershedBoundaries;
+
+            %%% Label the objects
+            Objects = bwlabel(Objects);
+
+            %%% Remove objects with no marker in them (this happens occasionally)
+            %%% This is a very fast way to get pixel indexes for the objects
+            tmp = regionprops(Objects,'PixelIdxList');
+            for k = 1:length(tmp)
+                %%% If there is no maxima in these pixels, exclude object
+                if sum(MaximaImage(tmp(k).PixelIdxList)) == 0
+                    Objects(index) = 0;
+                end
+            end
+        end
+        drawnow
+
+        %%% Label the objects
+        Objects = bwlabel(Objects);
+
+        %%% Merge small objects
+        if strcmp(MergeChoice,'Yes')
+            Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
+        end
+
+        %%% Will be stored to the handles structure
+        UneditedLabelMatrixImage = Objects;
+
+        %%% Get diameters of objects and calculate the interval
+        %%% that contains 90% of the objects
+        tmp = regionprops(Objects,'EquivDiameter');
+        Diameters = [0;cat(1,tmp.EquivDiameter)];
+        SortedDiameters = sort(Diameters);
+        NbrInTails = max(round(0.05*length(Diameters)),1);
+        Lower90Limit = SortedDiameters(NbrInTails);
+        Upper90Limit = SortedDiameters(end-NbrInTails+1);
+
+        %%% Locate objects with diameter outside the specified range
+        tmp = Objects;
+        if strcmp(ExcludeSize,'Yes')
+            %%% Create image with object intensity equal to the diameter
+            DiameterMap = Diameters(Objects+1);
+            %%% Remove objects that are too small
+            Objects(DiameterMap < MinDiameter) = 0;
+            %%% Will be stored to the handles structure
+            SmallRemovedLabelMatrixImage = Objects;
+            %%% Remove objects that are too big
+            Objects(DiameterMap > MaxDiameter) = 0;
+        else
+            %%% Will be stored to the handles structure even if it's unedited.
+            SmallRemovedLabelMatrixImage = Objects;
+        end
+        %%% Store objects that fall outside diameter range for display
+        DiameterExcludedObjects = tmp - Objects;
+
+        %%% Remove objects along the border of the image (depends on user input)
+        tmp = Objects;
+        if strcmp(ExcludeBorderObjects,'Yes')
+            Objects = imclearborder(Objects);
+        end
+        %%% Store objects that touch the border for display
+        BorderObjects = tmp - Objects;
+
+        %%% Relabel the objects
+        [Objects,NumOfObjects] = bwlabel(Objects > 0);
+        FinalLabelMatrixImage = Objects;
+
+        %%%%%%%%%%%%%%%%%%%%%%
+        %%% DISPLAY RESULTS %%%
+        %%%%%%%%%%%%%%%%%%%%%%
+
+        if strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType)
+            fieldname = ['FigureNumberForModule',CurrentModule];
+            ThisModuleFigureNumber = handles.Current.(fieldname);
+            if any(findobj == ThisModuleFigureNumber)
+                drawnow
+                CPfigure(handles,ThisModuleFigureNumber);
+                subplot(2,2,1)
+                ImageHandle = imagesc(OrigImage);colormap(gray)
+                set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
+                axis image
+                title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',8);
+                set(gca,'fontsize',8)
+                hx = subplot(2,2,2);
+                %%% This method of calculating a colormap to use prevented some
+                %%% errors relating to colormaps. For one thing, the label2rgb
+                %%% function fails if there are no objects in the label matrix
+                %%% image. Also, there is a bug for some of the colormaps that
+                %%% fails when there are only 1 or 2 objects in the image, I
+                %%% think.
+                cmap = jet(max(64,max(Objects(:))));
+                im = label2rgb(Objects, cmap, 'k', 'shuffle');
+                ImageHandle = image(im);
+                set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
+                title(sprintf('Segmented %s',ObjectName),'fontsize',8);
+                axis image,set(gca,'fontsize',8)
+
+                %%% Indicate objects in original image and color excluded objects in red
+                tmp = OrigImage/max(OrigImage(:));
+                OutlinedObjectsR = tmp;
+                OutlinedObjectsG = tmp;
+                OutlinedObjectsB = tmp;
+                PerimObjects = bwperim(Objects > 0);
+                PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+                PerimBorder = bwperim(BorderObjects > 0);
+                OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+                OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+                OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+                hy = subplot(2,2,3);
+                OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+                ImageHandle = image(OutlinedObjects);
+                set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
+                title('Outlined objects','fontsize',8);
+                axis image,set(gca,'fontsize',8)
+
+                CPFixAspectRatio(OrigImage);
+
+                %%% Report numbers
+                posx = get(hx,'Position');
+                posy = get(hy,'Position');
+                bgcolor = get(ThisModuleFigureNumber,'Color');
+                uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
+                    'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Current.FontSize);
+                uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
+                    'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
+                uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
+                    'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range [%0.1f, %0.1f] pixels',...
+                    Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
+                ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
+                uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
+                    'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
+                if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
+                    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Current.FontSize);
+                    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Current.FontSize);
+                end
+            end
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%% SAVE DATA TO HANDLES STRUCTURE %%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            %%% Saves the segmented image, not edited for objects along the edges or
+            %%% for size, to the handles structure.
+            fieldname = ['UneditedSegmented',ObjectName];
+            handles.Pipeline.(fieldname) = UneditedLabelMatrixImage;
+
+            %%% Saves the segmented image, only edited for small objects, to the
+            %%% handles structure.
+            fieldname = ['SmallRemovedSegmented',ObjectName];
+            handles.Pipeline.(fieldname) = SmallRemovedLabelMatrixImage;
+
+            %%% Saves the final segmented label matrix image to the handles structure.
+            fieldname = ['Segmented',ObjectName];
+            handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+
+            %%% Store outlines of objects in the handles structure
+            handles.PipelineObjectOutlines = PerimObjects;
+
+            %%% Saves images to the handles structure so they can be saved to the hard
+            %%% drive, if the user requested.
+            if ~strcmp(SaveOutlines,'Do not save')
+                try    handles.Pipeline.(SaveOutlines) = PerimObjects;
+                catch
+                    errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+                end
+            end
+
+            if ~strcmp(SaveOutlinedOnOriginal,'Do not save')
+                try    handles.Pipeline.(SaveOutlinedOnOriginal) = OutlinedObjects;
+                catch
+                    errordlg('The object outlines overlaid on the original image were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+                end
+            end
+
+            if ~strcmp(SaveColored,'Do not save')
+                try
+                    if strcmp(SaveMode,'RGB')
+                        if sum(sum(FinalLabelMatrixImage)) >= 1
+                            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
+                            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
+                        else
+                            ColoredLabelMatrixImage = FinalLabelMatrixImage;
+                        end
+                        handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+                    else
+                        handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+                    end
+                catch
+                    errordlg('The label matrix image was not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+                end
+            end
+
+            %%% Saves the Threshold value to the handles structure.
+            %%% Storing the threshold is a little more complicated than storing other measurements
+            %%% because several different modules will write to the handles.Measurements.Image.Threshold
+            %%% structure, and we should therefore probably append the current threshold to an existing structure.
+            % First, if the Threshold fields don't exist, initialize them
+            if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
+                handles.Measurements.Image.ThresholdFeatures = {};
+                handles.Measurements.Image.Threshold = {};
+            end
+            % Search the ThresholdFeatures to find the column for this object type
+            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
+            % If column is empty it means that this particular object has not been segmented before. This will
+            % typically happen for the first image set. Append the feature name in the
+            % handles.Measurements.Image.ThresholdFeatures matrix
+            if isempty(column)
+                handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};
+                column = length(handles.Measurements.Image.ThresholdFeatures);
+            end
+            handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
+
+            %%% Saves the ObjectCount, i.e., the number of segmented objects.
+            %%% See comments for the Threshold saving above
+            if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
+                handles.Measurements.Image.ObjectCountFeatures = {};
+                handles.Measurements.Image.ObjectCount = {};
+            end
+            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
+            if isempty(column)
+                handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
+                column = length(handles.Measurements.Image.ObjectCountFeatures);
+            end
+            handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
+
+            %%% Saves the location of each segmented object
+            handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
+            tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+            Centroid = cat(1,tmp.Centroid);
+            handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
+        end
+
+        if strcmp(TestMode,'Yes')
+            drawnow;
+            SegmentedFigures = findobj('Tag','SegmentedFigure');
+            if isempty(SegmentedFigures)
+                SegFig=CPfigure('Tag','SegmentedFigure');
+                uicontrol('style','text','units','normalized','string','Test images for Segmented Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
+            else
+                SegFig = CPfigure(SegmentedFigures(1));
+            end
+
+            subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+            cmap = jet(max(64,max(Objects(:))));
+            im = label2rgb(Objects, cmap, 'k', 'shuffle');
+            ImageHandle = imagesc(im);
+
+            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
+
+            OutlinedFigures = findobj('Tag','OutlinedFigure');
+            if isempty(OutlinedFigures)
+                OutFig=CPfigure('Tag','OutlinedFigure');
+                uicontrol('style','text','units','normalized','string','Test images for Outlined Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
+
+            else
+                OutFig = CPfigure(OutlinedFigures(1));
+            end
+
+            tmp = OrigImage/max(OrigImage(:));
+            OutlinedObjectsR = tmp;
+            OutlinedObjectsG = tmp;
+            OutlinedObjectsB = tmp;
+            PerimObjects = bwperim(Objects > 0);
+            PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+            PerimBorder = bwperim(BorderObjects > 0);
+            OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+            OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+            OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+
+            subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+            OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+            ImageHandle = imagesc(OutlinedObjects);
+            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
+        end
     end
-end
-
-%%% Saves the Threshold value to the handles structure.
-%%% Storing the threshold is a little more complicated than storing other measurements
-%%% because several different modules will write to the handles.Measurements.Image.Threshold
-%%% structure, and we should therefore probably append the current threshold to an existing structure.
-% First, if the Threshold fields don't exist, initialize them
-if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
-    handles.Measurements.Image.ThresholdFeatures = {};
-    handles.Measurements.Image.Threshold = {};
-end
-% Search the ThresholdFeatures to find the column for this object type
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
-% If column is empty it means that this particular object has not been segmented before. This will
-% typically happen for the first image set. Append the feature name in the
-% handles.Measurements.Image.ThresholdFeatures matrix
-if isempty(column)
-    handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};
-    column = length(handles.Measurements.Image.ThresholdFeatures);
-end
-handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
-
-%%% Saves the ObjectCount, i.e., the number of segmented objects.
-%%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-    handles.Measurements.Image.ObjectCountFeatures = {};
-    handles.Measurements.Image.ObjectCount = {};
-end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
-if isempty(column)
-    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
-    column = length(handles.Measurements.Image.ObjectCountFeatures);
-end
-handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
-%%% Saves the location of each segmented object
-handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
-tmp = regionprops(FinalLabelMatrixImage,'Centroid');
-Centroid = cat(1,tmp.Centroid);
-handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-
-end
-
-if strcmp(TestMode,'Yes')
-    drawnow;
-    SegmentedFigures = findobj('Tag','SegmentedFigure');
-    if isempty(SegmentedFigures)
-        SegFig=CPfigure('Tag','SegmentedFigure');
-        uicontrol('style','text','units','normalized','string','Test images for Segmented Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
-    else
-        SegFig = CPfigure(SegmentedFigures(1));
-    end
-    
-    subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-    cmap = jet(max(64,max(Objects(:))));
-    im = label2rgb(Objects, cmap, 'k', 'shuffle');
-    ImageHandle = imagesc(im);
-    
-    title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
-
-   
-    
-    OutlinedFigures = findobj('Tag','OutlinedFigure');
-    if isempty(OutlinedFigures)
-        OutFig=CPfigure('Tag','OutlinedFigure');
-        uicontrol('style','text','units','normalized','string','Test images for Outlined Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
-
-    else
-        OutFig = CPfigure(OutlinedFigures(1));
-    end
-    
-    tmp = OrigImage/max(OrigImage(:));
-    OutlinedObjectsR = tmp;
-    OutlinedObjectsG = tmp;
-    OutlinedObjectsB = tmp;
-    PerimObjects = bwperim(Objects > 0);
-    PerimDiameter = bwperim(DiameterExcludedObjects > 0);
-    PerimBorder = bwperim(BorderObjects > 0);
-    OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-    OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
-    OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
-    
-    subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-    OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-    ImageHandle = imagesc(OutlinedObjects);
-    title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
-
-    
-    
-end
-    
-    
-end
 end
 
 %%%%%%%%%%%%%%%%%%%

@@ -128,17 +128,17 @@ CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = What is the first pixel in form X,Y?  (only if you are using rectangle, coordinates, and Just Once)
+%textVAR06 = Specify the (Left, Right) pixel positions. (only if you are using rectangle, coordinates, and Just Once)
 %defaultVAR06 = 1,1
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What is the second pixel in form X,Y? (only if you are using rectangular, coordinates, and Just Once)
+%textVAR07 = Specify the (Top, Bottom) pixel positions. (only if you are using rectangle, coordinates, and Just Once)
 %defaultVAR07 = 100,100
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What is the center of the ellipse in form X,Y? (only if you are using ellipse, coordinates, and Just Once)
 %defaultVAR08 = 500,500
-center = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+Center = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = What is the radius of the X axis? (only if you are using ellipse, coordinates, and Just Once)
 %defaultVAR09 = 400
@@ -176,10 +176,7 @@ OrigImage = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
-if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually')
-    
+if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually')    
     if strcmp(IndividualOrOnce, 'Only Once')
         %%% The user can choose an image from the pipeline or from the hard drive to use for
         %%% cropping.
@@ -252,17 +249,17 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             
             if strcmp(IndividualOrOnce,'Individually')
                 Answers = inputdlg({'What is the center in the form X,Y?' 'What is the length of the radius along the X-axis?' 'What is the length of the radius along the Y-axis?'});
-                center = Answers{1};
+                Center = Answers{1};
                 X_axis = Answers{2};
                 Y_axis = Answers{3};
             end
                    
-            index = strfind(center,',');
+            index = strfind(Center,',');
             if isempty(index)
                 error('The format of the center is invalid. Please include a comma.');
             end
-            X_center = center(1:index-1);
-            Y_center = center(index+1:end);
+            X_center = Center(1:index-1);
+            Y_center = Center(index+1:end);
             
             masksize = size(ImageToBeCropped);
             [X,Y] = meshgrid(1:masksize(2), 1:masksize(1));
@@ -286,23 +283,29 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         if strcmp(CropMethod,'Coordinates')
             
             if strcmp(IndividualOrOnce,'Individually')
-                Answers = inputdlg({'What is the first pixel in the form X,Y?' 'What is the second pixel in the form X,Y?'});
+                %%% Displays the image so that you can see which
+                %%% pixel positions you want to use to crop. But wait,
+                %%% you would probably just use the Mouse option
+                %%% instead, so I've commented it out.
+%                 TempFigHandle = figure, imagesc(ImageToBeCropped), title('Close this window when you have identified the pixel positions to be used for cropping.'), pixval
+%                 waitfor(TempFigHandle)
+                Answers = inputdlg({'Specify the (Left, Right) pixel positions:' 'Specify the (Top, Bottom) pixel positions:'});
                 Pixel1=Answers{1};
                 Pixel2=Answers{2};
             end
             
             index = strfind(Pixel1,',');
             if isempty(index)
-                error('The format of the first pixel is invalid. Please include a comma.');
+                error('The format of the Left, Right pixel positions is invalid. Please include a comma.');
             end
             x1 = Pixel1(1:index-1);
-            y1 = Pixel1(index+1:end);
+            x2 = Pixel1(index+1:end);
             
             index = strfind(Pixel2,',');
             if isempty(index)
-                error('The format of the second pixel is invalid. Please include a comma.');
+                error('The format of the Top, Bottom pixel positions is invalid. Please include a comma.');
             end
-            x2 = Pixel2(1:index-1);
+            y1 = Pixel2(1:index-1);
             y2 = Pixel2(index+1:end);
             
             [a b c] = size(ImageToBeCropped);
@@ -310,19 +313,18 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             eval(['BinaryCropImage(min(' y1 ',' y2 '):max(' y1 ',' y2 '),min(' x1 ',' x2 '):max(' x1 ',' x2 ')) = 1;']);
             
         elseif strcmp(CropMethod,'Mouse')
-            %%% Displays the image and asks the user to choose points for the
-            %%% ellipse.
+            %%% Displays the image and asks the user to choose points.
             CroppingFigureHandle = figure;
             CroppingImageHandle = imagesc(ImageToBeCropped);
             colormap('gray'); pixval
-            title({'Click on at least two points & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
+            title({'Click on at least two points that are inside the region to be retained (e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             try imcontrast(CroppingImageHandle); end
             try imcontrast(CroppingImageHandle); end
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
             
-            masksize = size(ImageToBeCropped);
-            BinaryCropImage = zeros(masksize);
+            [a b c] = size(ImageToBeCropped);
+            BinaryCropImage = zeros(a,b);
             BinaryCropImage(round(min(y)):round(max(y)),round(min(x)):round(max(x))) = 1;
         else
             error('The value of CropMethod is not recognized');

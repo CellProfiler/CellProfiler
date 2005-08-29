@@ -1152,7 +1152,7 @@ if ModuleNamedotm ~= 0,
             'FontName','helvetica',...
             'FontSize',handles.Current.FontSize,...
             'Position',[305 295-25*lastVariableCheck 195 23],...
-            'String','n/a',...
+            'String','NO FILE LOADED',...
             'Style','edit',...
             'CreateFcn', 'CellProfiler(''VariableBox_CreateFcn'',gcbo,[],guidata(gcbo))',...
             'Tag',['VariableBox' TwoDigitString(lastVariableCheck)],...
@@ -1625,7 +1625,8 @@ if (length(ModuleHighlighted) > 0)
         %%% VariableDescriptions to be invisible.
         set(findobj('Parent',handles.variablepanel,'Visible','On'),'Visible','Off');
         set(handles.VariableDescription{ModuleNumber},'Visible','On');
-        set(handles.VariableBox{ModuleNumber},'Visible','On');
+        
+        set(handles.VariableBox{ModuleNumber}(~strcmp(get(handles.VariableBox{ModuleNumber},'string'),'n/a')),'Visible','On'); %only makes the boxes without n/a as the string visible
         try,set(handles.BrowseButton{ModuleNumber},'Visible','On');end;
         %%% 2.25 Removes slider and moves panel back to original
         %%% position.
@@ -1801,14 +1802,14 @@ for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
         VarDesOn=0;
     end
     tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
-    if ((tempPos(2)+scrollPos)>-20) && VarDesOn  %%% OLA 7/7/2005 && ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a')
+    if ((tempPos(2)+scrollPos)>-20) && VarDesOn  && (size(get(handles.VariableBox{ModuleNumber}(i),'String'),1)~=1 || ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a'))
         set(handles.VariableBox{ModuleNumber}(i),'visible','on');
     else
         set(handles.VariableBox{ModuleNumber}(i),'visible','off');
     end
     try
         tempPos=get(handles.BrowseButton{ModuleNumber}(i),'Position');
-        if ((tempPos(2)+scrollPos)>-25) && VarDesOn  %%% OLA 7/7/2005 && ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a')
+        if ((tempPos(2)+scrollPos)>-20) && VarDesOn
             set(handles.BrowseButton{ModuleNumber}(i),'visible','on');
         else
             set(handles.BrowseButton{ModuleNumber}(i),'visible','off');

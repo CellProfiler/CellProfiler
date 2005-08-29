@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 8/29) - (Requested by Anne 8-26-05) - it looks like we have a slight peek-through problem - I noticed it on the Crop module that it's showing up behind the default image directory edit box.  Also, change 'Directory' to 'folder' in the main GUI.
+
 -(Mike 8/26) (Requested by Anne) - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  I've no idea whether it's related to the CPFixAspectRatio function (based on the 4 modules I checked there is a correlation, but it's not definitive). We should figure out what the point of CPFixAspectRatio is and document its code with some help to describe it.  We may also need to incorporate it throughout the code - some modules use it and others don't, so we ought to make things consistent.  Also (a separate issue, i think), error/help box text didn't fit in their windows and so was not visible. 
 
 - (Requested by Anne) - cvs remove Profiler for Anne folder from the DeveloperDropBox. removing a directory requires a special procedure - i don't know how.

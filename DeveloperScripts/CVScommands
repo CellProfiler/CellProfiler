@@ -15,6 +15,9 @@ In terminal, change to the directory where CellProfiler resides.\
 \ul To show what differences exist between particular revision numbers\ulnone \
 cvs diff -r REVNUMBER REVNUMBER  (providing only one revision number will compare to your locally modified copy, I think)\
 \
+\ul If you get "it is in the way" errors:\
+\ulnone If you don't have any local modifications that you need to commit, just remove the parent directory altogether and then cvs update -d to restore a fresh version of the folder.\
+\
 \ul To obtain revision numbers:\
 \ulnone cvs log Filename.m\
 \

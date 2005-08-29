@@ -3,6 +3,8 @@ AUGUST 23, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+- (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
+
 - (Requested by Anne) - Move the help contents of IdentifySecPropagateSubfunction to the help for 
  IdentifySecPropagate and then remove IdentifySecPropagateSubfunction.m from cvs (i.e. delete it), because it contains no code but appears as a module to load in the pipeline when you click the AddModule button.
 
@@ -110,6 +112,8 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
+- (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
+
 - (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.
 
 - (Requested by Anne) - In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
@@ -175,20 +179,16 @@ Error in ==> SaveImageAs at 29
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 [Do the following prior to releasing:  (Requested by Anne) -
-- Make the download new modules work.
+- Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
 - Smart Indent
 - M Lint error checking
-- Check for TODO's
+- Check for TODO's and FIX ME's throughout the code
 - Test every module & button
 - Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed.
 - Prepare updated manual
 - Check whether canceling works 
 - Make reference sheet with short descriptions of the modules.
-- Make "applications" technical notes and automatic settings
-       files to give a good starting place for common applications
-       (e.g. cell count, yeast colony count, staining intensity, cell
-       cycle, nuclear/cytoplasmic translocation) and for common cell
-       types. 
+- For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.]
 

@@ -1,9 +1,0 @@
-*.tex
-*.log
-*.aux
-CellProfilerFontSize.m
-CellProfilerRegFactor.m
-CellProfilerVarRegFactor.m
-Validation
-WRITEUPS
-key

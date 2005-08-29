@@ -755,8 +755,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 ImageHandle = imagesc(OrigImage);colormap(gray)
                 set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
                 axis image
-                title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',8);
-                set(gca,'fontsize',8)
+                title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Current.FontSize);
+                set(gca,'fontsize',handles.Current.FontSize)
                 hx = subplot(2,2,2);
                 %%% This method of calculating a colormap to use prevented some
                 %%% errors relating to colormaps. For one thing, the label2rgb
@@ -768,8 +768,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 im = label2rgb(Objects, cmap, 'k', 'shuffle');
                 ImageHandle = image(im);
                 set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
-                title(sprintf('Segmented %s',ObjectName),'fontsize',8);
-                axis image,set(gca,'fontsize',8)
+                title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Current.FontSize);
+                axis image,set(gca,'fontsize',handles.Current.FontSize)
 
                 %%% Indicate objects in original image and color excluded objects in red
                 tmp = OrigImage/max(OrigImage(:));
@@ -786,8 +786,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                 ImageHandle = image(OutlinedObjects);
                 set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
-                title('Outlined objects','fontsize',8);
-                axis image,set(gca,'fontsize',8)
+                title('Outlined objects','fontsize',handles.Current.FontSize);
+                axis image,set(gca,'fontsize',handles.Current.FontSize)
 
                 CPFixAspectRatio(OrigImage);
 
@@ -924,7 +924,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             im = label2rgb(Objects, cmap, 'k', 'shuffle');
             ImageHandle = imagesc(im);
 
-            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
+            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',handles.Current.FontSize);
 
             OutlinedFigures = findobj('Tag','OutlinedFigure');
             if isempty(OutlinedFigures)
@@ -949,7 +949,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
             OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
             ImageHandle = imagesc(OutlinedObjects);
-            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',8);
+            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',handles.Current.FontSize);
         end
     end
 end

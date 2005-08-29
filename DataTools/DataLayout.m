@@ -11,7 +11,7 @@ function DataLayout(handles)
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
-% Developed by the Whitehead Institute for Biomedical Research.
+% Developed by the Whitehexad Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %
 % Authors:
@@ -72,7 +72,7 @@ MeanImage = reshape(Measurements,NumberRows,NumberColumns);
 
 %%% Shows the results.
 TitleString = sprintf('Objects: %s, Feauture classification: %s, Feature: %s',ObjectTypename, FeatureType, handles.Measurements.(ObjectTypename).([FeatureType ,'Features']){FeatureNo});
-figure, imagesc(MeanImage), title(TitleString,'fontsize',8), colorbar
+figure, imagesc(MeanImage), title(TitleString,'fontsize',handles.Current.FontSize), colorbar
 
 
 

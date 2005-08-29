@@ -7,15 +7,15 @@
 \red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 Normal;}
 {\*\cs10 \additive \ssemihidden Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid13722558}{\*\generator Microsoft Word 10.0.6612;}{\info
-{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy26\hr13\min41}{\revtim\yr2005\mo8\dy26\hr13\min42}{\version2}{\edmins1}{\nofpages2}{\nofwords611}{\nofchars3487}{\*\company WIBR}{\nofcharsws4090}{\vern16389}}
+\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}}{\*\rsidtbl \rsid2052166\rsid13722558}{\*\generator Microsoft Word 10.0.6612;}{\info
+{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo8\dy26\hr13\min41}{\revtim\yr2005\mo8\dy29\hr16\min28}{\version3}{\edmins1}{\nofpages2}{\nofwords452}{\nofchars2583}{\*\company WIBR}{\nofcharsws3029}{\vern16389}}
 \widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot13722558 \fet0\sectd 
 \linex0\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4
 \pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}
 {\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ql \li0\ri0\nowidctlpar
 \tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\faauto\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f4\insrsid13722558 Mike's TODO list
-\par }{\f4\insrsid13722558 
-\par }{\f4\insrsid13722558 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
+\par 
+\par - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 \par 
 \par - (Requested by Anne) - There is a genera
 l popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I ca
@@ -24,14 +24,6 @@ n
 t
 ifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. 
 This problem might have the same root case.
-\par 
-\par - (Requested by Anne) - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identif
-y module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not ha
-p
-pen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when 
-y
-ou actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's alre
-ady chosen. So, re-selecting it seems to embed the proper choice into the handles.
 \par 
 \par - (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled m
 atrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any othe

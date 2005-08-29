@@ -1685,7 +1685,11 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 if ~iscell(CurrentString)
                     set(ModList(i),'String',{UserEntry});
                 else
-                    set(ModList(i),'String',cat(1,CurrentString(1:(MatchedIndice-1)),{UserEntry},CurrentString((MatchedIndice+1):end)));
+                    if length(CurrentString) == 1
+                        set(ModList(i),'String',{UserEntry});
+                    else
+                        set(ModList(i),'String',cat(1,CurrentString(1:(MatchedIndice-1)),{UserEntry},CurrentString((MatchedIndice+1):end)));
+                    end
                 end
             else
                 set(ModList(i),'String',cat(1,CurrentString(1:(MatchedIndice-1)),CurrentString((MatchedIndice+1):end)));

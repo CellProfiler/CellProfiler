@@ -1678,6 +1678,15 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
     ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet)));
     for i=1:numel(ModList)
+        %%%Finds Module Number and Variable Number, not needed now but
+        %%%possibly useful in future
+        %%%BoxTag = get(ModList(i),'tag');
+        %%%BoxNum = str2num(BoxTag((length(BoxTag)-1):end));
+        %%%for m = 1:handles.Current.NumberOfModules
+        %%%    if ModList(i) == handles.VariableBox{m}(BoxNum)
+        %%%        ModNum = m;
+        %%%    end
+        %%%end
         CurrentString = get(ModList(i),'String');
         MatchedIndice = strmatch(PrevValue,CurrentString);
         if ~isempty(MatchedIndice) && isempty(ModList3)
@@ -1686,7 +1695,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                     set(ModList(i),'String',{UserEntry});
                 else
                     if length(CurrentString) == 1
-                        set(ModList(i),'String',{UserEntry});
+                        set(ModList(i),'String',cat(1,CurrentString,{UserEntry}));
                     else
                         set(ModList(i),'String',cat(1,CurrentString(1:(MatchedIndice-1)),{UserEntry},CurrentString((MatchedIndice+1):end)));
                     end

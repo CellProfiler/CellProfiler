@@ -1623,7 +1623,6 @@ if (length(ModuleHighlighted) > 0)
     if( handles.Current.NumberOfModules > 0 )
         %%% 2. Sets all VariableBox edit boxes and all
         %%% VariableDescriptions to be invisible.
-        
         set(findobj('Parent',handles.variablepanel,'Visible','On'),'Visible','Off');
         set(handles.VariableDescription{ModuleNumber},'Visible','On');
         set(handles.VariableBox{ModuleNumber},'Visible','On');
@@ -1635,7 +1634,6 @@ if (length(ModuleHighlighted) > 0)
         set(handles.variablepanel, 'position', [238 0 563 346]);
         set(handles.slider1,'value',get(handles.slider1,'min'));
         set(handles.slider1,'visible','off');
-        
         %%% 2.5 Checks whether a module is loaded in this slot.
         contents = get(handles.ModulePipelineListBox,'String');
         ModuleName = contents{ModuleNumber};
@@ -1751,7 +1749,7 @@ end
 ModuleNumber = whichactive(handles);
 if isempty(UserEntry)
   errordlg('Variable boxes must not be left blank');
-  set(handles.(['VariableBox' VariableNumberStr]),'string', 'Fill in');
+  set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string', 'Fill in');
   storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
 else
   if ModuleNumber == 0,     

@@ -7,10 +7,6 @@
 \f0\fs24 \cf0 Colin's TODO list\
 \
 \
-- (Requested by Anne) - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.\
-\
-- (Requested by Anne) - It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.\
-\
 - (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.  Check through all other modules and tools - I think DataLayout tool is also using a hard coded font size.\
 \
 - (Requested by Anne) - Put in the help menus for ImageTools and DataTools.\

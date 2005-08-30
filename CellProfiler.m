@@ -1679,7 +1679,12 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     ModList2 = findobj('UserData',InfoType(1:end));
     ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2num(VariableNumber)));
     ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
-    ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(UserEntry))));
+    if ischar(UserEntry)
+        ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(1))));
+    else
+        ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(UserEntry))));
+    end
+    
     for i=1:numel(ModList)
         %%%Finds Module Number and Variable Number, not needed now but
         %%%possibly useful in future
@@ -1716,8 +1721,13 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             elseif ~iscell(CurrentString)
                 CurrentString = {CurrentString}
             else
-                CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
-                set(ModList(i),'String',CurrentString);
+                if ischar(UserEntry)
+                    CurrentString(numel(CurrentString)+1) = {StrSet};
+                    set(ModList(i),'String',CurrentString);
+                else
+                    CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
+                    set(ModList(i),'String',CurrentString);
+                end
             end
         end
     end

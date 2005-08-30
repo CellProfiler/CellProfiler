@@ -31,6 +31,17 @@ sabcarp 2153
 sabatini 128
 cellomics 2149
 -----------
+Create a folder on your computer's hard drive ( at root / ) at the topmost level called 'nfs', with one subfolder for each server. You can do this at the command line in Terminal like this:
+cd /
+mkdir nfs
+cd nfs
+mkdir sabatini_dbw02
+mkdir sabatini_dbw01
+mkdir imaging
+mkdir sabatini1_ata
+mkdir sabatini2_ata
+mkdir carpente_ata
+
 At the command line in a Terminal window, be sure that you are logged in as someone who has permission to access those servers (e.g. cellprofileruser).  Then type each of these lines, with Enter after each one:
 mount tap6:/sabatini_dbw02   /nfs/sabatini_dbw02
 mount tap5:/sabatini_dbw01   /nfs/sabatini_dbw01

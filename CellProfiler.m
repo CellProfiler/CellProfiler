@@ -1274,6 +1274,15 @@ if ModuleNamedotm ~= 0,
           %  if isempty(handles.Settings.VariableValues{ModuleNums, str2num(output(11:12))})
           %      handles.Settings.VariableValues(ModuleNums, str2num(output(11:12))) = StrSet(1);
            % end
+        elseif (strncmp(output,'%infotypeVAR',12) == 1) && (OptionInCode == SelectedOption);
+            lastVariableCheck = str2double(output(13:14));
+            try
+                set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData', output(18:end));
+            catch
+                keyboard;
+            end
+            handles.Settings.VariableInfoTypes(ModuleNums, lastVariableCheck) = {output(18:end)};
+            guidata(handles.figure1,handles);
         elseif (strncmp(output,'%inputtypeVAR',13) == 1) && (OptionInCode == SelectedOption);
             lastVariableCheck = str2double(output(14:15));
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'style', output(19:27));
@@ -1286,7 +1295,7 @@ if ModuleNamedotm ~= 0,
             for i=1:(ModuleNums-1)
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
-                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/')
+                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save')
                             StrSet(Count) = handles.Settings.VariableValues(i,j);
                             Count = Count + 1;
                         end
@@ -1295,7 +1304,6 @@ if ModuleNamedotm ~= 0,
             end
             
             if strcmp(output(29:end),'custom')
-
                 if  (~isempty(handles.Settings.VariableValues{ModuleNums,lastVariableCheck})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}, StrSet, 'exact'))))
                     StrSet(Count) = handles.Settings.VariableValues(ModuleNums,lastVariableCheck);
                     Count = Count + 1;
@@ -1303,22 +1311,16 @@ if ModuleNamedotm ~= 0,
                 StrSet(Count) = {'Other..'};
                 Count = Count + 1;
             end
+            
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'string',StrSet);
             guidata(handles.figure1,handles);
+            
             if Count == 1
                 set(handles.VariableBox{ModuleNums}(lastVariableCheck),'enable','off')
                 guidata(handles.figure1,handles);
             end
+            
             clear StrSet
-        elseif (strncmp(output,'%infotypeVAR',12) == 1) && (OptionInCode == SelectedOption);
-            lastVariableCheck = str2double(output(13:14));
-            try
-                set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData', output(18:end));
-            catch
-                keyboard;
-            end
-            handles.Settings.VariableInfoTypes(ModuleNums, lastVariableCheck) = {output(18:end)};
-            guidata(handles.figure1,handles);
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
                 handles.Settings.VariableRevisionNumbers(ModuleNums) = str2num(output(29:30));
@@ -1677,7 +1679,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     ModList2 = findobj('UserData',InfoType(1:end));
     ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2num(VariableNumber)));
     ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
-    ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet)));
+    ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(UserEntry))));
     for i=1:numel(ModList)
         %%%Finds Module Number and Variable Number, not needed now but
         %%%possibly useful in future
@@ -1714,14 +1716,12 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             elseif ~iscell(CurrentString)
                 CurrentString = {CurrentString}
             else
-                CurrentString(numel(CurrentString)+1) = {UserEntry};
+                CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
                 set(ModList(i),'String',CurrentString);
             end
         end
     end
 end
-
-
 
 if strcmp(get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'style'), 'edit')
     handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
@@ -1742,8 +1742,11 @@ function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignor
 %%% subfunction), and calls the storevariable function.
 VariableName = get(hObject,'tag');
 VariableNumberStr = VariableName(12:13);
-
+ModuleNumber = whichactive(handles);
+VarNum = str2num(VariableNumberStr);
 InputType = get(hObject,'style');
+InfoType = char(handles.Settings.VariableInfoTypes(ModuleNumber,VarNum));
+
 if strcmp(InputType, 'edit')
     UserEntry = get(hObject,'string');
 elseif strcmp(InputType, 'popupmenu')
@@ -1761,7 +1764,6 @@ elseif strcmp(InputType, 'popupmenu')
     end
 end
 
-ModuleNumber = whichactive(handles);
 if isempty(UserEntry)
   errordlg('Variable boxes must not be left blank');
   set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string', 'Fill in');

@@ -88,7 +88,7 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Which image's original filename do you want to use as a base to create the new file name? Type N to use sequential numbers.
+%textVAR02 = Which image's original filename do you want use to base new image filenames (MUST be from Load module e.g. OrigBlue)? Type N to use sequential numbers.
 %infotypeVAR02 = imagegroup
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
@@ -170,6 +170,13 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     end
 end
 drawnow
+
+try
+    fieldname = ['Filename', ImageFileName];
+    FileName = handles.Pipeline.(fieldname);
+catch
+    error(['The original name chosen to base the saved files name''s MUST be from a Load module (images or video) or ''N'' for sequential numbering.  The error is: ', lasterr])
+end
 
 %%% The module is only carried out if this is the appropriate set being
 %%% analyzed, or if the user wants it done every time.

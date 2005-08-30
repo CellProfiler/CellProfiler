@@ -311,10 +311,10 @@ PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
 rgLoG=fspecial('log',NeighborhoodSize,Sigma);
 %%% Filters the image.
 imLoGout=imfilter(double(OrigImage),rgLoG);
-    figure, imagesc(imLoGout), colormap(gray), title('imLoGout')
+    figure, imagesc(imLoGout), CPcolormap(handles), title('imLoGout')
 %%% Removes noise using the weiner filter.
 imLoGoutW=wiener2(imLoGout,WienerSize);
-    figure, imagesc(imLoGoutW), colormap(gray), title('imLoGoutW')
+    figure, imagesc(imLoGoutW), CPcolormap(handles), title('imLoGoutW')
 
 %%%%%%%%%%%%%%
 rgNegCurve = imLoGoutW < Threshold;
@@ -359,7 +359,7 @@ InvertedBinaryImage = rgDilated;
 
 %%% Creates label matrix image.
 % rgLabelled2=uint16(bwlabel(imLoGoutW,4));
-% figure, imagesc(rgLabelled2), colormap(gray), title('rgLabelled2')
+% figure, imagesc(rgLabelled2), CPcolormap(handles), title('rgLabelled2')
 % FinalLabelMatrixImage = bwlabel(FinalBinary,4);
 
 PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
@@ -443,17 +443,17 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);CPcolormap(handles);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,2); imagesc(FinalLabelMatrixImage); CPcolormap(handles);title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    % subplot(2,2,3); imagesc(Overlaid); colormap(gray); title([ObjectName, ' markers']);
+    % subplot(2,2,3); imagesc(Overlaid); CPcolormap(handles); title([ObjectName, ' markers']);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);CPcolormap(handles); title([ObjectName, ' Outlines on Input Image']);
     CPFixAspectRatio(OrigImage);
 end
 

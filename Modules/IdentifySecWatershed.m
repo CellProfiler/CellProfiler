@@ -502,18 +502,18 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);CPcolormap(handles);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
+    subplot(2,2,2); imagesc(FinalLabelMatrixImage);CPcolormap(handles); title(['Segmented ',SecondaryObjectName]);
     %%% A subplot of the figure window is set to display the original image
     %%% with watershed lines drawn on top.
-    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage); colormap(gray); title([SecondaryObjectName, ' Outlines on Input Image']);
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage); CPcolormap(handles); title([SecondaryObjectName, ' Outlines on Input Image']);
     %%% A subplot of the figure window is set to display the original
     %%% image with watershed lines drawn for both the primary and secondary
     %%% objects.
-    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); colormap(gray); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); CPcolormap(handles); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
     CPFixAspectRatio(OrigImage);
 end
 

@@ -76,7 +76,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = imagesc(OrigImage); 
-colormap(gray), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
+CPcolormap(handles), axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
 
 drawnow
 
@@ -185,7 +185,7 @@ end
 CPfigure(FigureHandle); 
 subplot(2,3,[1 2 4 5]);
 ImageHandle = imagesc(RotatedImage); 
-colormap(gray);
+CPcolormap(handles);
 axis image;
 title('Rotated Image');
 pixval off;

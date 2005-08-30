@@ -163,7 +163,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,1)
     ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))
-    colormap(hot),axis image
+    CPcolormap(handles),axis image
     set(gca,'Fontsize',handles.Current.FontSize)
     title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
 

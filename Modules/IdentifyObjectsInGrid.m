@@ -209,7 +209,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% think.
     cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
     im = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
-    ImageHandle = imagesc(im);
+    ImageHandle = imagesc(FinalLabelMatrixImage);CPcolormap(handles);
         
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
@@ -219,7 +219,7 @@ if any(findobj == ThisModuleFigureNumber)
     
     subplot(2,1,2); 
     imagesc(OutlinedObjects);
-    colormap(gray);
+    CPcolormap(handles);
         
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);

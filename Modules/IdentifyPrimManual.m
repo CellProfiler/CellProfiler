@@ -138,7 +138,7 @@ FigureHandle = figure;
 ImageHandle = imagesc(LowResOrigImage);axis off,axis image
 [nrows,ncols,ncolors] = size(LowResOrigImage);
 if ncolors == 1
-    colormap(gray)
+    CPcolormap(handles)
 end
 AxisHandle = gca;
 set(gca,'fontsize',handles.Current.FontSize)
@@ -169,13 +169,13 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); colormap(gray);
+    subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); CPcolormap(handles);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); imagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,3); imagesc(LowResOrigImage);colormap(gray); title([ObjectName, ' Outline on Input Image']);
+    subplot(2,2,3); imagesc(LowResOrigImage);CPcolormap(handles); title([ObjectName, ' Outline on Input Image']);
     hold on, plot(x,y,'r'),hold off
     CPFixAspectRatio(LowResOrigImage);
 end

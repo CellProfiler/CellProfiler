@@ -112,7 +112,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
+    subplot(2,1,1); imagesc(OrigImage);CPcolormap(handles);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.

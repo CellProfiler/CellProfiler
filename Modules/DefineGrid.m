@@ -251,7 +251,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 
 if any(findobj == ThisModuleFigureNumber)    
     CPfigure(handles,ThisModuleFigureNumber);    
-    imagesc(FinalLabelMatrixImage);    
+    imagesc(FinalLabelMatrixImage);CPcolormap(handles);  
     %%% Draws the lines.
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);

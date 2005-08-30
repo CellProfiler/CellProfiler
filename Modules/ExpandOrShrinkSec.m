@@ -210,9 +210,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OriginalColoredLabelMatrixImage);colormap(gray);
+    subplot(2,1,1); imagesc(SegmentedImage);CPcolormap(handles);
     title([ObjectName, ' Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); imagesc(ShrunkenColoredLabelMatrixImage); title(ShrunkenObjectName);colormap(gray);
+    subplot(2,1,2); imagesc(FinalShrunkenSegmentedImage); title(ShrunkenObjectName);CPcolormap(handles);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -109,7 +109,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 FigHandle = CPfigure;
 
 imagesc(handles.Pipeline.(ImageName));
-colormap(gray);
+CPcolormap(handles);
     
 if ~strcmp(DataName1,'/')
     Text1 = handles.Measurements.(DataName1);

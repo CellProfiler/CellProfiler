@@ -130,9 +130,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);colormap(gray);
+    subplot(2,1,1); imagesc(OrigImage);CPcolormap(handles);
     title(['Input image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); imagesc(DilatedObjectsImage); colormap(gray);
+    subplot(2,1,2); imagesc(DilatedObjectsImage); CPcolormap(handles);
     title('Image of dilated objects');
 end
 

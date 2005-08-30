@@ -166,9 +166,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage1);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage1);CPcolormap(handles);
     title(['First input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,3); imagesc(OrigImage2);colormap(gray);
+    subplot(2,2,3); imagesc(OrigImage2);CPcolormap(handles);
     title(['Second input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Adjacent
     %%% Image.

@@ -395,17 +395,17 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);colormap(gray);
+    subplot(2,2,1); imagesc(OrigImage);CPcolormap(handles);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,2); imagesc(FinalLabelMatrixImage); CPcolormap(handles);title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    subplot(2,2,3); imagesc(EnhancedInvertedImage); colormap(gray); title(['Inverted enhanced contrast image']);
+    subplot(2,2,3); imagesc(EnhancedInvertedImage); CPcolormap(handles); title(['Inverted enhanced contrast image']);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);colormap(gray); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);CPcolormap(handles); title([ObjectName, ' Outlines on Input Image']);
     CPFixAspectRatio(OrigImage);
 end
 

@@ -277,7 +277,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         drawnow
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
-        colormap(gray);
+        CPcolormap(handles);
         %%% Displays the image.
         imagesc(TiledImage)
         %%% Sets the figure to take up most of the screen.

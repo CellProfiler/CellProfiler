@@ -752,7 +752,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 drawnow
                 CPfigure(handles,ThisModuleFigureNumber);
                 subplot(2,2,1)
-                ImageHandle = imagesc(OrigImage);colormap(gray)
+                ImageHandle = imagesc(OrigImage);CPcolormap(handles);
                 set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
                 axis image
                 title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Current.FontSize);
@@ -764,9 +764,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 %%% image. Also, there is a bug for some of the colormaps that
                 %%% fails when there are only 1 or 2 objects in the image, I
                 %%% think.
-                cmap = jet(max(64,max(Objects(:))));
-                im = label2rgb(Objects, cmap, 'k', 'shuffle');
-                ImageHandle = image(im);
+                ImageHandle = image(Objects);
+                CPcolormap(handles);
                 set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
                 title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Current.FontSize);
                 axis image,set(gca,'fontsize',handles.Current.FontSize)

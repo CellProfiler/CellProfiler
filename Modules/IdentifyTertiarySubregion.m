@@ -169,19 +169,19 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% primary object image.
-    subplot(2,2,1); imagesc(PrimaryObjectImage);colormap(gray);
+    subplot(2,2,1); imagesc(PrimaryObjectImage);CPcolormap(handles);
     title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the original
     %%% secondary object image.
     subplot(2,2,2); imagesc(SecondaryObjectImage);
-    title([SecondaryObjectName, ' Image']); colormap(gray);
+    title([SecondaryObjectName, ' Image']); CPcolormap(handles);
     %%% A subplot of the figure window is set to display the resulting
     %%% subregion image in gray.
-    subplot(2,2,3); imagesc(SubregionObjectImage); colormap(gray);
+    subplot(2,2,3); imagesc(SubregionObjectImage); CPcolormap(handles);
     title([SubregionObjectName, ' Image']);
     %%% A subplot of the figure window is set to display the resulting
     %%% subregion image in color.
-    subplot(2,2,4); imagesc(ColoredLabelMatrixImage);
+    subplot(2,2,4); imagesc(SubregionObjectImage);CPcolormap(handles);
     title([SubregionObjectName, ' Color Image']);
     CPFixAspectRatio(PrimaryObjectImage);
 end

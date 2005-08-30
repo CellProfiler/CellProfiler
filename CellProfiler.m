@@ -1745,7 +1745,7 @@ VariableNumberStr = VariableName(12:13);
 ModuleNumber = whichactive(handles);
 VarNum = str2num(VariableNumberStr);
 InputType = get(hObject,'style');
-InfoType = char(handles.Settings.VariableInfoTypes(ModuleNumber,VarNum));
+InfoType = handles.Settings.VariableInfoTypes(ModuleNumber,VarNum);
 
 if strcmp(InputType, 'edit')
     UserEntry = get(hObject,'string');

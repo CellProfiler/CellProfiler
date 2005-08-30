@@ -1,0 +1,132 @@
+CELLPROFILER ON CLUSTER new
+
+These instructions are for writing the batch files straight to the remote location. You can also write the batch files to the local computer and copy them over (see LOCAL ONLY steps).
+
+1. Put your images on the network somewhere. Currently, imaging (tap2), carpente_ata (tap6), sabatini_dbw01 (tap5), sabatini_dbw02 (tap6),  sabatini1_ata (tap6) and sabatini2_ata (tap6) are all nfs mounted and accessible to the cluster.
+
+2. Connect to that location from the CP G5, using Go > Connect to server.  Be sure to use nfs rather than cifs because the connection is much faster.
+
+3. Log into barra (a server and a front end to submit jobs to the cluster) as user=carpente, using Terminal or X Windows:
+ssh -X carpente@barra.wi.mit.edu
+
+4. As carpente, logged into barra, make a directory for the project somewhere on gobo that is accessible to the cluster, and give write permission to the new directory: 
+mkdir DIRNAME
+chmod a+w DIRNAME.
+(I think it is necessary to use the command line as carpente rather than just making a folder using the Mac, because the CellProfilerUser does not have write permission on sabatini_ata's, I think.)
+
+5. (LOCAL ONLY) Make a folder on the local computer.
+
+6. In CellProfiler, add the module CreateBatchScripts to the end of the pipeline, and enter the settings (see Notes below for server naming issues):
+CreateBatchScripts module:
+What prefix ahould be added to the batch file names?
+Batch_
+What is the path to the CellProfiler folder on the cluster machines? 
+/home/carpente/CellProfiler
+What is the path to the image directory on the cluster machines?
+.
+What is the path to the directory where batch output should be written on the cluster machines? 
+.
+What is the path to the directory where you want to save the batch files?
+.
+What is the path to the directory where the batch data file will be saved on the cluster machines?
+.
+If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective
+Volumes/tap6
+If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective
+nfs/sabatini2_ata
+SaveImages module:
+Enter the pathname to the directory where you want to save the images: (note: I am not sure if we can currently save images on each cycle through the pipeline)
+ /nfs/sabatini2_ata/PROJECTNAME
+Default image directory:
+/Volumes/tap6/IMAGEDIRECTORY
+Default output directory:
+/Volumes/tap6/PROJECTNAME (or LOCAL folder)
+
+7. Run the pipeline through CellProfiler, which will analyze the first set and create batch files.
+
+8. (LOCAL ONLY) Drag the BatchFiles folder (which now contains the Batch  .m files and .mat file) and BatchOutputFiles folder (empty) from the local computer into the project folder at the remote location. 
+
+9. From the command line, logged into barra, make sure the CellProfiler code at  /home/carpente/CellProfiler is up to date by changing to /home/carpente/CellProfiler and type: cvs update.  Any compiled functions in the code must be compiled for every type of architecture present in the cluster using the matlab command mex (PC, Mac, Unix, 64-bit, etc).
+
+10. From the command line, logged into barra, submit the jobs using a script like runallbatchjobs.sh as follows: 
+./rerunLQ.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME
+Note that FOLDERWHEREMATFILESARE is usually the same as FOLDERWHEREMFILESARE. This is mainly if you are trying to re-run failed jobs - it only runs m files if there is no corresponding mat file located in the FOLDERWHEREMATFILESARE.
+For example:
+./rerunLQ.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_
+./rerunNormal.sh /nfs/sabatini_dbw01/Fly200_40x_Results /nfs/sabatini_dbw01/Fly200_40x_Results/Logs /nfs/sabatini_dbw01/Fly200_40x_Results Batch_sl22_
+(currently, there is a copy of this script at /home/carpente so that is the directory from which the script should be run. The first time I ran it, I had to change the permissions by doing this: chmod a+w runallbatchjobs.sh)
+
+choosing a queue:
+QUEUE_NAME      PRIORITY 
+sq32hp           50  
+sq64hp           50 
+lq32hp           50 
+lq64hp           50  
+sq32mp           40
+lq32mp           40 
+lq64lp           30  
+sq32lp           20  
+fraenkel         20  
+normal           10  
+sq = short queue jobs < 20 minutes
+lq = long queue jobs > 20 minutes
+32 & 64 indicate 32 vs 64 bit applications - not important at this time as our apps run both
+lp = low priority
+medium = medium priority
+high  = high priority
+There are fewer machines in the hp and mp queues but they have higher priority. If you just have a few jobs that need to be run soon the mp and hp queues should be ideal.  If you have many jobs w/ a lower turn around requirement the lp queues have more machines available but at a lower run priority. Ofcourse this is a limited resource availlable to all so when the cluster is busy everything will take bit longer.
+When writing to sabatini2_ata, use sq32hp - other computers don't have write permission sometimes.
+
+11. Transfer files to Ray's computer:
+To copy output files to oblique (after making the destination directory):
+scp /Volumes/tap5/Fly200_40x_sl07Results/Batch_*OUT.mat carpenter@oblique.lcs.mit.edu:/home/carpenter/Fly200_40x_sl07Results
+or here:
+/csail/vision-polina2/thouis/Fly200/
+----------------------------------------------------------------------------------
+
+Checking the jobs during running (Bsub Functions):
+List all jobs: bjobs
+Count all jobs: bjobs | wc -l
+Count running jobs: bjobs | grep RUN | wc -l
+Count pending jobs: bjobs | grep PEND | wc -l
+Kill all jobs bkill 0
+Submit an individual job: copy a bsub line out of batAll.sh, like this:
+bsub -B -N -u carpenter@wi.mit.edu matlab -nodisplay -r Test3Batch_2_to_2
+-B sends email at beginning of job, -N at the end. 
+-q QUEUENAME allows selecting a queue.
+	OR >>> use RunOneBatchJob2.sh
+After editing a script, you might need to chmod a+x to run it.
+To see what is in batAll.sh: less batAll.sh
+To edit  batAll.sh: pico batAll.sh (Works only in Terminal, not in X Windows).
+
+How many jobs are running and pending?
+bjobs | grep RUN | wc -l ; echo jobs_running; bjobs | grep PEND | wc -l; echo jobs_pending
+
+How many jobs are running and pending for a particular slide?
+bjobs -w | grep sl12 | wc -l
+
+How many jobs are running and pending in each queue?
+echo sq32hp; bjobs | grep sq32hp | wc -l; echo lq32hp; bjobs | grep lq32hp | wc -l ; echo lq64lp; bjobs | grep lq64lp | wc -l ; echo normal; bjobs | grep normal | wc -l ; 
+
+Switch a job to a different queue
+bswitch sq32hp 189091
+
+Checking the jobs after running:
+To see how many lines are present in each log file in the directory (an indicator of successful completion):
+wc -l *.m.txt 
+To see how many files are in the directory (subtract 1, I think)
+ls | grep *OUT.mat | wc -l
+To list jobs that Exited without completing by searching the log files for the word 'Exited':
+less /Volumes/tap5/Fly200_40x_sl03Results/*.m.txt | grep Exited
+
+Other notes:
+1. COPY OPTIONS:
+	Example 1: drag and drop to /gobo/carpente or gobo/sabatini1_ata
+For some locations, it may not be permitted to create a folder using Mac's functions. In these cases, it should be possible to mkdir from the command line when logged into barra, or chmod a+w DIRNAME when logged into barra as carpente.
+	Example 2: In Terminal, from within the folder on local computer containing the batch files:
+scp Batch* carpente@barra.wi.mit.edu:/home/carpente/2005_02_07BatchFiles
+	Example 3: (similar, to retrieve output files):  From within the destination folder in Terminal on the local computer:
+scp carpente@barra.wi.mit.edu:/home/carpente/CellProfiler/ExampleFlyImages/Test3Batch_2_to_2_OUT.mat .
+2. SERVER NAMING:
+- The cluster calls gobo "nfs", so all instances where you might normally use gobo should be replaced with nfs.   e.g. gobo/imaging becomes /nfs/imaging from the cluster's perspective.
+- The local computer uses the actual address of servers to use in place of "gobo".  Connect to the server using cifs://gobo/DIRNAME, then in Terminal ssh to barra, then cd /nfs then df. This will list the actual address, something like: tap2.wi.mit.edu:/imaging   The name tap2 is then used in CellProfiler.    e.g. gobo/imaging becomes /Volumes/tap2 from the local computer's perspective.  sabatini_dbw01 is /Volumes/tap5.

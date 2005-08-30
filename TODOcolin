@@ -21,5 +21,7 @@ This also affects the "SAVING IMAGES" portion of the help for each module, so up
 \
 - (Requested by Anne 8-24-05) I HAVE STARTED ADDRESSING THE ABOVE CONCERNS IN THIS MANNER - I have written QuickFixConvertObjectsToImage module. We should develop this further so that it can be used to convert objects into images that are savable by SaveImages. It should also be able to convert objects to images in order to pass them down the pipeline (because if you wanted to process a label matrix image downstream, you can't select its object name in downstream modules because only imagegroup members are selectable in downstream modules). The ability to use this module with the SaveImages module will replace the last few variables and related code from each individual Identify module which will be more streamlined. This module should include options (1) convert entire objects or just outlines, (2) binary, grayscale in range 0 to 1 (be sure to think about what happens if there's more than 256 objects), or RGB. For RGB, allow the user to choose which colormap (e.g. jet, bone, autumn, etc).  We might even include an option to allow overlaying outlines on some image, because that's really handy.\
 \
+\
+- (Requested by Anne 8-30-05) - What is the last variable talking about in SaveImages.m ? "Do you want to update file names within CellProfiler?"   This should be described in the help - I have no idea what it's referring to. \
 ********************\
 }

@@ -129,11 +129,11 @@ IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 = Specify the (Left, Right) pixel positions. (only if you are using rectangle, coordinates, and Just Once)
-%defaultVAR06 = 1,1
+%defaultVAR06 = 1,100
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Specify the (Top, Bottom) pixel positions. (only if you are using rectangle, coordinates, and Just Once)
-%defaultVAR07 = 100,100
+%defaultVAR07 = 1,100
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What is the center of the ellipse in form X,Y? (only if you are using ellipse, coordinates, and Just Once)

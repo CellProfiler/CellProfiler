@@ -1,0 +1,30 @@
+Setting up new computers to access WIBR servers using NFS
+Anne Carpenter   July 22, 2005
+
+On Mac OSX, go to Utilities > NetInfo Manager
+
+Security > Authenticate
+
+Go to /  groups  	(highlight it)
+And select one of the groups
+
+Then click Duplicate (be sure you don't have one of its properties highlighted or you will duplicate one line within the group)
+
+In the lower panel, change the fields as follows (doubleclick to edit each field):
+users		root, cellprofileruser
+realname 	Imaging group  [or any nice name you want to give it, doesn't matter]
+name		imaging
+passwd	*
+gid		1110
+
+Domain > Save changes
+
+
+----------
+Here are the groups:
+imaging 1110
+sabata 2148
+sabdbw 2145
+sabcarp 2153
+sabatini 128
+cellomics 2149

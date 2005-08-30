@@ -1,4 +1,5 @@
-CELLPROFILER ON CLUSTER new
+CELLPROFILER ON CLUSTER
+August 30, 2005
 
 These instructions are for writing the batch files straight to the remote location. You can also write the batch files to the local computer and copy them over (see LOCAL ONLY steps).
 

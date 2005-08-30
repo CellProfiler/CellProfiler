@@ -57,4 +57,4 @@ So now everything is set up, and you should never need to repeat any of these st
 -----------------------------------
 Setting up new users:
 Use System Preferences on the computer to add a new user. It's best to use the same shortname as you pan to use for your other unix accounts.
-Probably it will be useful to email unix@wi.mit.edu and ask them to add your username to the above groups. This will allow you to access the servers using the cifs://gobo protocol & your CCDOM login & password from any computer.
+Probably it will be useful to email unix@wi.mit.edu and ask them to add your username to the above groups in order for you to modify any files on the servers. This will also allow you to access the servers using the cifs://gobo protocol & your CCDOM login & password from any computer.

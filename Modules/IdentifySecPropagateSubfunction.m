@@ -1,5 +1,5 @@
 % Help for the Segment Secondary Propagate Subfunction:
-% Category: Object Identification and Modification
+% Category: Object Processing
 %
 % This is a subfunction implemented in C and MEX to perform the
 % propagate algorithm (somewhat similar to watershed).  This help

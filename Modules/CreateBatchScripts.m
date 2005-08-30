@@ -1,7 +1,7 @@
 function handles = CreateBatchScripts(handles)
 
 % Help for the Create Batch Scripts module:
-% Category: File Handling
+% Category: File Processing
 %
 % This module writes a batch (set) of Matlab scripts (m-files) that
 % can be submitted in parallel to a cluster for faster processing.

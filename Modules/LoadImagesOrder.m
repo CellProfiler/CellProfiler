@@ -1,7 +1,7 @@
 function handles = LoadImagesOrder(handles)
 
 % Help for the Load Images Order module:
-% Category: File Handling
+% Category: File Processing
 %
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.

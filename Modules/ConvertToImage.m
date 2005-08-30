@@ -1,7 +1,7 @@
 function handles = ConvertToImage(handles)
 
 % Help for the Quick Fix Convert Objects To Image module:
-% Category: Object Identification and Modification
+% Category: Object Processing
 %
 % This module hasn't really been written yet, much less documented.
 % 

@@ -1,7 +1,7 @@
 function handles = IdentifyTertiarySubregion(handles)
 
 % Help for the Identify Tertiary Subregion module:
-% Category: Object Identification and Modification
+% Category: Object Processing
 %
 % This module will take the identified objects specified in the first
 % box and remove from them the identified objects specified in the

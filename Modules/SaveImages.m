@@ -1,7 +1,7 @@
 function handles = SaveImages(handles)
 
 % Help for the Save Images module:
-% Category: File Handling
+% Category: File Processing
 %
 % This module allows you to save images to the hard drive.  Any of the
 % processed images created by CellProfiler during the analysis can be

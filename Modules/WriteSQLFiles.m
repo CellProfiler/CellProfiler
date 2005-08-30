@@ -1,7 +1,7 @@
 function handles = WriteSQLFiles(handles)
 
 % Help for the Write SQL Files module:
-% Category: File Handling
+% Category: File Processing
 %
 % This module exports measurements to a SQL compatible format.
 % It creates a MySQL script and associated data files. It calls

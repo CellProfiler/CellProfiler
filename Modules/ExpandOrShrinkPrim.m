@@ -1,7 +1,7 @@
 function handles = ExpandOrShrinkPrim(handles)
 
 % Help for the Expand Or Shrink Primary Objects module:
-% Category: Object Identification and Modification
+% Category: Object Processing
 %
 % The module expands or shrinks primary objects by adding or removing
 % border pixels. The user can specify a certain number of times the

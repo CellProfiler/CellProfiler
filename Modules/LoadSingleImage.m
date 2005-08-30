@@ -1,7 +1,7 @@
 function handles = LoadSingleImage(handles)
 
 % Help for the Load Single Image module:
-% Category: File Handling
+% Category: File Processing
 %
 % Tells CellProfiler where to retrieve a single image and gives the
 % image a meaningful name for the other modules to access.  The module

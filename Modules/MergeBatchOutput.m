@@ -1,7 +1,7 @@
 function handles = MergeBatchOutput(handles)
 
 % Help for the Merge Batch Output module:
-% Category: File Handling
+% Category: File Processing
 %
 % This module merges the output from several output files, each
 % resulting from scripts created by the the CreateBatchFiles module.

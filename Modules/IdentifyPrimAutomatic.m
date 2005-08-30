@@ -1,7 +1,7 @@
 function handles = IdentifyPrimAutomatic(handles)
 
 % Help for the Identify Primary Automatic module:
-% Category: Object Identification and Modification
+% Category: Object Processing
 %
 % General module for identifying (segmenting) primary objects in
 % grayscale images that show bright objects on a dark background. The

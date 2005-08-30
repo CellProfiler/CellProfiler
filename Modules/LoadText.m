@@ -1,7 +1,7 @@
 function handles = LoadText(handles)
 
 % Help for the Load Text module:
-% Category: File Handling
+% Category: File Processing
 %
 % Use this tool if you would like text information.  The information could
 % be referring to each image set, each object, or anything else the user

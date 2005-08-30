@@ -1,7 +1,7 @@
 function handles = LoadMoviesText(handles)
 
 % Help for the Load Movies Text module:
-% Category: File Handling
+% Category: File Processing
 %
 % Tells CellProfiler where to retrieve avi-formatted movies (avi
 % movies must be in uncompressed avi format on UNIX and Mac

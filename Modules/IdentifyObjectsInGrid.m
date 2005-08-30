@@ -1,7 +1,7 @@
 function handles = IdentifyObjectsInGrid(handles)
 
 % Help for the Identify Objects In Grid module:
-% Category: Object Identification and Modification
+% Category: Object Processing
 %
 % This module identifies objects what are in a grid.  It requires that you
 % create a grid in an earlier module using the DefineGrid module.  If you

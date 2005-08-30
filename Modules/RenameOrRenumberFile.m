@@ -1,7 +1,7 @@
 function handles = RenameOrRenumberFile(handles)
 
 % Help for the RenameOrRenumberFile module:
-% Category: File Handling
+% Category: File Processing
 %
 % File renaming utility that deletes or adds text anywhere
 % within image file names.

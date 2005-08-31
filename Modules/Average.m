@@ -75,8 +75,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the resulting projection image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = ProjectedBlue
+%infotypeVAR02 = imagegroup indep
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Are the images you want to use to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.

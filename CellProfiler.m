@@ -1078,6 +1078,9 @@ if ModuleNamedotm ~= 0,
             lastVariableCheck = str2double(istr);
             handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'String',displayval);
+            if isempty(handles.Settings.VariableValues(ModuleNums,lastVariableCheck))
+                handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = {displayval};
+            end
         elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption)
             lastVariableCheck = str2double(output(9:10));
             if ~RunInBG
@@ -1283,9 +1286,12 @@ if ModuleNamedotm ~= 0,
             else
                 StrSet{numel(StrSet)+1} = output(16:end);
             end
-          %  if isempty(handles.Settings.VariableValues{ModuleNums, str2num(output(11:12))})
-          %      handles.Settings.VariableValues(ModuleNums, str2num(output(11:12))) = StrSet(1);
-           % end
+            % if isempty(handles.Settings.VariableValues{ModuleNums, str2num(output(11:12))})
+            %      handles.Settings.VariableValues(ModuleNums, str2num(output(11:12))) = StrSet(1);
+            % end
+            if isempty(handles.Settings.VariableValues(ModuleNums,lastVariableCheck))
+                handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = StrSet(1);
+            end
         elseif (strncmp(output,'%infotypeVAR',12) == 1) && (OptionInCode == SelectedOption);
             lastVariableCheck = str2double(output(13:14));
             try
@@ -1294,6 +1300,12 @@ if ModuleNamedotm ~= 0,
                 keyboard;
             end
             handles.Settings.VariableInfoTypes(ModuleNums, lastVariableCheck) = {output(18:end)};
+            if strcmp(output((length(output)-4):end),'indep')
+                UserEntry = char(handles.Settings.VariableValues(ModuleNums,lastVariableCheck));
+                if ~strcmp(UserEntry,'n/a') && ~strcmp(UserEntry,'/') && ~isempty(UserEntry)
+                    storevariable(ModuleNums,output(13:14),UserEntry,handles);
+                end
+            end
             guidata(handles.figure1,handles);
         elseif (strncmp(output,'%inputtypeVAR',13) == 1) && (OptionInCode == SelectedOption);
             lastVariableCheck = str2double(output(14:15));
@@ -1307,7 +1319,7 @@ if ModuleNamedotm ~= 0,
             for i=1:(ModuleNums-1)
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
-                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save')
+                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')
                             StrSet(Count) = handles.Settings.VariableValues(i,j);
                             Count = Count + 1;
                         end
@@ -1752,7 +1764,11 @@ end
 if strcmp(get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'style'), 'edit')
     handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
 else
+    if ischar(UserEntry)
+    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
+    else
     handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = StrSet(UserEntry);
+    end
 end
 guidata(handles.figure1, handles);
 

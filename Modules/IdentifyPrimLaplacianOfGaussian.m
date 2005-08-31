@@ -125,8 +125,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Cells
+%infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
@@ -162,9 +162,9 @@ IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 =  What do you want to call the labeled matrix image?
-%infotypeVAR10 = imagegroup indep
 %choiceVAR10 = Do not save
 %choiceVAR10 = LabeledNuclei
+%infotypeVAR10 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 %inputtypeVAR10 = popupmenu custom
 

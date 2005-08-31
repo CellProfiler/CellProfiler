@@ -58,20 +58,20 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the segmented objects that you want to measure?
-%infotypeVAR02 = objectgroup
 %choiceVAR02 = Do not use
+%infotypeVAR02 = objectgroup
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 =
-%infotypeVAR03 = objectgroup
 %choiceVAR03 = Do not use
+%infotypeVAR03 = objectgroup
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 =
-%infotypeVAR04 = objectgroup
 %choiceVAR04 = Do not use
+%infotypeVAR04 = objectgroup
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 

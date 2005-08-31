@@ -109,8 +109,8 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
-%infotypeVAR03 = objectgroup indep
 %defaultVAR03 = Cells
+%infotypeVAR03 = objectgroup indep
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the threshold (Positive number, Max = 1):
@@ -133,9 +133,9 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
 %textVAR08 =  What do you want to call the labeled matrix image?
-%infotypeVAR08 = imagegroup indep
 %choiceVAR08 = Do not save
 %choiceVAR08 = LabeledNuclei
+%infotypeVAR08 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8}); 
 %inputtypeVAR08 = popupmenu custom
 

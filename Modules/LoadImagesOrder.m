@@ -71,8 +71,8 @@ NumberInSet{1} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,1
 
 
 %textVAR02 = What do you want to call these images?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
+%infotypeVAR02 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = The images to be loaded are located in what position in each set?
@@ -85,8 +85,8 @@ NumberInSet{2} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call these images?
-%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigGreen
+%infotypeVAR04 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = The images to be loaded are located in what position in each set?
@@ -99,8 +99,8 @@ NumberInSet{3} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 = What do you want to call these images?
-%infotypeVAR06 = imagegroup indep
 %defaultVAR06 = OrigRed
+%infotypeVAR06 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = The images to be loaded are located in what position in each set?
@@ -113,8 +113,8 @@ NumberInSet{4} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 = What do you want to call these images?
-%infotypeVAR08 = imagegroup indep
 %defaultVAR08 = OrigOther
+%infotypeVAR08 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = How many images are there in each set (i.e. each field of view)?

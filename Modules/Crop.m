@@ -106,8 +106,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the cropped image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = CropBlue
+%infotypeVAR02 = imagegroup indep
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Into which shape would you like to crop? To crop to a shape based on another image you have loaded, type its name here (see help for details).

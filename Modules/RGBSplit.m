@@ -49,18 +49,18 @@ RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the image that was red? Type N to ignore red.
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigRed
+%infotypeVAR02 = imagegroup indep
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What do you want to call the image that was green? Type N to ignore green.
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = OrigGreen
+%infotypeVAR03 = imagegroup indep
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call the image that was blue? Type N to ignore blue.
-%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = OrigBlue
+%infotypeVAR04 = imagegroup indep
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1

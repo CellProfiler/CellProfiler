@@ -74,8 +74,8 @@ CurrentModuleNum = str2double(CurrentModule);
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call these images?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigBlue
+%infotypeVAR02 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Type the text that this set of images has in common
@@ -83,8 +83,8 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call these images?
-%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = /
+%infotypeVAR04 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Type the text that this set of images has in common
@@ -92,8 +92,8 @@ ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call these images?
-%infotypeVAR06 = imagegroup indep
 %defaultVAR06 = /
+%infotypeVAR06 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Type the text that this set of images has in common
@@ -101,8 +101,8 @@ ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What do you want to call these images?
-%infotypeVAR08 = imagegroup indep
 %defaultVAR08 = /
+%infotypeVAR08 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = If an image slot above is not being used, type a slash  /  in the box. Do you want to match the text exactly or use regular expressions?

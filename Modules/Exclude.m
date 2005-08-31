@@ -83,8 +83,8 @@ MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the remaining objects?
-%infotypeVAR03 = objectgroup indep
 %defaultVAR03 = EditedStaining
+%infotypeVAR03 = objectgroup indep
 RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For the remaining objects, do you want to retain their original number or renumber them consecutively (Retain or Renumber)? Retaining their original number might be important if you intend to correlate measurements made on the remaining objects with measurements made on the original objects.  Renumbering, on the other hand, makes the output file more compact and the processing quicker.

@@ -54,28 +54,28 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the image to be colored blue?
-%infotypeVAR01 = imagegroup
 %choiceVAR01 = Leave this black
+%infotypeVAR01 = imagegroup
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the image to be colored green?
-%infotypeVAR02 = imagegroup
 %choiceVAR02 = Leave this black
+%infotypeVAR02 = imagegroup
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What did you call the image to be colored red?
-%infotypeVAR03 = imagegroup
 %choiceVAR03 = Leave this black
+%infotypeVAR03 = imagegroup
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = Type "N" in any slots above to leave that color black.
 
 %textVAR05 = What do you want to call the resulting image?
-%infotypeVAR05 = imagegroup indep
 %defaultVAR05 = RGBImage
+%infotypeVAR05 = imagegroup indep
 RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the adjustment factor for the blue image

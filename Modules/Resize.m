@@ -49,8 +49,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the resized image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = ResizedBlue
+%infotypeVAR02 = imagegroup indep
 ResizedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = To shrink the image, enter the resizing factor (0 to 1). To enlarge the image, enter the resizing factor (greater than 1)

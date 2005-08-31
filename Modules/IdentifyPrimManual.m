@@ -72,8 +72,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Cells
+%infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Resize the image to this size before manual identification (pixels)
@@ -87,9 +87,9 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
 %textVAR05 =  What do you want to call the labeled matrix image?
-%infotypeVAR05 = imagegroup indep
 %choiceVAR05 = Do not save
 %choiceVAR05 = LabeledNuclei
+%infotypeVAR05 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
 %inputtypeVAR05 = popupmenu custom
 

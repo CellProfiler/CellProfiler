@@ -52,8 +52,8 @@ ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the resulting image?
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = AdjacentImage
+%infotypeVAR03 = imagegroup indep
 AdjacentImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Placement Type.

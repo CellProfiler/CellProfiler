@@ -73,14 +73,14 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the new subregions?
-%infotypeVAR03 = objectgroup indep
 %defautVAR03 = Cells
+%infotypeVAR03 = objectgroup indep
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 =  What do you want to call the labeled matrix image?
-%infotypeVAR04 = imagegroup indep
 %choiceVAR04 = Do not save
 %choiceVAR04 = LabeledNuclei
+%infotypeVAR04 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
 %inputtypeVAR04 = popupmenu custom
 

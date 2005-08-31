@@ -144,8 +144,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Yeast
+%infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Size range (in pixels) of objects to include (1,99999 = do not discard any)
@@ -176,13 +176,13 @@ IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 = What do you want to call the image of the outlines of the objects?
-%infotypeVAR09 = imagegroup indep
 %defaultVAR09 = Do not save
+%infotypeVAR09 = imagegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
 %textVAR10 =  What do you want to call the labeled matrix image?
-%infotypeVAR10 = imagegroup indep
 %defaultVAR10 = Do not save
+%infotypeVAR10 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 
 %textVAR11 = Do you want to save the labeled matrix image in RGB or grayscale?

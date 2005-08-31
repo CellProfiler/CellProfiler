@@ -36,8 +36,8 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What would you like to call the grid?
-%infotypeVAR01 = gridgroup indep
 %defaultVAR01 = GridBlue
+%infotypeVAR01 = gridgroup indep
 GridName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Would you like to create the grid manually, or automatic.  Also, if the grid is defined manual, would you like to create a different grid for each image, or use the same grid for all of them?

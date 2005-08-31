@@ -275,8 +275,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Nuclei
+%infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Typical diameter of objects, in pixel units (Min,Max):
@@ -366,18 +366,19 @@ UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
 %textVAR16 = What do you want to call the image of the outlines of the objects?
-%infotypeVAR16 = imagegroup indep
 %defaultVAR16 = Do not save
+%infotypeVAR16 = imagegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
 %textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
-%infotypeVAR17 = imagegroup indep
 %defaultVAR17 = Do not save
+%infotypeVAR17 = imagegroup indep
 SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
 %textVAR18 =  What do you want to call the labeled matrix image?
+%choiceVAR18 = Do not save
+%inputtypeVAR18 = popupmenu custom
 %infotypeVAR18 = imagegroup indep
-%defaultVAR18 = Do not save
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 %textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?

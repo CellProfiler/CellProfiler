@@ -75,8 +75,8 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the tiled image?
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = TiledImage
+%infotypeVAR03 = imagegroup indep
 TiledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Number of rows to display.

@@ -43,50 +43,50 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = Enter the names of each image type to be compared.
-%infotypeVAR01 = imagegroup
 %choiceVAR01 = Do not use
+%infotypeVAR01 = imagegroup
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = All pairwise comparisons will be performed.
-%infotypeVAR02 = imagegroup
 %choiceVAR02 = Do not use
+%infotypeVAR02 = imagegroup
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 =
-%infotypeVAR03 = imagegroup
 %choiceVAR03 = Do not use
+%infotypeVAR03 = imagegroup
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 =
-%infotypeVAR04 = imagegroup
 %choiceVAR04 = Do not use
+%infotypeVAR04 = imagegroup
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 = What did you call the objects within which to compare the images?
-%infotypeVAR05 = objectgroup
 %choiceVAR05 = Do not use
+%infotypeVAR05 = objectgroup
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 =
-%infotypeVAR06 = objectgroup
 %choiceVAR06 = Do not use
+%infotypeVAR06 = objectgroup
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 =
-%infotypeVAR07 = objectgroup
 %choiceVAR07 = Do not use
+%infotypeVAR07 = objectgroup
 ObjectName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 =
-%infotypeVAR08 = objectgroup
 %choiceVAR08 = Do not use
+%infotypeVAR08 = objectgroup
 ObjectName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 

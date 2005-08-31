@@ -65,8 +65,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the image with the dilated objects?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = DilatedObjects
+%infotypeVAR02 = imagegroup indep
 DilatedObjectsImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter the radius to use for dilation (roughly equal to the original radius of the objects).

@@ -111,18 +111,18 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the illumination function?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = IllumBlue
+%infotypeVAR02 = imagegroup indep
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = (Optional) What do you want to call the raw projection image prior to dilation or smoothing? (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = ProjectedBlue
+%infotypeVAR03 = imagegroup indep
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = (Optional) What do you want to call the projection image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = DilatedProjectedBlue
+%infotypeVAR04 = imagegroup indep
 DilatedProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter Each to calculate an illumination function for Each image individually (in which case, choose P in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.

@@ -62,8 +62,8 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the secondary objects identified by this module?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = Cells
+%infotypeVAR02 = objectgroup indep
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = On which image would you like to display the outlines of the secondary objects?
@@ -82,9 +82,9 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
 %textVAR06 =  What do you want to call the labeled matrix image?
-%infotypeVAR06 = imagegroup indep
 %choiceVAR06 = Do not save
 %choiceVAR06 = LabeledNuclei
+%infotypeVAR06 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
 %inputtypeVAR06 = popupmenu custom
 

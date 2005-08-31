@@ -14,8 +14,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the generated histograms?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = OrigHist
+%infotypeVAR02 = imagegroup indep
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = How many bins do you want?

@@ -58,8 +58,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the thresholded image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = ThreshBlue
+%infotypeVAR02 = imagegroup indep
 ThresholdedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Pixels below this value (Range = 0-1) will be set to zero

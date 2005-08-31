@@ -124,13 +124,13 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the illumination function?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = IllumBlue
+%infotypeVAR02 = imagegroup indep
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = (Optional) What do you want to call the raw image of average minimums prior to smoothing? (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = AverageMinimumsBlue
+%infotypeVAR03 = imagegroup indep
 AverageMinimumsImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no cells are located.

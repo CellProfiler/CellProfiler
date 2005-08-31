@@ -58,8 +58,8 @@ CurrentModuleNum = str2double(CurrentModule);
 TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What would you like to call the data?
-%infotypeVAR02 = datagroup indep
 %defaultVAR02 = names
+%infotypeVAR02 = datagroup indep
 FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%VariableRevisionNumber = 1

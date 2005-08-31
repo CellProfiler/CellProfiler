@@ -62,8 +62,8 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the smoothed image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = CorrBlue
+%infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Are you using this module to smooth an image that results from processing multiple image sets?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).

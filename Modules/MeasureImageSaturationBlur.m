@@ -50,38 +50,38 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the image you want to check for saturation?
-%infotypeVAR01 = imagegroup
 %choiceVAR01 = Do not use
+%infotypeVAR01 = imagegroup
 NameImageToCheck{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the image you want to check for saturation?
-%infotypeVAR02 = imagegroup
 %choiceVAR02 = Do not use
+%infotypeVAR02 = imagegroup
 NameImageToCheck{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What did you call the image you want to check for saturation?
-%infotypeVAR03 = imagegroup
 %choiceVAR03 = Do not use
+%infotypeVAR03 = imagegroup
 NameImageToCheck{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What did you call the image you want to check for saturation?
-%infotypeVAR04 = imagegroup
 %choiceVAR04 = Do not use
+%infotypeVAR04 = imagegroup
 NameImageToCheck{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 = What did you call the image you want to check for saturation?
-%infotypeVAR05 = imagegroup
 %choiceVAR05 = Do not use
+%infotypeVAR05 = imagegroup
 NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 = What did you call the image you want to check for saturation?
-%infotypeVAR06 = imagegroup
 %choiceVAR06 = Do not use
+%infotypeVAR06 = imagegroup
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 

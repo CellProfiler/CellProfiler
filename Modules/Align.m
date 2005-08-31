@@ -62,8 +62,8 @@ Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the aligned first image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = AlignedBlue
+%infotypeVAR02 = imagegroup indep
 AlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What did you call the second image to be aligned? (will be displayed as green)
@@ -72,19 +72,19 @@ Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the aligned second image?
-%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = AlignedGreen
+%infotypeVAR04 = imagegroup indep
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = What did you call the third image to be aligned? (will be displayed as red)
-%infotypeVAR05 = imagegroup
 %defaultVAR05 = /
+%infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 = What do you want to call the aligned third image?
-%infotypeVAR06 = imagegroup indep
 %defaultVAR06 = /
+%infotypeVAR06 = imagegroup indep
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = This module calculates the alignment shift. Do you want to actually adjust the images?

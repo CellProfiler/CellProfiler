@@ -73,8 +73,8 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the expanded or shrunken objects?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = ShrunkenNuclei
+%infotypeVAR02 = objectgroup indep
 ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter E for Expand or S for Shrink.

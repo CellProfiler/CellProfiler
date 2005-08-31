@@ -73,19 +73,19 @@ TracedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the real images?
-%infotypeVAR02 = imagegroup
 %defaultVAR02 = OrigReal
+%infotypeVAR02 = imagegroup
 RealImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the aligned, cropped traced images?
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = ACTraced
+%infotypeVAR03 = imagegroup indep
 FinishedTracedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call the aligned, cropped real images?
-%infotypeVAR04 = imagegroup indep
 %defaultVAR04 = ACReal
+%infotypeVAR04 = imagegroup indep
 FinishedRealImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter the printed size of the real image in inches as "height,width" (no quotes).

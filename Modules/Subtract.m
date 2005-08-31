@@ -52,14 +52,14 @@ SubtractImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = From this image (enter the name here)
-%infotypeVAR02 = imagegroup
 %defaultVAR02 = NHSw1
+%infotypeVAR02 = imagegroup
 BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the resulting image?
-%infotypeVAR03 = imagegroup custom
 %defaultVAR03 = SubtractedCellStain
+%infotypeVAR03 = imagegroup custom
 ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the factor to multiply the subtracted image by:

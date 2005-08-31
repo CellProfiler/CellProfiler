@@ -62,13 +62,13 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
-%infotypeVAR03 = objectgroup indep
 %defaultVAR03 = ExpandedCells
+%infotypeVAR03 = objectgroup indep
 ExpandedObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call the image of the objects, colored by the number of neighbors?
-%infotypeVAR04 = objectgroup indep
 %defaultVAR04 = ColoredNeighbors
+%infotypeVAR04 = objectgroup indep
 ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1

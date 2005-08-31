@@ -15,8 +15,8 @@ OrigImage = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the thumbnail images you want to use to link to full images?
-%infotypeVAR02 = imagegroup
 %choiceVAR02 = Do not use
+%infotypeVAR02 = imagegroup
 ThumbImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 

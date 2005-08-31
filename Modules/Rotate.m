@@ -27,8 +27,8 @@ RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the rotated image?
-%infotypeVAR03 = imagegroup indep
 %defaultVAR03 = RotatedImage
+%infotypeVAR03 = imagegroup indep
 RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Align the spots horizontally, or vertically?

@@ -83,8 +83,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the corrected image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = CorrBlue
+%infotypeVAR02 = imagegroup indep
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module with the 'Single Image' option)?

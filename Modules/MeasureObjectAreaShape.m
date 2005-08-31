@@ -40,20 +40,20 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
-%infotypeVAR01 = objectgroup
 %choiceVAR01 = Do not use
+%infotypeVAR01 = objectgroup
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 =
-%infotypeVAR02 = objectgroup
 %choiceVAR02 = Do not use
+%infotypeVAR02 = objectgroup
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 =
-%infotypeVAR03 = objectgroup
 %choiceVAR03 = Do not use
+%infotypeVAR03 = objectgroup
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 

@@ -49,8 +49,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the inverted image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = InvertedBlue
+%infotypeVAR02 = imagegroup indep
 InvertedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

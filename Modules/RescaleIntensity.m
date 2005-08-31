@@ -74,8 +74,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the rescaled image?
-%infotypeVAR02 = imagegroup indep
 %defaultVAR02 = RescaledBlue
+%infotypeVAR02 = imagegroup indep
 RescaledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. See the help for details.

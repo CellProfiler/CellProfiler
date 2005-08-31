@@ -52,8 +52,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%infotypeVAR02 = objectgroup indep
 %defaultVAR02 = ProcessedOutlines
+%infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter the threshold (Positive number, Max = 1):

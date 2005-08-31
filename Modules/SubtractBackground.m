@@ -235,13 +235,12 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,1,1); imagesc(OrigImage);
         title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-        CPcolormap(handles)
-        %%% The mean image does not absolutely have to be present in order to
+        colormap(handles.Preferences.IntensityColorMap);        %%% The mean image does not absolutely have to be present in order to
         %%% carry out the calculations if the illumination image is provided,
         %%% so the following subplot is only shown if MeanImage exists in the
         %%% workspace.
         subplot(2,1,2); imagesc(CorrectedImage);
-        title('Corrected Image'); CPcolormap(handles)
+        title('Corrected Image'); 
         %%% Displays the text.
         displaytext = ['Background threshold used: ', num2str(MinimumTenthMinimumPixelValue)];
         set(displaytexthandle,'string',displaytext)

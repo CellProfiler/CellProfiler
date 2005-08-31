@@ -132,18 +132,18 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-
+    colormap(handles.Preferences.IntensityColorMap);
     %%% A subplot of the figure window is set to display the Splitd RGB
     %%% image.  Using imagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
     subplot(2,2,1); imagesc(RGBImage);
     title(['Input RGB Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the blue image.
-    subplot(2,2,2); imagesc(BlueImage); CPcolormap(handles), title('Blue Image');
+    subplot(2,2,2); imagesc(BlueImage);  title('Blue Image');
     %%% A subplot of the figure window is set to display the green image.
-    subplot(2,2,3); imagesc(GreenImage); CPcolormap(handles), title('Green Image');
+    subplot(2,2,3); imagesc(GreenImage); title('Green Image');
     %%% A subplot of the figure window is set to display the red image.
-    subplot(2,2,4); imagesc(RedImage); CPcolormap(handles), title('Red Image');
+    subplot(2,2,4); imagesc(RedImage); title('Red Image');
     CPFixAspectRatio(RGBImage);
 end
 

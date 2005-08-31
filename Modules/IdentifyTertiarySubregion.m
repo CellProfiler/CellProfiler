@@ -157,8 +157,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SubregionObjectImage)) >= 1
-        cmap = jet(max(64,max(SubregionObjectImage(:))));
-        ColoredLabelMatrixImage = label2rgb(SubregionObjectImage,cmap, 'k', 'shuffle');
+        ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
     else  ColoredLabelMatrixImage = SubregionObjectImage;
     end
     %%% Converts the label matrix to a colored label matrix for display and saving
@@ -167,21 +166,22 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    colormap(handles.Preferences.IntensityColorMap);
     %%% A subplot of the figure window is set to display the original
     %%% primary object image.
-    subplot(2,2,1); imagesc(PrimaryObjectImage);CPcolormap(handles);
+    subplot(2,2,1); imagesc(PrimaryObjectImage);
     title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the original
     %%% secondary object image.
     subplot(2,2,2); imagesc(SecondaryObjectImage);
-    title([SecondaryObjectName, ' Image']); CPcolormap(handles);
+    title([SecondaryObjectName, ' Image']);
     %%% A subplot of the figure window is set to display the resulting
     %%% subregion image in gray.
-    subplot(2,2,3); imagesc(SubregionObjectImage); CPcolormap(handles);
+    subplot(2,2,3); imagesc(SubregionObjectImage);
     title([SubregionObjectName, ' Image']);
     %%% A subplot of the figure window is set to display the resulting
     %%% subregion image in color.
-    subplot(2,2,4); imagesc(SubregionObjectImage);CPcolormap(handles);
+    subplot(2,2,4); imagesc(ColoredLabelMatrixImage);
     title([SubregionObjectName, ' Color Image']);
     CPFixAspectRatio(PrimaryObjectImage);
 end

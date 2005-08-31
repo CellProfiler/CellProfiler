@@ -185,8 +185,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SegmentedImage)) >= 1
-        cmap = jet(max(64,max(SegmentedImage(:))));
-        OriginalColoredLabelMatrixImage = label2rgb(SegmentedImage,cmap, 'k', 'shuffle');
+        OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,SegmentedImage);
     else  OriginalColoredLabelMatrixImage = SegmentedImage;
     end
     %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
@@ -194,8 +193,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SegmentedImage)) >= 1
-        cmap = jet(max(64,max(FinalShrunkenSegmentedImage(:))));
-        ShrunkenColoredLabelMatrixImage = label2rgb(FinalShrunkenSegmentedImage,cmap, 'k', 'shuffle');
+        ShrunkenColoredLabelMatrixImage = CPlabel2rgb(handles,FinalShrunkenSegmentedImage);
     else  ShrunkenColoredLabelMatrixImage = FinalShrunkenSegmentedImage;
     end
 
@@ -210,9 +208,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(SegmentedImage);CPcolormap(handles);
+    subplot(2,1,1); imagesc(OriginalColoredLabelMatrixImage);
     title([ObjectName, ' Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); imagesc(FinalShrunkenSegmentedImage); title(ShrunkenObjectName);CPcolormap(handles);
+    subplot(2,1,2); imagesc(ShrunkenColoredLabelMatrixImage); title(ShrunkenObjectName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

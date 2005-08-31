@@ -311,10 +311,10 @@ PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
 rgLoG=fspecial('log',NeighborhoodSize,Sigma);
 %%% Filters the image.
 imLoGout=imfilter(double(OrigImage),rgLoG);
-    figure, imagesc(imLoGout), CPcolormap(handles), title('imLoGout')
+    figure, imagesc(imLoGout),  title('imLoGout')
 %%% Removes noise using the weiner filter.
 imLoGoutW=wiener2(imLoGout,WienerSize);
-    figure, imagesc(imLoGoutW), CPcolormap(handles), title('imLoGoutW')
+    figure, imagesc(imLoGoutW),  title('imLoGoutW')
 
 %%%%%%%%%%%%%%
 rgNegCurve = imLoGoutW < Threshold;
@@ -359,7 +359,7 @@ InvertedBinaryImage = rgDilated;
 
 %%% Creates label matrix image.
 % rgLabelled2=uint16(bwlabel(imLoGoutW,4));
-% figure, imagesc(rgLabelled2), CPcolormap(handles), title('rgLabelled2')
+% figure, imagesc(rgLabelled2),  title('rgLabelled2')
 % FinalLabelMatrixImage = bwlabel(FinalBinary,4);
 
 PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
@@ -419,8 +419,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(FinalLabelMatrixImage)) >= 1
-        cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
-        ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
+        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
     %%% Calculates the object outlines, which are overlaid on the original
@@ -443,17 +442,17 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);CPcolormap(handles);
+    subplot(2,2,1); imagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(FinalLabelMatrixImage); CPcolormap(handles);title(['Segmented ',ObjectName]);
+    subplot(2,2,2); imagesc(ColoredLabelMatrixImage);title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    % subplot(2,2,3); imagesc(Overlaid); CPcolormap(handles); title([ObjectName, ' markers']);
+    % subplot(2,2,3); imagesc(Overlaid);  title([ObjectName, ' markers']);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage);CPcolormap(handles); title([ObjectName, ' Outlines on Input Image']);
+    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage); title([ObjectName, ' Outlines on Input Image']);
     CPFixAspectRatio(OrigImage);
 end
 

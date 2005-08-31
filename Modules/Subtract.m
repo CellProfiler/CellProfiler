@@ -137,7 +137,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(BasicImage);CPcolormap(handles);
+    subplot(2,2,1); imagesc(BasicImage);colormap(handles.Preferences.IntensityColorMap);
     title([BasicImageName, ' input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.

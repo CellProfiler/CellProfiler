@@ -177,10 +177,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
     subplot(2,1,1); imagesc(OrigImage);
-    CPcolormap(handles)
+    
     title('Input Image');
     subplot(2,1,2); imagesc(SmoothedImage);
-    CPcolormap(handles)
+    
     title('Smoothed Image');
 end
 

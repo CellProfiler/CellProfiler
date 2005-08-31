@@ -183,18 +183,15 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(NewSegmentedObjectImage)) >= 1
-        cmap = jet(max(64,max(NewSegmentedObjectImage(:))));
-        ColoredNewSegmentedObjectImage = label2rgb(NewSegmentedObjectImage, cmap, 'k', 'shuffle');
+        ColoredNewSegmentedObjectImage = CPlabel2rgb(handles,NewSegmentedObjectImage);
     else  ColoredNewSegmentedObjectImage = NewSegmentedObjectImage;
     end
     if sum(sum(MaskRegionObjectImage)) >= 1
-        cmap = jet(max(64,max(MaskRegionObjectImage(:))));
-        ColoredMaskRegionObjectImage = label2rgb(MaskRegionObjectImage, cmap, 'k', 'shuffle');
+        ColoredMaskRegionObjectImage = CPlabel2rgb(handles,MaskRegionObjectImage);
     else  ColoredMaskRegionObjectImage = MaskRegionObjectImage;
     end
     if sum(sum(SegmentedObjectImage)) >= 1
-        cmap = jet(max(64,max(SegmentedObjectImage(:))));
-        ColoredSegmentedObjectImage = label2rgb(SegmentedObjectImage, cmap, 'k', 'shuffle');
+        ColoredSegmentedObjectImage = CPlabel2rgb(handles,SegmentedObjectImage);
     else  ColoredSegmentedObjectImage = SegmentedObjectImage;
     end
 
@@ -202,15 +199,15 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(SegmentedObjectImage);CPcolormap(handles);
+    subplot(2,2,1); imagesc(ColoredSegmentedObjectImage);
     title(['Previously identified ', ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,2); imagesc(NewSegmentedObjectImage);CPcolormap(handles);
+    subplot(2,2,2); imagesc(ColoredNewSegmentedObjectImage);
     title(RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,3); imagesc(MaskRegionObjectImage);CPcolormap(handles);
+    subplot(2,2,3); imagesc(ColoredMaskRegionObjectImage);
     title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     CPFixAspectRatio(ColoredSegmentedObjectImage);
 end

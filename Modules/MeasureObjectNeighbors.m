@@ -211,7 +211,7 @@ if any(findobj == ThisModuleFigureNumber) == 1
     set(gca,'FontSize',FontSize)
     subplot(2,1,2)
     imagesc(ImageOfNeighbors)
-    CPcolormap(handles);
+    colormap(handles.Preferences.IntensityColorMap);
     colorbar('SouthOutside','FontSize',FontSize)
     title('Cells colored according to the number of neighbors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)

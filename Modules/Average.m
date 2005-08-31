@@ -138,7 +138,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         CPfigure(handles,ThisModuleFigureNumber);
         imagesc(ProjectionImage);
         title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']);
-        CPcolormap(handles)
+        
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated projection image so far is displayed each time through
         %%% the pipeline.
@@ -146,7 +146,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         CPfigure(handles,ThisModuleFigureNumber);
         imagesc(ProjectionImage);
         title(['Projection Image so far, based on Image set # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
-        CPcolormap(handles)
+        
     end
 end
 

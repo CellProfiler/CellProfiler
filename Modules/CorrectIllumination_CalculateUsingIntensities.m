@@ -250,7 +250,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
     if exist('OrigImage','var')
-        subplot(2,2,1); imagesc(OrigImage); CPcolormap(handles)
+        subplot(2,2,1); imagesc(OrigImage); 
         title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
         CPFixAspectRatio(OrigImage);
     end
@@ -260,16 +260,16 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% whether the user has chosen to dilate or smooth the projection
     %%% image.
     if exist('ProjectionImage','var')
-        subplot(2,2,2); imagesc(ProjectionImage); CPcolormap(handles)
+        subplot(2,2,2); imagesc(ProjectionImage); 
         title('Raw projection image prior to dilation');
     end
     if exist('DilatedProjectionImage','var')
-        subplot(2,2,3); imagesc(DilatedProjectionImage); CPcolormap(handles)
+        subplot(2,2,3); imagesc(DilatedProjectionImage); 
         title('Projection image prior to smoothing');
     end
     subplot(2,2,4);
     imagesc(IlluminationImage);
-    CPcolormap(handles);
+    
     text(1,50,['Min Value: ' num2str(min(min(IlluminationImage)))],'Color','red');
     text(1,150,['Max Value: ' num2str(max(max(IlluminationImage)))],'Color','red');
     if strcmp(ReadyFlag, 'Ready')

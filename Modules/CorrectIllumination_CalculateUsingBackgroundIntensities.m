@@ -347,7 +347,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     if exist('IlluminationImage','var') == 1
         subplot(2,2,4);
         imagesc(IlluminationImage);
-        CPcolormap(handles)
+        
         text(1,50,['Min Value: ' num2str(min(min(IlluminationImage)))],'Color','red');
         text(1,150,['Max Value: ' num2str(max(max(IlluminationImage)))],'Color','red');
         title('Final illumination correction function');

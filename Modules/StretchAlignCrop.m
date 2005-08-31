@@ -292,16 +292,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
 drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); imagesc(TracedImage); CPcolormap(handles);
+    subplot(2,2,1); imagesc(TracedImage); colormap(handles.Preferences.IntensityColorMap);;
     title(['Traced Input, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); imagesc(RealImage); title('Real Input Image');
-    subplot(2,2,3); imagesc(CroppedAlignedTracedImage); CPcolormap(handles); title('Cropped & Aligned Traced Image');
-    subplot(2,2,4); imagesc(CroppedAlignedRealImage);title('Cropped & Aligned Real Image');
-    CPFixAspectRatio(RealImage);
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
+    subplot(2,2,3); imagesc(CroppedAlignedTracedImage); %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 

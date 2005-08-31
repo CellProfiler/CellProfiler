@@ -207,9 +207,12 @@ if any(findobj == ThisModuleFigureNumber)
     %%% image. Also, there is a bug for some of the colormaps that
     %%% fails when there are only 1 or 2 objects in the image, I
     %%% think.
-    cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
-    im = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
-    ImageHandle = imagesc(FinalLabelMatrixImage);CPcolormap(handles);
+    try
+        im = CPlabel2rgb(handles,FinalLabelMatrixImage);
+    catch
+        im = FinalLabelMatrixImage;
+    end
+    ImageHandle = imagesc(im);
         
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
@@ -219,7 +222,6 @@ if any(findobj == ThisModuleFigureNumber)
     
     subplot(2,1,2); 
     imagesc(OutlinedObjects);
-    CPcolormap(handles);
         
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);

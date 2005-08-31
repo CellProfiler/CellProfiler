@@ -185,7 +185,6 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(FinalSecObjectsLabelMatrixImage)) >= 1
-        cmap = jet(max(64,max(FinalSecObjectsLabelMatrixImage(:))));
         ColoredLabelMatrixImage = label2rgb(FinalSecObjectsLabelMatrixImage, cmap, 'k', 'shuffle');
     else ColoredLabelMatrixImage = FinalSecObjectsLabelMatrixImage;
     end
@@ -217,18 +216,19 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    colormap(handles.Preferences.IntensityColorMap);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);CPcolormap(handles);
+    subplot(2,2,1); imagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(FinalSecObjectsLabelMatrixImage); CPcolormap(handles);title(['Segmented ',SecondaryObjectName]);
+    subplot(2,2,2); imagesc(ColoredLabelMatrixImage);title(['Segmented ',SecondaryObjectName]);
     %%% A subplot of the figure window is set to display the original image
     %%% with outlines drawn on top.
-    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage); CPcolormap(handles); title([SecondaryObjectName, ' Outlines on Input Image']);
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage); title([SecondaryObjectName, ' Outlines on Input Image']);
     %%% A subplot of the figure window is set to display the original image
     %%% with outlines drawn on top.
-    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); CPcolormap(handles); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
     CPFixAspectRatio(OrigImage);
 end
 

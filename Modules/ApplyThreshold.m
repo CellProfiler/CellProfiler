@@ -119,15 +119,11 @@ if BinaryChoice == 0
     %%% Identifies bright object pixels.
     BinaryBrightObjectsImage = zeros(size(OrigImage));
     BinaryBrightObjectsImage(OrigImage >= HighThreshold) = 1;
-    % figure, imagesc(BinaryBrightObjectsImage), title('BinaryBrightObjectsImage'), CPcolormap(handles)
     StructuringElement = strel('disk',DilationValue,8);
     DilatedBinaryBrightObjectsImage = imdilate(BinaryBrightObjectsImage,StructuringElement);
-    % figure, imagesc(DilatedBinaryBrightObjectsImage), title('DilatedBinaryBrightObjectsImage'), CPcolormap(handles)
     ThresholdedImage = OrigImage;
     ThresholdedImage(DilatedBinaryBrightObjectsImage == 1) = 0;
-    % figure, imagesc(ThresholdedImage), title('ThresholdedImage1'), CPcolormap(handles)
     ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
-    % figure, imagesc(ThresholdedImage), title('ThresholdedImage2'), CPcolormap(handles)
 else
     ThresholdedImage = im2bw(OrigImage,BinaryChoice);
 end
@@ -154,7 +150,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);CPcolormap(handles);
+    subplot(2,1,1); imagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.

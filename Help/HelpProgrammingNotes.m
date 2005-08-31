@@ -214,3 +214,20 @@ helpdlg(help('ProgrammingNotes'))
 % produces an image by that name, the module will run just fine: it
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
+%
+% PROGRAMMING NOTE
+% VARIABLE ORDER:
+% For CellProfiler to load modules and pipelines correctly, the order of
+% variable information should be as follows:
+%
+% %textVAR01 = Whatever you want to say
+% %defaultVAR01 = OrigBlue
+% %infotypeVAR01 = imagegroup indep
+% %inputtypeVAR01 = popupmenu
+%
+% In cases where the input type is "popupmenu custom", the choiceVAR01
+% value should be after textVAR01 where defaultVAR01 is in our example.
+% This order is necessary because the textVAR01 creates the VariableBox
+% associated with a variable number. Also, the defaultVAR01 value will
+% inadvertently overwrite saved settings when loading a saved pipeline if
+% it is located after infotypeVAR01 or inputtypeVAR01.

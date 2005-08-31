@@ -1,5 +1,5 @@
 CellProfiler cell image analysis software development 
-AUGUST 23, 2005  IN ORDER OF PRIORITY
+AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
@@ -26,7 +26,7 @@ WANT IT ASAP:
 
 - (Requested by Anne) - Can IdentifyLaplacianOfGaussian be merged into IdentifyPrimAutomatic?
 
-- (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread.
+- (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread - but maybe it's not possible because that requires running code rather than just extracting text. If that's the case, I guess we just have to type them into this module manually and update them whenever Matlab updates its imread function (which probably isn't that often anyway). Also, right now we ask the user for the file format of their images but this information is not actually used anywhere. We need to adjust the CPimread function to take in and use a file format (it should be optional; only used when images do not have file extensions).
 
 - (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to doublecheck.
 
@@ -215,6 +215,11 @@ POST-PUBLIC RELEASE SUPPORT:
      - Organize training workshops
      - Present at conferences
 ---------------------------------------------------
+THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
+- update the image file formats that are readable in LoadImages modules.
+
+---------------------------------------------------
+
 LONG-TERM:
 
 GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.

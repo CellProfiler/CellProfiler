@@ -246,8 +246,7 @@ try
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(FinalLabelMatrixImage)) >= 1
-        cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
-        ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
+        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
 

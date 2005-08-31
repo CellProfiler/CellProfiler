@@ -185,7 +185,7 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(FinalSecObjectsLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = label2rgb(FinalSecObjectsLabelMatrixImage, cmap, 'k', 'shuffle');
+        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalSecObjectsLabelMatrixImage);
     else ColoredLabelMatrixImage = FinalSecObjectsLabelMatrixImage;
     end
     %%% Calculates ObjectOutlinesOnOrigImage for displaying in the figure

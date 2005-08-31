@@ -795,7 +795,7 @@ end
 function SavePipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
 if handles.Current.NumberOfModules == 0
-    warndlg('Please add modules before attempting to save the current pipeline.','Warning')
+    warndlg('Pipeline saving was canceled because there are no modules in the current pipeline.','Warning')
     return
 end
 

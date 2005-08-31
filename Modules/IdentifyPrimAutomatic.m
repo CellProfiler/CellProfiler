@@ -366,19 +366,22 @@ UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
 %textVAR16 = What do you want to call the image of the outlines of the objects?
-%defaultVAR16 = Do not save
+%choiceVAR16 = Do not save
 %infotypeVAR16 = imagegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%inputtypeVAR16 = popupmenu custom
 
 %textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
-%defaultVAR17 = Do not save
+%choiceVAR17 = Do not save
 %infotypeVAR17 = imagegroup indep
 SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu custom
 
 %textVAR18 =  What do you want to call the labeled matrix image?
-%defaultVAR18 = Do not save
+%choiceVAR18 = Do not save
 %infotypeVAR18 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+%inputtypeVAR18 = popupmenu custom
 
 %textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
 %choiceVAR19 = RGB

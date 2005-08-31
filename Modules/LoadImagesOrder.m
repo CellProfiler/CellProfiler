@@ -45,16 +45,11 @@ function handles = LoadImagesOrder(handles)
 %
 % $Revision$
 
-
-
-
 drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -68,7 +63,6 @@ CurrentModuleNum = str2double(CurrentModule);
 %choiceVAR01 = 4
 NumberInSet{1} = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
 %inputtypeVAR01 = popupmenu
-
 
 %textVAR02 = What do you want to call these images?
 %defaultVAR02 = OrigBlue
@@ -125,7 +119,7 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 ImagesPerSet = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Type the file format of the images
+%textVAR10 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
 %choiceVAR10 = tif
 %choiceVAR10 = bmp
 %choiceVAR10 = gif

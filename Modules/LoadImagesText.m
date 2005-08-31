@@ -106,7 +106,7 @@ ExactOrRegExp = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 ExactOrRegExp = ExactOrRegExp(1);
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Type the file format of the images
+%textVAR10 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
 %choiceVAR10 = tif
 %choiceVAR10 = bmp
 %choiceVAR10 = gif

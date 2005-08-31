@@ -78,7 +78,7 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 % important to save the illumination image in '.mat' format or else
 % the quality of the illumination function values will be degraded.
 %
-% See also CORRECTILLUMINATION_APPLY, SMOOTHIMAGE
+% See also CORRECTILLUMINATION_APPLY, SMOOTH
 % CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES.
 
 % CellProfiler is distributed under the GNU General Public License.

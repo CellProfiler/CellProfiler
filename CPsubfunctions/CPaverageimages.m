@@ -38,7 +38,7 @@ if strcmpi(Mode,'DoNow') == 1
         %%% not a color image), which would disrupt several of the
         %%% image functions.
         if ndims(OrigImage) ~= 2
-            error('Image processing was canceled because calculating the average image (which is used by Make Projection and Correct Illumination modules) requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+            error('Image processing was canceled because calculating the average image (which is used by the Average and Correct Illumination modules) requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
         TotalImage = TotalImage + CPimread(OrigImage, handles);
         CurrentTime = clock;
@@ -46,7 +46,7 @@ if strcmpi(Mode,'DoNow') == 1
         TimePerSet = TimeSoFar/i;
         ImagesRemaining = NumberOfImages - i;
         TimeRemaining = round(TimePerSet*ImagesRemaining);
-        WaitbarText = {'Calculating the projection image.'; 'Subsequent image sets will be processed';'more quickly than the first image set.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
+        WaitbarText = {'Calculating the average image.'; 'Subsequent image sets will be processed';'more quickly than the first image set.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
         WaitbarText = char(WaitbarText);
         waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
         drawnow
@@ -55,7 +55,7 @@ if strcmpi(Mode,'DoNow') == 1
         CurrentTime = clock;
         TimeSoFar = etime(CurrentTime,TimeStart);
     end
-    WaitbarText = {'Calculations of the projection image are finished for the';'Correct Illumination All Divide module.'; 'Subsequent image sets will be processed';'more quickly than the first image set.';['Seconds consumed: ',num2str(TimeSoFar),]};
+    WaitbarText = {'Calculations of the average image are finished.'; 'Subsequent image sets will be processed';'more quickly than the first image set.';['Seconds consumed: ',num2str(TimeSoFar),]};
     WaitbarText = char(WaitbarText);
     waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
     OutputImage = TotalImage / length(FileList);
@@ -81,7 +81,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
             %%% that an error was produced because of its try/catch
             %%% loop and breaks out of the image analysis loop without
             %%% attempting further modules.
-            error(['Image processing was canceled because the Make Projection/Average Images module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+            error(['Image processing was canceled because the average function (which is used by the Average and Correct Illumination modules) could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
         end
         %%% Retrieves the current image.
         OrigImage = handles.Pipeline.(fieldname);
@@ -95,7 +95,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
     %%% color image), which would disrupt several of the image
     %%% functions.
     if ndims(OrigImage) ~= 2
-        error('Image processing was canceled because the Make Projection/Average Images module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+        error('Image processing was canceled because the average function (which is used by the Average and Correct Illumination modules) requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
     end
     %%% Retrieves the existing projection image, as accumulated so
     %%% far.

@@ -1404,7 +1404,7 @@ if ModuleNamedotm ~= 0,
     end
     
     MaxInfo = get(handles.slider1,'UserData');
-    MaxInfo = [MaxInfo(1:ModuleNums-1) ((handles.Settings.NumbersOfVariables(ModuleNums)-14+numberOfLongBoxes+numberExtraLinesOfDescription)*25) MaxInfo(ModuleNums:end)];
+    MaxInfo = [MaxInfo(1:ModuleNums-1) ((handles.Settings.NumbersOfVariables(ModuleNums)-12+numberOfLongBoxes+numberExtraLinesOfDescription)*25) MaxInfo(ModuleNums:end)];
     set(handles.slider1,'UserData',MaxInfo);
     
     

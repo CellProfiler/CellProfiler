@@ -53,16 +53,10 @@ function handles = LoadImagesText(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -153,12 +147,9 @@ end
 TextToFind = tmp1;
 ImageName = tmp2;
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
@@ -267,7 +258,6 @@ for n = 1:length(ImageName)
 
     % Create a cell array with the filenames
     FileNames(n) = CurrentFileName(1);
-
 end
 
 %%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%

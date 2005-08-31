@@ -376,8 +376,7 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
 %textVAR18 =  What do you want to call the labeled matrix image?
-%choiceVAR18 = Do not save
-%inputtypeVAR18 = popupmenu custom
+%defaultVAR18 = Do not save
 %infotypeVAR18 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 

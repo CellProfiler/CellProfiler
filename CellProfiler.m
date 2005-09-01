@@ -1133,7 +1133,6 @@ if ModuleNamedotm ~= 0,
             varXSize = VarDesPosition(3);
             varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
             set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'Position', [varXPos varYPos varXSize varYSize]);
-            
             if flagExist
             	numberOfLongBoxes = numberOfLongBoxes+1;
             	varXPos = 25;
@@ -1146,7 +1145,8 @@ if ModuleNamedotm ~= 0,
             	varXSize = normBoxLength;
             	varYSize = normBoxHeight;
             end
-            set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [varXPos varYPos varXSize varYSize]);            
+            set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [varXPos varYPos varXSize varYSize]);
+                    
            
         elseif strncmp(output,'%filenametextVAR',16) && OptionInCode == SelectedOption
             
@@ -1212,6 +1212,18 @@ if ModuleNamedotm ~= 0,
             
             set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'string',descriptionString);
             
+            linesVarDes = length(textwrap(handles.VariableDescription{ModuleNums}(lastVariableCheck),{descriptionString}));
+            numberExtraLinesOfDescription = numberExtraLinesOfDescription + linesVarDes - 1;
+            VarDesPosition = get(handles.VariableDescription{ModuleNums}(lastVariableCheck), 'Position');
+            varXPos = VarDesPosition(1);
+            varYPos = firstDesLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(lastVariableCheck+numberOfLongBoxes+numberExtraLinesOfDescription);
+            varXSize = VarDesPosition(3);
+            varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
+            set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'Position', [varXPos varYPos varXSize varYSize]);
+           	varYPos = firstBoxLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(lastVariableCheck+numberOfLongBoxes+numberExtraLinesOfDescription-(linesVarDes-1)/2.0);
+            set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [305 varYPos 195 23]);
+            set(handles.BrowseButton{ModuleNums}(lastVariableCheck), 'Position', [501 varYPos 63 20]);
+            
     elseif strncmp(output,'%pathnametextVAR',16) && OptionInCode == SelectedOption
  
             lastVariableCheck = str2double(output(17:18));
@@ -1273,6 +1285,18 @@ if ModuleNamedotm ~= 0,
             'CreateFcn', '');
             
             set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'string',descriptionString);
+                       
+            linesVarDes = length(textwrap(handles.VariableDescription{ModuleNums}(lastVariableCheck),{descriptionString}));
+            numberExtraLinesOfDescription = numberExtraLinesOfDescription + linesVarDes - 1;
+            VarDesPosition = get(handles.VariableDescription{ModuleNums}(lastVariableCheck), 'Position');
+            varXPos = VarDesPosition(1);
+            varYPos = firstDesLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(lastVariableCheck+numberOfLongBoxes+numberExtraLinesOfDescription);
+            varXSize = VarDesPosition(3);
+            varYSize = normDesHeight*linesVarDes + pixelSpacing*(linesVarDes-1);
+            set(handles.VariableDescription{ModuleNums}(lastVariableCheck),'Position', [varXPos varYPos varXSize varYSize]);
+           	varYPos = firstBoxLoc+pixelSpacing*numberExtraLinesOfDescription-varSpacing*(lastVariableCheck+numberOfLongBoxes+numberExtraLinesOfDescription-(linesVarDes-1)/2.0);
+            set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [305 varYPos 195 23]);
+            set(handles.BrowseButton{ModuleNums}(lastVariableCheck), 'Position', [501 varYPos 63 20]);
             
         elseif (strncmp(output,'%choiceVAR',10) == 1 ) && (OptionInCode == SelectedOption);
             if ~(exist('StrSet'))

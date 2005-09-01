@@ -32,7 +32,7 @@ function handles = IdentifyTertiarySubregion(handles)
 % handles structure (see the SaveImages module help) and then using
 % the Save Images module.%
 % See also identify Primary and Identify Secondary modules.
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -46,16 +46,11 @@ function handles = IdentifyTertiarySubregion(handles)
 %
 % $Revision$
 
-
-
-
 drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -73,7 +68,7 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the new subregions?
-%defautVAR03 = Cells
+%defaultVAR03 = Cells
 %infotypeVAR03 = objectgroup indep
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 

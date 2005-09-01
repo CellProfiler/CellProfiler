@@ -88,7 +88,7 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Which image's original filename do you want use to base new image filenames (MUST be from Load module e.g. OrigBlue)? Type N to use sequential numbers.
+%textVAR02 = Which images' original filenames do you want use as a base for these new images' filenames? Your choice MUST be images loaded directly with a Load module. Type N to use sequential numbers.
 %infotypeVAR02 = imagegroup
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom

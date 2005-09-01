@@ -115,7 +115,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter Each to calculate an illumination function for Each image individually (in which case, choose P in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.
+%textVAR03 = Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.
 %choiceVAR03 = Each
 %choiceVAR03 = All
 EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -162,6 +162,10 @@ DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+if strcmp(EachOrAll,'Each') && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
+    error('Image processing was canceled because in the Correct Illumination_Calculate Using Intensities module, you must choose Pipeline mode if you are using Each mode.')
+end
+
 %%% If the illumination correction function was to be calculated using
 %%% all of the incoming images from a LoadImages module, it will already have been calculated
 %%% the first time through the image set. No further calculations are
@@ -172,7 +176,7 @@ end
 
 try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
 catch
-    error('In the Correct Illumination_Calculate Using Intensities module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
+    error('Image processing was canceled because in the Correct Illumination_Calculate Using Intensities module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -308,14 +312,14 @@ drawnow
 %%% average image and its flag are saved to the handles structure
 %%% after every image set is processed.
 if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1 | (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1)
-    fieldname = [IlluminationImageName];
-    handles.Pipeline.(fieldname) = FinalIlluminationFunction;
+    handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
     %%% Whether these images exist depends on whether the user has chosen
     %%% to dilate or smooth the average image.
     if ~strcmpi(AverageImageName,'Do not save')
-        try
-            fieldname = [AverageImageName];
-            handles.Pipeline.(fieldname) = RawImage;
+        if strcmp(EachOrAll,'Each')
+            error('Image processing was canceled because in the Correct Illumination module you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.')
+        end
+        try handles.Pipeline.(AverageImageName) = RawImage;
         catch error('There was a problem passing along the average image in the Correct Illumination module. This image can only be passed along if you choose to dilate.')
         end
         %%% Saves the ready flag to the handles structure so it can be used by
@@ -324,10 +328,20 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1 | (strcmp(SourceIsLoadedOrP
         handles.Pipeline.(fieldname) = ReadyFlag;
     end
     if ~strcmpi(DilatedImageName,'Do not save')
-        try
-            fieldname = [DilatedAverageImageName];
-            handles.Pipeline.(fieldname) = DilatedImage;
+        try handles.Pipeline.(DilatedImageName) = DilatedImage;
         catch error('There was a problem passing along the dilated image in the Correct Illumination module. This image can only be passed along if you choose to dilate.')
         end
     end
 end
+
+
+
+
+
+
+
+
+
+
+
+

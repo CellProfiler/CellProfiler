@@ -8,10 +8,10 @@ function handles = MeasureCorrelation(handles)
 % images, or individual correlation measurements can be made for each
 % individual object, as defined by another module.
 %
-% See also MEASUREAREAOCCUPIED,
-% MEASUREAREASHAPECOUNTLOCATION,
-% MEASUREINTENSITYTEXTURE,
-% MEASURETOTALINTENSITY.
+% See also MEASUREIMAGEAREAOCCUPIED,
+% MEASUREOBJECTAREASHAPE,
+% MEASUREOBJECTINTENSITYTEXTURE,
+% MEASUREIMAGEINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -25,17 +25,11 @@ function handles = MeasureCorrelation(handles)
 %   In Han Kang    <inthek@mit.edu>
 %
 % $Revision$
-
-
-
-
 drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
@@ -90,7 +84,19 @@ ObjectName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 ObjectName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR09 =
+%choiceVAR09 = Do not use
+%infotypeVAR09 = objectgroup
+ObjectName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%textVAR10 =
+%choiceVAR10 = Do not use
+%infotypeVAR10 = objectgroup
+ObjectName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -133,9 +139,9 @@ if ImageCount < 2
     errordlg('At least two image names must be entered in the MeasureCorrelation module.')
 end
 
-%%% Get the masks of segemented objects
+%%% Get the masks of segmented objects
 ObjectNameCount = 0;
-for ObjectNameNbr = 1:4
+for ObjectNameNbr = 1:6
     if ~strcmp(ObjectName{ObjectNameNbr},'Do not use')
         ObjectNameCount = ObjectNameCount + 1;
         tmpObjectName{ObjectNameCount} = ObjectName{ObjectNameNbr};
@@ -166,9 +172,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
-
 % Produce feature names for all pairwise image combinations
 CorrelationFeatures = {};
 for i = 1:ImageCount-1
@@ -179,7 +182,6 @@ end
 
 % For each object type and for each segmented object, calculate the correlation between all combinations of images
 for ObjectNameNbr = 1:ObjectNameCount
-
     % Calculate the correlation in all objects for all pairwise image combinations
     NbrOfObjects = max(LabelMatrixImage{ObjectNameNbr}(:));          % Get number of segmented objects
     Correlation = zeros(NbrOfObjects,length(CorrelationFeatures));   % Pre-allocate memory
@@ -194,28 +196,18 @@ for ObjectNameNbr = 1:ObjectNameCount
             end
         end
     end
-
     % Store the correlation measurements
     handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
     handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
 end
 
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
@@ -236,10 +228,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     TextToDisplay = ['Average correlations in Image Set # ',num2str(handles.Current.SetBeingAnalyzed)];
     set(Displaytexthandle,'string',TextToDisplay)
 
-
     for ObjectNameNbr = 0:ObjectNameCount
         row = 1;
-
         % Write object names
         if ObjectNameNbr > 0         % Don't write any object type name in the first colum
             h = uicontrol(ThisModuleFigureNumber,'style','text','position',[110+70*ObjectNameNbr Height-110 70 25],...
@@ -247,7 +237,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
                 'fontweight','bold');
             set(h,'string',ObjectName{ObjectNameNbr});
         end
-
         % Write image names or correlation measurements
         FeatureNbr = 1;
         for i = 1:ImageCount-1
@@ -272,10 +261,3 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     set(ThisModuleFigureNumber,'toolbar','figure')
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-

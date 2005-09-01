@@ -27,16 +27,10 @@ function handles = SpeedUpCellProfiler(handles)
 %
 % $Revision$
 
-
-
-
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -67,7 +61,6 @@ ImageNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
-
 ListOfFields = fieldnames(handles.Pipeline);
 tempPipe = handles.Pipeline;
 for i = 1:length(ListOfFields)
@@ -76,8 +69,6 @@ for i = 1:length(ListOfFields)
     end
 end
 handles.Pipeline = tempPipe;
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -104,12 +95,3 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     end
     drawnow
 end
-
-%%% Programming notes that are not relevant for this module:
-
-
-
-
-
-
-

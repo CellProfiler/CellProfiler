@@ -2,6 +2,8 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+(Joy 9/1) - (Requested by Anne) - When Saving a pipeline, after you confirm the filename change (adding PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.  Also, we should check whether PIPE is already part of the name and if so, do not suggest adding PIPE again!
+
 -(Joy 9/1) - (Requested by Anne 8-23-05) - The Histogram DataTool spits out the value "Suffix" at the command line in the first few steps of using the tool.
 
 -(Colin 9/1) - (Requested by Anne 9-01-05) - There is a bit of a bug with the new 'long box' fix that has the edit box plus the browse button. I end up with browse buttons floating in the wrong place. The pipeline in the drop box called temp3PIPE.mat should reproduce the problem - look in the SaveImages module and there should be a browse button displayed on top of the 4th variable.

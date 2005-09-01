@@ -2,6 +2,8 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Joy 9/1) - (Requested by Anne 8-23-05) - The Histogram DataTool spits out the value "Suffix" at the command line in the first few steps of using the tool.
+
 -(Colin 9/1) - (Requested by Anne 9-01-05) - There is a bit of a bug with the new 'long box' fix that has the edit box plus the browse button. I end up with browse buttons floating in the wrong place. The pipeline in the drop box called temp3PIPE.mat should reproduce the problem - look in the SaveImages module and there should be a browse button displayed on top of the 4th variable.
 
 -(Colin 9/1) - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.

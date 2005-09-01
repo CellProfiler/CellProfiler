@@ -40,8 +40,6 @@ We should check through the code and make sure errors are handled properly, and 
 
 - (Requested by Anne) - It would be nice to allow CellProfiler to be used by different people and each one could have their own user preferences.  Right now preferences can be saved (File > Save preferences), but we should allow the user to choose whether to save these preferences as the default preferences (in CellProfilerPreferences.mat), or alternately, to name the preferences file something unique (e.g. AnneCellProfilerPreferences.mat). Then the user could load their preferences by using: File > Load preferences.
 
-- (Requested by Anne 8-23-05) - The Histogram DataTool spits out the value "Suffix" at the command line in the first few steps of using the tool.
-
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne 8-24-05) - The FilterObjectsAreaShape window should have the bottom left and top right displays switched in their positions (the final filtered image should be in the top right and the outlines on input image should be at the lower right.)  Why is there an input image for this module?  Is it only for showing the outlines on the original image? If that is the case, it should be made optional. FilterObjectsAreaShape needs full documentation and to be made to look like all the other modules, and it needs its method for saving outlines and colored images to be consistent with other modules (like IdentifyPrimAutomatic).  I think we also need a FilterObjectsIntensity and FilterObjectsTexture module (the last one is probably not going to be used much, but it's just to be complete).

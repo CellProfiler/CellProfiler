@@ -1,1 +1,1 @@
-ixels'
+CPcolormap(handles)

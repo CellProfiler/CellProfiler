@@ -393,7 +393,6 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
 
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-    colormap(handles.Preferences.IntensityColorMap);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); imagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);

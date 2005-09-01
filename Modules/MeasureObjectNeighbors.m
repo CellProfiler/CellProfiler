@@ -204,14 +204,13 @@ if any(findobj == ThisModuleFigureNumber) == 1
     end
     drawnow
 
-    figure(ThisModuleFigureNumber)
+    CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,1,1)
     imagesc(ColoredLabelMatrixImage)
     title('Cells colored according to their original colors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)
     subplot(2,1,2)
     imagesc(ImageOfNeighbors)
-    colormap(handles.Preferences.IntensityColorMap);
     colorbar('SouthOutside','FontSize',FontSize)
     title('Cells colored according to the number of neighbors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)

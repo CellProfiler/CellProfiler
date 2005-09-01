@@ -201,12 +201,7 @@ if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,ThisModuleFigureNumber);
 
     subplot(2,1,1)
-    %%% This method of calculating a colormap to use prevented some
-    %%% errors relating to colormaps. For one thing, the label2rgb
-    %%% function fails if there are no objects in the label matrix
-    %%% image. Also, there is a bug for some of the colormaps that
-    %%% fails when there are only 1 or 2 objects in the image, I
-    %%% think.
+    
     try
         im = CPlabel2rgb(handles,FinalLabelMatrixImage);
     catch

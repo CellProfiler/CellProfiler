@@ -211,9 +211,9 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         if strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points for the
             %%% ellipse.
-            CroppingFigureHandle = figure;
+            CroppingFigureHandle = CPfigure(handles);
             CroppingImageHandle = imagesc(ImageToBeCropped);
-            colormap('gray'); pixval
+            pixval
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             try imcontrast(CroppingImageHandle); end
             try imcontrast(CroppingImageHandle); end

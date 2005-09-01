@@ -166,7 +166,6 @@ if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    colormap(handles.Preferences.IntensityColorMap);
     %%% A subplot of the figure window is set to display the original
     %%% primary object image.
     subplot(2,2,1); imagesc(PrimaryObjectImage);

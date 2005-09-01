@@ -185,7 +185,6 @@ end
 CPfigure(FigureHandle); 
 subplot(2,3,[1 2 4 5]);
 ImageHandle = imagesc(RotatedImage); 
-colormap(handles.Preferences.IntensityColorMap);
 axis image;
 title('Rotated Image');
 pixval off;

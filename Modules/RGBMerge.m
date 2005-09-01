@@ -201,7 +201,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    colormap(handles.Preferences.IntensityColorMap);
     %%% A subplot of the figure window is set to display the Merged RGB
     %%% image.  Using imagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.

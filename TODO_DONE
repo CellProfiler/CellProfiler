@@ -2,6 +2,11 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Colin 9/1) - (Requested by Anne 9-01-05) - There is a bit of a bug with the new 'long box' fix that has the edit box plus the browse button. I end up with browse buttons floating in the wrong place. The pipeline in the drop box called temp3PIPE.mat should reproduce the problem - look in the SaveImages module and there should be a browse button displayed on top of the 4th variable.
+
+-(Colin 9/1) - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
+
+
 -(Mike 8/31) (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
 
 

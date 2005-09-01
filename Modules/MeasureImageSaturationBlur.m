@@ -88,11 +88,11 @@ NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %textVAR07 =  Do you want to also check the above images for blur?
 %choiceVAR07 = Yes
 %choiceVAR07 = No
-BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 BlurCheck = BlurCheck(1);
 %inputtypeVAR07 = popupmenu
 
-%%%VariableRevisionNumber = 03
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%
@@ -102,7 +102,7 @@ drawnow
 for ImageNumber = 1:6;
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
-    if strcmp(NameImageToCheck{ImageNumber}), 'Do not use') ~= 1
+    if strcmp(NameImageToCheck{ImageNumber}, 'Do not use') ~= 1
         fieldname = ['', NameImageToCheck{ImageNumber}];
         %%% Checks whether the image to be analyzed exists in the handles structure.
         if isfield(handles.Pipeline, fieldname)==0,

@@ -52,9 +52,9 @@ mount tap6:/carpente_ata     /nfs/carpente_ata
 
 The connections are now made but are likely not visible at /nfs/FOLDERNAME, so you can either wait for a while or you can force the finder window to refresh by creating a file in the /nfs folder and then deleting it (this is a bug in Mac OS X that doesn't refresh frequently and also doesn't let you force windows to refresh).  Once everything refreshes, the icons for the servers will appear on the desktop but also at /nfs/FOLDERNAME.
 
-So now everything is set up, and you should never need to repeat any of these steps.
+So now everything is set up, and you should never need to repeat any of these steps. Remount the NFS/share folders after restart/shutdown.
 
 -----------------------------------
 Setting up new users:
 Use System Preferences on the computer to add a new user. It's best to use the same shortname as you pan to use for your other unix accounts.
-Probably it will be useful to email unix@wi.mit.edu and ask them to add your username to the above groups in order for you to modify any files on the servers. This will also allow you to access the servers using the cifs://gobo protocol & your CCDOM login & password from any computer.
+Also add the new user into all local user groups.  This will also allow you to access the servers using the cifs://gobo protocol & your CCDOM login & password from any computer. Be sure to shut down the computer to refresh the memory and make all these local settings really happen.

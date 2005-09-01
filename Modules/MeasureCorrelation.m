@@ -136,7 +136,7 @@ ImageName = tmpImageName;           % Get rid of '/' in the ImageName cell array
 
 % Check so that at least two images have been entered
 if ImageCount < 2
-    errordlg('At least two image names must be entered in the MeasureCorrelation module.')
+    error('At least two image names must be entered in the MeasureCorrelation module.')
 end
 
 %%% Get the masks of segmented objects
@@ -152,7 +152,7 @@ for ObjectNameNbr = 1:6
             fieldname = ['Segmented', ObjectName{ObjectNameNbr}];
             %%% Checks whether the image exists in the handles structure.
             if isfield(handles.Pipeline, fieldname)==0,
-                error(['Image processing has been canceled. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
+                error(['Image processing has been canceled. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
             end
             LabelMatrixImage{ObjectNameCount} = handles.Pipeline.(fieldname);
         else

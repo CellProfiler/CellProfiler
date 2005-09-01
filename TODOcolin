@@ -7,6 +7,11 @@
 \f0\fs24 \cf0 Colin's TODO list\
 \pard\pardeftab720\ri720\ql\qnatural
 \cf0 \
+- (Requested by Anne 09-01-05) - When we ran a pipeline that contained IdentifyPrimAUtomatic and SecPropagate and Tertiary Subregions, we ended up with an unanticipated field in the handles structure:\
+handles.PipelineObjectOutlines\
+It seems like this ought to have been something like:\
+handles.Pipeline.NucleiOutlines\
+or something??\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural
 \cf0 \
 - (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.  Check through all other modules and tools - I think DataLayout tool is also using a hard coded font size.\

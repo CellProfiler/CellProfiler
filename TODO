@@ -192,7 +192,7 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons.  I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
 
-- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..." 
+- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

@@ -12,7 +12,11 @@ WANT IT ASAP:
 
 - (Requested by Anne) - make sure all modules have a Variable revision number, because otherwise we have to confirm it upon loading pipelines every time we use that module.
 
-- (Requested by Anne 8-24-05) - All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use error('error message goes here'), *not* errordlg(''), return. We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
+- (Requested by Anne 8-24-05) - All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use:
+error('error message goes here')
+not this:
+errordlg('error message goes here'), return
+We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
 
 - (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
 
@@ -185,6 +189,8 @@ Error in ==> SaveImageAs at 29
 - (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through.
 
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
+
+- (Requested by Anne 9-01-05) - The waitbar window produced by the CorrectIllumination_CalculateUsingIntensities module stays open after closing CellProfiler (it must not have the UserData indicating that it's a CellProfiler-related window). And, it's the wrong color.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

@@ -6,6 +6,7 @@
 
 \f0\fs24 \cf0 Colin's TODO list\
 \
+- (Requested by Anne 9-01-05) - There is a bit of a bug with the new 'long box' fix that has the edit box plus the browse button. I end up with browse buttons floating in the wrong place. The pipeline in the drop box called temp3PIPE.mat should reproduce the problem - look in the SaveImages module and there should be a browse button displayed on top of the 4th variable.\
 \
 - (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.  Check through all other modules and tools - I think DataLayout tool is also using a hard coded font size.\
 \

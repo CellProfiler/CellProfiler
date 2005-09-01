@@ -801,18 +801,31 @@ end
 
 %%% The "Settings" variable is saved to the file name the user chooses.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [FileName,Pathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'), 'Save Settings As...');
+    [FileName,Pathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'), 'Save Pipeline As...');
 else
-    [FileName,Pathname] = uiputfile('*.mat', 'Save Settings As...');
+    [FileName,Pathname] = uiputfile('*.mat', 'Save Pipeline As...');
 end
 %%% Allows canceling.
 if FileName ~= 0
     [Temp,FileNom,FileExt,Temp2] = fileparts(FileName);
-    AutoName = CPquestdlg(['Do you want to rather name the file as ', FileNom, 'PIPE', FileExt, ' in order to prevent confusion with output files?'],'Rename file?','Yes');
-    if strcmp(AutoName,'Yes')
-        FileName = [FileNom,'PIPE',FileExt];
-    elseif strcmp(AutoName,'Cancel')
-        return
+    %%% search for 'pipe' in the filename
+    LocatePipe = strfind(FileName,'pipe');
+    if isempty(LocatePipe)
+        LocatePipe = strfind(FileName,'Pipe');
+    end
+    if isempty(LocatePipe)
+        LocatePipe = strfind(FileName,'PIPE');
+    end
+    if isempty(LocatePipe)
+        AutoName = CPquestdlg(['Do you want to rather name the file as ', FileNom, 'PIPE', FileExt, ' in order to prevent confusion with output files?'],'Rename file?','Yes');
+        if strcmp(AutoName,'Yes')
+            FileName = [FileNom,'PIPE',FileExt];
+            helpdlg('The pipeline file has been saved.');
+        elseif strcmp(AutoName,'No')
+            helpdlg('The pipeline file has been saved.');
+        elseif strcmp(AutoName,'Cancel')
+            return
+        end
     end
     %%% Allows user to save pipeline setting as a readable text file (.txt)
     SaveText = CPquestdlg('Do you want to save settings as a text file also?','Save as text?','No');
@@ -908,8 +921,8 @@ if FileName ~= 0
         display = strvcat(display, PixelSizeDisplay, RevisionNumbersDisplay);
         %% Save to a .txt file.
         dlmwrite(fullfile(SavePathname,filename), display, 'delimiter', '');
+        helpdlg('The pipeline .txt file has been written.');
     end
-  helpdlg('The settings file(s) has been written.');
 end
 
 

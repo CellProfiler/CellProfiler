@@ -665,7 +665,7 @@ try
             i = str2num(istr);
             VariableInfoTypes(i) = {displayval};
             if ~strcmp(output((length(output)-4):end),'indep')
-                VariableValues(i) = {'Pipeline Value'}
+                VariableValues(i) = {'Pipeline Value'};
             end
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try

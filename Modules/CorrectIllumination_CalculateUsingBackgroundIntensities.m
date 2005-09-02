@@ -258,7 +258,7 @@ if strcmp(EachOrAll,'All') == 1
             IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
             ReadyFlag = 'Ready';
         elseif strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1
-            %%% In Pipeline (cycling) mode, each time through the image sets,
+            %%% In Pipeline mode, each time through the cycle,
             %%% the minimums from the image are added to the existing cumulative image.
             [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
             if handles.Current.SetBeingAnalyzed == 1

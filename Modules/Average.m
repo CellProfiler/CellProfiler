@@ -8,10 +8,10 @@ function handles = Average(handles)
 %
 % How it works:
 % This module works by averaging together all of the images. The first
-% time through the pipeline (i.e. for image set 1), the whole set of
+% time through the pipeline (i.e. for cycle 1), the whole set of
 % images (as defined by a Load Images module) is used to calculate one
 % projected image. Subsequent runs through the pipeline (i.e. for
-% image set 2 through the end) produce no new results, but processing
+% cycle 2 through the end) produce no new results, but processing
 % is not aborted in case other modules are being run for some reason.
 % The projection image calculated the first time through the pipeline
 % is still available to other modules during subsequent runs through
@@ -29,9 +29,9 @@ function handles = Average(handles)
 % to follow a Load Images module; it is acceptable to make the single,
 % averaged projection from images resulting from other image
 % processing steps in the pipeline. However, the resulting projection
-% image will not be available until the last image set has been
+% image will not be available until the last cycle has been
 % processed, so it cannot be used in subsequent modules unless they
-% are instructed to wait until the last image set.
+% are instructed to wait until the last cycle.
 %
 % SAVING IMAGES: The image produced by this module can be easily saved
 % using the Save Images module, using the name you assign.
@@ -131,7 +131,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% The projection image is displayed the first time through
-        %%% the set. For subsequent image sets, this figure is not
+        %%% the set. For subsequent cycles, this figure is not
         %%% updated at all, to prevent the need to load the projection
         %%% image from the handles structure.
         %%% Activates the appropriate figure window.
@@ -145,7 +145,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         imagesc(ProjectionImage);
-        title(['Projection Image so far, based on Image set # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Projection Image so far, based on cycle # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
         
     end
 end
@@ -161,10 +161,10 @@ drawnow
 
 %%% If running in non-cycling mode (straight from the hard drive using
 %%% a LoadImages module), the projection image and its flag need only
-%%% be saved to the handles structure after the first image set is
+%%% be saved to the handles structure after the first cycle is
 %%% processed. If running in cycling mode (Pipeline mode), the
 %%% projection image and its flag are saved to the handles structure
-%%% after every image set is processed.
+%%% after every cycle is processed.
 if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
     %%% Saves the projected image to the handles structure so it can be used by
     %%% subsequent modules.

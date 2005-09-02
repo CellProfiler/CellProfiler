@@ -2651,7 +2651,7 @@ else
                     'menubar','none','NumberTitle','off','IntegerHandle','off', 'HandleVisibility', 'off', ...
                     'color',[0.7,0.7,0.9],'UserData',userData);
                 %%% Sets initial text to be displayed in the text box within the timer window.
-                timertext = 'First image set is being processed';
+                timertext = 'First cycle is being processed';
                 %%% Creates the text box within the timer window which will display the
                 %%% timer text.
                 text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
@@ -2664,7 +2664,7 @@ else
                     'String', 'Pause', 'Position', [5 10 40 30], ...
                     'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelAfterImageSetButton_handle = uicontrol('Style', 'pushbutton', ...
-                    'String', 'Cancel after image set', 'Position', [50 10 120 30], ...
+                    'String', 'Cancel after current cycle', 'Position', [50 10 120 30], ...
                     'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Current.FontSize,'UserData',0);
                 CancelAfterModuleButton_handle = uicontrol('Style', 'pushbutton', ...
                     'String', 'Cancel after module', 'Position', [175 10 115 30], ...
@@ -2677,13 +2677,13 @@ else
                 %%% within the Timer window are pressed.
                 PauseButtonFunction = 'if ~exist(''h''); h = CPmsgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h; end';
                 set(PauseButton_handle,'Callback', PauseButtonFunction)
-                CancelAfterImageSetButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this image set? Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current image set to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current image set will not be saved in the output file.''); case ''No''; return; end; clear deleteme; clear delme; end'];
+                CancelAfterImageSetButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this cycle? Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current cycle to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current cycle will not be saved in the output file.''); case ''No''; return; end; clear deleteme; clear delme; end'];
                 set(CancelAfterImageSetButton_handle, 'Callback', CancelAfterImageSetButtonFunction)
-                CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme2; end'];
+                CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme2; end'];
                 set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
-                CancelNowCloseButtonFunction = ['if ~exist(''delme3''); delme3=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.''); switch enddeleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear enddeleteme; clear delme3; end'];
+                CancelNowCloseButtonFunction = ['if ~exist(''delme3''); delme3=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.''); switch enddeleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear enddeleteme; clear delme3; end'];
                 set(CancelNowCloseButton_handle,'Callback', CancelNowCloseButtonFunction)
-                HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after image set: Processing will continue on the current image set, the data up to and including the current image set will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* image set are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* image set will be saved in the output file, but the current image set data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
+                HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after cycle: Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
                 %%% HelpButton
                 uicontrol('Style', 'pushbutton', ...
                     'String', '?', 'Position', [460 10 15 30], 'FontName','Helvetica','FontSize', handles.Current.FontSize,...
@@ -2714,7 +2714,7 @@ else
                 %%% window and write the figure window number to the handles structure so
                 %%% that the modules know where to write to.  Each module should
                 %%% resize the figure window appropriately.  The closing function of the
-                %%% figure window is set to wait until an image set is done processing
+                %%% figure window is set to wait until a cycle is done processing
                 %%% before closing the window, to avoid unexpected results.              
                 set(handles.CloseFigureButton,'visible','on')
                 set(handles.OpenFigureButton,'visible','on')
@@ -2729,9 +2729,9 @@ else
                     end
                 end
 
-                %%% For the first time through, the number of image sets
+                %%% For the first time through, the number of cycles
                 %%% will not yet have been determined.  So, the Number of
-                %%% image sets is set temporarily.
+                %%% cycles is set temporarily.
                 handles.Current.NumberOfImageSets = 1;
                 handles.Current.SetBeingAnalyzed = 1;
                 handles.Current.SaveOutputHowOften = 1;
@@ -2746,7 +2746,7 @@ else
                 guidata(gcbo, handles);
 
                 %%%%%%
-                %%% Begin loop (going through all the image sets).
+                %%% Begin loop (going through all the cycles).
                 %%%%%%
 
                 %%% This variable allows breaking out of nested loops.
@@ -2802,7 +2802,7 @@ else
                         %%% If the module passed out a new value for
                         %%% StartingImageSet, then we set startingImageSet
                         %%% to be that value and break all the way our to
-                        %%% the image set loop. The RestartImageSet in
+                        %%% the cycle loop. The RestartImageSet in
                         %%% handles is deleted because we never want it in
                         %%% the output file.
                         startingImageSet = handles.Current.StartingImageSet;
@@ -2935,9 +2935,9 @@ else
                     %%% Save all data that is in the handles structure to the output file 
                      %%% name specified by the user, but only save it
                      %%% in the increments that the user has specified
-                     %%% (e.g. every 5th image set, every 10th image
+                     %%% (e.g. every 5th cycle, every 10th image
                      %%% set, as set by the SpeedUpCellProfiler
-                     %%% module), or if it is the last image set.  If
+                     %%% module), or if it is the last cycle.  If
                      %%% the user has not used the SpeedUpCellProfiler
                      %%% module, then
                      %%% handles.Current.SaveOutputHowOften is the
@@ -2964,7 +2964,7 @@ else
                         break
                     end
                     
-                     %%% Record time elapsed for each image set.
+                     %%% Record time elapsed for each cycle.
                      a=clock;
                         finish_set=a(5:6);
                         TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
@@ -2978,9 +2978,9 @@ else
                             show_set_text = set_text;
                         end
                                                 
-                end %%% This "end" goes with the "while" loop (going through the image sets).
+                end %%% This "end" goes with the "while" loop (going through the cycles).
                 
-                %%% After all the image sets have been processed, the following checks to
+                %%% After all the cycle have been processed, the following checks to
                 %%% be sure that the data loaded as "Sample Info" (Imported) has the proper number of
                 %%% entries.  If not, the data is removed from the handles structure so
                 %%% that the extract data button will work later on.
@@ -2993,7 +2993,7 @@ else
                 %%% structure, we should adjust the following to have
                 %%% more sophisticated error handling.  If the number
                 %%% of entries of imported data does not equal the
-                %%% number of image sets that were analyzed, the
+                %%% number of cycles that were analyzed, the
                 %%% current code forces that sample info to be deleted
                 %%% altogether form the handles structure *and* the
                 %%% output file.  It would be nice to at least allow
@@ -3003,7 +3003,7 @@ else
                 %%% the analysis in full (which happens pretty
                 %%% frequently).  It might also be nice to allow the
                 %%% user to truncate the imported data to match how
-                %%% many image sets were actually analyzed, although
+                %%% many cycles were actually analyzed, although
                 %%% we should show the user exactly what data will be
                 %%% retained and deleted so they can verify that no
                 %%% mistakes are made.
@@ -3020,7 +3020,7 @@ else
                             Lengths(i) = length(handles.Measurements.Image.(fieldname));
                         end
                         %%% Create a logical array that indicates which headings do not have the
-                        %%% same number of entries as the number of image sets analyzed.
+                        %%% same number of entries as the number of cycles analyzed.
                         IsWrongNumber = (Lengths ~= setbeinganalyzed - 1);
                         %%% Determine which heading names to remove.
                         HeadingsToBeRemoved = ImportedFieldnames(IsWrongNumber);
@@ -3087,7 +3087,7 @@ else
                 set(text_handle,'string',timertext)
                 set(timer_handle,'CloseRequestFcn','closereq')
                 
-                %%% Show seperate calcualtion times for each image set.
+                %%% Show seperate calcualtion times for each cycle.
                 try
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
                 show_time_elapsed = {['Time elapsed for cycle ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
@@ -3192,7 +3192,7 @@ if strncmp(Error,'Error using ==> ', 16) == 1
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
 elseif isempty(strfind(Error,'bad magic')) == 0
-    ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the image sets up to the one which generated this error are OK in the output file.';
+    ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.';
 else
     ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in module ', CurrentModuleNumber];
 end

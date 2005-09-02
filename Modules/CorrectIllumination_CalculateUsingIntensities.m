@@ -45,9 +45,9 @@ function handles = CorrectIllumination_CalculateUsingIntensities(handles)
 % to follow a Load Images module; it is acceptable to make the single,
 % averaged image from images resulting from other image
 % processing steps in the pipeline. However, the resulting average
-% image will not be available until the last image set has been
+% image will not be available until the last cycle has been
 % processed, so it cannot be used in subsequent modules unless they
-% are instructed to wait until the last image set.
+% are instructed to wait until the last cycle.
 %
 % Dilation:
 % For some applications, the incoming images are binary and each
@@ -168,7 +168,7 @@ end
 
 %%% If the illumination correction function was to be calculated using
 %%% all of the incoming images from a LoadImages module, it will already have been calculated
-%%% the first time through the image set. No further calculations are
+%%% the first time through the cycle. No further calculations are
 %%% necessary.
 if (strcmp(EachOrAll,'All') == 1 && handles.Current.SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module') == 1)
     return
@@ -263,7 +263,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% Whether these images exist depends on whether the images have
     %%% been calculated yet (if running in pipeline mode, this won't occur
-    %%% until the last image set is processed).  It also depends on
+    %%% until the last cycle is processed).  It also depends on
     %%% whether the user has chosen to dilate or smooth the averaged
     %%% image.
     
@@ -279,7 +279,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
             title('Averaged image calculated so far');
         end
     else subplot(2,2,1); imagesc(OrigImage);
-        title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Input Image, Cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         CPFixAspectRatio(OrigImage);
     end
     if strcmp(ReadyFlag, 'Ready')
@@ -307,10 +307,10 @@ drawnow
 %%% Saves images to the handles structure.
 %%% If running in non-cycling mode (straight from the hard drive using
 %%% a LoadImages module), the average image and its flag need only
-%%% be saved to the handles structure after the first image set is
+%%% be saved to the handles structure after the first cycle is
 %%% processed. If running in cycling mode (Pipeline mode), the
 %%% average image and its flag are saved to the handles structure
-%%% after every image set is processed.
+%%% after every cycle is processed.
 if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1 | (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1)
     handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
     %%% Whether these images exist depends on whether the user has chosen

@@ -226,7 +226,7 @@ Error in ==> SaveImageAs at 29
 - M Lint error checking
 - Check for TODO's and FIX ME's throughout the code
 - Test every module & button
-- Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed.
+- Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed. Also, check whether starting a pipeline containing every module properly opens up figure windows when using the Restart module to being at something other than setbeinganalyzed = 1.
 - Prepare updated manual
 - Check whether canceling works 
 - Make reference sheet with short descriptions of the modules.

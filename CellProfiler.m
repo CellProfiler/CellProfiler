@@ -631,6 +631,13 @@ try
             istr = output(12:13);
             i = str2num(istr);
             VariableValues(i) = {displayval};
+        elseif (strncmp(output,'%choiceVAR',10) == 1) && (OptionInCode == SelectedOption),
+            if ~iscellstr(VariableValues(i))
+                displayval = output(16:end);
+                istr = output(11:12);
+                i = str2num(istr);
+                VariableValues(i) = {displayval};
+            end
         elseif strncmp(output,'%textVAR',8) && (OptionInCode == SelectedOption);
             displayval = output(13:end);
             istr = output(9:10);
@@ -657,7 +664,6 @@ try
             istr = output(13:14);
             i = str2num(istr);
             VariableInfoTypes(i) = {displayval};
-        
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
                 VarRevNum = str2num(output(29:30));

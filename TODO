@@ -40,6 +40,20 @@ We should check through the code and make sure errors are handled properly, and 
 
 **- (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to doublecheck.
 
+- (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:   CPretrieveMediaFileNames.m
+line 27 change  MediaExtensions = [MediaExtensions, 'avi', 'stk']; 
+to
+MediaExtensions = [MediaExtensions {'avi'}, {'stk'}]; to preserve the cell class
+This gave a bug on my Mac when I started CP but didn't cause any problem on a widows machine, strange!
+
+- (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:  MakeProjection_averageImage.m
+(1) line 162:  [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+to work properly. the output argument do not match.
+(2) Same problem at line 134 probably
+(3) line 222 title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']) NumberOfImage argument is not specified before
+
+
 ***************
 
 - (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.

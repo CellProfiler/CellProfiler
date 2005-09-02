@@ -139,7 +139,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         CPfigure(handles,ThisModuleFigureNumber);
         imagesc(AveragedImage);
         title(['Final Averaged Image, based on all ', num2str(NumberOfImages), ' images']);
-        
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated averaged image so far is displayed each time through
         %%% the pipeline.

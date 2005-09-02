@@ -664,6 +664,9 @@ try
             istr = output(13:14);
             i = str2num(istr);
             VariableInfoTypes(i) = {displayval};
+            if ~strcmp(output((length(output)-4):end),'indep')
+                VariableValues(i) = {'Pipeline Value'}
+            end
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
             try
                 VarRevNum = str2num(output(29:30));

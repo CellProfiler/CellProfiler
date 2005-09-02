@@ -45,12 +45,18 @@ function handles = IdentifyPrimAutomatic(handles)
 % they touch the border.
 %
 % Try to merge 'too small' objects with nearby larger objects:
+% Use caution when choosing 'Yes' for this option! 
 % This is an experimental functionality that takes objects that were
 % discarded because they were smaller than the specified Minimum
 % diameter and tries to merge them with other surrounding objects.
 % This is helpful in cases when an object was incorrectly split into
 % two objects, one of which is actually just a tiny piece of the
-% larger object.
+% larger object. However, this could be dangerous if you have selected
+% poor settings which produce lots of tiny objects - the module will
+% take a very long time and you won't realize that it's because the
+% tiny objects are being merged. It is therefore a good idea to run
+% the module first without merging objects to make sure the settings
+% are reasonably effective.
 %
 % Discard objects touching the border of the image:
 % For most applications, you do not want to make measurements of

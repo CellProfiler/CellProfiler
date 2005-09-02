@@ -67,9 +67,16 @@ LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4
 %defaultVAR05 = 100
 UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter number of bins
+%textVAR06 = Enter number of bins (Note: to measure the percent of objects that are above a threshold, type P:XXX in this box, where XXX is the threshold).
 %defaultVAR06 = 3
-NbrOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+try
+    NbrOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+catch if strncmpi(NbrOfBins,'P',1)
+        MidPointToUse = str2double(NbrOfBins(3:end));
+        NbrOfBins = 0;
+    else error('Image processing was canceled because you must enter a number, or the letter P for the number of bins in the Classify Objects module.')
+    end
+end
 
 %%%VariableRevisionNumber = 2
 
@@ -106,13 +113,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 % Get Measurements
 Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
 
-% Quantize measurements
-edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1);
+if NbrOfBins == 0
+    edges = [LowerBinMin,MidPointToUse,UpperBinMax]
+else
+    % Quantize measurements
+    edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1)
+end
 edges(1) = edges(1) - sqrt(eps);                               % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));
 bins = zeros(1,NbrOfBins);
@@ -136,13 +145,10 @@ cmap = [0 0 0;jet(length(bins))];
 QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
     FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);

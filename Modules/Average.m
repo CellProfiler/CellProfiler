@@ -88,13 +88,23 @@ SourceIsLoadedOrPipeline = SourceIsLoadedOrPipeline(1);
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% If running in non-cycling mode (straight from the hard drive using
+%%% a LoadImages module), the averaged image and its flag need only
+%%% be calculated and saved to the handles structure after the first cycle is
+%%% processed. If running in cycling mode (Pipeline mode), the
+%%% averaged image and its flag are saved to the handles structure
+%%% after every cycle is processed.
+if strncmpi(SourceIsLoadedOrPipeline, 'L',1) && handles.Current.SetBeingAnalyzed ~= 1
+    return
+end
+
 ReadyFlag = 'Not Ready';
 try
-    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% The first time the module is run, the averaged image is
         %%% calculated.
         [AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
-    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         [AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
     else
         error('Image processing was canceled because you must choose either "L" or "P" in the Average module');
@@ -145,18 +155,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% If running in non-cycling mode (straight from the hard drive using
-%%% a LoadImages module), the averaged image and its flag need only
-%%% be saved to the handles structure after the first cycle is
-%%% processed. If running in cycling mode (Pipeline mode), the
-%%% averaged image and its flag are saved to the handles structure
-%%% after every cycle is processed.
-if strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1 | (strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == 1)
-    %%% Saves the averaged image to the handles structure so it can be used by
-    %%% subsequent modules.
-    handles.Pipeline.(AveragedImageName) = AveragedImage;
-    %%% Saves the ready flag to the handles structure so it can be used by
-    %%% subsequent modules.
-    fieldname = [AveragedImageName,'ReadyFlag'];
-    handles.Pipeline.(fieldname) = ReadyFlag;
-end
+%%% Saves the averaged image to the handles structure so it can be used by
+%%% subsequent modules.
+handles.Pipeline.(AveragedImageName) = AveragedImage;
+%%% Saves the ready flag to the handles structure so it can be used by
+%%% subsequent modules.
+fieldname = [AveragedImageName,'ReadyFlag'];
+handles.Pipeline.(fieldname) = ReadyFlag;

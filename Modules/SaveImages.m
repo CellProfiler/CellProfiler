@@ -325,7 +325,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     end
 
     NewFileAndPathName = fullfile(FileDirectoryToSave, NewImageName);
-    if strcmpi(CheckOverwrite,'Y') == 1 && strcmpi(FileFormat,'avi') ~= 1
+    if strcmpi(CheckOverwrite,'Yes') == 1 && strcmpi(FileFormat,'avi') ~= 1
         %%% Checks whether the new image name is going to overwrite the
         %%% original file. This check is not done here if this is an avi
         %%% (movie) file, because otherwise the check would be done on each

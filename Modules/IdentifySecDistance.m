@@ -40,16 +40,11 @@ function handles = IdentifySecDistance(handles)
 %
 % $Revision$
 
-
-
-
 drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -94,7 +89,7 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,7}); 
 %inputtypeVAR07 = popupmenu
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -143,8 +138,6 @@ PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Creates the structuring element using the user-specified size.
 StructuringElement = strel('disk', DistanceToDilate);
 %%% Dilates the preliminary label matrix image (edited for small only).
@@ -174,8 +167,6 @@ FinalSecObjectsLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectIm
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -237,8 +228,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent modules.
 fieldname = ['Segmented',SecondaryObjectName];
@@ -255,7 +244,6 @@ if isempty(column)
     column = length(handles.Measurements.Image.ObjectCountFeatures);
 end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalSecObjectsLabelMatrixImage(:));
-
 
 %%% Saves the location of each segmented object
 handles.Measurements.(SecondaryObjectName).LocationFeatures = {'CenterX','CenterY'};

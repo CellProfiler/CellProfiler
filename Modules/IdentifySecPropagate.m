@@ -86,16 +86,10 @@ function handles = IdentifySecPropagate(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -209,13 +203,10 @@ if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) | (size(OrigImage) ~
     error(['Image processing has been canceled. The incoming images are not all of equal size.']);
 end
 
-
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% STEP 1: The distinction between objects and background is determined
 %%% using the user-specified threshold.
@@ -227,8 +218,6 @@ if strcmp(Threshold,'Automatic')
 %    Threshold = CPgraythresh(OrigImage);
     %%% Adjusts the threshold by a correction factor.
 %    Threshold = Threshold*ThresholdAdjustmentFactor;
-
-
     Threshold=graythresh(OrigImage);
     ThresholdedOrigImage = im2bw(OrigImage, Threshold);
     while numel(nonzeros(ThresholdedOrigImage & PrelimPrimaryLabelMatrixImage))/numel(nonzeros(PrelimPrimaryLabelMatrixImage))<.95;
@@ -240,8 +229,6 @@ else
 end
 MinimumThreshold = str2num(MinimumThreshold);
 Threshold = max(MinimumThreshold,Threshold);
-
-
 
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImage, Threshold);
@@ -323,8 +310,6 @@ FinalLabelMatrixImage = LabelsUsed(PrelimLabelMatrixImage+1);
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
@@ -389,8 +374,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent modules.
 fieldname = ['Segmented',SecondaryObjectName];
@@ -416,7 +399,6 @@ if isempty(column)
 end
 handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
 
-
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
@@ -428,7 +410,6 @@ if isempty(column)
     column = length(handles.Measurements.Image.ObjectCountFeatures);
 end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
 
 %%% Saves the location of each segmented object
 handles.Measurements.(SecondaryObjectName).LocationFeatures = {'CenterX','CenterY'};

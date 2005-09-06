@@ -190,9 +190,18 @@ for ObjectNameNbr = 1:ObjectNameCount
         for i = 1:ImageCount-1                                       % Loop over all combinations of images
             for j = i+1:ImageCount
                 index = find(LabelMatrixImage{ObjectNameNbr} == ObjectNbr);   % Get the indexes for the this object number
-                c = corrcoef([Image{i}(index) Image{j}(index)]);              % Get the values for these indexes in the images and calculate the correlation
-                Correlation(ObjectNbr,FeatureNbr) = c(1,2);                   % Store the correlation
-                FeatureNbr = FeatureNbr + 1;
+                try
+                    if isempty(index) || numel(index) == 1 % If the object does not exist in the label matrix or is only one pixel, the correlation calculation will fail, so we assign the correlation to be NaN.
+                        CorrelationForCurrentObject = NaN;
+                    else
+                        c = corrcoef([Image{i}(index) Image{j}(index)]);             % Get the values for these indexes in the images and calculate the correlation
+                        CorrelationForCurrentObject = c(1,2);
+                    end
+                    Correlation(ObjectNbr,FeatureNbr) = CorrelationForCurrentObject; % Store the correlation
+                    FeatureNbr = FeatureNbr + 1;
+                catch error(['There was a problem calculating the correlation in the MeasureCorrelation module.',])
+                end
+
             end
         end
     end

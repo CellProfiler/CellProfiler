@@ -7,6 +7,12 @@
 \f0\fs24 \cf0 Colin's TODO list\
 \pard\pardeftab720\ri720\ql\qnatural
 \cf0 \
+\pard\pardeftab720\ql\qnatural
+\cf0 - (Requested by Anne 09-02-05) - it looks like you invented a new 'filenameVAR' to enter filenames - have we incorporated this into any modules yet? We could put it in LoadSingleImage if you want. \
+\
+- (Requested by Anne 09-06-05) - MeasureRatios needs to be much more sophisticated. Right now it has CorrGreen and CorrBlue and CorrRed hard-coded in. It isn't flexible for different types of measures, is it? (AreaShape, Intensity, texture) \
+\pard\pardeftab720\ri720\ql\qnatural
+\cf0 \
 - (Requested by Anne 09-01-05) - When we ran a pipeline that contained IdentifyPrimAUtomatic and SecPropagate and Tertiary Subregions, we ended up with an unanticipated field in the handles structure:\
 handles.PipelineObjectOutlines\
 It seems like this ought to have been something like:\

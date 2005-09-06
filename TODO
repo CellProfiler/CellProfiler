@@ -42,8 +42,6 @@ This gave a bug on my Mac when I started CP but didn't cause any problem on a wi
 has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
 to work properly. the output argument do not match.
 (2) Same problem at line 134 probably
-(3) line 222 title(['Final Projection Image, based on all ', num2str(NumberOfImages), ' images']) NumberOfImage argument is not specified before
-
 
 ***************
 
@@ -60,6 +58,8 @@ to work properly. the output argument do not match.
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
 - (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
+
+- (Requested by Anne 9-06-05) - Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
 
 - (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 

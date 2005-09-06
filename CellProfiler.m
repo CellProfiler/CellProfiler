@@ -677,7 +677,8 @@ try
     end    
     fclose(fid);
 catch
-    errordlg('Module could not be found in directory specified','Error');
+    uiwait(errordlg(['The ' ModuleName ' module could not be found in the directory specified. You will be able to see the module''s saved settings, but it is suggested that CellProfiler be shut down since the stored settings are now corrupt.'],'Error'));
+    %waitfor(h);
 end
 
 %%% SUBFUNCTION %%%

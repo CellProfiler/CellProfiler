@@ -96,27 +96,27 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = How do you want to identify the secondary objects?
-%choiceVAR01 = Distance
-%choiceVAR01 = Propagation
-%choiceVAR01 = Watershed
+%textVAR01 = What did you call the images you want to process?
+%infotypeVAR01 = imagegroup
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
-IdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What did you call the images you want to process?
-%infotypeVAR02 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What did you call the primary objects you want to create secondary objects around?
+%infotypeVAR02 = objectgroup
+PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What did you call the primary objects you want to create secondary objects around?
-%infotypeVAR03 = objectgroup
-PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu
+%textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
+%defaultVAR03 = Cells
+%infotypeVAR03 = objectgroup indep
+SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
-%defaultVAR04 = Cells
-%infotypeVAR04 = objectgroup indep
-SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = How do you want to identify the secondary objects?
+%choiceVAR04 = Distance
+%choiceVAR04 = Propagation
+%choiceVAR04 = Watershed
+%inputtypeVAR04 = popupmenu
+IdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Set the number of pixels by which to expand the primary objects, ONLY if identifying by DISTANCE [Positive number]
 %defaultVAR05 = 10
@@ -219,56 +219,61 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% STEP 1: Marks at least some of the background by applying a
+%%% weak threshold to the original image of the secondary objects.
+drawnow
+%%% Determines the threshold to use.
+if strcmp(Threshold,'Automatic')
+    Threshold = CPgraythresh(OrigImage,handles,ImageName);
+    %%% Replaced the following line to accomodate calculating the
+    %%% threshold for images that have been masked.
+    %    Threshold = CPgraythresh(OrigImage);
+    %%% Adjusts the threshold by a correction factor.
+    Threshold = Threshold*ThresholdAdjustmentFactor;
+else
+    Threshold=str2double(Threshold);
+end
+MinimumThreshold = str2num(MinimumThreshold);
+Threshold = max(MinimumThreshold,Threshold);
+
+%%% Thresholds the original image.
+ThresholdedOrigImage = im2bw(OrigImage, Threshold);
+
 if strcmp(IdentChoice,'Distance')
+    RelabeledPrelimPrimaryLabelMatrixImage = PrelimPrimaryLabelMatrixImage;
+    RelabeledPrelimPrimaryLabelMatrixImage = bwlabel(PrelimPrimaryLabelMatrixImage > 0);
     %%% Creates the structuring element using the user-specified size.
     StructuringElement = strel('disk', DistanceToDilate);
     %%% Dilates the preliminary label matrix image (edited for small only).
     DilatedPrelimSecObjectLabelMatrixImage = imdilate(PrelimPrimaryLabelMatrixImage, StructuringElement);
+    %DilatedPrelimSecObjectLabelMatrixImage = bwmorph(PrelimPrimaryLabelMatrixImage,'thicken',DistanceToDilate);
     %%% Converts to binary.
     DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,.5);
     %%% Computes nearest neighbor image of nuclei centers so that the dividing
     %%% line between secondary objects is halfway between them rather than
     %%% favoring the primary object with the greater label number.
-    [ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
+    [ignore, Labels] = bwdist(full(RelabeledPrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
     drawnow
     %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
-    ExpandedRelabeledDilatedPrelimSecObjectImage = PrelimPrimaryLabelMatrixImage(Labels);
+    ExpandedRelabeledDilatedPrelimSecObjectImage = RelabeledPrelimPrimaryLabelMatrixImage(Labels);
     %%% Removes the background pixels (those not labeled as foreground in the
     %%% DilatedPrelimSecObjectBinaryImage). This is necessary because the
     %%% nearest neighbor function assigns *every* pixel to a nucleus, not just
     %%% the pixels that are part of a secondary object.
+    %%% TODO: This is where we would put in thresholding, if we add this as
+    %%% an option in the future.
     RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelimSecObjectImage));
     RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
     drawnow
+    
+    EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
+    
     %%% Removes objects that are not in the edited EditedPrimaryLabelMatrixImage.
-    LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
+    LookUpTable = sortrows(unique([RelabeledPrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
     LookUpColumn = LookUpTable(:,2);
     FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
+    
 elseif strcmp(IdentChoice,'Propagation')
-    %%% STEP 1: The distinction between objects and background is determined
-    %%% using the user-specified threshold.
-    %%% Determines the threshold to use.
-    if strcmp(Threshold,'Automatic')
-        %   Threshold = CPgraythresh(OrigImage,handles,ImageName);
-        %%% Replaced the following line to accomodate calculating the
-        %%% threshold for images that have been masked.
-        %    Threshold = CPgraythresh(OrigImage);
-        %%% Adjusts the threshold by a correction factor.
-        %    Threshold = Threshold*ThresholdAdjustmentFactor;
-        Threshold=graythresh(OrigImage);
-        ThresholdedOrigImage = im2bw(OrigImage, Threshold);
-        while numel(nonzeros(ThresholdedOrigImage & PrelimPrimaryLabelMatrixImage))/numel(nonzeros(PrelimPrimaryLabelMatrixImage))<.95;
-            Threshold=Threshold-0.002;
-            ThresholdedOrigImage = im2bw(OrigImage, Threshold);
-        end
-    else
-        Threshold=str2double(Threshold);
-    end
-    MinimumThreshold = str2num(MinimumThreshold);
-    Threshold = max(MinimumThreshold,Threshold);
-
-    %%% Thresholds the original image.
-    ThresholdedOrigImage = im2bw(OrigImage, Threshold);
     %%% STEP 2: Starting from the identified primary objects, the secondary
     %%% objects are identified using the propagate function, written by Thouis
     %%% R. Jones. Calls the function
@@ -350,25 +355,6 @@ elseif strcmp(IdentChoice,'Watershed')
     %%% object's outline to extend at least as far as the edge of the primary
     %%% objects.
 
-    %%% STEP 1: Marks at least some of the background by applying a
-    %%% weak threshold to the original image of the secondary objects.
-    drawnow
-    %%% Determines the threshold to use.
-    if strcmp(Threshold,'Automatic')
-        Threshold = CPgraythresh(OrigImage,handles,ImageName);
-        %%% Replaced the following line to accomodate calculating the
-        %%% threshold for images that have been masked.
-        %    Threshold = CPgraythresh(OrigImage);
-        %%% Adjusts the threshold by a correction factor.
-        Threshold = Threshold*ThresholdAdjustmentFactor;
-    else
-        Threshold=str2double(Threshold);
-    end
-    MinimumThreshold = str2num(MinimumThreshold);
-    Threshold = max(MinimumThreshold,Threshold);
-
-    %%% Thresholds the original image.
-    ThresholdedOrigImage = im2bw(OrigImage, Threshold);
     %%% Inverts the image.
     InvertedThresholdedOrigImage = imcomplement(ThresholdedOrigImage);
 

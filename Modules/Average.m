@@ -101,8 +101,8 @@ end
 ReadyFlag = 'Not Ready';
 try
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
-        %%% The first time the module is run, the averaged image is
-        %%% calculated.
+        %%% If we are in LoadImages mode, the averaged image is
+        %%% calculated the first time the module is run.
         [AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         [AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
@@ -110,7 +110,7 @@ try
         error('Image processing was canceled because you must choose either "L" or "P" in the Average module');
     end
 catch [ErrorMessage, ErrorMessage2] = lasterr;
-    error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+    error(['An error occurred in the Average module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -130,7 +130,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
         drawnow
     end
-    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
         %%% The averaged image is displayed the first time through
         %%% the set. For subsequent cycles, this figure is not
         %%% updated at all, to prevent the need to load the averaged
@@ -138,14 +138,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         imagesc(AveragedImage);
-        title(['Final Averaged Image, based on all ', num2str(NumberOfImages), ' images']);
+        title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated averaged image so far is displayed each time through
         %%% the pipeline.
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         imagesc(AveragedImage);
-        title(['Averaged Image so far, based on cycle # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
     end
 end
 

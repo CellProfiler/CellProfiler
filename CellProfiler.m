@@ -1100,7 +1100,8 @@ if ModuleNamedotm ~= 0,
             lastVariableCheck = str2double(istr);
             handles.Settings.NumbersOfVariables(str2double(ModuleNumber)) = lastVariableCheck;
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'String',displayval);
-            if isempty(handles.Settings.VariableValues(ModuleNums,lastVariableCheck))
+            CheckVal = handles.Settings.VariableValues(ModuleNums,lastVariableCheck);
+            if isempty(CheckVal{1})
                 handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = {displayval};
             end
         elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption)

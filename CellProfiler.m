@@ -1327,9 +1327,6 @@ if ModuleNamedotm ~= 0,
             else
                 StrSet{numel(StrSet)+1} = output(16:end);
             end
-            % if isempty(handles.Settings.VariableValues{ModuleNums, str2num(output(11:12))})
-            %      handles.Settings.VariableValues(ModuleNums, str2num(output(11:12))) = StrSet(1);
-            % end
             if isempty(handles.Settings.VariableValues(ModuleNums,lastVariableCheck))
                 handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = StrSet(1);
             end
@@ -1361,8 +1358,16 @@ if ModuleNamedotm ~= 0,
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
                         if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')
-                            StrSet(Count) = handles.Settings.VariableValues(i,j);
-                            Count = Count + 1;
+                            TestStr = 0;
+                            for m=1:length(StrSet)
+                                if strcmp(StrSet(m),handles.Settings.VariableValues(i,j))
+                                    TestStr = TestStr + 1;
+                                end
+                            end
+                            if TestStr == 0
+                                StrSet(Count) = handles.Settings.VariableValues(i,j);
+                                Count = Count + 1;
+                            end
                         end
                     end
                 end
@@ -1745,7 +1750,11 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2num(VariableNumber)));
     ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
     if ischar(UserEntry)
-        ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(1))));
+        if size(StrSet,1) == 1
+            ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet)));
+        else
+            ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(1))));
+        end
     else
         ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(UserEntry))));
     end
@@ -1781,6 +1790,8 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 set(ModList(i),'String',cat(1,CurrentString(1:(MatchedIndice-1)),CurrentString((MatchedIndice+1):end)));
                 if get(ModList(i),'Value')==MatchedIndice
                     set(ModList(i),'Value',1);
+                    VarVals = get(ModList(i),'string');
+                    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = VarVals;
                     %%FIXME: Update VariableValues
                 end
             end
@@ -1791,10 +1802,14 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 CurrentString = {CurrentString}
             else
                 if ischar(UserEntry)
-                    CurrentString(numel(CurrentString)+1) = {StrSet};
+                    if ~strcmp(StrSet,'n/a') && ~strcmp(StrSet,'/')
+                        CurrentString(numel(CurrentString)+1) = {StrSet};
+                    end
                     set(ModList(i),'String',CurrentString);
                 else
-                    CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
+                    if ~strcmp(StrSet,'n/a') && ~strcmp(StrSet,'/')
+                        CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
+                    end
                     set(ModList(i),'String',CurrentString);
                 end
             end
@@ -3511,9 +3526,9 @@ function ZipFiles_Callback(hObject, eventdata, handles)
 macpc = CPquestdlg('Are you using a Mac?', 'Yes', 'No');
 switch macpc
     case 'Yes',
-        ListOfThingsToSave = {'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.m' 'Help/*.m' 'CellProfiler.m' 'CellProfiler.fig'},
+        ListOfThingsToSave = {'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.*' 'Help/*.m' 'CellProfiler.m'},
     case 'No',
-        ListOfThingsToSave = {'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.m' 'Help\*.m' 'CellProfiler.m' 'CellProfiler.fig'},
+        ListOfThingsToSave = {'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.*' 'Help\*.m' 'CellProfiler.m'},
 end
 %%%Not sure why list of things to save is put in loop with this code.
 %%%

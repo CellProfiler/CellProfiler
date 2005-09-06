@@ -3,9 +3,11 @@ function handles = MeasureRatios(handles)
 % Help for the Measure Ratios module:
 % Category: Measurement
 %
-% This module has not yet been documented.  Sometimes I get divide by
-% zero errors; We should add error checking to be sure the proper
-% number of measurements exist.
+% This module has not yet been documented.  You can enter 'Area' or
+% 'IntegratedIntensity' or 'MeanIntensity' for example. Sometimes I
+% get divide by zero errors; We should add error checking to be sure
+% the proper number of measurements exist.  It has some hard coded
+% lines at the moment for CorrRed, CorrGreen, CorrBlue.
 %
 % How it works:
 %

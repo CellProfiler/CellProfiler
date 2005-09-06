@@ -2,6 +2,10 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/2) (Requested by Anne 09-01-05) - When loading from a saved pipeline and a module doesn't exist anymore, a warndlg pops up but is then covered up by the variable revision assisting window. The text from the warndlg box should be displayed in the variable assist window (which normally says something about revision numbers not matching), and just say "Module XXX can't be loaded, but you can at least see the saved settings below. The pipeline will not load properly and probably all of CellProfiler's settings are corrupt so you should shut it down before attempting to load or build a new pipeline".
+
+-(Mike 9/2) (Requested by Anne 09-01-05) - When we load from an old saved pipeline (e.g. the SecPropagate module) and the Variable Revision number is now newer, we go through the helper window that assists us in choosing saved or default variables. It's kind of strange though because there are blank spaces for default variables that make use of popup menus. These should display *something*, like "Image must be chosen from pipeline" if it's an imagegroup popup menu, for example.
+
 -(Mike 9/2) When loading a module whose variable revision number has changed, many of the variables come up as blank in the window where you choose between Saved and Default.
 
 (Joy 9/1) - (Requested by Anne) - When Saving a pipeline, after you confirm the filename change (adding PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.  Also, we should check whether PIPE is already part of the name and if so, do not suggest adding PIPE again!

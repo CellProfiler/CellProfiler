@@ -2,6 +2,9 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/2) (Requested by Anne) - Move the help contents of IdentifySecPropagateSubfunction to the help for 
+ IdentifySecPropagate and then remove IdentifySecPropagateSubfunction.m from cvs (i.e. delete it), because it contains no code but appears as a module to load in the pipeline when you click the AddModule button.
+
 -(Mike 9/2) (Requested by Anne 09-01-05) - When loading from a saved pipeline and a module doesn't exist anymore, a warndlg pops up but is then covered up by the variable revision assisting window. The text from the warndlg box should be displayed in the variable assist window (which normally says something about revision numbers not matching), and just say "Module XXX can't be loaded, but you can at least see the saved settings below. The pipeline will not load properly and probably all of CellProfiler's settings are corrupt so you should shut it down before attempting to load or build a new pipeline".
 
 -(Mike 9/2) (Requested by Anne 09-01-05) - When we load from an old saved pipeline (e.g. the SecPropagate module) and the Variable Revision number is now newer, we go through the helper window that assists us in choosing saved or default variables. It's kind of strange though because there are blank spaces for default variables that make use of popup menus. These should display *something*, like "Image must be chosen from pipeline" if it's an imagegroup popup menu, for example.

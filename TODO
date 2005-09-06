@@ -7,9 +7,6 @@ WANT IT ASAP:
 
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
-- (Requested by Anne) - Move the help contents of IdentifySecPropagateSubfunction to the help for 
- IdentifySecPropagate and then remove IdentifySecPropagateSubfunction.m from cvs (i.e. delete it), because it contains no code but appears as a module to load in the pipeline when you click the AddModule button.
-
 **- (Requested by Anne) - Adapt the Crop module to take in an object (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object is cropped away). This will be used to Crop away yeast agar plates.
 
 - (Requested by Anne) - make sure all modules have a Variable revision number, because otherwise we have to confirm it upon loading pipelines every time we use that module.

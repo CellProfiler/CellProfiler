@@ -52,6 +52,8 @@ FifthImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %pathnametextVAR04 = Enter the directory path name where the images are saved.
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
+%%%VariableRevisionNumber = 1
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

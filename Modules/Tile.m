@@ -112,6 +112,8 @@ LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 SizeChange = str2num(SizeChange);
 
+%%%VariableRevisionNumber = 1
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

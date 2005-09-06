@@ -61,6 +61,8 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 %textVAR04 = Note: this module may fill in holes between objects that are not desired, so follow it with an identify primary objects module.
 
+%%%VariableRevisionNumber = 1
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

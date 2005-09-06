@@ -90,6 +90,8 @@ GreenAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,7}
 %defaultVAR08 = 1
 RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
+%%%VariableRevisionNumber = 1
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -61,7 +61,7 @@ Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = 5
 Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-
+%%%VariableRevisionNumber = 1
 
 
 if ~isfield(handles.Pipeline, ImageName)

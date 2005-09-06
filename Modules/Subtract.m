@@ -77,6 +77,8 @@ Stretch = Stretch(1);
 %defaultVAR06 = 3
 BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
+%%%VariableRevisionNumber = 1
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

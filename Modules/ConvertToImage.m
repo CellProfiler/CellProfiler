@@ -46,6 +46,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu
 ImageMode = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%
 

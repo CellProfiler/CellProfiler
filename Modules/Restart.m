@@ -45,7 +45,8 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = No data required for this module.
-%defaultVAR01 = .
+
+%%%VariableRevisionNumber = 1
 
 drawnow
 if (handles.Current.SetBeingAnalyzed ~= 1)

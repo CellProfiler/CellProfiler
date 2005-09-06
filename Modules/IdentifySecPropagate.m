@@ -70,6 +70,26 @@ function handles = IdentifySecPropagate(handles)
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
 %
+% Information on IdentifySecPropagateSubfunction:
+%
+% This is a subfunction implemented in C and MEX to perform the
+% propagate algorithm (somewhat similar to watershed).  This help
+% documents the arguments and behavior of the propagate algorithm.
+%
+% Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
+% limited to MASK.  MASK should be a logical array.  LAMBDA is a
+% regularization paramter, larger being closer to Euclidean distance
+% in the image plane, and zero being entirely controlled by IMAGE.
+%
+% Propagation of labels is by shortest path to a nonzero label in
+% LABELS_IN.  Distance is the sum of absolute differences in the image
+% in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
+% LAMBDA^2).
+%
+% Note that there is no separation between adjacent areas with
+% different labels (as there would be using, e.g., watershed).  Such
+% boundaries must be added in a postprocess.
+%
 % See also IDENTIFYSECPROPAGATESUBFUNCTION, IDENTIFYSECDISTANCE,
 % IDENTIFYSECWATERSHED.
 

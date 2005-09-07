@@ -292,8 +292,14 @@ for Object = 1:length(ExportInfo.ObjectNames)
             if ~strcmp('Image',ExportInfo.ObjectNames{k})
                 MeasurementNames = cat(2,MeasurementNames,SuperMeasurementNames{k});
                 tmpMeasurements = SuperMeasurements{k};
-                for imageset = 1:length(Measurements)
-                    Measurements{imageset} = cat(2,Measurements{imageset},mean(tmpMeasurements{imageset},1));
+                if ExportInfo.IgnoreNaN == 1
+                    for imageset = 1:length(Measurements)
+                        Measurements{imageset} = cat(2,Measurements{imageset},nanmean(tmpMeasurements{imageset},1));
+                    end
+                else
+                    for imageset = 1:length(Measurements)
+                        Measurements{imageset} = cat(2,Measurements{imageset},mean(tmpMeasurements{imageset},1));
+                    end
                 end
             end
         end
@@ -458,7 +464,7 @@ function ExportInfo = ObjectsToExport(handles,RawFileName)
 % This function displays a window so that lets the user choose which
 % measurements to export. If the return variable 'ObjectNames' is empty
 % it means that either no measurements were found or the user pressed
-% the Cancel button (or the window was closed). 'Summary' takes on the values'yes'
+% the Cancel button (or the window was closed). 'Summary' takes on the values 'yes'
 % or 'no', depending if the user only wants a summary report (mean and std)
 % or a full report.
 
@@ -549,7 +555,10 @@ uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','Fo
     'HorizontalAlignment','left','units','inches','position',[2.9 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
 EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[2.9 basey 0.7 uiheight],...
     'backgroundcolor',[1 1 1],'String','.txt');
-
+uicontrol(ETh,'style','text','String','Ignore NaN''s?','FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
+    'units','inches','position',[2.9 basey+2 1.8 uiheight],'BackgroundColor',get(ETh,'color'))
+IgnoreNaN = uicontrol(ETh,'Style','checkbox','units','inches','position',[3.4 basey+1.9 1.8 uiheight],...
+    'BackgroundColor',get(ETh,'color'),'Value',1);
 
 % Export and Cancel pushbuttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
@@ -559,6 +568,8 @@ cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','
     'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
+
+ExportInfo.IgnoreNaN = get(IgnoreNaN,'Value');
 
 if get(ETh,'Userdata') == 1     % The user pressed the Export button
 

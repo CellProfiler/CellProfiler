@@ -31,12 +31,6 @@ We should check through the code and make sure errors are handled properly, and 
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread - but maybe it's not possible because that requires running code rather than just extracting text. If that's the case, I guess we just have to type them into this module manually and update them whenever Matlab updates its imread function (which probably isn't that often anyway). Also, right now we ask the user for the file format of their images but this information is not actually used anywhere. We need to adjust the CPimread function to take in and use a file format (it should be optional; only used when images do not have file extensions).  Also, sometimes we might want to sort images by order but also by text, or sort by two different bits of text - like only wanting to retrieve images with the proper extension. So perhaps we should use the File format input in another way (besides using it for imread when there is no extension): do you only want to consider files with that extension?  That would be nice because it prevents you from having to exclude .mat files or other types of files in the folder.
 
-- (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:   CPretrieveMediaFileNames.m
-line 27 change  MediaExtensions = [MediaExtensions, 'avi', 'stk']; 
-to
-MediaExtensions = [MediaExtensions {'avi'}, {'stk'}]; to preserve the cell class
-This gave a bug on my Mac when I started CP but didn't cause any problem on a widows machine, strange!
-
 - (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:  MakeProjection_averageImage.m
 (1) line 162:  [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
 has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');

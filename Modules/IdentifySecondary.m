@@ -240,22 +240,19 @@ Threshold = max(MinimumThreshold,Threshold);
 ThresholdedOrigImage = im2bw(OrigImage, Threshold);
 
 if strcmp(IdentChoice,'Distance')
-    RelabeledPrelimPrimaryLabelMatrixImage = PrelimPrimaryLabelMatrixImage;
-    RelabeledPrelimPrimaryLabelMatrixImage = bwlabel(PrelimPrimaryLabelMatrixImage > 0);
     %%% Creates the structuring element using the user-specified size.
     StructuringElement = strel('disk', DistanceToDilate);
     %%% Dilates the preliminary label matrix image (edited for small only).
     DilatedPrelimSecObjectLabelMatrixImage = imdilate(PrelimPrimaryLabelMatrixImage, StructuringElement);
-    %DilatedPrelimSecObjectLabelMatrixImage = bwmorph(PrelimPrimaryLabelMatrixImage,'thicken',DistanceToDilate);
     %%% Converts to binary.
     DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,.5);
     %%% Computes nearest neighbor image of nuclei centers so that the dividing
     %%% line between secondary objects is halfway between them rather than
     %%% favoring the primary object with the greater label number.
-    [ignore, Labels] = bwdist(full(RelabeledPrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
+    [ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
     drawnow
     %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
-    ExpandedRelabeledDilatedPrelimSecObjectImage = RelabeledPrelimPrimaryLabelMatrixImage(Labels);
+    ExpandedRelabeledDilatedPrelimSecObjectImage = PrelimPrimaryLabelMatrixImage(Labels);
     %%% Removes the background pixels (those not labeled as foreground in the
     %%% DilatedPrelimSecObjectBinaryImage). This is necessary because the
     %%% nearest neighbor function assigns *every* pixel to a nucleus, not just
@@ -264,13 +261,18 @@ if strcmp(IdentChoice,'Distance')
     %%% an option in the future.
     RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelimSecObjectImage));
     RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
+    %RelabeledDilatedPrelimSecObjectImage(ThresholdedOrigImage == 0) = 0;
     drawnow
     
     EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
     
     %%% Removes objects that are not in the edited EditedPrimaryLabelMatrixImage.
-    LookUpTable = sortrows(unique([RelabeledPrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
-    LookUpColumn = LookUpTable(:,2);
+    LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
+    b=zeros(max(LookUpTable(:,1)+1),2)
+    b(LookUpTable(:,1)+1,1)=LookUpTable(:,1)
+    b(LookUpTable(:,1)+1,2)=LookUpTable(:,2)
+    b(:,1) = 0:length(b)-1
+    LookUpColumn = b(:,2);
     FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
     
 elseif strcmp(IdentChoice,'Propagation')

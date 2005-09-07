@@ -24,7 +24,7 @@ else
     elseif strncmpi(ImageOrMovie,'B',1)
         formats = imformats;
         MediaExtensions = CPimread;
-        MediaExtensions = [MediaExtensions, 'avi', 'stk'];
+        MediaExtensions = [MediaExtensions, {'avi'}, {'stk'}];
     else
         error('You have selected an invalid entry for ImageOrMovie.  It can only be something that starts with an M (Movie) or I (Image) or B (Both).');
     end

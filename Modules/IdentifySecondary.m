@@ -1,9 +1,23 @@
 function handles = IdentifySecondary(handles)
 
-% Help for the Identify Secondary Propagate module:
+% Help for the Identify Secondary module:
 % Category: Object Processing
 %
-% This module identifies secondary objects based on a previous
+% METHODS OF IDENTIFICATION
+%
+% Distance:
+% Based on another module's identification of primary objects, this
+% mode identifies secondary objects when no specific staining is
+% available.  The edges of the primary objects are simply expanded a
+% particular distance to create the secondary objects. For example, if
+% nuclei are labeled but there is no stain to help locate cell edges,
+% the nuclei can simply be expanded in order to estimate the cell's
+% location.  This is a standard module used in commercial software and
+% is known as the 'donut' or 'annulus' approach for identifying the
+% cytoplasmic compartment.
+%
+% Propagation:
+% This mode identifies secondary objects based on a previous
 % module's identification of primary objects.  Each primary object is
 % assumed to be completely within a secondary object (e.g. nuclei
 % within cells stained for actin).  The module is especially good at
@@ -12,13 +26,46 @@ function handles = IdentifySecondary(handles)
 % of the distance to the nearest primary object and intensity
 % gradients (dividing lines can be either dim or bright).
 %
+% Watershed:
+% This mode identifies secondary objects based on a previous
+% module's identification of primary objects.  Each primary object is
+% assumed to be completely within a secondary object (e.g. nuclei
+% within cells stained for actin). The dividing lines between objects
+% are determined by looking for dim lines between objects. It would
+% not be difficult to write a module that looks for bright lines
+% between objects, based on this one.
+%
 % Settings:
 %
-% Threshold: this setting affects the stringency of object outlines
-% that border the background.  It does not affect the dividing lines
-% between clumped objects. A higher number will result in smaller
-% objects (more stringent). A lower number will result in large
-% objects (less stringent).
+% Threshold: The threshold affects the stringency of the lines between
+% the objects and the background. You may enter an absolute number
+% between 0 and 1 for the threshold (use 'Show pixel data' to see the
+% pixel intensities for your images in the appropriate range of 0 to
+% 1), or you may have it calculated for each image individually by
+% typing 0.  There are advantages either way.  An absolute number
+% treats every image identically, but an automatically calculated
+% threshold is more realistic/accurate, though occasionally subject to
+% artifacts.  The threshold which is used for each image is recorded
+% as a measurement in the output file, so if you find unusual
+% measurements from one of your images, you might check whether the
+% automatically calculated threshold was unusually high or low
+% compared to the remaining images.  When an automatic threshold is
+% selected, it may consistently be too stringent or too lenient, so an
+% adjustment factor can be entered as well. The number 1 means no
+% adjustment, 0 to 1 makes the threshold more lenient and greater than
+% 1 (e.g. 1.3) makes the threshold more stringent.
+%
+% Perhaps outdated note about the threshold adjustment factor: A
+% higher number will result in smaller objects (more stringent). A
+% lower number will result in large objects (less stringent), but at a
+% certain point, depending on the particular image, the objects will
+% become huge and the processing will take a really long time.  To
+% determine whether the number is too low, you can just test it (of
+% course), but a shortcut would be to alter the code (m-file) for this
+% module to display the image called InvertedThresholdedOrigImage. The
+% resulting image that pops up during processing should not have lots
+% of speckles - this adds to the processing time. Rather, there should
+% be rather large regions of black where the cells are located.
 %
 % Regularization factor: This module takes two factors into account
 % when deciding where to draw the dividing line between two touching
@@ -46,7 +93,7 @@ function handles = IdentifySecondary(handles)
 % likely to be artifactual, and so they therefore should not "claim"
 % any secondary object pixels.
 %
-% TECHNICAL DESCRIPTION OF THE MODULE:
+% TECHNICAL DESCRIPTION OF THE PROPAGATION MODE:
 % Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
 % limited to MASK.  MASK should be a logical array.  LAMBDA is a
 % regularization parameter, larger being closer to Euclidean distance
@@ -69,6 +116,26 @@ function handles = IdentifySecondary(handles)
 %    Additional image(s) are calculated by this module and can be 
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
+%
+% Information on IdentifySecPropagateSubfunction:
+%
+% This is a subfunction implemented in C and MEX to perform the
+% propagate algorithm (somewhat similar to watershed).  This help
+% documents the arguments and behavior of the propagate algorithm.
+%
+% Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
+% limited to MASK.  MASK should be a logical array.  LAMBDA is a
+% regularization paramter, larger being closer to Euclidean distance
+% in the image plane, and zero being entirely controlled by IMAGE.
+%
+% Propagation of labels is by shortest path to a nonzero label in
+% LABELS_IN.  Distance is the sum of absolute differences in the image
+% in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
+% LAMBDA^2).
+%
+% Note that there is no separation between adjacent areas with
+% different labels (as there would be using, e.g., watershed).  Such
+% boundaries must be added in a postprocess.
 %
 % See also IDENTIFYSECPROPAGATESUBFUNCTION, IDENTIFYSECDISTANCE,
 % IDENTIFYSECWATERSHED.

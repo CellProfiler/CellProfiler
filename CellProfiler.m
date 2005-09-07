@@ -1342,7 +1342,7 @@ if ModuleNamedotm ~= 0,
 
             if strcmp(output((length(output)-4):end),'indep')
                 UserEntry = char(handles.Settings.VariableValues(ModuleNums,lastVariableCheck));
-                if ~strcmp(UserEntry,'n/a') && ~strcmp(UserEntry,'/') && ~isempty(UserEntry) && ~strcmp(UserEntry,'Pipeline Value')
+                if ~strcmp(UserEntry,'n/a') && ~strcmp(UserEntry,'/') && ~isempty(UserEntry)
                     storevariable(ModuleNums,output(13:14),UserEntry,handles);
                 end
             end
@@ -1359,7 +1359,7 @@ if ModuleNamedotm ~= 0,
             for i=1:(ModuleNums-1)
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
-                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a') && ~strcmp(handles.Settings.VariableValues{i,j},'Pipeline Value')
+                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')
                             TestStr = 0;
                             for m=1:length(StrSet)
                                 if strcmp(StrSet(m),handles.Settings.VariableValues(i,j))
@@ -1422,7 +1422,9 @@ if ModuleNamedotm ~= 0,
             else
                 PPos = find(strcmp(handles.Settings.VariableValues{ModuleNums,i},OptList));
                 if isempty(PPos)
-                    set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);
+                    if ~strcmp(handles.Settings.VariableValues{ModuleNums,i},'Pipeline Value')
+                        set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);
+                    end
                 else
                     set(handles.VariableBox{ModuleNums}(i),'Value',PPos);
                 end

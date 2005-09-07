@@ -1,78 +1,96 @@
-{\rtf1\ansi\ansicpg1252\uc1\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1033{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}
-{\f4\fswiss\fcharset0\fprq2{\*\panose 020b0604020202020204}Helvetica;}{\f5\fmodern\fcharset0\fprq1{\*\panose 02070409020205020404}Courier{\*\falt Courier New};}{\f69\froman\fcharset238\fprq2 Times New Roman CE;}
-{\f70\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f72\froman\fcharset161\fprq2 Times New Roman Greek;}{\f73\froman\fcharset162\fprq2 Times New Roman Tur;}{\f74\froman\fcharset177\fprq2 Times New Roman (Hebrew);}
-{\f75\froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f76\froman\fcharset186\fprq2 Times New Roman Baltic;}{\f77\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f109\fswiss\fcharset238\fprq2 Helvetica CE;}
-{\f110\fswiss\fcharset204\fprq2 Helvetica Cyr;}{\f112\fswiss\fcharset161\fprq2 Helvetica Greek;}{\f113\fswiss\fcharset162\fprq2 Helvetica Tur;}{\f114\fswiss\fcharset177\fprq2 Helvetica (Hebrew);}{\f115\fswiss\fcharset178\fprq2 Helvetica (Arabic);}
-{\f116\fswiss\fcharset186\fprq2 Helvetica Baltic;}{\f117\fswiss\fcharset163\fprq2 Helvetica (Vietnamese);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;
-\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 Normal;}{\*\cs10 \additive \ssemihidden Default Paragraph Font;}{\*
-\ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}{\*\cs15 \additive \ul\cf2 \sbasedon10 \styrsid14564127 Hyperlink;}}
-{\*\rsidtbl \rsid6828773\rsid7143785\rsid11350864\rsid14564127\rsid14621707\rsid15024497\rsid15031857\rsid16738112}{\*\generator Microsoft Word 10.0.6612;}{\info{\author michael_lamprecht}{\operator michael_lamprecht}{\creatim\yr2005\mo9\dy7\hr8\min51}
-{\revtim\yr2005\mo9\dy7\hr9\min5}{\version15}{\edmins14}{\nofpages2}{\nofwords397}{\nofchars2263}{\*\company WIBR}{\nofcharsws2655}{\vern16389}}\margl1440\margr1440 
-\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot14621707 \fet0\sectd 
-\linex0\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4
-\pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}
-{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0\pararsid14564127 
-\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f4\ul\insrsid14621707 SVN}{\f4\ul\insrsid6828773  Commands}{\f4\insrsid6828773 
-\par Overall, to reconcile your local copy with the central }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  copy, first update yourself (retrieve other people's changes), then check for differences between
- your version and the central version (optional), then commit (submit your changes to the central version).
-\par 
-\par }{\b\f4\insrsid16738112\charrsid16738112 You can read more about SVN at:
-\par }{\f4\insrsid16738112 http://svnbook.red-bean.com/en/1.0/svn-book.html#svn-ap-a
-\par 
-\par }{\f4\insrsid6828773 In terminal, change to the directory where CellProfiler resides.
-\par }{\f4\ul\insrsid6828773 To update:}{\f4\insrsid6828773  }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  update
-\par 
-\par }{\f4\ul\insrsid6828773 To show what differences exist between your copy and the last central copy you checked out: }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  diff
-\par 
-\par }{\f4\ul\insrsid6828773 To show what differences exist between particular revision numbers}{\f4\insrsid6828773 
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  diff -r REVNUMBER REVNUMBER  (providing only one revision number will compare to your locally modified copy, I think)
-\par 
-\par }{\f4\ul\insrsid6828773 If you get "it is in the way" errors:
-\par }{\f4\insrsid6828773 If you don't have any local modifications that you need to commit, just remove the parent directory altogether and then }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  update -d to restore a fresh version of the folder.
-\par 
-\par }{\f4\ul\insrsid6828773 To obtain revision numbers:
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  log Filename.m
-\par 
-\par }{\f4\ul\insrsid6828773 To commit changes one by one: (}{\f4\insrsid6828773 leave off the specific filename to commit all)
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  commit -m "Description of this change" filename.m
-\par }{\f4\ul\insrsid6828773 
-\par To add a file which is not already in the central copy:}{\f4\insrsid6828773 
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  add filename.m
-\par (this only adds it to your local }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  list, not the central one, so the next step is to }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  commit)
-\par 
-\par }{\f4\ul\insrsid6828773 To lock a file so that only you can commit to it:}{\f4\insrsid6828773 
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  admin -l filename
-\par When you check in a new version, the lock will be unlocked by default,
-\par so you'll have to do it again.
-\par 
-\par }{\f4\ul\insrsid6828773 To remove a file from the repository:
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  update filename.m
-\par move the file from the directory
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  remove filename.m
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  commit filename.m
-\par 
-\par }{\f4\insrsid16738112 
-\par }{\f4\ul\insrsid6828773 To rename a file without losing all the }{\f4\ul\insrsid14621707 SVN}{\f4\ul\insrsid6828773  history:
-\par }{\f4\insrsid6828773 Of course you can }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  add with the new name and }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  remove the old name, but this will lose all the }{\f4\insrsid14621707 SVN}{\f4\insrsid6828773 
- history.  So instead, you need to go to the computer which has the repository: 
-\par cp oldfile.c,v newfile.c,v
-\par now go to your working directory and do a }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  update; newfile.c will appear as a new file. Now you can }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  delete oldfile.c and commit.
-\par 
-\par }{\f4\ul\insrsid6828773 To see a list of all files and their status:
-\par }{\f4\insrsid14621707 svn}{\f4\insrsid6828773  status
-\par }{\f5\insrsid14564127 
-\par }{\f4\ul\insrsid14564127 To set up a computer with the CellProfiler directory cvs'd (for PC):
-\par }{\f4\insrsid14564127 Download and install with all options TortoiseSVN from }{\f4\insrsid14564127\charrsid15031857 http://tortoisesvn.tigris.org/}{\f4\insrsid15024497 
-\par }{\f4\insrsid14564127 Checkout new copy entering: }{\f4\insrsid14564127\charrsid15031857 http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk}{\f4\insrsid14564127 
-\par All commands can now be done by right clicking the folder/file of interest
-\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0\pararsid15031857 {\f4\insrsid14564127 You can save your username/password by checking the box that appears after your first update}{\f4\insrsid6828773 
-\par }{\f4\insrsid6828773 
-\par }{\f4\ul\insrsid6828773\charrsid6828773 To add new users:
-\par }{\f4\insrsid6828773 Login to login.csail.mit.edu and run command:
-\par 
-\par htpasswd /afs/csail/group/vision/cellprofiler/.htpasswd <username>
-\par 
-\par Then enter their password
-\par }}
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf110
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;\f1\fswiss\fcharset77 Helvetica-Bold;\f2\fmodern\fcharset77 Courier;
+}
+{\colortbl;\red255\green255\blue255;}
+{\info
+{\author michael_lamprecht}
+{\*\company WIBR}}\margl1440\margr1440\vieww14060\viewh15340\viewkind1\viewscale100
+\deftab720
+\pard\pardeftab720\ri0\ql\qnatural
+
+\f0\fs24 \cf0 \ul \ulc0 SVN Commands\ulnone \
+Overall, to reconcile your local copy with the central svn copy, first update yourself (retrieve other people's changes), then check for differences between your version and the central version (optional), then commit (submit your changes to the central version).\
+\
+\pard\pardeftab720\ri0\ql\qnatural
+
+\f1\b \cf0 You can read more about SVN at:\
+\pard\pardeftab720\ri0\ql\qnatural
+
+\f0\b0 \cf0 http://svnbook.red-bean.com/en/1.0/svn-book.html#svn-ap-a\
+\
+In terminal, change to the directory where CellProfiler resides.\
+\ul To update:\ulnone  svn update\
+\
+\ul To show what differences exist between your copy and the last central copy you checked out: \ulnone svn diff\
+\
+\ul To show what differences exist between particular revision numbers\ulnone \
+svn diff -r REVNUMBER REVNUMBER  (providing only one revision number will compare to your locally modified copy, I think)\
+\
+\ul If you get "it is in the way" errors:\
+\ulnone If you don't have any local modifications that you need to commit, just remove the parent directory altogether and then svn update -d to restore a fresh version of the folder.\
+\
+\ul To obtain revision numbers:\
+\ulnone svn log Filename.m\
+\
+\ul To commit changes one by one: (\ulnone leave off the specific filename to commit all)\
+svn commit -m "Description of this change" filename.m\
+\ul DRQQQ\
+To add a file which is not already in the central copy:\ulnone \
+svn add filename.m\
+(this only adds it to your local svn list, not the central one, so the next step is to svn commit)\
+\
+\ul To lock a file so that only you can commit to it:\ulnone \
+svn admin -l filename\
+When you check in a new version, the lock will be unlocked by default,\
+so you'll have to do it again.\
+\
+\ul To remove a file from the repository:\
+\ulnone svn update filename.m\
+move the file from the directory\
+svn remove filename.m\
+svn commit filename.m\
+\
+\
+\ul To rename a file without losing all the SVN history:\
+\ulnone Of course you can svn add with the new name and svn remove the old name, but this will lose all the SVN history.  So instead, you need to go to the computer which has the repository: \
+cp oldfile.c,v newfile.c,v\
+now go to your working directory and do a svn update; newfile.c will appear as a new file. Now you can svn delete oldfile.c and commit.\
+\
+\ul To see a list of all files and their status:\
+\ulnone svn status\
+\pard\pardeftab720\ri0\ql\qnatural
+
+\f2 \cf0 \
+\pard\pardeftab720\ri0\ql\qnatural
+
+\f0 \cf0 \ul To set up a computer with the CellProfiler directory cvs'd (for PC):\
+\ulnone Download and install with all options TortoiseSVN from http://tortoisesvn.tigris.org/\
+Checkout new copy entering: http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
+All commands can now be done by right clicking the folder/file of interest\
+You can save your username/password by checking the box that appears after your first update\
+\
+\ul To set up a computer with the CellProfiler directory cvs'd (for Mac):\
+\ulnone Download and  install the Mac os X package at http://metissian.com/projects/macosx/subversion/\
+choose version 1.2.3  up\
+after install finished , open the terminal and cd to /Users/youraccount/ , then type the following to check out the latest copy to your local computer.\
+svn co http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
+\
+This will create a CellProfiler directory. At that point you can edit, commit changes, etc. \
+Be sure to use export $PATH=PATH:/usr/local/bin to set the path before use svn commands.\
+\
+Last step: Set the path in Matlab to include this new folder & its subfolders. \
+open MatLab\
+from File-->Set Path --> Add with Subfolders--> find CellProfiler folder --> save\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 If you get error message says that the pathdef.m can't be saved , you have to change the permission for Matlab folder first. To do that right click on MatLab folder  --> Get Info --> change the owner to you self. Close the Get Info window. Reopen the Get Info for MatLab folder, change the owner to system(root), be sure to allow group and others to read and write.   \
+\pard\pardeftab720\ri0\ql\qnatural
+\cf0 \
+\
+\ul To add new users:\
+\ulnone Login to login.csail.mit.edu and run command:\
+\
+htpasswd /afs/csail/group/vision/cellprofiler/.htpasswd <username>\
+\
+Then enter their password\
+}

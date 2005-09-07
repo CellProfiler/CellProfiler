@@ -542,7 +542,6 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
         handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
         savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
     elseif (varChoice == 2),
-        
         handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
         handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
         handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
@@ -1339,10 +1338,11 @@ if ModuleNamedotm ~= 0,
             catch
                 keyboard;
             end
-            handles.Settings.VariableInfoTypes(ModuleNums, lastVariableCheck) = {output(18:end)};
+            handles.Settings.VariableInfoTypes(ModuleNums,lastVariableCheck) = {output(18:end)};
+
             if strcmp(output((length(output)-4):end),'indep')
                 UserEntry = char(handles.Settings.VariableValues(ModuleNums,lastVariableCheck));
-                if ~strcmp(UserEntry,'n/a') && ~strcmp(UserEntry,'/') && ~isempty(UserEntry)
+                if ~strcmp(UserEntry,'n/a') && ~strcmp(UserEntry,'/') && ~isempty(UserEntry) && ~strcmp(UserEntry,'Pipeline Value')
                     storevariable(ModuleNums,output(13:14),UserEntry,handles);
                 end
             end
@@ -1359,7 +1359,7 @@ if ModuleNamedotm ~= 0,
             for i=1:(ModuleNums-1)
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
-                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')
+                        if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a') && ~strcmp(handles.Settings.VariableValues{i,j},'Pipeline Value')
                             TestStr = 0;
                             for m=1:length(StrSet)
                                 if strcmp(StrSet(m),handles.Settings.VariableValues(i,j))
@@ -1845,7 +1845,6 @@ VariableNumberStr = VariableName(12:13);
 ModuleNumber = whichactive(handles);
 VarNum = str2num(VariableNumberStr);
 InputType = get(hObject,'style');
-InfoType = handles.Settings.VariableInfoTypes(ModuleNumber,VarNum);
 
 if strcmp(InputType, 'edit')
     UserEntry = get(hObject,'string');
@@ -1872,7 +1871,7 @@ else
   if ModuleNumber == 0,     
     errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');
   else
-    storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
+      storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
   end
 end
 

@@ -499,65 +499,78 @@ end
 revisionConfirm = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames),
     SelectedOption = handles.Settings.SelectedOption(ModuleNum);
-    
-    [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)), SelectedOption);
-    if (isfield(Settings,'VariableRevisionNumbers')),
-        SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
-    else
-        SavedVarRevNum = 0;
-    end
-    if(SavedVarRevNum == DefVarRevNum)
-        if(handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum))
-            handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-            handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-            defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-            varChoice = 3;
+
+    [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum Failed] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)), SelectedOption);
+    if Failed == 0
+        if (isfield(Settings,'VariableRevisionNumbers')),
+            SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
         else
-            errorString = 'Variable Revision Number same, but number of variables different for some reason';
+            SavedVarRevNum = 0;
+        end
+        if(SavedVarRevNum == DefVarRevNum)
+            if(handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum))
+                handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+                handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
+                defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+                varChoice = 3;
+            else
+                errorString = 'Variable Revision Number same, but number of variables different for some reason';
+                savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+                for i=1:(length(savedVariableValues)),
+                    if (iscellstr(savedVariableValues(i)) == 0)
+                        savedVariableValues(i) = {''};
+                    end
+                end
+                varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues, defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+                revisionConfirm = 1;
+            end
+        else
+            errorString = 'Variable Revision Numbers are not the same';
             savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
             for i=1:(length(savedVariableValues)),
                 if (iscellstr(savedVariableValues(i)) == 0)
                     savedVariableValues(i) = {''};
                 end
             end
-            varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues, defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+            varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues,  defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
             revisionConfirm = 1;
         end
-    else
-        errorString = 'Variable Revision Numbers are not the same';
-        savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-        for i=1:(length(savedVariableValues)),
-            if (iscellstr(savedVariableValues(i)) == 0)
-                savedVariableValues(i) = {''};
-            end
+        if (varChoice == 1),
+
+            handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
+            handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
+            handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
+            handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+            savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
+        elseif (varChoice == 2),
+            handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
+            handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
+            handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+            savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
+        elseif (varChoice == 0),
+            break;
         end
-        varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues,  defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
-        revisionConfirm = 1;
-    end
-    if (varChoice == 1),
-        
-        handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
-        handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-        handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
-        handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-        savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-    elseif (varChoice == 2),
-        handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
-        handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
-        handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-        savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-    elseif (varChoice == 0),
+        clear defVariableInfoTypes;
+    else
+        set(handles.ModulePipelineListBox,'String','No Modules Loaded');
         break;
     end
-    clear defVariableInfoTypes;
 end
 
-if(varChoice == 0),
-% CLEAR DOESN"T ACTUALLY WORK WHEN USED THIS WAY.
-    %    clear handles.Settings.ModuleNames;
+
+
+if (varChoice == 0) || Failed == 1,
     %%% Update handles structure.
+    handles.Settings.VariableValues = {};
+    handles.Settings.VariableInfoTypes = {};
+    handles.Settings.VariableRevisionNumbers = [];
+    delete(get(handles.variablepanel,'children'));
+    handles.VariableBox = {};
+    handles.VariableDescription = {};
     guidata(hObject,handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
+    handles.Settings.ModuleNames = {};
+    handles.Settings.NumbersOfVariables = [];
 else
     try
         handles.Settings.PixelSize = Settings.PixelSize;
@@ -608,7 +621,7 @@ else
 end
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName, SelectedOption)
+function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum Failed] = LoadSettings_Helper(Pathname, ModuleName, SelectedOption)
 
 VariableValues = {[]};
 VariableInfoTypes = {[]};
@@ -616,6 +629,7 @@ VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
 OptionInCode = 0;
+Failed = 0;
 try
     ModuleNamedotm = [ModuleName '.m'];
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
@@ -677,7 +691,7 @@ try
     fclose(fid);
 catch
     uiwait(errordlg(['The ' ModuleName ' module could not be found in the directory specified. You will be able to see the module''s saved settings, but it is suggested that CellProfiler be shut down since the stored settings are now corrupt.'],'Error'));
-    %waitfor(h);
+    Failed = 1;
 end
 
 %%% SUBFUNCTION %%%

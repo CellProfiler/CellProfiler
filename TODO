@@ -3,7 +3,7 @@ AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-- (Requested by Anne 09-01-05) - If loading an old pipeline fails dramatically (e.g. because a module no longer exists), right now things just kind of stall, and then there are loose variables left in the handles.Settings and the pipeline list box shows 'loading...'. If possible,  if something goes wrong during pipeline loading can we make sure handles.Settings is cleared out and the 'loading...' is cleared away?
+===- (Requested by Anne 09-01-05) - If loading an old pipeline fails dramatically (e.g. because a module no longer exists), right now things just kind of stall, and then there are loose variables left in the handles.Settings and the pipeline list box shows 'loading...'. If possible,  if something goes wrong during pipeline loading can we make sure handles.Settings is cleared out and the 'loading...' is cleared away?
 
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
@@ -17,11 +17,11 @@ not this:
 errordlg('error message goes here'), return
 We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
 
-- (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
+===- (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
 
 **- (Requested by Anne) - Combine all IdentifySec options into one module.
 
-- (Requested by Anne) - Combine RGBsplit and RGBtoGray into a single module - that is, with the two methods (split or combine) being options within a single module. Call the resulting module RGBtoGray and move RGBSplit to Outdated.
+===- (Requested by Anne) - Combine RGBsplit and RGBtoGray into a single module - that is, with the two methods (split or combine) being options within a single module. Call the resulting module RGBtoGray and move RGBSplit to Outdated.
 
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?
 

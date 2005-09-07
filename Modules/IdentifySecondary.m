@@ -268,10 +268,10 @@ if strcmp(IdentChoice,'Distance')
     
     %%% Removes objects that are not in the edited EditedPrimaryLabelMatrixImage.
     LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
-    b=zeros(max(LookUpTable(:,1)+1),2)
-    b(LookUpTable(:,1)+1,1)=LookUpTable(:,1)
-    b(LookUpTable(:,1)+1,2)=LookUpTable(:,2)
-    b(:,1) = 0:length(b)-1
+    b=zeros(max(LookUpTable(:,1)+1),2);
+    b(LookUpTable(:,1)+1,1)=LookUpTable(:,1);
+    b(LookUpTable(:,1)+1,2)=LookUpTable(:,2);
+    b(:,1) = 0:length(b)-1;
     LookUpColumn = b(:,2);
     FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
     

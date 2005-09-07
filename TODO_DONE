@@ -2,7 +2,9 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
--(Mike 9/07) (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:   CPretrieveMediaFileNames.m
+===-(Mike 9/7) (Requested by Anne 09-01-05) - If loading an old pipeline fails dramatically (e.g. because a module no longer exists), right now things just kind of stall, and then there are loose variables left in the handles.Settings and the pipeline list box shows 'loading...'. If possible,  if something goes wrong during pipeline loading can we make sure handles.Settings is cleared out and the 'loading...' is cleared away?
+
+-(Mike 9/7) (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:   CPretrieveMediaFileNames.m
 line 27 change  MediaExtensions = [MediaExtensions, 'avi', 'stk']; 
 to
 MediaExtensions = [MediaExtensions {'avi'}, {'stk'}]; to preserve the cell class

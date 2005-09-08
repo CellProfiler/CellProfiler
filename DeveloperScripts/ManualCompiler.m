@@ -2,9 +2,18 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 
 % This Matlab program allows a CellProfiler help manual to be compiled
 % from the help contained within individual modules and tools.
-
+%
 %%% The Manual Compiler must be run from the main CellProfiler
-%%% directory.
+%%% directory. Just type: ManualCompiler (with no arguments) at
+%%% Matlab's command line to run the manual compiler.
+%%%
+%%% When it is finished, open the program TexShop.
+%%% File > Open CellProfilerManual.tex
+%%% Then click Typeset It will process for a long time, and will pause
+%%% often. When it is finished, run it again by clicking Typeset so
+%%% that the page numbers are placed appropriately.  Possibly run it
+%%% again, if it says something like  "references may have changed"
+%%% near the last page of output.
 
 fid = fopen('CellProfilerManual.tex', 'w');
 fwrite(fid,tex_start());

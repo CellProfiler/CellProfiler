@@ -262,7 +262,7 @@ CurrentModuleNum = str2double(CurrentModule);
 
 %%% Sets up loop for test mode.
 if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,20}),'Yes')
-    LocalMaximaTypeList = {'Intensity' 'Shape' 'None'};
+    LocalMaximaTypeList = {'Intensity' 'Shape'};
     WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
 else
     LocalMaximaTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,11})};
@@ -271,7 +271,7 @@ end
 
 for LocalMaximaTypeNumber = [1:length(LocalMaximaTypeList)]
     for WatershedTransformImageTypeNumber = [1:length(WatershedTransformImageTypeList)]
-
+        
 %%% NOTE: We cannot indent the variables or they will not be read
 %%% properly.
         
@@ -916,46 +916,48 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         end
 
         if strcmp(TestMode,'Yes')
-            drawnow;
-            SegmentedFigures = findobj('Tag','SegmentedFigure');
-            if isempty(SegmentedFigures)
-                SegFig=CPfigure('Tag','SegmentedFigure');
-                uicontrol('style','text','units','normalized','string','Test images for Segmented Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
-            else
-                SegFig = CPfigure(SegmentedFigures(1));
+            if ~(LocalMaximaTypeNumber == 2 && WatershedTransformImageTypeNumber == 3)
+                drawnow;
+                SegmentedFigures = findobj('Tag','SegmentedFigure');
+                if isempty(SegmentedFigures)
+                    SegFig=CPfigure('Tag','SegmentedFigure');
+                    uicontrol('style','text','units','normalized','string','SEGMENTED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                else
+                    SegFig = CPfigure(SegmentedFigures(1));
+                end
+
+                subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                cmap = jet(max(64,max(Objects(:))));
+                im = label2rgb(Objects, cmap, 'k', 'shuffle');
+                ImageHandle = imagesc(im);
+
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Current.FontSize);
+
+                OutlinedFigures = findobj('Tag','OutlinedFigure');
+                if isempty(OutlinedFigures)
+                    OutFig=CPfigure('Tag','OutlinedFigure');
+                    uicontrol('style','text','units','normalized','string','OUTLINED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                else
+                    OutFig = CPfigure(OutlinedFigures(1));
+                end
+
+                tmp = OrigImage/max(OrigImage(:));
+                OutlinedObjectsR = tmp;
+                OutlinedObjectsG = tmp;
+                OutlinedObjectsB = tmp;
+                PerimObjects = bwperim(Objects > 0);
+                PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+                PerimBorder = bwperim(BorderObjects > 0);
+                OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+                OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+                OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+
+                subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+                ImageHandle = imagesc(OutlinedObjects);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Current.FontSize);
+
             end
-
-            subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-            cmap = jet(max(64,max(Objects(:))));
-            im = label2rgb(Objects, cmap, 'k', 'shuffle');
-            ImageHandle = imagesc(im);
-
-            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',handles.Current.FontSize);
-
-            OutlinedFigures = findobj('Tag','OutlinedFigure');
-            if isempty(OutlinedFigures)
-                OutFig=CPfigure('Tag','OutlinedFigure');
-                uicontrol('style','text','units','normalized','string','Test images for Outlined Objects','position',[.3 .025 .4 .1],'BackgroundColor',[.7 .7 .9])
-
-            else
-                OutFig = CPfigure(OutlinedFigures(1));
-            end
-
-            tmp = OrigImage/max(OrigImage(:));
-            OutlinedObjectsR = tmp;
-            OutlinedObjectsG = tmp;
-            OutlinedObjectsB = tmp;
-            PerimObjects = bwperim(Objects > 0);
-            PerimDiameter = bwperim(DiameterExcludedObjects > 0);
-            PerimBorder = bwperim(BorderObjects > 0);
-            OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-            OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
-            OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
-
-            subplot(4,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-            OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-            ImageHandle = imagesc(OutlinedObjects);
-            title(sprintf('%s and %s',WatershedTransformImageTypeList{WatershedTransformImageTypeNumber},LocalMaximaTypeList{LocalMaximaTypeNumber}),'fontsize',handles.Current.FontSize);
         end
     end
 end

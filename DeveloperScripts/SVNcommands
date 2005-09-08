@@ -1,4 +1,4 @@
-{\rtf1\mac\ansicpg10000\cocoartf102
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf110
 {\fonttbl\f0\froman\fcharset77 Times-Roman;\f1\froman\fcharset77 Times-Bold;}
 {\colortbl;\red255\green255\blue255;}
 \margl1440\margr1440\vieww13320\viewh15140\viewkind1\viewscale100
@@ -22,8 +22,7 @@ Then enter their password\
 
 \f0\b0 \cf0 http://svnbook.red-bean.com/en/1.0/svn-book.html\
 \
-\pard\pardeftab720\ql\qnatural
-\cf0 \ul \ulc0 To set up a computer with the CellProfiler directory cvs'd (for PC):\
+\ul To set up a computer with the CellProfiler directory cvs'd (for PC):\
 \ulnone Download and install with all options TortoiseSVN from http://tortoisesvn.tigris.org/\
 Checkout new copy entering: http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
 This will create a trunk/CellProfiler directory on your computer. All commands can now be done by right clicking the folder/file of interest (ignore all the SVN command line instructions below).\
@@ -34,7 +33,7 @@ You can save your username/password by checking the box that appears after your 
 \ul To set up a computer with the CellProfiler directory cvs'd (for Mac):\
 \ulnone Download and install the latest Mac os X package version at http://metissian.com/projects/macosx/subversion/     (as of Sept 2005, this is version 1.2.3  up)\
 After installation finishes, open the terminal and cd to /Users/youraccount/ (and whatever subfolder you want CellProfiler to be installed in), and type:\
-export $PATH=PATH:/usr/local/bin\
+export PATH=$PATH:/usr/local/bin\
 The first time you are settings this up, type the following to check out CellProfiler to your local computer:\
 svn co http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
 This will create a trunk/CellProfiler directory on your computer. At that point you can edit, commit changes, etc. (see commands below).\
@@ -86,6 +85,5 @@ svn commit filename.m\
 \ulnone Of course you can svn add with the new name and svn remove the old name, but this will lose all the SVN history.  So instead, you need to go to the computer which has the repository: \
 cp oldfile.c,v newfile.c,v\
 now go to your working directory and do a svn update; newfile.c will appear as a new file. Now you can svn delete oldfile.c and commit.\
-\
 \ul To see a list of all files and their status:\
 \ulnone svn status}

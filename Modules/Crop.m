@@ -279,6 +279,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         else
             error('The value of CropMethod is not recognized');
         end
+        handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
             
@@ -329,13 +331,12 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         else
             error('The value of CropMethod is not recognized');
         end
+        handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
     else
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',CroppedImageName]);
-        return;
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape]);
     end
     %%% See subfunction below.
-    handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
 else
     [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
 end

@@ -69,13 +69,17 @@ UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5
 
 %textVAR06 = Enter number of bins (Note: to measure the percent of objects that are above a threshold, type P:XXX in this box, where XXX is the threshold).
 %defaultVAR06 = 3
+NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,6})
+
 try
-    NbrOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
-catch if strncmpi(NbrOfBins,'P',1)
+    if strncmpi(NbrOfBins,'P',1)
         MidPointToUse = str2double(NbrOfBins(3:end));
         NbrOfBins = 0;
-    else error('Image processing was canceled because you must enter a number, or the letter P for the number of bins in the Classify Objects module.')
+    else
+        NbrOfBins = str2double(NbrOfBins);
     end
+catch
+    error('Image processing was canceled because you must enter a number, or the letter P for the number of bins in the Classify Objects module.')
 end
 
 %%%VariableRevisionNumber = 2

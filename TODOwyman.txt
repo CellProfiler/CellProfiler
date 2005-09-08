@@ -2,15 +2,20 @@ TODOwyman
 
 
 //ADDED 09/08/2005
-- (Requested by Anne 9-06-05)
-- Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
-- drawnow after each header
-- take out extra lines
 
-- (Requested by Anne 8-24-05)
-- All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use:
-error(['Image processing was canceled in the ', ModuleName, ' module because *error msg*'])
-not:
-errordlg('error message goes here'), return
+---(Requested by Anne 9-06-05)
+
+- Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
+- Move drawnow after each header
+- Take out extra lines
+
+Progress: @ ApplyThreshold.m
+
+
+
+---(Requested by Anne 8-24-05)
+
+- All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use: error(['Image processing was canceled in the ', ModuleName, ' module because *error msg*'])
+not: errordlg('error message goes here'), return
 We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
 

@@ -69,7 +69,7 @@ UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5
 
 %textVAR06 = Enter number of bins (Note: to measure the percent of objects that are above a threshold, type P:XXX in this box, where XXX is the threshold).
 %defaultVAR06 = 3
-NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,6})
+NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 try
     if strncmpi(NbrOfBins,'P',1)
@@ -77,6 +77,9 @@ try
         NbrOfBins = 0;
     else
         NbrOfBins = str2double(NbrOfBins);
+        if isempty(NbrOfBins) | NbrOfBins < 1
+            errordlg('Image processing has been canceled because an error was found in the number of bins specification in the ClassifyObjects module.');
+        end
     end
 catch
     error('Image processing was canceled because you must enter a number, or the letter P for the number of bins in the Classify Objects module.')
@@ -107,11 +110,6 @@ if isempty(LowerBinMin) | isempty(UpperBinMax) | LowerBinMin > UpperBinMax
     errordlg('Image processing has been canceled because an error in the specification of the lower and upper limits was found in the ClassifyObjects module.');
 end
 
-if isempty(NbrOfBins) | NbrOfBins < 1
-    errordlg('Image processing has been canceled because an error was found in the number of bins specification in the ClassifyObjects module.');
-end
-
-
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
@@ -121,10 +119,11 @@ drawnow
 Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
 
 if NbrOfBins == 0
-    edges = [LowerBinMin,MidPointToUse,UpperBinMax]
+    edges = [LowerBinMin,MidPointToUse,UpperBinMax];
+    NbrOfBins = 2;
 else
     % Quantize measurements
-    edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1)
+    edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1);
 end
 edges(1) = edges(1) - sqrt(eps);                               % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));

@@ -32,11 +32,17 @@ You can save your username/password by checking the box that appears after your 
 \
 \ul To set up a computer with the CellProfiler directory cvs'd (for Mac):\
 \ulnone Download and install the latest Mac os X package version at http://metissian.com/projects/macosx/subversion/     (as of Sept 2005, this is version 1.2.3  up)\
-After installation finishes, open the terminal and cd to /Users/youraccount/ (and whatever subfolder you want CellProfiler to be installed in), and type:\
-export PATH=$PATH:/usr/local/bin\
-The first time you are settings this up, type the following to check out CellProfiler to your local computer:\
+After installation finishes, open the terminal and cd to /Users/youraccount/ (and whatever subfolder you want CellProfiler to be installed in).\
+\pard\pardeftab720\ql\qnatural
+\cf0 You also need set up path before using the svn client\
+in terminal type: export PATH=$PATH:/usr/local/bin\
+or use GUI  to find the file profiler( under /etc/profiler), open the file with text editor and  add the  /usr/local/bin at the end of the PATH, save it.\
+\
+\pard\pardeftab720\ql\qnatural
+\cf0 The first time you are settings this up, type the following to check out CellProfiler to your local computer:\
 svn co http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
 This will create a trunk/CellProfiler directory on your computer. At that point you can edit, commit changes, etc. (see commands below).\
+\
 In Matlab, be sure to set the path to include this new folder & its subfolders as follows:\
 File-->Set Path --> Add with Subfolders--> choose CellProfiler folder --> save\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ql\qnatural

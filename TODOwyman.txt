@@ -1,1 +1,3 @@
-TODOwyman
+TODOwyman
+- (Requested by Anne 9-06-05) - Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
+

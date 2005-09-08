@@ -33,7 +33,7 @@ too long names can be fixed just before importing the data.
 
 Given on 9/7/2005
 
---set up SVN on cluster and as CP user on this computer
+--set up SVN on cluster and as CP user on this computer--cluster waiting
 --week of 9/12 ,  check wth Ray to work on writerSQL module
 --week of 9/12, meet with Tim ierson, IT dept. to discuss /set up the mySQL database
 -- practice with large batches (FLY200) + use that
@@ -42,5 +42,5 @@ Given on 9/7/2005
 
 --modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by mine or leave it out.
 
-update SVNCommands
-clean up MatLab path to not search .svn folders.
+update SVNCommands-done
+clean up MatLab path to not search .svn folders. -done

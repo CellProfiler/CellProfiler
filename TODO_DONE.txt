@@ -2,6 +2,9 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+===-(Mike 9/8) (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
+
+===-(Mike 9/8) (Requested by Anne) - Combine RGBsplit and RGBtoGray into a single module - that is, with the two methods (split or combine) being options within a single module. Call the resulting module RGBtoGray and move RGBSplit to Outdated.
 
 -(Mike 9/8) (Requested by Anne 09-07-05) - For the IdentifySecondary module, I think that if you choose Distance, no images are needed as an input, so the variable description should change to reflect that an image selected there only affects the display and not the object identification itself. 
 

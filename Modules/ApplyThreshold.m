@@ -55,23 +55,29 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 ThresholdedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Pixels below this value (Range = 0-1) will be set to zero
-%defaultVAR03 = 0
-LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = Do you want to shift the image to lower boundary?
+%choiceVAR03 = No
+%choiceVAR03 = Yes
+%inputtypeVAR03 = popupmenu
+Shift = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Pixels above this value (Range = 0-1) will be set to zero
-%defaultVAR04 = 1
-HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR04 = Pixels below this value (Range = 0-1) will be set to zero
+%defaultVAR04 = 0
+LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = Bright pixel areas should be expanded by this many pixels in every direction
-%defaultVAR05 = 0
-DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = Pixels above this value (Range = 0-1) will be set to zero
+%defaultVAR05 = 1
+HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Binary option: Enter the threshold to use to make the incoming image binary (black and white) where pixels equal to or below this value will be zero and above this value will be 1. If instead you want to use the settings above to preserve grayscale information, enter 0 here.
+%textVAR06 = Bright pixel areas should be expanded by this many pixels in every direction
 %defaultVAR06 = 0
-BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%%%VariableRevisionNumber = 2
+%textVAR07 = Binary option: Enter the threshold to use to make the incoming image binary (black and white) where pixels equal to or below this value will be zero and above this value will be 1. If instead you want to use the settings above to preserve grayscale information, enter 0 here.
+%defaultVAR07 = 0
+BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -113,7 +119,12 @@ if BinaryChoice == 0
     DilatedBinaryBrightObjectsImage = imdilate(BinaryBrightObjectsImage,StructuringElement);
     ThresholdedImage = OrigImage;
     ThresholdedImage(DilatedBinaryBrightObjectsImage == 1) = 0;
-    ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
+    if strcmp(Shift,'No')
+        ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
+    elseif strcmp(Shift,'Yes')
+        ThresholdedImage = ThresholdedImage - LowThreshold;
+        ThresholdedImage(ThresholdedImage < 0) = 0;
+    end
 else
     ThresholdedImage = im2bw(OrigImage,BinaryChoice);
 end

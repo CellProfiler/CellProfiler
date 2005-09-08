@@ -1,96 +1,1 @@
-{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf110
-{\fonttbl\f0\fswiss\fcharset77 Helvetica;\f1\fswiss\fcharset77 Helvetica-Bold;\f2\fmodern\fcharset77 Courier;
-}
-{\colortbl;\red255\green255\blue255;}
-{\info
-{\author michael_lamprecht}
-{\*\company WIBR}}\margl1440\margr1440\vieww14060\viewh15340\viewkind1\viewscale100
-\deftab720
-\pard\pardeftab720\ri0\ql\qnatural
-
-\f0\fs24 \cf0 \ul \ulc0 SVN Commands\ulnone \
-Overall, to reconcile your local copy with the central svn copy, first update yourself (retrieve other people's changes), then check for differences between your version and the central version (optional), then commit (submit your changes to the central version).\
-\
-\pard\pardeftab720\ri0\ql\qnatural
-
-\f1\b \cf0 You can read more about SVN at:\
-\pard\pardeftab720\ri0\ql\qnatural
-
-\f0\b0 \cf0 http://svnbook.red-bean.com/en/1.0/svn-book.html#svn-ap-a\
-\
-In terminal, change to the directory where CellProfiler resides.\
-\ul To update:\ulnone  svn update\
-\
-\ul To show what differences exist between your copy and the last central copy you checked out: \ulnone svn diff\
-\
-\ul To show what differences exist between particular revision numbers\ulnone \
-svn diff -r REVNUMBER REVNUMBER  (providing only one revision number will compare to your locally modified copy, I think)\
-\
-\ul If you get "it is in the way" errors:\
-\ulnone If you don't have any local modifications that you need to commit, just remove the parent directory altogether and then svn update -d to restore a fresh version of the folder.\
-\
-\ul To obtain revision numbers:\
-\ulnone svn log Filename.m\
-\
-\ul To commit changes one by one: (\ulnone leave off the specific filename to commit all)\
-svn commit -m "Description of this change" filename.m\
-\ul DRQQQ\
-To add a file which is not already in the central copy:\ulnone \
-svn add filename.m\
-(this only adds it to your local svn list, not the central one, so the next step is to svn commit)\
-\
-\ul To lock a file so that only you can commit to it:\ulnone \
-svn admin -l filename\
-When you check in a new version, the lock will be unlocked by default,\
-so you'll have to do it again.\
-\
-\ul To remove a file from the repository:\
-\ulnone svn update filename.m\
-move the file from the directory\
-svn remove filename.m\
-svn commit filename.m\
-\
-\
-\ul To rename a file without losing all the SVN history:\
-\ulnone Of course you can svn add with the new name and svn remove the old name, but this will lose all the SVN history.  So instead, you need to go to the computer which has the repository: \
-cp oldfile.c,v newfile.c,v\
-now go to your working directory and do a svn update; newfile.c will appear as a new file. Now you can svn delete oldfile.c and commit.\
-\
-\ul To see a list of all files and their status:\
-\ulnone svn status\
-\pard\pardeftab720\ri0\ql\qnatural
-
-\f2 \cf0 \
-\pard\pardeftab720\ri0\ql\qnatural
-
-\f0 \cf0 \ul To set up a computer with the CellProfiler directory cvs'd (for PC):\
-\ulnone Download and install with all options TortoiseSVN from http://tortoisesvn.tigris.org/\
-Checkout new copy entering: http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
-All commands can now be done by right clicking the folder/file of interest\
-You can save your username/password by checking the box that appears after your first update\
-\
-\ul To set up a computer with the CellProfiler directory cvs'd (for Mac):\
-\ulnone Download and  install the Mac os X package at http://metissian.com/projects/macosx/subversion/\
-choose version 1.2.3  up\
-after install finished , open the terminal and cd to /Users/youraccount/ , then type the following to check out the latest copy to your local computer.\
-svn co http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\
-\
-This will create a CellProfiler directory. At that point you can edit, commit changes, etc. \
-Be sure to use export $PATH=PATH:/usr/local/bin to set the path before use svn commands.\
-\
-Last step: Set the path in Matlab to include this new folder & its subfolders. \
-open MatLab\
-from File-->Set Path --> Add with Subfolders--> find CellProfiler folder --> save\
-\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-\cf0 If you get error message says that the pathdef.m can't be saved , you have to change the permission for Matlab folder first. To do that right click on MatLab folder  --> Get Info --> change the owner to you self. Close the Get Info window. Reopen the Get Info for MatLab folder, change the owner to system(root), be sure to allow group and others to read and write.   \
-\pard\pardeftab720\ri0\ql\qnatural
-\cf0 \
-\
-\ul To add new users:\
-\ulnone Login to login.csail.mit.edu and run command:\
-\
-htpasswd /afs/csail/group/vision/cellprofiler/.htpasswd <username>\
-\
-Then enter their password\
-}
+{\rtf1\mac\ansicpg10000\uc1 \deff0\deflang1033\deflangfe1033{\upr{\fonttbl{\f0\fnil\fcharset256\fprq2{\*\panose 00020206030504050203}Times New Roman;}{\f4\fnil\fcharset256\fprq2{\*\panose 00020005000000000000}Times;}{\f5\fnil\fcharset256\fprq2{\*\panose 00020005000000000000}Helvetica;}{\f6\fnil\fcharset256\fprq2{\*\panose 00020005000000000000}Courier;}{\f19\fswiss\fcharset77\fprq0{\*\panose 00000000000000000000}Helvetica-Bold{\*\falt Times};}}{\*\ud{\fonttbl{\f0\fnil\fcharset256\fprq2{\*\panose 00020206030504050203}Times New Roman;}{\f4\fnil\fcharset256\fprq2{\*\panose 00020005000000000000}Times;}{\f5\fnil\fcharset256\fprq2{\*\panose 00020005000000000000}Helvetica;}{\f6\fnil\fcharset256\fprq2{\*\panose 00020005000000000000}Courier;}{\f19\fswiss\fcharset77\fprq0{\*\panose 00000000000000000000}Helvetica-Bold{\*\falt Times};}}}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f4\lang1033\cgrid \snext0 Normal;}{\*\cs10 \additive Default Paragraph Font;}}{\info{\author michael_lamprecht}{\operator Anne Carpenter}{\creatim\yr2005\mo9\dy8\hr8\min8}{\revtim\yr2005\mo9\dy8\hr8\min10}{\version2}{\edmins1}{\nofpages3}{\nofwords550}{\nofchars3138}{\*\company WIBR}{\nofcharsws3853}{\vern16521}}\margl1440\margr1440 \ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dgmargin\dghspace120\dgvspace120\dghorigin1440\dgvorigin1440\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl \fet0\sectd \linex0\sectdefaultcl {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang{\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}\pard\plain \nowidctlpar\faauto\rin0\lin0\itap0 \f4\lang1033\cgrid {\ul SVN Commands}{\par Overall, to reconcile your local copy with the central svn copy, first update yourself (retrieve other people's changes), then check for differences between your version and the central version (optional), then commit (submit your changes to the central version).\par \par }{\b You can read more about SVN at:\par }{http://svnbook.red-bean.com/en/1.0/svn-book.html\par \par In terminal, change to the directory where CellProfiler resides.\par }{\ul To update:}{ svn update\par \par }{\ul To show what differences exist between your copy and the last central copy you checked out: }{svn diff\par \par }{\ul To show what differences exist between particular revision numbers}{\par svn diff -r REVNUMBER REVNUMBER  (providing only one revision number will compare to your locally modified copy, I think)\par \par }{\ul If you get "it is in the way" errors:\par }{If you don't have any local modifications that you need to commit, just remove the parent directory altogether and then svn update -d to restore a fresh version of the folder.\par \par }{\ul To obtain revision numbers:\par }{svn log Filename.m\par \par }{\ul To commit changes one by one: (}{leave off the specific filename to commit all)\par svn commit -m "Description of this change" filename.m\par }{\ul DRQQQ\par To add a file which is not already in the central copy:}{\par svn add filename.m\par (this only adds it to your local svn list, not the central one, so the next step is to svn commit)\par \par }{\ul To lock a file so that only you can commit to it:}{\par svn admin -l filename\par When you check in a new version, the lock will be unlocked by default,\par so you'll have to do it again.\par \par }{\ul To remove a file from the repository:\par }{svn update filename.m\par move the file from the directory\par svn remove filename.m\par svn commit filename.m\par \par \par }{\ul To rename a file without losing all the SVN history:\par }{Of course you can svn add with the new name and svn remove the old name, but this will lose all the SVN history.  So instead, you need to go to the computer which has the repository: \par cp oldfile.c,v newfile.c,v\par now go to your working directory and do a svn update; newfile.c will appear as a new file. Now you can svn delete oldfile.c and commit.\par \par }{\ul To see a list of all files and their status:\par }{svn status\par }{\par }{\ul To set up a computer with the CellProfiler directory cvs'd (for PC):\par }{Download and install with all options TortoiseSVN from http://tortoisesvn.tigris.org/\par Checkout new copy entering: http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\par All commands can now be done by right clicking the folder/file of interest\par You can save your username/password by checking the box that appears after your first update\par \par }{\ul To set up a computer with the CellProfiler directory cvs'd (for Mac):\par }{Download and  install the Mac os X package at http://metissian.com/projects/macosx/subversion/\par choose version 1.2.3  up\par after install finished , open the terminal and cd to /Users/youraccount/ , then type the following to check out the latest copy to your local computer.\par svn co http://svn.csail.mit.edu/cellprofiler/CellProfiler/trunk\par \par This will create a CellProfiler directory. At that point you can edit, commit changes, etc. \par Be sure to use export $PATH=PATH:/usr/local/bin to set the path before use svn commands.\par \par Last step: Set the path in Matlab to include this new folder & its subfolders. \par open MatLab\par from File-->Set Path --> Add with Subfolders--> find CellProfiler folder --> save\par \par }\pard \nowidctlpar\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\faauto\rin0\lin0\itap0 {If you get error message says that the pathdef.m can't be saved , you have to change the permission for Matlab folder first. To do that right click on MatLab folder  --> Get Info --> change the owner to you self. Close the Get Info window. Reopen the Get Info for MatLab folder, change the owner to system(root), be sure to allow group and others to read and write.   \par }\pard \nowidctlpar\faauto\rin0\lin0\itap0 {\par \par }{\ul To add new users:\par }\pard \ri-720\nowidctlpar\faauto\rin-720\lin0\itap0 {Anne needs to login to login.csail.mit.edu and run command:\par }\pard \nowidctlpar\faauto\rin0\lin0\itap0 {\par htpasswd /afs/csail/group/vision/cellprofiler/.htpasswd <username>\par \par Then enter their password\par }}

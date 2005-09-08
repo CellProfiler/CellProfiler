@@ -42,4 +42,4 @@ Look at Matlab central to see if any of these are useful/faster than
 what we have: auto image registration using mutual information (x2),
 Graph analysis toolbox, multivariate analysis multispectral 
 
-test svn access
+still test svn access

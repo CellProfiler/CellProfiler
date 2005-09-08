@@ -355,7 +355,7 @@ OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{Curre
 
 WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
-%textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects)
+%textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.
 %choiceVAR13 = Automatic
 SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
@@ -556,18 +556,21 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         %%% Apply a slight smoothing before thresholding to remove
         %%% 1-pixel objects and to smooth the edges of the objects.
         %%% Note that this smoothing is hard-coded, and not controlled
-        %%% by the user.
-        sigma = 1;
-        FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
-        [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-        f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-        BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+        %%% by the user, but it is omitted if the user selected 0 for
+        %%% the size of the smoothing filter.
+        if SizeOfSmoothingFilter == 0
+            %%% No blurring is done.
+            BlurredImage = OrigImage;
+        else        sigma = 1;
+            FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
+            [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+            f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+            BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+        end
         Objects = BlurredImage > Threshold;                                   % Threshold image
         Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
         Objects = imfill(double(Objects),'holes');                            % Fill holes
         drawnow
-
-
 
         %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
         %%% to separate neighboring objects.
@@ -579,15 +582,19 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             else
                 sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
             end
-            FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
-            [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-            f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-            %%% The original image is blurred. Prior to this blurring, the
-            %%% image is padded with values at the edges so that the values
-            %%% around the edge of the image are not artificially low.  After
-            %%% blurring, these extra padded rows and columns are removed.
-            BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
-            BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
+            if SizeOfSmoothingFilter == 0
+                %%% No blurring is done.
+            else
+                FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
+                [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+                f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+                %%% The original image is blurred. Prior to this blurring, the
+                %%% image is padded with values at the edges so that the values
+                %%% around the edge of the image are not artificially low.  After
+                %%% blurring, these extra padded rows and columns are removed.
+                BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
+                BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
+            end
             %%% Get local maxima, where the definition of local depends on the
             %%% user-provided object size. This will (usually) be done in a
             %%% lower-resolution image for speed. The ordfilt2() function is

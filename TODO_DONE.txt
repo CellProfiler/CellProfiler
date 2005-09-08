@@ -1,0 +1,465 @@
+TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
+
+TODO_DONE
+
+===-(Mike 9/7) (Requested by Anne 09-01-05) - If loading an old pipeline fails dramatically (e.g. because a module no longer exists), right now things just kind of stall, and then there are loose variables left in the handles.Settings and the pipeline list box shows 'loading...'. If possible,  if something goes wrong during pipeline loading can we make sure handles.Settings is cleared out and the 'loading...' is cleared away?
+
+-(Mike 9/7) (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:   CPretrieveMediaFileNames.m
+line 27 change  MediaExtensions = [MediaExtensions, 'avi', 'stk']; 
+to
+MediaExtensions = [MediaExtensions {'avi'}, {'stk'}]; to preserve the cell class
+This gave a bug on my Mac when I started CP but didn't cause any problem on a widows machine, strange!
+
+-(Mike 9/6) (Requested by Anne) - Move the help contents of IdentifySecPropagateSubfunction to the help for 
+ IdentifySecPropagate and then remove IdentifySecPropagateSubfunction.m from cvs (i.e. delete it), because it contains no code but appears as a module to load in the pipeline when you click the AddModule button.
+
+-(Mike 9/6) (Requested by Anne 09-01-05) - When loading from a saved pipeline and a module doesn't exist anymore, a warndlg pops up but is then covered up by the variable revision assisting window. The text from the warndlg box should be displayed in the variable assist window (which normally says something about revision numbers not matching), and just say "Module XXX can't be loaded, but you can at least see the saved settings below. The pipeline will not load properly and probably all of CellProfiler's settings are corrupt so you should shut it down before attempting to load or build a new pipeline".
+
+-(Mike 9/6) (Requested by Anne 09-01-05) - When we load from an old saved pipeline (e.g. the SecPropagate module) and the Variable Revision number is now newer, we go through the helper window that assists us in choosing saved or default variables. It's kind of strange though because there are blank spaces for default variables that make use of popup menus. These should display *something*, like "Image must be chosen from pipeline" if it's an imagegroup popup menu, for example.
+
+-(Mike 9/2) When loading a module whose variable revision number has changed, many of the variables come up as blank in the window where you choose between Saved and Default.
+
+-(Mike 9/2) (Requested by Anne) - SaveImages is not actually checking to prevent overwriting existing images, even when you have the variable set to doublecheck.
+
+(Joy 9/1) - (Requested by Anne) - When Saving a pipeline, after you confirm the filename change (adding PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.  Also, we should check whether PIPE is already part of the name and if so, do not suggest adding PIPE again!
+
+-(Joy 9/1) - (Requested by Anne 8-23-05) - The Histogram DataTool spits out the value "Suffix" at the command line in the first few steps of using the tool.
+
+-(Colin 9/1) - (Requested by Anne 9-01-05) - There is a bit of a bug with the new 'long box' fix that has the edit box plus the browse button. I end up with browse buttons floating in the wrong place. The pipeline in the drop box called temp3PIPE.mat should reproduce the problem - look in the SaveImages module and there should be a browse button displayed on top of the 4th variable.
+
+-(Colin 9/1) - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
+
+
+-(Mike 8/31) (Requested by Anne) - There is a general popupmenu bug: for example, in ImageTiler, if I load this module after loading other modules (like SaveImages) and leave the default "TiledImage" as it is, this 'TiledImage' option does not automatically show up in the SaveImages module as an image I can choose. The workaround is simply to click on the TiledImage text in the  ImageTiler module. This refreshes the popup menu in the saveimages module so that the TiledImage can now be selected. Another popupmenu bug: To reproduce, first add for example IdentifyPrimIntensIntens to the pipeline, close the add module window, and then add for example the LoadImagesText module. Move the LoadImagesText module to the top. Now it is still not possible to choose an input image in the IdentifyPrimIntensIntens module. This problem might have the same root case.
+
+
+-(Colin 8/31) - (Requested by Anne 8-30-05) - Hey Colin - can we add ImageTools to the main GUI interface (next to DataTools), please? I find it useful for ShowDataOnImage, which doesn't depend on being run from a particular figure window.  Or, we could just make ShowDataOnImage be a DataTool.
+
+-(Mike 8/30) (Requested by Anne) - variable bug: for IdentifyPrimIntenIntens (and possibly other modules), there is a problem with the variable - what do you want to call the labeled matrix image?  Typing in a custom entry using the 'Other...' option yields an error. See that module for more details on the error produced.  Perhaps we decided that this bug is not worth fixing, in which case remove the comments there and convert any other similar situations in other modules so that this error does not occur.  Note: We have replaced IdentifyPrimIntenIntens with IdentifyEasy recently. We still want to fix the problem because a similar thing occurs in IdentifyEasy but you will still want to take a look at the code in IdentifyPrimIntenIntens because the bug is described in detail in there (see Outdated folder).
+
+-(Colin 8/30) - (Requested by Anne) - It used to work that if we added "LongBox" to the end of a variable description, a long edit box would be shown. Also, if the text contained within an edit box outgrew a small edit box (e.g. more than 20 characters I think), then a long edit box would be shown so all the text is visible.  With the changes associated with the new popupmenus, etc., we lost this functionality. Most, or maybe all, of the instances where we used LongBox  was to input a path name. In these cases, it would be very nice to instead have a browse button and a long edit box to help the user choose or type in a path.  This would involve creating a new variableinfotype.  This does not, however, take care of the other usage of long edit boxes: so we also need to adjust the popupmenus and small edit boxes so that if their contents become too long, the popupmenus or small edit boxes drop down to the next line and become long.
+
+-(Colin 8/30) - (Requested by Anne) - For the interactive zoom part of CPfigure, it seems there's no way to turn it off. (the tool itself works fine). It'd be nice to click the 'Interactive Zoom' text on the menu and have it turn off and the little X Y indicator go away. Also, clicking the 'X' to close the XY indicator yields an error.
+
+-(Colin 8/29) - (Requested by Anne) - In several places there is text information entered as a variable description that does not need a corresponding variable box (see SaveImages for an example). A box with the text 'n/a' appears next to these variable descriptions that is unnecessary.  This seems odd - can we make it so the variable box doesn't appear if it is n/a?  I think maybe the reason it is done this way is to be sure that if you scroll down using the slider this extra text information is displayed properly.
+
+-(Mike 8/29) (Requested by Anne) - Variable bug: To reproduce, make a pipeline of LoadImagesText, then IdentifyPrimIntensIntens, then MeasureAreaShape. In MeasureAreaShape, choose Cells in the first slot. Then go to Identify module and change the objects to be identified from Cells to Nuclei. When returning to MeasureAreaShape, you will see that what was previously set to Cells has automatically changed to Nuclei. In my view, this is unanticipated behavior and should not happen. It ought to stay set to Cells until you change it (even though Cells will not exist and the pipeline will fail, at least it is the user's fault and they can figure out the problem).  The worse problem (other than it being unanticipated) is that when you actually run the pipeline, the MeasureAreaShape module still goes looking for Cells rather than Nuclei, so it fails. This part of the error can be prevented by going to MeasureAreaShape and re-selected Nuclei, even though that is the option that's already chosen. So, re-selecting it seems to embed the proper choice into the handles.
+
+-(Colin 8/29) - (Requested by Anne 8-26-05) - it looks like we have a slight peek-through problem - I noticed it on the Crop module that it's showing up behind the default image directory edit box.  Also, change 'Directory' to 'folder' in the main GUI.
+
+-(Mike 8/26) (Requested by Anne) - On the windows machines that Stephanie & Monica & Winston use over at CSAIL, the windows appear off the top of the screen for some reason. It was only a problem for the Identify modules and RGB Split module but not Crop and Measure modules.  I've no idea whether it's related to the CPFixAspectRatio function (based on the 4 modules I checked there is a correlation, but it's not definitive). We should figure out what the point of CPFixAspectRatio is and document its code with some help to describe it.  We may also need to incorporate it throughout the code - some modules use it and others don't, so we ought to make things consistent.  Also (a separate issue, i think), error/help box text didn't fit in their windows and so was not visible. 
+
+- (Requested by Anne) - cvs remove Profiler for Anne folder from the DeveloperDropBox. removing a directory requires a special procedure - i don't know how.
+
+-(Mike 8/26)  (Requested by Anne) - Remove all Programming notes from each module and instead we will just have the one Help file of programming notes.
+
+-(Mike 8/25)  (Requested by Anne) - Go through the code looking for uses of the command 'label2rgb' and change it to look like this (pre-calculates a colormap instead of just using the jet colormap):\
+    %%% This method of calculating a colormap to use prevented some\
+    %%% errors relating to colormaps. For one thing, the label2rgb\
+    %%% function fails if there are no objects in the label matrix\
+    %%% image. Also, there is a bug for some of the colormaps that\
+    %%% fails when there are only 1 or 2 objects in the image, I\
+    %%% think.\
+    cmap = jet(max(64,max(Objects(:))));\
+    im = label2rgb(Objects, cmap, 'k', 'shuffle');\
+
+-(Colin + Mike 8/24) (Requested by Anne 8-22-05) - For IdentifyEasy, add a variable "Do you want to run in test mode to see the results of all the intensity/distance options?" which will run all combinations of options and show the results in a single large window to help the user choose among the options.  I particularly want to see these results and show them to Ola before he leaves for Germany to make sure they are giving the results he expects.}
+
+-(Colin 8/24) - (Requested by Anne) - SpotIdentifier needs to be polished up - see the help of that file for a few things we wanted to do or check. Some of these items may be done already.
+
+-(Colin 8/24) - (Requested by Anne) - IdentifyWellSpots needs to be polished up - it needs more help text, the boilerplate etc, and it needs to be made just like the other Identify modules in terms of the various things that end up stored in the handles structure.  Also, we need a way to have the module figure out if there is no good way to line up the identified spots; if the settings are weird (e.g. I type in an 8 x 11 grid when the image actually has an 8 x 12 grid), I get errors but they aren't explained very well. (e.g. Non-finite endpoints or increment for colon operator in index).
+
+-(Colin 8/24) _ (Requested by Anne) - It's a bit complicated but I'd like to combine IdentifyWellSpots (automatic version) and SpotIdentifier (manual version) into a single module (to be called IdentifyPrimGrid?). 
+
+-(Colin 8/24) -- (Requested by Anne) - Once all these changes are done (removing the text data and the image rotation from SpotID'er), then we want to combine IdentifyWellSpots and SpotIdentifier into a single module: IdentifyGridOfObjects.  Here's what the variables ought to be (you'll need to change the syntax for a lot of them because I cut & pasted them):
+
+-(Mike 8/24) (Requested by Anne) - The crop module seems to fail for RGB images at the moment.
+
+-(Mike 8/24) (Requested by Anne) - For the File > snapshot of CP files, don't have it archive the CVS folders or any files preceded by a dot (hidden files).
+
+-(Mike 8/24) (Requested by Anne) - Make this information available via a "?" button in the Add Module selection window next to the "Object Identification" header:\
+% Identify Primary modules identify objects without relying on any\
+% information other than a single grayscale input image (e.g. nuclei\
+% are typically primary objects). Identify Secondary modules require a\
+% grayscale image plus an image where primary objects have already\
+% been identified, because the secondary objects' locations are\
+% determined in part based on the primary objects (e.g. cells can be\
+% secondary objects). Identify Tertiary modules require images where\
+% two sets of objects have already been identified (e.g. nuclei and\
+% cell regions are used to define the cytoplasm objects, which are\
+% tertiary objects).\
+
+-(Mike 8/23) (Requested by Anne) - Improve the window that appears at the end of an analysis run: Right now it prints the time elapsed for every cycle, which is almost always way too much info to fit in the window. So four columns: [Module name  |  Time for first cycle  | Time for last cycle | Average time for all other cycles], and then one row for each module in the pipeline.  Change the Timer to also display this information, using the term 'Cycle' rather than 'Image set'.  Also, have it convert to minutes or hours if it's reasonable instead of displaying in seconds all the time.
+
+-(Mike 8/23) (Requested by Anne) - In the Add Module window, there is no directory listed next to the text "You are currently looking in". It's because the text wraps to two lines so we need to make that text box big enough to display two lines.
+
+- (Colin 8/18) - Remove the code for rotating an image from the SpotIdentifier module and make it into a separate image processing module "RotateImage". There should be several methods to choose from in a popup menu:
+1. Type in a set of pixel coordinates for two points that should be aligned horizontally.
+2. Type in a set of pixel coordinates for two points that should be aligned vertically.
+3. Click spots that should be aligned horizontally with mouse 
+4. Click spots that should be aligned vertically with mouse 
+5. Type in the rotation in units of degrees.
+6. Automatic, based on identified objects - this would be a new, sophisticated option where identified objects that look like they're in a grid or some sort of lines would be rotated to be squared up to the image. Not sure if this is feasible, but it would be cool. We can make this a more long-term part of the project.
+All of these options would be converted to a single number - degree of rotation - so the same code can then be used to actually rotate the image no matter which option was chosen.  This degree of rotation (or however you want to store it) should be saved in handles.Measurements.Image because it may be of interest to the user and also so that it can be retrieved in case you want to apply the rotation from the first image set to subsequent sets (see next option).
+
+Another option - do you want the rotation for the first image to be applied to all image sets or do you want to determine the rotation for each image individually as you cycle through? 
+
+Another option - do you want to crop away the rotated edges?  (Otherwise, the rotated edges with missing pixel information are just black pixels).
+
+- (Colin 8/22) - (Requested by Anne) - We've lost the regular Matlab toolbar that shows up in figures - the one that has save, print, zoom, add text, etc. Can we add it back?
+
+DONE BETWEEN  IAP 2005 and FALL 2005  (the oldest is towards the top in this list)  >>>>
+-------------------
+Done, I think - The error checking for "there are no images in this folder"
+       should be moved out of CellProfiler.m and into the two Load
+       Images modules, since some pipelines may not require images in
+       order to run properly.
+Done - - The confirmation window upon "cancel after image set" button clicking ought to say "confirm cancel", not "confirm close". 
+
+Done (Anne) - Fix CreateBatchScripts, for the option of selecting the default module directory by entering "."  Things were changed recently to add CellProfiler and CellProfiler/Modules to the path, and I am not sure whether this option will still function.
+
+Done (Anne) - In CellProfiler.m, look for lines marked: %%% TODO: Fix filename construction (I think also see lines pertaining to OutputFileOverwrite), and use a less platform-dependent way to construct the path/filenames (e.g. with Matlab's fullfile function), rather than using slashes.
+
+Done (James and Anne) - Remove all 'cd' commands from modules and use full pathnames instead.  In particular, modules that need to look at all the images in a set (Load images, identifythreshold, correctillum, subtract background) typically change to the directory then read the images, whereas we could construct the image filename using fullfile(pathname,filename). (The reason for doing this is to prevent CellProfiler from unexpectedly changing the current directory in matlab.  However, if this method takes more processing time, perhaps we should not make this change).
+
+Done (Anne, with Kyle writing the Help) - Load movies module, with ability to load each frame of a .avi file.  (Look at AvitoImageSlices.m)
+
+- DONE, Delimiter was not functioning on anne's computer, but it seems to work now.- Allow the user to 'export' the current settings into some nice, person-readable text file so they have a permanent record. 
+
+DONE (Anne - SpeedUpCellProfiler module): - Change saving of the output file to be faster for large jobs -> tell the user they can change CP.m code to save only if handles.Current.SetBeingAnalyzed is a multiple of 5 or 10 or whatever, rather than saving after every image set.
+
+Steve Lowe fixed the following:
+2/25/05
+- Help function does not work for ImageTools and DataTools; The menu often doesn't return to the default first position ('DataTools' or 'ImageTools') after running a tool.
+First problem was a partially deleted string defining okcallback. Second problem may have been fixed by someone else, seems to work ok.
+
+3/08/05
+Fixed title bar label for Data Tools Help (previously said Image Tools Help).
+
+Changed Image and Data Tools Help windows so that double clicking in list box will display help for the tool, same as clicking OK button.
+
+In PlotOrExportHistograms, fixed problem that filenames containing underscores were not displayed properly as histogram titles (displayed succeeding character as subscript).
+
+3/15/05
+
+- Improve the Data tool "PlotOrExportHistograms":
+*Make the dialog box that asks for input from the user (~13 questions) wider.
+*When filenames have underscores and these filenames are used to label each histogram in the display, the underscores cause the following text to be subscripted. We fixed this somewhere else in the code at one point by doing a string replacement of underscores with some symbol that prevents the underscore from being read as a string modifier. 
+*Flip rows vs columns for exporting the raw histogram data, so that columns are histogram bins and rows are images. Now have option to display in either orientation.
+* Update help for this tool.
+
+4/12/05 and 4/15/05
+- Created new module IdentifyPrimLaplacianOfGaussian. Functions, but need to verify that it is doing as well as Perlman and Mitcheson's work.
+- Added ability to restart a partially completed run, using module Restart.m. TODO: small mods to 45 modules that check SetBeingAnalyzed == 1 and take some global action, some of these may need to be changed to SetBeingAnalyzed == StartingImageSet.
+-Made "Close Windows" button work better by tagging figures that CellProfiler creates. Now every figure CP creates has UserData.Application = 'CellProfiler'. "Close Windows" button will delete figures from current and previous invocations of CP.
+-ToolsHelpSubfunction: Now closes any existing ToolsHelpWindow because 'ok',
+'cancel' callbacks could get confused and throw error if more than one.
+-ToolsHelpSubfunction: Set toolsChoice=0 before uiwait to make behavior
+correct if exit message box using clicking x instead of cancel.
+
+4/22/05
+Went through Modules and adjusted so they will work with Restart.m.
+
+5/24/05 (Colin)
+- Allow canceling from the first dialog box when using the Save Image As button.
+
+5/24/05 (Colin)
+- The help button does not work for OpenNewImageFile, ShowDataOnImage, AddData, and ClearData
+
+5/24/05 (Joo Han) - Not committed yet, have pending questions.
+- I just adapted ClassifyObjects into ClassifyObjectsIntensity, but probably we should combine the two. I wasn't sure how to look up which column of measurements is desired, so that's one definite improvement that ought to be made.  Also, the new version doesn't allow for marking/coloring which object is in which bin since it extracts the data from the handles structure rather than calculating it from a label matrix. Neither version allows anything other than three bins, so it would be nice to allow the user to enter a variable number of bins separated by commas.
+
+5/24/05 (Joo Han)
+- Updated help for OpenNewImageFile.m
+
+5/26/05 (Colin)
+- After renaming is complete, the list of image names does not update itself automatically
+
+5/26/05 (Colin)
+- CPtextdisplaybox scrolls faster
+
+
+- Done (Joo Han) Figure out a way to let the user to launch CellProfiler without separately launching Matlab (Have Matlab be automatically launched).
+                -for Windows: In the installation package, include the shortcut with the path set as: matlab.exe /r CellProfiler
+                -for UNIX: In the installation package, include the shortcut with the path set as matlab.exe -r CellProfiler
+
+*The changes below have been canceled and replaced by a new version. The help file for the new syntax will follow soon.
+
+- Done (Joo Han) - Expanded the syntax for declaration of variable boxes and such using comments in modules.
+
+- Done (Joo Han) Combined all the identifyprim modules (need to delete most comments?)
+
+- Done (Joo Han) Wrote the help file for the expanded syntax. (Perhaps too long?)
+
+- Done (Joo Han)	Combined all the load images modules into LoadImages.m, using the expanded syntax.
+				Combined all the load movies modules into LoadMovies.m, using the expanded syntax.
+				(It would be very simple to change the program so that either LoadImages or LoadMovies module is added to the pipeline by default when the program starts; however, this will result in some loss of flexibility. Perhaps we can have a feature in the GUI called "Frequently Used Modules" where the user can add certain modules with just one click?)
+                *Shouldn't we also have a LoadSingleMovie feature? It will probably end up being the most used load movie method..
+
+- Done (Joo Han) Replace OrigImageToBeAnalyzed or OriginalImage or whatever, with 'OrigImage' in all modules in order to make everything consistent.
+
+- Done (Joo Han) Check through all modules and make sure none of them have any variable options that let you load or save images to/from the hard drive - this was archaic and is replaced by LoadImages and SaveImages modules. (Used ReplaceTextInModules and checked modules with more than 3 instances of 'hard drive' found.)
+
+- Done (Joo Han) We have modified several built in matlab functions and produced new functions with the CP prefix (they are all in the main CellProfiler folder). It's unclear which lines we have modified, so use the Matlab tool 'FileComparison Report' to show how the modified functions differ from the original and mark those lines in the code with comments so that we are aware of the differences. *All are well documented. File Comparison Report fails to give meaningful comparison results sometimes due to inconsistency of order, so I went through the modules myself. Most of the CP modules had been modified to indicate that figures or msgboxes created belong to CellProfiler.
+
+- Done (Joo Han) Add error checking to data-related buttons to determine whether
+       the .mat file the user selected is a valid CellProfiler output
+       file. AddData, ClearData, ConvertBatchFiles.m. Load pipeline already has error check built-in, and for other modules it seems more complicated.
+
+- Done (Joo Han) A modification on the improved version of the comment syntax, to make the combined modules more readable. Refer to IdentifyPrimAdaptThreshold.m for the format.
+
+- Done (Joo Han) Bug fixed for OpenNewImageFile.m where capital lettered image file extensions were not recognized.
+ 
+- Done (Joo Han) When some of the data tools (e.g. Histogram) generate a figure, these figures do not contain information in their UserData to indicate that they are CellProfiler figures, so that the Close windows button in CellProfiler.m does not function on these windows. We should check through all the data tools and image tools and modules and be sure that all figures which are created have the proper userdata.  Perhaps actually we should rewrite the figure function to be CPfigure, which is basically a subfunction calling the figure function plus some lines that add the userdata.
+
+- Done (Colin) Make the DIB cancel button work in CPimread.m > right now it gives a less straightforward error message when you choose cancel during an analysis run. I don't know how it responds during an ImageTool like OpenNewImageFile.m
+
+- Done (Joo Han), in a different way. Despite numerous attempts, we have had trouble adding a panel/frame to the GUI (CellProfiler.fig file) so that variable descriptions don't peek through under the boxes at the bottom of the GUI, when loading a module with lots of variables. The problem is peculiar, because it seems that if we make the change and save the .fig file on a PC it works fine everywhere but on the mac platform suddenly there is a 5 minute delay - the first few times we tried it, the delay occurred upon loading up CellProfiler. Later, it would happen only when you actually try to run a pipeline.  Usually the problem would be fixed by making the changes on a mac rather than a pc, but the past few times we tried, even that doesn't help. It's worth trying again on a mac.  the reason it seems so peculiar may have to do with how the .fig and CellProfiler.m files interact - they seem to update each other in a magical way that gets disturbed if you aren't careful. Seems like a buggy Matlab issue.  If all else fails, we could add a frame 'manually' by writing code in CellProfiler.m that runs upon start up rather than trying to add the panel to the .fig file using GUIDE.
+
+- Done (Steve Lowe) - Restart module. 'Start job midway' module, run image set #XXXX (allow putting in a bunch of comma-delimited numbers to allow random), every 50th.
+
++++ Done (Steve Lowe) Download code relating to Perlman, Mitchison, et al. Science
+       2004 and make modules accordingly (Laplacian of Gaussian to
+       identify nuclei)
+
+- Done (Ola) Make the ColorClassifyObjects way cooler: (1) able to use any measurement calculated by other modules - retrieve any measurement from the handles structure (2) allow the user to enter any number of bins. (3) Allow user to choose the colors to display for each bin.  Right now, the module can only do three bins, with fixed colors, and it classifies based on Area only, which is calculated within the module rather than retrieved from the handles.Measurements.
+
+- Done (Ola) - PlotMeasurement DataTool: allow displaying two parameters vs. each
+       other in a scatter plot.
+
+- Done (Colin) - Make a button/tool that creates a zipped archive of all the CellProfiler files (e.g. a 'snapshot' of the code that is currently being used). 
+
+- Done (Joo Han) - Implement Log Thresholding by changing CPgraythresh. In Han tested different thresholding methods, and log thresholding seems to be most stable at the moment. Might need to add an option to log threshold or not.
+
+- Done (Joo Han) - Enable the use of popup menus by adding new possible syntax in comments within modules, and - We would like to overhaul all modules that pass images from one to the next to use drop-down menus rather than the user typing in the image name, which will limit typos. This would be a major infrastructure change.
+
+- Done (Joo Han) - Go through all the modules to use popup menus whenever applicable (except IdentifyPrimAdaptThreshold)
+
+- Done (Joo Han) - Allow up/down for combined modules (e.g. IdentifyPrimAdaptThreshold)
+
+- Done (Joo Han) - Fix the scrolling method so that a variable description always becomes visible only after the corresponding variable box becomes visible, instead of just looking at the location.
+
+- Done (Joo Han) - Make a "CreateWebPage" module that takes in original images, small thumbnail versions of the images (e.g. made with the ResizeImages module), and a filename that you want to call the html file.  The module should then write a text html file with code something like this:
+<A HREF= origfilename.jpg><IMG SRC = thumbnailfilename.jpg>
+</A> <BR>
+Check to be sure that it works with subdirectories, so that one html file is produced per subdirectory.
+
+- Done (Colin) - Make a button/tool that creates a zipped archive of all the CellProfiler files (e.g. a 'snapshot' of the code that is currently being used). 
+
+- Done (Colin) - In the SetPreferences button, fix the code for when the user does not have write access to the matlab root directory. There is a nice routine almost functional there, but it doesn't quite seem to do the right thing: try to write in matlab root first, and if that fails, write in the handles.Current.StartupDirectory) > Also, maybe we should change it so that the current directory it tries to write to is the handles.Current.default output directory, since presumably the user can write there.  That is where CellProfiler should look when trying to load the preferences upon launching, too, if we add this feature.
+
+- Done (Colin) - In the SetPreferences button in CellProfiler.m, do some error checking to see whether items entered in edit boxes are valid.  For directories, check whether the directory exists and warn the user if it does not (although, still let the nonexistent directory be saved, because perhaps they are not connected to the network or something). For the default output directory, check whether the user has write permission to that directory and warn if not.  For the pixel size and font size, check whether the entry is a number (though I think it needs to be stored as a string within a cell) and revert to the previously saved value if it is not a number.
+
+- Done (Joo Han) - Change Save Images as to be compatible with CreateWebPage - in order to do this, it needs to update the filenames after it saves them. In case there are any trouble caused by this, also add a option where the user can choose not to update filenames within CellProfiler.
+
+- Done (Joo Han) - WriteSQL.m should enforce itself being the last module in the
+pipeline, like CreateBatchScripts does (or second to last, if
+CreateBatchScripts is last).
+
+- Done (Joo Han) - For the SaveImageAs Imagetool, allow saving the data in the image as a variable called 'Image',  in .mat format.
+
+- Done (Joo Han) - When attempting to Export data using any of the various
+       data tools, add an error check in case the mat file does not
+       contain the field "Measurements".
+
+- Done (Joo Han) - When clicking on a module in the list box whose .m file no longer exists in the Modules directory, an error pops up saying the module no longer exists but that the settings will be shown anyway.  The settings are *not* shown in the window, because an error appears in the command window - undefined variable "flagExist" at line 1066.
+Error in ==> CellProfiler>ModulePipelineListBox_Callback at 1062
+  if ( ( length(VariableValuesString) > 13) | (flagExist))
+
+- Done (Joo Han) - CellProfiler.m keeps track of time elapsed, broken down for each module, and has a display pop open at the end of a pipeline showing how long the first image set took and how long subsequent sets are taking.  Right now, the time is shown for *every* image set, whereas we only want two columns: the first image set, and then subsequent sets all averaged together.
+
+- Done (Joo Han) - ++ Prevent clicking pause/cancel buttons twice in the timer window.
+
+- Done (Joo Han) - It would be nice if clicking '+' to add a module to the pipeline added the module after the point you have highlighted in the pipeline, rather than always adding the new module to the end.
+
+- I think the only way to do this is take away the ability to select multiple things, which isn't worth it. (Colin) - When viewing algorithms in the main GUI on the Mac platform, the down arrow should
+       move from one highlighted algorithm to the next (right now, the
+       dotted line highlighting moves but nothing happens).
+
+- Done (Joo Han) Make all pop-up windows use the proper background color and
+       come to the center of the CP window (helpdlg, warndlg, msgbox): (changed as center of screen, will need handles to get CP center..)
+       requires getting the handle then setting the color and
+       position. (Also, for the variablerevisionnumber window, set colors appropriately.)
+
+        ***Please use CPhelpdlg and CPwarndlg from now on***
+
+
+- Done (Colin) For the ExportData data tool, we would like to have the option of swapping rows and columns. Right now, measurements are across the columns and objects/images are the rows. We would like to add a checkbox that allows us to swap these.
+
+- Done (Joo Han) 'Report bug' button in CellProfiler's main GUI. (in the Help menu) The function itself is also implemented. mail server needs to be automatically detected, though..
+
+- Done (Joo Han) 'GetHistogram' module, which has various options to create a histogram and allows each histogram to be saved so that a movie can be created later.
+
+- Done (Joo Han) Added a zip create and download feature to CreateWebPage module so that the user does not have to download image by image.
+
+- Done (Joo Han) I think this was already done before but not removed from the list: Add Image set # to the display for AlgAlign.m (see other displays for the precise format).
+
+- Done (Joo Han) Have image windows pay attention to aspect ratio of images. (Created a new function called CPFixAspectRatio.m which fixes the ratio for quadrant subplots, and made every module that uses quadrant subplots call this function. Not perfect, but much better than before. May also accommodate double subplots later)
+
+- Done (Joo Han) 'Fetch new modules from website' button in CellProfiler's main GUI. (in the Help menu) 
+The function itself is also implemented, although it may have to be revised. Right now it tries to connect to cellprofiler.org and tries to download ModuleList.txt, and download all the modules listed in that file if the module doesn't already exist.
+
+- Done (Colin)- Be sure that all exporting tools will function properly if some
+       measurement fields are left blank, which is the case when there
+       are no objects in a particular image, for example.  This is particularly a concern when the last image had no objects, so make a fake image set with no objects in the last set and see if everything works.
+
+- Done (Colin) - ExportData Data Tool: I would like Export Process Data to include all of the variable descriptions and variable values and variable revision numbers, as is currently created when using the Save Pipeline button (save as a text file option).
+
+- Done (Colin) - - Use the User's preference for font size for all figure displays and dialog boxes.  Do this by adding this line:
+	FontSize = get(0,'UserData');
+After the line in the DISPLAY RESULTS section:
+if any(findobj == ThisModuleFigureNumber) == 1
+And then, for each subplot or text window, add this line:
+    set(gca,'FontSize',FontSize)
+For each title, add properties at the end:
+    title('Original Image', 'FontSize', FontSize)
+Also, ask Ola whether we should take out the old method of finding the preferred font size, which was FontSize = handles.Current.FontSize;  I would guess we probably should remove that to make it more consistent throughout the code. {NOT SURE IF THIS IS UP TO DATE... ASKED OLA AND HERE IS HIS RESPONSE:"it seems that the FontSize is still stored in UserData, and not in a UserData.FontSize. However, the fontsize is stored in the UserData for the 0-window, i.e. the main matlab window.
+I've seen that there is a UserData.Application = 'CellProfiler' and so on now, but this is stored  in the UserData for other figure windows (i.e. with handles > 1). So right now there is
+no conflict, but we should perhaps everything consistent."
+
+- Done (Colin) - 
+GUI 2 +++ Make image tools more accessible/intuitive:
+Create an image toolbar to replace the drop down menu in the main CP GUI 
+- The toolbar should have a horizontal orientation due to the drop down menu
+- One row of tiny icon-buttons for standard image tools
+- Below that, a drop down menu for infrequently used/custom tools
+- Below that, a 'status line' of text that indicates which image will be acted on, and any further instruction if necessary during the running of the tool.
+- We want to be able to close/open this toolbar, so there should be a button in the main CP GUI to "Show Image toolbar".  The Image toolbar should be close-able, but probably the normal window-closing functions are adequate - it doesn't need a hide/cancel button I don't think.
+- When clicking on any image, have the toolbar become active/come to the top of all other windows.
+For standard image tools:
+[including: SaveImageAs, OpenNewImageFile, ShowPixelData, ShowHistogram, SaveToMatlabWorkspace, ShowImageInNewWindow]
+- Have tooltips appear upon mouse-over of each button that show the name of the tool 
+- Convert the tools that Ola wrote in ImageTool_Callbacks.m into separate m-files and add them to the ImageTools folder.
+For infrequently used/custom tools:
+[ShowDataOnImage, any other .m file in the ImageTools folder]
+- Have any .m file in the ImageTools folder that does not have its own button appear in a drop down menu below the icon buttons.
+- Make the help within each tool accessible somehow: maybe a '?' button that then asks you to select the tool you want help on (by clicking its icon or choosing it in the drop down menu).
+Other implementation notes:
+- replace imagesc throughout all CellProfiler, Modules, and Tools code with a new function to go in the main CellProfiler directory: CPimagesc.m, which should include this code:
+ImageHandle  = imagesc(Image);
+set(ImageHandle,'ButtonDownFcn','ImageTool(gco)')
+This will be a simple string replacement of imagesc > CPimagesc to convert all the modules & tools, and it will be more fool-proof for when people write new code.  It might also give us the flexibility later on to do things like set other settings (like aspect ratio or font size) for every new axis produced.
+- Possibly add DataTools to the same toolbar, just have it divided in half?
+- To aid in interactive selection of settings, allow user to
+       create a figure window where images can be dragged and overlaid
+       and toggled back and forth. See Inca and dragndrop in Matlab
+       Central.  Or, in the image toolbar for each figure window, have an 'Export to common window' button which puts the figure into a single, common window where you can pile up a bunch of images and toggle back and forth.
+
+- Done (Colin) 
+- Fix interactive zoom button (within Show Image button):
+         (1) It seems to always work OK the first time you click on
+     Interactive Zoom.  The subsequent times you click on it though:
+     sometimes it works just fine and other times there is no change
+     to the image itself - it stays at fully zoomed out and doesn't
+     respond to mouse clicks.  Perhaps related, sometimes lots of
+     errors are spit out at the command line (I think only on
+     subsequent tries to use the functionality).  Actually, maybe it
+     has something to do with having other figure windows open at the
+     same time? 
+         (2) Once things are working, I would like to add this
+     Interactive Zoom button to several other places: In
+     CellProfiler.m: "Display data on image", "Show pixel data", and
+     all of the figure display windows (for each algorithm - I am not
+     sure whether buttons will stay intact, though, once each
+     algorithm runs. so I am not sure whether it makes more sense to
+     have the button added within each algorithm's code or within the
+     main CellProfiler code when the window is first created). The
+     most important thing is to add the button to "AlgImageTiler.m";
+     that is why I acquired this code in the first place.
+
+- Done (Colin) - Many modules that load images from the hard drive use a 
+subfunction called RetrieveImageFileNames, but it's slightly different when used in different contexts. It would be nice to consolidate at least part of this function into a standalone subfunction.  This allows people to change something like which file extensions are ignored in the one subfunction rather than every individual module.
+
+- Done (Colin) - GUI 4 +++ For the + button (add a module to the pipeline), it currently asks you to choose a file in the modules folder. It would be nice if it determined which modules are of which variety (Identify, Measure, Other, etc) and presented them in a nice categorized way that's more user-friendly. See the ManualCompiler.m code in DeveloperScripts for example code for categorizing modules. (note: this might be a bit time consuming to extract all this information each time you want to add a module to the pipeline).
+
+- Done (Joo Han) - Fix speed problem when CP is run with figures open, which occurs due to the fact that uicontrols which are created for each image set are never deleted.
+
+- Done (Joo Han) - Make a module to expand or shrink secondary objects. (e.g. to define a membrane compartment). Test to be sure that downstream modules work on the newly defined region: measure, subtract from the original compartment, save images.
+
+- Done (Joo Han) - Make a FilterObjectsAreaShape module that selects objects according to statistics obtained using MeasureAreaShape module. This module can be used, for example, to eliminate objects with a solidity below 0.5.
+
+- Done (Joo Han) - Improve the response time of the main GUI - previously, toggling between modules was very slow, especially on macs. Through a significant infrastructure change that should be taken into account in future changes, an instantaneous module toggling was achieved. Common 99 VariableDescriptions and Boxes were used before - now, they are classified the module number. (handles.VariableDescription{ModuleNumber}(VariableNumber) and handles.VariableBox{ModuleNumber}(VariableNumber).
+
+- Done (Joo Han) - Make the order of variable declarations consistent by always having %textVAR declared first. Before, either %infotypeVAR or %textVAR came first depending on the use of infotype. Relevant redundant calculations were removed and now CellProfiler.m will fail to read modules properly if %textVAR does not come first.
+
+- Done (Joo Han) Have the save settings function automatically add SET to the  
+       name > can't currently do it with uisave. (The user is prompted whether he really wants to do this, with Yes as default. This actually seemed like a better and easier solution since it allows more flexibility.)
+
+- Done (Joo Han) - Created CPwaitbar which uses a waitbar with adjusted colors and applied the function accordingly for load pipeline.
+
+- Done (Colin) - SpotIdentifier: We haven't checked this module in a while. Figure out Excel mac vs Pc problems (Anne has
+       an email from Mathworks describing the issue, thread QW38).
+       Allow asking if numbers are in rows or columns.  Check offsets,
+       flipping. Display value only when clicking (see email that Anne
+       has: Mathworks tricks for interactive figures). Make manual
+       page. Toggle several images. In general, it just needs to be looked over and polished up.
+
+- Done (Colin) - Decide about cutting down the name of modules.
+
+- Done (Joo Han) - We should change the Identify modules and the SaveImages module so that if the user has chosen to save a label matrix image, the user has a choice between saving the grayscale label matrix (in which case they should be warned if they have more than 256 objects and if saving in 8 bit format), or a colored version, created using label2rgb on the spot in the SaveImages module rather than having the colored version saved to the handles structure by the Identify modules, which requires Variables in the Identify modules asking the user if they might want to save the images later in order to save processing time. >> It's possible that Anne already did some of this??
+
+- Done (Joo Han) - Created and polished up IdentifyWellSpots.m, according to collaborators' request. I originally made this to be a stand-alone module, but this made it less flexible, so now it should be used with other modules, including FilterObjectsAreaShape.
+
+- Done (Colin) - Scrollbar bug: To reproduce, add LoadImagesText and IdentifyPrimIntensIntens to the pipeline. Use the scrollbar in the IdentifyPrimIntensIntens module and then select LoadImagesText. The variable boxes will then be shifted for LoadImagesText too.
+
+- Done (Colin) - Sometimes we save images (using the SaveImages module, for example) in matlab .mat format. We can then load them into CP using LoadSingleImage, but none of the other LoadImages modules, nor the OpenNewImageFile Image tool, nor CPimread itself have been adapted to read images stored in .mat files.
+
+- Done (Colin) - For OpenNewImageFile Image tool, make use of CPimread's ability to tell us which files it can read when deciding what file types to display in the uigetfile line.  Right now, the file types are hard-coded.  Also, when the user is selecting a file format for images in, for example, the SaveImages module, currently the user types in the file format into the edit box. Can we make this a popupmenu whose choices are determined by the output of CPimread (with no arguments, CPimread tells us which file formats it can read)?
+
+- Done (Colin) - Put in toggle buttons for red, green, and blue if an image is color.  Maybe in CPfigure, or maybe just in specific places like spot identifier.
+
+- Done (Colin) - Update ExampleFlySettings - it's currently in pretty bad shape and uses some pretty old revisions of modules. Trying to load the current ExampleFlySettings revealed a potentially serious problem - with the new way of showing settings (drop down menus, etc), I think it makes it frequently fail to load old pipelines properly.  So we should figure out if we can make CellProfiler more robust to loading old pipelines, otherwise everything we've worked on up to this point is going to be un-loadable.
+
+Done - Anne - SpotIdentifier is storing a value with the handles field named "ImageTopLeftXCorrectedGray" which should instead be stored in a subfield of "Image".
+
+- Done (Colin) - Loading pipelines bug: When loading a pipeline, the old settings do not seem completely cleared away. For example the old pipeline had module #2 with 15 variables and the new pipeline's module 2 has only 5. In handles.Settings.VariableValues, variables 6-15 for old module 2 are still present.  These variables are showing up in the main GUI when you click on the module, but this only happens sometimes - I can't pin it down.  Also, I loaded a pipeline into a 'fresh' CellProfiler, and canceled at the second module when it asked me whether to load saved or default variables (due to an old variable revision number). Then I looked at the handles.Settings and this is what was there (instead of it being empty):
+                  PixelSize: '1'
+                ModuleNames: {1x13 cell}
+             SelectedOption: [0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+         NumbersOfVariables: [12 5 5]
+             VariableValues: {2x12 cell}
+    VariableRevisionNumbers: [3 2]
+
+- Done (Colin) - Pixels is misspelled 'pixals' in SpotID - I fixed it there, but check other code to see if it's misspelled elsewhere too.
+
+- Done (Colin) - When saving pipelines, it offers to add 'SET' to the name. We should change this to 'PIPELINE'. Is there a shorter bit of text we could add that would still make sense rather than PIPELINE?  Also, it should check whether the filename the user typed in already has 'SET' at the end - if so, skip the dialog box asking whether to add it.
+
+- Done (Colin) - SpotIdentifier needs to load spot identifying information properly because xlsread just doesn't work reliably. We should use the code from AddData to read data from a text file (just a simple text list of information) and then reshape it to fit the proper grid.
+[[[Colin & Anne decided to make a new module (undecided name, but something like LoadTextData) that allows text data to be imported, one bit of text for each image set. When this is done, remove the code from SpotIdentifier and instead ask "What did you call the imported text data you would like to use to label each spot (optional; use the LoadTextData module)?"]]]
+
+- Done (Colin) - Adapt the crop module to allow an option to specify how many pixels to remove from each edge of the image (top,bottom,left,right). This is helpful if you don't know the size of the image but want to remove a certain number of pixels from the edge. We can already do this for the top and left edges by typing in the pixel at which to start and leaving the endpoint as "end" but we can't do it for the bottom and right if we don't know the incoming size of images. This will allow us to crop rectangular plate edges away.
+
+
+
+
+DONE DURING IAP 2005 >>>>>>>
+
+     -Done- Make the help button next to the image/data tools work.  It should pop open a listbox asking you to choose which tool's help you would like to see, and then it should extract the help from the tool's m-file.  The listbox should also give general help, i.e. "You can add your own tools by writing Matlab m-files, placing them in the ImageTools or DataTools folder, and restarting CellProfiler."
+
+     -Done- When adding a module to the pipeline, check to see whether more than one function with that name exists on the Matlab search path. If so, warn the user, tell the user which pathname to the function will most likely be used, but warn them that this may change if the path is changed by adding modules from another directory.  Suggest that if the module has the same name as a Matlab function, they should consider renaming the module to prevent confusion.
+
+     -Done- When adding a module to the pipeline, CellProfiler checks in a fairly rudimentary way whether it is a valid CellProfiler module and warns the user. However, the module is then half-loaded so nothing works properly and you have to restart CellProfiler. This checking should be more sophisticated, and should recover by not loading the module at all.
+
+     -Done- In CellProfiler.m, check whether the guidata lines are necessary (marked with a TODO).  (They were unnecessary)
+
+     DONE!! - Allow the Save Images module to deal with different bit depths, in case the user wants to save images in 16-bit (e.g. with PNG or JPG). Also allow the user to save an image as a binary (black/white rather than grayscale, so that any nonzero pixels = 1, most useful for viewing a label matrix).
+
+     -Almost done- : Have the time for first set separate from the time for
+       subsequent sets. 
+
+     -Done- Make progress bar windows go away when using the close all figures and timers button (e.g. Correct illum modules).
+
+     - done Have LoadSettings button determine whether a file is a valid Settings file.
+
+    - Done "Make projection" module (= average, get code from DivideAllMean). 
+
+     -Done-   adjusted the Show data on image button or the Show image button
+       to load DIB images. Also need to adjust any other modules
+       that use imread, including those which open all the images to
+       calculate something, like CorrectIllum All modules and probably
+       IdentifyPrimThreshold and ApplyThreshold (when the threshold is 
+       automatically calculated).  Also, DIB's are currently being read
+       upside down - need to flip them (flipud).
+
+Done     - Throughout CellProfiler and its modules, remove unnecessary updating of the handles structure (guidata function).
+

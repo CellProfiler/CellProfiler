@@ -1,0 +1,324 @@
+CellProfiler cell image analysis software development 
+AUGUST 31, 2005  IN ORDER OF PRIORITY
+
+WANT IT ASAP:
+
+Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
+
+**- (Requested by Anne) - Adapt the Crop module to take in an object (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object is cropped away). This will be used to Crop away yeast agar plates.
+
+- (Requested by Anne) - make sure all modules have a Variable revision number, because otherwise we have to confirm it upon loading pipelines every time we use that module.
+
+- (Requested by Anne 8-24-05) - All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use:
+error('error message goes here')
+not this:
+errordlg('error message goes here'), return
+We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
+
+===- (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
+
+**- (Requested by Anne) - Combine all IdentifySec options into one module.
+
+===- (Requested by Anne) - Combine RGBsplit and RGBtoGray into a single module - that is, with the two methods (split or combine) being options within a single module. Call the resulting module RGBtoGray and move RGBSplit to Outdated.
+
+- (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?
+
+- (Requested by Anne 8-25-05) - Can DilateBinaryObjects be combined with ExpandOrShrinkPrim or ExpandOrShrinkSec?
+
+- (Requested by Anne) - Can IdentifyLaplacianOfGaussian be merged into IdentifyPrimAutomatic?
+
+- (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread - but maybe it's not possible because that requires running code rather than just extracting text. If that's the case, I guess we just have to type them into this module manually and update them whenever Matlab updates its imread function (which probably isn't that often anyway). Also, right now we ask the user for the file format of their images but this information is not actually used anywhere. We need to adjust the CPimread function to take in and use a file format (it should be optional; only used when images do not have file extensions).  Also, sometimes we might want to sort images by order but also by text, or sort by two different bits of text - like only wanting to retrieve images with the proper extension. So perhaps we should use the File format input in another way (besides using it for imread when there is no extension): do you only want to consider files with that extension?  That would be nice because it prevents you from having to exclude .mat files or other types of files in the folder.
+
+- (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:  MakeProjection_averageImage.m
+(1) line 162:  [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+to work properly. the output argument do not match.
+(2) Same problem at line 134 probably
+
+***************
+
+- (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
+
+- (Requested by Anne) - It would be nice to allow CellProfiler to be used by different people and each one could have their own user preferences.  Right now preferences can be saved (File > Save preferences), but we should allow the user to choose whether to save these preferences as the default preferences (in CellProfilerPreferences.mat), or alternately, to name the preferences file something unique (e.g. AnneCellProfilerPreferences.mat). Then the user could load their preferences by using: File > Load preferences.
+
+- (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
+
+- (Requested by Anne 8-24-05) - The FilterObjectsAreaShape window should have the bottom left and top right displays switched in their positions (the final filtered image should be in the top right and the outlines on input image should be at the lower right.)  Why is there an input image for this module?  Is it only for showing the outlines on the original image? If that is the case, it should be made optional. FilterObjectsAreaShape needs full documentation and to be made to look like all the other modules, and it needs its method for saving outlines and colored images to be consistent with other modules (like IdentifyPrimAutomatic).  I think we also need a FilterObjectsIntensity and FilterObjectsTexture module (the last one is probably not going to be used much, but it's just to be complete).
+
+- (Requested by Anne 8-24-05) - The help for the crop module is out of date. The variable descriptions should tell the user that they can enter 'end' (or maybe it should be 'last') instead of a numerical value for the pixel position if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
+
+- (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
+
+- (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
+
+- (Requested by Anne 9-06-05) - Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
+
+- (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower. 
+
+- (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
+
+- (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
+organelles or speckles within nuclei or cells).
+This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
+
+	From: 	  friman@bwh.harvard.edu
+	Subject: 	Storing subobjects
+	Date: 	August 13, 2005 3:03:31 PM EDT
+	To: 	  carpenter@wi.mit.edu
+
+One simple way to store subobjects that fits into the current way
+of saving measurements is simply to have a "feature/measurement" that
+indicates the number of the parent object.
+For example, to have a structure handles.Measurements.Nucleoli that in addition
+to the usual measurements contains a handles.Meaurements.Nucleoli.Parent field
+where the number of the corresponding parent object is stored, and a handles.Measurements.Nucleoli.ParentFeatures
+which indicate the name of the parent (e.g. 'Cells' or 'Nuclei'). It is not straightforward to have a
+similar entry for the parent objects since the parent objects (e.g. Cells) can have
+a different number of children (while each child only has one parent object). Storing the numbers of the
+children of a parent is not straightforward in the current measurement system, because the parent
+objects can have a different number of children. This would require storing a cell array with
+the numbers of the children for each parent object, and that would
+cause problems for all data tools that don't know how to handle this cell array when
+they encounter it. However, I guess there can be a handles.Measurements.Cells.Children field which contains
+the names of the children objects (e.g. 'Nucleoli', 'Organelles', 'Speckles'....) but not corresponding numbers.
+If one wants to find the children of a  certain Cell object with number K, one must then look in
+handles.Measurements.Cells.Children to find the  name of the children (e.g. 'Nucleoli', 'Organelles', 'Speckles'....)
+and then search e.g. handles.Meaurements.Nucleoli.Parent for the Nucleoli objects that have object K as parent.
+It think it would be quite simple to introduce the above system in the IdentifyPrimary/IdentifySecondary/IndentifyTertiary
+way of identifying objects.
+
+Best,
+Ola
+
+- (Requested by Anne) - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
+
+- (Requested by Anne) - Whenever anything is saved to the hard drive, add an error
+       check to see whether the user has permission to write to that
+       location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
+       [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
+       then error(INSERT PROPER ERROR STUFF HERE), end 
+
+- (Requested by Anne) - Save Image As tool: does not work well for all kinds of
+       displayed images (e.g. The mean image produced by correct illum
+       divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
+
+- (Requested by Anne) - When figures produced by DisplayGridInfo are saved as matlab fig files and opened later, when CellProfiler itself is not open, and then you click on SpotIdentifying Info - Show, an error is produced (at least when no spot identifying info has been loaded): (NOTE: Not sure if this is still a problem - doublecheck first.)
+??? Error using ==> guidata
+H must be the handle to a figure or figure descendent.
+Error in ==> CPmsgbox at 198
+handles = guidata(findobj('Tag','figure1'));
+Error in ==> CPwarndlg at 42
+handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
+??? Error while evaluating uicontrol Callback.
+
+- (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
+
+- (Requested by Anne) - When Saving a pipeline, after you confirm the filename change (adding PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.  Also, we should check whether PIPE is already part of the name and if so, do not suggest adding PIPE again!
+
+- (Requested by Anne 09-01-05) - How difficult would it be for the imagegroup and objectgroup popup menus to display their contents in ABC order? I am guessing this would be a monstrous project because I think the order is important, so it's probably not worth the effort.
+
+- (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
+
+- (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
+
+- (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
+
+- (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.
+
+- (Requested by Anne) - In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
+
+- (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle. The popup window is the wrong color at the end after the html file is saved.  The 'Download zipped file' html code should be at the top of the page rather than the bottom.
+
+- (Requested by Anne 08-30-05) - There are two ways to generate a text file containing the current pipeline settings and they should be made consistent with each other (e.g. sharing a subfunction so they produce the exact same results). One way is to use DataTools > ExportData and generate the 'Process Info' file, and the other way is to File > SavePipeline, and then save also as a text file. At the moment, the File > SavePipeline, using the text option, is broken, so I don't know what sort of file it is trying to produce. Most likely, it is producing something similar to ExportData so I don't know whether the code from that would be helpful or not. The ExportData method is pretty close to what we want, with these changes:
+> move the pixel size and number of image sets to the top of the file (after the processing date & time).
+> Is the processing date & time the start time or end time? Label it appropriately.
+> I think we store variable descriptions in the handles structure in output files - if so, I'd like to print out the variable descriptions next to each value. In other words, replace the text "Variable 1 Value" with the actual variable description.
+> at the moment it produces a bit *too* much information.  we do *not* need to list all the info about each image set, because this information is already exported in the "Image" structure when you export data. 
+
+- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
+
+- (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
+??? Error using ==> set
+Index exceeds matrix dimensions.
+??? Error using ==> set
+Error while evaluating uicontrol Callback.
+
+- (Requested by Anne) - In File > Open Image, underscores in the file name are not displayed as underscores - instead they make the character after the underscore appear as a subscript. We have fixed this elsewhere (I think in the histogram tool).
+
+- (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.
+
+- (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyPrimAutomatic: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyPrimAutomatic.
+
+- (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
+
+- (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.
+
+- (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
+
+- (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
+% Threshold correction factor:
+% When the threshold is calculated automatically, it may consistently
+% be too stringent or too lenient.  For example, the Otsu automatic
+% thresholding inherently assumes that 50% of the image is covered by
+% objects. If a larger percentage of the image is covered, the Otsu
+% method will give a slightly biased threshold that may have to be
+% corrected. In a future version, the 'Threshold correction factor'
+% may be removed and the "Approximate percentage covered by objects"
+% information used instead.  For now, however, you may need to enter an
+% adjustment factor which you empirically determine is suitable for
+% your images. The number 1 means no adjustment, 0 to 1 makes the
+% threshold more lenient and greater than 1 (e.g. 1.3) makes the
+% threshold more stringent.
+
+- (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
+
+- (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:  SCMD: Saccharomyces
+       cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
+       1;32 Database issue:D319-22. PMID: 14681423  
+Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
+
+- (Requested by Anne 8-24-05) - The SaveImageAs ImageTool gave this error when I tried to use it on a IdentifyPrimAutomatic figure window that was saved as a matlab fig file and then reopened later:
+??? Invalid handle object.
+Error in ==> SaveImageAs at 29
+    MainWinPos = get(handles.figure1,'Position');
+??? Error while evaluating uimenu Callback.
+
+- (Requested by Anne 8-26-05) - If there is available space, check that each display window for each module shows the image set # at the top.
+
+- (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames.
+
+- (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
+
+- (Requested by Anne 8-30-05) - If the user enters an odd number for CPsmooth (a subfunction used by the Smooth module, among others), right now it yields the error 'The text you entered for the smoothing..." and it cancels all processing. Instead, let's have it continue processing by rounding the user's entry down to the nearest integer but meanwhile pop up a warning dialog box telling the user that their entry has been rounded down.  Make sure the warning dialog box does not pop up new every time around the cycle (maybe only if setbeinganalyzed = 1).
+
+- (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through.
+
+- (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
+
+- (Requested by Anne 9-01-05) - We used to have code that allowed variable edit boxes to expand when the text within them was too long to fit. It mostly became unnecessary when Colin invented the new pathname entry boxes/browse buttons (because this usually only happens when we are dealing with typing pathnames into edit boxes), but I would still like edit boxes to expand if text becomes too long to fit, so we should find that code and re-implement it.
+
+- (Requested by Anne 9-01-05) - The waitbar window produced by the CorrectIllumination_CalculateUsingIntensities module stays open after closing CellProfiler (it must not have the UserData indicating that it's a CellProfiler-related window). And, it's the wrong color.
+
+- (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons.  I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
+
+- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
+
+- (Requested by Anne 9-07-05) - In the modules where we use pathnameVAR to create a long box with a browse button, the variable descriptions all need to be changed to state that you can type a period (.) to use the default image directory (or output directory, depending on the context).
+
+- (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
+
+[Do the following prior to releasing:  (Requested by Anne) -
+- Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
+- Smart Indent
+- M Lint error checking
+- Check for TODO's and FIX ME's throughout the code
+- Test every module & button
+- Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed. Also, check whether starting a pipeline containing every module properly opens up figure windows when using the Restart module to being at something other than setbeinganalyzed = 1.
+- Prepare updated manual
+- Check whether canceling works 
+- Make reference sheet with short descriptions of the modules.
+- For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
+- Design an informational brochure
+- Make a tutorial to demonstrate how CP is used.]
+
+---------------------------------------------------
+POST-PUBLIC RELEASE SUPPORT:
+     - Monitor imaging newsgroups and inform people about the software
+     - Provide technical support/help desk
+     - Fix bugs
+     - Maintain for new releases of OS's and Matlab
+     - Check Matlab Central for useful code to incorporate into
+       CellProfiler or its modules (last checked on 9-16-04:
+       Biotech/medical, Graphics (all 3 categories), Image Processing,
+       Utilities - GUI Tools & examples, and Misc.) 
+     - Organize training workshops
+     - Present at conferences
+---------------------------------------------------
+THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
+- update the image file formats that are readable in LoadImages modules.
+
+---------------------------------------------------
+
+LONG-TERM:
+
+GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
+
+GUI 3 +++  (Requested by Anne) -Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
+
+VISION PROJECTS:
+  - Write algorithms to compare hand-traced results to CellProfiler
+       results quantitatively, then apply them to our hand-traced data
+       sets. [2 parts: 1) segment manual images.  2) match object to object, 
+	 3) signed distance transfer]
+
+     - Allow batches of different settings to be run and their results
+       compared 
+
+     - Allow automatic selection of settings based on hand-traced images
+
+     - Get someone to Hand-outline a second set of images to compare
+       to Chris' set. 
+
+     - Make separate Identify Secondary modules: one for bright lines
+       and one for dark lines between objects.  Also try watershedding
+       the gradient image rather than the original. 
+
+     - Improve background/cell edge finding - threshold vs. adaptive
+       threshold vs. watershed
+---------------------------------------------------
+
+PROBABLY DO NOT WANT TO INVEST TIME IN THESE IMMEDIATELY:
+
+- (Requested by Colin) - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
+
+VISION 2 +++  (Requested by Anne) -Improve foreground/background determination for the IdentifySecPropagate module.  Ask Ray for advice. Here is one idea:
+Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.
+The usual procedure is as follows (the technique is called Expectation Maximization segmentation):
+Segment cells
+Estimate illumination variation from the background and correct the original image
+Re-segment cells
+Re-estimate illumination variation from the background and correct the original image
+Re-segment cells
+Repeat until convergence.
+The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
+
+++  (Requested by Anne) -Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
+
+++  (Requested by Anne) -Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
+
++++  (Requested by Anne) -Make a user-scoring module that allows the user to view and
+       annotate each image manually. Show control side by side (1-4 at
+       a time) and add that assessment to the data structure. Maybe
+       allow randomizing (to do blind tests). Allow clicking
+       through. Could also be used just for viewing images (e.g. every
+       third image in a gigantic image set).  Whether the file name
+       and/or sample info is shown should be optional. 
+
++++  (Requested by Anne) -Allow data to be exported to Open Microscopy Environment
+       databases.  (Being worked on by Tony Scelfo in Peter Sorger's lab).
+
++++  (Requested by Anne) -Binucleate cells: figure out how to identify and count them
+
++++  (Requested by Anne) -Make modules to identify objects in transmitted light/DIC images.
+
++++  (Requested by Anne) -Align/resize stack of images (like yeast plates). See Matlab
+       demo on image registration. Did Chris already do this? 
+
++++ (Requested by Anne) - Neurite outgrowth module
+
++++  (Requested by Anne) -Particle tracking over time module
+
+- (Requested by Anne) - Add background masking to the identify sec distance module
+       (make it optional in case a cell stain image is not
+       available). 
+
+[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
+- Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
+Settings =      ModuleNames: {1x6 cell}
+             VariableValues: {6x13 cell}
+         NumbersOfVariables: [13 6 5 6 4 8]
+    VariableRevisionNumbers: [2 0 1 0 1 1]
+*Note: This requires editing almost all the modules, while this improvement is not absolutely necessary; the time cost should be considered.
+
+[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
++++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.

@@ -1,12 +1,5 @@
 Mike's TODO list
 
-- (Requested by Anne 09-07-05) - Can you rename all text files (the TODO's and some DeveloperScript files) by adding .txt to the names?  I think SVN allows us to do this in a smart way (whereas CVS required adding and deleting).
-
-- (Requested by Anne 09-07-05) - Don't forget to move the outdated IdentifySec modules to the Outdated folder.  
-
-- (Requested by Anne 09-07-05) - For the IdentifySecondary module, I think that if you choose Distance, no images are needed as an input, so the variable description should change to reflect that an image selected there only affects the display and not the object identification itself. 
-
-
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
 - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.

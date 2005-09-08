@@ -2,6 +2,15 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+
+-(Mike 9/8) (Requested by Anne 09-07-05) - For the IdentifySecondary module, I think that if you choose Distance, no images are needed as an input, so the variable description should change to reflect that an image selected there only affects the display and not the object identification itself. 
+
+-(Mike 9/8) (Requested by Anne 09-07-05) - Don't forget to move the outdated IdentifySec modules to the Outdated folder. 
+
+-(Mike 9/8) (Requested by Anne) - Combine all IdentifySec options into one module.
+
+-(Mike 9/8) (Requested by Anne 09-07-05) - Can you rename all text files (the TODO's and some DeveloperScript files) by adding .txt to the names?  I think SVN allows us to do this in a smart way (whereas CVS required adding and deleting).
+
 ===-(Mike 9/7) (Requested by Anne 09-01-05) - If loading an old pipeline fails dramatically (e.g. because a module no longer exists), right now things just kind of stall, and then there are loose variables left in the handles.Settings and the pipeline list box shows 'loading...'. If possible,  if something goes wrong during pipeline loading can we make sure handles.Settings is cleared out and the 'loading...' is cleared away?
 
 -(Mike 9/7) (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:   CPretrieveMediaFileNames.m
@@ -16,6 +25,9 @@ This gave a bug on my Mac when I started CP but didn't cause any problem on a wi
 -(Mike 9/6) (Requested by Anne 09-01-05) - When loading from a saved pipeline and a module doesn't exist anymore, a warndlg pops up but is then covered up by the variable revision assisting window. The text from the warndlg box should be displayed in the variable assist window (which normally says something about revision numbers not matching), and just say "Module XXX can't be loaded, but you can at least see the saved settings below. The pipeline will not load properly and probably all of CellProfiler's settings are corrupt so you should shut it down before attempting to load or build a new pipeline".
 
 -(Mike 9/6) (Requested by Anne 09-01-05) - When we load from an old saved pipeline (e.g. the SecPropagate module) and the Variable Revision number is now newer, we go through the helper window that assists us in choosing saved or default variables. It's kind of strange though because there are blank spaces for default variables that make use of popup menus. These should display *something*, like "Image must be chosen from pipeline" if it's an imagegroup popup menu, for example.
+
+-(Mike 9/2) (Requested by Anne) - make sure all modules have a Variable revision number, because otherwise we have to confirm it upon loading pipelines every time we use that module.
+NOTE: THIS SHOULD BE CHECKED FOR ALL NEW MODULES BEING CREATED
 
 -(Mike 9/2) When loading a module whose variable revision number has changed, many of the variables come up as blank in the window where you choose between Saved and Default.
 

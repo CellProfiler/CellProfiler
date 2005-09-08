@@ -40,21 +40,16 @@ function handles = Align(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Align';
 
 %textVAR01 = What did you call the first image to be aligned? (will be displayed as blue)
 %infotypeVAR01 = imagegroup
@@ -93,7 +88,7 @@ AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -101,7 +96,7 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 drawnow
 
 if strcmp(Image1Name,'/') == 1
-    error('Image processing was canceled because no image was loaded in the Align module''s first image slot')
+    error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the first image slot'])
 end
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, Image1Name) == 0
@@ -111,24 +106,24 @@ if isfield(handles.Pipeline, Image1Name) == 0
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image1Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image1Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 Image1 = handles.Pipeline.(Image1Name);
 
 %%% Same for Image 2.
 if strcmp(Image2Name,'/') == 1
-    error('Image processing was canceled because no image was loaded in the Align module''s second image slot')
+    error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the second image slot'])
 end
 if isfield(handles.Pipeline, Image2Name) == 0
-    error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 Image2 = handles.Pipeline.(Image2Name);
 
 %%% Same for Image 3.
 if strcmp(Image3Name,'/') ~= 1
     if isfield(handles.Pipeline, Image3Name) == 0
-        error(['Image processing was canceled because the Align module could not find the input image.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     Image3 = handles.Pipeline.(Image3Name);
 end
@@ -137,8 +132,6 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Aligns three input images.
 if strcmp(Image3Name,'/') ~= 1
@@ -171,8 +164,6 @@ end
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -224,8 +215,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 if strcmp(AdjustImage,'Yes') == 1
     %%% Saves the adjusted image to the

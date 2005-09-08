@@ -29,6 +29,7 @@ using namespace std;
 
 /* Output Arguments */
 #define LABELS_OUT        plhs[0]
+#define DISTANCES_OUT        plhs[1]
 
 #define IJ(i,j) ((j)*m+(i))
 
@@ -120,17 +121,12 @@ push_neighbors_on_queue(PixelQueue &pq, double dist,
 
 static void propagate(double *labels_in, double *im_in,
                       mxLogical *mask_in, double *labels_out,
+                      double *dists,
                       unsigned int m, unsigned int n,
                       double lambda)
 {
   unsigned int i, j;
-  double *dists;
-  mxArray *dist_array;
-
   PixelQueue pixel_queue;
-
-  dist_array = mxCreateDoubleMatrix(m, n, mxREAL);
-  dists = mxGetPr(dist_array);
 
   for (j = 0; j < n; j++) {
     for (i = 0; i < m; i++) {
@@ -161,8 +157,6 @@ static void propagate(double *labels_in, double *im_in,
       push_neighbors_on_queue(pixel_queue, p.distance, im_in, p.i, p.j, m, n, lambda, p.label);
     }
   }
-
-  mxDestroyArray(dist_array);
 }
 
 void mexFunction( int nlhs, mxArray *plhs[], 
@@ -171,15 +165,16 @@ void mexFunction( int nlhs, mxArray *plhs[],
 { 
     double *labels_in, *im_in; 
     mxLogical *mask_in;
-    double *labels_out;
+    double *labels_out, *dists;
     double *lambda; 
+    mxArray *dists_array;
     unsigned int m, n; 
     
     /* Check for proper number of arguments */
     
     if (nrhs != 4) { 
         mexErrMsgTxt("Four input arguments required."); 
-    } else if (nlhs > 1) {
+    } else if (nlhs > 2) {
         mexErrMsgTxt("Too many output arguments."); 
     } 
 
@@ -206,8 +201,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
       mexErrMsgTxt("Third argument must be a logical array.");
     }
 
-    /* Create a matrix for the return argument */ 
+    /* Create matrices for the return arguments */ 
     LABELS_OUT = mxCreateDoubleMatrix(m, n, mxREAL); 
+    dists_array = mxCreateDoubleMatrix(m, n, mxREAL);
     
     /* Assign pointers to the various parameters */ 
     labels_in = mxGetPr(LABELS_IN);
@@ -217,7 +213,15 @@ void mexFunction( int nlhs, mxArray *plhs[],
     lambda = mxGetPr(LAMBDA_IN);
 
     /* Do the actual computations in a subroutine */
-    propagate(labels_in, im_in, mask_in, labels_out, m, n, *lambda); 
+    dists = mxGetPr(dists_array);
+
+    propagate(labels_in, im_in, mask_in, labels_out, dists, m, n, *lambda); 
+
+    if (nlhs == 2) {
+      DISTANCES_OUT = dists_array;
+    } else {
+      mxDestroyArray(dists_array);
+    }      
+
     return;
-    
 }

@@ -7,12 +7,6 @@ Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to th
 
 **- (Requested by Anne) - Adapt the Crop module to take in an object (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object is cropped away). This will be used to Crop away yeast agar plates.
 
-- (Requested by Anne 8-24-05) - All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use:
-error('error message goes here')
-not this:
-errordlg('error message goes here'), return
-We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
-
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?
 
 - (Requested by Anne 8-25-05) - Can DilateBinaryObjects be combined with ExpandOrShrinkPrim or ExpandOrShrinkSec?

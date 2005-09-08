@@ -53,6 +53,8 @@ to work properly. the output argument do not match.
 
 - (Requested by Anne 9-06-05) - Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
 
+- (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower. 
+
 - (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
@@ -201,6 +203,8 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 
+- (Requested by Anne 9-07-05) - In the modules where we use pathnameVAR to create a long box with a browse button, the variable descriptions all need to be changed to state that you can type a period (.) to use the default image directory (or output directory, depending on the context).
+
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 [Do the following prior to releasing:  (Requested by Anne) -
@@ -240,6 +244,27 @@ LONG-TERM:
 GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
 
 GUI 3 +++  (Requested by Anne) -Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
+
+VISION PROJECTS:
+  - Write algorithms to compare hand-traced results to CellProfiler
+       results quantitatively, then apply them to our hand-traced data
+       sets. [2 parts: 1) segment manual images.  2) match object to object, 
+	 3) signed distance transfer]
+
+     - Allow batches of different settings to be run and their results
+       compared 
+
+     - Allow automatic selection of settings based on hand-traced images
+
+     - Get someone to Hand-outline a second set of images to compare
+       to Chris' set. 
+
+     - Make separate Identify Secondary modules: one for bright lines
+       and one for dark lines between objects.  Also try watershedding
+       the gradient image rather than the original. 
+
+     - Improve background/cell edge finding - threshold vs. adaptive
+       threshold vs. watershed
 ---------------------------------------------------
 
 PROBABLY DO NOT WANT TO INVEST TIME IN THESE IMMEDIATELY:

@@ -53,9 +53,9 @@ if (handles.Current.SetBeingAnalyzed ~= 1)
     return;
 end;
 
-callback = get(handles.LoadPipelineButton,'Callback');
+callback = handles.LoadPipelineButton;
 try
-    eval(['[filepath, filename, errFlg, updatedhandles] = ' callback ';']);
+    eval(['[filepath, filename, errFlg, updatedhandles] = ' callback(gcbo,[],guidata(gcbo)) ';']);
 catch
     errFlg = 1;
 end;

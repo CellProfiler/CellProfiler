@@ -55,7 +55,7 @@ end;
 
 callback = handles.LoadPipelineButton;
 try
-    eval(['[filepath, filename, errFlg, updatedhandles] = ' callback(gcbo,[],guidata(gcbo)) ';']);
+    [filepath, filename, errFlg, updatedhandles] = callback(gcbo,[],guidata(gcbo));
 catch
     errFlg = 1;
 end;

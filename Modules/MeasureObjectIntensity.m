@@ -18,7 +18,8 @@ function handles = MeasureObjectIntensity(handles)
 % image should be converted to binary and re-made into a label matrix
 % image before feeding into this module.
 %
-% See also MEASURETEXTURE, MEASURESHAPE, MEASURECORRELATION,
+% See also MEASUREOBJECTTEXTURE, MEASUREOBJECTAREASHAPE,
+% MEASURECORRELATION
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -33,16 +34,10 @@ function handles = MeasureObjectIntensity(handles)
 %
 % $Revision$
 
-
-%
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -72,7 +67,25 @@ ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%%%VariableRevisionNumber = 1
+%textVAR05 =
+%choiceVAR05 = Do not use
+%infotypeVAR05 = objectgroup
+ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
+
+%textVAR06 =
+%choiceVAR06 = Do not use
+%infotypeVAR06 = objectgroup
+ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
+
+%textVAR07 =
+%choiceVAR07 = Do not use
+%infotypeVAR07 = objectgroup
+ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 %%% Set up the window for displaying the results
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -84,7 +97,7 @@ if any(findobj == ThisModuleFigureNumber);
 end
 
 %%% START LOOP THROUGH ALL THE OBJECTS
-for i = 1:3
+for i = 1:6
     
     ObjectName = ObjectNameList{i};
     if strcmp(ObjectName,'Do not use') == 1
@@ -103,7 +116,6 @@ for i = 1:3
         error(['Image processing has been canceled. Prior to running the Measure Intensity module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureObjectIntensity module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
     end
     OrigImage = handles.Pipeline.(fieldname);
-
 
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
@@ -129,10 +141,6 @@ for i = 1:3
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-
-
     %%% Initialize measurement structure
     Basic = [];
     BasicFeatures    = {'IntegratedIntensity',...
@@ -146,7 +154,6 @@ for i = 1:3
         'MinIntensityEdge',...
         'MaxIntensityEdge',...
         'MassDisplacement'};
-
 
     %%% Get pixel indexes (fastest way), and count objects
     props = regionprops(LabelMatrixImage,'PixelIdxList');

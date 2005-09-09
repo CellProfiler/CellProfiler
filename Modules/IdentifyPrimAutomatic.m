@@ -757,6 +757,18 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         [Objects,NumOfObjects] = bwlabel(Objects > 0);
         FinalLabelMatrixImage = Objects;
 
+        %%% Indicate objects in original image and color excluded objects in red
+        tmp = OrigImage/max(OrigImage(:));
+        OutlinedObjectsR = tmp;
+        OutlinedObjectsG = tmp;
+        OutlinedObjectsB = tmp;
+        PerimObjects = bwperim(Objects > 0);
+        PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+        PerimBorder = bwperim(BorderObjects > 0);
+        OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+        OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+        OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+
         %%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%
         %%%%%%%%%%%%%%%%%%%%%%
@@ -784,17 +796,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Current.FontSize);
                 axis image,set(gca,'fontsize',handles.Current.FontSize)
 
-                %%% Indicate objects in original image and color excluded objects in red
-                tmp = OrigImage/max(OrigImage(:));
-                OutlinedObjectsR = tmp;
-                OutlinedObjectsG = tmp;
-                OutlinedObjectsB = tmp;
-                PerimObjects = bwperim(Objects > 0);
-                PerimDiameter = bwperim(DiameterExcludedObjects > 0);
-                PerimBorder = bwperim(BorderObjects > 0);
-                OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-                OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
-                OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
                 hy = subplot(2,2,3);
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                 ImageHandle = image(OutlinedObjects);

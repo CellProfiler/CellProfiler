@@ -29,15 +29,9 @@ function handles = Restart(handles)
 %
 % $Revision$
 
-
-
-
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -50,43 +44,45 @@ CurrentModuleNum = str2double(CurrentModule);
 
 drawnow
 if (handles.Current.SetBeingAnalyzed ~= 1)
-    return;
-end;
+    return
+end
 
 callback = handles.LoadPipelineButton;
 try
     [filepath, filename, errFlg, updatedhandles] = callback(gcbo,[],guidata(gcbo));
 catch
     errFlg = 1;
-end;
+end
 
 if (errFlg ~= 0)
     error('Processing cancelled because module Restart could not initialize pipeline.');
     return;
-end;
+end
 
 try
     importhandles = load(fullfile(filepath,filename));
 catch
     error(['Processing cancelled because module Restart could not load from file ' ...
         fullfile(filepath,filename),'.']);
-end;
+end
 % save figure properties
 ScreenSize = get(0,'ScreenSize');
 ScreenWidth = ScreenSize(3);
 ScreenHeight = ScreenSize(4);
 fig = handles.Current.(['FigureNumberForModule',CurrentModule]);
 RestartFigColor = get(fig,'color');
-close(fig);   % Close the Restart figure
+if ~isempty(fig)
+    try
+        close(fig); % Close the Restart figure
+    end
+end
 
-clear handles.Settings;
 handles.Settings = updatedhandles.Settings;
-clear handles.Pipeline;
 handles.Pipeline = importhandles.handles.Pipeline;
-clear handles.Measurements;
 handles.Measurements = importhandles.handles.Measurements;
-clear handles.Current;
 handles.Current = importhandles.handles.Current;
+handles.VariableBox = updatedhandles.VariableBox;
+handles.VariableDescription = updatedhandles.VariableDescription;
 handles.Current.StartingImageSet = handles.Current.SetBeingAnalyzed + 1;
 handles.Current.CurrentModuleNumber = '01';
 

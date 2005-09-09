@@ -20,7 +20,6 @@ WANT IT ASAP:
 
 - (Requested by Anne 9-08-05) - The MeasureObjectIntensity module should show which image it is measuring (e.g. OrigBlue) in the window title somewhere.  Make sure MeasureObjectTexture does this too.
 
-- (Requested by Anne 9-08-05) - Change the name from SVNcommands to SVNcommands.txt 
 
 - (Requested by Anne 9-08-05) - It looks like someone committed changes to the IdentifySec subfunctions... was this unintentional? I wonder if these needed to be SVN added in binary format rather than regular ASCII. Also, if it's feasible, we could rename the Sec subfunction to match the module's name 'IdentifySecondary'.
 

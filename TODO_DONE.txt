@@ -2,6 +2,12 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Colin 9/9) - (Requested by Anne 09-02-05) - it looks like you invented a new 'filenameVAR' to enter filenames - have we incorporated this into any modules yet? We could put it in LoadSingleImage if you want. 
+
+-(Colin 9/9) (Requested by Anne 09-08-05) - I think we still want to increase the size of the text boxes that say default image folder and default output folder. All the other text looks great on my computer, except that those are missing the word 'folder' because the box isn't quite wide enough.
+
+- (Colin 9/9) (Requested by Anne 09-08-05) - Can you check that the zipping function works now on the mac? Mike just fixed it and i want to doublecheck that if you do File > Save current CP code that the zipped archive contains everything we need to run CP.
+
 ===-(Mike 9/8) (Requested by Anne 8-23-05) - Make the ApplyThresholdAndShift an option within ApplyThreshold. Give the new combined module sophisticated options for automatic thresholding (see IdentifyPrimAutomatic for thresholding code).  I think this will also replace the functionality of SubtractBackground.
 
 ===-(Mike 9/8) (Requested by Anne) - Combine RGBsplit and RGBtoGray into a single module - that is, with the two methods (split or combine) being options within a single module. Call the resulting module RGBtoGray and move RGBSplit to Outdated.

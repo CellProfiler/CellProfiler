@@ -1,6 +1,5 @@
 Susan's TODO list
 
-- (Requested by Anne 09-08-05) - Please adapt the four pipelines which are in trunk/CellProfiler/ExampleImages (each folder has an example pipeline) to the current code and once they are repaired and load smoothly, commit them to SVN and generate new Output files and commit them to SVN too.  This might involve changing some module names and moving variable names around, as you have done previously. If you run into trouble, you might check first with Mike and if you can't figure something out, email me.
 
 - Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
 
@@ -35,7 +34,7 @@ too long names can be fixed just before importing the data.
 
 Given on 9/7/2005
 
---set up SVN on cluster and as CP user on this computer--cluster waiting
+--set up SVN on cluster   waiting for login
 --week of 9/12 ,  check wth Ray to work on writerSQL module
 --week of 9/12, meet with Tim ierson, IT dept. to discuss /set up the mySQL database
 -- practice with large batches (FLY200) + use that
@@ -44,5 +43,4 @@ Given on 9/7/2005
 
 --modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by mine or leave it out.
 
-update SVNCommands-done
-clean up MatLab path to not search .svn folders. -done
+ 

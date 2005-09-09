@@ -71,7 +71,7 @@ openFigures = [];
 %%% Determines the startup directory.
 handles.Current.StartupDirectory = pwd;
 addpath(pwd);
-handles.LoadPipelineButton = @LoadPipeline_Callback;
+handles.FunctionHandles.LoadPipelineCallback = @LoadPipeline_Callback;
 %%% Retrieves preferences from CellProfilerPreferences.mat, if possible.
 %%% Try loading CellProfilerPreferences.mat first from the matlabroot
 %%% directory and then the current directory.  This is not necessary for

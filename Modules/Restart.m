@@ -47,7 +47,7 @@ if (handles.Current.SetBeingAnalyzed ~= 1)
     return
 end
 
-callback = handles.LoadPipelineButton;
+callback = handles.FunctionHandles.LoadPipelineCallback;
 try
     [filepath, filename, errFlg, updatedhandles] = callback(gcbo,[],guidata(gcbo));
 catch

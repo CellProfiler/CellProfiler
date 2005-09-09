@@ -273,6 +273,9 @@ GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool 
 GUI 3 +++  (Requested by Anne) -Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
 VISION PROJECTS:
+
+- IMPROVE AUTOMATIC THRESHOLD CALCULATIONS!!!  Implement Ray's belief propagation idea??
+
   - Write algorithms to compare hand-traced results to CellProfiler
        results quantitatively, then apply them to our hand-traced data
        sets. [2 parts: 1) segment manual images.  2) match object to object, 

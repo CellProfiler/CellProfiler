@@ -7,7 +7,6 @@ function handles = ClassifyObjects(handles)
 % classes according to the size of a measurement specified
 % by the user.
 %
-%
 % SAVING IMAGES: To save images using this module, use the SaveImages
 % module with the images to be saved called 'ColorClassified' plus
 % the object name you enter in the module, e.g.
@@ -28,8 +27,6 @@ function handles = ClassifyObjects(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
@@ -40,10 +37,10 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the segmented objects?
+%textVAR01 = What did you call the identified objects (or UserDefined)?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
+%inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = Enter the feature type, e.g. AreaShape, Texture, Intensity,...
 %choiceVAR02 = AreaShape
@@ -96,10 +93,15 @@ drawnow
 fieldname = ['Segmented', ObjectName];
 
 %%% Checks whether the image exists in the handles structure.
-if ~isfield(handles.Pipeline, fieldname)
-    errordlg(['Image processing has been canceled. Prior to running the ClassifyObject module, you must have previously run a module that generates an image with the objects identified.  You specified in the ClassifyObject module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ClassifyObject module cannot locate this image.']);
+if isfield(handles.Pipeline, fieldname)
+    LabelMatrixImage = handles.Pipeline.(fieldname);
+%%% If we are using a user defined field, there is no corresponding
+%%% image.
+elseif strcmpi(ObjectName,'UserDefined')
+    LabelMatrixImage = zeros(100);
+else
+    error(['Image processing has been canceled. Prior to running the ClassifyObject module, you must have previously run a module that generates an image with the objects identified.  You specified in the ClassifyObject module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ClassifyObject module cannot locate this image.']);
 end
-LabelMatrixImage = handles.Pipeline.(fieldname);
 
 %%% Checks whether the feature type exists in the handles structure.
 if ~isfield(handles.Measurements.(ObjectName),FeatureType)
@@ -134,20 +136,26 @@ for k = 1:NbrOfBins
     bins(k) = length(index);
 end
 
-% Produce image where the the objects are colored according to the original
-% measurements and the quantized measurements
-NonQuantizedImage = zeros(size(LabelMatrixImage));
-NbrOfObjects = max(LabelMatrixImage(:));
-props = regionprops(LabelMatrixImage,'PixelIdxList');              % Pixel indexes for objects fast
-for k = 1:NbrOfObjects
-    NonQuantizedImage(props(k).PixelIdxList) = Measurements(k);
-end
-QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
-QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
-cmap = [0 0 0;jet(length(bins))];
-QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
-    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
+NbrOfObjects = length(Measurements);
 
+%%% If we are using a user defined field, there is no corresponding
+%%% image.
+if ~strcmpi(ObjectName,'UserDefined')
+    % Produce image where the the objects are colored according to the original
+    % measurements and the quantized measurements
+    NonQuantizedImage = zeros(size(LabelMatrixImage));
+    props = regionprops(LabelMatrixImage,'PixelIdxList');              % Pixel indexes for objects fast
+    for k = 1:NbrOfObjects
+        NonQuantizedImage(props(k).PixelIdxList) = Measurements(k);
+    end
+    QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
+    QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
+    cmap = [0 0 0;jet(length(bins))];
+    QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
+    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
+else
+    FeatureName = FeatureType;
+end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -156,26 +164,21 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
-    %%% Sets the width of the figure window to be appropriate (half width).
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = originalsize(3);
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
     %%% Activates the appropriate figure window.
+
     CPfigure(handles,ThisModuleFigureNumber);
-
-    %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1)
-    ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))
-    axis image
-    set(gca,'Fontsize',handles.Current.FontSize)
-    title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
-
+    %%% If we are using a user defined field, there is no corresponding
+    %%% image.
+    if ~strcmpi(ObjectName,'UserDefined')
+        %%% A subplot of the figure window is set to display the original image.
+        subplot(2,2,1)
+        ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))
+        axis image
+        set(gca,'Fontsize',handles.Current.FontSize)
+        title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
+    end
     %%% Produce and plot histogram of original data
     subplot(2,2,2)
     Nbins = min(round(NbrOfObjects/5),40);
@@ -188,14 +191,17 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     axis tight
     xlimits = xlim;
     axis([xlimits ylimits])
+    %%% If we are using a user defined field, there is no corresponding
+    %%% image.
+    if ~strcmpi(ObjectName,'UserDefined')
 
-    %%% A subplot of the figure window is set to display the quantized image.
-    subplot(2,2,3)
-    ImageHandle = image(QuantizedRGBimage);axis image
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Classified ', ObjectName])
-    set(gca,'Fontsize',handles.Current.FontSize)
-    title(['Classified ', ObjectName],'fontsize',handles.Current.FontSize);
-
+        %%% A subplot of the figure window is set to display the quantized image.
+        subplot(2,2,3)
+        ImageHandle = image(QuantizedRGBimage);axis image
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Classified ', ObjectName])
+        set(gca,'Fontsize',handles.Current.FontSize)
+        title(['Classified ', ObjectName],'fontsize',handles.Current.FontSize);
+    end
     %%% Produce and plot histogram
     subplot(2,2,4)
     x = edges(1:end-1) + (edges(2)-edges(1))/2;
@@ -209,7 +215,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     axis([xlimits ylim])
     set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
 
-    CPFixAspectRatio(NonQuantizedImage);
+    %%% If we are using a user defined field, there is no corresponding
+    %%% image.
+    if ~strcmpi(ObjectName,'UserDefined')
+        CPFixAspectRatio(NonQuantizedImage);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,19 +227,21 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
-%%% Saves images to the handles structure so they can be saved to the hard
-%%% drive, if the user requests.
-fieldname = ['ColorClassified',ObjectName];
-handles.Pipeline.(fieldname) = QuantizedRGBimage;
+%%% If we are using a user defined field, there is no corresponding
+%%% image.
+if ~strcmpi(ObjectName,'UserDefined')
+    %%% Saves images to the handles structure so they can be saved to the hard
+    %%% drive, if the user requests.
+    fieldname = ['ColorClassified',ObjectName];
+    handles.Pipeline.(fieldname) = QuantizedRGBimage;
+end
 
 ClassifyFeatureNames = cell(1,NbrOfBins);
 for k = 1:NbrOfBins
     ClassifyFeatureNames{k} = ['Bin ',num2str(k)];
 end
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName,'Features']) = ClassifyFeatureNames;
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins};
-
-
+%%% We are truncating the ObjectName in case it's really long.
+MaxLengthOfFieldname = min(20,length(FeatureName));
+handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ClassifyFeatureNames;
+handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins};

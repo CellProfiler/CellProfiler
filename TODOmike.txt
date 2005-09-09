@@ -1,7 +1,5 @@
 Mike's TODO list
 
-- (Requested by Anne 9-08-05) - there still seems to be a lingering bug in object groups... I think it happens when I set up a pipeline (e.g. with  Nuclei being identified and then measured) and then at the last minute change the name Nuclei to Nuclei2. In subsequent modules that make use of that object, the name automatically updates to Nuclei2 but when I run the pipeline the subsequent module goes looking for Nuclei, not Nuclei2.
-
 - (Requested by Anne 9-08-05) - Can you check the Tif image files now that we have SVN set up and see if they look OK on the PC (and haven't been mangled by conversion to binary or whatever)?  Also, the .mat files.  Susan will be updating the ExampleXXXSettings.mat files to the newest version of code, but you should at least see that matlab can read the files.
 
 - (Requested by Anne 09-08-05) - I helped someone setup CP on a PC (Windows XP, with Matlab 7.04.365 SP2 R14) and ran into a couple of bugs. Not sure if they will reproduce but can you check on them:

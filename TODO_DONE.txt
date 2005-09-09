@@ -2,6 +2,8 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/9) (Requested by Anne 9-08-05) - there still seems to be a lingering bug in object groups... I think it happens when I set up a pipeline (e.g. with  Nuclei being identified and then measured) and then at the last minute change the name Nuclei to Nuclei2. In subsequent modules that make use of that object, the name automatically updates to Nuclei2 but when I run the pipeline the subsequent module goes looking for Nuclei, not Nuclei2.
+
 -(Mike 9/9) (Requested by Anne 9-08-05) - In ClassifyObjects, I get strange results in the histogram - I think the data is probably right, it's just displayed strangely. Test it with the lower bin set below the lowest actual measurement, but with the upper bin edge set to be somewhere where about half the measurements will be excluded because they are too high. Now set p:NN  where NN is a value where about half the objects are higher and half lower. I tested it where the actual values ranged from 0 to 2000 and I set the cutoff to p:300. The histogram showed two bars, stretching from 0 to 300 and from 300 to 600. I would have expected it to be 0 to 300 and 300 to 2000, but maybe that's just how the display looks.
 
 -(Mike 9/9) (Requested by Anne 9-08-05) - I hacked together a quick fix for the MeasureCorrelation module to allow it to measure the correlation of the images overall, but apparently there's something wrong in the code - the module doesn't fail or error out, but the measurements it produces are not the right 'shape': for each combination of incoming images (e.g. green+blue) it should produce one number per image, and the measurement should go in handles.Measurements.Image, like:

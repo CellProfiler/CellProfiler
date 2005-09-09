@@ -1,26 +1,5 @@
 Colin's TODO list
 
-- (Requested by Anne 09-08-05) - Can you check that the zipping function works now on the mac? Mike just fixed it and i want to doublecheck that if you do File > Save current CP code that the zipped archive contains everything we need to run CP.
-
-- (Requested by Anne 09-08-05) - I think we still want to increase the size of the text boxes that say default image folder and default output folder. All the other text looks great on my computer, except that those are missing the word 'folder' because the box isn't quite wide enough.
-
-Some random administrative stuff:
-1. The only way to add new users is by me logging into CSAIL, so tell me what login name you want (it will be easiest if it's identical to your shortname when you login to the CP G5 computer). I will give you the password CellProfiler and then you can change it yourself (if there are not instructions on our SVNcommands document yet for changing passwords, can you add those instructions?).
-2. I left a weekly schedule printout on 'your' desk so that you can mark what times you are *not* free for our weekly CellProfiler meeting (you + UROPs + Mike).
-3. For SVN, we don't want all the users sharing the same CellProfiler folder because then people can't leave projects  half done, and if people forget to commit something, other people have to sort through what they've left behind. So I think you will want to have your own SVN'd trunk/CellProfiler folder within Users/colin and have other users checkout their own copy in their own Users folder. The only problem I could foresee is that you will need to set the path of matlab when starting work to be the proper folder - maybe there is a way to force matlab to look in each user's folder to lookup pathdef.m whihc contains the path. Does this seem like a good strategy? I think it's fine to set everyone up with their own account on the CP G5-1 (or the ibm laptop, or the little mac) rather than trying to share the cellprofiler identity, right?  If this is what we decide to do, could you make sure the instructions for installing SVN on the mac are correct and understandable in SVNcommands (Susan should be doing this, so ask her first before writing out instructions)?
-4. Can you pack up the CP poster into the tube for me to take to switzerland, and print out ~20 mini color copies (SABATINI COLOR laser printer outside David's office)?
-5.  For future reference, here's what new UROPs need to do to be set up. I will make sure the loose ends are tied up by emailing Joy and Wyman. Can you add the following info to a text file (HiringNewPeople.txt) in the SVN DeveloperScripts (I am not kidding) so we have it as a reference for IAP and next semester:
-- Notify Lahra Tillman to appoint the person as a UROP. If pay is pending approval by the UROP office, have her set them up as UROP for credit. If they get funding through the UROP office we are all set; if not and we agreed to pay them, then Lahra needs to convert their appointment to UROP for pay and we need to tell Lahra which account to use.  At that time, the UROPs can start submitting their timecards. When HR receives the appointment from Lahra, they will schedule the training/safety orientation, so we don't need to set this up ourselves.
-- Email their resume to Lahra Tillman.
-- Make an account for them on the CP G5-1 computer or whatever other computers they might use - make note of the shortname you assign and be consistent with the next step.
-- tell Anne what login name they want for SVN and she will set it up with the password CellProfiler.
-- Explain to them how to use the timecards, and how to wait to submit them until we see whether they get UROP funding through the office.
-- Help them prepare their UROP proposal before the deadline.
-- Explain to them how to use SVN and especially how to use the TODO lists and all the DeveloperScripts text files that have instructions for things (like SVNcommands).  Be sure to emphasize how important it is to take projects off the TODO and commit the TODO before starting on them... I am really afraid that several people might work on the same thing and end up annoyed at redundant work!
-- I think you might want to approve their work before they commit anything to SVN so that it doesn't wreak havoc on ongoing work. I don't know whether it's practical for them to basically demo any new features or bug fixes to you (and have you glance through the code itself to make sure it's done in a reasonably smart way) before they commit, because it probably involves you being in the same place at the same time.  Maybe they could have Mike doublecheck stuff before submitting instead?  What do you think?
-
-
-- (Requested by Anne 09-02-05) - it looks like you invented a new 'filenameVAR' to enter filenames - have we incorporated this into any modules yet? We could put it in LoadSingleImage if you want. 
 
 - (Requested by Anne 09-06-05) - MeasureRatios needs to be much more sophisticated. Right now it has CorrGreen and CorrBlue and CorrRed hard-coded in. It isn't flexible for different types of measures, is it? (AreaShape, Intensity, texture) 
 

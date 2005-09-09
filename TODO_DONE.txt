@@ -2,6 +2,14 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/9) (Requested by Anne 9-08-05) - In ClassifyObjects, I get strange results in the histogram - I think the data is probably right, it's just displayed strangely. Test it with the lower bin set below the lowest actual measurement, but with the upper bin edge set to be somewhere where about half the measurements will be excluded because they are too high. Now set p:NN  where NN is a value where about half the objects are higher and half lower. I tested it where the actual values ranged from 0 to 2000 and I set the cutoff to p:300. The histogram showed two bars, stretching from 0 to 300 and from 300 to 600. I would have expected it to be 0 to 300 and 300 to 2000, but maybe that's just how the display looks.
+
+-(Mike 9/9) (Requested by Anne 9-08-05) - I hacked together a quick fix for the MeasureCorrelation module to allow it to measure the correlation of the images overall, but apparently there's something wrong in the code - the module doesn't fail or error out, but the measurements it produces are not the right 'shape': for each combination of incoming images (e.g. green+blue) it should produce one number per image, and the measurement should go in handles.Measurements.Image, like:
+handles.Measurements.Image.CorrelationFeatures = {'Red_Blue','Red_Green',Green_Blue'}
+handles.Measurements.Image.Correlation = {[.2 .4 .6], [.4 .5 .1]}
+(for three color combinations and two image sets)
+Or something like that - check other measurements that end up in the Image substructure and make sure that this module matches those.  The way the code is currently, there are a few hundred numbers for each image!
+
 -(Colin 9/9) - (Requested by Anne 09-02-05) - it looks like you invented a new 'filenameVAR' to enter filenames - have we incorporated this into any modules yet? We could put it in LoadSingleImage if you want. 
 
 -(Colin 9/9) (Requested by Anne 09-08-05) - I think we still want to increase the size of the text boxes that say default image folder and default output folder. All the other text looks great on my computer, except that those are missing the word 'folder' because the box isn't quite wide enough.

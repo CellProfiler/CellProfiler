@@ -11,10 +11,10 @@ function handles = MeasureRatios(handles)
 %
 % How it works:
 %
-% See also MEASUREAREAOCCUPIED,
-% MEASUREINTENSITYTEXTURE, MEASUREAREASHAPECOUNTLOCATION,
+% See also MEASUREIMAGEAREAOCCUPIED,
+% MEASUREOBJECTINTENSITYTEXTURE, MEASUREOBJECTAREASHAPE,
 % MEASURECORRELATION,
-% MEASURETOTALINTENSITY.
+% MEASUREIMAGEINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -29,11 +29,10 @@ function handles = MeasureRatios(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.

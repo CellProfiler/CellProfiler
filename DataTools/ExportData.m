@@ -361,7 +361,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                     index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
                     for k = 1:length(index)
                         for l = 1:length(index{k})
-                            tmp{k} = [tmp{k}(1:index{k}(l)+1-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
+                            tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
                         end
                     end
                     strText(2:2:end) = tmp;                    % Interleave with tabs

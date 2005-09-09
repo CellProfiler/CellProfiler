@@ -3,6 +3,8 @@ AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+- (Requested by Anne 9-08-05) - LoadSingleImage produced a long box and browse button for the first image specified but not the subsequent image types.
+
 - (Requested by Anne 9-08-05) - Can we have the image set number displayed for every figure window?  Rather than adding it as a title for each individual figure, perhaps we could have it be part of the window bar (where it says Figure 9: ClassifyObjects can we change it to Figure 9: ClassifyObjects, image set #3?)
 
 - (Requested by Anne 9-08-05) - There's a typo in ClassifyObjects - according is accoring.

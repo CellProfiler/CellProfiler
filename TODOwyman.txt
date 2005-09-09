@@ -1,5 +1,6 @@
 TODOwyman
 
+- (Requested by Anne 9-08-05) - Wyman, I just noticed in your email you mentioned having ideas for the GUI and features after playing with the code a bit.  I'd love to talk over your ideas when I get back in town!
 
 //ADDED 09/08/2005
 

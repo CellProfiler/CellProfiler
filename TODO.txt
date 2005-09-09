@@ -3,15 +3,42 @@ AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+- (Requested by Anne 9-08-05) - Can we have the image set number displayed for every figure window?  Rather than adding it as a title for each individual figure, perhaps we could have it be part of the window bar (where it says Figure 9: ClassifyObjects can we change it to Figure 9: ClassifyObjects, image set #3?)
+
+- (Requested by Anne 9-08-05) - There's a typo in ClassifyObjects - according is accoring.
+
+
+- (Requested by Anne 9-08-05) - ClassifyObjects is able to classify cells based on a ratio calculated with the MeasureRatios module. Anne has an example pipeline (temp17PIPE.mat for BioImage images) that shows how it's done, but it's a little hacked together and the module is not documented well to explain how this would be done.  
+
+- (Requested by Anne 9-08-05) - MeasureRatios creates very long fieldnames in the handles.Measurements structure. Is there any way we can reduce the length?
+
+- (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
+
+- (Requested by Anne 9-08-05) - The standard error message says error in module N, but it doesn't tell us the name of the module. Can we have the name of the module included in the error message? When there's > 10 modules it gets tough to count and find which one generated the error.  Also, it would be really really great if these error catchings could tell us what line number the error occurred on.  I think this is something we've tried before and couldn't figure out, though.
+
+- (Requested by Anne 9-08-05) - We want the MeasureCorrelation module to be able to measure the overall correlation between the two images, for the entire image itself (not just correlation within objects). I am pretty sure the code is able to do this, but it's not clear how to make it happen - do you have to leave one of the variables set to 'Do not use', or type in 'image' instead of choosing an object from the list?  We need to update the variable description to explain this, and possibly we need to adjust the variable popup menus to allow it.
+
+- (Requested by Anne 9-08-05) - The MeasureObjectIntensity module should show which image it is measuring (e.g. OrigBlue) in the window title somewhere.  Make sure MeasureObjectTexture does this too.
+
+- (Requested by Anne 9-08-05) - Change the name from SVNcommands to SVNcommands.txt 
+
+- (Requested by Anne 9-08-05) - It looks like someone committed changes to the IdentifySec subfunctions... was this unintentional? I wonder if these needed to be SVN added in binary format rather than regular ASCII. Also, if it's feasible, we could rename the Sec subfunction to match the module's name 'IdentifySecondary'.
+
+
+
+- (Requested by Anne 9-08-05) - SVN remove CVScommands (I already added it to the Outdated folder).
+
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
 **- (Requested by Anne) - Adapt the Crop module to take in an object (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object is cropped away). This will be used to Crop away yeast agar plates.
 
-- (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?
+- (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?  I guess maybe not, because PlaceAdjacent is designed to take in two different images (e.g. OrigBlue and OrigGreen) (although perhaps we can expand it to allow up to 6 images being side by side) whereas Tile is designed to take all the images of a particular type (e.g. all the OrigBlue images) and tile them.  Not sure if it is reasonable to combine these two - I guess it depends on what the variables are and how confusing they become.
 
 - (Requested by Anne 8-25-05) - Can DilateBinaryObjects be combined with ExpandOrShrinkPrim or ExpandOrShrinkSec?
 
 - (Requested by Anne) - Can IdentifyLaplacianOfGaussian be merged into IdentifyPrimAutomatic?
+
+- (Requested by Anne 09-08-05) - Can IllumCorrect Calculate using Intensities be combined with Background intensities?
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread - but maybe it's not possible because that requires running code rather than just extracting text. If that's the case, I guess we just have to type them into this module manually and update them whenever Matlab updates its imread function (which probably isn't that often anyway). Also, right now we ask the user for the file format of their images but this information is not actually used anywhere. We need to adjust the CPimread function to take in and use a file format (it should be optional; only used when images do not have file extensions).  Also, sometimes we might want to sort images by order but also by text, or sort by two different bits of text - like only wanting to retrieve images with the proper extension. So perhaps we should use the File format input in another way (besides using it for imread when there is no extension): do you only want to consider files with that extension?  That would be nice because it prevents you from having to exclude .mat files or other types of files in the folder.
 
@@ -55,7 +82,7 @@ NumberOfMergedObjects = NumberOfObjectsBeforeMerge-NumberOfObjectsAfterMerge;
 
 - (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower. 
 
-- (Requested by Anne) - Make measure windows expand to fit the number of lines of data that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
+- (Requested by Anne 9-08-05) - Make measure windows expand to fit the number of lines of data (and the number of columsn) that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 - (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
 organelles or speckles within nuclei or cells).
@@ -185,7 +212,7 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne 8-26-05) - If there is available space, check that each display window for each module shows the image set # at the top.
 
-- (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames.
+- (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames, and when it lets you choose an image file, on the mac it has the annoying {*.*} problem so that you can't choose an image file until you change the dropdown menu for file format in the uigetfile window.
 
 - (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 

@@ -1,5 +1,9 @@
 Colin's TODO list
 
+- (Requested by Anne 09-08-05) - Can you check that the zipping function works now on the mac? Mike just fixed it and i want to doublecheck that if you do File > Save current CP code that the zipped archive contains everything we need to run CP.
+
+- (Requested by Anne 09-08-05) - I think we still want to increase the size of the text boxes that say default image folder and default output folder. All the other text looks great on my computer, except that those are missing the word 'folder' because the box isn't quite wide enough.
+
 Some random administrative stuff:
 1. The only way to add new users is by me logging into CSAIL, so tell me what login name you want (it will be easiest if it's identical to your shortname when you login to the CP G5 computer). I will give you the password CellProfiler and then you can change it yourself (if there are not instructions on our SVNcommands document yet for changing passwords, can you add those instructions?).
 2. I left a weekly schedule printout on 'your' desk so that you can mark what times you are *not* free for our weekly CellProfiler meeting (you + UROPs + Mike).

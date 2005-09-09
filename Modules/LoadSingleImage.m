@@ -53,12 +53,11 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
-%defaultVAR01 = IllumBlue.mat
+%filenametextVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call that image?
-%defaultVAR02 = IllumBlue
+%defaultVAR02 = OrigBlue
 %infotypeVAR02 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

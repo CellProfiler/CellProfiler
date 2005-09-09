@@ -174,10 +174,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored accoring to %s',ObjectName,FeatureName))
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored according to %s',ObjectName,FeatureName))
         axis image
         set(gca,'Fontsize',handles.Current.FontSize)
-        title(sprintf('%s colored accoring to %s',ObjectName,FeatureName))
+        title(sprintf('%s colored according to %s',ObjectName,FeatureName))
     end
     %%% Produce and plot histogram of original data
     subplot(2,2,2)
@@ -211,7 +211,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title(sprintf('Histogram of %s',FeatureName))
     axis tight
     xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
-    xlimits(2) = max(xlimits(2),UpperBinMax);                          % so they can be used for the second histogram
+    xlimits(2) = UpperBinMax;                          % so they can be used for the second histogram
     axis([xlimits ylim])
     set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
 

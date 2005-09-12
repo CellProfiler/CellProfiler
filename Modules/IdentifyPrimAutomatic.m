@@ -845,9 +845,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             fieldname = ['Segmented',ObjectName];
             handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
-            %%% Store outlines of objects in the handles structure
-            handles.PipelineObjectOutlines = PerimObjects;
-
             %%% Saves images to the handles structure so they can be saved to the hard
             %%% drive, if the user requested.
             if ~strcmp(SaveOutlines,'Do not save')

@@ -2,11 +2,10 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
--(Colin 9/12) - (Requested by Anne 09-01-05) - When we ran a pipeline that contained IdentifyPrimAUtomatic and SecPropagate and Tertiary Subregions, we ended up with an unanticipated field in the handles structure:
-handles.PipelineObjectOutlines
-It seems like this ought to have been something like:
-handles.Pipeline.NucleiOutlines
-or something??
+-(Mike 9/12) (Requested by Anne 9-08-05) - We want the MeasureCorrelation module to be able to measure the overall correlation between the two images, for the entire image itself (not just correlation within objects). I am pretty sure the code is able to do this, but it's not clear how to make it happen - do you have to leave one of the variables set to 'Do not use', or type in 'image' instead of choosing an object from the list?  We need to update the variable description to explain this, and possibly we need to adjust the variable popup menus to allow it.
+
+-(Colin 9/12) - (Requested by Anne 09-01-05) - When we ran a pipeline that contained IdentifyPrimAUtomatic and SecPropagate and Tertiary Subregions, we ended up with an unanticipated field in the handles structure: handles.PipelineObjectOutlines
+It seems like this ought to have been something like: handles.Pipeline.NucleiOutlines or something??
 
 -(Mike 9/12 THIS WAS RAY'S FIX FOR DISTANCE) (Requested by Anne 9-08-05) - It looks like someone committed changes to the IdentifySec subfunctions... was this unintentional? I wonder if these needed to be SVN added in binary format rather than regular ASCII. Also, if it's feasible, we could rename the Sec subfunction to match the module's name 'IdentifySecondary'.
 

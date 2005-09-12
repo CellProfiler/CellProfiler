@@ -7,8 +7,6 @@ WANT IT ASAP:
 
 - (Requested by Anne 9-08-05) - MeasureRatios creates very long fieldnames in the handles.Measurements structure. Is there any way we can reduce the length?
 
-- (Requested by Anne 9-08-05) - We want the MeasureCorrelation module to be able to measure the overall correlation between the two images, for the entire image itself (not just correlation within objects). I am pretty sure the code is able to do this, but it's not clear how to make it happen - do you have to leave one of the variables set to 'Do not use', or type in 'image' instead of choosing an object from the list?  We need to update the variable description to explain this, and possibly we need to adjust the variable popup menus to allow it.
-
 - (Requested by Anne 9-08-05) - The MeasureObjectIntensity module should show which image it is measuring (e.g. OrigBlue) in the window title somewhere.  Make sure MeasureObjectTexture does this too.
 
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).

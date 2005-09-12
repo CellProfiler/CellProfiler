@@ -60,38 +60,44 @@ ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = What did you call the objects within which to compare the images?
+%textVAR05 = What did you call the objects within which to compare the images (Choosing Image will compare the entire image against all other images)?
 %choiceVAR05 = Do not use
+%choiceVAR05 = Image
 %infotypeVAR05 = objectgroup
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 =
 %choiceVAR06 = Do not use
+%choiceVAR06 = Image
 %infotypeVAR06 = objectgroup
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 =
 %choiceVAR07 = Do not use
+%choiceVAR07 = Image
 %infotypeVAR07 = objectgroup
 ObjectName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 =
 %choiceVAR08 = Do not use
+%choiceVAR09 = Image
 %infotypeVAR08 = objectgroup
 ObjectName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 =
 %choiceVAR09 = Do not use
+%choiceVAR09 = Image
 %infotypeVAR09 = objectgroup
 ObjectName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 =
 %choiceVAR10 = Do not use
+%choiceVAR10 = Image
 %infotypeVAR10 = objectgroup
 ObjectName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
@@ -210,23 +216,8 @@ for ObjectNameNbr = 1:ObjectNameCount
     handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
 end
 
-% Calculate the correlation for the images overall
-
-% Calculate the correlation in all objects for all pairwise image combinations
-FeatureNbr = 1;                                              % Easiest way to keep track of the feature number, i.e. which combination of images
-for i = 1:ImageCount-1                                       % Loop over all combinations of images
-    for j = i+1:ImageCount
-        try
-            c = corrcoef(Image{i},Image{j});             % Get the values for these indexes in the images and calculate the correlation
-            CorrelationImg(FeatureNbr) = c(1,2); % Store the correlation
-            FeatureNbr = FeatureNbr + 1;
-        catch error(['There was a problem calculating the correlation in the MeasureCorrelation module.',])
-        end
-    end
-end
 % Store the correlation measurements
 handles.Measurements.Image.CorrelationFeatures = CorrelationFeatures;
-handles.Measurements.Image.Correlation(handles.Current.SetBeingAnalyzed) = {CorrelationImg};
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

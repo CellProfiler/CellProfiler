@@ -2,6 +2,14 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/12) (Requested by Anne 9-08-05) - Can we have the image set number displayed for every figure window?  Rather than adding it as a title for each individual figure, perhaps we could have it be part of the window bar (where it says Figure 9: ClassifyObjects can we change it to Figure 9: ClassifyObjects, image set #3?)
+
+-(Mike 9/12) (Requested by Anne 9-08-05) - LoadSingleImage produced a long box and browse button for the first image specified but not the subsequent image types.
+
+-(Mike 9/12) (Requested by Anne 9-08-05) - There's a typo in ClassifyObjects - according is accoring.
+
+-(Mike 9/12) (Requested by Anne 9-08-05) - Can you check the Tif image files now that we have SVN set up and see if they look OK on the PC (and haven't been mangled by conversion to binary or whatever)?  Also, the .mat files.  Susan will be updating the ExampleXXXSettings.mat files to the newest version of code, but you should at least see that matlab can read the files.
+
 - (Susan 9/9)(Requested by Anne 9-08-05) - Change the name from SVNcommands to SVNcommands.txt 
 
 - (Susan 9/9)(Requested by Anne 09-08-05) - Please adapt the four pipelines which are in trunk/CellProfiler/ExampleImages (each folder has an example pipeline) to the current code and once they are repaired and load smoothly, commit them to SVN and generate new Output files and commit them to SVN too.  This might involve changing some module names and moving variable names around, as you have done previously. 

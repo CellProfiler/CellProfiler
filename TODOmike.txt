@@ -1,30 +1,18 @@
 Mike's TODO list
 
-- (Requested by Anne 9-08-05) - Can you check the Tif image files now that we have SVN set up and see if they look OK on the PC (and haven't been mangled by conversion to binary or whatever)?  Also, the .mat files.  Susan will be updating the ExampleXXXSettings.mat files to the newest version of code, but you should at least see that matlab can read the files.
-
 - (Requested by Anne 09-08-05) - I helped someone setup CP on a PC (Windows XP, with Matlab 7.04.365 SP2 R14) and ran into a couple of bugs. Not sure if they will reproduce but can you check on them:
+
 * I'm not sure the timer units were accurate - it said it was taking 1 second per image set but it seemed more like 5-10 seconds. Is there some weird conversion?  Also, for the popup window at the end which tells us the breakdown for the entire set that was processed, each module's avg time is listed in seconds but no units were listed for the first image set or whatever else is listed at the top. Perhaps these issues were because we 'canceled after cycle' partway through, so the calculations were based on the total number of image sets rather than the number we actually processed?
-* The slider in the main GUI, when there are lots of variables, was backwards!  I thought this was fixed - I remember it seemed to be backwards depending on whether you're using PC vs Mac, but I thought it was working fine on your PC recently. i wonder if it's an XP issue?
+
+E-MAILED MATHWORKS * The slider in the main GUI, when there are lots of variables, was backwards!  I thought this was fixed - I remember it seemed to be backwards depending on whether you're using PC vs Mac, but I thought it was working fine on your PC recently. i wonder if it's an XP issue?
+
 * Not a bug, but on his computer it takes forever every time the code has to look up the list of images in the selected directory.  Can you make sure we aren't doing this redundantly?  I know we check through all the files when you choose the directory in the main GUI (so it's displayed in the list box), and then we check through the files when you click analyze images to make sure the file list hasn't changed (in case you moved files in the meantime), but i wonder if also the load images module is checking through things unnecessarily.  You might want to doublecheck any changes with me since this is a critical thing!
-* We had trouble with ExportData data tool when trying to export his data that had Image and Cells data (e.g. it had Load, IdentifyPrimAuto, and MeasureObjectsAreaShape) - the Cells excel file seemed fine, but the Image one failed because one of the first columns is 'pathname' which on the PCC has backslashes, but these are read funny in excel as column breaks.  We also got the command line error in matlab:
+
+DONE * We had trouble with ExportData data tool when trying to export his data that had Image and Cells data (e.g. it had Load, IdentifyPrimAuto, and MeasureObjectsAreaShape) - the Cells excel file seemed fine, but the Image one failed because one of the first columns is 'pathname' which on the PCC has backslashes, but these are read funny in excel as column breaks.  We also got the command line error in matlab:
 Export Data > Write Measurements in line 378
 Export Data at line 75
 See help for sprintf for valid escape sequences.
 
 If you need to get an example output file (might be a pain b/c too big to email?) you can email Winston at timp@wi.mit.edu
 
-- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
-
-- (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
-
-- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
- Authors (in order of joining the project):
-   Anne E. Carpenter
-   Thouis Ray Jones
-   In Han Kang
-   Ola Friman
-   Steve Lowe
-   Joo Han Chang
-   Colin Clarke
-   Mike Lamprecht
-   Susan Ma
+- Add ray's new adjustment to SecProp function for secondary distance

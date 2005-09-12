@@ -9,9 +9,7 @@ function varargout = CellProfiler(varargin)
 % analysis of large numbers of images.  New moduless can be written for the
 % software using Matlab.
 %
-%  Typing CellProfiler at the command line launches the program.
-%
-%
+% Typing CellProfiler at the command line launches the program.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -25,7 +23,6 @@ function varargout = CellProfiler(varargin)
 %   In Han Kang    <inthek@mit.edu>
 %
 % $Revision$
-
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2766,7 +2763,7 @@ else
                 for i=1:handles.Current.NumberOfModules;
                     if iscellstr(handles.Settings.ModuleNames(i)) == 1
                         handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
-                            CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
+                            CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display, Image Set #'],...
                             'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
                             'color',[0.7,0.7,0.7]);
                     end
@@ -2814,13 +2811,19 @@ else
                             handles.Current.CurrentModuleNumber = ModuleNumberAsString;
                             %%% The try/catch/end set catches any errors that occur during the
                             %%% running of module 1, notifies the user, breaks out of the image
-                            %%% analysis loop, and completes the refreshing process.
+                            %%% analysis loop, and completes the refreshing
+                            %%% process.
                             try
                                 %%% Runs the appropriate module, with the handles structure as an
                                 %%% input argument and as the output
                                 %%% argument.
-                                
+
                                 eval(['handles = ',ModuleName,'(handles);'])
+                                if ishandle(SlotNumber)
+                                    OldText = get(SlotNumber,'name');
+                                    NewNum = handles.Current.SetBeingAnalyzed;
+                                    set(SlotNumber,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
+                                end
                             catch
                                 if exist([ModuleName,'.m'],'file') ~= 2,
                                     errordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);

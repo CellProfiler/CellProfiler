@@ -3,13 +3,6 @@ AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-- (Requested by Anne 9-08-05) - LoadSingleImage produced a long box and browse button for the first image specified but not the subsequent image types.
-
-- (Requested by Anne 9-08-05) - Can we have the image set number displayed for every figure window?  Rather than adding it as a title for each individual figure, perhaps we could have it be part of the window bar (where it says Figure 9: ClassifyObjects can we change it to Figure 9: ClassifyObjects, image set #3?)
-
-- (Requested by Anne 9-08-05) - There's a typo in ClassifyObjects - according is accoring.
-
-
 - (Requested by Anne 9-08-05) - ClassifyObjects is able to classify cells based on a ratio calculated with the MeasureRatios module. Anne has an example pipeline (temp17PIPE.mat for BioImage images) that shows how it's done, but it's a little hacked together and the module is not documented well to explain how this would be done.  
 
 - (Requested by Anne 9-08-05) - MeasureRatios creates very long fieldnames in the handles.Measurements structure. Is there any way we can reduce the length?
@@ -22,10 +15,7 @@ WANT IT ASAP:
 
 - (Requested by Anne 9-08-05) - The MeasureObjectIntensity module should show which image it is measuring (e.g. OrigBlue) in the window title somewhere.  Make sure MeasureObjectTexture does this too.
 
-
 - (Requested by Anne 9-08-05) - It looks like someone committed changes to the IdentifySec subfunctions... was this unintentional? I wonder if these needed to be SVN added in binary format rather than regular ASCII. Also, if it's feasible, we could rename the Sec subfunction to match the module's name 'IdentifySecondary'.
-
-
 
 - (Requested by Anne 9-08-05) - SVN remove CVScommands (I already added it to the Outdated folder).
 
@@ -48,6 +38,23 @@ Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to th
 has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
 to work properly. the output argument do not match.
 (2) Same problem at line 134 probably
+
+- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
+
+- (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
+
+- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
+ Authors (in order of joining the project):
+   Anne E. Carpenter
+   Thouis Ray Jones
+   In Han Kang
+   Ola Friman
+   Steve Lowe
+   Joo Han Chang
+   Colin Clarke
+   Mike Lamprecht
+   Susan Ma
+
 
 ***************
 

@@ -2,6 +2,8 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/12) (Requested by Anne 9-08-05) - The standard error message says error in module N, but it doesn't tell us the name of the module. Can we have the name of the module included in the error message? When there's > 10 modules it gets tough to count and find which one generated the error.  Also, it would be really really great if these error catchings could tell us what line number the error occurred on.  I think this is something we've tried before and couldn't figure out, though.
+
 -(Mike 9/12) (Requested by Anne 9-08-05) - Can we have the image set number displayed for every figure window?  Rather than adding it as a title for each individual figure, perhaps we could have it be part of the window bar (where it says Figure 9: ClassifyObjects can we change it to Figure 9: ClassifyObjects, image set #3?)
 
 -(Mike 9/12) (Requested by Anne 9-08-05) - LoadSingleImage produced a long box and browse button for the first image specified but not the subsequent image types.

@@ -2830,7 +2830,7 @@ else
                                 else
                                     %%% Runs the errorfunction function that catches errors and
                                     %%% describes to the user what to do.
-                                    errorfunction(ModuleNumberAsString,handles.Current.FontSize)
+                                    errorfunction(ModuleNumberAsString,handles.Current.FontSize,ModuleName)
                                 end
                                 %%% Causes break out of the image analysis loop (see below)
                                 break_outer_loop = 1;
@@ -3229,7 +3229,7 @@ end
 %%% would require redefining the Zoom tool's action, which is not likely to
 %%% be a simple task.
 
-function errorfunction(CurrentModuleNumber,FontSize)
+function errorfunction(CurrentModuleNumber,FontSize,ModuleName)
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
@@ -3240,7 +3240,7 @@ if strncmp(Error,'Error using ==> ', 16) == 1
 elseif isempty(strfind(Error,'bad magic')) == 0
     ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.';
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in module ', CurrentModuleNumber];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is #', CurrentModuleNumber];
 end
 errordlg(ErrorExplanation);
 

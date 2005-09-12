@@ -61,8 +61,7 @@ TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Type the name of the image file you want to load (include the extension, like .tif)
-%defaultVAR03 = /
+%filenametextVAR03 = Type the name of the image file you want to load (include the extension, like .tif)
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call that image?
@@ -70,8 +69,7 @@ TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %infotypeVAR04 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Type the name of the image file you want to load (include the extension, like .tif)
-%defaultVAR05 = /
+%filenametextVAR05 = Type the name of the image file you want to load (include the extension, like .tif)
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call that image?
@@ -79,8 +77,7 @@ TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR06 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Type the name of the image file you want to load (include the extension, like .tif)
-%defaultVAR07 = /
+%filenametextVAR07 = Type the name of the image file you want to load (include the extension, like .tif)
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What do you want to call that image?

@@ -2,6 +2,12 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Colin 9/12) - (Requested by Anne 09-01-05) - When we ran a pipeline that contained IdentifyPrimAUtomatic and SecPropagate and Tertiary Subregions, we ended up with an unanticipated field in the handles structure:
+handles.PipelineObjectOutlines
+It seems like this ought to have been something like:
+handles.Pipeline.NucleiOutlines
+or something??
+
 -(Mike 9/12 THIS WAS RAY'S FIX FOR DISTANCE) (Requested by Anne 9-08-05) - It looks like someone committed changes to the IdentifySec subfunctions... was this unintentional? I wonder if these needed to be SVN added in binary format rather than regular ASCII. Also, if it's feasible, we could rename the Sec subfunction to match the module's name 'IdentifySecondary'.
 
 -(Mike 9/12) (Requested by Anne 9-08-05) - SVN remove CVScommands (I already added it to the Outdated folder).

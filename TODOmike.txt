@@ -40,3 +40,10 @@ See help for sprintf for valid escape sequences.
 If you need to get an example output file (might be a pain b/c too big to email?) you can email Winston at timp@wi.mit.edu
 
 - Add ray's new adjustment to SecProp function for secondary distance
+
+
+MIKE _ this was on the general TODO and it's what you are implementing above, so i thought i'd transfer this here.
+- (Requested by Anne) - Add background masking to the identify sec distance module
+       (make it optional in case a cell stain image is not
+       available). 
+

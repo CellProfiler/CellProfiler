@@ -2,6 +2,8 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+**-(CAN BE DONE BUT TAKES A LONG TIME) (Requested by Anne) - Adapt the Crop module to take in an object (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object is cropped away). This will be used to Crop away yeast agar plates.
+
 -(Mike 9/12) (Requested by Anne 9-08-05) - The MeasureObjectIntensity module should show which image it is measuring (e.g. OrigBlue) in the window title somewhere.  Make sure MeasureObjectTexture does this too.
 
 -(Mike 9/12) (Requested by Anne 9-08-05) - We want the MeasureCorrelation module to be able to measure the overall correlation between the two images, for the entire image itself (not just correlation within objects). I am pretty sure the code is able to do this, but it's not clear how to make it happen - do you have to leave one of the variables set to 'Do not use', or type in 'image' instead of choosing an object from the list?  We need to update the variable description to explain this, and possibly we need to adjust the variable popup menus to allow it.

@@ -2,6 +2,10 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
 
+-(Mike 9/13) (Requested by Anne 09-08-05) - Can IllumCorrect Calculate using Intensities be combined with Background intensities?
+
+-(Mike 9/13) (Requested by Anne 9-08-05) - MeasureRatios creates very long fieldnames in the handles.Measurements structure. Is there any way we can reduce the length?
+
 **-(CAN BE DONE BUT TAKES A LONG TIME) (Requested by Anne) - Adapt the Crop module to take in an object (ie. the plate) identified by one of the identify modules and crop based on that object (anything outside the object is cropped away). This will be used to Crop away yeast agar plates.
 
 -(Mike 9/12) (Requested by Anne 9-08-05) - The MeasureObjectIntensity module should show which image it is measuring (e.g. OrigBlue) in the window title somewhere.  Make sure MeasureObjectTexture does this too.

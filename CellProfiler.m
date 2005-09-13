@@ -1778,8 +1778,10 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
         BoxTag = get(ModList(i),'tag');
         BoxNum = str2num(BoxTag((length(BoxTag)-1):end));
         for m = 1:handles.Current.NumberOfModules
-            if ModList(i) == handles.VariableBox{m}(BoxNum)
-                ModNum = m;
+            if length(handles.VariableBox{m}) >= BoxNum
+                if ModList(i) == handles.VariableBox{m}(BoxNum)
+                    ModNum = m;
+                end
             end
         end
         CurrentString = get(ModList(i),'String');

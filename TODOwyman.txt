@@ -1,24 +1,46 @@
 TODOwyman
 
-- (Requested by Anne 9-08-05) - Wyman, I just noticed in your email you mentioned having ideas for the GUI and features after playing with the code a bit.  I'd love to talk over your ideas when I get back in town!
 
-//ADDED 09/08/2005
+Last updated: 09-13-05
+
+
+
+
+- (Requested by Anne 9-12-05) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space).  It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
+
+
+
+
+
+
+--- (Requested by Anne 9-08-05)
+- Wyman, I just noticed in your email you mentioned having ideas for the GUI and features after playing with the code a bit.  I'd love to talk over your ideas when I get back in town!
+
+
 
 ---(Requested by Anne 9-06-05)
 
+
 - Go through existing modules and towards the top, where we define CurrentModuleNumber, also specify ThisModuleName = 'IdentifyPrimAutomatic' (for example), and then adjust all the error dialogs to use that name, so that it's easier to maintain the code in the future - if we change a module name we do not have to go back through the code and find all instances of it, and we can copy error messages from one module to another without changing the module name.
+
 - Move drawnow after each header
+
 - Take out extra lines
+- 
 
 Progress: @ ApplyThreshold.m
 
 
-- (Requested by Anne) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space).  It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
-
 
 ---(Requested by Anne 8-24-05)
 
-- All errors encountered within modules (and maybe also data/image tools, though I am not certain about that) should use: error(['Image processing was canceled in the ', ModuleName, ' module because *error msg*'])
+
+- All errors encountered within modules (and maybe also data/image tools, though I am not certain about that)
+- should use: error(['Image processing was canceled in the ', ModuleName, ' module because *error msg*'])
+- 
 not: errordlg('error message goes here'), return
-We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
+
+- We should check through the code and make sure errors are handled properly, and add this detail to the programming notes.
+
+
 

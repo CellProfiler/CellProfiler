@@ -106,17 +106,17 @@ end
 
 % Get measurements
 NumeratorMeasurements = handles.Measurements.(NumObjectName).(NumMeasure){SetBeingAnalyzed};
-%NumeratorMeasurements = NumeratorMeasurements(:,NumFeatureNumber);
+NumeratorMeasurements = NumeratorMeasurements(NumFeatureNumber);
 DenominatorMeasurements = handles.Measurements.(DenomObjectName).(DenomMeasure){SetBeingAnalyzed};
-%DenominatorMeasurements = DenominatorMeasurements(:,DenomFeatureNumber);
+DenominatorMeasurements = DenominatorMeasurements(DenomFeatureNumber);
 
 if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
     error(['The specified object names ',NumObjectName,' and ',DenomObjectName,' in the MeasureRatios do not have the same object count.']);
 end
 
 try
-NewFieldName = [NumObjectName,'_',NumMeasure,'_',NumFeatureNumber,'_dividedby_',DenomObjectName,'_',DenomMeasure,'_',DenomFeatureNumber];
-NewFieldNameFeatures = [NumObjectName,'_',NumMeasure,'_',NumFeatureNumber,'_Features_dividedby_',DenomObjectName,'_',DenomMeasure,'_',DenomFeatureNumber,'_Feature'];
+NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber];
+NewFieldNameFeatures = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_Features_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber,'_Feature'];
 handles.Measurements.Ratios.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
 handles.Measurements.Ratios.(NewFieldNameFeatures) = {NewFieldName};
 end

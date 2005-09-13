@@ -39,7 +39,8 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Which object would you like to use for the numerator?
+%textVAR01 = Which object would you like to use for the numerator (The option IMAGE only works with the Correlation measurement of entire images)?
+%choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
 NumObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -62,7 +63,8 @@ NumFeatureNumber = handles.Settings.VariableValues{CurrentModuleNum,3};
 %inputtypeVAR04 = popupmenu
 NumImage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Which object would you like to use for the denominator?
+%textVAR05 = Which object would you like to use for the denominator (The option IMAGE only works with the Correlation measurement of entire images)?
+%choiceVAR05 = Image
 %infotypeVAR05 = objectgroup
 %inputtypeVAR05 = popupmenu
 DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});

@@ -294,7 +294,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 tmpMeasurements = SuperMeasurements{k};
                 if ExportInfo.IgnoreNaN == 1
                     for imageset = 1:length(Measurements)
-                        Measurements{imageset} = cat(2,Measurements{imageset},nanmean(tmpMeasurements{imageset},1));
+                        Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));
                     end
                 else
                     for imageset = 1:length(Measurements)

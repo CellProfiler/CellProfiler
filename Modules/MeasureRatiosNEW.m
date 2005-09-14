@@ -56,7 +56,7 @@ NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter the feature number (see HELP for explanation):
 %defaultVAR03 = 1
-NumFeatureNumber = handles.Settings.VariableValues{CurrentModuleNum,3};
+NumFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = If using INTENSITY or TEXTURE measures, which image would you like to process?
 %infotypeVAR04 = imagegroup
@@ -80,7 +80,7 @@ DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,06});
 
 %textVAR07 = Enter the feature number (see HELP for explanation):
 %defaultVAR07 = 1
-DenomFeatureNumber = handles.Settings.VariableValues{CurrentModuleNum,7};
+DenomFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = If using INTENSITY or TEXTURE measures, which image would you like to process?
 %infotypeVAR08 = imagegroup
@@ -106,9 +106,9 @@ end
 
 % Get measurements
 NumeratorMeasurements = handles.Measurements.(NumObjectName).(NumMeasure){SetBeingAnalyzed};
-NumeratorMeasurements = NumeratorMeasurements(NumFeatureNumber);
+NumeratorMeasurements = NumeratorMeasurements(:,NumFeatureNumber);
 DenominatorMeasurements = handles.Measurements.(DenomObjectName).(DenomMeasure){SetBeingAnalyzed};
-DenominatorMeasurements = DenominatorMeasurements(DenomFeatureNumber);
+DenominatorMeasurements = DenominatorMeasurements(:,DenomFeatureNumber);
 
 if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
     error(['The specified object names ',NumObjectName,' and ',DenomObjectName,' in the MeasureRatios do not have the same object count.']);
@@ -116,9 +116,9 @@ end
 
 try
 NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber];
-NewFieldNameFeatures = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_Features_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber,'_Feature'];
-handles.Measurements.Ratios.(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
-handles.Measurements.Ratios.(NewFieldNameFeatures) = {NewFieldName};
+NewFieldNameFeatures = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber,'Features'];
+handles.Measurements.(NumObjectName).(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
+handles.Measurements.(NumObjectName).(NewFieldNameFeatures) = {NewFieldName};
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

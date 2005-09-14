@@ -1,28 +1,6 @@
 Mike's TODO list
 
-Strangely, I can't use my email right now but SVN is still working...I'll put the PIPE mentioned inthe dev. drop box.
----------------
-Hi!
-nanmean is a function only available in the statistics toolbox (which i don't have a license for on my laptop). We'd like to only require the user to have Matlab + image proc toolbox.  Can you make a CPnanmean function and commit it?
-
-Also, I ran the attached pipeline on the first two image sets in ExampleFlyImages, then tried Data Tools > Export Data, with the option - not ignoring NaNs (since I don't have that function). I get an error: index exceeds matrix dimensions, somewhere in the loops around line 300.  Can you check what the problem is there?
-
-Perhaps it's related to this - In MeasureRatios, we need to rearrange the output a bit...Currently, it's:
-handles.Measurements.Ratios.Cytoplasm_I_1_dividedby_Nuclei_I_1: {[0.7548]  [1.3635]}
-handles.Measurements.Ratios.Cytoplasm_I_1_Features_dividedby_Nuclei_I_1_Feature: {'Cytoplasm_I_1_dividedby_Nuclei_I_1'}
-
-Whatever two things the user divides, they must have the same number of entries. So, it's safe to store the resulting ratios within one of the objects' already existing measurement structure. I'd suggest we store the ratios in the numerator object's measurement structure. For example, in the example pipeline, it ought to be this:
-handles.Measurements.Cytoplasm.Ratios = {[0.7548]  [1.3635]}
-handles.Measurements.Cytoplasm.RatiosFeatures = {'Cytoplasm_I_1_dividedby_Nuclei_I_1'}
-
-Then, if another Ratio is calculated with cytoplasm as the numerator, it gets to be the second column of data. See the results of MeasureObjectIntensity to see how it's done.  Does this all make sense?
-
 Also, Make sure there's an error check in MeasureRatios that catches if the incoming objects (or 'image') do not have the same number of objects, e.g. they try to divide a whole image measurement by a nucleus measurement, or they try to divide nuclei/cytoplasm but there's a slightly different number of those objects in the image.
--a
-
---------------------------
-
-
 
 - (Requested by Anne 09-08-05) - I helped someone setup CP on a PC (Windows XP, with Matlab 7.04.365 SP2 R14) and ran into a couple of bugs. Not sure if they will reproduce but can you check on them:
 
@@ -41,8 +19,6 @@ If you need to get an example output file (might be a pain b/c too big to email?
 
 - Add ray's new adjustment to SecProp function for secondary distance
 
-
-MIKE _ this was on the general TODO and it's what you are implementing above, so i thought i'd transfer this here.
 - (Requested by Anne) - Add background masking to the identify sec distance module
        (make it optional in case a cell stain image is not
        available). 

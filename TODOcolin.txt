@@ -3,7 +3,6 @@ Colin's TODO list
 
 - (Requested by Anne 09-06-05) - MeasureRatios needs to be much more sophisticated. Right now it has CorrGreen and CorrBlue and CorrRed hard-coded in. It isn't flexible for different types of measures, is it? (AreaShape, Intensity, texture) 
 
-- (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.  Check through all other modules and tools - I think DataLayout tool is also using a hard coded font size.
 
 - (Requested by Anne) - Put in the help menus for ImageTools and DataTools.
 

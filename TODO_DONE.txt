@@ -1,6 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
+-(Mike 9/14) (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:  MakeProjection_averageImage.m
+(1) line 162:  [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+to work properly. the output argument do not match.
+(2) Same problem at line 134 probably
+
 -(Colin 9/14) (Requested by Anne 8-23-05) - Make IdentifyEasy use the user's preference for font size - right now it's hard coded to be 8.  Check through all other modules and tools - I think DataLayout tool is also using a hard coded font size.
 
 -(Mike 9/13) (Requested by Anne 09-08-05) - Can IllumCorrect Calculate using Intensities be combined with Background intensities?

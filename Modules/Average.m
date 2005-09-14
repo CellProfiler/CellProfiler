@@ -103,9 +103,9 @@ try
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% If we are in LoadImages mode, the averaged image is
         %%% calculated the first time the module is run.
-        [AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+        [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
-        [AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
+        [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
     else
         error('Image processing was canceled because you must choose either "L" or "P" in the Average module');
     end

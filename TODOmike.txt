@@ -1,12 +1,10 @@
 Mike's TODO list
 
-Also, Make sure there's an error check in MeasureRatios that catches if the incoming objects (or 'image') do not have the same number of objects, e.g. they try to divide a whole image measurement by a nucleus measurement, or they try to divide nuclei/cytoplasm but there's a slightly different number of those objects in the image.
-
 - (Requested by Anne 09-08-05) - I helped someone setup CP on a PC (Windows XP, with Matlab 7.04.365 SP2 R14) and ran into a couple of bugs. Not sure if they will reproduce but can you check on them:
 
 * I'm not sure the timer units were accurate - it said it was taking 1 second per image set but it seemed more like 5-10 seconds. Is there some weird conversion?  Also, for the popup window at the end which tells us the breakdown for the entire set that was processed, each module's avg time is listed in seconds but no units were listed for the first image set or whatever else is listed at the top. Perhaps these issues were because we 'canceled after cycle' partway through, so the calculations were based on the total number of image sets rather than the number we actually processed?
 
-E-MAILED MATHWORKS * The slider in the main GUI, when there are lots of variables, was backwards!  I thought this was fixed - I remember it seemed to be backwards depending on whether you're using PC vs Mac, but I thought it was working fine on your PC recently. i wonder if it's an XP issue?
+DONE * The slider in the main GUI, when there are lots of variables, was backwards!  I thought this was fixed - I remember it seemed to be backwards depending on whether you're using PC vs Mac, but I thought it was working fine on your PC recently. i wonder if it's an XP issue?
 
 * Not a bug, but on his computer it takes forever every time the code has to look up the list of images in the selected directory.  Can you make sure we aren't doing this redundantly?  I know we check through all the files when you choose the directory in the main GUI (so it's displayed in the list box), and then we check through the files when you click analyze images to make sure the file list hasn't changed (in case you moved files in the meantime), but i wonder if also the load images module is checking through things unnecessarily.  You might want to doublecheck any changes with me since this is a critical thing!
 

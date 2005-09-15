@@ -1720,7 +1720,12 @@ if (length(ModuleHighlighted) > 0)
         %%% If panel location gets changed in GUIDE, must change the
         %%% position values here as well.
         set(handles.variablepanel, 'position', [238 0 563 346]);
-        set(handles.slider1,'value',get(handles.slider1,'min'));
+        if ispc
+            set(handles.slider1,'value',get(handles.slider1,'max'));
+        else
+            set(handles.slider1,'value',get(handles.slider1,'min'));
+        end
+
         set(handles.slider1,'visible','off');
         %%% 2.5 Checks whether a module is loaded in this slot.
         contents = get(handles.ModulePipelineListBox,'String');
@@ -1732,14 +1737,18 @@ if (length(ModuleHighlighted) > 0)
         if(MaxInfo > 0)
             set(handles.slider1,'visible','on');
             set(handles.slider1,'max',MaxInfo);
-            set(handles.slider1,'value',get(handles.slider1,'min'));
-            set(handles.slider1,'SliderStep',[max(.2,1/MaxInfo) min(1,5/MaxInfo)]); 
+            if ispc
+                set(handles.slider1,'value',get(handles.slider1,'max'));
+            else
+                set(handles.slider1,'value',get(handles.slider1,'min'));
+            end
+            set(handles.slider1,'SliderStep',[max(.2,1/MaxInfo) min(1,5/MaxInfo)]);
         end
         slider1_Callback(handles.slider1,0,handles);
-    else 
+    else
         helpdlg('No modules are loaded.');
     end
-else 
+else
     helpdlg('No module highlighted.');
 end
 
@@ -1881,15 +1890,15 @@ elseif strcmp(InputType, 'popupmenu')
 end
 
 if isempty(UserEntry)
-  errordlg('Variable boxes must not be left blank');
-  set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string', 'Fill in');
-  storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
+    errordlg('Variable boxes must not be left blank');
+    set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string', 'Fill in');
+    storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
 else
-  if ModuleNumber == 0,     
-    errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');
-  else
-      storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
-  end
+    if ModuleNumber == 0,
+        errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');
+    else
+        storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1909,32 +1918,62 @@ ModuleNumber = ModuleHighlighted(1);
 % Position of the variablePanel.  If the original location of the
 % variablePanel gets changed, then the constant offset must be changed as
 % well.
-set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
-for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
-    tempPos=get(handles.VariableDescription{ModuleNumber}(i),'Position');
-    if(tempPos(2)+scrollPos)>-20
-        set(handles.VariableDescription{ModuleNumber}(i),'visible','on');
-        VarDesOn=1;
-    else
-        set(handles.VariableDescription{ModuleNumber}(i),'visible','off');
-        VarDesOn=0;
-    end
-    tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
-    if ((tempPos(2)+scrollPos)>-20) && VarDesOn  && (size(get(handles.VariableBox{ModuleNumber}(i),'String'),1)~=1 || ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a'))
-        set(handles.VariableBox{ModuleNumber}(i),'visible','on');
-    else
-        set(handles.VariableBox{ModuleNumber}(i),'visible','off');
-    end
-    try
-        tempPos=get(handles.BrowseButton{ModuleNumber}(i),'Position');
-        if ((tempPos(2)+scrollPos)>-20) && VarDesOn
-            set(handles.BrowseButton{ModuleNumber}(i),'visible','on');
+if ispc
+    Ypos = get(handles.slider1,'max') - get(handles.slider1,'Value');
+    set(handles.variablepanel, 'position', [variablepanelPos(1) Ypos variablepanelPos(3) variablepanelPos(4)]);
+    for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
+        tempPos=get(handles.VariableDescription{ModuleNumber}(i),'Position');
+        if(tempPos(2)+Ypos)>-20
+            set(handles.VariableDescription{ModuleNumber}(i),'visible','on');
+            VarDesOn=1;
         else
-            set(handles.BrowseButton{ModuleNumber}(i),'visible','off');
+            set(handles.VariableDescription{ModuleNumber}(i),'visible','off');
+            VarDesOn=0;
+        end
+        tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
+        if ((tempPos(2)+Ypos)>-20) && VarDesOn  && (size(get(handles.VariableBox{ModuleNumber}(i),'String'),1)~=1 || ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a'))
+            set(handles.VariableBox{ModuleNumber}(i),'visible','on');
+        else
+            set(handles.VariableBox{ModuleNumber}(i),'visible','off');
+        end
+        try
+            tempPos=get(handles.BrowseButton{ModuleNumber}(i),'Position');
+            if ((tempPos(2)+Ypos)>-20) && VarDesOn
+                set(handles.BrowseButton{ModuleNumber}(i),'visible','on');
+            else
+                set(handles.BrowseButton{ModuleNumber}(i),'visible','off');
+            end
         end
     end
+    guidata(handles.figure1,handles);
+else
+    set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
+    for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
+        tempPos=get(handles.VariableDescription{ModuleNumber}(i),'Position');
+        if(tempPos(2)+scrollPos)>-20
+            set(handles.VariableDescription{ModuleNumber}(i),'visible','on');
+            VarDesOn=1;
+        else
+            set(handles.VariableDescription{ModuleNumber}(i),'visible','off');
+            VarDesOn=0;
+        end
+        tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
+        if ((tempPos(2)+scrollPos)>-20) && VarDesOn  && (size(get(handles.VariableBox{ModuleNumber}(i),'String'),1)~=1 || ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a'))
+            set(handles.VariableBox{ModuleNumber}(i),'visible','on');
+        else
+            set(handles.VariableBox{ModuleNumber}(i),'visible','off');
+        end
+        try
+            tempPos=get(handles.BrowseButton{ModuleNumber}(i),'Position');
+            if ((tempPos(2)+scrollPos)>-20) && VarDesOn
+                set(handles.BrowseButton{ModuleNumber}(i),'visible','on');
+            else
+                set(handles.BrowseButton{ModuleNumber}(i),'visible','off');
+            end
+        end
+    end
+    guidata(handles.figure1,handles);
 end
-guidata(handles.figure1,handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PIXEL SIZE EDIT BOX %%%

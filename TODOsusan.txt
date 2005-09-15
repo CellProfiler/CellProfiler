@@ -1,5 +1,6 @@
 Susan's TODO list
 
+- NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.
 
 - Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
 

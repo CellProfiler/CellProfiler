@@ -309,6 +309,8 @@ The iterations can be performed on a low-resolution version of the original imag
        third image in a gigantic image set).  Whether the file name
        and/or sample info is shown should be optional. 
 
++++  (Requested by Anne 9-14-05) - Implement Bob Murphy's classification algorithms into CP?  These algorithms compare images of protein localization and can tell you which compartment a protein is localized in.  See Chen, Murphy, J Biomed/Biotech 2005 87-95.
+
 +++  (Requested by Anne) -Allow data to be exported to Open Microscopy Environment
        databases.  (Being worked on by Tony Scelfo in Peter Sorger's lab).
 
@@ -319,7 +321,29 @@ The iterations can be performed on a low-resolution version of the original imag
 +++  (Requested by Anne) -Align/resize stack of images (like yeast plates). See Matlab
        demo on image registration. Did Chris already do this? 
 
-+++ (Requested by Anne) - Neurite outgrowth module
++++ (Requested by Anne) - Reproduce the major 'big pharma' screening assays:
+cell adhesion
+Neurite outgrowth
+micronucleus formation
+protein translocation
+cell cycle analysis
+cell differentiation
+adipogenesis
+reporter gene analysis
+cell viability
+cell spreading
+cell proliferation
+apoptosis
+microtubule formation
+receptor trafficking
+protein kinase activation
+mitotic index
+proteasome activity
+oligosaccharide synthesis
+cell migration
+membrane potential
+gap junction formation
+p-glycoprotein activity
 
 +++  (Requested by Anne) -Particle tracking over time module. Good references:
 Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.

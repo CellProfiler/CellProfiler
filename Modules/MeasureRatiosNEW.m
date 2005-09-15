@@ -115,12 +115,23 @@ if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
 end
 
 try
-NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber];
-NewFieldNameFeatures = [NumObjectName,'_',NumMeasure(1),'_',NumFeatureNumber,'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',DenomFeatureNumber,'Features'];
-handles.Measurements.(NumObjectName).(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
-handles.Measurements.(NumObjectName).(NewFieldNameFeatures) = {NewFieldName};
+NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber)];
+if isfield(handles.Measurements.(NumObjectName),'Ratios')
+    OldPos = strmatch(NewFieldName,handles.Measurements.(NumObjectName).RatiosFeatures,'exact');
+    if isempty(OldPos)
+        handles.Measurements.(NumObjectName).RatiosFeatures(end+1) = {NewFieldName};
+        handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,end+1) = NumeratorMeasurements./DenominatorMeasurements;
+    else
+        handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,OldPos) = NumeratorMeasurements./DenominatorMeasurements;
+    end
+else
+    handles.Measurements.(NumObjectName).RatiosFeatures = {NewFieldName};
+    handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = NumeratorMeasurements./DenominatorMeasurements;
 end
-
+end
+%NewFieldNameFeatures = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber),'Features'];
+%handles.Measurements.(NumObjectName).(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
+%handles.Measurements.(NumObjectName).(NewFieldNameFeatures) = {NewFieldName};
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%

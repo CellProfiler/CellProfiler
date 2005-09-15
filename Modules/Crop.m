@@ -334,7 +334,15 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
         [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
     else
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape]);
+        try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape);
+        catch
+            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape]);
+            catch
+                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape]);
+                catch error('Image cannot be found!');
+                end
+            end
+        end
     end
     %%% See subfunction below.
 else

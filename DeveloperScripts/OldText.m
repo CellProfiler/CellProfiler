@@ -1,1 +1,1 @@
-CPcolormap(handles)
+CPaverageimages(handles, 'DoNow', ImageName, 'ignore');

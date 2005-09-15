@@ -1,9 +1,5 @@
 Colin's TODO list
 
-
-- (Requested by Anne 09-06-05) - MeasureRatios needs to be much more sophisticated. Right now it has CorrGreen and CorrBlue and CorrRed hard-coded in. It isn't flexible for different types of measures, is it? (AreaShape, Intensity, texture) 
-
-
 - (Requested by Anne) - Put in the help menus for ImageTools and DataTools.
 
 - (Requested by Anne) - Make the DefineGrid module use the usual colormap for labeling its objects in the display.  By the way, should we have a CPcolormap function, if we decide to use that fix that Ola wrote (and that you edited?). Then someone could set it as their preferences and it would affect all the modules' colormaps.

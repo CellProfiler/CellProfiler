@@ -1,6 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
 TODO_DONE
+-(Mike 9/15 MOVED TO OUTDATED, DILATEBINARYOBJECTS HAS SAME FUNCTION AS EXPANDORSHRINK) (Requested by Anne 8-25-05) - Can DilateBinaryObjects be combined with ExpandOrShrinkPrim or ExpandOrShrinkSec?
+
+-(Mike 9/15) (Requested by Anne 09-06-05) - MeasureRatios needs to be much more sophisticated. Right now it has CorrGreen and CorrBlue and CorrRed hard-coded in. It isn't flexible for different types of measures, is it? (AreaShape, Intensity, texture)
+
+-(Mike 9/15) Also, Make sure there's an error check in MeasureRatios that catches if the incoming objects (or 'image') do not have the same number of objects, e.g. they try to divide a whole image measurement by a nucleus measurement, or they try to divide nuclei/cytoplasm but there's a slightly different number of those objects in the image.
+
 -(Mike 9/14) (Reported by Serge Pelet 09-02-05) - he was working with an old version, so i am not sure if it's still a problem, and the line numbers may not match up:  MakeProjection_averageImage.m
 (1) line 162:  [ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
 has to be changed to  [handles, ProjectionImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');

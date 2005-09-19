@@ -37,22 +37,22 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the identified objects (or UserDefined)?
+%textVAR01 = What did you call the identified objects (or Ratio)?
 %infotypeVAR01 = objectgroup
+%choiceVAR01 = Ratio
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Enter the feature type, e.g. AreaShape, Texture, Intensity,...
+%textVAR02 = Enter the feature type (e.g. AreaShape, Texture, Intensity)(for Ratio, enter the numerator object, e.g. Nuclei, Cells):
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Correlation
 %choiceVAR02 = Texture
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
-%choiceVAR02 = Ratios
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter feature number
+%textVAR03 = Enter feature number (see help for Ratio):
 %defaultVAR03 = 1
 FeatureNbr = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
@@ -97,15 +97,17 @@ if isfield(handles.Pipeline, fieldname)
     LabelMatrixImage = handles.Pipeline.(fieldname);
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-elseif strcmpi(ObjectName,'UserDefined')
+elseif strcmpi(ObjectName,'Ratio')
     LabelMatrixImage = zeros(100);
 else
     error(['Image processing has been canceled. Prior to running the ClassifyObject module, you must have previously run a module that generates an image with the objects identified.  You specified in the ClassifyObject module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ClassifyObject module cannot locate this image.']);
 end
 
-%%% Checks whether the feature type exists in the handles structure.
-if ~isfield(handles.Measurements.(ObjectName),FeatureType)
-    errordlg('The feature type entered in the ClassifyObjects module does not exist.');
+if ~strcmp(ObjectName,'Ratio')
+    %%% Checks whether the feature type exists in the handles structure.
+    if ~isfield(handles.Measurements.(ObjectName),FeatureType)
+        errordlg('The feature type entered in the ClassifyObjects module does not exist.');
+    end
 end
 
 if isempty(LowerBinMin) | isempty(UpperBinMax) | LowerBinMin > UpperBinMax
@@ -117,8 +119,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% Get Measurements
-Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
+if strcmp(ObjectName,'Ratio')
+    Measurements = handles.Measurements.(FeatureType).Ratios{handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
+else
+    % Get Measurements
+    Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
+end
 
 if NbrOfBins == 0
     edges = [LowerBinMin,MidPointToUse,UpperBinMax];
@@ -140,7 +146,7 @@ NbrOfObjects = length(Measurements);
 
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-if ~strcmpi(ObjectName,'UserDefined')
+if ~strcmpi(ObjectName,'Ratio')
     % Produce image where the the objects are colored according to the original
     % measurements and the quantized measurements
     NonQuantizedImage = zeros(size(LabelMatrixImage));
@@ -171,7 +177,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     AdjustedFeatureName = strrep(FeatureName,'_','\_');
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-    if ~strcmpi(ObjectName,'UserDefined')
+    if ~strcmpi(ObjectName,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
@@ -194,7 +200,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     axis([xlimits ylimits])
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-    if ~strcmpi(ObjectName,'UserDefined')
+    if ~strcmpi(ObjectName,'Ratio')
 
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
@@ -218,7 +224,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-    if ~strcmpi(ObjectName,'UserDefined')
+    if ~strcmpi(ObjectName,'Ratio')
         CPFixAspectRatio(NonQuantizedImage);
     end
 end
@@ -230,7 +236,7 @@ drawnow
 
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-if ~strcmpi(ObjectName,'UserDefined')
+if ~strcmpi(ObjectName,'Ratio')
     %%% Saves images to the handles structure so they can be saved to the hard
     %%% drive, if the user requests.
     fieldname = ['ColorClassified',ObjectName];

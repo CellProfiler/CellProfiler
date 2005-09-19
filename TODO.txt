@@ -12,6 +12,8 @@ Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to th
 
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread - but maybe it's not possible because that requires running code rather than just extracting text. If that's the case, I guess we just have to type them into this module manually and update them whenever Matlab updates its imread function (which probably isn't that often anyway). Also, right now we ask the user for the file format of their images but this information is not actually used anywhere. We need to adjust the CPimread function to take in and use a file format (it should be optional; only used when images do not have file extensions).  Also, sometimes we might want to sort images by order but also by text, or sort by two different bits of text - like only wanting to retrieve images with the proper extension. So perhaps we should use the File format input in another way (besides using it for imread when there is no extension): do you only want to consider files with that extension?  That would be nice because it prevents you from having to exclude .mat files or other types of files in the folder.
 
+- (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
+
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
 - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
@@ -179,8 +181,6 @@ Error while evaluating uicontrol Callback.
 % threshold more lenient and greater than 1 (e.g. 1.3) makes the
 % threshold more stringent.
 
-- (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
-
 - (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:  SCMD: Saccharomyces
        cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan
        1;32 Database issue:D319-22. PMID: 14681423  
@@ -198,7 +198,7 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne 8-30-05) - If the user enters an odd number for CPsmooth (a subfunction used by the Smooth module, among others), right now it yields the error 'The text you entered for the smoothing..." and it cancels all processing. Instead, let's have it continue processing by rounding the user's entry down to the nearest integer but meanwhile pop up a warning dialog box telling the user that their entry has been rounded down.  Make sure the warning dialog box does not pop up new every time around the cycle (maybe only if setbeinganalyzed = 1).
 
-- (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through.
+- (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through. ANNE SAYS - I think we can already do this, by clicking points at the corners of the rectangle.
 
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
@@ -211,6 +211,8 @@ Error in ==> SaveImageAs at 29
 - (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 
 - (Requested by Anne 9-07-05) - In the modules where we use pathnameVAR to create a long box with a browse button, the variable descriptions all need to be changed to state that you can type a period (.) to use the default image directory (or output directory, depending on the context).
+
+- (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 

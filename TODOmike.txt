@@ -1,7 +1,5 @@
 Mike's TODO list
 
-If you need to get an example output file (might be a pain b/c too big to email?) you can email Winston at timp@wi.mit.edu
-
 - Add ray's new adjustment to SecProp function for secondary distance
 
 - (Requested by Anne) - Add background masking to the identify sec distance module

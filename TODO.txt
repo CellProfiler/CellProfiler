@@ -9,8 +9,6 @@ Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to th
 
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?  I guess maybe not, because PlaceAdjacent is designed to take in two different images (e.g. OrigBlue and OrigGreen) (although perhaps we can expand it to allow up to 6 images being side by side) whereas Tile is designed to take all the images of a particular type (e.g. all the OrigBlue images) and tile them.  Not sure if it is reasonable to combine these two - I guess it depends on what the variables are and how confusing they become.
 
-- (Requested by Anne 8-23-05) - LoadMoviesText doesn't work when loading two .stk movie files - it fails at line 456, looking for 'FileNames'. Doublecheck that LoadMovies Order works too.  ---> UPDATE: Anne fixed the bug very quickly in LoadMoviesText new revision: 1.17; previous revision: 1.16. You can see the changes that were made by diffing those two revisions. Make sure that LoadMoviesOrder works and if not, hopefully those bug fixes in LoadMoviesText will show you what to do to repair LoadMoviesOrder. 
-
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
 - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.

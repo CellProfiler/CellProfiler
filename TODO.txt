@@ -10,8 +10,6 @@ Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to th
 
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?  I guess maybe not, because PlaceAdjacent is designed to take in two different images (e.g. OrigBlue and OrigGreen) (although perhaps we can expand it to allow up to 6 images being side by side) whereas Tile is designed to take all the images of a particular type (e.g. all the OrigBlue images) and tile them.  Not sure if it is reasonable to combine these two - I guess it depends on what the variables are and how confusing they become.
 
-- (Requested by Anne) - Can IdentifyLaplacianOfGaussian be merged into IdentifyPrimAutomatic?
-
 - (Requested by Anne) - Combine Load Images and Movies (including Order & Text versions) into a single module.(I think this would be great, but maybe there are compelling reasons not to do it).  At the moment, the code which determines which files in the image directory are shown in the list box in the main CP GUI is weeding out movie file types, I think.  Also, the LoadImagesText module lists only 6 file formats that can be read. This list of file formats that appears in its popupmenu should be retrieved from CPimread - but maybe it's not possible because that requires running code rather than just extracting text. If that's the case, I guess we just have to type them into this module manually and update them whenever Matlab updates its imread function (which probably isn't that often anyway). Also, right now we ask the user for the file format of their images but this information is not actually used anywhere. We need to adjust the CPimread function to take in and use a file format (it should be optional; only used when images do not have file extensions).  Also, sometimes we might want to sort images by order but also by text, or sort by two different bits of text - like only wanting to retrieve images with the proper extension. So perhaps we should use the File format input in another way (besides using it for imread when there is no extension): do you only want to consider files with that extension?  That would be nice because it prevents you from having to exclude .mat files or other types of files in the folder.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
@@ -193,8 +191,6 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 Error in ==> SaveImageAs at 29
     MainWinPos = get(handles.figure1,'Position');
 ??? Error while evaluating uimenu Callback.
-
-- (Requested by Anne 8-26-05) - If there is available space, check that each display window for each module shows the image set # at the top.
 
 - (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames, and when it lets you choose an image file, on the mac it has the annoying {*.*} problem so that you can't choose an image file until you change the dropdown menu for file format in the uigetfile window.
 

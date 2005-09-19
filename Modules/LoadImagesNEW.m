@@ -239,9 +239,9 @@ if SetBeingAnalyzed == 1
             handles.Current.NumberOfMovieSets = NumberOfMovieSets;
 
             %%% For all valid movie slots, extracts the file names.
-            for n = 1:length(MovieName)
+            for n = 1:length(ImageName)
                 % Get the list of filenames
-                FileList = FileNames(NumberInSet{n}:ImagesPerSet:end);
+                FileList = FileNames(TextToFind{n}:ImagesPerSet:end);
 
                 StartingPositionForThisMovie = 0;
                 for MovieFileNumber = 1:length(FileList)

@@ -2,6 +2,7 @@ CellProfiler cell image analysis software development
 AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
+- (Requested by Anne 9-16-05) - why are there two SVNcommands.txt files now? can someone check the log and see who committed the new misspelled one?
 
 - (Requested by Anne 9-08-05) - ClassifyObjects is able to classify cells based on a ratio calculated with the MeasureRatios module. Anne has an example pipeline (temp17PIPE.mat for BioImage images) that shows how it's done, but it's a little hacked together and the module is not documented well to explain how this would be done.  
 
@@ -217,7 +218,8 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
-[Do the following prior to releasing:  (Requested by Anne) -
+---------------------------------------------------
+JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
 - Smart Indent
 - M Lint error checking
@@ -229,7 +231,8 @@ Error in ==> SaveImageAs at 29
 - Make reference sheet with short descriptions of the modules.
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
-- Make a tutorial to demonstrate how CP is used.]
+- Make a tutorial to demonstrate how CP is used.
+- copy CP code onto CDs for Colin to take to ASCB meeting in San Francisco.
 
 ---------------------------------------------------
 POST-PUBLIC RELEASE SUPPORT:

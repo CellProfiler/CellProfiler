@@ -3177,9 +3177,9 @@ else
                 %%% Show seperate calcualtion times for each cycle.
                 try
                 set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
-                show_time_elapsed = {['Time elapsed for cycle ' num2str(1) '= ' num2str(set_time_elapsed(1)) ]};
+                show_time_elapsed = {['Time elapsed for cycle ' num2str(1) '(seconds) = ' num2str(set_time_elapsed(1)) ]};
                 if handles.Current.NumberOfImageSets > 1
-                    show_time_elapsed(2) = {['Average time elapsed for other cycles = ' num2str((round(10*toc)/10 - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
+                    show_time_elapsed(2) = {['Average time elapsed for other cycles (seconds) = ' num2str((round(10*toc)/10 - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1))]};
                 end
                 
                 ModCount=1;

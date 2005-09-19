@@ -3,8 +3,6 @@ AUGUST 31, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-- (Requested by Anne 9-08-05) - ClassifyObjects is able to classify cells based on a ratio calculated with the MeasureRatios module. Anne has an example pipeline (temp17PIPE.mat for BioImage images) that shows how it's done, but it's a little hacked together and the module is not documented well to explain how this would be done.  
-
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?  I guess maybe not, because PlaceAdjacent is designed to take in two different images (e.g. OrigBlue and OrigGreen) (although perhaps we can expand it to allow up to 6 images being side by side) whereas Tile is designed to take all the images of a particular type (e.g. all the OrigBlue images) and tile them.  Not sure if it is reasonable to combine these two - I guess it depends on what the variables are and how confusing they become.

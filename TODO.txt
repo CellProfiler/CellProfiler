@@ -344,6 +344,7 @@ p-glycoprotein activity
 +++  (Requested by Anne) -Particle tracking over time module. Good references:
 Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
 Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
+Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 
 - (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
 

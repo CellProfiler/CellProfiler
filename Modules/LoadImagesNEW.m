@@ -127,6 +127,8 @@ ImageOrMovie = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %choiceVAR12 = jpg
 %choiceVAR12 = mat
 %choiceVAR12 = DIB
+%choiceVAR12 = avi
+%choiceVAR12 = stk
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
@@ -163,6 +165,7 @@ TextToFind = tmp1;
 ImageName = tmp2;
 
 if strcmp(LoadChoice,'Order')
+    TextToFind{:} = str2num(TextToFind{:});
     %%% Checks whether the position in set exceeds the number per set.
     if ImagesPerSet < max([TextToFind{:}])
         error(['Image processing was canceled during the Load Images Order module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])

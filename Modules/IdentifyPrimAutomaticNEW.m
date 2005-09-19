@@ -814,7 +814,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,21});
 
             %(Smart)closing
             % rgDilated=RgSmartDilate(rgLabelled,50); %%% IMPORTANT VARIABLE
-            rgDilated=RgSmartDilate(rgLabelled,2); %%% IMPORTANT VARIABLE
+            rgDilated=CPRgSmartDilate(rgLabelled,2); %%% IMPORTANT VARIABLE
             rgFill=imfill(rgDilated,'holes');
 
             %%%%SE=strel('diamond',1);

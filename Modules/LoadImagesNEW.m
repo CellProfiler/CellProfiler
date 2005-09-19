@@ -525,7 +525,7 @@ end
 %%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
 %%% names to the already written ones.
 if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+        isfield(handles.Measurements.Image,'FileNames') && length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
     % Get existing file/path names. Returns a cell array of names
     ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
     ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};

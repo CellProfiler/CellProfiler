@@ -362,7 +362,7 @@ end % Goes with: if SetBeingAnalyzed == 1
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-for n = 1:4
+for n = 1:length(MovieName)
     %%% This try/catch will catch any problems in the load movies module.
     try
         %%% Determines which movie to analyze.
@@ -401,7 +401,7 @@ for n = 1:4
     end % Goes with: catch
 
     % Create a cell array with the filenames
-    FileNames(n) = CurrentFileNameWithFrame;
+    FileNames(n) = {CurrentFileNameWithFrame};
 end
 
 %%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
@@ -423,7 +423,7 @@ end
 %%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
 %%% names to the already written ones.
 if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+        isfield(handles.Measurements.Image,'FileNames') && length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
     % Get existing file/path names. Returns a cell array of names
     ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
     ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};

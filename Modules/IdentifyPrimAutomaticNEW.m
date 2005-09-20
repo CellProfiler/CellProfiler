@@ -882,7 +882,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,21});
         %%% DISPLAY RESULTS %%%
         %%%%%%%%%%%%%%%%%%%%%%
 
-        if strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType)
+        if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
 
             if strcmp(LaplaceValues,'/')
                 %%% Indicate objects in original image and color excluded objects in red

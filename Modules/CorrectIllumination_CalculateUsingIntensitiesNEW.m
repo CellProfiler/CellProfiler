@@ -119,6 +119,7 @@ IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2}
 %choiceVAR03 = Regular
 %choiceVAR03 = Background
 IntensityChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
 %textVAR04 = Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.
 %choiceVAR04 = Each

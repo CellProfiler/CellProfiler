@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
-- Measure modules (AreaShape) should be able to handle 7 objects
+-(Mike 9/20) ImageIntensity not working at the moment
+
+-(Mike 9/20) Measure modules (AreaShape) should be able to handle 7 objects
 
 -(Mike 9/20) Fix bugs with removing module from pipeline
 

@@ -1,7 +1,5 @@
 Mike's TODO list
 
-- ImageIntensity not working at the moment
-
 - Add ray's new adjustment to SecProp function for secondary distance
 
 - (Requested by Anne) - Add background masking to the identify sec distance module

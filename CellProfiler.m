@@ -455,13 +455,6 @@ catch
     return
 end
 
-handles.Settings.VariableValues = {};
-handles.Settings.VariableInfoTypes = {};
-handles.Settings.VariableRevisionNumbers = [];
-delete(get(handles.variablepanel,'children'));
-handles.VariableBox = {};
-handles.VariableDescription = {};
-
 handles.Settings.ModuleNames = Settings.ModuleNames;
 try
     handles.Settings.SelectedOption = Settings.SelectedOption;
@@ -475,7 +468,6 @@ handles.Settings.VariableRevisionNumbers = [];
 delete(get(handles.variablepanel,'children'));
 handles.VariableBox = {};
 handles.VariableDescription = {};
-
 
 ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
 %%% Checks to make sure that the modules have not changed

@@ -1367,7 +1367,7 @@ if ModuleNamedotm ~= 0,
             else
                 Count = size(StrSet,2)+1;
             end
-            for i=1:(ModuleNums-1)
+            for i=1:handles.Current.NumberOfModules
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
                         if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')

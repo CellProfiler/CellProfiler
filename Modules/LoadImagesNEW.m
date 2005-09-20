@@ -64,9 +64,9 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
 %textVAR01 = How do you want to load these files?
+%choiceVAR01 = Text-Exact match
+%choiceVAR01 = Text-Regular expressions
 %choiceVAR01 = Order
-%choiceVAR01 = Text-Regular
-%choiceVAR01 = Text-Exact
 LoadChoice = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -74,43 +74,43 @@ if strcmp(LoadChoice(1),'T')
     ExactOrRegExp = LoadChoice(6);
 end
 
-%textVAR02 = Type the text that this set of images has in common, or their position in each set:
+%textVAR02 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
 %defaultVAR02 = DAPI
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call these images?
+%textVAR03 = What do you want to call these images within CellProfiler?
 %defaultVAR03 = OrigBlue
 %infotypeVAR03 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Type the text that this set of images has in common, or their position in each set:
+%textVAR04 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
 %defaultVAR04 = /
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What do you want to call these images?
+%textVAR05 = What do you want to call these images within CellProfiler?
 %defaultVAR05 = /
 %infotypeVAR05 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Type the text that this set of images has in common, or their position in each set:
+%textVAR06 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
 %defaultVAR06 = /
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What do you want to call these images?
+%textVAR07 = What do you want to call these images within CellProfiler?
 %defaultVAR07 = /
 %infotypeVAR07 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Type the text that this set of images has in common
+%textVAR08 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
 %defaultVAR08 = /
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call these images?
+%textVAR09 = What do you want to call these images within CellProfiler?
 %defaultVAR09 = /
 %infotypeVAR09 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = If using ORDER, how many images are there in each set (i.e. each field of view)?
+%textVAR10 = If using ORDER, how many images are there in each group (i.e. each field of view)?
 %defaultVAR10 = 3
 ImagesPerSet = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 

@@ -67,12 +67,12 @@ OldObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Would you like to save the image of the outlines of the objects? and if so, what would you like to call them?
-%defaultVAR06 = Do Not Save
+%defaultVAR06 = Do not save
 %infotypeVAR06 = imagegroup indep
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Would you like to save the label matrix image?  and if so, what would you like to call it?
-%defaultVAR07 = Do Not Save
+%defaultVAR07 = Do not save
 %infotypeVAR07 = imagegroup indep
 LabelMatrixImageName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 

@@ -3,12 +3,20 @@ function CPConvertSQL(handles, OutDir, OutfilePrefix, DBname, TablePrefix, First
 per_image_names = {};
 per_object_names = {};
 
-M = handles.Measurements;
+if ~isfield(handles,'Measurements')
+    error('There are no measurements to be converted to SQL.')
+end
 
-subM = fieldnames(M)';
-for sfc = subM,
-    sf = sfc{1};
-    substruct = handles.Measurements.(sf);
+Measurements = handles.Measurements;
+
+%%% SubMeasurementFieldnames usually includes 'Image' and objects like 'Nuclei',
+%%% 'Cells', etc.
+SubMeasurementFieldnames = fieldnames(Measurements)';
+for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
+    %%%SubFieldname is the first fieldname in SubMeasurementFieldnames.
+    SubFieldname = RemainingSubMeasurementFieldnames{1};
+    
+    substruct = handles.Measurements.(SubFieldname);
     substructfields = fieldnames(substruct)';
     for ssfc = substructfields,
         ssf = ssfc{1};
@@ -21,26 +29,31 @@ for sfc = subM,
             continue;
         end
         
+        if strfind(ssf, 'Filename'),
+             continue;
+        end
+        
         if isfield(substruct, [ssf 'Features']),
-            names = handles.Measurements.(sf).([ssf 'Features']);
+            names = handles.Measurements.(SubFieldname).([ssf 'Features']);
         else
             names = {ssf};
         end
 
-        vals = handles.Measurements.(sf).(ssf);
-        if (~ ischar(vals{1}))
-            if (size(vals{1},2) ~= length(names)),
-                error([sf ' ' ssf ' does not have right number of names1 ']);
+        vals = handles.Measurements.(SubFieldname).(ssf);
+        if (~ ischar(vals{1})) 
+            if (size(vals{1},2) ~= length(names)), % make change here vals{1},2
+                error([SubFieldname ' ' ssf ' does not have right number of names ']);
+            
             end
         end
         
         if (size(vals{1},1) == 1),
             for n = 1:length(names),
-                per_image_names{end+1} = cleanup([sf '_' ssf '_' names{n}]);
+                per_image_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]);
             end
         else
             for n = 1:length(names),
-                per_object_names{end+1} = cleanup([sf '_' ssf '_' names{n}]);
+                per_object_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]);
             end
         end
     end
@@ -81,9 +94,9 @@ for img_idx = FirstSet:LastSet,
     objectbasecol = 2;
     numobj = 0;
 
-    for sfc = subM,
-        sf = sfc{1};
-        substruct = handles.Measurements.(sf);
+    for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
+       SubFieldname = RemainingSubMeasurementFieldnames{1};
+        substruct = handles.Measurements.(SubFieldname);
         substructfields = fieldnames(substruct)';
         for ssfc = substructfields,
             ssf = ssfc{1};
@@ -97,11 +110,13 @@ for img_idx = FirstSet:LastSet,
             end
             
             % img_idx
-            % handles.Measurements.(sf).(ssf)
-            vals = handles.Measurements.(sf).(ssf){img_idx};
+            % handles.Measurements.(SubFieldname).(ssf)
+            vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
             if (size(vals,1) == 1),
-                if (ischar(vals)),
+                if ischar(vals),
                     fprintf(fimage, '|%s', vals);
+                elseif iscell(vals)
+                   fprintf(fimage, '|%s', char(vals));
                 else
                     fprintf(fimage, '|%g', vals);
                 end

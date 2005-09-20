@@ -60,7 +60,7 @@ end
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Select directory where CellProfiler output files are located');
 else
-    Pathname = uigetdir('Select directory where CellProfiler output files are located');
+    Pathname = uigetdir('Select directory that contains the output file(s) to add data to');
 end
 %%% Check if cancel button pressed
 if Pathname == 0

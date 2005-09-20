@@ -53,8 +53,10 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 
 
-if (CurrentModuleNum ~= handles.Current.NumberOfModules) && ~(isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) && (handles.Current.NumberOfModules == CurrentModuleNum+1))
-    error(['WriteSQLFiles must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
+if CurrentModuleNum ~= handles.Current.NumberOfModules
+    if isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
+        error(['WriteSQLFiles must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
+    end
 end;
 
 if strcmp(DataPath, '.') == 1

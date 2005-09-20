@@ -35,13 +35,14 @@ too long names can be fixed just before importing the data.
 
 Given on 9/7/2005
 
---set up SVN on cluster   waiting for login
---week of 9/12 ,  check wth Ray to work on writerSQL module
---week of 9/12, meet with Tim ierson, IT dept. to discuss /set up the mySQL database
+--set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders.
+
+--week of 9/12 ,  check wth Ray to work on writerSQL module, have problem need  fix in CPconvertSQl
+--week of 9/12, meet with Tim Pierson, IT dept. to discuss /set up the mySQL database, have Oracle account set up, in processing to test
 -- practice with large batches (FLY200) + use that
 
---Anne will work together to get real CPValid1 pipeline ready if time allows
+--Anne will work together to get real CPValid1 pipeline ready, partial done.
 
---modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by mine or leave it out.
+--modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by Susan or leave it out.
 
  

@@ -1764,7 +1764,11 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
         OtherIndepWithSameValue = [];
         for k = 1:length(TestVars)
             if isempty(OtherIndepWithSameValue)
-                OtherIndepWithSameValue = strmatch(StrSet,TestVars{k});
+                if iscell(TestVars)
+                    OtherIndepWithSameValue = strmatch(StrSet,TestVars{k});
+                else
+                    OtherIndepWithSameValue = strmatch(StrSet,TestVars(k));
+                end
             end
         end
 

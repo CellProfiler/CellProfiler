@@ -222,6 +222,10 @@ Error in ==> SaveImageAs at 29
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
+-- (Requested by Susan) - on WriteSQL module: if I only include WriteSQL module in pipeline I don't get an error message. The same thing with the situation if I only include WriteSQL and CreateBatchScripts modules in the pipeline. It will be nice to let user know that these are no useful pinelines.
+
+--- (Requested by Susan) - Add 'New Pipeline' command so that user can create a new pipeline while use is opening a pipeline. This will be helpful if user have some problem in compile a complex pipeline and would like to start a fresh simply one from scratch. 
+
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

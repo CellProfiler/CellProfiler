@@ -1,6 +1,8 @@
 Mike's TODO list
 
-- ImageIntensity
+- All measure modules (AreaShape) should be able to handles about 7 objects
+
+- ImageIntensity not working at the moment
 
 - Add ray's new adjustment to SecProp function for secondary distance
 

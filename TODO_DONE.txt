@@ -1,5 +1,6 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/20) Fix bugs with removing module from pipeline
 
 -(Mike 9/19) (Requested by Anne 9-08-05) - ClassifyObjects is able to classify cells based on a ratio calculated with the MeasureRatios module. Anne has an example pipeline (temp17PIPE.mat for BioImage images) that shows how it's done, but it's a little hacked together and the module is not documented well to explain how this would be done.  
 

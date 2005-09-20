@@ -162,9 +162,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% image.
     subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
 
-    delete(findobj('Parent',ThisModuleFigureNumber));
+    %delete(findobj('Parent',ThisModuleFigureNumber));
 
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 265 55],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7],'FontSize',handles.Current.FontSize);
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [65 -10 265 55],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Current.FontSize);
     displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...
         ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]};

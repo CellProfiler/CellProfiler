@@ -57,7 +57,31 @@ ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%%%VariableRevisionNumber = 01
+%textVAR04 =
+%choiceVAR04 = Do not use
+%infotypeVAR04 = objectgroup
+ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
+
+%textVAR05 =
+%choiceVAR05 = Do not use
+%infotypeVAR05 = objectgroup
+ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
+
+%textVAR06 =
+%choiceVAR06 = Do not use
+%infotypeVAR06 = objectgroup
+ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
+
+%textVAR07 =
+%choiceVAR07 = Do not use
+%infotypeVAR07 = objectgroup
+ObjectNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 
 %%% Set up the window for displaying the results

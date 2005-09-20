@@ -209,7 +209,7 @@ end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
 
-if strcmp('IntensityChoice','Background')
+if strcmp(IntensityChoice,'Background')
     %%% Checks whether the chosen block size is larger than the image itself.
     [m,n] = size(OrigImage);
     MinLengthWidth = min(m,n);

@@ -356,14 +356,12 @@ OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{Curre
 WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
 %textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.
-%choiceVAR13 = Automatic
+%defaultVAR13 = Automatic
 SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu custom
 
 %textVAR14 = Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)
-%choiceVAR14 = Automatic
+%defaultVAR14 = Automatic
 MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-%inputtypeVAR14 = popupmenu custom
 
 %textVAR15 = Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)
 %choiceVAR15 = Yes
@@ -372,22 +370,19 @@ UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
 %textVAR16 = What do you want to call the image of the outlines of the objects?
-%choiceVAR16 = Do not save
-%infotypeVAR16 = imagegroup indep
+%defaultVAR16 = OutlineBlue
+%infotypeVAR16 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,16});
-%inputtypeVAR16 = popupmenu custom
 
 %textVAR17 = What do you want to call the image of the outlines of the objects, overlaid on the original image?
-%choiceVAR17 = Do not save
+%defaultVAR17 = Do not save
 %infotypeVAR17 = imagegroup indep
 SaveOutlinedOnOriginal = char(handles.Settings.VariableValues{CurrentModuleNum,17});
-%inputtypeVAR17 = popupmenu custom
 
 %textVAR18 =  What do you want to call the labeled matrix image?
-%choiceVAR18 = Do not save
+%defaultVAR18 = Do not save
 %infotypeVAR18 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
-%inputtypeVAR18 = popupmenu custom
 
 %textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
 %choiceVAR19 = RGB
@@ -768,6 +763,12 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
         OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
         OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+        
+        FinalOutline = zeros(size(OrigImage,1),size(OrigImage,2));
+        FinalOutline = logical(FinalOutline);
+        FinalOutline(PerimObjects) = 1;
+        FinalOutline(PerimDiameter) = 0;
+        FinalOutline(PerimBorder) = 0;
 
         %%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%
@@ -855,7 +856,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             end
 
             if ~strcmp(SaveOutlinedOnOriginal,'Do not save')
-                try    handles.Pipeline.(SaveOutlinedOnOriginal) = OutlinedObjects;
+                try    handles.Pipeline.(SaveOutlinedOnOriginal) = FinalOutline;
                 catch
                     errordlg('The object outlines overlaid on the original image were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
                 end

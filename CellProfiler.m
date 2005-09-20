@@ -1525,9 +1525,10 @@ end
 
 MaxInfo = get(handles.slider1,'UserData');
 
-delete(findobj('Parent',handles.variablepanel,'Visible','on'));
-
 for ModuleDelete = 1:length(ModuleHighlighted);
+    RemoveVariables(handles,ModuleHighlighted(ModuleDelete)-ModuleDelete+1);
+    %%% Remove variable names from other modules
+    delete(findobj('Parent',handles.variablepanel,'Visible','on'));
     %%% 2. Removes the ModuleName from the handles structure.
     handles.Settings.ModuleNames(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     %%% 3. Clears the variable values in the handles structure.
@@ -1755,6 +1756,63 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
+function RemoveVariables(handles,ModuleNumber)
+%%% This function removes all variables of a specified Module from the
+%%% handles structure.
+for i = 1:length(handles.VariableBox{ModuleNumber})
+    InfoType = get(handles.VariableBox{ModuleNumber}(i),'UserData');
+    StrSet = get(handles.VariableBox{ModuleNumber}(i),'string');
+
+    if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
+
+        ModList = findobj('UserData',InfoType(1:end-6));
+        ModList2 = findobj('UserData',InfoType);
+        ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(i));
+        TestVars = get(ModList2,'string');
+        OtherIndepWithSameValue = [];
+        for k = 1:length(TestVars)
+            if isempty(OtherIndepWithSameValue)
+                OtherIndepWithSameValue = strmatch(StrSet,TestVars{k});
+            end
+        end
+
+        if isempty(OtherIndepWithSameValue)
+
+            for m=1:numel(ModList)
+                PrevList = get(ModList(m),'string');
+                VarVal = get(ModList(m),'value');
+                BoxTag = get(ModList(m),'tag');
+                BoxNum = str2num(BoxTag((length(BoxTag)-1):end));
+                ModNum = [];
+                for j = 1:length(handles.VariableBox)
+                    if length(handles.VariableBox{j}) >= BoxNum
+                        if ModList(m) == handles.VariableBox{j}(BoxNum)
+                            ModNum = j;
+                        end
+                    end
+                end
+                if strcmp(get(ModList(m),'style'),'popupmenu')
+                    if strcmp(PrevList(VarVal),StrSet)
+                        NewStrSet = cat(1,PrevList(1:(VarVal-1)),PrevList((VarVal+1):end));
+                        set(ModList(m),'string',NewStrSet);
+                        set(ModList(m),'value',1);
+                        handles.Settings.VariableValues(ModNum,BoxNum) = PrevList(1);
+                    else
+                        OldPos = strmatch(StrSet,PrevList);
+                        if ~isempty(OldPos)
+                            OldStr = PrevList(VarVal);
+                            NewStrSet = cat(1,PrevList(1:(OldPos-1)),PrevList((OldPos+1):end));
+                            CorrectValue = strmatch(OldStr,NewStrSet,'exact');
+                            set(ModList(m),'string',NewStrSet);
+                            set(ModList(m),'value',CorrectValue);
+                            handles.Settings.VariableValues(ModNum,BoxNum) = NewStrSet(CorrectValue);
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
 
 function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% This function stores a variable's value in the handles structure, 

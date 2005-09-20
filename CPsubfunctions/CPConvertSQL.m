@@ -28,11 +28,7 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         if strfind(ssf, 'PathnameOrig'),
             continue;
         end
-        
-        if strfind(ssf, 'Filename'),
-             continue;
-        end
-        
+                       
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
         else

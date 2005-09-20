@@ -133,6 +133,19 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle. The popup window is the wrong color at the end after the html file is saved.  The 'Download zipped file' html code should be at the top of the page rather than the bottom.
 
+- (Requested by Anne 08-30-05) - If the current default image directory no longer exists and then you go do anything like File > Open Image, there is a command line error that the directory cannot be found.  Do we need to change all instances of cd to CPcd that is able to handle this kind of error and warn the user?
+??? Error using ==> cd
+Cannot CD to /Users/anne_carpenter/Desktop/2005_09_20NovartisYeast (Name is nonexistent or not a directory).
+Error in ==> OpenNewImageFile at 45
+cd(handles.Current.DefaultImageDirectory);
+Error in ==> CellProfiler>OpenImage_Callback at 3586
+OpenNewImageFile(handles);
+Error in ==> CellProfiler>gui_mainfcn at 4788
+        feval(varargin{:});
+Error in ==> CellProfiler at 42
+    gui_mainfcn(gui_State, varargin{:});
+??? Error while evaluating uimenu Callback.
+
 - (Requested by Anne 08-30-05) - There are two ways to generate a text file containing the current pipeline settings and they should be made consistent with each other (e.g. sharing a subfunction so they produce the exact same results). One way is to use DataTools > ExportData and generate the 'Process Info' file, and the other way is to File > SavePipeline, and then save also as a text file. At the moment, the File > SavePipeline, using the text option, is broken, so I don't know what sort of file it is trying to produce. Most likely, it is producing something similar to ExportData so I don't know whether the code from that would be helpful or not. The ExportData method is pretty close to what we want, with these changes:
 > move the pixel size and number of image sets to the top of the file (after the processing date & time).
 > Is the processing date & time the start time or end time? Label it appropriately.

@@ -405,7 +405,7 @@ SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
 TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,21});
 %inputtypeVAR21 = popupmenu
 
-%%%VariableRevisionNumber = 9
+%%%VariableRevisionNumber = 10
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%

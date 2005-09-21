@@ -87,7 +87,7 @@ DenomFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,7}
 %inputtypeVAR08 = popupmenu
 DenomImage = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%

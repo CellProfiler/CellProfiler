@@ -162,8 +162,8 @@ if strcmp(AutoOrManual,'Automatic') %Rightmost and Lowermost should not be used 
     Lowermost = ceil(max(y));
 
     %Assuming the user declared the number of rows and cols
-    XDiv = ceil((Rightmost - Leftmost)/(Cols - 1));
-    YDiv = ceil((Lowermost - Topmost)/(Rows - 1));
+    XDiv = round((Rightmost - Leftmost)/(Cols - 1));
+    YDiv = round((Lowermost - Topmost)/(Rows - 1));
 
 elseif strcmp(AutoOrManual,'Manual (all)')
     YDiv = VertSpacing;

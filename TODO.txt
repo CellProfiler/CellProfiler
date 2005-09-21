@@ -1,9 +1,33 @@
 CellProfiler cell image analysis software development 
-AUGUST 31, 2005  IN ORDER OF PRIORITY
+September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+- (Requested by Anne 09-21-05) - There is a bug in the MeasureCorrelation module when the settings are: OrigBlue, OrigGreen, within Nuclei. (i.e. not within Image). It produces an output file with the correct fields in the handles.Measurements.Nuclei structure, but an extra, incorrect field (CorrelationFeatures) in the handles.Measurements.Image structure for some reason:
+>> handles.Measurements.Nuclei
+ans = 
+       LocationFeatures: {'CenterX'  'CenterY'}
+               Location: {[282x2 double]  [860x2 double]}
+    CorrelationFeatures: {'Correlation OrigBlue and OrigGreen'}
+            Correlation: {[282x1 double]  [860x1 double]}
+
+>> handles.Measurements.Image
+ans = 
+          FileNamesText: {'Filename OrigBlue'  'Filename OrigGreen'}
+              FileNames: {{1x2 cell}  {1x2 cell}}
+          PathNamesText: {'Path OrigBlue'  'Path OrigGreen'}
+              PathNames: {{1x2 cell}  {1x2 cell}}
+      ThresholdFeatures: {'Threshold Nuclei'  'Threshold Cells'}
+              Threshold: {[0.0392 0.0409]  [0.0524 0.0568]}
+    ObjectCountFeatures: {'ObjectCount Nuclei'  'ObjectCount Cells'}
+            ObjectCount: {[282 282]  [860 860]}
+    CorrelationFeatures: {'Correlation OrigBlue and OrigGreen'}
+            TimeElapsed: {[75.9895]  [214.3913]}
+
+
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
+
+- (Requested by Anne 9-21-05) - Combine ExpandOrShrinkPrim and ExpandOrShrinkSec.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
@@ -237,6 +261,9 @@ Error in ==> CellProfiler at 42
     gui_mainfcn(gui_State, varargin{:});
 ??? Error while evaluating uimenu Callback.
 
+- (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
+MergeBatchOutput
+Restart
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

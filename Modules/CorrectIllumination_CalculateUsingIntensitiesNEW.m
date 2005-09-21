@@ -229,6 +229,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+if strcmp(AverageImageName,'Do not save')
+    AverageImageSaveFlag = 0;
+    AverageImageName = ['Averaged',ImageName];
+else AverageImageSaveFlag = 1;
+end
+
 ReadyFlag = 'Not Ready';
 if strcmp(EachOrAll,'All')
     try
@@ -482,11 +488,13 @@ drawnow
 %%% average image and its flag are saved to the handles structure
 %%% after every cycle is processed.
 if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1 | (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1)
-    handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
+    if strcmp(ReadyFlag, 'Ready') == 1
+        handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
+    end
     if strcmp(IntensityChoice,'Regular')
         %%% Whether these images exist depends on whether the user has chosen
         %%% to dilate or smooth the average image.
-        if ~strcmpi(AverageImageName,'Do not save')
+        if AverageImageSaveFlag == 1
             if strcmp(EachOrAll,'Each')
                 error('Image processing was canceled because in the Correct Illumination module you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.')
             end

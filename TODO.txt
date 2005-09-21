@@ -226,6 +226,9 @@ Error in ==> SaveImageAs at 29
 
 --- (Requested by Susan) - Add 'New Pipeline' command so that user can create a new pipeline while use is opening a pipeline. This will be helpful if user have some problem in compile a complex pipeline and would like to start a fresh simply one from scratch. 
 
+- (Requested by Anne 9-21-05) - THere is a cool tool for interactively selecting a threshold. Perhaps we can add a 'test mode' button for the Identify modules that allows you to choose a threshold the first image cycle. It would use this code:
+http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6770
+
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

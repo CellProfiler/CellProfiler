@@ -36,7 +36,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What are the outlines that you would like to display?
-%infotypeVAR02 = outlinegroup
+%infotypeVAR02 = imagegroup
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
@@ -84,14 +84,9 @@ end
 NewImage = OrigImage;
 NewImage(OutlineImage ~= 0) = m;
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -105,12 +100,6 @@ uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','o
     'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),imagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
 
 
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

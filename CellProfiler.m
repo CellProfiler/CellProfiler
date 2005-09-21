@@ -1896,7 +1896,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                     end
                     set(ModList(i),'String',CurrentString);
                 else
-                    if ~strcmp(StrSet,'n/a') && ~strcmp(StrSet,'/')
+                    if ~strcmp(StrSet(UserEntry),'n/a') && ~strcmp(StrSet(UserEntry),'/')
                         CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
                     end
                     set(ModList(i),'String',CurrentString);

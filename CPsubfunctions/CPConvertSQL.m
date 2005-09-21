@@ -29,11 +29,20 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
             continue;
         end
                        
+        if strfind(ssf, 'Text'),
+            if (strfind(ssf, 'Text') + 3) == length(ssf),
+                continue;
+            end
+        end
+                       
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
+        elseif isfield(substruct, [ssf 'Text']),
+            names = handles.Measurements.(SubFieldname).([ssf 'Text']);
         else
             names = {ssf};
         end
+
 
         vals = handles.Measurements.(SubFieldname).(ssf);
         if (~ ischar(vals{1})) 

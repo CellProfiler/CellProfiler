@@ -229,6 +229,19 @@ Error in ==> SaveImageAs at 29
 - (Requested by Anne 9-21-05) - THere is a cool tool for interactively selecting a threshold. Perhaps we can add a 'test mode' button for the Identify modules that allows you to choose a threshold the first image cycle. It would use this code:
 http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6770
 
+- (Requested by Anne 9-21-05) - If a matlab file is corrupt, there is a command line error that is not caught by CellProfiler:
+??? Error using ==> load
+Unable to read MAT-file /Users/anne_carpenter/Desktop/illum10PIPE.mat
+File may be corrupt.
+Error in ==> CellProfiler>LoadPipeline_Callback at 427
+LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
+Error in ==> CellProfiler>gui_mainfcn at 4849
+        feval(varargin{:});
+Error in ==> CellProfiler at 42
+    gui_mainfcn(gui_State, varargin{:});
+??? Error while evaluating uimenu Callback.
+
+
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

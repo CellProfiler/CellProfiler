@@ -234,7 +234,7 @@ end
 
 handles.Pipeline.(['Segmented' NewObjectName]) = FinalLabelMatrixImage;
 
-if ~strcmp(LabelMatrixImageName,'Do Not Save')
+if ~strcmp(LabelMatrixImageName,'Do not save')
     if strcmp(RGBorGray,'RGB')
         if sum(sum(FinalLabelMatrixImage)) >= 1
             cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
@@ -248,6 +248,6 @@ if ~strcmp(LabelMatrixImageName,'Do Not Save')
     end
 end
 
-if ~strcmp(OutlineName,'Do Not Save')
+if ~strcmp(OutlineName,'Do not save')
     handles.Pipeline.(OutlineName) = OutlinedObjects;
 end

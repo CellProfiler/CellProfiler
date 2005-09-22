@@ -24,7 +24,6 @@ function handles = OverlayOutlines(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
@@ -46,6 +45,11 @@ OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
+
+%textVAR04 = What are the outlines that you would like to display?
+%defaultVAR04 = OutlineOverlay
+%infotypeVAR04 = imagegroup indep
+SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
@@ -80,7 +84,7 @@ elseif strcmp(MaxType,'Max Possible')
 else
     error('The value of MaxType was not recognized');
 end
-    
+
 NewImage = OrigImage;
 NewImage(OutlineImage ~= 0) = m;
 
@@ -90,16 +94,19 @@ NewImage(OutlineImage ~= 0) = m;
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-    
-FigHandle = CPfigure(ThisModuleFigureNumber);
+if any(findobj == ThisModuleFigureNumber) == 1;
 
-imagesc(NewImage);
+    FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 
-uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
-    'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...
-    'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),imagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
-
+    imagesc(NewImage);
+    title(['Original Image with Outline Overlay, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
+        'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...
+        'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),imagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+handles.Pipeline.(SavedImageName) = NewImage;

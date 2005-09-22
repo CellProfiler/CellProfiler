@@ -212,7 +212,57 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
     else
         ImageToBeCropped = OrigImage;
     end
-    
+
+    if ~strcmp(Shape,'Ellipse') && ~strcmp(Shape,'Rectangle')
+        if strcmp(PlateFix,'Yes')
+            try BinaryCropImage = handles.Pipeline.(Shape);
+            catch
+                fieldname = ['Segmented',Shape];
+                try BinaryCropImage = handles.Pipeline.(fieldname);
+                catch
+                    fieldname = ['Cropping',Shape'];
+                    try BinaryCropImage = handles.Pipeline.(fieldname);
+                    catch error('Image cannot be found!');
+                    end
+                end
+            end
+            [m,n] = size(BinaryCropImage);
+            flag = 0;
+            for i = 1:m
+                if sum(BinaryCropImage(i,:))/n >= .5
+                    LastY = i;
+                    if flag == 0
+                        FirstY = i;
+                        flag = 1;
+                    end
+                end
+            end
+            flag = 0;
+            for i = 1:n
+                if sum(BinaryCropImage(:,i))/m >= .5
+                    LastX = i;
+                    if flag == 0
+                        FirstX = i;
+                        flag = 1;
+                    end
+                end
+            end
+            Pixel1 = [num2str(FirstX),',',num2str(LastX)];
+            Pixel2 = [num2str(FirstY),',',num2str(LastY)];
+            Shape = 'Rectangle';
+        else
+            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape);
+            catch
+                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], PlateFix);
+                catch
+                    try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], PlateFix);
+                    catch error('Image cannot be found!');
+                    end
+                end
+            end
+        end
+    end
+
     if strcmp(Shape, 'Ellipse')
         if strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points for the
@@ -339,16 +389,6 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
         [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix);
-    else
-        try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape);
-        catch
-            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], PlateFix);
-            catch
-                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], PlateFix);
-                catch error('Image cannot be found!');
-                end
-            end
-        end
     end
     %%% See subfunction below.
 else
@@ -399,17 +439,6 @@ try
     BinaryCropImage = handles.Pipeline.(CroppedImageName);
 catch
     error(['You must choose rectangular cropping, ellipse or the name of something from a previous module.']);
-end
-
-if strcmp(PlateFix,'Yes')
-    [m,n] = size(BinaryCropImage)
-    for i = 1:m
-        if sum(BinaryCropImage(i,:))/n >= .5
-            BinaryCropImage(i,:) = ones(1,n);
-        else
-            BinaryCropImage(i,:) = zeros(1,n);
-        end
-    end
 end
 
 if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))

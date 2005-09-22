@@ -148,7 +148,13 @@ X_axis = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 200
 Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%%%VariableRevisionNumber = 2
+%textVAR11 = Do you want to use Plate Fix?
+%choiceVAR11 = Yes
+%choiceVAR11 = No
+%inputtypeVAR11 = popupmenu
+PlateFix = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -280,7 +286,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
             
@@ -332,13 +338,13 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix);
     else
         try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape);
         catch
-            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape]);
+            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], PlateFix);
             catch
-                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape]);
+                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], PlateFix);
                 catch error('Image cannot be found!');
                 end
             end
@@ -346,7 +352,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
     end
     %%% See subfunction below.
 else
-    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName]);
+    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -387,12 +393,23 @@ drawnow
 %%% subsequent modules.
 handles.Pipeline.(CroppedImageName) = CroppedImage;
 
-function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName)
+function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, PlateFix)
 %%% Retrieves the Cropping image from the handles structure.
 try
     BinaryCropImage = handles.Pipeline.(CroppedImageName);
 catch
     error(['You must choose rectangular cropping, ellipse or the name of something from a previous module.']);
+end
+
+if strcmp(PlateFix,'Yes')
+    [m,n] = size(BinaryCropImage)
+    for i = 1:m
+        if sum(BinaryCropImage(i,:))/n >= .5
+            BinaryCropImage(i,:) = ones(1,n);
+        else
+            BinaryCropImage(i,:) = zeros(1,n);
+        end
+    end
 end
 
 if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))

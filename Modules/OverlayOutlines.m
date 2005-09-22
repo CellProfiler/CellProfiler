@@ -1,9 +1,9 @@
 function handles = OverlayOutlines(handles)
 
 % Help for the Overlay Outlines module:
-% Category: Other
+% Category: Image Processing
 %
-% There is no help right now.
+% Sorry, this module has not yet been documented.
 %
 % See also n/a.
 
@@ -34,19 +34,18 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What are the outlines that you would like to display?
+%textVAR02 = What did you call the outlines that you would like to display?
 %infotypeVAR02 = imagegroup
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Would you like to set the outlines to be the maximum in the image, or the maximum possible value?
-%choiceVAR03 = Max of Image
-%choiceVAR03 = Max Possible
+%textVAR03 = Would you like to set the outlines to be the maximum in the image, or the maximum possible value for this image format?
+%choiceVAR03 = Max of image
+%choiceVAR03 = Max possible
 MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-
-%textVAR04 = What are the outlines that you would like to display?
+%textVAR04 = What do you want to call the image with the outlines displayed?
 %defaultVAR04 = OutlineOverlay
 %infotypeVAR04 = imagegroup indep
 SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -60,33 +59,33 @@ SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 try
     OrigImage = handles.Pipeline.(ImageName);
 catch
-    error(['Cannot load ' ImageName ' from pipeline.  Make sure you run a load image module, before this one.']);
+    error(['Image processing was canceled because the image ' ImageName ' could not be found. Perhaps there is a typo?']);
 end
 
 try
     OutlineImage = handles.Pipeline.(OutlineName);
 catch
-    error(['Cannot load ' OutlineName ' from pipeline.  Make sure you saved the outlines in an earlier module.']);
+    error(['Image processing was canceled because the image ' OutlineName ' could not be found. Perhaps there is a typo?  Make sure you saved the outlines in an earlier module.']);
 end
 
 if any(size(OrigImage) ~= size(OutlineImage))
-    error(['The sizes of the image, ' size(OrigImage) ' is not the same as the size of the outlines, ' size(OutlineImage)]);
+    error(['The size of the image, ' size(OrigImage) ' is not the same as the size of the outlines, ' size(OutlineImage)]);
 end
 
-if strcmp(MaxType,'Max of Image')
-    m = max(max(OrigImage));
-elseif strcmp(MaxType,'Max Possible')
+if strcmp(MaxType,'Max of image')
+    ValueToUseForOutlines = max(max(OrigImage));
+elseif strcmp(MaxType,'Max possible')
     if isfloat(OrigImage(1,1))
-        m=1;
+        ValueToUseForOutlines=1;
     else
-        m = intmax(class(OrigImage(1,1)));
+        ValueToUseForOutlines = intmax(class(OrigImage(1,1)));
     end
 else
     error('The value of MaxType was not recognized');
 end
 
 NewImage = OrigImage;
-NewImage(OutlineImage ~= 0) = m;
+NewImage(OutlineImage ~= 0) = ValueToUseForOutlines;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

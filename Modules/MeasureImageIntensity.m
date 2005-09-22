@@ -110,8 +110,6 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 
-
-
 %%% Subtracts the threshold from the original image.
 ThresholdedOrigImage = OrigImage - LowThreshold;
 ThresholdedOrigImage(ThresholdedOrigImage < 0) = 0;
@@ -177,8 +175,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Saves measurements to the handles structure.
 %fieldname = ['ImageTotalIntensity', ObjectName];
 %handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalIntensity};
@@ -186,7 +182,8 @@ drawnow
 %handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {MeanIntensity};
 %fieldname = ['ImageTotalArea', ObjectName];
 %handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalArea};
-
-handles.Measurements.Image.IntensityFeatures = {'Total intensity','Mean intensity','Total area'};
-handles.Measurements.Image.Intensity(handles.Current.SetBeingAnalyzed) = {[TotalIntensity MeanIntensity TotalArea]};
+featurefieldname = ['Intensity_',ImageName','Features'];
+fieldname = ['Intensity_',ImageName];
+handles.Measurements.Image.(featurefieldname) = {'Total intensity','Mean intensity','Total area'};
+handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = {[TotalIntensity MeanIntensity TotalArea]};
 

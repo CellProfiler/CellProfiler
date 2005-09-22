@@ -100,12 +100,12 @@ for img_idx = FirstSet:LastSet,
     numobj = 0;
 
     for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
-       SubFieldname = RemainingSubMeasurementFieldnames{1};
+        SubFieldname = RemainingSubMeasurementFieldnames{1};
         substruct = handles.Measurements.(SubFieldname);
         substructfields = fieldnames(substruct)';
         for ssfc = substructfields,
             ssf = ssfc{1};
-            
+
             if strfind(ssf, 'Features'),
                 continue;
             end
@@ -113,7 +113,13 @@ for img_idx = FirstSet:LastSet,
             if strfind(ssf, 'PathnameOrig'),
                 continue;
             end
-            
+
+            if strfind(ssf, 'Text'),
+                if (strfind(ssf, 'Text') + 3) == length(ssf),
+                    continue;
+                end
+            end
+
             % img_idx
             % handles.Measurements.(SubFieldname).(ssf)
             vals = handles.Measurements.(SubFieldname).(ssf){img_idx};

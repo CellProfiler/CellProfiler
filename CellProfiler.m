@@ -2916,10 +2916,16 @@ else
                             %%% analysis loop, and completes the refreshing
                             %%% process.
                             try
+                                %%% This is a kluge, to make modules
+                                %%% that output the measurements
+                                %%% structure work when they try to
+                                %%% export the time elapsed
+                                if setbeinganalyzed > 1,
+                                    handles.Measurements.Image.TimeElapsed{setbeinganalyzed} = toc;
+                                end
                                 %%% Runs the appropriate module, with the handles structure as an
                                 %%% input argument and as the output
                                 %%% argument.
-
                                 eval(['handles = ',ModuleName,'(handles);'])
                                 if ishandle(SlotNumber)
                                     OldText = get(SlotNumber,'name');

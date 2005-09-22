@@ -68,7 +68,7 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the new subregions?
-%defaultVAR03 = Cells
+%defaultVAR03 = Cytoplasm
 %infotypeVAR03 = objectgroup indep
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -85,7 +85,7 @@ SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
 %inputtypeVAR05 = popupmenu
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -1,15 +1,11 @@
-function handles = MeasureRatiosNEW(handles)
+function handles = MeasureRatios(handles)
 
 % Help for the Measure Ratios module:
 % Category: Measurement
 %
-% This module has not yet been documented.  You can enter 'Area' or
-% 'IntegratedIntensity' or 'MeanIntensity' for example. Sometimes I
-% get divide by zero errors; We should add error checking to be sure
-% the proper number of measurements exist.  It has some hard coded
-% lines at the moment for CorrRed, CorrGreen, CorrBlue.
+% This module has not yet been documented.
 %
-% How it works:
+% How it works: not yet been documented.
 %
 % See also MEASUREIMAGEAREAOCCUPIED,
 % MEASUREOBJECTINTENSITYTEXTURE, MEASUREOBJECTAREASHAPE,
@@ -39,22 +35,22 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Which object would you like to use for the numerator (The option IMAGE only works with the Correlation measurement of entire images)?
+%textVAR01 = Which object would you like to use for the numerator (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
 NumObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Which measurement would you like to use?
+%textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Correlation
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
 %choiceVAR02 = Texture
-%inputtypeVAR02 = popupmenu
+%inputtypeVAR02 = popupmenu custom
 NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter the feature number (see HELP for explanation):
+%textVAR03 = Which measurement do you want to use? (Enter the measurement number - see HELP for explanation)
 %defaultVAR03 = 1
 NumFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -63,22 +59,22 @@ NumFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR04 = popupmenu
 NumImage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Which object would you like to use for the denominator (The option IMAGE only works with the Correlation measurement of entire images)?
+%textVAR05 = Which object would you like to use for the denominator (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR05 = Image
 %infotypeVAR05 = objectgroup
 %inputtypeVAR05 = popupmenu
 DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Which measurement would you like to use?
+%textVAR06 = Which category of measurements would you like to use?
 %choiceVAR06 = AreaShape
 %choiceVAR06 = Correlation
 %choiceVAR06 = Intensity
 %choiceVAR06 = Neighbors
 %choiceVAR06 = Texture
-%inputtypeVAR06 = popupmenu
+%inputtypeVAR06 = popupmenu custom
 DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,06});
 
-%textVAR07 = Enter the feature number (see HELP for explanation):
+%textVAR07 = Which measurement do you want to use? (Enter the measurement number - see HELP for explanation)
 %defaultVAR07 = 1
 DenomFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,7});
 

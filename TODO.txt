@@ -3,6 +3,18 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+- (Requested by Anne 09-21-05) - The MeasureImageIntensity module does not store the image name with the measurement, so if you put multiple modules in a row measuring the intensity of different images, the early ones are overwritten.  Here's how the measurements look from the MeasureImageIntensity module....
+handles.Measurements.Image:
+    IntensityFeatures: {'Total intensity'  'Mean intensity'  'Total area'}
+            Intensity: {[4.0181e+04 0.0399 1006000]}
+
+I think we should change the module to be more like the MeasureObjectIntensity module, where we include the image type (e.g. 'OrigBlue' in the feature name), like this...
+handles.Measurements.Nuclei:
+   Intensity_OrigBlueFeatures: {1x11 cell}
+            Intensity_OrigBlue: {[282x11 double]}
+
+This will also make the module compatible with the MeasureRatios module.
+
 - (Requested by Anne 09-21-05) - There is a bug in the MeasureCorrelation module when the settings are: OrigBlue, OrigGreen, within Nuclei. (i.e. not within Image). It produces an output file with the correct fields in the handles.Measurements.Nuclei structure, but an extra, incorrect field (CorrelationFeatures) in the handles.Measurements.Image structure for some reason:
 >> handles.Measurements.Nuclei
 ans = 
@@ -143,6 +155,8 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
+- (Requested by Anne 09-21-05) - MeasureImageSaturationBlur's figure color scheme is weird.
+
 - (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
@@ -188,7 +202,22 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 
-- (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.
+- (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.  Also, its measurements are not saved in the proper structure format. It looks like this when I analyzed three image cycles:
+handles.Measurements
+ans = 
+             ImageAreaOccupiedStainedRegion: {[156845]  [424211]  [336473]}
+    ImageAreaOccupiedThresholdStainedRegion: {[0.0174]  [0.0406]  [0.0290]}
+But these measurements should actually be in handles.Measurements.Image in two separate fields - one with the measurements and the other with the feature names, and with these two fields listed above being features.  This should make the module compatible with the MeasureRatios module, so we should then adjust the MeasureRatios module so you can choose these measures.
+
+- (Requested by Anne 9-22-05) - To be consistent with the other modules, I think we should change the MeasureImageSaturationBlur fieldnames a bit. Right now, it looks like this:
+>> handles.Measurements.Image
+ans = 
+           FocusScoreFeatures: {'FocusScore OrigGreen'}
+                   FocusScore: {[0.1509]  [0.0999]  [0.1208]}
+    PercentSaturationFeatures: {'PercentSaturation OrigGreen'}
+            PercentSaturation: {[0]  [0]  [0]}
+
+I think instead it should be SaturationBlur_OrigGreen and SaturationBlur_OrigGreenFeatures, and then the feature names would be BlurScore (not FocusScore) and PercentSaturated (not PercentSaturation). As it currently is, subsequent modules would overwrite the results here, because there is no image-specific thing added to the main field name.  Making these changes should also render this module compatible with the MeasureRatios module, too, so we should then adjust the MeasureRatios module so you can choose these measures.
 
 - (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
 

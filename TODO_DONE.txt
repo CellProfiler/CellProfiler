@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+-(Mike 9/22) (Requested by Anne 09-21-05) - The MeasureImageIntensity module does not store the image name with the measurement, so if you put multiple modules in a row measuring the intensity of different images, the early ones are overwritten.  Here's how the measurements look from the MeasureImageIntensity module....
+handles.Measurements.Image:
+    IntensityFeatures: {'Total intensity'  'Mean intensity'  'Total area'}
+            Intensity: {[4.0181e+04 0.0399 1006000]}
+
+I think we should change the module to be more like the MeasureObjectIntensity module, where we include the image type (e.g. 'OrigBlue' in the feature name), like this...
+handles.Measurements.Nuclei:
+   Intensity_OrigBlueFeatures: {1x11 cell}
+            Intensity_OrigBlue: {[282x11 double]}
+
+This will also make the module compatible with the MeasureRatios module.
+
 -(Mike 9/20) ImageIntensity not working at the moment
 
 -(Mike 9/20) Measure modules (AreaShape) should be able to handle 7 objects

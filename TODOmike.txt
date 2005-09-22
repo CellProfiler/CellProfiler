@@ -1,8 +1,8 @@
 Mike's TODO list
 
-- I just wanted to be revision 2000
-
 - (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?  I guess maybe not, because PlaceAdjacent is designed to take in two different images (e.g. OrigBlue and OrigGreen) (although perhaps we can expand it to allow up to 6 images being side by side) whereas Tile is designed to take all the images of a particular type (e.g. all the OrigBlue images) and tile them.  Not sure if it is reasonable to combine these two - I guess it depends on what the variables are and how confusing they become.
+
+- (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
 
 - Add ray's new adjustment to SecProp function for secondary distance
 
@@ -10,4 +10,4 @@ Mike's TODO list
        (make it optional in case a cell stain image is not
        available). 
 
-- (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
+- Add 'New Pipeline' button

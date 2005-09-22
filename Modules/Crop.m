@@ -149,8 +149,8 @@ X_axis = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Do you want to use Plate Fix?
-%choiceVAR11 = Yes
 %choiceVAR11 = No
+%choiceVAR11 = Yes
 %inputtypeVAR11 = popupmenu
 PlateFix = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 

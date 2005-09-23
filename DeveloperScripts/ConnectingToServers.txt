@@ -61,10 +61,10 @@ mount tap2:/imaging /nfs/imaging
 EOF
 
 Save the above text as create_mounts.command in your root directory.
-Now there two ways to run this mounting script:
-option 1: In GUI --locate the file right click on the create_mount select open with terminal. You will be prompted to enter password.
+Now there are two ways to run this mounting script:
+option 1: In GUI --locate the file right click on the file, select open with terminal. You will be prompted to enter password.
 
-option 2:  open terminal, be sure that you are logged in as someone who has permission to access those servers (e.g. cellprofileruser).. At the command line  cd / to your root, type /create_mounts.command and it will prompt you for your password. 
+option 2:  open terminal, be sure that you are logged in as someone who has permission to access those servers (e.g. cellprofileruser).. At the command line  cd / to your root, type ./create_mounts.command and it will prompt you for your password. 
 The connections are now made but are likely not visible at /nfs/FOLDERNAME, so you can either wait for a while or you can force the finder window to refresh by creating a file in the /nfs folder and then deleting it (this is a bug in Mac OS X that doesn't refresh frequently and also doesn't let you force windows to refresh).  Once everything refreshes, the icons for the servers will appear on the desktop but also at /nfs/FOLDERNAME.
 
 So now everything is set up, and you should never need to repeat any of these steps. Remount the nfs/share folders after restart/shutdown.

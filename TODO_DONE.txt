@@ -1,5 +1,26 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/23) (Requested by Anne 09-21-05) - There is a bug in the MeasureCorrelation module when the settings are: OrigBlue, OrigGreen, within Nuclei. (i.e. not within Image). It produces an output file with the correct fields in the handles.Measurements.Nuclei structure, but an extra, incorrect field (CorrelationFeatures) in the handles.Measurements.Image structure for some reason:
+>> handles.Measurements.Nuclei
+ans = 
+       LocationFeatures: {'CenterX'  'CenterY'}
+               Location: {[282x2 double]  [860x2 double]}
+    CorrelationFeatures: {'Correlation OrigBlue and OrigGreen'}
+            Correlation: {[282x1 double]  [860x1 double]}
+
+>> handles.Measurements.Image
+ans = 
+          FileNamesText: {'Filename OrigBlue'  'Filename OrigGreen'}
+              FileNames: {{1x2 cell}  {1x2 cell}}
+          PathNamesText: {'Path OrigBlue'  'Path OrigGreen'}
+              PathNames: {{1x2 cell}  {1x2 cell}}
+      ThresholdFeatures: {'Threshold Nuclei'  'Threshold Cells'}
+              Threshold: {[0.0392 0.0409]  [0.0524 0.0568]}
+    ObjectCountFeatures: {'ObjectCount Nuclei'  'ObjectCount Cells'}
+            ObjectCount: {[282 282]  [860 860]}
+    CorrelationFeatures: {'Correlation OrigBlue and OrigGreen'}
+            TimeElapsed: {[75.9895]  [214.3913]}
+
 -(Mike 9/23) (Requested by Anne) - RenameOrRenumberFile behaves weirdly when trying to rename and renumber.  For example, for the file IMG_0760.JPG I tried these settings: # characters beginning = 4, # characters at end = 4, any text to add = /, characters for renumbering = 5.  I expected this to yield IMG_00760.JPG, but instead it yields: IMG_00000.JPG  Likewise, # characters for renumbering = 3 should yield IMG_760.JPG but instead it yields IMG_000.JPG.
 
 -(Mike 9/23) (Requested by Anne 8-25-05) - Is the module "PlaceAdjacent" something that we can combine with "Tile"?  I guess maybe not, because PlaceAdjacent is designed to take in two different images (e.g. OrigBlue and OrigGreen) (although perhaps we can expand it to allow up to 6 images being side by side) whereas Tile is designed to take all the images of a particular type (e.g. all the OrigBlue images) and tile them.  Not sure if it is reasonable to combine these two - I guess it depends on what the variables are and how confusing they become.

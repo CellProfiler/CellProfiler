@@ -216,9 +216,6 @@ for ObjectNameNbr = 1:ObjectNameCount
     handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
 end
 
-% Store the correlation measurements
-handles.Measurements.Image.CorrelationFeatures = CorrelationFeatures;
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%

@@ -86,29 +86,26 @@ for n = 1:length(FileNames)
     Prefix = OldFilename(1:NumberCharactersPrefix);
     Suffix = OldFilename((end-NumberCharactersSuffix+1):end);
 
-    %Renaming Stage
-    if strcmp(TextToAdd,'/') == 0
-        InterFilename = [Prefix,TextToAdd,Suffix];
-    else
-        InterFilename = [Prefix,Suffix];
-    end
-
     %Renumbering Stage
-    if strcmp(NumberDigits,'/') == 0
-        OldNumber = InterFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
+    if ~strcmp(NumberDigits,'/')
+        OldNumber = OldFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
         NumberOfZerosToAdd = AmtDigits - length(OldNumber);
         if NumberOfZerosToAdd < 0
             OldNumber = OldNumber(end-AmtDigits+1:end);
             NumberOfZerosToAdd=0;
         end
         ZerosToAdd = num2str(zeros(NumberOfZerosToAdd,1))';
-        TextToAdd = [ZerosToAdd,OldNumber];
+        NewText = [ZerosToAdd,OldNumber];
     else
-        TextToAdd = InterFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
+        NewText = OldFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
     end
 
-    %Final renamed & renumbered name
-    NewFilename = [Prefix,TextToAdd,Suffix];
+    %Renaming Stage
+    if strcmp(TextToAdd,'/')
+        NewFilename = [Prefix,NewText,Suffix];
+    else
+        NewFilename = [Prefix,TextToAdd,NewText,Suffix];
+    end
 
     if n == 1
         DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.  The remaining files will be converted without asking for confirmation.'];

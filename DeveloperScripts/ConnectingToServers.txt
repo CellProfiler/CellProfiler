@@ -3,7 +3,7 @@ Susan Ma & Anne Carpenter  September 23, 2005
 
 [[[Note: connecting via cifs://gobo is flexible because it allows you to log in from any WIBR computer using your CCDOM account, but the connection is very slow.  Connecting via nfs must be set up as follows for each computer itself, but once the connection is made it is very fast and doesn't require login]]].
 
-{{{I assume that another step we have to do is email unix@wi.mit.edu and ask them to give the new user permission to access each server. I'm not sure exactly what they do to make this happen.}}}
+If this is the first time that a computer has been set up, email unix@wi.mit.edu and ask them to give the computer permission to access each server. 
 
 ----------------------------------------------------------------
 Step 1. Create new user account and add new user to WIBR sabatini groups
@@ -55,7 +55,7 @@ mkdir sabatini2_ata
 mkdir imaging
 mkdir carpente_ata
 
-Then use Microsoft Word to create a mounting script called ConnectServers.command:
+Then use a text editor to create a mounting script called ConnectServers.command:
 
 #!/bin/sh
 sudo su << EOF

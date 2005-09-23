@@ -3,6 +3,8 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+(Requested by Anne 9-23-05) - Make the File > save current cellprfoiler code ignore .svn directories.  There was one in the Modules directory.
+
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
 - (Requested by Anne 9-21-05) - Combine ExpandOrShrinkPrim and ExpandOrShrinkSec.
@@ -387,6 +389,8 @@ cell migration
 membrane potential
 gap junction formation
 p-glycoprotein activity
+
+- Neurite tracing algorithm: see potentially useful references: J Neurosci Methods. 2005 Sep 17; Automated identification of axonal growth cones in time-lapse image sequences. Keenan TM, Hooker A, Spilker ME, Li N, Boggy GJ, Vicini P, Folch A.
 
 +++  (Requested by Anne) -Particle tracking over time module. Good references:
 Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.

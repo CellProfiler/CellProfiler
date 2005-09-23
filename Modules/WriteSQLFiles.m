@@ -92,6 +92,12 @@ if DoWriteSQL,
     if isempty(DatabaseName)
         error('No database specified in the WriteSQLFiles module.');
     end
+    
+    %%% This is necessary to make sure the export works with the last
+    %%% set.  Otherwise, the TimeElapsed array is missing the last
+    %%% element.  The corresponding 'tic' is in CellProfiler.m.
+    handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
+
     CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet);
 end
 

@@ -3646,22 +3646,11 @@ function OpenImage_Callback(hObject, eventdata, handles)
 OpenNewImageFile(handles);
 
 function ZipFiles_Callback(hObject, eventdata, handles)
-macpc = CPquestdlg('Are you using a Mac?', 'Yes', 'No');
-switch macpc
-    case 'Yes',
-        ListOfThingsToSave = {'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.*' 'Help/*.m' 'CellProfiler.m'},
-    case 'No',
-        ListOfThingsToSave = {'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.*' 'Help\*.m' 'CellProfiler.m'},
+if ispc
+    ListOfThingsToSave = {'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.*' 'Help\*.m' 'CellProfiler.m'};
+else
+    ListOfThingsToSave = {'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.*' 'Help/*.m' 'CellProfiler.m'};
 end
-%%%Not sure why list of things to save is put in loop with this code.
-%%%
-%%%TempListOfThingsToSave = {'CPsubfunctions' 'DataTools' 'ImageTools' 'Modules' 'Help' 'CellProfiler.m' 'CellProfiler.fig'};
-%%%ListOfThingsToSave = {};
-%%%for(i=[1:length(TempListOfThingsToSave)])
-%%%    if(exist(char(TempListOfThingsToSave(i)),'file'))
-%%%        ListOfThingsToSave(length(ListOfThingsToSave)+1) = TempListOfThingsToSave(i);
-%%%    end
-%%%end
 try
     ZipFileName = [handles.Current.DefaultOutputDirectory '/CellProfilerCode_',date,'.zip'];
     zip(ZipFileName,ListOfThingsToSave,handles.Current.CellProfilerPathname);

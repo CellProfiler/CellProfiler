@@ -1,8 +1,10 @@
 Setting up new computers to access WIBR servers using NFS
-Anne Carpenter   July 22, 2005
+Susan Ma   Sept.22, 2005
 
 [[[Note: connecting via cifs://gobo is flexible because it allows you to log in from any WIBR computer using your CCDOM account, but the connection is very slow.  Connecting via nfs must be set up as follows for each computer itself, but once the connection is made it is very fast and doesn't require login]]].
-
+----------------------------------------------------------------
+Step 1. Add new user account to WIBR satabtini groups
+----------------------------------------------------------------
 On Mac OSX, go to Applications > Utilities > NetInfo Manager
 
 Security > Authenticate
@@ -31,6 +33,11 @@ sabcarp 2153
 sabatini 128
 cellomics 2149
 -----------
+
+----------------------------------------------------------------------
+Step 2. Set up nfs/WIBR network share drivers on local computer
+-----------------------------------------------------------------------
+
 Create a folder on your computer's hard drive ( at root / ) at the topmost level called 'nfs', with one subfolder for each server. You can do this at the command line in Terminal like this:
 cd /
 mkdir nfs
@@ -42,17 +49,25 @@ mkdir sabatini1_ata
 mkdir sabatini2_ata
 mkdir carpente_ata
 
-At the command line in a Terminal window, be sure that you are logged in as someone who has permission to access those servers (e.g. cellprofileruser).  Then type each of these lines, with Enter after each one:
-mount tap6:/sabatini_dbw02   /nfs/sabatini_dbw02
-mount tap5:/sabatini_dbw01   /nfs/sabatini_dbw01
-mount tap2:/imaging          /nfs/imaging      
-mount tap6:/sabatini1_ata    /nfs/sabatini1_ata 
-mount tap6:/sabatini2_ata    /nfs/sabatini2_ata 
-mount tap6:/carpente_ata     /nfs/carpente_ata
+Then use text editor to create a mounting script called create_mounts.command:
 
+#!/bin/sh
+sudo su << EOF
+mount tap5:/sabatini_dbw01 /nfs/sabatini_dbw01
+mount tap6:/sabatini_dbw02 /nfs/sabatini_dbw02
+mount tap4:/sabatini1_ata /nfs/sabatini1_ata
+mount tap4:/sabatini2_ata /nfs/sabatini2_ata
+mount tap2:/imaging /nfs/imaging
+EOF
+
+Save the above text as create_mounts.command in your root directory.
+Now there two ways to run this mounting script:
+option 1: In GUI --locate the file right click on the create_mount select open with terminal. You will be prompted to enter password.
+
+option 2:  open terminal, be sure that you are logged in as someone who has permission to access those servers (e.g. cellprofileruser).. At the command line  cd / to your root, type /create_mounts.command and it will prompt you for your password. 
 The connections are now made but are likely not visible at /nfs/FOLDERNAME, so you can either wait for a while or you can force the finder window to refresh by creating a file in the /nfs folder and then deleting it (this is a bug in Mac OS X that doesn't refresh frequently and also doesn't let you force windows to refresh).  Once everything refreshes, the icons for the servers will appear on the desktop but also at /nfs/FOLDERNAME.
 
-So now everything is set up, and you should never need to repeat any of these steps. Remount the NFS/share folders after restart/shutdown.
+So now everything is set up, and you should never need to repeat any of these steps. Remount the nfs/share folders after restart/shutdown.
 
 -----------------------------------
 Setting up new users:

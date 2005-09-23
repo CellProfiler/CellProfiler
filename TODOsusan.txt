@@ -1,5 +1,7 @@
 Susan's TODO list
 
+- NEW FROM ANNE - please update the four example pipelines to work with the newest version of the software. I will need these by ~October 5th so I can include them in a demo for Merck (where hopefully they will give us some money for the project!)
+
 - NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
 - Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.

@@ -234,6 +234,12 @@ end
 
 handles.Pipeline.(['Segmented' NewObjectName]) = FinalLabelMatrixImage;
 
+%%% Saves the location of each segmented object
+handles.Measurements.(NewObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(NewObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
 if ~strcmp(LabelMatrixImageName,'Do not save')
     if strcmp(RGBorGray,'RGB')
         if sum(sum(FinalLabelMatrixImage)) >= 1

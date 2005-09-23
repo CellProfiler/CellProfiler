@@ -182,7 +182,9 @@ OrigImage = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually')    
+CropFromObjectFlag = 0;
+
+if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
     if strcmp(IndividualOrOnce, 'Only Once')
         %%% The user can choose an image from the pipeline or from the hard drive to use for
         %%% cropping.
@@ -250,7 +252,9 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             Pixel1 = [num2str(FirstX),',',num2str(LastX)];
             Pixel2 = [num2str(FirstY),',',num2str(LastY)];
             Shape = 'Rectangle';
+            CropFromObjectFlag = 1;
         else
+            CropFromObjectFlag = 1;
             try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape);
             catch
                 try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], PlateFix);
@@ -340,7 +344,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
             
-            if strcmp(IndividualOrOnce,'Individually')
+            if strcmp(IndividualOrOnce,'Individually') && (CropFromObjectFlag == 0)
                 %%% Displays the image so that you can see which
                 %%% pixel positions you want to use to crop. But wait,
                 %%% you would probably just use the Mouse option

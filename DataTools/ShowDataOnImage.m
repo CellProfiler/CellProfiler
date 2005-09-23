@@ -126,7 +126,7 @@ set(FigureHandle,'toolbar', 'figure')
 
 %%% Overlays the values in the proper location in the image.
 TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...
-    'HorizontalAlignment','center', 'color', [0 0 1],'fontsize',8);
+    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',8);
 
 %%% Create structure and save it to the UserData property of the window
 Info = get(FigureHandle,'UserData');

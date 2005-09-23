@@ -193,18 +193,11 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage{1});
-    title(['First input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,3); imagesc(OrigImage{2});
-    title(['Second input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the Adjacent
-    %%% Image.
-    subplot(2,2,2); imagesc(AdjacentImage); title('Adjacent Image');
+    imagesc(AdjacentImage);
+    title(['Adjacent Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

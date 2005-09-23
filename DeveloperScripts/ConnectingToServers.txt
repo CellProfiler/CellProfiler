@@ -67,7 +67,7 @@ mount tap2:/imaging /nfs/imaging
 mount tap6:/carpente_ata /nfs/carpente_ata
 EOF
 
-Save the above text as ConnectServers.command in your root (/) directory, and be sure to save it in Text only format (if you use Text Editor it will save it in rich text format which will not work).
+Save the above text as ConnectServers.command in your root (/) directory, and be sure to save it in Text only format (if you use Text Editor it will save it in rich text format which will not work).  Actually, the best editor to use is a command line editor or the Editor in Matlab, if you know how to use them. Or, just get a copy of the script from another computer.
 
 Check that you have permission to execute this file in the Terminal:
 cd /
@@ -86,7 +86,7 @@ Step 3. Run the script to actually connect to the servers
 This step will need to be done to remount the nfs/share folders after you restart/shutdown, but it is not necessary to repeat after logging out/in.
 
 There are two ways to run the ConnectServers.command script:
-option 1: In GUI --locate the file right click on the file, select open with terminal. You will be prompted to enter password.
+option 1: In GUI --locate the file, right click on the file, select open with terminal. You will be prompted to enter password.  Simply doubleclicking may also work, if you have already set this type of file to open in terminal (by right clicking > Get Info, and change Open With to Terminal). You could then put a shortcut to this file in your dock (the right hand side, near the trash) if you want, by dragging the file onto the dock. Then you would just click once on the icon in the dock and the script would run.
 
 option 2:  open terminal, be sure that you are logged in as someone who has permission to access those servers (e.g. cellprofileruser). At the command line  cd / to your root, type ./ConnectServers.command and it will prompt you for your password.
 

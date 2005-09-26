@@ -84,7 +84,7 @@ end
 ControlSpotMode = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = If manual (all) and coordinates, here is the control spot?
+%textVAR08 = If manual (all) and coordinates, where is the control spot (X,Y)?
 %defaultVAR08 = 57,57
 ControlSpot = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 try
@@ -112,13 +112,13 @@ catch
     error('There was an invalid value for the distance from the control spot to the top left spot.  The value needs to be two integers seperated by a comma.');
 end
 
-%textVAR11 = For number purposes, is the first spot at the left or right?
+%textVAR11 = For numbering purposes, is the first spot at the left or right?
 %choiceVAR11 = Left
 %choiceVAR11 = Right
 LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = For numbering purposes, is the first spot on the top or bottom
+%textVAR12 = For numbering purposes, is the first spot on the top or bottom?
 %choiceVAR12 = Top
 %choiceVAR12 = Bottom
 TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,12});

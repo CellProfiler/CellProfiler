@@ -16,9 +16,8 @@ function handles = LoadText(handles)
 %              .
 %              .
 %
-% <identifier> is used as field name when storing the text information in
-% the Matlab structure. It must be one word. <description> is a description
-% of the text information stored in the file. It can be a sentence.
+% <description> is a description of the text information stored in the
+% file. It can contain spaces or unusual characters.
 %
 % For example:
 %
@@ -43,8 +42,6 @@ function handles = LoadText(handles)
 %
 % $Revision$
 
-
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
@@ -64,7 +61,6 @@ FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%VariableRevisionNumber = 1
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,11 +73,10 @@ if handles.Current.SetBeingAnalyzed == 1
         errordlg('Could not open file.  It might not exist or you might not have given its valid path.');
     end
 
-
     % Get description
     s = fgets(fid,11);
     if ~strcmp(s,'DESCRIPTION')
-        errordlg('The second line in the text information file must start with DESCRIPTION')
+        errordlg('The first line in the text information file must start with DESCRIPTION')
     end
     Description = fgetl(fid);
     Description = Description(2:end);       % Remove space
@@ -108,6 +103,3 @@ if handles.Current.SetBeingAnalyzed == 1
         handles.Measurements.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
     end
 end
-
-
-

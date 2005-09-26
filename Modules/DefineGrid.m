@@ -10,7 +10,7 @@ function handles = DefineGrid(handles)
 % automatic mode will create a skewed grid if there is an object on the far
 % left or far right that is not supposed to be there.
 %
-% See also IdentifyObjectsInGrid.
+% See also IdentifyObjectsInGrid, DisplayGridInfo.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -28,7 +28,7 @@ function handles = DefineGrid(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -95,7 +95,6 @@ catch
     error('There was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.');
 end
 
-
 %textVAR09 = If you are using manual (all) and coordinates, are you going to be specifying the distance (the next option) in units or pixels?
 %choiceVAR09 = Spots
 %choiceVAR09 = Pixels
@@ -131,13 +130,12 @@ TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 RowsOrColumns = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-
-
 %%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if strcmp(AutoOrManual,'Automatic')
     FinalLabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);

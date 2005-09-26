@@ -2,6 +2,8 @@ CellProfiler cell image analysis software development
 September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
+(Requested by Anne 9-26-05) - The Load Text figure display currently doesn't show anything. It would be nice to have it show the text that has been loaded  with a scroll bar. I think we have a CP subfunction for showing a text display figure - CPshowtext or somethign like that?
+(Requested by Anne 9-23-05) - Make the File > save current cellprfoiler code ignore .svn directories.  There was one in the Modules directory.
 
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
@@ -34,13 +36,13 @@ Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to th
 - (Requested by Anne 8-24-05) - The help for the crop module is out of date. The variable descriptions should tell the user that they can enter 'end' (or maybe it should be 'last') instead of a numerical value for the pixel position if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
 
 - (Requested by Anne 09-08-05) - Adapt the code for IdentifyPrimAutomatic according to Ola's advice, in order to tell the user the number of merged objects (once calculated as below, the number should be recorded in the handles.Measurements - probably in the Image substructure, since there will be only one measurement per image - and also shown in the figure display window):
-OLD>>>
+OLD>
 %%% Merge small objects
 if strcmp(MergeChoice,'Yes')
   Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
 end
 
-SUGGESTED NEW>>>>
+SUGGESTED NEW>
 %%% Merge small objects
 NumberOfObjectsBeforeMerge = max(Objects(:));
 if strcmp(MergeChoice,'Yes')
@@ -174,7 +176,7 @@ ans =
 But these measurements should actually be in handles.Measurements.Image in two separate fields - one with the measurements and the other with the feature names, and with these two fields listed above being features.  This should make the module compatible with the MeasureRatios module, so we should then adjust the MeasureRatios module so you can choose these measures.
 
 - (Requested by Anne 9-22-05) - To be consistent with the other modules, I think we should change the MeasureImageSaturationBlur fieldnames a bit. Right now, it looks like this:
->> handles.Measurements.Image
+> handles.Measurements.Image
 ans = 
            FocusScoreFeatures: {'FocusScore OrigGreen'}
                    FocusScore: {[0.1509]  [0.0999]  [0.1208]}
@@ -395,7 +397,7 @@ Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 
 - (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
 
-[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
+[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>
 - Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
 Settings =      ModuleNames: {1x6 cell}
              VariableValues: {6x13 cell}
@@ -403,5 +405,5 @@ Settings =      ModuleNames: {1x6 cell}
     VariableRevisionNumbers: [2 0 1 0 1 1]
 *Note: This requires editing almost all the modules, while this improvement is not absolutely necessary; the time cost should be considered.
 
-[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>>>>
+[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.

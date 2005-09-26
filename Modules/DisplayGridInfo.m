@@ -25,18 +25,15 @@ function handles = DisplayGridInfo(handles)
 %
 % $Revision$
 
-
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-
 
 %textVAR01 = What is the already defined grid?
 %infotypeVAR01 = gridgroup
@@ -88,7 +85,6 @@ VertLinesY = Grid.VertLinesY;
 HorizLinesX = Grid.HorizLinesX;
 HorizLinesY = Grid.HorizLinesY;
 
-
 GridXLocations = VertLinesX(1,1:end-1);
 GridXLocations = repmat(GridXLocations,Rows,1);
 GridXLocations = reshape(GridXLocations,1,[]);
@@ -97,11 +93,9 @@ GridYLocations = HorizLinesY(1,1:end-1) + YDiv/2;
 GridYLocations = repmat(GridYLocations',1,Cols);
 GridYLocations = reshape(GridYLocations,1,[]);
 
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -131,7 +125,6 @@ if ~strcmp(DataName1,'/')
             'set(button,''String'',''Hide Text1'');'...
             'set(get(button,''UserData''),''visible'',''on'');'...
         'end;'];
-            
             
     uicontrol(FigHandle,...
         'Units','normalized',...

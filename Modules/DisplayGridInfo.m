@@ -69,29 +69,28 @@ DataName3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-Grid = handles.Pipeline.(['Grid_' GridName]);
+%%% Retrieve grid info from previously run module.
+GridInfo = handles.Pipeline.(['Grid_' GridName]);
+%    Rows = GridInfo.Rows;
+ %   Columns = GridInfo.Columns;
+    YSpacing = GridInfo.YSpacing;
+    VertLinesX = GridInfo.VertLinesX;
+    VertLinesY = GridInfo.VertLinesY;
+    HorizLinesX = GridInfo.HorizLinesX;
+    HorizLinesY = GridInfo.HorizLinesY;
+    SpotTable = GridInfo.SpotTable;
+ %   GridXLocations = GridInfo.GridXLocations;
+  %  GridYLocations = GridInfo.GridYLocations;
+    YLocations = GridInfo.YLocations;
+    XLocations = GridInfo.XLocations;
 
-TotalHeight = Grid.TotalHeight;
-TotalWidth = Grid.TotalWidth;
-Cols = Grid.Cols;
-Rows = Grid.Rows;
-YDiv = Grid.YDiv;
-XDiv = Grid.XDiv;
-Topmost = Grid.Topmost;
-Leftmost = Grid.Leftmost;
-SpotTable = Grid.SpotTable;
-VertLinesX = Grid.VertLinesX;
-VertLinesY = Grid.VertLinesY;
-HorizLinesX = Grid.HorizLinesX;
-HorizLinesY = Grid.HorizLinesY;
-
-GridXLocations = VertLinesX(1,1:end-1);
-GridXLocations = repmat(GridXLocations,Rows,1);
-GridXLocations = reshape(GridXLocations,1,[]);
-
-GridYLocations = HorizLinesY(1,1:end-1) + YDiv/2;
-GridYLocations = repmat(GridYLocations',1,Cols);
-GridYLocations = reshape(GridYLocations,1,[]);
+% GridXLocations = VertLinesX(1,1:end-1);
+% GridXLocations = repmat(GridXLocations,Rows,1);
+% GridXLocations = reshape(GridXLocations,1,[]);
+% 
+% GridYLocations = HorizLinesY(1,1:end-1) + YSpacing/2;
+% GridYLocations = repmat(GridYLocations',1,Cols);
+% GridYLocations = reshape(GridYLocations,1,[]);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -99,10 +98,15 @@ GridYLocations = reshape(GridYLocations,1,[]);
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-    
+try
+    delete(ThisModuleFigureNumber)
+end
+%%% Opens a new window. Because the whole purpose of this module is to
+%%% display info, the user probably doesn't want to overwrite the
+%%% figure after each cycle.
 FigHandle = CPfigure;
-
 imagesc(handles.Pipeline.(ImageName));
+title(['Image #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
     
 if ~strcmp(DataName1,'/')
     Text1 = handles.Measurements.(DataName1);
@@ -114,7 +118,7 @@ if ~strcmp(DataName1,'/')
         Text1{i} = tempText{temp(i)};
     end
     
-    TextHandles1 = text(GridXLocations,GridYLocations-YDiv/3,Text1,'Color','red');
+    TextHandles1 = text(XLocations,YLocations-floor(YSpacing/4),Text1,'Color','red');
     
     ButtonCallback = [...
         'button = gco;'...
@@ -146,7 +150,7 @@ if ~strcmp(DataName2,'/')
         Text2{i} = tempText{temp(i)};
     end
     
-    TextHandles2 = text(GridXLocations,GridYLocations,Text2,'Color','green');
+    TextHandles2 = text(XLocations,YLocations,Text2,'Color','green');
     
     ButtonCallback = [...
         'button = gco;'...
@@ -179,7 +183,7 @@ if ~strcmp(DataName3,'/')
         Text3{i} = tempText{temp(i)};
     end
     
-    TextHandles3 = text(GridXLocations,GridYLocations+YDiv/3,Text3,'Color','blue');
+    TextHandles3 = text(XLocations,YLocations+YSpacing/4,Text3,'Color','blue');
     
     ButtonCallback = [...
         'button = gco;'...
@@ -190,7 +194,6 @@ if ~strcmp(DataName3,'/')
             'set(button,''String'',''Hide Text3'');'...
             'set(get(button,''UserData''),''visible'',''on'');'...
         'end;'];
-            
             
     uicontrol(FigHandle,...
         'Units','normalized',...
@@ -204,12 +207,9 @@ end
         
 line(VertLinesX,VertLinesY);
 line(HorizLinesX,HorizLinesY);
+%%% Puts the standard Matlab tool bar back on.
+set(FigHandle,'Toolbar','figure');
 
-title('Outlined objects','fontsize',8);  
+title(['Image set #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',8);  
        
-set(findobj('type','line'), 'color',[.15 .15 .15]) 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+set(findobj('type','line'), 'color',[.15 .15 .15])

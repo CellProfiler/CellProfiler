@@ -309,11 +309,12 @@ if any(findobj == ThisModuleFigureNumber)
     delete(ThisModuleFigureNumber)
     %%% Recreates the figure.
     CPfigure(handles,ThisModuleFigureNumber);    
-    imagesc(ImageToDisplay);  
+    imagesc(ImageToDisplay); 
+    colormap(handles.Preferences.IntensityColorMap)
     %%% Draws the lines.
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    set(findobj('type','line'), 'color',[.15 .15 .15])
+    set(findobj('type','line'), 'color',[1 0 0])
     TextToShow = cellstr(num2str(LinearNumbers'))';
     TextHandles = text((floor(XLocations+XSpacing/3)),(YLocations+floor(YSpacing/4)),TextToShow,'color','yellow');
     drawnow

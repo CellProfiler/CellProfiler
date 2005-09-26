@@ -59,7 +59,7 @@ BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What do you want to call the resulting image?
 %defaultVAR03 = SubtractedCellStain
-%infotypeVAR03 = imagegroup custom
+%infotypeVAR03 = imagegroup indep
 ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the factor to multiply the subtracted image by:
@@ -121,6 +121,7 @@ if BlurRadius ~= 0
     BasicImage = filter2(fspecial('gaussian',FiltSize, BlurRadius), BasicImage);
 end
 ResultingImage = imsubtract(BasicImage,AdjustedSubtractImage);
+ResultingImage(ResultingImage < 0) = 0;
 if strcmp(upper(Stretch),'Y') == 1
     ResultingImage = imadjust(ResultingImage,stretchlim(ResultingImage,[.01 .99]));
 end

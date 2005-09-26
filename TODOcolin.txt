@@ -1,5 +1,7 @@
 Colin's TODO list
 
+Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
+
 - Colin: the overlayoutlines module works perfectly.  Thanks!  Looking forward to getting the rest of this done, because it will be so much more streamlined/straightforward and we will be able to take a bunch of mess out of each individual module. Oh, p.s. is there a reason we didn't name it 'AddImages' so that we can have the flexibility of also just adding regular images if someone wants to do that?  Also, the ConvertToImage module is already constructed but you'd need to add more options, probably, to address the colored label matrix issue below. - Anne
 
 ****************

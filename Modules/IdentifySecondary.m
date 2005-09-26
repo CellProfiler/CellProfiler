@@ -163,7 +163,7 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to process? If identifying objects by DISTANCE, this will not affect object identification, only the final display.
+%textVAR01 = What did you call the images you want to process? If identifying objects by DISTANCE - R, this will not affect object identification, only the final display.
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -178,8 +178,9 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = How do you want to identify the secondary objects?
-%choiceVAR04 = Distance
+%textVAR04 = How do you want to identify the secondary objects (Distance - B uses a background image for identification, Distance - N identifies objects by distance alone)?
+%choiceVAR04 = Distance - N
+%choiceVAR04 = Distance - B
 %choiceVAR04 = Propagation
 %choiceVAR04 = Watershed
 %inputtypeVAR04 = popupmenu
@@ -189,20 +190,20 @@ IdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 10
 DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter the threshold, ONLY if identifying by PROPAGATION or WATERSHED (Positive number, Max = 1):
+%textVAR06 = Enter the threshold (IGNORED BY DISTANCE - N)(Positive number, Max = 1):
 %choiceVAR06 = Automatic
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu custom
 
-%textVAR07 = If auto threshold, enter an adjustment factor, ONLY if identifying by PROPAGATION or WATERSHED (Positive number, 1 = no adjustment):
+%textVAR07 = If auto threshold, enter an adjustment factor (IGNORED BY DISTANCE - N) (Positive number, 1 = no adjustment):
 %defaultVAR07 = 1
 ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Enter the minimum allowable threshold, ONLY if identifying by PROPAGATION or WATERSHED (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
+%textVAR08 = Enter the minimum allowable threshold (IGNORED BY DISTANCE - N) (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
 %defaultVAR08 = 0
 MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = Regularization factor , ONLY if identifying by PROPAGATION (0 to infinity). Larger=distance,0=intensity
+%textVAR09 = Regularization factor, ONLY if identifying by PROPAGATION or DISTANCE - B (0 to infinity). Larger=distance,0=intensity
 %defaultVAR09 = 0.05
 RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
@@ -306,37 +307,39 @@ Threshold = max(MinimumThreshold,Threshold);
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImage, Threshold);
 
-if strcmp(IdentChoice,'Distance')
-    %%% Creates the structuring element using the user-specified size.
-    %StructuringElement = strel('disk', DistanceToDilate);
-    %%% Dilates the preliminary label matrix image (edited for small only).
-    %DilatedPrelimSecObjectLabelMatrixImage = imdilate(PrelimPrimaryLabelMatrixImage, StructuringElement);
-    %%% Converts to binary.
-    %DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,.5);
-    %%% Computes nearest neighbor image of nuclei centers so that the dividing
-    %%% line between secondary objects is halfway between them rather than
-    %%% favoring the primary object with the greater label number.
-    %[ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
-    %drawnow
-    %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
-    %ExpandedRelabeledDilatedPrelimSecObjectImage = PrelimPrimaryLabelMatrixImage(Labels);
-    %%% Removes the background pixels (those not labeled as foreground in the
-    %%% DilatedPrelimSecObjectBinaryImage). This is necessary because the
-    %%% nearest neighbor function assigns *every* pixel to a nucleus, not just
-    %%% the pixels that are part of a secondary object.
-    %%% TODO: This is where we would put in thresholding, if we add this as
-    %%% an option in the future.
-    %RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelimSecObjectImage));
-    %RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
-    %RelabeledDilatedPrelimSecObjectImage(ThresholdedOrigImage == 0) = 0;
-    drawnow
-    
-    [labels_out,d]=IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,1.0);
-    labels_out(d>DistanceToDilate) = 0;
-    RelabeledDilatedPrelimSecObjectImage = labels_out;
-    
+if strncmp(IdentChoice,'Distance',8)
+    if strcmp(IdentChoice(12),'N')
+        %%% Creates the structuring element using the user-specified size.
+        StructuringElement = strel('disk', DistanceToDilate);
+        %%% Dilates the preliminary label matrix image (edited for small only).
+        DilatedPrelimSecObjectLabelMatrixImage = imdilate(PrelimPrimaryLabelMatrixImage, StructuringElement);
+        %%% Converts to binary.
+        DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,.5);
+        %%% Computes nearest neighbor image of nuclei centers so that the dividing
+        %%% line between secondary objects is halfway between them rather than
+        %%% favoring the primary object with the greater label number.
+        [ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
+        drawnow
+        %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
+        ExpandedRelabeledDilatedPrelimSecObjectImage = PrelimPrimaryLabelMatrixImage(Labels);
+        %%% Removes the background pixels (those not labeled as foreground in the
+        %%% DilatedPrelimSecObjectBinaryImage). This is necessary because the
+        %%% nearest neighbor function assigns *every* pixel to a nucleus, not just
+        %%% the pixels that are part of a secondary object.
+        %%% TODO: This is where we would put in thresholding, if we add this as
+        %%% an option in the future.
+        RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelimSecObjectImage));
+        RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
+        drawnow
+    elseif strcmp(IdentChoice(12),'B')
+        [labels_out,d]=IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,1.0);
+        labels_out(d>DistanceToDilate) = 0;
+        labels_out((PrelimPrimaryLabelMatrixImage > 0)) = PrelimPrimaryLabelMatrixImage((PrelimPrimaryLabelMatrixImage > 0));
+        RelabeledDilatedPrelimSecObjectImage = labels_out;
+    end
+
     EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
-    
+
     %%% Removes objects that are not in the edited EditedPrimaryLabelMatrixImage.
     LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
     b=zeros(max(LookUpTable(:,1)+1),2);
@@ -345,7 +348,7 @@ if strcmp(IdentChoice,'Distance')
     b(:,1) = 0:length(b)-1;
     LookUpColumn = b(:,2);
     FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
-    
+
 elseif strcmp(IdentChoice,'Propagation')
     %%% STEP 2: Starting from the identified primary objects, the secondary
     %%% objects are identified using the propagate function, written by Thouis

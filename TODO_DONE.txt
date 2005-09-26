@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/26) (Requested by Anne) - Add background masking to the identify sec distance module
+       (make it optional in case a cell stain image is not
+       available). 
+
+-(Mike 9/26) Add ray's new adjustment to SecProp function for secondary distance
+
 -(Mike 9/26) (Requested by Anne 9-23-05) - Make the File > save current cellprfoiler code ignore .svn directories.  There was one in the Modules directory.
 
 -(Mike 9/26) (Requested by Anne 9-21-05) - Combine ExpandOrShrinkPrim and ExpandOrShrinkSec.

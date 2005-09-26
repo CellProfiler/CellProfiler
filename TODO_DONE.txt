@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/26) (Requested by Anne 9-23-05) - Make the File > save current cellprfoiler code ignore .svn directories.  There was one in the Modules directory.
+
+-(Mike 9/26) (Requested by Anne 9-21-05) - Combine ExpandOrShrinkPrim and ExpandOrShrinkSec.
+
 -(Mike 9/23) (Requested by Anne 09-21-05) - There is a bug in the MeasureCorrelation module when the settings are: OrigBlue, OrigGreen, within Nuclei. (i.e. not within Image). It produces an output file with the correct fields in the handles.Measurements.Nuclei structure, but an extra, incorrect field (CorrelationFeatures) in the handles.Measurements.Image structure for some reason:
 >> handles.Measurements.Nuclei
 ans = 

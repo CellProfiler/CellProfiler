@@ -3,11 +3,7 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-(Requested by Anne 9-23-05) - Make the File > save current cellprfoiler code ignore .svn directories.  There was one in the Modules directory.
-
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
-
-- (Requested by Anne 9-21-05) - Combine ExpandOrShrinkPrim and ExpandOrShrinkSec.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 

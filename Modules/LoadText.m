@@ -97,9 +97,22 @@ if handles.Current.SetBeingAnalyzed == 1
     if ~isfield(handles.Measurements,FieldName)
         handles.Measurements.([FieldName,'Text']) = {Description};
         handles.Measurements.(FieldName) = Text;
-     %%% If the entered field already exists we have to append to this field
+        %%% If the entered field already exists we have to append to this field
     else
         handles.Measurements.([FieldName,'Text']) = cat(2,handles.Measurements.([FieldName,'Text']),{Description});
         handles.Measurements.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%
+    %%% DISPLAY RESULTS %%%
+    %%%%%%%%%%%%%%%%%%%%%%
+    drawnow
+
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    if any(findobj == ThisModuleFigureNumber) == 1
+        CPfigure(handles,ThisModuleFigureNumber);
+        uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Description: ',Description],'position',[.05 .55 .8 .4],'BackgroundColor',[.7 .7 .9])
+        uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Text: ',Text],'position',[.05 .1 1 .7],'BackgroundColor',[.7 .7 .9])
     end
 end

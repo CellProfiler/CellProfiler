@@ -2,8 +2,6 @@ CellProfiler cell image analysis software development
 September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
-(Requested by Anne 9-26-05) - The Load Text figure display currently doesn't show anything. It would be nice to have it show the text that has been loaded  with a scroll bar. I think we have a CP subfunction for showing a text display figure - CPshowtext or somethign like that?
-(Requested by Anne 9-23-05) - Make the File > save current cellprfoiler code ignore .svn directories.  There was one in the Modules directory.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 

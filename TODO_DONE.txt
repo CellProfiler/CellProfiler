@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/26) (Requested by Anne 9-26-05) - The Load Text figure display currently doesn't show anything. It would be nice to have it show the text that has been loaded  with a scroll bar. I think we have a CP subfunction for showing a text display figure - CPshowtext or somethign like that?
+
 -(Mike 9/26) (Requested by Anne) - Add background masking to the identify sec distance module
        (make it optional in case a cell stain image is not
        available). 

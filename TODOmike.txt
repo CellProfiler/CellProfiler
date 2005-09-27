@@ -1,3 +1,5 @@
 Mike's TODO list
 
 - Add 'New Pipeline' button
+
+- Fix crop module to "plate fix" both horizontal and vertical

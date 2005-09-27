@@ -249,8 +249,12 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                     end
                 end
             end
+            try
             Pixel1 = [num2str(FirstX),',',num2str(LastX)];
             Pixel2 = [num2str(FirstY),',',num2str(LastY)];
+            catch
+                error('There was a problem finding the X and Y pixels from the object. PlateFix is currently hard-coded to crop based on objects which occupy at least 50% of the field of vue. If your object is smaller than this, it will fail.');
+            end
             Shape = 'Rectangle';
             CropFromObjectFlag = 1;
         else

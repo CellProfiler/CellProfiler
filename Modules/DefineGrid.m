@@ -313,6 +313,7 @@ if any(findobj == ThisModuleFigureNumber)
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
     imagesc(ImageToDisplay);
     colormap(handles.Preferences.IntensityColorMap)
+    set(gca,'fontsize',handles.Current.FontSize)
     %%% Draws the lines.
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);

@@ -94,11 +94,11 @@ function handles = Crop(handles)
 %%%%%%%%%%%%%%%%
 drawnow
 
-
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Crop';
 
 %textVAR01 = What did you call the image to be cropped?
 %infotypeVAR01 = imagegroup
@@ -172,7 +172,7 @@ if ~isfield(handles.Pipeline, fieldname)
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Crop module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
@@ -190,12 +190,12 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         %%% cropping.
         Answer = CPquestdlg('Choose an image to be used for cropping...','Select image','Image file from hard drive','Image from this image set','Image from this image set');
         if strcmp(Answer,'Cancel')
-            error('Image processing was canceled by the user in the Crop module.');
+            error(['Image processing was canceled by the user in the ', ModuleName, ' module.']);
         elseif strcmp(Answer,'Image from this image set')
             try 
                 ImageToBeCropped = OrigImage;
             catch
-                error('Image processing was canceled because you did not select a valid image to use for cropping in the Crop module.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because you did not select a valid image to use for cropping in the Crop module.'])
             end
         elseif strcmp(Answer,'Image file from hard drive')
             %%% Asks the user to open an image file upon which to draw the
@@ -206,7 +206,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% If the user presses "Cancel", the FileName will = 0 and an error
             %%% message results.
             if CroppingFileName == 0
-                error('Image processing was canceled because you did not select an image to use for cropping in the Crop module.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because you did not select an image to use for cropping in the Crop module.'])
             else
                 [ImageToBeCropped, handles] = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
             end
@@ -404,7 +404,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
@@ -432,7 +431,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.
 handles.Pipeline.(CroppedImageName) = CroppedImage;
@@ -446,7 +444,7 @@ catch
 end
 
 if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))
-    error('Image processing was canceled because an image you wanted to analyze is not the same size as the image used for cropping in the Crop module.  The pixel dimensions must be identical.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because an image you wanted to analyze is not the same size as the image used for cropping.  The pixel dimensions must be identical.'])
 end
 %%% Sets pixels in the original image to zero if those pixels are zero in
 %%% the binary image file.

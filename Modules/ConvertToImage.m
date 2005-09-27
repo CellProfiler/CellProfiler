@@ -23,11 +23,13 @@ function handles = ConvertToImage(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Convert To Image';
 
 %textVAR01 = What did you call the objects you want to process?
 %infotypeVAR01 = objectgroup
@@ -56,6 +58,7 @@ handles.Pipeline.(ImageName) = double(LabelMatrixImage > 0);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure

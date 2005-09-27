@@ -63,6 +63,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Average';
 
 %textVAR01 = What did you call the images to be averaged (made into a projection)?
 %infotypeVAR01 = imagegroup
@@ -107,10 +108,10 @@ try
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
     else
-        error('Image processing was canceled because you must choose either "L" or "P" in the Average module');
+        error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either "L" or "P" in the Average module']);
     end
 catch [ErrorMessage, ErrorMessage2] = lasterr;
-    error(['An error occurred in the Average module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+    error(['An error occurred in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

@@ -28,7 +28,7 @@ Last updated: 09-13-05
 - Take out extra lines
 - 
 
-Progress: @ ApplyThreshold.m
+Progress: @ DefineGrid.m
 
 
 

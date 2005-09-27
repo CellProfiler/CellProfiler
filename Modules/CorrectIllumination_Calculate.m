@@ -94,16 +94,16 @@ function handles = CorrectIllumination_CalculateUsingIntensitiesNEW(handles)
 %
 % $Revision: 1750 $
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Correct Illumination_Calculate';
 
 %textVAR01 = What did you call the images to be used to calculate the illumination function?
 %infotypeVAR01 = imagegroup
@@ -177,7 +177,7 @@ BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}
 drawnow
 
 if strcmp(EachOrAll,'Each') && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
-    error('Image processing was canceled because in the Correct Illumination_Calculate Using Intensities module, you must choose Pipeline mode if you are using Each mode.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must choose Pipeline mode if you are using Each mode.'])
 end
 
 %%% If the illumination correction function was to be calculated using
@@ -190,7 +190,7 @@ end
 
 try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
 catch
-    error('Image processing was canceled because in the Correct Illumination_Calculate Using Intensities module, you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).')
+    error(['Image processingwas canceled in the ', ModuleName, ' module because you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).'])
 end
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
@@ -204,7 +204,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
@@ -214,14 +214,14 @@ if strcmp(IntensityChoice,'Background')
     [m,n] = size(OrigImage);
     MinLengthWidth = min(m,n);
     if BlockSize >= MinLengthWidth
-        error('Image processing was canceled because in the Correct Illumination module the selected block size is greater than or equal to the image size itself.')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the selected block size is greater than or equal to the image size itself.'])
     end
 end
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -528,6 +528,7 @@ end
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
+drawnow
 
 function [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize)
 %%% Calculates the best block size that minimizes padding with

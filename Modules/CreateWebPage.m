@@ -8,6 +8,7 @@ function handles = CreateWebPage(handles)
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Create Web Page';
 
 %textVAR01 = What did you call the full-size images you want to include?
 %infotypeVAR01 = imagegroup
@@ -136,8 +137,7 @@ NumberOfImageSets = handles.Current.NumberOfImageSets;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
+drawnow
 
 if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed == NumberOfImageSets)
 

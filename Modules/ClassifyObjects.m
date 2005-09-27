@@ -36,6 +36,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Classify Objects';
 
 %textVAR01 = What did you call the identified objects (or Ratio)?
 %infotypeVAR01 = objectgroup
@@ -75,11 +76,11 @@ try
     else
         NbrOfBins = str2double(NbrOfBins);
         if isempty(NbrOfBins) | NbrOfBins < 1
-            errordlg('Image processing has been canceled because an error was found in the number of bins specification in the ClassifyObjects module.');
+            error(['Image processing was canceled in the ', ModuleName, ' module because an error was found in the number of bins specification.']);
         end
     end
 catch
-    error('Image processing was canceled because you must enter a number, or the letter P for the number of bins in the Classify Objects module.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number, or the letter P for the number of bins.'])
 end
 
 %%%VariableRevisionNumber = 2
@@ -100,18 +101,18 @@ if isfield(handles.Pipeline, fieldname)
 elseif strcmpi(ObjectName,'Ratio')
     LabelMatrixImage = zeros(100);
 else
-    error(['Image processing has been canceled. Prior to running the ClassifyObject module, you must have previously run a module that generates an image with the objects identified.  You specified in the ClassifyObject module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ClassifyObject module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have previously run a module that generates an image with the objects identified.  You specified in the ', ModuleName, ' module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);
 end
 
 if ~strcmp(ObjectName,'Ratio')
     %%% Checks whether the feature type exists in the handles structure.
     if ~isfield(handles.Measurements.(ObjectName),FeatureType)
-        errordlg('The feature type entered in the ClassifyObjects module does not exist.');
+        error(['The feature type entered in the ', ModuleName, ' module does not exist.']);
     end
 end
 
 if isempty(LowerBinMin) | isempty(UpperBinMax) | LowerBinMin > UpperBinMax
-    errordlg('Image processing has been canceled because an error in the specification of the lower and upper limits was found in the ClassifyObjects module.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because an error in the specification of the lower and upper limits was found.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%

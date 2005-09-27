@@ -66,16 +66,16 @@ function handles = CorrectIllumination_Apply(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Correct Illumination_Apply';
 
 %textVAR01 = What did you call the image to be corrected?
 %infotypeVAR01 = imagegroup
@@ -123,14 +123,14 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
@@ -144,14 +144,14 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Correct Illumination module could not find the input image.  It was supposed to be named ', IllumCorrectFunctionImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', IllumCorrectFunctionImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 IllumCorrectFunctionImage = handles.Pipeline.(fieldname);
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(IllumCorrectFunctionImage) ~= 2
-    error('Image processing was canceled because the Correct Illumination module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded of the illumination correction function does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded of the illumination correction function does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 if strcmp(RescaleOption,'No rescaling') == 1
@@ -170,8 +170,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 if strcmp(DivideOrSubtract,'Divide') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by dividing each pixel by the value in the IlluminationImage.
@@ -187,15 +185,13 @@ elseif strcmp(DivideOrSubtract,'Subtract') == 1
     %%% values should be fairly rare (and minor), since the minimum is used to
     %%% calculate the IlluminationImage.
     CorrectedImage(CorrectedImage < 0) = 0;
-else error('In the Correct Illumination_Apply module, you must enter D or S for the method by which to apply the illumination correction.')
+else error(['In the ', ModuleName, ' module, you must enter D or S for the method by which to apply the illumination correction.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -228,8 +224,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Saves the corrected image to the
 %%% handles structure so it can be used by subsequent modules.

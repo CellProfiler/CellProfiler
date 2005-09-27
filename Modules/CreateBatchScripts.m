@@ -236,16 +236,16 @@ function handles = CreateBatchScripts(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = 'Create Batch Scripts';
 
 %textVAR01 = How many image sets should be in each batch?
 %defaultVAR01 = 100
@@ -290,6 +290,7 @@ NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if strcmp(BatchSavePath, '.') == 1
     BatchSavePath = handles.Current.DefaultOutputDirectory;
@@ -316,7 +317,7 @@ handles_in = handles;
 
 %%% Checks that this is the last module in the analysis path.
 if (CurrentModuleNum ~= handles.Current.NumberOfModules),
-    error(['CreateBatchFiles must be the last module in the pipeline.']);
+    error([ModuleName, ' must be the last module in the pipeline.']);
 end;
 
 %%% If this isn't the first image set, we are running on the
@@ -432,6 +433,7 @@ handles = handles_in;
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed if it was previously open.

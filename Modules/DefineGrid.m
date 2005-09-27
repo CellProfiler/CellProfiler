@@ -158,7 +158,7 @@ end
 %%% If we are in 'Once' mode and this is not the first image cycle,
 %%% then we only need to retrieve values from the handles structure
 %%% rather than calculating/asking the user for the values.
-if strncmp(EachOrOnce,'Once',4) == 1 && handles.Current.SetBeingAnalyzed ~= 1
+if strncmp(EachOrOnce,'Once',4) && handles.Current.SetBeingAnalyzed ~= 1
     GridInfo = handles.Pipeline.(['Grid_' GridName]);
     XLocationOfLowestXSpot = GridInfo.XLocationOfLowestXSpot;
     YLocationOfLowestYSpot = GridInfo.YLocationOfLowestYSpot;
@@ -202,12 +202,12 @@ else
         YSpacing = round((YLocationOfHighestYSpot - YLocationOfLowestYSpot)/(Rows - 1));
     elseif strcmp(AutoOrManual,'Manual')
         if strcmp(ControlSpotMode,'Coordinates')
-            if strncmp(EachOrOnce,'Once',4) == 1
+            if strncmp(EachOrOnce,'Once',4)
                 %%% In 'Manual' + 'Coordinates' mode + 'Once' mode,
                 %%% the values from the main GUI are used for
                 %%% XControlSpot and YControlSpot and XSpacing and
                 %%% YSpacing, so they aren't retrieved here.
-            elseif strncmp(EachOrOnce,'Each',4) == 1
+            elseif strncmp(EachOrOnce,'Each',4)
                 answers = inputdlg({'Enter the X,Y location of the center of the bottom, left spot in the grid.''Enter the vertical and horizontal spacing, separated by a comma.'});
                 ControlSpot = str2num(answers{1});
                 try
@@ -272,28 +272,30 @@ else
     %%% numbers, spot identifying information, or coordinates).
     GridXLocations = SpotTable;
     for g = 1:size(GridXLocations,2)
-        GridXLocations(:,g) = XLocationOfLowestXSpot + (g-1)*XSpacing - floor(XSpacing/2);
+        GridXLocations(:,g) = XLocationOfLowestXSpot + (g-1)*XSpacing - round(XSpacing/2);
     end
     %%% Converts to a single column.
     XLocations = reshape(GridXLocations, 1, []);
     %%% Same routine for Y.
     GridYLocations = SpotTable;
     for h = 1:size(GridYLocations,1)
-        GridYLocations(h,:) = YLocationOfLowestYSpot + (h-1)*YSpacing - floor(YSpacing/2);
+        GridYLocations(h,:) = YLocationOfLowestYSpot + (h-1)*YSpacing - round(YSpacing/2);
     end
     YLocations = reshape(GridYLocations, 1, []);
 
     %%% Calculates the lines.
     TotalHeight = size(ImageToDisplay,1);
     TotalWidth = size(ImageToDisplay,2);
+    %%% Adds extra spaced line to end of X locations
     VertLinesX(1,:) = [GridXLocations(1,:),GridXLocations(1,end)+XSpacing];
     VertLinesX(2,:) = [GridXLocations(1,:),GridXLocations(1,end)+XSpacing];
-    VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1);
+    VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1); %%% Same as zeros(1,size(GridXLocations,2)+1)
     VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
+    %%% Adds extra spaced line to end of X locations
     HorizLinesY(1,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YSpacing];
     HorizLinesY(2,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YSpacing];
-    HorizLinesX(1,:) = repmat(0,1,size(GridXLocations,1)+1);
-    HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridXLocations,1)+1);
+    HorizLinesX(1,:) = repmat(0,1,size(GridYLocations,1)+1); %%% Same as zeros(1,size(GridYLocations,2)+1)
+    HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridYLocations,1)+1);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

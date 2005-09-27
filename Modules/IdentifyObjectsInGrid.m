@@ -97,12 +97,12 @@ end
     
 TotalHeight = Grid.TotalHeight;
 TotalWidth = Grid.TotalWidth;
-Cols = Grid.Cols;
+Cols = Grid.Columns;
 Rows = Grid.Rows;
-YDiv = Grid.YDiv;
-XDiv = Grid.XDiv;
-Topmost = Grid.Topmost;
-Leftmost = Grid.Leftmost;
+YDiv = Grid.YSpacing;
+XDiv = Grid.XSpacing;
+Topmost = Grid.YLocationOfLowestYSpot;
+Leftmost = Grid.XLocationOfLowestXSpot;
 SpotTable = Grid.SpotTable;
 VertLinesX = Grid.VertLinesX;
 VertLinesY = Grid.VertLinesY;

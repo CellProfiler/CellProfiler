@@ -2,4 +2,4 @@ Mike's TODO list
 
 - Add 'New Pipeline' button
 
-- Fix crop module to "plate fix" both horizontal and vertical
+- Ask Anne about bioimage check for how good programs are

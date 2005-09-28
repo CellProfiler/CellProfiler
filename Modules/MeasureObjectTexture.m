@@ -36,16 +36,9 @@ function handles = MeasureObjectTexture(handles)
 %
 % $Revision$
 
-
-%
-
-
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -86,7 +79,6 @@ if any(findobj == ThisModuleFigureNumber);
     columns = 1;
 end
 
-
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:3
     ObjectName = ObjectNameList{i};
@@ -126,10 +118,6 @@ for i = 1:3
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
 
     %%% Initilize measurement structure
     Haralick = [];

@@ -1,6 +1,6 @@
-function handles = FilterByObjectIntensity(handles)
+function handles = FilterByObjectMeasurement(handles)
 
-% Help for the Filter Objects by Intensity module: 
+% Help for the Filter Objects by Measurement module: 
 % Category: Object Processing
 %
 % This module applies a filter using statistics measured by the 
@@ -28,54 +28,54 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What feature do you want to  use as a filter? Please run this module after MeasureObjectIntensity module.
-%choiceVAR04 = IntegratedIntensity
-%choiceVAR04 = MeanIntensity
-%choiceVAR04 = StdIntensity
-%choiceVAR04 = MinIntensity
-%choiceVAR04 = MaxIntensity
-%choiceVAR04 = IntegratedIntensityEdge
-%choiceVAR04 = MeanIntensityEdge
-%choiceVAR04 = StdIntensityEdge
-%choiceVAR04 = MinIntensityEdge
-%choiceVAR04 = MaxIntensityEdge
-%choiceVAR04 = MassDisplacement
+%textVAR04 = What measurement do you want to filter by?
+%choiceVAR04 = AreaShape
+%choiceVAR04 = Intensity
+%choiceVAR04 = Texture
 %inputtypeVAR04 = popupmenu
-FeatureName1 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Minimum value required:
-%choiceVAR05 = 0.5
-%choiceVAR05 = Do not use
-%inputtypeVAR05 = popupmenu custom
-MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = What feature number do you want to  use as a filter? Please run this module after MeasureObject module.
+%defaultVAR05 = 1
+FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Maximum value allowed:
+%textVAR06 = Minimum value required:
+%choiceVAR06 = 0.5
 %choiceVAR06 = Do not use
 %inputtypeVAR06 = popupmenu custom
-MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What do you want to call the image of the colored objects?
-%choiceVAR07 = Do not save
-%infotypeVAR07 = imagegroup indep
+%textVAR07 = Maximum value allowed:
+%choiceVAR07 = Do not use
 %inputtypeVAR07 = popupmenu custom
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call the image of the outlines of the objects?
+%textVAR08 = What do you want to call the image of the colored objects?
 %choiceVAR08 = Do not save
-%infortypeVAR08 = imagegroup indep
+%infotypeVAR08 = imagegroup indep
 %inputtypeVAR08 = popupmenu custom
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%textVAR09 = What do you want to call the image of the outlines of the objects?
+%choiceVAR09 = Do not save
+%infortypeVAR09 = imagegroup indep
+%inputtypeVAR09 = popupmenu custom
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 1
 
-
-
 OrigImage = handles.Pipeline.(ImageName);
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
-fieldname = ['Intensity_',ImageName,'Features'];
-FilterType = strmatch(FeatureName1, handles.Measurements.(ObjectName).(fieldname));
-fieldname = ['Intensity_',ImageName];
-IntensityInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FilterType);
+
+if strcmp(MeasureChoice,'Intensity')
+    fieldname = ['Intensity_',ImageName];
+    MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+elseif strcmp(MeasureChoice,'AreaShape')
+    MeasureInfo = handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+elseif strcmp(MeasureChoice,'Texture')
+    fieldname = ['Texture_',ImageName];
+    MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+end
 
 if strcmp(MinValue1, 'Do not use')
     MinValue1 = -Inf;
@@ -89,7 +89,7 @@ else
     MaxValue1 = str2double(MaxValue1);
 end
 
-Filter = find((IntensityInfo < MinValue1) | (IntensityInfo > MaxValue1));
+Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
 for i=1:numel(Filter)
     FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
@@ -148,19 +148,17 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
 
 if ~strcmp(SaveColored,'Do not save')
     try handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
     catch
-        errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg('The colored image was not calculated by the FilterByObjectMeasurement module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
     end
 end
 if ~strcmp(SaveOutlined,'Do not save')
-    try handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
+    try handles.Pipeline.(SaveOutlined) = PrimaryObjectOutlines;
     catch
-        errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg('The object outlines were not calculated by the FilterByObjectMeasurement module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
     end
 end

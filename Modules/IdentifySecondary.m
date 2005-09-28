@@ -208,8 +208,8 @@ MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
 %textVAR10 = What do you want to call the image of the outlines of the objects?
-%defaultVAR10 = OutlinedNuclei
-%infotypeVAR10 = outlinegroup indep
+%choiceVAR10 = Do not save
+%choiceVAR10 = OutlinedNuclei
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu custom
 
@@ -668,25 +668,62 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-
-ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    
-FinalOutline = logical(zeros(size(OrigImage,1),size(OrigImage,2)));
-FinalOutline = bwperim(FinalLabelMatrixImage >0);
-    
-drawnow
-%%% Activates the appropriate figure window.
-CPfigure(handles,ThisModuleFigureNumber);
-
-subplot(2,2,1); imagesc(OrigImage);
-title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-
-subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
-
-subplot(2,2,3); imagesc(FinalOutline);  title([SecondaryObjectName, ' Outlines']);
-
-CPFixAspectRatio(OrigImage);
-
+if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
+    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
+    %%% window in subplot(2,2,2).
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    if sum(sum(FinalLabelMatrixImage)) >= 1
+        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
+    else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
+    end
+    %%% Calculates OutlinesOnOrigImage for displaying in the figure
+    %%% window in subplot(2,2,3).
+    %%% Note: these outlines are not perfectly accurate; for some reason it
+    %%% produces more objects than in the original image.  But it is OK for
+    %%% display purposes.
+    %%% Maximum filters the image with a 3x3 neighborhood.
+    MaxFilteredImage = ordfilt2(FinalLabelMatrixImage,9,ones(3,3),'symmetric');
+    %%% Determines the outlines.
+    IntensityOutlines = FinalLabelMatrixImage - MaxFilteredImage;
+    %%% Converts to logical.
+    warning off MATLAB:conversionToLogical
+    LogicalOutlines = logical(IntensityOutlines);
+    warning on MATLAB:conversionToLogical
+    %%% Determines the grayscale intensity to use for the cell outlines.
+    LineIntensity = max(OrigImage(:));
+    %%% Overlays the outlines on the original image.
+    ObjectOutlinesOnOrigImage = OrigImage;
+    ObjectOutlinesOnOrigImage(LogicalOutlines) = LineIntensity;
+    %%% Calculates BothOutlinesOnOrigImage for displaying in the figure
+    %%% window in subplot(2,2,4).
+    %%% Creates the structuring element that will be used for dilation.
+    StructuringElement = strel('square',3);
+    %%% Dilates the Primary Binary Image by one pixel (8 neighborhood).
+    DilatedPrimaryBinaryImage = imdilate(EditedPrimaryBinaryImage, StructuringElement);
+    %%% Subtracts the PrelimPrimaryBinaryImage from the DilatedPrimaryBinaryImage,
+    %%% which leaves the PrimaryObjectOutlines.
+    PrimaryObjectOutlines = DilatedPrimaryBinaryImage - EditedPrimaryBinaryImage;
+    BothOutlinesOnOrigImage = ObjectOutlinesOnOrigImage;
+    BothOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    drawnow
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,ThisModuleFigureNumber);
+    %%% A subplot of the figure window is set to display the original image.
+    subplot(2,2,1); imagesc(OrigImage);
+    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    %%% A subplot of the figure window is set to display the colored label
+    %%% matrix image.
+    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
+    %%% A subplot of the figure window is set to display the original image
+    %%% with secondary object outlines drawn on top.
+    subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage);  title([SecondaryObjectName, ' Outlines on Input Image']);
+    %%% A subplot of the figure window is set to display the original
+    %%% image with outlines drawn for both the primary and secondary
+    %%% objects.
+    subplot(2,2,4); imagesc(BothOutlinesOnOrigImage);  title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+    CPFixAspectRatio(OrigImage);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -749,7 +786,7 @@ try
         end
     end
     if ~strcmp(SaveOutlined,'Do not save')
-        handles.Pipeline.(SaveOutlined) = FinalOutline;
+        handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
     end
-catch error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.');
+catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end

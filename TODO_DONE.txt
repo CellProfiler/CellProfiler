@@ -1,5 +1,21 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/28) (Requested by Anne 09-08-05) - Adapt the code for IdentifyPrimAutomatic according to Ola's advice, in order to tell the user the number of merged objects (once calculated as below, the number should be recorded in the handles.Measurements - probably in the Image substructure, since there will be only one measurement per image - and also shown in the figure display window):
+OLD>
+%%% Merge small objects
+if strcmp(MergeChoice,'Yes')
+  Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
+end
+
+SUGGESTED NEW>
+%%% Merge small objects
+NumberOfObjectsBeforeMerge = max(Objects(:));
+if strcmp(MergeChoice,'Yes')
+  Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
+end
+NumberOfObjectsAfterMerge = max(Objects(:));
+NumberOfMergedObjects = NumberOfObjectsBeforeMerge-NumberOfObjectsAfterMerge;
+
 -(Mike 9/26) (Requested by Anne 9-26-05) - The Load Text figure display currently doesn't show anything. It would be nice to have it show the text that has been loaded  with a scroll bar. I think we have a CP subfunction for showing a text display figure - CPshowtext or somethign like that?
 
 -(Mike 9/26) (Requested by Anne) - Add background masking to the identify sec distance module

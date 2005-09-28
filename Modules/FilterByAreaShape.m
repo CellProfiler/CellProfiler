@@ -125,7 +125,7 @@ if any(findobj == ThisModuleFigureNumber) == 1
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(LabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,3); imagesc(LabelMatrixImage); title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     try
@@ -133,7 +133,7 @@ if any(findobj == ThisModuleFigureNumber) == 1
     catch
         ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
-    subplot(2,2,3); imagesc(ColoredLabelMatrixImage); title(['Filtered ' ObjectName]);
+    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Filtered ' ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
     subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage); title([TargetName, ' Outlines on Input Image']);

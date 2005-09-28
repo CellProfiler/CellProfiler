@@ -26,9 +26,18 @@ end
 %%% but with our modifications that work in log space, and take into
 %%% account the max and min values in the image.
 im = double(im(:));
-im(im == 0) = min(im(im > 0));
-im = log(im);
-minval = min (im);
-maxval = max (im);
-im = (im - minval) / (maxval - minval);
-level = exp(minval + (maxval - minval) * graythresh(im));
+
+if max(im) == min(im),
+    level = im(0);
+else,
+    %%% We want to limit the dynamic range of the image to 256.
+    %%% Otherwise, an image with almost all values near zero can give a
+    %%% bad result.
+    minval = max(im)/256;
+    im(im < minval) = minval;
+    im = log(im);
+    minval = min (im);
+    maxval = max (im);
+    im = (im - minval) / (maxval - minval);
+    level = exp(minval + (maxval - minval) * graythresh(im));
+end

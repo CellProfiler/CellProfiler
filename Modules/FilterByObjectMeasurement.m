@@ -38,6 +38,7 @@ MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = What feature number do you want to  use as a filter? Please run this module after MeasureObject module.
 %defaultVAR05 = 1
 FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+FeatureNum = str2num(FeatureNum);
 
 %textVAR06 = Minimum value required:
 %choiceVAR06 = 0.5

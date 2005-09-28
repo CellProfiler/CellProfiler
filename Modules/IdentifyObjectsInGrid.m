@@ -185,7 +185,7 @@ OutlinedObjects2 = bwperim(mod(floor(FinalLabelMatrixImage/Rows),2));
 OutlinedObjects3 = bwperim(mod(floor(FinalLabelMatrixImage/Cols),2));
 OutlinedObjects4 = bwperim(FinalLabelMatrixImage>0);
 FinalOutline = OutlinedObjects1 + OutlinedObjects2 + OutlinedObjects3 + OutlinedObjects4;
-FinalOutline = logical(FinalOutlien>0);
+FinalOutline = logical(FinalOutline>0);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

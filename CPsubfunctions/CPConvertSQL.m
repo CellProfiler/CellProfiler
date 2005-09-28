@@ -52,6 +52,7 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
             end
         end
         
+        
         if (size(vals{1},1) == 1),
             for n = 1:length(names),
                 per_image_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]);
@@ -64,9 +65,13 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
     end
 end
 
+%full .sql file name
 basename = [OutfilePrefix int2str(FirstSet) '_' int2str(LastSet)];
 fmain = fopen(fullfile(OutDir, [basename '.SQL']), 'W');
+
 fprintf(fmain, 'USE %s;\n', DBname);
+
+%begin writing the sql script for creating tables
 fprintf(fmain, 'CREATE TABLE IF NOT EXISTS %sPerImage (ImageNumber INTEGER PRIMARY KEY', TablePrefix);
 for i = per_image_names,
     if strfind(i{1}, 'Filename'),
@@ -121,14 +126,23 @@ for img_idx = FirstSet:LastSet,
             end
 
             % img_idx
-            % handles.Measurements.(SubFieldname).(ssf)
-            vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
-            if (size(vals,1) == 1),
+            % handles.Measurements.(Image).(FileNames){index}
+             vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
+             if (size(vals,1) == 1),
                 if ischar(vals),
                     fprintf(fimage, '|%s', vals);
+                    
+                 %vals is cellarray, need loop through to get all elements value   
                 elseif iscell(vals)
-                   fprintf(fimage, '|%s', char(vals));
-                else
+                    if (ischar(vals{1})), %is char
+                        for cellindex = 1:size(vals,2),
+                            fprintf(fimage, '|%s', vals{cellindex});
+                        end
+                    else, %vals{cellindex} is not char
+                        fprintf(fimage, '|%g', cell2mat(vals));
+                    end
+
+                else %vals is number
                     fprintf(fimage, '|%g', vals);
                 end
             else

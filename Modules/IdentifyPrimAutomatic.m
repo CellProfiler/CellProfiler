@@ -373,15 +373,18 @@ UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
 %textVAR17 = What do you want to call the image of the outlines of the objects?
-%defaultVAR17 = OutlineBlue
+%choiceVAR17 = Do not save
+%choiceVAR17 = OutlineBlue
 %infotypeVAR17 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu custom
 
 
 %textVAR18 =  What do you want to call the labeled matrix image?
-%defaultVAR18 = Do not save
+%choiceVAR18 = Do not save
 %infotypeVAR18 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+%inputtypeVAR17 = popupmenu custom
 
 %textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
 %choiceVAR19 = RGB

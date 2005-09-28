@@ -81,10 +81,9 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
 %textVAR04 = What do you want to call the image of the outlines of the objects?
-%choiceVAR04 = Do not save
-%choiceVAR04 = OutlinedNuclei
+%defaultVAR04 = OutlinedNuclei
+%inputtypeVAR04 = outlinegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
-%inputtypeVAR04 = popupmenu custom
 
 %textVAR05 =  What do you want to call the labeled matrix image?
 %choiceVAR05 = Do not save
@@ -155,6 +154,10 @@ close(FigureHandle)
 LowResInterior = inpolygon(X,Y, x,y);
 FinalLabelMatrixImage = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
 
+FinalOutline = logical(zeros(size(FinalLabelMatrixImage,1),size(FinalLabelMatrixImage,2)));
+FinalOutline = bwperim(FinalLabelMatrixImage > 0);
+
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -164,42 +167,29 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
 
-    drawnow
-    CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); 
-    %%% A subplot of the figure window is set to display the colored label
-    %%% matrix image.
-    subplot(2,2,2); imagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
-    %%% A subplot of the figure window is set to display the inverted original
-    %%% image with outlines drawn on top.
-    subplot(2,2,3); imagesc(LowResOrigImage); title([ObjectName, ' Outline on Input Image']);
-    hold on, plot(x,y,'r'),hold off
-    CPFixAspectRatio(LowResOrigImage);
-end
+ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
+
+drawnow
+CPfigure(handles,ThisModuleFigureNumber);
+
+subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); 
+
+subplot(2,2,2); imagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
+
+subplot(2,2,3); imagesc(FinalOutline); title([ObjectName, ' Outline']);
+hold on, plot(x,y,'r'),hold off
+
+subplot(2,2,4); imagesc(ColoredLabelMatrixImage); title(['Segmented ' ObjectName]);
+
+CPFixAspectRatio(LowResOrigImage);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
-%%% Saves the segmented image, not edited for objects along the edges or
-%%% for size, to the handles structure.
-%%% Makes this module comparable to other Identify Primary modules,
-%%% even though in this case the object was not edited for objects
-fieldname = ['UneditedSegmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
-
-%%% Saves the segmented image, only edited for small objects, to the
-%%% handles structure.
-%%% Makes this module comparable to other Identify Primary modules,
-%%% even though in this case the object was not edited for objects
-fieldname = ['SmallRemovedSegmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];
@@ -227,46 +217,18 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    %%% Calculates the object outlines. Note that FinalLabelMatrixImage is binary in this module
-    %%% Creates the structuring element that will be used for dilation.
-    StructuringElement = strel('square',3);
-    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
-    DilatedImage = imdilate(FinalLabelMatrixImage, StructuringElement);
-    %%% Subtracts the FinalLabelMatrixImage from the DilatedImage,
-    %%% which leaves the PrimaryObjectOutlines.
-    PrimaryObjectOutlines = DilatedImage - FinalLabelMatrixImage;
-    %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOrigImage = OrigImage;
-    %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImage(:));
-    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
-
-    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
-    %%% window in subplot(2,2,2).
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(FinalLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
+    if ~strcmp(SaveColored,'Do not save')
+        if strcmp(SaveMode,'RGB')
+            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+        else
+           handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+       end
     end
-
-    %%% Saves images to the handles structure so they can be saved to the hard
-    %%% drive, if the user requested.
-    try
-        if ~strcmp(SaveColored,'Do not save')
-            if strcmp(SaveMode,'RGB')
-                handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-            else
-                handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-            end
-        end
-        if ~strcmp(SaveOutlined,'Do not save')
-            handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
-        end
-    catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+    if ~strcmp(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = FinalOutline;
     end
-
-catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+catch
+    error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end
 
 %%%%%%%%%%%%%%%%%%

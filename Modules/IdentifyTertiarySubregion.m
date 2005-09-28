@@ -73,17 +73,14 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 =  What do you want to call the labeled matrix image?
-%choiceVAR04 = Do not save
-%choiceVAR04 = LabeledNuclei
+%defaultVAR04 = Do not save
 %infotypeVAR04 = imagegroup indep
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
-%inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR05 = RGB
-%choiceVAR05 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
-%inputtypeVAR05 = popupmenu
+%textVAR05 = Would you like to save the outlines of the objects?
+%defaultVAR05 = OutlineBlue
+%infotypeVAR05 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
 
 %%%VariableRevisionNumber = 1
 
@@ -137,7 +134,10 @@ drawnow
 %%% cases where the secondary object is exactly the same size as the
 %%% primary object.
 ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
-SubregionObjectImage = SecondaryObjectImage - ErodedPrimaryObjectImage;
+SubregionObjectImage = max(0,SecondaryObjectImage - ErodedPrimaryObjectImage);
+       
+FinalOutline = bwperim(SubregionObjectImage > 0);
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -148,42 +148,37 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(SubregionObjectImage)) >= 1
-        ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
-    else  ColoredLabelMatrixImage = SubregionObjectImage;
-    end
-    %%% Converts the label matrix to a colored label matrix for display and saving
-    %%% purposes.
 
-    drawnow
-    %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original
-    %%% primary object image.
-    subplot(2,2,1); imagesc(PrimaryObjectImage);
-    title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the original
-    %%% secondary object image.
-    subplot(2,2,2); imagesc(SecondaryObjectImage);
-    title([SecondaryObjectName, ' Image']);
-    %%% A subplot of the figure window is set to display the resulting
-    %%% subregion image in gray.
-    subplot(2,2,3); imagesc(SubregionObjectImage);
-    title([SubregionObjectName, ' Image']);
-    %%% A subplot of the figure window is set to display the resulting
-    %%% subregion image in color.
-    subplot(2,2,4); imagesc(ColoredLabelMatrixImage);
-    title([SubregionObjectName, ' Color Image']);
-    CPFixAspectRatio(PrimaryObjectImage);
-end
+ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
+SecondaryObjectImage = CPlabel2rgb(handles,SecondaryObjectImage);
+PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
+
+drawnow
+
+%%% Activates the appropriate figure window.
+CPfigure(handles,ThisModuleFigureNumber);
+
+subplot(2,2,1); imagesc(PrimaryObjectImage);
+title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+
+subplot(2,2,2); imagesc(SecondaryObjectImage);
+title([SecondaryObjectName, ' Image']);
+
+subplot(2,2,3); imagesc(ColoredLabelMatrixImage);
+title([SubregionObjectName, ' Image']);
+
+subplot(2,2,4); imagesc(FinalOutline);
+title([SubregionObjectName, ' Outlines']);
+
+CPFixAspectRatio(PrimaryObjectImage);
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+
 
 
 
@@ -212,26 +207,6 @@ tmp = regionprops(SubregionObjectImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(SubregionObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-
-%%% Saves images to the handles structure so they can be saved to the hard
-%%% drive, if the user requested.
-try
-    if strncmpi(SaveColored,'Y',1) == 1
-        fieldname = ['Colored',SubregionObjectName];
-        handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
-    end
-catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
-end
-
-%%% Saves images to the handles structure so they can be saved to the hard
-%%% drive, if the user requested.
-try
-    if ~strcmp(SaveColored,'Do not save')
-        if strcmp(SaveMode,'RGB')
-            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-        else
-            handles.Pipeline.(SaveColored) = SubregionObjectImage;
-        end
-    end
-catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+if ~strcmp(SaveOutlines,'Do Not Save')
+    handles.Pipeline.(SaveOutlines) = FinalOutline;
 end

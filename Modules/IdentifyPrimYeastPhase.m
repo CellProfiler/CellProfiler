@@ -177,7 +177,7 @@ IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = What do you want to call the image of the outlines of the objects?
 %defaultVAR09 = Do not save
-%infotypeVAR09 = imagegroup indep
+%infotypeVAR09 = outlinegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
 %textVAR10 =  What do you want to call the labeled matrix image?
@@ -365,48 +365,27 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
-    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
-    %%% window in subplot(2,2,2).
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(FinalLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
-    end
-    %%% Calculates the object outlines, which are overlaid on the original
-    %%% image and displayed in figure subplot (2,2,4).
-    %%% Creates the structuring element that will be used for dilation.
-    StructuringElement = strel('square',3);
-    %%% Converts the FinalLabelMatrixImage to binary.
-    FinalBinaryImage = im2bw(FinalLabelMatrixImage,0.5);
-    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
-    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
-    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
-    %%% which leaves the PrimaryObjectOutlines.
-    PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
-    %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnOrigImage = OrigImage;
-    %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(OrigImage(:));
-    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
-    drawnow
-    CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the colored label
-    %%% matrix image.
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
-    %%% A subplot of the figure window is set to display the Overlaid image,
-    %%% where the maxima are imposed on the inverted original image
-    subplot(2,2,3); imagesc(EnhancedInvertedImage); title(['Inverted enhanced contrast image']);
-    %%% A subplot of the figure window is set to display the inverted original
-    %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage); title([ObjectName, ' Outlines on Input Image']);
-    CPFixAspectRatio(OrigImage);
-end
+ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
+
+FinalOutline = logical(zeros(size(OrigImage,1),size(OrigImage,2)));
+FinalOutline = bwperim(FinalLabelMatrixImage > 0);
+
+
+drawnow
+CPfigure(handles,ThisModuleFigureNumber);
+
+subplot(2,2,1); imagesc(OrigImage);
+title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+
+subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+
+subplot(2,2,3); imagesc(EnhancedInvertedImage); title(['Inverted enhanced contrast image']);
+
+subplot(2,2,4); imagesc(FinalOutline); title([ObjectName, ' Outlines']);
+
+CPFixAspectRatio(OrigImage);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -481,7 +460,7 @@ try
         end
     end
     if ~strcmp(SaveOutlined,'Do not save')
-        handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
+        handles.Pipeline.(SaveOutlined) = FinalOutline;
     end
-catch errordlg('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+catch error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end

@@ -68,7 +68,7 @@ Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Would you like to save the image of the outlines of the objects? and if so, what would you like to call them?
 %defaultVAR06 = Do not save
-%infotypeVAR06 = imagegroup indep
+%infotypeVAR06 = outlinegroup indep
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Would you like to save the label matrix image?  and if so, what would you like to call it?
@@ -184,8 +184,8 @@ OutlinedObjects1 = bwperim(mod(FinalLabelMatrixImage,2));
 OutlinedObjects2 = bwperim(mod(floor(FinalLabelMatrixImage/Rows),2));
 OutlinedObjects3 = bwperim(mod(floor(FinalLabelMatrixImage/Cols),2));
 OutlinedObjects4 = bwperim(FinalLabelMatrixImage>0);
-OutlinedObjects = OutlinedObjects1 + OutlinedObjects2 + OutlinedObjects3 + OutlinedObjects4;
-OutlinedObjects = OutlinedObjects>0;
+FinalOutline = OutlinedObjects1 + OutlinedObjects2 + OutlinedObjects3 + OutlinedObjects4;
+FinalOutline = logical(FinalOutlien>0);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -200,14 +200,9 @@ if any(findobj == ThisModuleFigureNumber)
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
 
-    subplot(2,1,1)
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     
-    try
-        im = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    catch
-        im = FinalLabelMatrixImage;
-    end
-    ImageHandle = imagesc(im);
+    subplot(2,1,1); ImageHandle = imagesc(ColoredLabelMatrixImage);
         
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
@@ -215,8 +210,7 @@ if any(findobj == ThisModuleFigureNumber)
     title(sprintf('Segmented %s',NewObjectName),'fontsize',8);
 
     
-    subplot(2,1,2); 
-    imagesc(OutlinedObjects);
+    subplot(2,1,2);imagesc(FinalOutline);
         
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
@@ -241,19 +235,9 @@ Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(NewObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
 if ~strcmp(LabelMatrixImageName,'Do not save')
-    if strcmp(RGBorGray,'RGB')
-        if sum(sum(FinalLabelMatrixImage)) >= 1
-            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
-            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, 'jet', 'k', 'shuffle');
-        else
-            ColoredLabelMatrixImage = FinalLabelMatrixImage;
-        end
-        handles.Pipeline.(LabelMatrixImageName) = ColoredLabelMatrixImage;
-    else
-        handles.Pipeline.(LabelMatrixImageName) = FinalLabelMatrixImage;
-    end
+    handles.Pipeline.(LabelMatrixImageName) = ColoredLabelMatrixImage;
 end
 
 if ~strcmp(OutlineName,'Do not save')
-    handles.Pipeline.(OutlineName) = OutlinedObjects;
+    handles.Pipeline.(OutlineName) = FinalOutline;
 end

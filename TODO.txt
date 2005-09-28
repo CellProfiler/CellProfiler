@@ -13,8 +13,6 @@ WANT IT ASAP:
 
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
-- (Requested by Anne 8-24-05) - The FilterObjectsAreaShape window should have the bottom left and top right displays switched in their positions (the final filtered image should be in the top right and the outlines on input image should be at the lower right.)(DONE)  Why is there an input image for this module?  Is it only for showing the outlines on the original image? If that is the case, it should be made optional. FilterObjectsAreaShape needs full documentation and to be made to look like all the other modules, and it needs its method for saving outlines and colored images to be consistent with other modules (like IdentifyPrimAutomatic).  I think we also need a FilterObjectsIntensity and FilterObjectsTexture module (the last one is probably not going to be used much, but it's just to be complete).
-
 - (Requested by Anne 8-24-05) - The help for the crop module is out of date. The variable descriptions should tell the user that they can enter 'end' (or maybe it should be 'last') instead of a numerical value for the pixel position if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).

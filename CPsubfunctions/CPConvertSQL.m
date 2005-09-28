@@ -45,10 +45,13 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
 
 
         vals = handles.Measurements.(SubFieldname).(ssf);
-        if (~ ischar(vals{1})) 
+        vals;
+        
+        if (~ ischar(vals{1}))   
             if (size(vals{1},2) ~= length(names)), % make change here vals{1},2
+                if ~isempty(vals{1})
                 error([SubFieldname ' ' ssf ' does not have right number of names ']);
-            
+                end
             end
         end
         
@@ -127,12 +130,15 @@ for img_idx = FirstSet:LastSet,
 
             % img_idx
             % handles.Measurements.(Image).(FileNames){index}
+            
              vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
+ 
+             
              if (size(vals,1) == 1),
                 if ischar(vals),
                     fprintf(fimage, '|%s', vals);
                     
-                 %vals is cellarray, need loop through to get all elements value   
+                 %vals{} is cellarray, need loop through to get all elements value   
                 elseif iscell(vals)
                     if (ischar(vals{1})), %is char
                         for cellindex = 1:size(vals,2),
@@ -143,7 +149,7 @@ for img_idx = FirstSet:LastSet,
                     end
 
                 else %vals is number
-                    fprintf(fimage, '|%g', vals);
+                   fprintf(fimage, '|%g', vals);
                 end
             else
                 if (~ isa(vals, 'numeric')),
@@ -165,8 +171,10 @@ for img_idx = FirstSet:LastSet,
 end
 
 formatstr = ['%g' repmat('|%g',1,size(perobjectvals, 2)-1) '\n'];
-fprintf(fobject, formatstr, perobjectvals');
-
+%if vals{1} is empty skip writting into object file
+  if ~iscell(vals) ||( iscell(vals) && (~isempty(vals{1}))  )
+    fprintf(fobject, formatstr, perobjectvals');
+  end
 
 fclose(fimage);
 fclose(fobject);

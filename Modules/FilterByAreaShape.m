@@ -8,7 +8,7 @@ function handles = FilterByAreaShape(handles)
 % example, it can be used to eliminate objects with a Solidity value below
 % a certain threshold.
 %
-% See also MEASUREAREASHAPE
+% See also MEASUREOBJECTAREASHAPE
 
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
@@ -52,19 +52,19 @@ MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR06 = popupmenu custom
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Will you want to save the image of the colored objects? It will be saved as ColoredOBJECTNAME
-%choiceVAR07 = No
-%choiceVAR07 = Yes
-%inputtypeVAR07 = popupmenu
+%textVAR07 = What do you want to call the image of the colored objects?
+%choiceVAR07 = Do not save
+%infotypeVAR07 = imagegroup indep
+%inputtypeVAR07 = popupmenu custom
 SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Will you want to save the image of the outlined objects? It will be saved as OutlinedOBJECTNAME
-%choiceVAR08 = No
-%choiceVAR08 = Yes
-%inputtypeVAR08 = popupmenu
+%textVAR08 = What do you want to call the image of the outlines of the objects?
+%choiceVAR08 = Do not save
+%infortypeVAR08 = imagegroup indep
+%inputtypeVAR08 = popupmenu custom
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 
 
@@ -148,9 +148,15 @@ drawnow
 
 handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
 
-if strcmp(SaveColored,'Yes')
-    handles.Pipeline.(['Colored' TargetName]) = ColoredLabelMatrixImage;
+if ~strcmp(SaveColored,'Do not save')
+    try handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
+    catch
+        errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+    end
 end
-if strcmp(SaveOutlined,'Yes')
-    handles.Pipeline.(['Outlined' TargetName]) = ObjectOutlinesOnOrigImage;
+if ~strcmp(SaveOutlined,'Do not save')
+    try handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
+    catch
+        errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+    end
 end

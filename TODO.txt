@@ -238,6 +238,8 @@ Restart
    Mike Lamprecht
    Susan Ma
 
+- (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
+
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
@@ -253,6 +255,13 @@ JUST PRIOR TO PUBLIC RELEASE:
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.
 - copy CP code onto CDs for Colin to take to ASCB meeting in San Francisco.
+Sites that review and list software:
+www.zdnet.com	downloads.mycomputer.com	www.windows95.sk
+directory.google.com	www.libpng.org	cn.tech.yahoo.com
+www.dmoz.org	softload.narod.ru	www.chinabyte.com
+www.winsite.com	www.cheta.net
+- Get the email addresses of all corresponding authors from all the research articles Anne has collected and send them an email telling them to visit cellprofiler.org and sign up for the email list if desired.
+- The Broad institute has done a lot of thinking and infrastructure for distributing free software. They have narrowed down to 3 licenses (GPL, a variant of academic open source, and one other) that their scientists use and they also have pages to help register users who download their software etc. this might be useful for us.
 
 ---------------------------------------------------
 POST-PUBLIC RELEASE SUPPORT:
@@ -322,6 +331,8 @@ The iterations can be performed on a low-resolution version of the original imag
 
 ++  (Requested by Anne) -Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
 
+++  (Requested by Anne) -Implement the algorithm for identifying objects based on granulometry from Prodanov, Heeroma, and Marani, J Neuroscience Methods 2005. The code may be available from the authors directly, or supplemental journal data, or from ImageJ. This might be a good practice to build an interface which allows ImageJ routines to be run within CellProfiler.
+
 +++  (Requested by Anne) -Make a user-scoring module that allows the user to view and
        annotate each image manually. Show control side by side (1-4 at
        a time) and add that assessment to the data structure. Maybe
@@ -372,6 +383,7 @@ p-glycoprotein activity
 Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
 Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
 Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
+See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
 
 - (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
 

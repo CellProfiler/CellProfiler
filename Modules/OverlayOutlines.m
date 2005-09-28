@@ -46,7 +46,7 @@ MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the image with the outlines displayed?
-%defaultVAR04 = Do Not Save
+%defaultVAR04 = Do not save
 %infotypeVAR04 = imagegroup indep
 SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -108,6 +108,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if ~strcmp(SavedImageName,'Do Not Save')
+if ~strcmp(SavedImageName,'Do not save')
     handles.Pipeline.(SavedImageName) = NewImage;
 end

@@ -730,10 +730,16 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,21});
 
             %%% Label the objects
             Objects = bwlabel(Objects);
-
+            
             %%% Merge small objects
+
             if strcmp(MergeChoice,'Yes')
+                NumberOfObjectsBeforeMerge = max(Objects(:));
                 Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
+                NumberOfObjectsAfterMerge = max(Objects(:));
+                NumberOfMergedObjects = NumberOfObjectsBeforeMerge-NumberOfObjectsAfterMerge;
+                fieldname = [ObjectName,'_NumberOfMergedObjects'];
+                handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = NumberOfMergedObjects;
             end
 
             %%% Will be stored to the handles structure
@@ -947,6 +953,10 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,21});
                             'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Current.FontSize);
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
                             'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Current.FontSize);
+                    end
+                    if strcmp(MergeChoice,'Yes')
+                        uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.32 posx(3)+0.1 0.04],...
+                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of Merged Objects:  %d',NumberOfMergedObjects),'FontSize',handles.Current.FontSize);
                     end
                 end
             else

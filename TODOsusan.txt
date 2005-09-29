@@ -1,6 +1,6 @@
 Susan's TODO list
 
-- NEW FROM ANNE - please update the four example pipelines to work with the newest version of the software. I will need these by ~October 5th so I can include them in a demo for Merck (where hopefully they will give us some money for the project!)
+- NEW FROM ANNE - please update the four example pipelines to work with the newest version of the software. I will need these by ~October 5th so I can include them in a demo for Merck (where hopefully they will give us some money for the project!) --almost done
 
 - NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
@@ -11,14 +11,15 @@ Susan's TODO list
 2. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication.
 3. Kc 40x data (Fly217-220) - genome-wide screens!
 
-- Automate/check the production of SQL-importable files by CellProfiler:
-1. The new WriteSQL module also doesn't match the current ExportSQL2.m Data tool,
-which should be changed to use CPConvertSQL.m as well. When everything is finished, we might consider making the ExportSQL2.m function an option in the regular ExportData DataTool.
+
 2. CPConvertSQL automatically creates column names for the DB from the
 hierarchy in handles.  Sometimes these column names are too long.
 Currently, all it does is print a warning if this happens.  This may
 be sufficient, but perhaps it should be more forceful.  In general,
-too long names can be fixed just before importing the data.
+too long names can be fixed just before importing the data. --Will change the table structure to store long column names
+
+
+
 3. In han and Ray want means and medians to be calculated per image for all object measurements before they come into the database, so we should build this into CellProfiler's code for SQL exporting. We need to coordinate with them the structure/naming system for these derived measurements.
 
 - Research the various options for a database/server (e.g. which are backed up, from where can they be accessed, speed, etc). Set up a database/server locally (currently things are set up on Ray's desktop computer "oblique")
@@ -39,8 +40,9 @@ Given on 9/7/2005
 
 --set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders.
 
---week of 9/12 ,  check wth Ray to work on writerSQL module, have problem need  fix in CPconvertSQl
---week of 9/12, meet with Tim Pierson, IT dept. to discuss /set up the mySQL database, have Oracle account set up, in processing to test
+ 
+--week of 9/12, meet with Tim Pierson, IT dept. to discuss /set up the mySQL database, have Oracle account set up. in progress to test
+
 -- practice with large batches (FLY200) + use that
 
 --Anne will work together to get real CPValid1 pipeline ready, partial done.

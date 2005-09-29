@@ -10,8 +10,6 @@ WANT IT ASAP:
 ***************
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
-- (Requested by Anne 8-24-05) - The help for the crop module is out of date. The variable descriptions should tell the user that they can enter 'end' (or maybe it should be 'last') instead of a numerical value for the pixel position if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.
-
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
 - (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.

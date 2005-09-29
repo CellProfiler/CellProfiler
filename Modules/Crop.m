@@ -5,6 +5,11 @@ function handles = Crop(handles)
 %
 % Allows the images to be cropped in any shape:
 %
+% Shape: You can crop by rectangular coordinates, ellipse, or by an object
+% identified in a previous module. To crop by an object, simply type in the
+% name of that identified object instead of Rectangular or Ellipse. Please
+% see PlateFix for information on identifying crop plates.
+%
 % Rectangular: enter the pixel coordinates for the left, top and
 % right, bottom corners, and every image will be cropped at these
 % locations.  For the right, bottom corner, you can type "end" instead
@@ -41,6 +46,19 @@ function handles = Crop(handles)
 % starting size as your image and should contain a contiguous block of
 % white pixels, because keep in mind that the cropping module will
 % remove rows and columns that are completely blank.
+%
+% PlateFix: When cropping identified plates, sometimes pixels within the
+% object are set to zero. This can cause problems with later modules
+% (especially IlluminationCorrection). PlateFix takes the identified object
+% and finds where it covers at least 50% of the image in both the
+% horizontal and vertical directions. It then crops a rectangle based on
+% this information. This makes pixels that otherwise would be zero set to
+% the background of your picture thus avoiding the problems with other
+% modules. If you are cropping your identified plate after the initial crop
+% (to avoid including the sides), you can specify a rectangle crop and use 
+% PlateFix to make sure the image is computed correctly. If you do not have
+% PlateFix selected, Crop will use the first images coordinates to produce 
+% the rectangle, and will fail. In this case, you MUST use PlateFix.
 %
 % Warning: Keep in mind that cropping changes the size of your images,
 % which may have unexpected consequences.  For example, identifying
@@ -128,11 +146,11 @@ CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Specify the (Left, Right) pixel positions. (only if you are using rectangle, coordinates, and Just Once)
+%textVAR06 = Specify the (Left, Right) pixel positions. (only if you are using rectangle, coordinates, and Just Once)(end can be substituted for right pixel if you do not want to crop the right edge)
 %defaultVAR06 = 1,100
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Specify the (Top, Bottom) pixel positions. (only if you are using rectangle, coordinates, and Just Once)
+%textVAR07 = Specify the (Top, Bottom) pixel positions. (only if you are using rectangle, coordinates, and Just Once)(end can be substituted for bottom pixel if you do not want to crop the bottom edge)
 %defaultVAR07 = 1,100
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
@@ -148,7 +166,7 @@ X_axis = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 200
 Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = Do you want to use Plate Fix?
+%textVAR11 = Do you want to use Plate Fix? (see Help)
 %choiceVAR11 = No
 %choiceVAR11 = Yes
 %inputtypeVAR11 = popupmenu

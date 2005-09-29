@@ -2,6 +2,7 @@ CellProfiler cell image analysis software development
 September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
+- REQUESTED by anne - OpenNewImageFile does not work for .mat files (where the variable is 'Image', see LoadImages.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 

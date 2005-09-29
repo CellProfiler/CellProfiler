@@ -79,8 +79,6 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne 09-21-05) - MeasureImageSaturationBlur's figure color scheme is weird.
 
-- (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
-
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
 
 - (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.
@@ -124,23 +122,6 @@ Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 
-- (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.  Also, its measurements are not saved in the proper structure format. It looks like this when I analyzed three image cycles:
-handles.Measurements
-ans = 
-             ImageAreaOccupiedStainedRegion: {[156845]  [424211]  [336473]}
-    ImageAreaOccupiedThresholdStainedRegion: {[0.0174]  [0.0406]  [0.0290]}
-But these measurements should actually be in handles.Measurements.Image in two separate fields - one with the measurements and the other with the feature names, and with these two fields listed above being features.  This should make the module compatible with the MeasureRatios module, so we should then adjust the MeasureRatios module so you can choose these measures.
-
-- (Requested by Anne 9-22-05) - To be consistent with the other modules, I think we should change the MeasureImageSaturationBlur fieldnames a bit. Right now, it looks like this:
-> handles.Measurements.Image
-ans = 
-           FocusScoreFeatures: {'FocusScore OrigGreen'}
-                   FocusScore: {[0.1509]  [0.0999]  [0.1208]}
-    PercentSaturationFeatures: {'PercentSaturation OrigGreen'}
-            PercentSaturation: {[0]  [0]  [0]}
-
-I think instead it should be SaturationBlur_OrigGreen and SaturationBlur_OrigGreenFeatures, and then the feature names would be BlurScore (not FocusScore) and PercentSaturated (not PercentSaturation). As it currently is, subsequent modules would overwrite the results here, because there is no image-specific thing added to the main field name.  Making these changes should also render this module compatible with the MeasureRatios module, too, so we should then adjust the MeasureRatios module so you can choose these measures.
-
 - (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
 
 - (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
@@ -163,19 +144,11 @@ I think instead it should be SaturationBlur_OrigGreen and SaturationBlur_OrigGre
        1;32 Database issue:D319-22. PMID: 14681423  
 Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
 
-- (Requested by Anne 8-24-05) - The SaveImageAs ImageTool gave this error when I tried to use it on a IdentifyPrimAutomatic figure window that was saved as a matlab fig file and then reopened later:
-??? Invalid handle object.
-Error in ==> SaveImageAs at 29
-    MainWinPos = get(handles.figure1,'Position');
-??? Error while evaluating uimenu Callback.
-
 - (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames, and when it lets you choose an image file, on the mac it has the annoying {*.*} problem so that you can't choose an image file until you change the dropdown menu for file format in the uigetfile window.
 
 - (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 
 - (Requested by Anne 8-30-05) - If the user enters an odd number for CPsmooth (a subfunction used by the Smooth module, among others), right now it yields the error 'The text you entered for the smoothing..." and it cancels all processing. Instead, let's have it continue processing by rounding the user's entry down to the nearest integer but meanwhile pop up a warning dialog box telling the user that their entry has been rounded down.  Make sure the warning dialog box does not pop up new every time around the cycle (maybe only if setbeinganalyzed = 1).
-
-- (Requested by Anne) - It would be nice if the Crop module would allow you to freehand draw a rectangle (rather than an ellipse) on each image as it cycles through. ANNE SAYS - I think we can already do this, by clicking points at the corners of the rectangle.
 
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
@@ -194,8 +167,6 @@ Error in ==> SaveImageAs at 29
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 -- (Requested by Susan) - on WriteSQL module: if I only include WriteSQL module in pipeline I don't get an error message. The same thing with the situation if I only include WriteSQL and CreateBatchScripts modules in the pipeline. It will be nice to let user know that these are no useful pinelines.
-
---- (Requested by Susan) - Add 'New Pipeline' command so that user can create a new pipeline while use is opening a pipeline. This will be helpful if user have some problem in compile a complex pipeline and would like to start a fresh simply one from scratch. 
 
 - (Requested by Anne 9-21-05) - THere is a cool tool for interactively selecting a threshold. Perhaps we can add a 'test mode' button for the Identify modules that allows you to choose a threshold the first image cycle. It would use this code:
 http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6770

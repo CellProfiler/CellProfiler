@@ -7,9 +7,9 @@ Susan's TODO list
 - Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
 
 - Process these image sets:
-1. Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? 
+1. [You will need to get the movie and more instructions from Anne before you can start this one] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? 
 2. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication.
-3. Kc 40x data (Fly217-220) - genome-wide screens!
+3. Kc 40x data (Fly217-220) - genome-wide screens! [wait to see how the CPvalid1 comes out and if the data format is good first].
 
 
 2. CPConvertSQL automatically creates column names for the DB from the
@@ -18,19 +18,17 @@ Currently, all it does is print a warning if this happens.  This may
 be sufficient, but perhaps it should be more forceful.  In general,
 too long names can be fixed just before importing the data. --Will change the table structure to store long column names
 
+3. In han and Ray want means and medians to be calculated per image for all object measurements before they come into the database, so we should build this into CellProfiler's code for SQL exporting.  [Let's do this - ask Ray & IN Han what format is best for storing these - We need to coordinate with them the structure/naming system for these derived measurements.]
 
+- Research the various options for a database/server (e.g. which are backed up, from where can they be accessed, speed, etc). Set up a database/server locally (currently things are set up on Ray's desktop computer "oblique") [Waiting for testing from In Han]
 
-3. In han and Ray want means and medians to be calculated per image for all object measurements before they come into the database, so we should build this into CellProfiler's code for SQL exporting. We need to coordinate with them the structure/naming system for these derived measurements.
+- Learn 5x imaging on the microscope. [wait for Anne to get back]
 
-- Research the various options for a database/server (e.g. which are backed up, from where can they be accessed, speed, etc). Set up a database/server locally (currently things are set up on Ray's desktop computer "oblique")
+- Learn 40x imaging on the microscope. [Friday]
 
-- Learn 5x imaging on the microscope.
+- Play with data for Fly200 experiments (phospho chips) using CellVisualizer. [CV not quite ready]
 
-- Learn 40x imaging on the microscope.
-
-- Play with data for Fly200 experiments (phospho chips) using CellVisualizer.
-
-- (Long-term): improve the automation of the image acquisition so that choosing and verifying control spots is easier.
+- (Long-term): improve the automation of the image acquisition so that choosing and verifying control spots is easier. [Play with this Oct 3-7]
 
 - (Long-term): Set up 5x imaging on the Cellomics ArrayScan using their Slideport slide holder - is the 'window' of the slideport big enough to image the entire slide.  Wait for the HCi2005 ArrayScan software upgrade, though.
 
@@ -38,15 +36,14 @@ too long names can be fixed just before importing the data. --Will change the ta
 
 Given on 9/7/2005
 
---set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders.
+--set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders. [Definitely do this Oct 3-7: write script to update each folder or get SVN upgraded.]
 
- 
 --week of 9/12, meet with Tim Pierson, IT dept. to discuss /set up the mySQL database, have Oracle account set up. in progress to test
 
 -- practice with large batches (FLY200) + use that
 
 --Anne will work together to get real CPValid1 pipeline ready, partial done.
 
---modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by Susan or leave it out.
+--modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by Susan or leave it out. [Definitely do this Oct 3-7]
 
  

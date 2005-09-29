@@ -79,8 +79,6 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
-- (Requested by Anne) - When Saving a pipeline, after you confirm the filename change (adding PIPE to the name), it asks if you want to save the pipeline as a text file. If you click yes but then cancel at this stage, you don't get the dialog box confirming that the pipeline file itself was saved. I guess the best thing to do is after confirming the filename of the pipeline itself, the confirmation window should appear that it was saved and a separate confirmation window should appear if you save as a text file.  Also, in all of the dialog boxes relating to this function, we should refer to the 'settings' as 'pipeline' instead, to be consistent.  Also, we should check whether PIPE is already part of the name and if so, do not suggest adding PIPE again!
-
 - (Requested by Anne 09-01-05) - How difficult would it be for the imagegroup and objectgroup popup menus to display their contents in ABC order? I am guessing this would be a monstrous project because I think the order is important, so it's probably not worth the effort.
 
 - (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.

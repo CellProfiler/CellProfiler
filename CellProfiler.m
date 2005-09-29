@@ -840,8 +840,8 @@ if FileName ~= 0
         end
     end
     %%% Allows user to save pipeline setting as a readable text file (.txt)
-    SaveText = CPquestdlg('Do you want to save settings as a text file also?','Save as text?','No');
-    if strcmp(SaveText,'Cancel') == 1
+    SaveText = CPquestdlg('Do you want to save the pipeline as a text file also?','Save as text?','No');
+    if strcmp(SaveText,'Cancel')
         return
     end
     %%% Checks if a field is present, and if it is, the value is stored in the
@@ -869,7 +869,7 @@ if FileName ~= 0
     end
     save(fullfile(Pathname,FileName),'Settings')
     %%% Writes settings into a readable text file.
-    if strcmp(SaveText,'Yes') == 1
+    if strcmp(SaveText,'Yes')
         VariableValues = handles.Settings.VariableValues;
         VariableInfoTypes = handles.Settings.VariableInfoTypes;
         ModuleNames = handles.Settings.ModuleNames;
@@ -890,6 +890,7 @@ if FileName ~= 0
         end
         [filename,SavePathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.txt'), 'Save Settings As...');
         if filename == 0
+            CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
             return
         end
         % make sure # of modules equals number of variable rows.
@@ -897,7 +898,7 @@ if FileName ~= 0
         if VariableSize(1) ~= max(size(ModuleNames))
             error('Your settings are not valid.')
         end
-        display = ['Saved Settings, in file ' filename ', Saved on ' date];
+        display = ['Saved Pipeline, in file ' filename ', Saved on ' date];
         % Loop for each module loaded.
         for p = 1:VariableSize(1)
             Module = [char(ModuleNames(p))];

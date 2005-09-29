@@ -2073,9 +2073,9 @@ end
 
 function SaveButton_Callback (hObject, eventdata, handles)
 
-Answer = CPquestdlg('Do you want to save as default settings? If not, you will be asked to name your settings file, which can be loaded by File -> Load Settings.','Confirm','Yes','No','Yes');
+Answer = CPquestdlg('Do you want to save these as the default preferences? If not, you will be asked to name your preferences file, which can be loaded by File -> Load Preferences.','Save as default?','Yes','No','Yes');
 if strcmp(Answer, 'No')
-    [FileName,Pathname] = uiputfile(fullfile(matlabroot,'*.mat'), 'Save Pipeline As...');
+    [FileName,Pathname] = uiputfile(fullfile(matlabroot,'*.mat'), 'Save Preferences As...');
     FullFileName = fullfile(Pathname,FileName);
 else
     FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');
@@ -3666,9 +3666,9 @@ function LoadPreferences_Callback(hObject,eventdata,handles)
 %%% This function will load settings which have been saved from the Set
 %%% Preferences window
 
-[SettingsFileName, SettingsPathname] = uigetfile(fullfile(matlabroot,'*.mat'),'Choose a settings file');
+[SettingsFileName, SettingsPathname] = uigetfile(fullfile(matlabroot,'.','*.mat'),'Choose a preferences file');
 if isequal(SettingsFileName,0) || isequal(SettingsPathname,0)
-    CPwarndlg('You did not specify a settings file.');
+    CPwarndlg('You did not specify a preferences file.');
     return
 else
     try

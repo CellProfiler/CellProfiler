@@ -373,6 +373,7 @@ uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save current CellProfiler code','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Load Preferences','Callback','CellProfiler(''LoadPreferences_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
 
@@ -2065,9 +2066,18 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function SaveButton_Callback (hObject, eventdata, handles)
+
+Answer = CPquestdlg('Do you want to save as default settings? If not, you will be asked to name your settings file, which can be loaded by File -> Load Settings.','Confirm','Yes','No','Yes');
+if strcmp(Answer, 'No')
+    [FileName,Pathname] = uiputfile(fullfile(matlabroot,'*.mat'), 'Save Pipeline As...');
+    FullFileName = fullfile(Pathname,FileName);
+else
+    FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');
+end
+
 SetPreferencesWindowHandle = findobj('name','SetPreferences');
 global EnteredPreferences, PixelSizeEditBoxHandle = findobj('Tag','PixelSizeEditBox');
-FontSizeEditBoxHandle = findobj('Tag','FontSizeEditBox'); 
+FontSizeEditBoxHandle = findobj('Tag','FontSizeEditBox');
 ImageDirEditBoxHandle = findobj('Tag','ImageDirEditBox'); 
 OutputDirEditBoxHandle = findobj('Tag','OutputDirEditBox'); 
 ModuleDirEditBoxHandle = findobj('Tag','ModuleDirEditBox'); 
@@ -2090,14 +2100,14 @@ EnteredPreferences.LabelColorMap = LabelColorMap;
 SavedPreferences = EnteredPreferences; 
 CurrentDir = pwd; 
 try 
-    save(fullfile(matlabroot,'CellProfilerPreferences.mat'),'SavedPreferences')
+    save(FullFileName,'SavedPreferences')
     clear SavedPreferences
     helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
 catch
     try 
-        save(fullfile(CurrentDir, 'CellProfilerPreferences.mat'),'SavedPreferences')
+        save(fullfile(CurrentDir,FileName),'SavedPreferences')
         clear SavedPreferences
-        helpdlg('You do not have permission to write anything to the Matlab root directory.  Instead, your preferences will only function properly when you start CellProfiler from the current directory.')
+        helpdlg('You do not have permission to write anything to the Matlab root directory.  Instead, your default preferences will only function properly when you start CellProfiler from the current directory.')
     catch
         helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.'); 
     end
@@ -2617,7 +2627,7 @@ function CloseWindows_Callback(hObject, eventdata, handles) %#ok We want to igno
 
 %%% Requests confirmation to really delete all the figure windows.
 Answer = CPquestdlg('Are you sure you want to close all figure windows, timers, and message boxes that CellProfiler created?','Confirm','Yes','No','Yes');
-if strcmp(Answer, 'Yes') == 1
+if strcmp(Answer, 'Yes')
     %%% Run the CloseWindows_Helper function
     CloseWindows_Helper(hObject, eventdata, handles);
 end
@@ -3645,6 +3655,71 @@ function OpenImage_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 OpenNewImageFile(handles);
+
+function LoadPreferences_Callback(hObject,eventdata,handles)
+%%% This function will load settings which have been saved from the Set
+%%% Preferences window
+
+[SettingsFileName, SettingsPathname] = uigetfile(fullfile(matlabroot,'*.mat'),'Choose a settings file');
+if isequal(SettingsFileName,0) || isequal(SettingsPathname,0)
+    CPwarndlg('You did not specify a settings file.');
+    return
+else
+    try
+        load(fullfile(SettingsPathname,SettingsFileName));
+        EnteredPreferences = SavedPreferences;
+        clear SavedPreferences
+    catch
+        CPwarndlg('The file chosen does not exist');
+        return
+    end
+end
+
+if exist('EnteredPreferences','var')
+    if ~isempty(EnteredPreferences)
+        %%% Retrieves the data that the user entered and saves it to the
+        %%% handles structure.  
+        handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
+        handles.Preferences.FontSize  = EnteredPreferences.FontSize;
+        handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
+        handles.Preferences.DefaultOutputDirectory = EnteredPreferences.DefaultOutputDirectory;
+        handles.Preferences.DefaultModuleDirectory = EnteredPreferences.DefaultModuleDirectory;
+        handles.Preferences.IntensityColorMap = EnteredPreferences.IntensityColorMap;
+        handles.Preferences.LabelColorMap = EnteredPreferences.LabelColorMap;
+        clear global EnteredPreferences
+        
+        %%% Now that handles.Preferences.(5 different variables) has been filled
+        %%% in, the handles.Current values and edit box displays are set.
+        handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
+        handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
+        handles.Current.PixelSize = handles.Preferences.PixelSize;
+        handles.Current.FontSize  = str2num(handles.Preferences.FontSize);
+        handles.Settings.PixelSize = handles.Preferences.PixelSize;
+
+        %%% (No need to set a current module directory or display it in an
+        %%% edit box; the one stored in preferences is the only one ever
+        %%% used).
+        set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
+        set(handles.DefaultOutputDirectoryEditBox,'String',handles.Preferences.DefaultOutputDirectory)
+        set(handles.DefaultImageDirectoryEditBox,'String',handles.Preferences.DefaultImageDirectory)
+        %%% Retrieves the list of image file names from the chosen directory,
+        %%% stores them in the handles structure, and displays them in the
+        %%% filenameslistbox, by faking a click on the DefaultImageDirectoryEditBox.
+        handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
+        %%% Adds the default module directory to Matlab's search path.
+        addpath(handles.Preferences.DefaultModuleDirectory)
+        
+        %%% Set new fontsize
+        names = fieldnames(handles);
+        for k = 1:length(names)
+            if ishandle(handles.(names{k}))
+                set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Current.FontSize,'FontName','helvetica');
+            end
+        end
+        %%% Updates the handles structure to incorporate all the changes.
+        guidata(gcbo, handles);
+    end
+end
 
 function ZipFiles_Callback(hObject, eventdata, handles)
 if ispc

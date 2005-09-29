@@ -8,9 +8,6 @@ WANT IT ASAP:
 -(WAITING ON IT TO GET UPDATE) (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
 
 ***************
-
-- (Requested by Anne) - It would be nice to allow CellProfiler to be used by different people and each one could have their own user preferences.  Right now preferences can be saved (File > Save preferences), but we should allow the user to choose whether to save these preferences as the default preferences (in CellProfilerPreferences.mat), or alternately, to name the preferences file something unique (e.g. AnneCellProfilerPreferences.mat). Then the user could load their preferences by using: File > Load preferences.
-
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne 8-24-05) - The help for the crop module is out of date. The variable descriptions should tell the user that they can enter 'end' (or maybe it should be 'last') instead of a numerical value for the pixel position if they don't want to crop the bottom or right edges.  Also, for the 'Number of pixels from edge' option, the popup window isn't custom so you can't enter a number.

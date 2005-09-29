@@ -3,15 +3,10 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-Requested by Anne - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
-Display grid: it looks like the labels are too far one unit to the left and one unit up.
-Define grid:  I think the description for MANUAL + MOUSE what is the distance? is incorrect because it says distance from control to the bottom left. In my case, I had the settings: first spot = top left, count by columns, and then MANUAL + MOUSE distance from control to the bottom left = 1,0 (spot units).  In reality, the grid was placed (as I desired) as if that question was asking 'MANUAL + MOUSE distance from control to the *top left*'. So I think we need to change the text to read either 'top left' or maybe 'the first spot' (in other words, as defined by your settings for 'first spot'). Ideally, it would be first spot. I am just not sure how the code actually works.
-
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
 -(WAITING ON IT TO GET UPDATE) (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
 
-***************
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
@@ -78,7 +73,7 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
-- (Requested by Anne 09-01-05) - How difficult would it be for the imagegroup and objectgroup popup menus to display their contents in ABC order? I am guessing this would be a monstrous project because I think the order is important, so it's probably not worth the effort.
+- When you add a module that's expecting an imge but there are no modules yet that produce an image, the popup menu for imageroup is empty. but it stays empty even if you later add an module that produces an image.
 
 - (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 

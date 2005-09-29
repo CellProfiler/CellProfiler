@@ -909,16 +909,22 @@ if FileName ~= 0
             while 1
                 output = fgetl(fid);
                 if ~ischar(output), break, end
-                if (strncmp(output,'%textVAR',8) == 1);
+                if strncmp(output,'%textVAR',8)
                     displayval = output(13:end);
                     istr = output(9:10);
+                    i = str2num(istr);
+                    VariableDescriptions(i) = {displayval};
+                end
+                if strncmp(output,'%pathnametextVAR',16)
+                    displayval = output(21:end);
+                    istr = output(17:18);
                     i = str2num(istr);
                     VariableDescriptions(i) = {displayval};
                 end
             end
             fclose(fid);
             % Loop for each variable in the module.
-            for q = 1:VariableSize(2)
+            for q = 1:length(handles.VariableBox{p})
                 VariableDescrip = char(VariableDescriptions(q));
                 try
                     VariableVal = char(VariableValues(p,q));

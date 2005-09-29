@@ -51,10 +51,10 @@ function handles = LoadText(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%filenametextVAR01 = What is the textfile that you want to add?
+%filenametextVAR01 = What is the file containing the text that you want to load?
 TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What would you like to call the data?
+%textVAR02 = What would you like to call the loaded text?
 %defaultVAR02 = names
 %infotypeVAR02 = datagroup indep
 FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -70,13 +70,19 @@ if handles.Current.SetBeingAnalyzed == 1
     fid = fopen(TextFileName,'r');
 
     if fid == -1
-        errordlg('Could not open file.  It might not exist or you might not have given its valid path.');
+        try fid = fopen(fullfile(handles.Current.DefaultImageDirectory,TextFileName),'r');
+        catch
+            try fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,TextFileName),'r');
+            catch
+                error('Could not open file.  It might not exist or you might not have given its valid path.');
+            end
+        end
     end
 
     % Get description
     s = fgets(fid,11);
     if ~strcmp(s,'DESCRIPTION')
-        errordlg('The first line in the text information file must start with DESCRIPTION')
+        error('The first line in the text information file must start with DESCRIPTION')
     end
     Description = fgetl(fid);
     Description = Description(2:end);       % Remove space

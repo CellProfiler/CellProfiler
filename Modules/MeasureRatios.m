@@ -3,14 +3,64 @@ function handles = MeasureRatios(handles)
 % Help for the Measure Ratios module:
 % Category: Measurement
 %
-% This module has not yet been documented.
+% This module can take any measurement produced by previous modules and
+% calculate a ratio. Ratios can also be used to calculate other ratios and
+% be used in ClassifyObjects.
 %
-% How it works: not yet been documented.
+% Feature Number:
+% The feature number is the parameter from the chosen module (AreaShape,
+% Intensity, Texture) which will be used for the filter. The following
+% tables provide the feature numbers for each measurement made by the three
+% modules:
 %
-% See also MEASUREIMAGEAREAOCCUPIED,
-% MEASUREOBJECTINTENSITYTEXTURE, MEASUREOBJECTAREASHAPE,
-% MEASURECORRELATION,
-% MEASUREIMAGEINTENSITY.
+% Area Shape:               Feature Number:
+% Area                    |       1
+% Eccentricity            |       2
+% Solidity                |       3
+% Extent                  |       4
+% Euler Number            |       5
+% Perimeter               |       6
+% Form factor             |       7
+% MajorAxisLength         |       8
+% MinorAxisLength         |       9
+%
+% Intensity:                Feature Number:
+% IntegratedIntensity     |       1
+% MeanIntensity           |       2
+% StdIntensity            |       3
+% MinIntensity            |       4
+% MaxIntensity            |       5
+% IntegratedIntensityEdge |       6
+% MeanIntensityEdge       |       7
+% StdIntensityEdge        |       8
+% MinIntensityEdge        |       9
+% MaxIntensityEdge        |      10
+% MassDisplacement        |      11
+%
+% Texture:                  Feature Number:
+% AngularSecondMoment     |       1
+% Contrast                |       2
+% Correlation             |       3
+% Variance                |       4
+% InverseDifferenceMoment |       5
+% SumAverage              |       6
+% SumVariance             |       7
+% SumEntropy              |       8
+% Entropy                 |       9
+% DifferenceVariance      |      10
+% DifferenceEntropy       |      11
+% InformationMeasure      |      12
+% InformationMeasure2     |      13
+% Gabor1x                 |      14
+% Gabor1y                 |      15
+% Gabor2x                 |      16
+% Gabor2y                 |      17
+% Gabor3x                 |      18
+% Gabor3y                 |      19
+%
+% See also MEASUREIMAGEAREAOCCUPIED, MEASUREIMAGEINTENSITY,
+% MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
+% MEASUREOBJECTTEXTURE, MEASURECORRELATION
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -50,7 +100,7 @@ NumObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu custom
 NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which measurement do you want to use? (Enter the measurement number - see HELP for explanation)
+%textVAR03 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
 %defaultVAR03 = 1
 NumFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -74,7 +124,7 @@ DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR06 = popupmenu custom
 DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,06});
 
-%textVAR07 = Which measurement do you want to use? (Enter the measurement number - see HELP for explanation)
+%textVAR07 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
 %defaultVAR07 = 1
 DenomFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,7});
 

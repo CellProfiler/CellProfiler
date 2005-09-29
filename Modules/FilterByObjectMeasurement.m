@@ -3,12 +3,64 @@ function handles = FilterByObjectMeasurement(handles)
 % Help for the Filter Objects by Measurement module: 
 % Category: Object Processing
 %
-% This module applies a filter using statistics measured by the 
-% MeasureObjectIntensity module to select objects with desired intensity. For
-% example, it can be used to eliminate objects with a mean Intensity value below
-% a certain threshold.
+% This module applies a filter using measurements produced by either
+% MeasureObjectAreaShape, MeasureObjectIntensity, or MeasureObjectTexture
+% modules. All objects outside of the specified parameters will be
+% discarded.
 %
-% See also MEASUREOBJECTINESITY
+% Feature Number:
+% The feature number is the parameter from the chosen module (AreaShape,
+% Intensity, Texture) which will be used for the filter. The following
+% tables provide the feature numbers for each measurement made by the three
+% modules:
+%
+% Area Shape:               Feature Number:
+% Area                    |       1
+% Eccentricity            |       2
+% Solidity                |       3
+% Extent                  |       4
+% Euler Number            |       5
+% Perimeter               |       6
+% Form factor             |       7
+% MajorAxisLength         |       8
+% MinorAxisLength         |       9
+%
+% Intensity:                Feature Number:
+% IntegratedIntensity     |       1
+% MeanIntensity           |       2
+% StdIntensity            |       3
+% MinIntensity            |       4
+% MaxIntensity            |       5
+% IntegratedIntensityEdge |       6
+% MeanIntensityEdge       |       7
+% StdIntensityEdge        |       8
+% MinIntensityEdge        |       9
+% MaxIntensityEdge        |      10
+% MassDisplacement        |      11
+%
+% Texture:                  Feature Number:
+% AngularSecondMoment     |       1
+% Contrast                |       2
+% Correlation             |       3
+% Variance                |       4
+% InverseDifferenceMoment |       5
+% SumAverage              |       6
+% SumVariance             |       7
+% SumEntropy              |       8
+% Entropy                 |       9
+% DifferenceVariance      |      10
+% DifferenceEntropy       |      11
+% InformationMeasure      |      12
+% InformationMeasure2     |      13
+% Gabor1x                 |      14
+% Gabor1y                 |      15
+% Gabor2x                 |      16
+% Gabor2y                 |      17
+% Gabor3x                 |      18
+% Gabor3y                 |      19
+%
+% See also MEASUREOBJECTAREASHAPE, MEASUREOBJECTINTENSITY,
+% MEASUREOBJECTTEXTURE
 
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);

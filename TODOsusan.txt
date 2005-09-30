@@ -1,6 +1,9 @@
 Susan's TODO list
 
 - NEW FROM ANNE - please update the four example pipelines to work with the newest version of the software. I will need these by ~October 5th so I can include them in a demo for Merck (where hopefully they will give us some money for the project!) --almost done
+>>> Note from Anne - please change the ExampleFlyPIPE to use the 'propagate' option in the IdentifySecondary module because it's the better one!
+>>> The settings for the Identify module in ExampleYeastColonyPIPE don't look right - I think we were using the Shape option and the numbers were different at one point in the past. Try retrieving an old version of the pipeline from SVN and doublecheck the settings for this module.
+
 
 - NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 

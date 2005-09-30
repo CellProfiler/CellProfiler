@@ -28,7 +28,7 @@ function handles = RescaleIntensity(handles)
 % (C) Convert to 8 bit: Images in CellProfiler are
 % normally stored as numerical class double in the range of 0 to 1.
 % This option converts these images to class uint8, meaning an 8 bit
-% integer in the range of 0 to 1. This is useful to reduce the amount
+% integer in the range of 0 to 255. This is useful to reduce the amount
 % of memory required to store the image. Warning: Most CellProfiler
 % modules require the incoming image to be in the standard 0 to 1
 % range, so this conversion may cause downstream modules to behave
@@ -51,17 +51,12 @@ function handles = RescaleIntensity(handles)
 %
 % $Revision$
 
-
-
-
 drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -127,7 +122,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the RescaleIntensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled because the Rescale Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
@@ -136,8 +131,6 @@ OrigImage = handles.Pipeline.(fieldname);
 %%% IMAGE ANALYSIS%%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 if strncmpi(RescaleOption,'S',1) == 1
     MethodSpecificArguments = [];
@@ -153,7 +146,7 @@ elseif strncmpi(RescaleOption,'M',1) == 1
         %%% button callback.)  That callback recognizes that an error was
         %%% produced because of its try/catch loop and breaks out of the image
         %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled because the RescaleIntensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled because the Rescale Intensity module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
     MethodSpecificArguments = handles.Pipeline.(fieldname);
@@ -177,14 +170,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this module.
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -207,8 +197,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% The Rescaled image is saved to the handles structure so it can be
 %%% used by subsequent modules.

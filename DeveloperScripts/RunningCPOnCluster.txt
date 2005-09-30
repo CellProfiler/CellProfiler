@@ -50,12 +50,55 @@ Default output directory:
 9. From the command line, logged into barra, make sure the CellProfiler code at  /home/carpente/CellProfiler is up to date by changing to /home/carpente/CellProfiler and type: cvs update.  Any compiled functions in the code must be compiled for every type of architecture present in the cluster using the matlab command mex (PC, Mac, Unix, 64-bit, etc).
 
 10. From the command line, logged into barra, submit the jobs using a script like runallbatchjobs.sh as follows: 
-./rerunLQ.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME
+./rerunLQ.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME QueueType
 Note that FOLDERWHEREMATFILESARE is usually the same as FOLDERWHEREMFILESARE. This is mainly if you are trying to re-run failed jobs - it only runs m files if there is no corresponding mat file located in the FOLDERWHEREMATFILESARE.
-For example:
-./rerunLQ.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_
-./rerunNormal.sh /nfs/sabatini_dbw01/Fly200_40x_Results /nfs/sabatini_dbw01/Fly200_40x_Results/Logs /nfs/sabatini_dbw01/Fly200_40x_Results Batch_sl22_
+--------------------------------------------------------------------------For example:
+./rerunLQ.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_ sq32hp
+
+./rerunNormal.sh /nfs/sabatini_dbw01/Fly200_40x_Results /nfs/sabatini_dbw01/Fly200_40x_Results/Logs /nfs/sabatini_dbw01/Fly200_40x_Results Batch_sl22_ normal
+----------------------------------------------------------------------
 (currently, there is a copy of this script at /home/carpente so that is the directory from which the script should be run. The first time I ran it, I had to change the permissions by doing this: chmod a+w runallbatchjobs.sh)
+
+if the script doesn't exist save the following as run.sh file(using any text editor):
+
+--------------------------------------
+
+#!/bin/sh
+if test $# -ne 5; then
+    echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2
+    exit 1
+fi
+
+BATCHDIR=$1
+BATCHTXTOUTPUTDIR=$2
+BATCHMATOUTPUTDIR=$3
+BATCHFILEPREFIX=$4
+QueueType=$5
+MATLAB=/nfs/apps/matlab701
+LICENSE_SERVER="7182@pink-panther.csail.mit.edu"
+
+export DISPLAY=""
+
+for i in $BATCHDIR/$BATCHFILEPREFIX*.m; do
+    BATCHFILENAME=`basename $i .m`
+    if [ ! -e $BATCHMATOUTPUTDIR/${BATCHFILENAME}_OUT.mat ]; then
+        echo Re-running $BATCHDIR/$BATCHFILENAME
+        bsub -q $5 -o $BATCHTXTOUTPUTDIR/$BATCHFILENAME.txt -u xuefang_ma@wi.mit.edu -R 'rusage[img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm -c $LICENSE_SERVER < $BATCHDIR/$BATCHFILENAME.m"
+    fi
+done
+
+# INSTRUCTIONS
+# From the command line, logged into barra, submit the jobs using this script as follows: 
+# ./rerunLQ.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME
+# Note that FOLDERWHEREMATFILESARE is usually the same as FOLDERWHEREMFILESARE. This is mainly if you are trying to re-run failed jobs - it only runs m files if there is no corresponding mat file located in the FOLDERWHEREMATFILESARE.
+# For example:
+# ./rerunLQ.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_
+# (currently, there is a copy of this script at /home/carpente so that is the directory from which the script should be run. The first time I ran it, I had to change the permissions by doing this: chmod a+w runallbatchjobs.sh)
+
+
+
+---------------------------------------
+
 
 choosing a queue:
 QUEUE_NAME      PRIORITY 
@@ -75,8 +118,13 @@ lq = long queue jobs > 20 minutes
 lp = low priority
 medium = medium priority
 high  = high priority
+
+
 There are fewer machines in the hp and mp queues but they have higher priority. If you just have a few jobs that need to be run soon the mp and hp queues should be ideal.  If you have many jobs w/ a lower turn around requirement the lp queues have more machines available but at a lower run priority. Ofcourse this is a limited resource availlable to all so when the cluster is busy everything will take bit longer.
 When writing to sabatini2_ata, use sq32hp - other computers don't have write permission sometimes.
+
+--------------------------------------------------------
+
 
 11. Transfer files to Ray's computer:
 To copy output files to oblique (after making the destination directory):

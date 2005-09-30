@@ -1,1 +1,1 @@
-CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+uint8

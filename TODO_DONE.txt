@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+-(Mike 9/30) This dialog pops up even if I have saved my preferences to my own filename:  helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
+
 -(Mike 9/30) (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.  Also, its measurements are not saved in the proper structure format. It looks like this when I analyzed three image cycles:
 handles.Measurements
 ans = 

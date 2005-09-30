@@ -2077,8 +2077,10 @@ Answer = CPquestdlg('Do you want to save these as the default preferences? If no
 if strcmp(Answer, 'No')
     [FileName,Pathname] = uiputfile(fullfile(matlabroot,'*.mat'), 'Save Preferences As...');
     FullFileName = fullfile(Pathname,FileName);
+    DefaultVal = 0;
 else
     FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');
+    DefaultVal = 1;
 end
 
 SetPreferencesWindowHandle = findobj('name','SetPreferences');
@@ -2103,19 +2105,23 @@ EnteredPreferences.DefaultOutputDirectory = DefaultOutputDirectory;
 EnteredPreferences.DefaultModuleDirectory = DefaultModuleDirectory; 
 EnteredPreferences.IntensityColorMap = IntensityColorMap;
 EnteredPreferences.LabelColorMap = LabelColorMap;
-SavedPreferences = EnteredPreferences; 
-CurrentDir = pwd; 
-try 
+SavedPreferences = EnteredPreferences;
+CurrentDir = pwd;
+try
     save(FullFileName,'SavedPreferences')
     clear SavedPreferences
-    helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
+    if DefaultVal == 1;
+        helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
+    else
+        helpdlg('Your CellProfiler preferences were successfully set.')
+    end
 catch
-    try 
+    try
         save(fullfile(CurrentDir,FileName),'SavedPreferences')
         clear SavedPreferences
         helpdlg('You do not have permission to write anything to the Matlab root directory.  Instead, your default preferences will only function properly when you start CellProfiler from the current directory.')
     catch
-        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.'); 
+        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.');
     end
 end
 clear PixelSize* *Dir* , close(SetPreferencesWindowHandle);

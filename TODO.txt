@@ -79,8 +79,6 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
-- When you add a module that's expecting an imge but there are no modules yet that produce an image, the popup menu for imageroup is empty. but it stays empty even if you later add an module that produces an image.
-
 - (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
 - (Requested by Anne 09-21-05) - MeasureImageSaturationBlur's figure color scheme is weird.

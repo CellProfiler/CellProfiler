@@ -1,5 +1,6 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/30) When you add a module that's expecting an imge but there are no modules yet that produce an image, the popup menu for imageroup is empty. but it stays empty even if you later add an module that produces an image.
 
 -(Mike 9/30) This dialog pops up even if I have saved my preferences to my own filename:  helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
 

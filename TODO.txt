@@ -81,8 +81,6 @@ handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
 
 - (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
-- (Requested by Anne 09-21-05) - MeasureImageSaturationBlur's figure color scheme is weird.
-
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
 
 - (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.

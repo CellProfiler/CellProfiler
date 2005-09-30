@@ -3,6 +3,10 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
+Mike - don't forget NIST images!  - Anne
+
+Requested by Anne - IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
+
 Requested by Anne - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
 
 Display grid: it looks like the labels are too far one unit to the left and one unit up.

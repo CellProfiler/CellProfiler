@@ -109,6 +109,6 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     OutputImage = InputImageMod + shiftFactor;
     OutputImage = OutputImage * scaleFactor;
 elseif strncmpi(RescaleOption,'C',1) == 1
-    OutputImage = uint8(InputImage*256);
+    OutputImage = uint8(InputImage*255);
 else error(['For the rescaling option, you must enter N, S, M, G, E, or C for the method by which to rescale the image. Your entry was ', RescaleOption])
 end

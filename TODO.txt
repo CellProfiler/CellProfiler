@@ -355,6 +355,8 @@ Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't
 Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
 
+- (Requested by Anne) - If we want to extend CP to analyze 3D images, there is a good example available here: Gue, Messaoudi, Sun, Boudier Cytometry 2005 on Smart 3D-FISH. It's available as an imageJ plug in so it might be good as a practice to integrate ImageJ and CP.
+
 - (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
 
 [ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>

@@ -7,12 +7,6 @@ ans =
     ImageAreaOccupiedThresholdStainedRegion: {[0.0174]  [0.0406]  [0.0290]}
 But these measurements should actually be in handles.Measurements.Image in two separate fields - one with the measurements and the other with the feature names, and with these two fields listed above being features.  This should make the module compatible with the MeasureRatios module, so we should then adjust the MeasureRatios module so you can choose these measures.
 
-- (Requested by Anne 8-24-05) - The SaveImageAs ImageTool gave this error when I tried to use it on a IdentifyPrimAutomatic figure window that was saved as a matlab fig file and then reopened later:
-??? Invalid handle object.
-Error in ==> SaveImageAs at 29
-    MainWinPos = get(handles.figure1,'Position');
-??? Error while evaluating uimenu Callback.
-
 - (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
 - Add 'New Pipeline' button

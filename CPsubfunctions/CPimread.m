@@ -10,7 +10,7 @@ elseif nargin == 2,
     %%% Handles a non-Matlab readable file format.
     [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
     if strcmp('.DIB', upper(ext)),
-    %%% Opens this non-Matlab readable file format.
+        %%% Opens this non-Matlab readable file format.
         try
             Width = handles.Pipeline.DIBwidth;
             Height = handles.Pipeline.DIBheight;
@@ -49,11 +49,11 @@ elseif nargin == 2,
     elseif strcmp('.MAT',upper(ext))
         load(CurrentFileName);
         if exist('Image')
-            LoadedImage = Image; 
+            LoadedImage = Image;
         else
             error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
         end
-    else 
+    else
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,
             %%% "LoadedImage".
@@ -92,6 +92,13 @@ else
             LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
         end
         fclose(fid);
+    elseif strcmp('.MAT',upper(ext))
+        load(CurrentFileName);
+        if exist('Image')
+            LoadedImage = Image;
+        else
+            error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
+        end
     else
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,

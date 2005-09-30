@@ -2,7 +2,6 @@ CellProfiler cell image analysis software development
 September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
-- REQUESTED by anne - OpenNewImageFile does not work for .mat files (where the variable is 'Image', see LoadImages.
 
 -   This dialog pops up even if I have saved my preferences to my own filename:  helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
 

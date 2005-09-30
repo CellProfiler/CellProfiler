@@ -39,8 +39,6 @@ for i = 2:length(ListOfExtensions)
     ImageExtCat = [ImageExtCat ';*.' ListOfExtensions{i}];
 end
 
-
-
 TempCD=cd;
 cd(handles.Current.DefaultImageDirectory);
 [FileName,Pathname] = uigetfile({ImageExtCat, 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');

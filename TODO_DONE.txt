@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/30) REQUESTED by anne - OpenNewImageFile does not work for .mat files (where the variable is 'Image', see LoadImages.
+
 -(Mike 9/30) (Requested by Anne 8-24-05) - The SaveImageAs ImageTool gave this error when I tried to use it on a IdentifyPrimAutomatic figure window that was saved as a matlab fig file and then reopened later:
 ??? Invalid handle object.
 Error in ==> SaveImageAs at 29

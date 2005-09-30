@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/30) (Requested by Anne) - Adapt MeasureAreaOccupied to use the same threshold options as are in IdentifyPrimAutomatic.  Also, its measurements are not saved in the proper structure format. It looks like this when I analyzed three image cycles:
+handles.Measurements
+ans = 
+             ImageAreaOccupiedStainedRegion: {[156845]  [424211]  [336473]}
+    ImageAreaOccupiedThresholdStainedRegion: {[0.0174]  [0.0406]  [0.0290]}
+But these measurements should actually be in handles.Measurements.Image in two separate fields - one with the measurements and the other with the feature names, and with these two fields listed above being features.  This should make the module compatible with the MeasureRatios module, so we should then adjust the MeasureRatios module so you can choose these measures.
+
 -(Mike 9/30) REQUESTED by anne - OpenNewImageFile does not work for .mat files (where the variable is 'Image', see LoadImages.
 
 -(Mike 9/30) (Requested by Anne 8-24-05) - The SaveImageAs ImageTool gave this error when I tried to use it on a IdentifyPrimAutomatic figure window that was saved as a matlab fig file and then reopened later:

@@ -39,10 +39,10 @@ for i = 2:length(ListOfExtensions)
     ImageExtCat = [ImageExtCat ';*.' ListOfExtensions{i}];
 end
 
-TempCD=cd;
-cd(handles.Current.DefaultImageDirectory);
+TempCD=CPcd;
+CPcd(handles.Current.DefaultImageDirectory);
 [FileName,Pathname] = uigetfile({ImageExtCat, 'All Image Files';'*.*',  'All Files (*.*)'},'Select the image to view');
-cd(TempCD);
+CPcd(TempCD);
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
 if FileName == 0

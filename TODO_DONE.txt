@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/03) (Requested by Anne 08-30-05) - If the current default image directory no longer exists and then you go do anything like File > Open Image, there is a command line error that the directory cannot be found.  Do we need to change all instances of cd to CPcd that is able to handle this kind of error and warn the user?
+??? Error using ==> cd
+Cannot CD to /Users/anne_carpenter/Desktop/2005_09_20NovartisYeast (Name is nonexistent or not a directory).
+Error in ==> OpenNewImageFile at 45
+cd(handles.Current.DefaultImageDirectory);
+Error in ==> CellProfiler>OpenImage_Callback at 3586
+OpenNewImageFile(handles);
+Error in ==> CellProfiler>gui_mainfcn at 4788
+        feval(varargin{:});
+Error in ==> CellProfiler at 42
+    gui_mainfcn(gui_State, varargin{:});
+??? Error while evaluating uimenu Callback.
+
 -(Mike 10/03) (Requested by Anne) - In SaveImages, have the file format in which to save images be a popupmenu based on what is compatible with the imwrite command of matlab, plus .mat files. If possible, this list should be automatically obtained (in the same way that typing imread or CPimread lists the file formats), but i don't know if imwrite yields a list like that. Or maybe it's the same list as imread.
 
 -(Mike 10/03) (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.

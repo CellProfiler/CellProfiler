@@ -2645,6 +2645,8 @@ for k=1:length(GraphicsHandles)
             %%% Closes the figure windows.
             try
                 delete(GraphicsHandles(k));
+            catch
+                CPmsgbox('There was a problem closing some windows.');
             end
         end
     end

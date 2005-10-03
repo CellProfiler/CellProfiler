@@ -1,4 +1,4 @@
-function SmoothedImage = CPsmooth(OrigImage,SmoothingMethod)
+function SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SetBeingAnalyzed)
 
 %%% This subfunction is used for several modules, including
 %%% SMOOTH, AVERAGE,
@@ -19,16 +19,15 @@ elseif strcmpi(SmoothingMethod,'P') == 1
     Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
     drawnow
     SmoothedImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
- else try ArtifactWidth = str2num(SmoothingMethod);
-        ArtifactRadius = 0.5*ArtifactWidth;
+else try ArtifactWidth = str2num(SmoothingMethod);
+        ArtifactRadiusPre = 0.5*ArtifactWidth;
+        ArtifactRadius = floor(ArtifactRadiusPre);
+        if (SetBeingAnalyzed == 1) && (ArtifactRadiusPre ~= ArtifactRadius)
+            CPmsgbox('The number you entered was odd and has been rounded down to an even number.');
+        end
         StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
-%         MsgBoxHandle = CPmsgbox('Now calculating the smoothed image, which may take a long time.');
         SmoothedImage = ordfilt2(OrigImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
-%         MsgBox = 'Calculations for smoothing are complete.';
     catch
-        error(['The text you entered for the smoothing method is not valid for some reason. You must enter N, P, or a positive, even number.  Your entry was ',SmoothingMethod])
+        error(['The text you entered for the smoothing method is not valid for some reason. You must enter N, P, or a positive, even number. Your entry was ',SmoothingMethod])
     end
 end
-
-
-

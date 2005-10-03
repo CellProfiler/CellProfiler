@@ -362,9 +362,9 @@ if strcmp(ReadyFlag, 'Ready') == 1
             end
 
             if exist('DilatedImage','var')
-                SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod);
+                SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
             elseif exist('RawImage','var')
-                SmoothedImage = CPsmooth(RawImage,SmoothingMethod);
+                SmoothedImage = CPsmooth(RawImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
             else error('something is wrong; this should never happen.')
             end
         end
@@ -387,7 +387,7 @@ if strcmp(ReadyFlag, 'Ready') == 1
             if strcmp(SmoothingMethod,'Fit polynomial')
                 SmoothingMethod = 'P';
             end
-            FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod);
+            FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
         end
     end
 

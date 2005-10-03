@@ -1,4 +1,4 @@
-function CPtextpipe(handles)
+function CPtextpipe(handles,ExportInfo,RawFilename,RawPathname)
 
 if ~isfield(handles.Settings,'VariableValues') || ~isfield(handles.Settings,'VariableInfoTypes') || ~isfield(handles.Settings,'ModuleNames')
     CPmsgbox('You do not have a pipeline loaded!');
@@ -9,7 +9,7 @@ VariableValues = handles.Settings.VariableValues;
 VariableInfoTypes = handles.Settings.VariableInfoTypes;
 ModuleNames = handles.Settings.ModuleNames;
 ModuleNamedotm = [char(ModuleNames(1)) '.m'];
-%Prompt what to save file as, and where to save it.
+%%% Check for location of m-files
 if exist(ModuleNamedotm,'file')
     FullPathname = which(ModuleNamedotm);
     [PathnameModules, filename, ext, versn] = fileparts(FullPathname);
@@ -23,25 +23,58 @@ else
         return
     end
 end
-[filename,SavePathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.txt'), 'Save Settings As...');
-if filename == 0
-    CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
-    return
+
+if isstruct(ExportInfo)
+    if ExportInfo.ProcessInfoExtension(1) ~= '.';
+        ExportInfo.ProcessInfoExtension = ['.',ExportInfo.ProcessInfoExtension];
+    end
+    filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
+    fid = fopen(fullfile(RawPathname,filename),'w');
+    if fid == -1
+        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+    end
+else
+    %Prompt what to save file as, and where to save it.
+    [filename,SavePathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.txt'), 'Save Settings As...');
+    if filename == 0
+        CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
+        return
+    end
+    fid = fopen(fullfile(SavePathname,filename),'w');
+    if fid == -1
+        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+    end
 end
+
 % make sure # of modules equals number of variable rows.
 VariableSize = size(VariableValues);
 if VariableSize(1) ~= max(size(ModuleNames))
     error('Your settings are not valid.')
 end
-display = ['Saved Pipeline, in file ' filename ', Saved on ' date];
+
+if ~isstr(RawPathname) || ~isstr(RawFilename) || ~isstruct(ExportInfo)
+    fprintf(fid,['Saved Pipeline, in file ' filename ', Saved on ' date '\n']);
+else
+    fprintf(fid,'Processing info for file: %s\n',fullfile(RawPathname, RawFilename));
+    fprintf(fid,'Processed (start time): %s\n\n',handles.Current.TimeStarted);
+    NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
+    fprintf(fid,'Number of processed image sets: %d\n',NbrOfProcessedSets);
+end
+
+fprintf(fid,['\nPixel Size: ' handles.Settings.PixelSize '\n']);
+fprintf(fid,'\nPipeline:\n');
+for module = 1:length(handles.Settings.ModuleNames)
+    fprintf(fid,'\t%s\n',handles.Settings.ModuleNames{module});
+end
+RevNums = handles.Settings.VariableRevisionNumbers;
 % Loop for each module loaded.
 for p = 1:VariableSize(1)
     Module = [char(ModuleNames(p))];
-    display = strvcat(display, ['Module #' num2str(p) ': ' Module]);
+    fprintf(fid,['\nModule #' num2str(p) ': ' Module ' revision - ' num2str(RevNums(p)) '\n']);
     ModuleNamedotm = [Module '.m'];
-    fid=fopen(fullfile(PathnameModules,ModuleNamedotm));
+    fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
     while 1
-        output = fgetl(fid);
+        output = fgetl(fid2);
         if ~ischar(output), break, end
         if strncmp(output,'%textVAR',8)
             displayval = output(13:end);
@@ -56,7 +89,7 @@ for p = 1:VariableSize(1)
             VariableDescriptions(i) = {displayval};
         end
     end
-    fclose(fid);
+    fclose(fid2);
     % Loop for each variable in the module.
     for q = 1:length(handles.VariableBox{p})
         VariableDescrip = char(VariableDescriptions(q));
@@ -66,13 +99,11 @@ for p = 1:VariableSize(1)
             VariableVal = '  ';
 
         end
-        display =strvcat(display, ['    ' VariableDescrip '    ' VariableVal]);
+        fprintf(fid,['    ' VariableDescrip '    ' VariableVal '\n']);
     end
 end
-%% tack on rest of Settings information.
-PixelSizeDisplay = ['Pixel Size: ' handles.Settings.PixelSize];
-RevisionNumbersDisplay = ['Variable Revision Numbers: ' num2str(handles.Settings.VariableRevisionNumbers)];
-display = strvcat(display, PixelSizeDisplay, RevisionNumbersDisplay);
 %% Save to a .txt file.
-dlmwrite(fullfile(SavePathname,filename), display, 'delimiter', '');
-helpdlg('The pipeline .txt file has been written.');
+fclose(fid);
+if ~isstr(RawPathname) || ~isstr(RawFilename)
+    helpdlg('The pipeline .txt file has been written.');
+end

@@ -106,12 +106,6 @@ Error in ==> CellProfiler at 42
     gui_mainfcn(gui_State, varargin{:});
 ??? Error while evaluating uimenu Callback.
 
-- (Requested by Anne 08-30-05) - There are two ways to generate a text file containing the current pipeline settings and they should be made consistent with each other (e.g. sharing a subfunction so they produce the exact same results). One way is to use DataTools > ExportData and generate the 'Process Info' file, and the other way is to File > SavePipeline, and then save also as a text file. At the moment, the File > SavePipeline, using the text option, is broken, so I don't know what sort of file it is trying to produce. Most likely, it is producing something similar to ExportData so I don't know whether the code from that would be helpful or not. The ExportData method is pretty close to what we want, with these changes:
-> move the pixel size and number of image sets to the top of the file (after the processing date & time).
-> Is the processing date & time the start time or end time? Label it appropriately.
-> I think we store variable descriptions in the handles structure in output files - if so, I'd like to print out the variable descriptions next to each value. In other words, replace the text "Variable 1 Value" with the actual variable description.
-> at the moment it produces a bit *too* much information.  we do *not* need to list all the info about each image set, because this information is already exported in the "Image" structure when you export data. 
-
 - (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
 
 - (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.

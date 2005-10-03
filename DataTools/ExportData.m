@@ -63,12 +63,11 @@ waitbarhandle = waitbar(0,'');
 
 %%% Export process info
 if strcmp(ExportInfo.ExportProcessInfo,'Yes')
-    try WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname);
+    try CPtextpipe(handles,ExportInfo,RawFileName,RawPathname);
     catch errordlg(lasterr)
         return
     end
 end
-
 
 %%% Export measurements
 if ~isempty(ExportInfo.MeasurementFilename)
@@ -82,93 +81,6 @@ end
 close(waitbarhandle)
 CPmsgbox('Exporting is completed.')
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function WriteProcessInfo(handles,ExportInfo,RawFileName,RawPathname)
-%%% This function extracts info about the process that generated a
-%%% CellProfiler output file, and writes this info to a textfile.
-
-%%% Get the handle to the waitbar and update the text in the waitbar
-global waitbarhandle
-waitbar(0,waitbarhandle,'Exporting process info')
-
-%%% Open file for writing
-%%% Add dot in extension if it's not there
-if ExportInfo.ProcessInfoExtension(1) ~= '.';
-    ExportInfo.ProcessInfoExtension = ['.',ExportInfo.ProcessInfoExtension];
-end
-filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
-fid = fopen(fullfile(RawPathname,filename),'w');
-if fid == -1
-    error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
-    
-end
-
-fprintf(fid,'Processing info for file: %s\n',fullfile(RawPathname, RawFileName));
-fprintf(fid,'Processed: %s\n\n',handles.Current.TimeStarted);
-
-fprintf(fid,'Pipeline:\n');
-for module = 1:length(handles.Settings.ModuleNames)
-    fprintf(fid,'\t%s\n',handles.Settings.ModuleNames{module});
-end
-
-fprintf(fid,'\n\nVariable Values:\n');
-for module = 1:length(handles.Settings.ModuleNames)
-    fprintf(fid,'\t%s  - revision %s\n',handles.Settings.ModuleNames{module},num2str(handles.Settings.VariableRevisionNumbers(module)));
-    variables = [];
-    variables = handles.Settings.VariableValues(module,:);
-    for varnum = 1:length(variables)
-        if ~isempty(variables{varnum})
-            fprintf(fid,'\t\tVariable %s Value: %s\n',num2str(varnum),variables{varnum});
-        end
-    end
-end
-
-
-
-fprintf(fid,'\n\nPixel size: %s micrometer(s)\n',handles.Settings.PixelSize);
-
-% Get number of processed data sets
-NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
-fprintf(fid,'Number of processed image sets: %d\n\n',NbrOfProcessedSets);
-
-%%% Get segmented objects, don't count the 'Image' field
-ObjectNames = fieldnames(handles.Measurements);
-ObjectNames = ObjectNames(find(cellfun('isempty',strfind(ObjectNames,'Image'))));
-
-
-%%% Report info for each image set
-for imageset = 1:NbrOfProcessedSets
-
-    % Update waitbar handle
-    waitbar(imageset/NbrOfProcessedSets,waitbarhandle)
-
-    % Write info about image set
-    fprintf(fid,'Image set #%d ---------------------------------------\n',imageset);
-    fprintf(fid,'\tInput images:\n');
-    for k = 1:length(handles.Measurements.Image.FileNamesText)
-        fprintf(fid,'\t\t%s: %s\n',handles.Measurements.Image.FileNamesText{k},handles.Measurements.Image.FileNames{imageset}{k});
-    end
-    fprintf(fid,'\n');
-    fprintf(fid,'\tObjects:\n');
-    for k = 1:length(ObjectNames)
-        fprintf(fid,'\t\t%s\t',ObjectNames{k});
-        fields = fieldnames(handles.Measurements.Image);
-        fields = fields(~cellfun('isempty',strfind(fields,'Features')));
-        for j = 1:length(fields)
-            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.(fields{j}),ObjectNames{k})));
-            if ~isempty(column)
-
-                fprintf(fid,'\t %s: %g',fields{j}(1:end-8),handles.Measurements.Image.(fields{j}(1:end-8)){imageset}(column));
-            end
-        end
-        fprintf(fid,'\n');
-    end
-    fprintf(fid,'\n');
-end
-fclose(fid);
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function WriteMeasurements(handles,ExportInfo,RawPathname)
 %%% This function exports full and summary measurement reports
@@ -176,7 +88,6 @@ function WriteMeasurements(handles,ExportInfo,RawPathname)
 %%% Get the handle to the waitbar and update the text in the waitbar
 global waitbarhandle
 waitbar(0,waitbarhandle,'')
-
 
 %%% Step 1: Create a cell array containing matrices with all measurements for each object type
 %%% concatenated.
@@ -209,7 +120,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
             catch
                 error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
-                
+
             end
             if length(Measurements) == 0
                 Measurements = CellArray;
@@ -236,7 +147,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-4));
             catch
                 error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated text field.']);
-                
+
             end
 
             %%% If this is the first measurement structure encounterered we have to initialize instead of concatenate
@@ -260,8 +171,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
     SuperTextNames{Object} = TextNames;
 end % end loop over object types, i.e., Cells, Nuclei, Cytoplasm, Image
 
-
-
 %%% Step 2: Write the measurements to file
 for Object = 1:length(ExportInfo.ObjectNames)
 
@@ -276,7 +185,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
     fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
-        
+
     end
 
     % Get the measurements and feature names to export
@@ -400,7 +309,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
         end
 
-        %%% Start by writing text 
+        %%% Start by writing text
         %%% Loop over rows, writing one image set's text features at the time
         for row = 1:length(TextNames)
             fprintf(fid,'%s',TextNames{row});
@@ -419,7 +328,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
             fprintf(fid,'\n');
         end
-    
+
         %%% Next, write numerical measurements
         %%% Loop over rows, writing one image set's measurements at the time
         for row = 1:length(MeasurementNames)
@@ -427,39 +336,19 @@ for Object = 1:length(ExportInfo.ObjectNames)
             for imageset = 1:length(Measurements)
                 tmp = cellstr(num2str(Measurements{imageset}(:,row),'%g'));  % Create cell array with measurements
                 strMeasurement = cell(2*size(Measurements{imageset},1),1);
-                strMeasurement(1:2:end) = {'\t'};                 
+                strMeasurement(1:2:end) = {'\t'};
                 strMeasurement(2:2:end) = tmp;                    % Interleave with tabs
-                fprintf(fid,sprintf('%s',char(cat(2,strMeasurement{:}))));  
+                fprintf(fid,sprintf('%s',char(cat(2,strMeasurement{:}))));
             end
             fprintf(fid,'\n');
         end
-    
-    
+
+
     end % Ends 'if' row/column flip
 
     fclose(fid);
 end % Ends 'for'-loop over object types
 
-
-%
-%             % Update waitbar
-%             
-%
-%             try % In case things in Measurements are not the same length
-%                 fprintf(fid,'%s',MeasurementNames{i});
-%             end
-%             tmp = {};
-%             for imageset = 1:length(Measurements)
-%                 try % In case things in Measurements are not the same length
-%                     tmp = cat(1,tmp,cellstr(num2str(Measurements{imageset}(:,i),'%g')));
-%                 end
-%             end
-%             str = cell(2*length(tmp),1);
-%             str(1:2:end) = {'\t'};
-%             str(2:2:end) = tmp;
-%             fprintf(fid,sprintf('%s\n',cat(2,str{:})));
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ExportInfo = ObjectsToExport(handles,RawFileName)
 % This function displays a window so that lets the user choose which
 % measurements to export. If the return variable 'ObjectNames' is empty
@@ -480,7 +369,7 @@ FontSize = handles.Current.FontSize;
 fields = fieldnames(handles.Measurements);
 if length(fields) > 20
     error('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')
-    
+
 end
 
 % Create Export window
@@ -604,5 +493,3 @@ else
     delete(ETh);
     ExportInfo.ObjectNames = [];
 end
-
-

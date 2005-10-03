@@ -214,7 +214,7 @@ RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentMo
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu custom
 
-%textVAR11 =  What do you want to call the labeled matrix image?
+%textVAR11 = What do you want to call the labeled matrix image?
 %choiceVAR11 = Do not save
 %choiceVAR11 = LabeledNuclei
 %infotypeVAR11 = imagegroup indep

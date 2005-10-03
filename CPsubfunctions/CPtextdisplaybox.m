@@ -4,6 +4,7 @@ function helpFig = CPtextdisplaybox(Text,title)
 % becomes too long to fit into a small window.
 
 helpFig = CPfigure;
+set(helpFig,'Resize','off');
 set(helpFig,'NumberTitle','off');
 set(helpFig,'name', title);
 set(helpFig,'units','characters','color',[0.7 0.7 0.9]);

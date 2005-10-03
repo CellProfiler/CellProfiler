@@ -3,15 +3,19 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-Requested by Anne - IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
+-(BOTH APPEAR TO WORK FINE) (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
+
+-(ALREADY IN LOOP?) (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower.
+
+-(WHICH ERROR DIALOGS, DONT THINK ERROR AND ERRORDLG CAN BE CHANGES) (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
+
+- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
-
-- (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower. 
 
 - (Requested by Anne 9-08-05) - Make measure windows expand to fit the number of lines of data (and the number of columsn) that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
@@ -54,22 +58,9 @@ Ola
        [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
        then error(INSERT PROPER ERROR STUFF HERE), end 
 
-- (Requested by Anne) - Save Image As tool: does not work well for all kinds of
-       displayed images (e.g. The mean image produced by correct illum
-       divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
-
-- (Requested by Anne) - When figures produced by DisplayGridInfo are saved as matlab fig files and opened later, when CellProfiler itself is not open, and then you click on SpotIdentifying Info - Show, an error is produced (at least when no spot identifying info has been loaded): (NOTE: Not sure if this is still a problem - doublecheck first.)
-??? Error using ==> guidata
-H must be the handle to a figure or figure descendent.
-Error in ==> CPmsgbox at 198
-handles = guidata(findobj('Tag','figure1'));
-Error in ==> CPwarndlg at 42
-handle = CPmsgbox(WarnStringCell,DlgName,'warn',Replace);
-??? Error while evaluating uicontrol Callback.
+- (Requested by Anne) - Save Image As tool: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
 - (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
-
-- (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
 
@@ -85,13 +76,9 @@ Index exceeds matrix dimensions.
 ??? Error using ==> set
 Error while evaluating uicontrol Callback.
 
-- (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.
-
 - (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyPrimAutomatic: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyPrimAutomatic.
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
-
-- (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
 
 - (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
 % Threshold correction factor:

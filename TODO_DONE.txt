@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/03) (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.
+
 -(Mike 10/03) (Requested by Anne) - In File > Open Image, underscores in the file name are not displayed as underscores - instead they make the character after the underscore appear as a subscript. We have fixed this elsewhere (I think in the histogram tool).
 
 -(Mike 10/03) (Requested by Anne 8-30-05) - If the user enters an odd number for CPsmooth (a subfunction used by the Smooth module, among others), right now it yields the error 'The text you entered for the smoothing..." and it cancels all processing. Instead, let's have it continue processing by rounding the user's entry down to the nearest integer but meanwhile pop up a warning dialog box telling the user that their entry has been rounded down.  Make sure the warning dialog box does not pop up new every time around the cycle (maybe only if setbeinganalyzed = 1).

@@ -3781,12 +3781,11 @@ if strcmp(get(gcf,'SelectionType'),'open')
     else
         return;
     end
-        
+
     handles=guidata(AddModuleWindowHandles.figure1);
-	filename = [file_list{index_selected} '.m'];
+    filename = [file_list{index_selected} '.m'];
     PutModuleInListBox(filename,handles.Preferences.DefaultModuleDirectory,guidata(AddModuleWindowHandles.figure1),0);
 end
-
 
 % --- Executes on button press in ModuleHelpButton.
 function ModuleHelpButton_Callback(hObject, eventdata, AddModuleWindowHandles)
@@ -3794,38 +3793,35 @@ function ModuleHelpButton_Callback(hObject, eventdata, AddModuleWindowHandles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % AddModuleWindowHandles    structure with AddModuleWindowHandles and user data (see GUIDATA)
 
-  if(~isempty(get(AddModuleWindowHandles.FileProcessingListBox,'Value')))
-        index_selected = get(AddModuleWindowHandles.FileProcessingListBox,'Value');
-        file_list = get(AddModuleWindowHandles.FileProcessingListBox,'String');
-        
-    elseif(~isempty(get(AddModuleWindowHandles.PreProcessingListBox,'Value')))
-        index_selected = get(AddModuleWindowHandles.PreProcessingListBox,'Value');
-        file_list = get(AddModuleWindowHandles.PreProcessingListBox,'String');
-        
-    elseif(~isempty(get(AddModuleWindowHandles.ObjectProcessingListBox,'Value')))
-        index_selected = get(AddModuleWindowHandles.ObjectProcessingListBox,'Value');
-        file_list = get(AddModuleWindowHandles.ObjectProcessingListBox,'String');
-        
-    elseif(~isempty(get(AddModuleWindowHandles.MeasurementListBox,'Value')))
-        index_selected = get(AddModuleWindowHandles.MeasurementListBox,'Value');
-        file_list = get(AddModuleWindowHandles.MeasurementListBox,'String');
-        
-    elseif(~isempty(get(AddModuleWindowHandles.OtherListBox,'Value')))
-        index_selected = get(AddModuleWindowHandles.OtherListBox,'Value');
-        file_list = get(AddModuleWindowHandles.OtherListBox,'String');
-        
-    else
-        return;
-    end
-  
-	filename = file_list{index_selected};
-	if  isdir(filename) %This is outdated.  There should only be files now.
-		return;
-    else
-         CPtextdisplaybox(help(filename),'CellProfiler image analysis module help');
-   end
+if(~isempty(get(AddModuleWindowHandles.FileProcessingListBox,'Value')))
+    index_selected = get(AddModuleWindowHandles.FileProcessingListBox,'Value');
+    file_list = get(AddModuleWindowHandles.FileProcessingListBox,'String');
 
+elseif(~isempty(get(AddModuleWindowHandles.PreProcessingListBox,'Value')))
+    index_selected = get(AddModuleWindowHandles.PreProcessingListBox,'Value');
+    file_list = get(AddModuleWindowHandles.PreProcessingListBox,'String');
 
+elseif(~isempty(get(AddModuleWindowHandles.ObjectProcessingListBox,'Value')))
+    index_selected = get(AddModuleWindowHandles.ObjectProcessingListBox,'Value');
+    file_list = get(AddModuleWindowHandles.ObjectProcessingListBox,'String');
+
+elseif(~isempty(get(AddModuleWindowHandles.MeasurementListBox,'Value')))
+    index_selected = get(AddModuleWindowHandles.MeasurementListBox,'Value');
+    file_list = get(AddModuleWindowHandles.MeasurementListBox,'String');
+
+elseif(~isempty(get(AddModuleWindowHandles.OtherListBox,'Value')))
+    index_selected = get(AddModuleWindowHandles.OtherListBox,'Value');
+    file_list = get(AddModuleWindowHandles.OtherListBox,'String');
+else
+    return;
+end
+
+filename = file_list{index_selected};
+if  isdir(filename) %This is outdated.  There should only be files now.
+    return;
+else
+    CPtextdisplaybox(help(filename),'CellProfiler image analysis module help');
+end
 
 function BrowseButton_Callback(hObject, eventdata, AddModuleWindowHandles)
 % hObject    handle to PreProcessingListBox (see GCBO)

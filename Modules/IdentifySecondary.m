@@ -210,7 +210,7 @@ RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentMo
 %textVAR10 = What do you want to call the image of the outlines of the objects?
 %choiceVAR10 = Do not save
 %choiceVAR10 = OutlinedNuclei
-%infotypeVAR10 = outlinegroup indep
+%infotypeVAR10 = imagegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu custom
 

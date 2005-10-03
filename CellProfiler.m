@@ -1763,15 +1763,64 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     %Filter out objects that are over this one
     ModList2 = findobj('UserData',InfoType(1:end));
     ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2num(VariableNumber)));
-    ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
+    %ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
+    for i = 1:length(ModList2)
+        Values = get(ModList2(i),'value');
+        PrevStrSet = get(ModList2(i),'string');
+        if Values == 0
+            if strcmp(PrevStrSet,PrevValue)
+                if exist('ModList3')
+                    ModList3(end+1) = ModList2(i);
+                else
+                    ModList3 = ModList2(i);
+                end
+            end
+        else
+            if strcmp(PrevStrSet(Values),PrevValue)
+                if exist('ModList3')
+                    ModList3(end+1) = ModList2(i);
+                else
+                    ModList3 = ModList2(i);
+                end
+            end
+        end
+    end
     if ischar(UserEntry)
         if size(StrSet,1) == 1
             ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet)));
         else
-            ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(1))));
+            Values = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'value');
+            ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(Values))));
         end
     else
-        ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(UserEntry))));
+        for i = 1:length(ModList2)
+            Values = get(ModList2(i),'value');
+            PrevStrSet = get(ModList2(i),'string');
+            if Values == 0
+                if strcmp(PrevStrSet,StrSet(UserEntry))
+                    if exist('ModList4')
+                        ModList4(end+1) = ModList2(i);
+                    else
+                        ModList4 = ModList2(i);
+                    end
+                end
+            else
+                if strcmp(PrevStrSet(Values),StrSet(UserEntry))
+                    if exist('ModList4')
+                        ModList4(end+1) = ModList2(i);
+                    else
+                        ModList4 = ModList2(i);
+                    end
+                end
+            end
+        end
+    end
+    
+    if ~exist('ModList4')
+        ModList4 = [];
+    end
+    if ~exist('ModList3')
+        ModList3 = [];
     end
     
     for i=1:numel(ModList)
@@ -1822,7 +1871,6 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                     set(ModList(i),'Value',1);
                     VarVals = get(ModList(i),'string');
                     handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = VarVals;
-                    %%FIXME: Update VariableValues
                 end
             end
         elseif isempty(ModList4)

@@ -4,13 +4,6 @@ function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, Imag
 
 ReadyFlag = 'NotReady';
 if strcmpi(Mode,'DoNow') == 1
-    %%% Obtains the screen size and determines where the wait bar will
-    %%% be displayed.
-    ScreenSize = get(0,'ScreenSize');
-    ScreenHeight = ScreenSize(4);
-    PotentialBottom = [0, (ScreenHeight-720)];
-    BottomOfMsgBox = max(PotentialBottom);
-    PositionMsgBox = [500 BottomOfMsgBox 350 150];
     %%% Retrieves the path where the images are stored from the
     %%% handles structure.
     fieldname = ['Pathname', ImageName];
@@ -28,6 +21,17 @@ if strcmpi(Mode,'DoNow') == 1
     TotalImage = CPimread(fullfile(Pathname,char(FileList(1))), handles);
     %%% Waitbar shows the percentage of image sets remaining.
     WaitbarHandle = waitbar(0,'');
+    %%% Obtains the screen size and determines where the wait bar will
+    %%% be displayed.
+    ScreenSize = get(0,'ScreenSize');
+    ScreenHeight = ScreenSize(4);
+    PotentialBottom = [0, (ScreenHeight-720)];
+    BottomOfMsgBox = max(PotentialBottom);
+    OldPos = get(WaitbarHandle,'position');
+    PositionMsgBox = [250 BottomOfMsgBox OldPos(3) 90];
+    set(WaitbarHandle,'color',[.7 .7 .9]);
+    userData.Application = 'CellProfiler';
+    set(WaitbarHandle,'UserData',userData);
     set(WaitbarHandle, 'Position', PositionMsgBox)
     drawnow
     TimeStart = clock;

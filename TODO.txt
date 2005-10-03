@@ -3,8 +3,6 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WANT IT ASAP:
 
-Mike - don't forget NIST images!  - Anne
-
 Requested by Anne - IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
@@ -126,8 +124,6 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
 - (Requested by Anne 9-01-05) - We used to have code that allowed variable edit boxes to expand when the text within them was too long to fit. It mostly became unnecessary when Colin invented the new pathname entry boxes/browse buttons (because this usually only happens when we are dealing with typing pathnames into edit boxes), but I would still like edit boxes to expand if text becomes too long to fit, so we should find that code and re-implement it.
-
-- (Requested by Anne 9-01-05) - The waitbar window produced by the CorrectIllumination_CalculateUsingIntensities module stays open after closing CellProfiler (it must not have the UserData indicating that it's a CellProfiler-related window). And, it's the wrong color.
 
 - (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons.  I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
 

@@ -248,9 +248,10 @@ if strcmp(EachOrAll,'All')
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 100];
+            PositionMsgBox = [250 BottomOfMsgBox 350 100];
             h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination_Calculate Using Background Intensities module.  Subsequent image sets will be processed more quickly than the first image set.');
-            set(h, 'Position', PositionMsgBox)
+            OldPos = get(h,'position');
+            set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
             drawnow
 
             if strcmp(IntensityChoice,'Regular')

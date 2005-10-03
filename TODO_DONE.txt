@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/03) (Requested by Anne 9-01-05) - The waitbar window produced by the CorrectIllumination_CalculateUsingIntensities module stays  open after closing CellProfiler (it must not have the UserData indicating that it's a CellProfiler-related window). And, it's the wrong color.
+
 -(Mike 10/03) (Requested by Anne 08-30-05) - If the current default image directory no longer exists and then you go do anything like File > Open Image, there is a command line error that the directory cannot be found.  Do we need to change all instances of cd to CPcd that is able to handle this kind of error and warn the user?
 ??? Error using ==> cd
 Cannot CD to /Users/anne_carpenter/Desktop/2005_09_20NovartisYeast (Name is nonexistent or not a directory).

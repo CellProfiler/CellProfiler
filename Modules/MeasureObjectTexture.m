@@ -18,6 +18,56 @@ function handles = MeasureObjectTexture(handles)
 % image should be converted to binary and re-made into a label matrix
 % image before feeding into this module.
 %
+% Texture Measurements:
+%
+% Haralick Features:
+% These features are derived from the co-occurence matrix, which contains 
+% information about how image intensities in pixel with a certain position 
+% in relation to each other occur together. For example, how often does a 
+% pixel with intensity 43 have a neighbor to the right with intensity
+% 48? The current implementation in CellProfiler uses a shift of 1 pixel to
+% the right for calculating the co-occurence matrix. A different set of 
+% measurements is obtained for larger shifts, measuring texture on a larger
+% scale.
+%
+% The original reference for the Haralick features is:
+%
+% Haralick et al. (1973)
+% Textural Features for Image Classification.
+% IEEE Transaction on Systems
+% Man, Cybernetics, SMC-3(6):610-621
+%
+% In this paper, 14 features are described:
+%
+% H1. Angular Second Moment
+% H2. Contrast
+% H3. Correlation
+% H4. Sum of Squares: Variation
+% H5. Inverse Difference Moment
+% H6. Sum Average
+% H7. Sum Variance
+% H8. Sum Entropy
+% H9. Entropy
+% H10. Difference Variance
+% H11. Difference Entropy
+% H12. Information Measure of Correlation 1
+% H13. Information Measure of Correlation 2
+% H14. Max correlation coefficient
+%
+% All these features are implemented, but H14 is disabled because it's
+% computationally demanding.
+% -------------------------------------------------------------------------
+% Gabor "wavelet" features
+%
+% These features are similar to wavelet features, and they are obtained by 
+% applying so-called Gabor filters to the image. The Gabor filters measures
+% the frequency content in different orientations. They are very similar to
+% wavelets, and in the current context they work exactly as wavelets, but
+% they are not wavelets in a strict mathematical definition. As currently
+% implemented, the frequency content of the object is measured along the x-
+% and y-axis (i.e., in two different orientations) and for three different 
+% scales, resulting in 2*3 = 6 measurements per object.
+%
 % See also MEASUREAREAOCCUPIED,
 % MEASUREAREASHAPECOUNTLOCATION,
 % MEASURECORRELATION,

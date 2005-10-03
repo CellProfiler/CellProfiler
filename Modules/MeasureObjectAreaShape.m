@@ -4,8 +4,8 @@ function handles = MeasureObjectAreaShape(handles)
 % Category: Measurement
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module extracts area and shape features of each object. Note that shape features
-% are only reliable for objects that are inside the image borders.
+% module extracts area and shape features of each object. Note that shape
+% features are only reliable for objects that are inside the image borders.
 %
 % How it works:
 % Retrieves a segmented image, in label matrix format and makes measurements
@@ -14,6 +14,34 @@ function handles = MeasureObjectAreaShape(handles)
 % with no numbers skipped. So, if some objects were discarded from the label
 % matrix image, the image should be converted to binary and re-made into a
 % label matrix image before feeding into this module.
+%
+% The following measurements are extracted using the regionprops.m function
+% (see the help for this function for more information):
+% Area
+% Eccentricity
+% Solidity
+% Extent
+% Euler number
+% MajorAxisLength
+% MinorAxisLength
+%
+% In addition, the following two features are calculated
+% Perimeter
+% Form factor (= 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
+% object)
+% -------------------------------------------------------------------------
+% Zernike shape features
+%
+% Measures shape by describing a binary object (or more precisely, a patch
+% with background and an object in the center) in a basis of Zernike
+% polynomials, using the coefficients as features. This can also be done
+% for a gray-level object, and would then also measure texture. The Zernike
+% features are/have been used by the Murphy lab, there is probably more
+% information and motivation for these features in their papers. Currently,
+% Zernike polynomials from order 0 to order 9 are calculated, giving in
+% total 30 measurements (in the Murphy papers they use up to order 12).
+% There is no limit to the order, but the higher order polynomials don't
+% carry much/any relevant information.
 %
 % See also MeasureObjectTexture, MeasureObjectIntensity, MeasureCorrelation
 

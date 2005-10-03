@@ -7,29 +7,17 @@ Mike - don't forget NIST images!  - Anne
 
 Requested by Anne - IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
 
-Requested by Anne - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
-
-Display grid: it looks like the labels are too far one unit to the left and one unit up.
-
-Define grid:  I think the description for MANUAL + MOUSE what is the distance? is incorrect because it says distance from control to the bottom left. In my case, I had the settings: first spot = top left, count by columns, and then MANUAL + MOUSE distance from control to the bottom left = 1,0 (spot units).  In reality, the grid was placed (as I desired) as if that question was asking 'MANUAL + MOUSE distance from control to the *top left*'. So I think we need to change the text to read either 'top left' or maybe 'the first spot' (in other words, as defined by your settings for 'first spot'). Ideally, it would be first spot. I am just not sure how the code actually works.
-
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
-
--(WAITING ON IT TO GET UPDATE) (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
 
 - (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
-- (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
-
 - (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower. 
 
 - (Requested by Anne 9-08-05) - Make measure windows expand to fit the number of lines of data (and the number of columsn) that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
-- (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or
-organelles or speckles within nuclei or cells).
-This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
+- (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells). This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
 
 	From: 	  friman@bwh.harvard.edu
 	Subject: 	Storing subobjects

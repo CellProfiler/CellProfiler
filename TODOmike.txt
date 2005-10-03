@@ -1,7 +1,15 @@
 Mike's TODO list
 
+-(WAITING ON IT TO GET UPDATE) (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
+
 - (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
 - Add 'New Pipeline' button
 
 - Ask Anne about bioimage check for how good programs are
+
+Requested by Anne - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
+
+Display grid: it looks like the labels are too far one unit to the left and one unit up.
+
+Define grid:  I think the description for MANUAL + MOUSE what is the distance? is incorrect because it says distance from control to the bottom left. In my case, I had the settings: first spot = top left, count by columns, and then MANUAL + MOUSE distance from control to the bottom left = 1,0 (spot units).  In reality, the grid was placed (as I desired) as if that question was asking 'MANUAL + MOUSE distance from control to the *top left*'. So I think we need to change the text to read either 'top left' or maybe 'the first spot' (in other words, as defined by your settings for 'first spot'). Ideally, it would be first spot. I am just not sure how the code actually works.

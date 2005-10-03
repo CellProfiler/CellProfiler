@@ -18,6 +18,42 @@ function handles = MeasureObjectIntensity(handles)
 % image should be converted to binary and re-made into a label matrix
 % image before feeding into this module.
 %
+% Intensity Measurements:
+%
+% IntegratedIntensity:
+% The sum of the pixel intensities within an object.
+%
+% MeanIntensity:
+% The average pixel intensity within an object.
+%
+% StdIntensity:
+% The standard deviation of the pixel intensities within an object.
+%
+% MaxIntensity:
+% The maximal pixel intensity within an object.
+%
+% MinIntensity:
+% The minimal pixel intensity within an object.
+%
+% IntegratedIntensityEdge:
+% The sum of the edge pixel intensities of an object.
+%
+% MeanIntensityEdge:
+% The average edge pixel intensity of an object.
+%
+% StdIntensityEdge:
+% The standard deviation of the edge pixel intensities of an object.
+%
+% MaxIntensityEdge:
+% The maximal edge pixel intensity of an object.
+%
+% MinIntensityEdge:
+% The minimal edge pixel intensity of an object.
+%
+% MassDisplacement:
+% The distance between the centers of gravity in the gray-level representation of
+% the object and the binary representation of the object.
+%
 % See also MEASUREOBJECTTEXTURE, MEASUREOBJECTAREASHAPE,
 % MEASURECORRELATION
 

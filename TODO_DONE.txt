@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/03) (Requested by Anne) - There is a file in the DeveloperDropBox called MeasureDescriptions. These descriptions should be spliced into the help for the measure modules.
+
 -(Mike 10/03) (Requested by Anne 08-30-05) - There are two ways to generate a text file containing the current pipeline settings and they should be made consistent with each other (e.g. sharing a subfunction so they produce the exact same results). One way is to use DataTools > ExportData and generate the 'Process Info' file, and the other way is to File > SavePipeline, and then save also as a text file. At the moment, the File > SavePipeline, using the text option, is broken, so I don't know what sort of file it is trying to produce. Most likely, it is producing something similar to ExportData so I don't know whether the code from that would be helpful or not. The ExportData method is pretty close to what we want, with these changes:
 > move the pixel size and number of image sets to the top of the file (after the processing date & time).
 > Is the processing date & time the start time or end time? Label it appropriately.

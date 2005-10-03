@@ -52,5 +52,6 @@ else
     FigureHandle = CPfigure(handles);
     imagesc(Image);
     colormap(gray);
+    FileName = strrep(FileName,'_','\_')
     title(FileName);
 end

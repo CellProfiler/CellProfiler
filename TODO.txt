@@ -85,8 +85,6 @@ Index exceeds matrix dimensions.
 ??? Error using ==> set
 Error while evaluating uicontrol Callback.
 
-- (Requested by Anne) - In File > Open Image, underscores in the file name are not displayed as underscores - instead they make the character after the underscore appear as a subscript. We have fixed this elsewhere (I think in the histogram tool).
-
 - (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.
 
 - (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyPrimAutomatic: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyPrimAutomatic.

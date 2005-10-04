@@ -77,7 +77,7 @@ SampleNumber = str2double(Answer{1});
 
 %%% Looks up the corresponding image file name.
 Fieldnames = fieldnames(handles.Measurements.Image);
-PotentialImageNames = Fieldnames(strncmp(Fieldnames,'Filename',8)==1);
+PotentialImageNames = Fieldnames(strncmp(Fieldnames,'FileName',8)==1);
 %%% Error detection.
 if isempty(PotentialImageNames)
     h = errordlg('CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.')
@@ -121,7 +121,9 @@ Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure; imagesc(ImageToDisplay), colormap(gray)
-title([ObjectTypename,', ',handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo} ' on ', ImageFileName])
+FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+ImageDisp = ImageFileName{1};
+title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])
 set(FigureHandle,'toolbar', 'figure')
 
 %%% Overlays the values in the proper location in the image.

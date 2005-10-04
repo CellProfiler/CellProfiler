@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/04) (Requested by Susan) - on WriteSQL module: if I only include WriteSQL module in pipeline I don't get an error message. The same thing with the situation if I only include WriteSQL and CreateBatchScripts modules in the pipeline. It will be nice to let user know that these are no useful pinelines.
+
 -(Mike 10/04) (Requested by Anne 9-07-05) - In the modules where we use pathnameVAR to create a long box with a browse button, the variable descriptions all need to be changed to state that you can type a period (.) to use the default image directory (or output directory, depending on the context).
 
 -(Mike 10/03) (Requested by Anne) - The help box that opens when you click for information about a specific module has a scrollbar when the text is very long. The window is re-sizable, but resizing doesn't allow the text to wrap around nor does it allow any more text to be viewed. We should either allow things to wrap in a more sophisticated way, or we should make the window non-resizable.

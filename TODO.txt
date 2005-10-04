@@ -1,6 +1,31 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
+UROP:
+
+- (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
+
+- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
+ Authors (in order of joining the project):
+   Anne E. Carpenter
+   Thouis Ray Jones
+   In Han Kang
+   Ola Friman
+   Steve Lowe
+   Joo Han Chang
+   Colin Clarke
+   Mike Lamprecht
+   Susan Ma
+   Wyman Li
+
+- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
+
+- (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
+
+- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
+
+- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
+
 WANT IT ASAP:
 
 -(BOTH APPEAR TO WORK FINE) (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
@@ -10,10 +35,6 @@ WANT IT ASAP:
 -(WHICH ERROR DIALOGS, DONT THINK ERROR AND ERRORDLG CAN BE CHANGES) (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
 - (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
-
-- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
-
-- (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 
 - (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
 
@@ -68,8 +89,6 @@ Ola
 
 - (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle. The popup window is the wrong color at the end after the html file is saved.  The 'Download zipped file' html code should be at the top of the page rather than the bottom.
 
-- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
-
 - (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
 ??? Error using ==> set
 Index exceeds matrix dimensions.
@@ -110,13 +129,9 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 
 - (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons.  I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
 
-- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
-
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
-
--- (Requested by Susan) - on WriteSQL module: if I only include WriteSQL module in pipeline I don't get an error message. The same thing with the situation if I only include WriteSQL and CreateBatchScripts modules in the pipeline. It will be nice to let user know that these are no useful pinelines.
 
 - (Requested by Anne 9-21-05) - THere is a cool tool for interactively selecting a threshold. Perhaps we can add a 'test mode' button for the Identify modules that allows you to choose a threshold the first image cycle. It would use this code:
 http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6770
@@ -136,20 +151,6 @@ Error in ==> CellProfiler at 42
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 MergeBatchOutput
 Restart
-
-- (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
-
-- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
- Authors (in order of joining the project):
-   Anne E. Carpenter
-   Thouis Ray Jones
-   In Han Kang
-   Ola Friman
-   Steve Lowe
-   Joo Han Chang
-   Colin Clarke
-   Mike Lamprecht
-   Susan Ma
 
 - (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
 

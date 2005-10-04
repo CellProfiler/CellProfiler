@@ -51,7 +51,13 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+if handles.Current.NumberOfModules == 1
+    error('There is no pipeline to write an SQL file.');
+elseif handles.Current.NumberOfModules == 2
+    if ~isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames)))
+        error('There is no pipeline to write an SQL file.');
+    end
+end
 
 if CurrentModuleNum ~= handles.Current.NumberOfModules
     if isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1

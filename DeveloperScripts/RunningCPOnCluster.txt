@@ -1,11 +1,11 @@
 CELLPROFILER ON CLUSTER
-August 30, 2005
+Oct 4th, 2005
 
 These instructions are for writing the batch files straight to the remote location. You can also write the batch files to the local computer and copy them over (see LOCAL ONLY steps).
 
-1. Put your images on the network somewhere. Currently, imaging (tap2), carpente_ata (tap6), sabatini_dbw01 (tap5), sabatini_dbw02 (tap6),  sabatini1_ata (tap6) and sabatini2_ata (tap6) are all nfs mounted and accessible to the cluster.
+1. Put your images on the network share folder somewhere. Currently, imaging (tap2), carpente_ata (tap6), sabatini_dbw01 (tap5), sabatini_dbw02 (tap6),  sabatini1_ata (tap6) and sabatini2_ata (tap6) are all nfs mounted and accessible to the cluster.
 
-2. Connect to that location from the CP G5, using Go > Connect to server.  Be sure to use nfs rather than cifs because the connection is much faster.
+2. Connect to that location from the CP G5, using Go > Connect to server or use create_mounts.command script.  Be sure to use nfs rather than cifs because the connection is much faster.
 
 3. Log into barra (a server and a front end to submit jobs to the cluster) as user=carpente, using Terminal or X Windows:
 ssh -X carpente@barra.wi.mit.edu
@@ -47,19 +47,19 @@ Default output directory:
 
 8. (LOCAL ONLY) Drag the BatchFiles folder (which now contains the Batch  .m files and .mat file) and BatchOutputFiles folder (empty) from the local computer into the project folder at the remote location. 
 
-9. From the command line, logged into barra, make sure the CellProfiler code at  /home/carpente/CellProfiler is up to date by changing to /home/carpente/CellProfiler and type: cvs update.  Any compiled functions in the code must be compiled for every type of architecture present in the cluster using the matlab command mex (PC, Mac, Unix, 64-bit, etc).
+9. From the command line, logged into barra, make sure the CellProfiler code at  /home/carpente/CellProfiler is up to date by changing to /home/carpente/CellProfiler and type: svn update.  Any compiled functions in the code must be compiled for every type of architecture present in the cluster using the matlab command mex (PC, Mac, Unix, 64-bit, etc).
 
 10. From the command line, logged into barra, submit the jobs using a script like runallbatchjobs.sh as follows: 
-./rerunLQ.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME QueueType
+./batchrun.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME QueueType
 Note that FOLDERWHEREMATFILESARE is usually the same as FOLDERWHEREMFILESARE. This is mainly if you are trying to re-run failed jobs - it only runs m files if there is no corresponding mat file located in the FOLDERWHEREMATFILESARE.
 --------------------------------------------------------------------------For example:
-./rerunLQ.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_ sq32hp
+./batchrun.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_ sq32hp
 
-./rerunNormal.sh /nfs/sabatini_dbw01/Fly200_40x_Results /nfs/sabatini_dbw01/Fly200_40x_Results/Logs /nfs/sabatini_dbw01/Fly200_40x_Results Batch_sl22_ normal
+./batchrun.sh /nfs/sabatini_dbw01/Fly200_40x_Results /nfs/sabatini_dbw01/Fly200_40x_Results/Logs /nfs/sabatini_dbw01/Fly200_40x_Results Batch_sl22_ normal
 ----------------------------------------------------------------------
-(currently, there is a copy of this script at /home/carpente so that is the directory from which the script should be run. The first time I ran it, I had to change the permissions by doing this: chmod a+w runallbatchjobs.sh)
+(currently, there is a copy of this script at /home/carpente so that is the directory from which the script should be run. The first time I ran it, I had to change the permissions by doing this: chmod a+w batchrun.sh)
 
-if the script doesn't exist save the following as run.sh file(using any text editor):
+if the script doesn't exist save the following as batchrun.sh file(using any text editor):
 
 --------------------------------------
 
@@ -68,6 +68,23 @@ if test $# -ne 5; then
     echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2
     exit 1
 fi
+
+cd CellProfiler
+svn update CellProfiler.m
+cd ImageTools
+svn update
+cd ..
+
+cd DataTools
+svn update
+cd ..
+
+cd Modules
+svn update
+cd ..
+
+cd CPsubfunctions
+svn update
 
 BATCHDIR=$1
 BATCHTXTOUTPUTDIR=$2
@@ -89,10 +106,10 @@ done
 
 # INSTRUCTIONS
 # From the command line, logged into barra, submit the jobs using this script as follows: 
-# ./rerunLQ.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME
+# ./batchrun.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME QueueType
 # Note that FOLDERWHEREMATFILESARE is usually the same as FOLDERWHEREMFILESARE. This is mainly if you are trying to re-run failed jobs - it only runs m files if there is no corresponding mat file located in the FOLDERWHEREMATFILESARE.
 # For example:
-# ./rerunLQ.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_
+# ./batchrun.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER Batch_ normal
 # (currently, there is a copy of this script at /home/carpente so that is the directory from which the script should be run. The first time I ran it, I had to change the permissions by doing this: chmod a+w runallbatchjobs.sh)
 
 

@@ -53,10 +53,10 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
-CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModule = handles.Current.CurrentModuleNumber; 
 CurrentModuleNum = str2double(CurrentModule);
 
-%pathnametextVAR01 = What is the path to the directory where the batch files were saved?
+%pathnametextVAR01 = What is the path to the directory where the batch files were saved?  Type period (.) for default output directory.
 BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What was the prefix of the batch files?

@@ -88,6 +88,12 @@ for p = 1:VariableSize(1)
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};
         end
+        if strncmp(output,'%filenametextVAR',16)
+            displayval = output(21:end);
+            istr = output(17:18);
+            i = str2num(istr);
+            VariableDescriptions(i) = {displayval};
+        end
     end
     fclose(fid2);
     % Loop for each variable in the module.

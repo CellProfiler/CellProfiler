@@ -112,8 +112,6 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 
 - (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 
-- (Requested by Anne 9-07-05) - In the modules where we use pathnameVAR to create a long box with a browse button, the variable descriptions all need to be changed to state that you can type a period (.) to use the default image directory (or output directory, depending on the context).
-
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.

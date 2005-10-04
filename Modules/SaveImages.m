@@ -122,7 +122,7 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR04 = popupmenu
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.
+%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory.
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the bit depth at which to save the images (Note: some image formats do not support saving at a bit depth of 12 or 16; see Matlab's imwrite function for more details.)

@@ -1,1 +1,1 @@
-load
+%pathnametext

@@ -49,7 +49,7 @@ ThirdImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 FifthImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%pathnametextVAR04 = Enter the directory path name where the images are saved.
+%pathnametextVAR04 = Enter the directory path name where the images are saved.  Type period (.) for default directory.
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1

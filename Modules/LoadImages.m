@@ -138,7 +138,7 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located.
+%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default directory.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 %%%VariableRevisionNumber = 1

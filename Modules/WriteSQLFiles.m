@@ -30,7 +30,7 @@ function handles = WriteSQLFiles(handles)
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%pathnametextVAR01 = Enter the directory where the SQL files are to be saved?
+%pathnametextVAR01 = Enter the directory where the SQL files are to be saved?  Type period (.) for default output directory.
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What is the name of the database to use?

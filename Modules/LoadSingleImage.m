@@ -97,7 +97,7 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%pathnametextVAR11 = Enter the path name to the folder where the images to be loaded are located.
+%pathnametextVAR11 = Enter the path name to the folder where the images to be loaded are located.  Type period (.) for default image directory.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 3

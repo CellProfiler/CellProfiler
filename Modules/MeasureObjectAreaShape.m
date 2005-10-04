@@ -260,10 +260,21 @@ for i = 1:length(ObjectNameList)
 
     %%% Report measurements
     FontSize = handles.Current.FontSize;
-    if any(findobj == ThisModuleFigureNumber);
+    if any(findobj == ThisModuleFigureNumber)
+        if handles.Current.SetBeingAnalyzed == 1
+            delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+            delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+            delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+        end
+        
+        %if columns >= 4
+        %    OldPos = get(ThisModuleFigureNumber,'position');
+        %    OldPos(3) = 560+columns*100;
+        %    set(ThisModuleFigureNumber,'position',OldPos);
+        %end
         % This first block writes the same text several times
         % Header
-        delete(findobj('Parent',ThisModuleFigureNumber));
+        % delete(findobj('Parent',ThisModuleFigureNumber));
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','Backgroundcolor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed),'UserData',handles.Current.SetBeingAnalyzed);
@@ -295,12 +306,12 @@ for i = 1:length(ObjectNameList)
 
 
         % The name of the object image
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.9 0.2 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.9 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',ObjectName,'UserData',handles.Current.SetBeingAnalyzed);
 
         % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.85 0.2 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.85 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'string',num2str(max(LabelMatrixImage(:))),'UserData',handles.Current.SetBeingAnalyzed);
 
@@ -308,14 +319,14 @@ for i = 1:length(ObjectNameList)
         if max(LabelMatrixImage(:)) > 0
             % Basic shape features
             for k = 1:7
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
             end
 
             % Zernike shape features
             for k = 1:5
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.2*(columns-1) 0.45-0.04*k 0.2 0.03],...
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.45-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
             end

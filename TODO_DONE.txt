@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/04) (Requested by Anne 9-08-05) - Make measure windows expand to fit the number of lines of data (and the number of columsn) that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
+
+-(Mike 10/04) (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).
+
 -(Mike 10/04) (Requested by Anne) - SaveImages module - have a way that you can type in special formatting. E.g. if you are going to save in gif mode, you should be able to type in the optional parameters like 'BackgroundColor',0 into a text box and have that text appended within the imwrite command.
 
 -(Mike 10/04) (Requested by Susan) - on WriteSQL module: if I only include WriteSQL module in pipeline I don't get an error message. The same thing with the situation if I only include WriteSQL and CreateBatchScripts modules in the pipeline. It will be nice to let user know that these are no useful pinelines.

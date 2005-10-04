@@ -226,7 +226,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-
+    
     % Set white background color
     set(ThisModuleFigureNumber,'Color',[1 1 1])
 
@@ -235,7 +235,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     Height = Position(4);
     Width  = Position(3);
 
-    delete(findobj('Parent',ThisModuleFigureNumber));
+    if handles.Current.SetBeingAnalyzed == 1
+        delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+        delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+        delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+    end
 
     %%% Displays the results.
     Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 Height-40 Width 20],...
@@ -247,7 +251,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         row = 1;
         % Write object names
         if ObjectNameNbr > 0         % Don't write any object type name in the first colum
-            h = uicontrol(ThisModuleFigureNumber,'style','text','position',[110+70*ObjectNameNbr Height-110 70 25],...
+            h = uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-110 70 25],...
                 'fontname','times','FontSize',handles.Current.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center',...
                 'fontweight','bold');
             set(h,'string',ObjectName{ObjectNameNbr});
@@ -265,7 +269,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
                 else
                     % Calculate the average correlation over the objects
                     c = mean(handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation{handles.Current.SetBeingAnalyzed}(:,FeatureNbr));
-                    uicontrol(ThisModuleFigureNumber,'style','text','position',[110+70*ObjectNameNbr Height-125-40*row 70 40],...
+                    uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-125-40*row 70 40],...
                         'fontname','times','FontSize',handles.Current.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center',...
                         'string',sprintf('%0.2f',c));
                     FeatureNbr = FeatureNbr + 1;

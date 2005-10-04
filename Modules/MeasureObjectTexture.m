@@ -307,7 +307,11 @@ for i = 1:3
         % This first block writes the same text several times
         % Header
 
-        delete(findobj('Parent',ThisModuleFigureNumber));
+        if handles.Current.SetBeingAnalyzed == 1
+            delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+            delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+            delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+        end
 
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...

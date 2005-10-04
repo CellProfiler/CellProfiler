@@ -244,10 +244,17 @@ for i = 1:6
 
     %%% Report measurements
     FontSize = handles.Current.FontSize;
-
+    
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
+
+        if handles.Current.SetBeingAnalyzed == 1
+            delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+            delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+            delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+        end
+
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average intensity features for ', ImageName,', image set #%d'],handles.Current.SetBeingAnalyzed));
@@ -268,19 +275,19 @@ for i = 1:6
         end
 
         % The name of the object image
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.9 0.2 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.9 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',ObjectName);
 
         % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.85 0.2 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.85 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
         if ObjectCount > 0
             % Basic features
             for k = 1:11
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
             end

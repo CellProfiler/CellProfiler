@@ -169,7 +169,23 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Warning! It is possible to overwrite existing files using this module!
+%textVAR14 = Enter an optional parameter name here (BackgroundColor, Compression, Quality, etc.) or leave / for no optional parameters.
+%defaultVAR14 = /
+Option1 = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+
+%textVAR15 = If using an optional paramter, enter its value here or leave / for no optional paramters.
+%defaultVAR15 = /
+OptionValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+
+%textVAR16 = Enter an optional parameter name here (BackgroundColor, Compression, Quality, etc.) or leave / for no optional parameters.
+%defaultVAR16 = /
+Option2 = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+
+%textVAR17 = If using an optional paramter, enter its value here or leave / for no optional paramters.
+%defaultVAR17 = /
+OptionValue2 = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+
+%textVAR18 = Warning! It is possible to overwrite existing files using this module!
 
 %%%VariableRevisionNumber = 10
 
@@ -372,7 +388,34 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
         end
     end
+    
+    OptionDouble1 = strcmp(Option1,'DelayTime') || strcmp(Option1,'TransparentColor') || strcmp(Option1,'BackgroundColor') || strcmp(Option1,'LoopCount') || strcmp(Option1,'ScreenSize') || strcmp(Option1,'Location') || strcmp(Option1,'Quality') || strcmp(Option1,'BitDepth') || strcmp(Option1,'Resolution') || strcmp(Option1,'Transparency') || strcmp(Option1,'Background') || strcmp(Option1,'Gamma') || strcmp(Option1,'Chromaticities') || strcmp(Option1,'XResolution') || strcmp(Option1,'YResolution') || strcmp(Option1,'Alpha') || strcmp(Option1,'SignificantBits') || strcmp(Option1,'MaxValue');
+    OptionDouble2 = strcmp(Option2,'DelayTime') || strcmp(Option2,'TransparentColor') || strcmp(Option2,'BackgroundColor') || strcmp(Option2,'LoopCount') || strcmp(Option2,'ScreenSize') || strcmp(Option2,'Location') || strcmp(Option2,'Quality') || strcmp(Option2,'BitDepth') || strcmp(Option2,'Resolution') || strcmp(Option2,'Transparency') || strcmp(Option2,'Background') || strcmp(Option2,'Gamma') || strcmp(Option2,'Chromaticities') || strcmp(Option2,'XResolution') || strcmp(Option2,'YResolution') || strcmp(Option2,'Alpha') || strcmp(Option2,'SignificantBits') || strcmp(Option2,'MaxValue');
 
+    if ~strcmp(Option1,'/') && ~strcmp(Option2,'/')
+        if OptionDouble1 && OptionDouble2
+            FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',',OptionValue2];
+        elseif ~OptionDouble1 && OptionDouble2
+            FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',',Option2,''',',OptionValue2];
+        elseif OptionDouble1 && ~OptionDouble2
+            FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',''',OptionValue2,''''];
+        elseif ~OptionDouble1 && ~OptionDouble2
+            FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',''',Option2,''',''',OptionValue2,''''];
+        end
+    elseif ~strcmp(Option1,'/') && strcmp(Option2,'/')
+        if OptionDouble1
+            FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1];
+        elseif ~OptionDouble1
+            FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''''];
+        end
+    elseif strcmp(Option1,'/') && ~strcmp(Option2,'/')
+        if OptionDouble2
+            FileSavingParameters = [FileSavingParameters,',''',Option2,''',',OptionValue2];
+        elseif ~OptionDouble2
+            FileSavingParameters = [FileSavingParameters,',''',Option2,''',''',OptionValue2,''''];
+        end
+    end
+    
     if strcmpi(FileFormat,'mat') == 1
         try eval(['save(''',NewFileAndPathName, ''',''Image'')']);
         catch
@@ -461,98 +504,74 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
 
 
-%%%%%%% THIS IS FUNCTIONAL, BUT SLOW >>>>>>>>>>>
-%%% It opens the entire file from the hard drive and re-saves the whole
-%%% thing.
-%         %%% If this movie file already exists, open it.
-%         try
-%
-%             Movie = aviread(NewFileAndPathName);
-%             NumberExistingFrames = size(Movie,2);
-%          %%% If the movie does not yet exist, create the colormap
-%          %%% field as empty to prevent errors when trying to save as a
-%          %%% movie.
-%
-%
-%         catch   Movie.colormap = [];
-%             NumberExistingFrames = 0;
-%         end
-%         %%% Adds the image as the last frame in the movie.
-%         Movie(1,NumberExistingFrames+1).cdata = Image*256;
-%         % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
-%         %%% Saves the Movie under the appropriate file name.
-%         movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
+        %%%%%%% THIS IS FUNCTIONAL, BUT SLOW >>>>>>>>>>>
+        %%% It opens the entire file from the hard drive and re-saves the whole
+        %%% thing.
+        %         %%% If this movie file already exists, open it.
+        %         try
+        %
+        %             Movie = aviread(NewFileAndPathName);
+        %             NumberExistingFrames = size(Movie,2);
+        %          %%% If the movie does not yet exist, create the colormap
+        %          %%% field as empty to prevent errors when trying to save as a
+        %          %%% movie.
+        %
+        %
+        %         catch   Movie.colormap = [];
+        %             NumberExistingFrames = 0;
+        %         end
+        %         %%% Adds the image as the last frame in the movie.
+        %         Movie(1,NumberExistingFrames+1).cdata = Image*256;
+        %         % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
+        %         %%% Saves the Movie under the appropriate file name.
+        %         movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
 
-%%% TRYING TO FIGURE OUT HOW TO ADD COLORMAP INFO TO RGB IMAGES>>>
-            %%% If the image is an RGB image (3-d), convert it to an
-            %%% indexed image plus a colormap to allow saving as a
-            %%% movie.
-            %%% I THINK ONLY ONE COLORMAP IS ALLOWED FOR THE WHOLE
-            %%% MOVIE.>>>>>>>>>>>>> MAYBE NEED TO SPECIFY A SINGLE COLORMAP
-            %%% HERE RATHER THAN HAVING IT AUTO CALCULATED.
-%             [Image,map] = rgb2ind(Image,256,'nodither');
-%             Movie(NumberExistingFrames+1).colormap = map;
-%             %%% Adds the image as the last frame in the movie.
-%             %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
-%             %%%
-%             Movie(NumberExistingFrames+1).cdata = Image;
-          %   [Image,map] = rgb2ind(Image,256,'nodither');
-            %%% Adds the image as the last frame in the movie.
-            %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
-            %%%
-           % Movie(NumberExistingFrames+1).cdata = Image;
-
-
-
-% %%% ATTEMPT TO ONLY SAVE AT THE END>>>
-% %%% RIGHT NOW IT WON"T WORK IF WE ARE TRYING TO OVERWRITE AN OLD FILE.
-%
-% %%% See if this movie file already exists. If so,
-% %%% retrieve the movie data accumulated so far from handles.
-%
-% if handles.Current.SetBeingAnalyzed == 1
-%     Movie = avifile(NewFileAndPathName);
-%     fieldname = ['Movie', ImageName];
-%     handles.Pipeline.(fieldname) =  Movie;
-% end
-%
-% %%% Add the frame to the movie.
-% fieldname = ['Movie', ImageName];
-% Movie = handles.Pipeline.(fieldname);
-% Movie = addframe(Movie,Image);
-%
-% %%% Closes the file.
-% if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-%     Movie = close(Movie);
-% end
+        %%% TRYING TO FIGURE OUT HOW TO ADD COLORMAP INFO TO RGB IMAGES>>>
+        %%% If the image is an RGB image (3-d), convert it to an
+        %%% indexed image plus a colormap to allow saving as a
+        %%% movie.
+        %%% I THINK ONLY ONE COLORMAP IS ALLOWED FOR THE WHOLE
+        %%% MOVIE.>>>>>>>>>>>>> MAYBE NEED TO SPECIFY A SINGLE COLORMAP
+        %%% HERE RATHER THAN HAVING IT AUTO CALCULATED.
+        %             [Image,map] = rgb2ind(Image,256,'nodither');
+        %             Movie(NumberExistingFrames+1).colormap = map;
+        %             %%% Adds the image as the last frame in the movie.
+        %             %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
+        %             %%%
+        %             Movie(NumberExistingFrames+1).cdata = Image;
+        %   [Image,map] = rgb2ind(Image,256,'nodither');
+        %%% Adds the image as the last frame in the movie.
+        %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
+        %%%
+        % Movie(NumberExistingFrames+1).cdata = Image;
 
 
-%%% FAILED ATTEMPT TO USE ADDFRAME.
-% %%% See if this movie file already exists. If so, just
-%         %%% retrieve the AviHandle from handles
-%         SUCCESSFULHANDLERETIREVAL = 0;
-%         if exist(NewFileAndPathName) ~= 0
-%             try
-%                 fieldname = ['AviHandle', ImageName];
-%                 AviHandle = handles.Pipeline.(fieldname)
-%                 AviHandle = addframe(AviHandle,Image);
-% %                AviHandle = close(AviHandle);
-%                 SUCCESSFULHANDLERETIREVAL = 1;
-%             end
-%         end
-%
-%         if SUCCESSFULHANDLERETIREVAL == 0
-%             %%% If the movie does not exist already, create it using
-%             %%% the avifile function and put the AviHandle into the handles.
-%
-%             AviHandle = avifile(NewFileAndPathName);
-%             AviHandle = addframe(AviHandle,Image);
-%             AviHandle = close(AviHandle);
-%
-%             fieldname = ['AviHandle', ImageName];
-%             handles.Pipeline.(fieldname) =  AviHandle;
-%         end
-%
+        %%% FAILED ATTEMPT TO USE ADDFRAME.
+        % %%% See if this movie file already exists. If so, just
+        %         %%% retrieve the AviHandle from handles
+        %         SUCCESSFULHANDLERETIREVAL = 0;
+        %         if exist(NewFileAndPathName) ~= 0
+        %             try
+        %                 fieldname = ['AviHandle', ImageName];
+        %                 AviHandle = handles.Pipeline.(fieldname)
+        %                 AviHandle = addframe(AviHandle,Image);
+        %                 AviHandle = close(AviHandle);
+        %                 SUCCESSFULHANDLERETIREVAL = 1;
+        %             end
+        %         end
+        %
+        %         if SUCCESSFULHANDLERETIREVAL == 0
+        %             %%% If the movie does not exist already, create it using
+        %             %%% the avifile function and put the AviHandle into the handles.
+        %
+        %             AviHandle = avifile(NewFileAndPathName);
+        %             AviHandle = addframe(AviHandle,Image);
+        %             AviHandle = close(AviHandle);
+        %
+        %             fieldname = ['AviHandle', ImageName];
+        %             handles.Pipeline.(fieldname) =  AviHandle;
+        %         end
+        %
 
     else
         try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);

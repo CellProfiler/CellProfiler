@@ -50,16 +50,11 @@ function handles = IdentifyPrimManual(handles)
 %
 % $Revision$
 
-
-
-
 drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -82,7 +77,7 @@ MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}
 
 %textVAR04 = What do you want to call the image of the outlines of the objects?
 %defaultVAR04 = OutlinedNuclei
-%inputtypeVAR04 = outlinegroup indep
+%infotypeVAR04 = outlinegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
 
 %textVAR05 =  What do you want to call the labeled matrix image?

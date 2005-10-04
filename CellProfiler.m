@@ -1748,8 +1748,8 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
 end
 
 function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
-%%% This function stores a variable's value in the handles structure, 
-%%% when given the Module Number, the Variable Number, 
+%%% This function stores a variable's value in the handles structure,
+%%% when given the Module Number, the Variable Number,
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
 
@@ -1787,10 +1787,50 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     end
     if ischar(UserEntry)
         if size(StrSet,1) == 1
-            ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet)));
+            for i = 1:length(ModList2)
+                Values = get(ModList2(i),'value');
+                PrevStrSet = get(ModList2(i),'string');
+                if Values == 0
+                    if strcmp(PrevStrSet,StrSet)
+                        if exist('ModList4')
+                            ModList4(end+1) = ModList2(i);
+                        else
+                            ModList4 = ModList2(i);
+                        end
+                    end
+                else
+                    if strcmp(PrevStrSet(Values),StrSet)
+                        if exist('ModList4')
+                            ModList4(end+1) = ModList2(i);
+                        else
+                            ModList4 = ModList2(i);
+                        end
+                    end
+                end
+            end
         else
-            Values = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'value');
-            ModList4 = nonzeros(ModList2(strcmp(get(ModList2,'String'),StrSet(Values))));
+            OrigValues = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'value');
+            for i = 1:length(ModList2)
+                Values = get(ModList2(i),'value');
+                PrevStrSet = get(ModList2(i),'string');
+                if Values == 0
+                    if strcmp(PrevStrSet,StrSet(OrigValues))
+                        if exist('ModList4')
+                            ModList4(end+1) = ModList2(i);
+                        else
+                            ModList4 = ModList2(i);
+                        end
+                    end
+                else
+                    if strcmp(PrevStrSet(Values),StrSet(OrigValues))
+                        if exist('ModList4')
+                            ModList4(end+1) = ModList2(i);
+                        else
+                            ModList4 = ModList2(i);
+                        end
+                    end
+                end
+            end
         end
     else
         for i = 1:length(ModList2)
@@ -1815,7 +1855,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             end
         end
     end
-    
+
     if ~exist('ModList4')
         ModList4 = [];
     end

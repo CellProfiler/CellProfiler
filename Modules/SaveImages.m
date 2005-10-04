@@ -83,7 +83,7 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = What did you call the images you want to save?
+%textVAR01 = What did you call the images you want to save (If you would like to save a figure, enter the module number here)?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
@@ -97,7 +97,7 @@ ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = \
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = In what file format do you want to save images?
+%textVAR04 = In what file format do you want to save images (figures must be saved as fig)?
 %choiceVAR04 = bmp
 %choiceVAR04 = cur
 %choiceVAR04 = fts
@@ -119,6 +119,7 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = xwd
 %choiceVAR04 = dib
 %choiceVAR04 = mat
+%choiceVAR04 = fig
 %inputtypeVAR04 = popupmenu
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -231,43 +232,45 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %%% path, which will be used.
     end
 
-    %%% Retrieves the image you want to analyze and assigns it to a variable,
-    %%% "Image".
-    %%% Checks whether image has been loaded.
-    if isfield(handles.Pipeline, ImageName) == 0,
-        %%% If the image is not there, the module tries in a field named
-        %%% 'Segmented' which would be produced by an Identify module.
-        if isfield(handles.Pipeline, ['Segmented',ImageName])==1,
-            ImageName = ['Segmented',ImageName];
-        else %%% If the image is not there, an error message is produced.  The error
-            %%% is not displayed: The error function halts the current function and
-            %%% returns control to the calling function (the analyze all images
-            %%% button callback.)  That callback recognizes that an error was
-            %%% produced because of its try/catch loop and breaks out of the image
-            %%% analysis loop without attempting further modules.
-            error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but neither that nor an image with the name ', ['Segmented',ImageName] , ' exists.  Perhaps there is a typo in the name.'])
+    if ~strcmp(FileFormat,'fig')
+        %%% Retrieves the image you want to analyze and assigns it to a variable,
+        %%% "Image".
+        %%% Checks whether image has been loaded.
+        if isfield(handles.Pipeline, ImageName) == 0,
+            %%% If the image is not there, the module tries in a field named
+            %%% 'Segmented' which would be produced by an Identify module.
+            if isfield(handles.Pipeline, ['Segmented',ImageName])==1,
+                ImageName = ['Segmented',ImageName];
+            else %%% If the image is not there, an error message is produced.  The error
+                %%% is not displayed: The error function halts the current function and
+                %%% returns control to the calling function (the analyze all images
+                %%% button callback.)  That callback recognizes that an error was
+                %%% produced because of its try/catch loop and breaks out of the image
+                %%% analysis loop without attempting further modules.
+                error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but neither that nor an image with the name ', ['Segmented',ImageName] , ' exists.  Perhaps there is a typo in the name.'])
+            end
         end
-    end
-    Image = handles.Pipeline.(ImageName);
+        Image = handles.Pipeline.(ImageName);
 
-    if strncmpi(RescaleImage,'Y',1) == 1
-        LOW_HIGH = stretchlim(Image,0);
-        Image = imadjust(Image,LOW_HIGH,[0 1]);
-    end
+        if strncmpi(RescaleImage,'Y',1) == 1
+            LOW_HIGH = stretchlim(Image,0);
+            Image = imadjust(Image,LOW_HIGH,[0 1]);
+        end
 
-    %%% Checks whether the file format the user entered is readable by Matlab.
-    if strcmp(FileFormat(1),'.')
-        FileFormat = FileFormat(2:end);
-    end
-    IsFormat = imformats(FileFormat);
-    if isempty(IsFormat) == 1
-        if strcmpi(FileFormat,'mat') && strcmpi(FileFormat,'avi') &&strcmpi(FileFormat,'dib')
-            error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
+        %%% Checks whether the file format the user entered is readable by Matlab.
+        if strcmp(FileFormat(1),'.')
+            FileFormat = FileFormat(2:end);
+        end
+        IsFormat = imformats(FileFormat);
+        if isempty(IsFormat) == 1
+            if strcmpi(FileFormat,'mat') && strcmpi(FileFormat,'avi') &&strcmpi(FileFormat,'dib')
+                error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
+            end
         end
     end
 
     %%% Creates the file name automatically, if the user requested.
-    if strcmpi(OverrideFileName,'A') == 1
+    if strcmpi(OverrideFileName,'A')
         %%% Checks whether the appendage is going to result in a name with
         %%% spaces.
         Spaces = isspace(Appendage);
@@ -322,7 +325,6 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
                 end
 
             end
-
         else
             %%% Determine the filename of the image to be analyzed.
             fieldname = ['Filename', ImageFileName];
@@ -380,7 +382,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     FileSavingParameters = [];
-    if strcmpi(BitDepth,'8') ~=1
+    if strcmpi(BitDepth,'8') ~= 1
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
         %%% In jpeg format at 12 and 16 bits, the mode must be set to
         %%% lossless to avoid failure of the imwrite function.
@@ -388,7 +390,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
         end
     end
-    
+
     OptionDouble1 = strcmp(Option1,'DelayTime') || strcmp(Option1,'TransparentColor') || strcmp(Option1,'BackgroundColor') || strcmp(Option1,'LoopCount') || strcmp(Option1,'ScreenSize') || strcmp(Option1,'Location') || strcmp(Option1,'Quality') || strcmp(Option1,'BitDepth') || strcmp(Option1,'Resolution') || strcmp(Option1,'Transparency') || strcmp(Option1,'Background') || strcmp(Option1,'Gamma') || strcmp(Option1,'Chromaticities') || strcmp(Option1,'XResolution') || strcmp(Option1,'YResolution') || strcmp(Option1,'Alpha') || strcmp(Option1,'SignificantBits') || strcmp(Option1,'MaxValue');
     OptionDouble2 = strcmp(Option2,'DelayTime') || strcmp(Option2,'TransparentColor') || strcmp(Option2,'BackgroundColor') || strcmp(Option2,'LoopCount') || strcmp(Option2,'ScreenSize') || strcmp(Option2,'Location') || strcmp(Option2,'Quality') || strcmp(Option2,'BitDepth') || strcmp(Option2,'Resolution') || strcmp(Option2,'Transparency') || strcmp(Option2,'Background') || strcmp(Option2,'Gamma') || strcmp(Option2,'Chromaticities') || strcmp(Option2,'XResolution') || strcmp(Option2,'YResolution') || strcmp(Option2,'Alpha') || strcmp(Option2,'SignificantBits') || strcmp(Option2,'MaxValue');
 
@@ -415,13 +417,29 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             FileSavingParameters = [FileSavingParameters,',''',Option2,''',''',OptionValue2,''''];
         end
     end
-    
-    if strcmpi(FileFormat,'mat') == 1
+
+    if strcmp(FileFormat,'fig')
+        if length(ImageName) == 1
+            fieldname = ['FigureNumberForModule0',ImageName];
+        elseif length(ImageName) == 2
+            fieldname = ['FigureNumberForModule',ImageName];
+        else
+            error('The figure number was not in 00 format.');
+        end
+        FigureHandle = handles.Current.(fieldname);
+    end
+
+    if strcmpi(FileFormat,'mat')
         try eval(['save(''',NewFileAndPathName, ''',''Image'')']);
         catch
             error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
-    elseif strcmpi(FileFormat,'avi') == 1
+    elseif strcmp(FileFormat,'fig')
+        try eval(['saveas(FigureHandle,NewFileAndPathName,''fig'')']);
+        catch
+            error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+        end
+    elseif strcmpi(FileFormat,'avi')
         if handles.Current.SetBeingAnalyzed == 1
             if strcmpi(CheckOverwrite,'Y') == 1
                 %%% Checks whether the new image name is going to overwrite

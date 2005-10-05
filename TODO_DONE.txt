@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/05) (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyPrimAutomatic: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyPrimAutomatic.
+
 -(Mike 10/05) (Requested by Anne 9-21-05) - If a matlab file is corrupt, there is a command line error that is not caught by CellProfiler:
 ??? Error using ==> load
 Unable to read MAT-file /Users/anne_carpenter/Desktop/illum10PIPE.mat

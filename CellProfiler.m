@@ -1885,9 +1885,16 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             end
         end
         CurrentString = get(ModList(i),'String');
-        if isempty(CurrentString{1})
-            CurrentString = StrSet;
-            set(ModList(i),'Enable','on');
+        try
+            if isempty(CurrentString{1})
+                CurrentString = StrSet;
+                set(ModList(i),'Enable','on');
+            end
+        catch
+            if isempty(CurrentString)
+                CurrentString = StrSet;
+                set(ModList(i),'Enable','on');
+            end
         end
         MatchedIndice = strmatch(PrevValue,CurrentString);
         if ~isempty(MatchedIndice) && isempty(ModList3)

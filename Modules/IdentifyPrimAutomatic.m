@@ -307,11 +307,12 @@ MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = Select thresholding method or enter a threshold in the range [0,1].
+%textVAR07 = Select thresholding method or enter a threshold in the range [0,1] (Choosing 'All' will decide threshold for entire image group).
 %choiceVAR07 = MoG Global
 %choiceVAR07 = MoG Adaptive
 %choiceVAR07 = Otsu Global
 %choiceVAR07 = Otsu Adaptive
+%choiceVAR07 = All
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
@@ -497,7 +498,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             elseif strfind(Threshold,'MoG')
                 Threshold = MixtureOfGaussians(OrigImage,pObject);
             end
-
         elseif strfind(Threshold,'Adaptive')
 
             %%% Choose the block size that best covers the original image in the sense
@@ -549,7 +549,71 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             %%% unreasonable threshold will be overridden by the minimum threshold.
             Threshold(Threshold <= 0.7*GlobalThreshold) = 0.7*GlobalThreshold;
             Threshold(Threshold >= 1.5*GlobalThreshold) = 1.5*GlobalThreshold;
-
+        elseif strcmp(Threshold,'All')
+            if handles.Current.SetBeingAnalyzed == 1
+                try
+                    %%% Notifies the user that the first image set will take much longer than
+                    %%% subsequent sets.
+                    %%% Obtains the screen size.
+                    ScreenSize = get(0,'ScreenSize');
+                    ScreenHeight = ScreenSize(4);
+                    PotentialBottom = [0, (ScreenHeight-720)];
+                    BottomOfMsgBox = max(PotentialBottom);
+                    PositionMsgBox = [500 BottomOfMsgBox 350 100];
+                    h = CPmsgbox('Preliminary calculations are under way for the Identify Primary Threshold module.  Subsequent image sets will be processed much more quickly than the first image set.');
+                    set(h, 'Position', PositionMsgBox)
+                    drawnow
+                    %%% Retrieves the path where the images are stored from the handles
+                    %%% structure.
+                    fieldname = ['Pathname', ImageName];
+                    try Pathname = handles.Pipeline.(fieldname);
+                    catch error('Image processing was canceled because the Identify Primary Threshold module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Identify Primary Threshold module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Identify Primary Threshold module onward.')
+                    end
+                    %%% Retrieves the list of filenames where the images are stored from the
+                    %%% handles structure.
+                    fieldname = ['FileList', ImageName];
+                    FileList = handles.Pipeline.(fieldname);
+                    %%% Calculates the threshold based on all of the images.
+                    Counts = zeros(256,1);
+                    NumberOfBins = 256;
+                    for i=1:length(FileList)
+                        [Image, handles] = CPimread(fullfile(Pathname,char(FileList(i))),handles);
+                        Counts = Counts + imhist(im2uint8(Image(:)), NumberOfBins);
+                        drawnow
+                    end
+                    % Variables names are chosen to be similar to the formulas in
+                    % the Otsu paper.
+                    P = Counts / sum(Counts);
+                    Omega = cumsum(P);
+                    Mu = cumsum(P .* (1:NumberOfBins)');
+                    Mu_t = Mu(end);
+                    % Saves the warning state and disable warnings to prevent divide-by-zero
+                    % warnings.
+                    State = warning;
+                    warning off Matlab:DivideByZero
+                    SigmaBSquared = (Mu_t * Omega - Mu).^2 ./ (Omega .* (1 - Omega));
+                    % Restores the warning state.
+                    warning(State);
+                    % Finds the location of the maximum value of sigma_b_squared.
+                    % The maximum may extend over several bins, so average together the
+                    % locations.  If maxval is NaN, meaning that sigma_b_squared is all NaN,
+                    % then return 0.
+                    Maxval = max(SigmaBSquared);
+                    if isfinite(Maxval)
+                        Idx = mean(find(SigmaBSquared == Maxval));
+                        % Normalizes the threshold to the range [0, 1].
+                        Threshold = (Idx - 1) / (NumberOfBins - 1);
+                    else
+                        Threshold = 0.0;
+                    end
+                catch [ErrorMessage, ErrorMessage2] = lasterr;
+                    error(['An error occurred in the Identify Primary Threshold module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+                end
+                fieldname = ['Threshold', ImageName];
+                handles.Pipeline.(fieldname) = Threshold;
+            else fieldname = ['Threshold', ImageName];
+                Threshold = handles.Pipeline.(fieldname);
+            end
         else
             %%% The threshold is manually set by the user
             %%% Checks that the Threshold parameter has a valid value
@@ -558,13 +622,20 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 error('The threshold entered in the IdentifyPrimAutomatic module is not a number, or is outside the acceptable range of 0 to 1.')
             end
         end
-
         %%% Correct the threshold using the correction factor given by the user
         %%% and make sure that the threshold is not larger than the minimum threshold
         Threshold = ThresholdCorrection*Threshold;
         Threshold = max(Threshold,MinimumThreshold);
         drawnow
 
+        
+        
+        
+        
+        
+        
+        
+        
         if strcmp(LaplaceValues,'/')
 
             %%% Apply a slight smoothing before thresholding to remove

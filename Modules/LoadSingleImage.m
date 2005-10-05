@@ -154,7 +154,10 @@ for n = 1:length(ImageName)
 
         FileAndPathname = fullfile(Pathname, CurrentFileName);
         if strcmpi(FileFormat,'mat')
-            StructureLoadedImage = load(FileAndPathname);
+            try
+                StructureLoadedImage = load(FileAndPathname);
+            catch error(['CellProfiler was unable to load ',FileAndPathname,'. The file may be corrupt.']);
+            end
             LoadedImage = StructureLoadedImage.Image;
         else [LoadedImage, handles] = CPimread(FileAndPathname,handles);
         end

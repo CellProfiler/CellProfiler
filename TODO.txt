@@ -28,6 +28,10 @@ UROP:
 
 - (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 
+- (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
+MergeBatchOutput
+Restart
+
 WANT IT ASAP:
 
 -(BOTH APPEAR TO WORK FINE, SLOW BUT WORKS) (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
@@ -101,7 +105,11 @@ way of identifying objects.
 Best,
 Ola
 
+- (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
+
 - (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
+
+- (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
 
@@ -109,36 +117,16 @@ Ola
 
 - (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyPrimAutomatic: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyPrimAutomatic.
 
-- (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
-
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
 - (Requested by Anne 9-01-05) - We used to have code that allowed variable edit boxes to expand when the text within them was too long to fit. It mostly became unnecessary when Colin invented the new pathname entry boxes/browse buttons (because this usually only happens when we are dealing with typing pathnames into edit boxes), but I would still like edit boxes to expand if text becomes too long to fit, so we should find that code and re-implement it.
 
 - (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons.  I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
 
-- (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
-
 - (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
 
 - (Requested by Anne 9-21-05) - THere is a cool tool for interactively selecting a threshold. Perhaps we can add a 'test mode' button for the Identify modules that allows you to choose a threshold the first image cycle. It would use this code:
 http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6770
-
-- (Requested by Anne 9-21-05) - If a matlab file is corrupt, there is a command line error that is not caught by CellProfiler:
-??? Error using ==> load
-Unable to read MAT-file /Users/anne_carpenter/Desktop/illum10PIPE.mat
-File may be corrupt.
-Error in ==> CellProfiler>LoadPipeline_Callback at 427
-LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
-Error in ==> CellProfiler>gui_mainfcn at 4849
-        feval(varargin{:});
-Error in ==> CellProfiler at 42
-    gui_mainfcn(gui_State, varargin{:});
-??? Error while evaluating uimenu Callback.
-
-- (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
-MergeBatchOutput
-Restart
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

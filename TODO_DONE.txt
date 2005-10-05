@@ -1,5 +1,17 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/05) (Requested by Anne 9-21-05) - If a matlab file is corrupt, there is a command line error that is not caught by CellProfiler:
+??? Error using ==> load
+Unable to read MAT-file /Users/anne_carpenter/Desktop/illum10PIPE.mat
+File may be corrupt.
+Error in ==> CellProfiler>LoadPipeline_Callback at 427
+LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
+Error in ==> CellProfiler>gui_mainfcn at 4849
+        feval(varargin{:});
+Error in ==> CellProfiler at 42
+    gui_mainfcn(gui_State, varargin{:});
+??? Error while evaluating uimenu Callback.
+
 -(Mike 10/05) (Requested by Anne) - Whenever anything is saved to the hard drive, add an error check to see whether the user has permission to write to that location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run: [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0, then error(INSERT PROPER ERROR STUFF HERE), end 
 
 -(Mike 10/04) (Requested by Anne 9-08-05) - Make measure windows expand to fit the number of lines of data (and the number of columsn) that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.

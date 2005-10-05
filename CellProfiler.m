@@ -81,11 +81,12 @@ try
     LoadedPreferencesExist = 1;
     clear SavedPreferences
 catch
-    try 
+    try
         load(fullfile(handles.Current.StartupDirectory, 'CellProfilerPreferences.mat'))
         LoadedPreferences = SavedPreferences;
         LoadedPreferencesExist = 1;
         clear SavedPreferences
+    catch error(['CellProfiler was unable to load ',fullfile(matlabroot,'CellProfilerPreferences.mat'),'. The file may be corrupt.']);
     end
 end
 
@@ -425,7 +426,10 @@ set(handles.ModulePipelineListBox,'Value',1);
 set(handles.ModulePipelineListBox,'String','Loading...');
 drawnow
 %%% Loads the Settings file.
-LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
+try
+    LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
+catch error(['CellProfiler was unable to load ',fullfile(SettingsPathname,SettingsFileName),'. The file may be corrupt.']);
+end
 %%% Error Checking for valid settings file.
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     errordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);

@@ -71,23 +71,23 @@ drawnow
 
 %%% Retrieve grid info from previously run module.
 GridInfo = handles.Pipeline.(['Grid_' GridName]);
-%    Rows = GridInfo.Rows;
- %   Columns = GridInfo.Columns;
-    YSpacing = GridInfo.YSpacing;
-    VertLinesX = GridInfo.VertLinesX;
-    VertLinesY = GridInfo.VertLinesY;
-    HorizLinesX = GridInfo.HorizLinesX;
-    HorizLinesY = GridInfo.HorizLinesY;
-    SpotTable = GridInfo.SpotTable;
- %   GridXLocations = GridInfo.GridXLocations;
-  %  GridYLocations = GridInfo.GridYLocations;
-    YLocations = GridInfo.YLocations;
-    XLocations = GridInfo.XLocations;
+% Rows = GridInfo.Rows;
+% Columns = GridInfo.Columns;
+YSpacing = GridInfo.YSpacing;
+VertLinesX = GridInfo.VertLinesX;
+VertLinesY = GridInfo.VertLinesY;
+HorizLinesX = GridInfo.HorizLinesX;
+HorizLinesY = GridInfo.HorizLinesY;
+SpotTable = GridInfo.SpotTable;
+% GridXLocations = GridInfo.GridXLocations;
+% GridYLocations = GridInfo.GridYLocations;
+YLocations = GridInfo.YLocations;
+XLocations = GridInfo.XLocations;
 
 % GridXLocations = VertLinesX(1,1:end-1);
 % GridXLocations = repmat(GridXLocations,Rows,1);
 % GridXLocations = reshape(GridXLocations,1,[]);
-% 
+%
 % GridYLocations = HorizLinesY(1,1:end-1) + YSpacing/2;
 % GridYLocations = repmat(GridYLocations',1,Cols);
 % GridYLocations = reshape(GridYLocations,1,[]);
@@ -107,29 +107,29 @@ end
 FigHandle = CPfigure;
 imagesc(handles.Pipeline.(ImageName));
 title(['Image #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
-    
+
 if ~strcmp(DataName1,'/')
     Text1 = handles.Measurements.(DataName1);
     Description1 = handles.Measurements.([DataName1 'Text']);
-    
+
     temp=reshape(SpotTable,1,[]);
     tempText = Text1;
     for i=[1:length(temp)]
         Text1{i} = tempText{temp(i)};
     end
-    
-    TextHandles1 = text(XLocations,YLocations-floor(YSpacing/4),Text1,'Color','red');
-    
+
+    TextHandles1 = text(XLocations,YLocations+2*floor(YSpacing/3),Text1,'Color','red');
+
     ButtonCallback = [...
         'button = gco;'...
         'if strcmp(get(button,''String''),''Hide Text1''),'...
-            'set(button,''String'',''Show Text1'');'...
-            'set(get(button,''UserData''),''visible'',''off'');'...
+        'set(button,''String'',''Show Text1'');'...
+        'set(get(button,''UserData''),''visible'',''off'');'...
         'else,'...
-            'set(button,''String'',''Hide Text1'');'...
-            'set(get(button,''UserData''),''visible'',''on'');'...
+        'set(button,''String'',''Hide Text1'');'...
+        'set(get(button,''UserData''),''visible'',''on'');'...
         'end;'];
-            
+
     uicontrol(FigHandle,...
         'Units','normalized',...
         'Position',[.5 .02 .13 .04],...
@@ -143,26 +143,26 @@ end
 if ~strcmp(DataName2,'/')
     Text2 = handles.Measurements.(DataName2);
     Description2 = handles.Measurements.([DataName2 'Text']);
-    
+
     temp=reshape(SpotTable,1,[]);
     tempText = Text2;
     for i=[1:length(temp)]
         Text2{i} = tempText{temp(i)};
     end
-    
-    TextHandles2 = text(XLocations,YLocations,Text2,'Color','green');
-    
+
+    TextHandles2 = text(XLocations,YLocations+floor(YSpacing/3),Text2,'Color','green');
+
     ButtonCallback = [...
         'button = gco;'...
         'if strcmp(get(button,''String''),''Hide Text2''),'...
-            'set(button,''String'',''Show Text2'');'...
-            'set(get(button,''UserData''),''visible'',''off'');'...
+        'set(button,''String'',''Show Text2'');'...
+        'set(get(button,''UserData''),''visible'',''off'');'...
         'else,'...
-            'set(button,''String'',''Hide Text2'');'...
-            'set(get(button,''UserData''),''visible'',''on'');'...
+        'set(button,''String'',''Hide Text2'');'...
+        'set(get(button,''UserData''),''visible'',''on'');'...
         'end;'];
-            
-            
+
+
     uicontrol(FigHandle,...
         'Units','normalized',...
         'Position',[.65 .02 .13 .04],...
@@ -176,25 +176,25 @@ end
 if ~strcmp(DataName3,'/')
     Text3 = handles.Measurements.(DataName3);
     Description3 = handles.Measurements.([DataName3 'Text']);
-    
+
     temp=reshape(SpotTable,1,[]);
     tempText = Text3;
     for i=[1:length(temp)]
         Text3{i} = tempText{temp(i)};
     end
-    
-    TextHandles3 = text(XLocations,YLocations+YSpacing/4,Text3,'Color','blue');
-    
+
+    TextHandles3 = text(XLocations,YLocations,Text3,'Color','blue');
+
     ButtonCallback = [...
         'button = gco;'...
         'if strcmp(get(button,''String''),''Hide Text3''),'...
-            'set(button,''String'',''Show Text3'');'...
-            'set(get(button,''UserData''),''visible'',''off'');'...
+        'set(button,''String'',''Show Text3'');'...
+        'set(get(button,''UserData''),''visible'',''off'');'...
         'else,'...
-            'set(button,''String'',''Hide Text3'');'...
-            'set(get(button,''UserData''),''visible'',''on'');'...
+        'set(button,''String'',''Hide Text3'');'...
+        'set(get(button,''UserData''),''visible'',''on'');'...
         'end;'];
-            
+
     uicontrol(FigHandle,...
         'Units','normalized',...
         'Position',[.8 .02 .13 .04],...
@@ -204,12 +204,12 @@ if ~strcmp(DataName3,'/')
         'UserData',TextHandles3,...
         'Callback',ButtonCallback);
 end
-        
+
 line(VertLinesX,VertLinesY);
 line(HorizLinesX,HorizLinesY);
 %%% Puts the standard Matlab tool bar back on.
 set(FigHandle,'Toolbar','figure');
 
-title(['Image set #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',8);  
-       
+title(['Image set #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',8);
+
 set(findobj('type','line'), 'color',[.15 .15 .15])

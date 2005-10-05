@@ -121,8 +121,6 @@ Ola
 
 - (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons.  I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
 
-- (Requested by Anne) - Try to compile the Matlab code so CellProfiler can be run on computers that don't have Matlab.
-
 - (Requested by Anne 9-21-05) - THere is a cool tool for interactively selecting a threshold. Perhaps we can add a 'test mode' button for the Identify modules that allows you to choose a threshold the first image cycle. It would use this code:
 http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6770
 

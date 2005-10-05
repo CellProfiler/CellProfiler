@@ -1,12 +1,14 @@
 Susan's TODO list
 
-- NEW FROM ANNE - please update the four example pipelines to work with the newest version of the software. I will need these by ~October 5th so I can include them in a demo for Merck (where hopefully they will give us some money for the project!) --almost done
->>> Note from Anne - please change the ExampleFlyPIPE to use the 'propagate' option in the IdentifySecondary module because it's the better one!
->>> The settings for the Identify module in ExampleYeastColonyPIPE don't look right - I think we were using the Shape option and the numbers were different at one point in the past. Try retrieving an old version of the pipeline from SVN and doublecheck the settings for this module.
+- NEW FROM ANNE - please update the four example pipelines to work with the newest version of the software. I will need these by ~October 5th so I can include them in a demo for Merck (where hopefully they will give us some money for the project!) -- done
+
+>>> Note from Anne - please change the ExampleFlyPIPE to use the 'propagate' option in the IdentifySecondary module because it's the better one! -done
+>>> The settings for the Identify module in ExampleYeastColonyPIPE don't look right - I think we were using the Shape option and the numbers were different at one point in the past. Try retrieving an old version of the pipeline from SVN and doublecheck the settings for this module.-done
 
 - NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!
 
-- NEW FROM ANNE - Try to write a .command script for unmounting the servers. I think the command is "umount". 
+- NEW FROM ANNE - Try to write a .command script for unmounting the servers. I think the command is "umount". --done updated in connectingtoservers.txt
+
 
 - NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
@@ -22,19 +24,19 @@ Susan's TODO list
 hierarchy in handles.  Sometimes these column names are too long.
 Currently, all it does is print a warning if this happens.  This may
 be sufficient, but perhaps it should be more forceful.  In general,
-too long names can be fixed just before importing the data. --Will change the table structure to store long column names
+too long names can be fixed just before importing the data. --Will change the table structure to store long column names. Ray agreed to make the changes. We will have 5 tables created in CPConvertSQL:perobject, perimage, mean ,median and table column names look up  
 
-3. In han and Ray want means and medians to be calculated per image for all object measurements before they come into the database, so we should build this into CellProfiler's code for SQL exporting.  [Let's do this - ask Ray & IN Han what format is best for storing these - We need to coordinate with them the structure/naming system for these derived measurements.]
+3. In han and Ray want means and medians to be calculated per image for all object measurements before they come into the database, so we should build this into CellProfiler's code for SQL exporting.  [Let's do this - ask Ray & IN Han what format is best for storing these - We need to coordinate with them the structure/naming system for these derived measurements.] same with above 2
 
 - Research the various options for a database/server (e.g. which are backed up, from where can they be accessed, speed, etc). Set up a database/server locally (currently things are set up on Ray's desktop computer "oblique") [Waiting for testing from In Han]
 
 - Learn 5x imaging on the microscope. [wait for Anne to get back]
 
-- Learn 40x imaging on the microscope. [Friday]
+- Learn 40x imaging on the microscope. [wait for Anne to get back]
 
 - Play with data for Fly200 experiments (phospho chips) using CellVisualizer. [CV not quite ready]
 
-- (Long-term): improve the automation of the image acquisition so that choosing and verifying control spots is easier. [Play with this Oct 3-7]
+- (Long-term): improve the automation of the image acquisition so that choosing and verifying control spots is easier. 
 
 - (Long-term): Set up 5x imaging on the Cellomics ArrayScan using their Slideport slide holder - is the 'window' of the slideport big enough to image the entire slide.  Wait for the HCi2005 ArrayScan software upgrade, though.
 
@@ -42,14 +44,11 @@ too long names can be fixed just before importing the data. --Will change the ta
 
 Given on 9/7/2005
 
---set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders. [Definitely do this Oct 3-7: write script to update each folder or get SVN upgraded.]
+--set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders. [Definitely do this Oct 3-7: write script to update each folder or get SVN upgraded.] Script is done--will automatically do SVN update when a job is submitted 
 
 --week of 9/12, meet with Tim Pierson, IT dept. to discuss /set up the mySQL database, have Oracle account set up. in progress to test
 
 -- practice with large batches (FLY200) + use that
 
---Anne will work together to get real CPValid1 pipeline ready, partial done.
-
---modify the .sh script on cluster(barra) to allow the queue name to be an argument for the "return" script so we don't have 8 or more different copies. change the email adddress in the script to by Susan or leave it out. [Definitely do this Oct 3-7]
 
  

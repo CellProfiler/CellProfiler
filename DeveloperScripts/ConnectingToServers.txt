@@ -55,17 +55,47 @@ mkdir sabatini2_ata
 mkdir imaging
 mkdir carpente_ata
 
-Then use a text editor to create a mounting script called ConnectServers.command:
-
+Then use a text editor to create a mounting script called CPmount.sh:
+----------------------------------------------------------
 #!/bin/sh
-sudo su << EOF
-mount tap5:/sabatini_dbw01 /nfs/sabatini_dbw01
-mount tap6:/sabatini_dbw02 /nfs/sabatini_dbw02
-mount tap4:/sabatini1_ata /nfs/sabatini1_ata
-mount tap4:/sabatini2_ata /nfs/sabatini2_ata
-mount tap2:/imaging /nfs/imaging
-mount tap6:/carpente_ata /nfs/carpente_ata
-EOF
+ 
+
+if test $# -ne 1; then
+    echo "usage: $0 m for mount OR $0 um for unmount" 1>&2
+    exit 1
+fi
+INPUT=$1 
+TYPE="ount"
+INPUT=$INPUT$TYPE
+ echo $INPUT
+
+
+if [ "$INPUT"="mount" ];  then
+
+cd /
+sudo $INPUT tap5:/sabatini_dbw01 /nfs/sabatini_dbw01
+sudo $INPUT tap6:/sabatini_dbw02 /nfs/sabatini_dbw02
+sudo $INPUT tap4:/sabatini1_ata /nfs/sabatini1_ata
+sudo $INPUT tap4:/sabatini2_ata /nfs/sabatini2_ata
+sudo $INPUT tap2:/imaging /nfs/imaging
+
+elif [ "$INPUT"="umount" ]; then
+ 
+echo $INPUT
+cd /
+sudo $INPUT   ./nfs/sabatini_dbw01
+sudo $INPUT  ./nfs/sabatini_dbw02
+sudo $INPUT   ./nfs/sabatini1_ata
+sudo $INPUT  ./nfs/sabatini2_ata
+sudo $INPUT   ./nfs/imaging
+
+
+else
+echo $INPUT" is invalid input"
+exit
+
+fi
+-------------------------------------------------------------------
 
 Save the above text as ConnectServers.command in your root (/) directory, and be sure to save it in Text only format (if you use Text Editor it will save it in rich text format which will not work).  Actually, the best editor to use is a command line editor or the Editor in Matlab, if you know how to use them. Or, just get a copy of the script from another computer.
 

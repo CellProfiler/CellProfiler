@@ -1,14 +1,34 @@
 function handles = CreateWebPage(handles)
 
-% Sorry, this module has not yet been documented. I think the
-% thumbnails and the images must be in the same directory for the web
-% page to work.
+% Help for the CreateWebPage module:
+% Category: Other
+%
+% This module will create an html file that will display the specified
+% images and also produce a zip-file of these images with a link. The
+% thumbnail images must be in the same directory as the original images.
+
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%
+% $Revision$
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = 'Create Web Page';
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 %textVAR01 = What did you call the full-size images you want to include?
 %infotypeVAR01 = imagegroup
@@ -139,8 +159,7 @@ NumberOfImageSets = handles.Current.NumberOfImageSets;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed == NumberOfImageSets)
-
+if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed == NumberOfImageSets) && strcmp(CreateBA,'After'))
     NumOrigImage = numel(handles.Pipeline.(['FileList' OrigImage]));
     if ~strcmp(ThumbImage,'Do not use')
         NumThumbImage = numel(handles.Pipeline.(['FileList' ThumbImage]));
@@ -152,9 +171,12 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
         ThumbImagePathName = handles.Pipeline.(['Pathname' ThumbImage]);
     end
 
-    OrigImageFileNames = handles.Pipeline.(['FileList' OrigImage]);
-    OrigImagePathName = handles.Pipeline.(['Pathname' OrigImage]);
-    ZipImagePathName = OrigImagePathName;
+    try
+        OrigImageFileNames = handles.Pipeline.(['FileList' OrigImage]);
+        OrigImagePathName = handles.Pipeline.(['Pathname' OrigImage]);
+        ZipImagePathName = OrigImagePathName;
+    catch error('There was an error finding your images. You must specify images directly loaded by CellProfiler (no modifications).');
+    end
 
     CurrentImage = 1;
 
@@ -183,6 +205,10 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
     Lines = strvcat(Lines,['<HEAD><TITLE>',PageTitle,'</TITLE></HEAD>']);
     Lines = strvcat(Lines,['<BODY BGCOLOR=',AddQ(BGColor),'>']);
     Lines = strvcat(Lines,['<CENTER><TABLE BORDER=',TableBorderWidth, ' BORDERCOLOR=', AddQ(TableBorderColor), ' CELLPADDING=0',' CELLSPACING=',ThumbSpacing,'>']);
+    if ~strcmp(ZipFileName,'Do not use')
+        zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
+        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download All Images</A></CENTER>']);
+    end
     while CurrentImage <= NumOrigImage
         Lines = strvcat(Lines,'<TR>');
         for i=1:ThumbCols
@@ -218,16 +244,11 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
     end
     Lines = strvcat(Lines,'</TABLE></CENTER>');
 
-    if ~strcmp(ZipFileName,'Do not use')
-        zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
-        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download All Images</A></CENTER>']);
-    end
-
     Lines = strvcat(Lines,'</BODY>');
     Lines = strvcat(Lines,'</HTML>');
     HTMLFullfile = fullfile(HTMLSavePath,FileName);
     dlmwrite(HTMLFullfile,Lines,'delimiter','');
-    msgbox(['Your webpage has been saved as ', HTMLFullfile, '.']);
+    CPmsgbox(['Your webpage has been saved as ', HTMLFullfile, '.']);
     if SetBeingAnalyzed == 1
         %%% This is the first image set, so this is the first time seeing this
         %%% module.  It should cause a cancel so no further processing is done
@@ -235,6 +256,21 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || (SetBeingAnalyzed =
         set(handles.timertexthandle,'string','Cancel');
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% The figure window display is unnecessary for this module, so the figure
+%%% window is closed.
+%%% Determines the figure number.
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+%%% Closes the window if it is open.
+if any(findobj == ThisModuleFigureNumber)
+    close(ThisModuleFigureNumber)
+end
+drawnow
 
 function AfterQuotation = AddQ(BeforeQuotation)
 AfterQuotation = ['"',BeforeQuotation,'"'];

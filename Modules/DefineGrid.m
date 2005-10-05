@@ -97,7 +97,7 @@ ControlSpotMode = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = For MANUAL + MOUSE, what is the distance from the control spot to the bottom left spot in the grid? (X,Y: specify units or pixels below)
+%textVAR11 = For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify units or pixels below)
 %defaultVAR11 = 0,0
 HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 try

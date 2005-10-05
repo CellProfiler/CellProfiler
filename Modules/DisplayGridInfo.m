@@ -118,7 +118,7 @@ if ~strcmp(DataName1,'/')
         Text1{i} = tempText{temp(i)};
     end
 
-    TextHandles1 = text(XLocations,YLocations+2*floor(YSpacing/3),Text1,'Color','red');
+    TextHandles1 = text(XLocations,YLocations+floor(YSpacing/3),Text1,'Color','red');
 
     ButtonCallback = [...
         'button = gco;'...
@@ -150,7 +150,7 @@ if ~strcmp(DataName2,'/')
         Text2{i} = tempText{temp(i)};
     end
 
-    TextHandles2 = text(XLocations,YLocations+floor(YSpacing/3),Text2,'Color','green');
+    TextHandles2 = text(XLocations,YLocations+2*floor(YSpacing/3),Text2,'Color','green');
 
     ButtonCallback = [...
         'button = gco;'...
@@ -183,7 +183,7 @@ if ~strcmp(DataName3,'/')
         Text3{i} = tempText{temp(i)};
     end
 
-    TextHandles3 = text(XLocations,YLocations,Text3,'Color','blue');
+    TextHandles3 = text(XLocations,YLocations+YSpacing,Text3,'Color','blue');
 
     ButtonCallback = [...
         'button = gco;'...

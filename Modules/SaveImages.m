@@ -424,7 +424,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         elseif length(ImageName) == 2
             fieldname = ['FigureNumberForModule',ImageName];
         else
-            error('The figure number was not in 00 format.');
+            error('The figure number was not in XX format.');
         end
         FigureHandle = handles.Current.(fieldname);
     end
@@ -437,7 +437,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     elseif strcmp(FileFormat,'fig')
         try eval(['saveas(FigureHandle,NewFileAndPathName,''fig'')']);
         catch
-            error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+            error(['In the save images module, the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi')
         if handles.Current.SetBeingAnalyzed == 1

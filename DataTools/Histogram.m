@@ -480,8 +480,13 @@ FigureSettings{3} = FinalHistogramData;
 if strcmpi(GreaterOrLessThan,'A') ~= 1
     AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
     try
-        save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
-    catch errordlg('oops, saving did not work.')
+        [ignore,Attributes] = fileattrib(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}));
+        if Attributes.UserWrite == 0
+            error(['You do not have permission to write ',fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'!']);
+        else
+            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
+        end
+    catch errordlg('Saving did not work.')
     end
 end
 
@@ -627,7 +632,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     %%% These callbacks control what happens when display
     %%% buttons are pressed within the histogram display
     %%% window.
-    
+
     if strcmp(computer,'MAC') == 1
         Button1Callback = 'FigureHandle = gcf; AxesHandles = findobj(''Parent'', FigureHandle, ''Type'', ''axes''); drawnow';
     else
@@ -792,7 +797,7 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
         set(AxisHandle,'XTick',0:100:size(FinalHistogramData,1))
     end
     NewColormap = 1 - colormap(gray);
-    colormap(NewColormap), 
+    colormap(NewColormap),
     ColorbarHandle = colorbar,
     %%% Labels the colorbar's units.
     if strncmpi(NumberOrPercent,'P',1) == 1
@@ -829,7 +834,12 @@ image => each row is one image, bin => each row is one bin.
 (Actually, first letter only is checked, case insensitively.)
 %}
 %%% Open the file and name it appropriately.
-fid = fopen(FileName, 'wt');
+[ignore,Attributes] = fileattrib(FileName);
+if Attributes.UserWrite == 0
+    error(['You do not have permission to write ',FileName,'!']);
+else
+    fid = fopen(FileName, 'wt');
+end
 if fid < 0
     h = errordlg(['Unable to open output file ',FileName,'.']);
     waitfor(h);

@@ -175,17 +175,21 @@ end % end loop over object types, i.e., Cells, Nuclei, Cytoplasm, Image
 for Object = 1:length(ExportInfo.ObjectNames)
 
     ObjectName = ExportInfo.ObjectNames{Object};
-
+    
     % Open a file for exporting the measurements
     % Add dot in extension if it's not there
     if ExportInfo.MeasurementExtension(1) ~= '.';
         ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
     end
     filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
-    fid = fopen(fullfile(RawPathname,filename),'w');
+    [ignore,Attributes] = fileattrib(fullfile(RawPathname,filename));
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write ',fullfile(RawPathname,filename),'!']);
+    else
+        fid = fopen(fullfile(RawPathname,filename),'w');
+    end
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
-
     end
 
     % Get the measurements and feature names to export

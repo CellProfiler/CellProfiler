@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/05) (Requested by Anne) - Whenever anything is saved to the hard drive, add an error check to see whether the user has permission to write to that location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run: [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0, then error(INSERT PROPER ERROR STUFF HERE), end 
+
 -(Mike 10/04) (Requested by Anne 9-08-05) - Make measure windows expand to fit the number of lines of data (and the number of columsn) that are produced. Maybe try using CPtextdisplaybox.m, which displays text using a slider so it's infinitely expandable.
 
 -(Mike 10/04) (Requested by Anne) - Put in some way to save a figure (either a module or ImageTool). (Anne thinks the best approach is to adapt SaveImages module and SaveImageAs image tool to be able to save .fig format).

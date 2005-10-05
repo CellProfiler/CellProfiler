@@ -130,5 +130,9 @@ end
 close(waitbarhandle)
 CPmsgbox('Merging is completed.')
 handles = superhandles;
-save(fullfile(Pathname,OutputFileName),'handles');
-
+[ignore,Attributes] = fileattrib(fullfile(Pathname,OutputFileName));
+if Attributes.UserWrite == 0
+    error(['You do not have permission to write ',fullfile(Pathname,OutputFileName),'!']);
+else
+    save(fullfile(Pathname,OutputFileName),'handles');
+end

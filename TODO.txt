@@ -49,6 +49,27 @@ WANT IT ASAP:
              2004 Jan 1;32 Database issue:D319-22. PMID: 14681423
 Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
 
+-(I DONT THINK THESE REALLY GO TOGETHER WELL, IF THEY DO PLEASE EXPLAIN) (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
+% Threshold correction factor:
+% When the threshold is calculated automatically, it may consistently
+% be too stringent or too lenient.  For example, the Otsu automatic
+% thresholding inherently assumes that 50% of the image is covered by
+% objects. If a larger percentage of the image is covered, the Otsu
+% method will give a slightly biased threshold that may have to be
+% corrected. In a future version, the 'Threshold correction factor'
+% may be removed and the "Approximate percentage covered by objects"
+% information used instead.  For now, however, you may need to enter an
+% adjustment factor which you empirically determine is suitable for
+% your images. The number 1 means no adjustment, 0 to 1 makes the
+% threshold more lenient and greater than 1 (e.g. 1.3) makes the
+% threshold more stringent.
+
+-(COULDNT REPRODUCE, BUT WE CAN JUST REMOVE RGB BUTTONS FROM TEXT ONLY DISPLAY) (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
+??? Error using ==> set
+Index exceeds matrix dimensions.
+??? Error using ==> set
+Error while evaluating uicontrol Callback.
+
 - (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells). This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
 
 	From: 	  friman@bwh.harvard.edu
@@ -80,42 +101,15 @@ way of identifying objects.
 Best,
 Ola
 
-- (Requested by Anne) - Whenever anything is saved to the hard drive, add an error
-       check to see whether the user has permission to write to that
-       location (esp. CellProfiler.m and AlgSaveImages.m). From within the target directory, run:
-       [ignore,Attributes] = fileattrib, if Attributes.UserWrite == 0,
-       then error(INSERT PROPER ERROR STUFF HERE), end 
+- (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
 
-- (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.
-
 - (Requested by Anne) - The CreateWebPage module needs help documentation and to be put in the category 'Other', and the license info, etc.  If there is nothing of interest to display in the figure for this module, it ought to close during the first cycle. The popup window is the wrong color at the end after the html file is saved.  The 'Download zipped file' html code should be at the top of the page rather than the bottom.
-
-- (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
-??? Error using ==> set
-Index exceeds matrix dimensions.
-??? Error using ==> set
-Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - There is a bit of functionality in IdentifyPrimThreshold which is lost in IdentifyPrimAutomatic: the ability to calculate a threshold based on all images of a given type and then apply that global threshold to each image.  This ought to be added to IdentifyPrimAutomatic.
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
-
-- (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
-% Threshold correction factor:
-% When the threshold is calculated automatically, it may consistently
-% be too stringent or too lenient.  For example, the Otsu automatic
-% thresholding inherently assumes that 50% of the image is covered by
-% objects. If a larger percentage of the image is covered, the Otsu
-% method will give a slightly biased threshold that may have to be
-% corrected. In a future version, the 'Threshold correction factor'
-% may be removed and the "Approximate percentage covered by objects"
-% information used instead.  For now, however, you may need to enter an
-% adjustment factor which you empirically determine is suitable for
-% your images. The number 1 means no adjustment, 0 to 1 makes the
-% threshold more lenient and greater than 1 (e.g. 1.3) makes the
-% threshold more stringent.
 
 - (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.
 
@@ -145,8 +139,6 @@ Error in ==> CellProfiler at 42
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 MergeBatchOutput
 Restart
-
-- (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

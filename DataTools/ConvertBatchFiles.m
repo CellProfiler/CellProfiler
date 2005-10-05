@@ -47,9 +47,13 @@ for fileno = 1:length(files)
             end
         end
     end
-
-    save(fullfile(Pathname,['Converted',files{fileno}]),'handles');
-end                
+    [ignore,Attributes] = fileattrib(fullfile(Pathname,['Converted',files{fileno}]));
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write ',fullfile(Pathname,['Converted',files{fileno}]),'!']);
+    else
+        save(fullfile(Pathname,['Converted',files{fileno}]),'handles');
+    end
+end
 close(waitbarhandle)
 CPmsgbox('Converting is completed.')                   
         

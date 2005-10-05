@@ -5,7 +5,7 @@ function ExportSQL2(handles)
 %
 % This tool exports measurements from one or several CellProfiler
 % output files to delimited text files. It also creates an SQL
-% script that puts the measurements into an SQL database. This tool calls CPConvertSQL 
+% script that puts the measurements into an SQL database. This tool calls CPConvertSQL
 % function to do the actuall exporting, which is same as WriteSQL module.
 %
 % Current known limitations and things to consider:
@@ -34,64 +34,63 @@ function ExportSQL2(handles)
 %
 % $Revision$
 
+% This function is not called from WriteSQLFiles ModuleCall but from the Data tool menu
+ModuleCall = 0;
 
-    % This function is not called from WriteSQLFiles ModuleCall but from the Data tool menu
-    ModuleCall = 0;
+%%% Let the user select one output file to indicate the directory and how the
+%%% filename is constructed
+if exist(handles.Current.DefaultOutputDirectory, 'dir')
+    [ExampleFile, DataPath] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select one CellProfiler output file');
+else
+    [ExampleFile, DataPath] = uigetfile('*.mat','Select one CellProfiler output file');
+end
+if ~DataPath;return;end
+%CurrentDataPath = handles.Current.DefaultOutputDirectory %current dir
 
-    %%% Let the user select one output file to indicate the directory and how the
-    %%% filename is constructed
-    if exist(handles.Current.DefaultOutputDirectory, 'dir')
-        [ExampleFile, DataPath] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select one CellProfiler output file');
-    else
-        [ExampleFile, DataPath] = uigetfile('*.mat','Select one CellProfiler output file');
-    end
-    if ~DataPath;return;end
-     %CurrentDataPath = handles.Current.DefaultOutputDirectory %current dir
+%%% Get all files with .mat extension in the chosen directory.
+%%% If the selected file name contains an 'OUT', it is assumed
+%%% that all interesting files contain an 'OUT'.
+AllFiles = dir(DataPath);                                                        % Get all file names in the chosen directory
+AllFiles = {AllFiles.name};
+Files = AllFiles(~cellfun('isempty',strfind(AllFiles,'.mat')));                  % Keep files that has and .mat extension
+if strfind(ExampleFile,'OUT')
+    Files = Files(~cellfun('isempty',strfind(Files,'OUT')));                     % Keep files with an 'OUT' in the name
+end
 
-    %%% Get all files with .mat extension in the chosen directory.
-    %%% If the selected file name contains an 'OUT', it is assumed
-    %%% that all interesting files contain an 'OUT'.
-    AllFiles = dir(DataPath);                                                        % Get all file names in the chosen directory
-    AllFiles = {AllFiles.name};
-    Files = AllFiles(~cellfun('isempty',strfind(AllFiles,'.mat')));                  % Keep files that has and .mat extension
-    if strfind(ExampleFile,'OUT')
-        Files = Files(~cellfun('isempty',strfind(Files,'OUT')));                     % Keep files with an 'OUT' in the name
-    end
+%%% Let the user select the files to be exported
+[selection,ok] = listdlg('liststring',Files,'name','Export SQL',...
+    'PromptString','Select files to export. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
+if ~ok,return,end
+CellProfilerDataFileNames = Files(selection);
 
-    %%% Let the user select the files to be exported
-    [selection,ok] = listdlg('liststring',Files,'name','Export SQL',...
-        'PromptString','Select files to export. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
-    if ~ok,return,end
-    CellProfilerDataFileNames = Files(selection);
-
-    %%% Ask for database name and name of SQL script
-    answer = inputdlg({'Database to use:','SQL script name:'},'Export SQL',1,{'Default','SQLScript_'});
-    if isempty(answer),return;end
-    DatabaseName = answer{1};
-    SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
-    if isempty(DatabaseName) | isempty(SQLScriptFileName)
-        errordlg('A database name and an SQL script name must be specified!');
-        return
-    end
+%%% Ask for database name and name of SQL script
+answer = inputdlg({'Database to use:','SQL script name:'},'Export SQL',1,{'Default','SQLScript_'});
+if isempty(answer),return;end
+DatabaseName = answer{1};
+SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
+if isempty(DatabaseName) | isempty(SQLScriptFileName)
+    errordlg('A database name and an SQL script name must be specified!');
+    return
+end
 %end
 
 %check whether have write permission in current dir
-SQLScriptFid = fopen(SQLScriptFileName, 'wt');
+[ignore,Attributes] = fileattrib(SQLScriptFileName);
+if Attributes.UserWrite == 0
+    error(['You do not have permission to write ',SQLScriptFileName,'!']);
+else
+    SQLScriptFid = fopen(SQLScriptFileName, 'wt');
+end
 if SQLScriptFid == -1, error(['Could not open ' SQLScriptFileName ' for writing.']); end
- 
 
 %display waiting bar
 waitbarhandle = waitbar(0,'Exporting SQL files');
-drawnow   
-
-   
-    
+drawnow
 
 for FileNo = 1:length(CellProfilerDataFileNames)
 
     % If called as a Data tool, load handles structure from file
     if ~ModuleCall,load(fullfile(DataPath,CellProfilerDataFileNames{FileNo}));end
-
 
     % Get the object types, e.g. 'Image', 'Cells', 'Nuclei',...
     try
@@ -110,8 +109,6 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         filename = [filename(1:index-1)]%,everything before . will be kept
 
     end
-
-
 
     for ObjectTypeNo = 1:length(ObjectTypes)    % Loop over the objects
 
@@ -132,7 +129,6 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         FirstSet = 1;
         LastSet = length(handles.Measurements.Image.FileNames);
     end
-
 
     %%% This is necessary to make sure the export works with the last
     %%% set.  Otherwise, the TimeElapsed array is missing the last

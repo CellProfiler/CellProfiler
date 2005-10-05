@@ -366,7 +366,12 @@ end
 %%% Saves the altered handles in a file which the user will feed to
 %%% the remote machines.
 PathAndFileName = fullfile(BatchSavePath, [BatchFilePrefix 'data.mat']);
-save(PathAndFileName, 'handles', '-v6');
+[ignore,Attributes] = fileattrib(PathAndFileName);
+if Attributes.UserWrite == 0
+    error(['You do not have permission to write',PathAndFileName,'!']);
+else
+    save(PathAndFileName, 'handles', '-v6');
+end
 
 %%% Reverts to the preserved handles. This prevents errors from
 %%% occurring as a result of the fact that we have changed the default
@@ -382,8 +387,12 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     StartImage = n;
     EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
     BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
-    BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
-
+    [ignore,Attributes] = fileattrib(fullfile(BatchSavePath, BatchFileName));
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write',fullfile(BatchSavePath, BatchFileName),'!']);
+    else
+        BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
+    end
     fprintf(BatchFile, 'addpath(genpath(''%s''));\n', BatchCellProfilerPath);
     fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
     fprintf(BatchFile, 'StartImage = %d;\n', StartImage);

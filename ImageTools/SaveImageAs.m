@@ -333,9 +333,21 @@ if isempty(Answers) ~= 1
     %%% existing file.
     ProposedFileAndPathname = fullfile(handles.Current.DefaultOutputDirectory,CompleteFileName);
     OutputFileOverwrite = exist(ProposedFileAndPathname,'file');
-    if OutputFileOverwrite ~= 0
-        Answer = CPquestdlg(['A file with the name ', CompleteFileName, ' already exists at ', handles.Current.DefaultOutputDirectory,'. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
-        if strcmp(Answer,'Yes') == 1;
+    [ignore,Attributes] = fileattrib(ProposedFileAndPathname);
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write ',ProposedFileAndPathname,'!']);
+    else
+        if OutputFileOverwrite ~= 0
+            Answer = CPquestdlg(['A file with the name ', CompleteFileName, ' already exists at ', handles.Current.DefaultOutputDirectory,'. Do you want to overwrite it?'],'Confirm file overwrite','Yes','No','No');
+            if strcmp(Answer,'Yes') == 1;
+                if strcmpi(Extension,'mat')
+                    save(ProposedFileAndPathname,'Image');
+                else
+                    imwrite(Image, ProposedFileAndPathname, Extension)
+                end
+                CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
+            end
+        else
             if strcmpi(Extension,'mat')
                 save(ProposedFileAndPathname,'Image');
             else
@@ -343,12 +355,5 @@ if isempty(Answers) ~= 1
             end
             CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
         end
-    else
-        if strcmpi(Extension,'mat')
-            save(ProposedFileAndPathname,'Image');
-        else
-            imwrite(Image, ProposedFileAndPathname, Extension)
-        end
-        CPmsgbox(['The file ', CompleteFileName, ' has been saved to the default output directory.']);
     end
 end

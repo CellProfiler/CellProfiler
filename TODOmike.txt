@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.
+
 -(WAITING ON IT TO GET UPDATE) (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
 
 - (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.

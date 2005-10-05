@@ -98,7 +98,12 @@ else
     handles.Measurements.(UserInput.SaveLocation).UserDefinedFeatures(end+1) = {UserInput.FeatureDescription};
 end
 
-save(fullfile(RawPathname, RawFileName),'handles');
+[ignore,Attributes] = fileattrib(fullfile(RawPathname, RawFileName));
+if Attributes.UserWrite == 0
+    error(['You do not have permission to write ',fullfile(RawPathname, RawFileName),'!']);
+else
+    save(fullfile(RawPathname, RawFileName),'handles');
+end
 CPmsgbox('Calculation complete!')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

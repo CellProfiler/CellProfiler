@@ -125,15 +125,19 @@ for FileNbr = 1:length(SelectedFiles)
         text = cat(2,text(1:FeatureNbr-1),text(FeatureNbr+1:end));
         handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]) = text;
     end
-
+    
     %%% Save the updated CellProfiler output file
     try
-        save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
+        [ignore,Attributes] = fileattrib(fullfile(Pathname, SelectedFiles{FileNbr}));
+        if Attributes.UserWrite == 0
+            error(['You do not have permission to write ',fullfile(Pathname, SelectedFiles{FileNbr}),'!']);
+        else
+            save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
+        end
     catch
         errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
         continue
     end
-
 end
 
 error_index = find(~cellfun('isempty',errors));
@@ -145,5 +149,3 @@ else
        CPwarndlg(errors{error_index(k)},'Clear Data failure')
     end
 end
-
-

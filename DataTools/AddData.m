@@ -5,11 +5,11 @@ function AddData(handles)
 %
 % Use this tool if you would like text information about each image to
 % be recorded in the output file along with measurements (e.g. Gene
-% names, accession numbers, or sample numbers). 
+% names, accession numbers, or sample numbers).
 % The text information must be specified in a separate text file
 % with the following syntax:
 %
-% IDENTIFIER <identfier> 
+% IDENTIFIER <identfier>
 % DESCRIPTION <description>
 % <Text info for image set #1>
 % <Text info for image set #2>
@@ -100,22 +100,24 @@ for FileNbr = 1:length(SelectedFiles)
         errors{FileNbr} = [SelectedFiles{FileNbr},' is not a CellProfiler output file'];
         continue
     end
-    
+
     tempVarValues=handles.Settings.VariableValues;
     tempModuleNumber = handles.Current.CurrentModuleNumber;
     handles.Settings.VariableValues{1,1}=fullfile(pathname,filename);
     handles.Settings.VariableValues{1,2}=FieldName;
     handles.Current.CurrentModuleNumber='01';
-    
     handles = LoadText(handles);
-    
     handles.Settings.VariableValues=tempVarValues;
     handles.Current.CurrentModuleNumber=tempModuleNumber;
-    
-    
+
     %%% Save the updated CellProfiler output file
     try
-        save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
+        [ignore,Attributes] = fileattrib(fullfile(Pathname, SelectedFiles{FileNbr}));
+        if Attributes.UserWrite == 0
+            error(['You do not have permission to write ',fullfile(Pathname, SelectedFiles{FileNbr}),'!']);
+        else
+            save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
+        end
     catch
         errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
         continue
@@ -133,7 +135,3 @@ else
         CPmsgbox(errors{error_index(k)},'Add Data failure')
     end
 end
-
-
-
-

@@ -29,7 +29,12 @@ if isstruct(ExportInfo)
         ExportInfo.ProcessInfoExtension = ['.',ExportInfo.ProcessInfoExtension];
     end
     filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
-    fid = fopen(fullfile(RawPathname,filename),'w');
+    [ignore,Attributes] = fileattrib(fullfile(RawPathname,filename));
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write ',fullfile(RawPathname,filename),'!']);
+    else
+        fid = fopen(fullfile(RawPathname,filename),'w');
+    end
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
     end
@@ -40,7 +45,12 @@ else
         CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
         return
     end
-    fid = fopen(fullfile(SavePathname,filename),'w');
+    [ignore,Attributes] = fileattrib(fullfile(SavePathname,filename));
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write ',fullfile(SavePathname,filename),'!']);
+    else
+        fid = fopen(fullfile(SavePathname,filename),'w');
+    end
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
     end
@@ -72,7 +82,12 @@ for p = 1:VariableSize(1)
     Module = [char(ModuleNames(p))];
     fprintf(fid,['\nModule #' num2str(p) ': ' Module ' revision - ' num2str(RevNums(p)) '\n']);
     ModuleNamedotm = [Module '.m'];
-    fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
+    [ignore,Attributes] = fileattrib(fullfile(PathnameModules,ModuleNamedotm));
+    if Attributes.UserWrite == 0
+        error(['You do not have permission to write ',fullfile(PathnameModules,ModuleNamedotm),'!']);
+    else
+        fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
+    end
     while 1
         output = fgetl(fid2);
         if ~ischar(output), break, end

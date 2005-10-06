@@ -75,12 +75,7 @@ end
 %end
 
 %check whether have write permission in current dir
-[ignore,Attributes] = fileattrib(SQLScriptFileName);
-if Attributes.UserWrite == 0
-    error(['You do not have permission to write ',SQLScriptFileName,'!']);
-else
-    SQLScriptFid = fopen(SQLScriptFileName, 'wt');
-end
+SQLScriptFid = fopen(SQLScriptFileName, 'wt');
 if SQLScriptFid == -1, error(['Could not open ' SQLScriptFileName ' for writing.']); end
 
 %display waiting bar

@@ -92,13 +92,8 @@ end
 fprintf(fmain, ', PRIMARY KEY (ImageNumber, ObjectNumber));\n');
 
 
-[ignore,Attributes] = fileattrib(fullfile(OutDir, [basename '_image.SQL']));
-if Attributes.UserWrite == 0
-    error(['You do not have permission to write ',fullfile(OutDir, [basename '_image.SQL']),'!']);
-else
-    fimage = fopen(fullfile(OutDir, [basename '_image.SQL']), 'W');
-    fobject = fopen(fullfile(OutDir, [basename '_object.SQL']), 'W');
-end
+fimage = fopen(fullfile(OutDir, [basename '_image.SQL']), 'W');
+fobject = fopen(fullfile(OutDir, [basename '_object.SQL']), 'W');
 
 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE  %sPerImage FIELDS TERMINATED BY ''|'';\n', [basename '_image.SQL'], TablePrefix);
 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE  %sPerObject FIELDS TERMINATED BY ''|'';\n', [basename '_object.SQL'], TablePrefix);

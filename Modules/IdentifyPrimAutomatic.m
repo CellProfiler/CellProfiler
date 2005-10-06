@@ -313,6 +313,7 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6})
 %choiceVAR07 = Otsu Global
 %choiceVAR07 = Otsu Adaptive
 %choiceVAR07 = All
+%choiceVAR07 = Test Mode
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
@@ -614,6 +615,14 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             else fieldname = ['Threshold', ImageName];
                 Threshold = handles.Pipeline.(fieldname);
             end
+        elseif strcmp(Threshold,'Test Mode')
+            fieldname = ['Threshold',ImageName];
+            if handles.Current.SetBeingAnalyzed == 1
+                Threshold = CPthresh_tool(OrigImage);
+                handles.Pipeline.(fieldname) = Threshold;
+            else
+                Threshold = handles.Pipeline.(fieldname)
+            end
         else
             %%% The threshold is manually set by the user
             %%% Checks that the Threshold parameter has a valid value
@@ -627,14 +636,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         Threshold = ThresholdCorrection*Threshold;
         Threshold = max(Threshold,MinimumThreshold);
         drawnow
-
-        
-        
-        
-        
-        
-        
-        
         
         if strcmp(LaplaceValues,'/')
 

@@ -70,13 +70,7 @@ end
 
 %full .sql file name
 basename = [OutfilePrefix int2str(FirstSet) '_' int2str(LastSet)];
-
-[ignore,Attributes] = fileattrib(fullfile(OutDir, [basename '.SQL']));
-if Attributes.UserWrite == 0
-    error(['You do not have permission to write ',fullfile(OutDir, [basename '.SQL']),'!']);
-else
-    fmain = fopen(fullfile(OutDir, [basename '.SQL']), 'W');
-end
+fmain = fopen(fullfile(OutDir, [basename '.SQL']), 'W');
 
 fprintf(fmain, 'USE %s;\n', DBname);
 

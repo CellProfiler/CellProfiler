@@ -86,7 +86,6 @@ catch
         LoadedPreferences = SavedPreferences;
         LoadedPreferencesExist = 1;
         clear SavedPreferences
-    catch error(['CellProfiler was unable to load ',fullfile(matlabroot,'CellProfilerPreferences.mat'),'. The file may be corrupt.']);
     end
 end
 

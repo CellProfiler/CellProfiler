@@ -182,12 +182,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
         ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
     end
     filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
-    [ignore,Attributes] = fileattrib(fullfile(RawPathname,filename));
-    if Attributes.UserWrite == 0
-        error(['You do not have permission to write ',fullfile(RawPathname,filename),'!']);
-    else
-        fid = fopen(fullfile(RawPathname,filename),'w');
-    end
+    fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
     end

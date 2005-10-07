@@ -2,6 +2,8 @@ Colin's TODO list
 
 - IdentifySecondary needs to be fixed. New method of calculating outlines was merging objects. Come talk to Mike.
 
+-(Colin, I put this on your list because I am pretty sure you took this functionality out after adding pathnameVAR. If you have too much stuff to do, just take a minute and come show me what exactly you took out because I am not sure what code it was. Thanks, -Mike)  (Requested by Anne 9-01-05) - We used to have code that allowed variable edit boxes to expand when the text within them was too long to fit. It mostly became unnecessary when Colin invented the new pathname entry boxes/browse buttons (because this usually only happens when we are dealing with typing pathnames into edit boxes), but I would still like edit boxes to expand if text becomes too long to fit, so we should find that code and re-implement it.
+
 Colin is working on this?? - (Requested by Anne 8-29-05) - Add a check box to the main GUI (in the space near pixel size) for 'Diagnostic mode'. This would basically be like running the SpeedUpCellProfiler module option that strips out the handles.Pipeline just before saving the output file which dramatically reduces the output file size. I think people rarely want the contents of the Pipeline unless they are actually intensively writing a new module, so mostly it just adds a ton of extra data to the file.  The default should be to *not* run in diagnostic mode, and there should be a '?' button nearby telling the user what this does (the SpeedUpCellProfiler module might have a description you could copy & paste).
 
 

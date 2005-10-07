@@ -36,21 +36,15 @@ WANT IT ASAP:
 
 -(MADE INITIAL CHANGES, WHAT TO DO FROM HERE) (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons. I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
 
--(BOTH APPEAR TO WORK FINE, SLOW BUT WORKS) (Requested by Anne 8-26-05) - I am pretty sure the close figure button doesn't work when you are analyzing images.  Haven't checked the open figure button.
-
--(ALREADY IN FOR LOOP AND CHECKS THAT IT EXISTS BEFORE DELETING) (Requested by Anne 9-07-05) - The close windows button often fails and causes CP and Matlab to crash, presumably due to some weird interaction between X11 and Matlab.  Right now the code generates a list of windows to close and then tries to close them all at once. Perhaps it would be more smooth to change this to a 'while' statement, like 'while any figure windows are found that have the userdata = cellprofiler, close the one at the top of the list.'  Perhaps doing them one by one this way (and essentially refreshing the list that remain to be closed each time) will cause X11 to crash less often.  If we use this method, we should probably comment in the code why we are doing it that way, because it might seem slower.
-
 -(WHICH ERROR DIALOGS, DONT THINK ERROR AND ERRORDLG CAN BE CHANGED) (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
 
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
-
--(NO OLD HELP TO SALVAGE FROM) (Requested by Anne) - For the Data Layout tool, the help is not extensive. Check an old version of the tool and salvage some of its help.
 
 -(SINCE THIS RUNS OF SAVEIMAGES MODULE, CAN NOW ADD FEATURE TO USE OPTIONS WHICH ARE SPECIFIC TO THE IMAGE TYPE, WILL THIS FIX PROBLEMS?) (Requested by Anne) - Save Image As tool: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
 
 -(IMAGE LOOKUP NOW WORKS, PLEASE SHOW ME *.* PROBLEM) (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames, and when it lets you choose an image file, on the mac it has the annoying {*.*} problem so that you can't choose an image file until you change the dropdown menu for file format in the uigetfile window.
 
--(I THINK ANNE SAID THIS WAD DONE) (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:
+-(I THINK ANNE SAID THIS WAS DONE) (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:
        SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res.
              2004 Jan 1;32 Database issue:D319-22. PMID: 14681423
 Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
@@ -114,8 +108,6 @@ Ola
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
-
-- (Requested by Anne 9-01-05) - We used to have code that allowed variable edit boxes to expand when the text within them was too long to fit. It mostly became unnecessary when Colin invented the new pathname entry boxes/browse buttons (because this usually only happens when we are dealing with typing pathnames into edit boxes), but I would still like edit boxes to expand if text becomes too long to fit, so we should find that code and re-implement it.
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

@@ -1732,7 +1732,7 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
                         NewStrSet = cat(1,PrevList(1:(VarVal-1)),PrevList((VarVal+1):end));
                         set(ModList(m),'string',NewStrSet);
                         set(ModList(m),'value',1);
-                        handles.Settings.VariableValues(ModNum,BoxNum) = PrevList(1);
+                        handles.Settings.VariableValues(ModNum,BoxNum) = NewStrSet(1);
                     else
                         OldPos = strmatch(StrSet,PrevList);
                         if ~isempty(OldPos)

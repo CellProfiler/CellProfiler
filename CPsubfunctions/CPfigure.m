@@ -47,5 +47,5 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
 else
     FigHandle=figure(varargin{:});
     set(FigHandle,'UserData',userData);
-    set(FigHandle,'Color',[0.7 0.7 0.9]);
+    set(FigHandle,'Color',[0.7 0.7 0.9],'BackingStore','off');
 end

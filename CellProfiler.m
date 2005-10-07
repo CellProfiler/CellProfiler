@@ -1458,7 +1458,7 @@ end
 MaxInfo = get(handles.slider1,'UserData');
 
 for ModuleDelete = 1:length(ModuleHighlighted);
-    RemoveVariables(handles,ModuleHighlighted(ModuleDelete)-ModuleDelete+1);
+    handles = RemoveVariables(handles,ModuleHighlighted(ModuleDelete)-ModuleDelete+1);
     %%% Remove variable names from other modules
     delete(findobj('Parent',handles.variablepanel,'Visible','on'));
     %%% 2. Removes the ModuleName from the handles structure.
@@ -1688,7 +1688,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-function RemoveVariables(handles,ModuleNumber)
+function handles = RemoveVariables(handles,ModuleNumber)
 %%% This function removes all variables of a specified Module from the
 %%% handles structure.
 for i = 1:length(handles.VariableBox{ModuleNumber})
@@ -1749,6 +1749,7 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
         end
     end
 end
+guidata(handles.figure1, handles);
 
 function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% This function stores a variable's value in the handles structure,

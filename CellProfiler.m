@@ -25,6 +25,10 @@ function varargout = CellProfiler(varargin)
 % $Revision$
 
 % Begin initialization code - DO NOT EDIT
+if ~nargin
+    tic
+    SplashHandle = SplashScreen;
+end
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -41,7 +45,6 @@ if nargout
 else
     gui_mainfcn(gui_State, varargin{:});
 end
-
 % End initialization code - DO NOT EDIT
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -5064,6 +5067,15 @@ else
         
         % Make figure visible
         if gui_MakeVisible
+            if any(findobj('tag','SplashScreenTag'))
+                if toc < 4
+                    SplashTime = 4 - toc;
+                    pause(SplashTime);
+                    close(findobj('tag','SplashScreenTag'));
+                else
+                    close(findobj('tag','SplashScreenTag'));
+                end
+            end
             set(gui_hFigure, 'Visible', 'on')
             if gui_Options.singleton 
                 setappdata(gui_hFigure,'GUIOnScreen', 1);
@@ -5117,3 +5129,10 @@ catch
     set(0,'defaultFigureVisible',gui_OldDefaultVisible);
 end
 rmappdata(0,'OpenGuiWhenRunning');
+
+function SplashScreenHandle = SplashScreen;
+SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
+axis off;
+logo = imread('CPSplash.jpg','jpg');
+iptsetpref('ImshowBorder','tight')
+test = imshow(logo);

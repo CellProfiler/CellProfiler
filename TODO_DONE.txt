@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/07) (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
+
 -(Mike 10/07) Add 'New Pipeline' button
 
 -(Mike 10/06) (Requested by Anne) - Make ImageTiler produce a button in the final figure that allows retrieval of a high resolution image. (Click the button, then click the part of the image you want to see in more detail). There should also be a button that allows you to select the folder where the images are stored so that the high-res button knows where to go to look for the images, in case they are not in the same place they were when the figure was originally made.  Adjust the help if ImageTiler to reflect this change when it's made.

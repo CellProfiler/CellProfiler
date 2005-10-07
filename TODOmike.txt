@@ -6,9 +6,7 @@ Mike's TODO list
 
 -(WAITING ON IT TO GET UPDATE) (Requested by Anne 9-08-05) - Download the new Service pack for matlab and test through basic CP functions to see if there are any major problems, on the PC and mac. If not, help other people install it on all of our computers.
 
-- (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
-
-Requested by Anne - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
+- (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
 
 DONE Display grid: it looks like the labels are too far one unit to the left and one unit up.
 

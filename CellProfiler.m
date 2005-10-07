@@ -369,6 +369,7 @@ uimenu('Label','Close Windows','Callback','CellProfiler(''CloseWindows_Callback'
 HelpMenu=uimenu('Label','Help');
 
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','New Pipeline','Callback','CellProfiler(''NewPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save current CellProfiler code','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
@@ -397,6 +398,27 @@ function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% NEW PIPELINE BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function NewPipeline_Callback(hObject, eventdata, handles)
+handles.Settings.ModuleNames = {};
+handles.Settings.SelectedOption = [];
+handles.Settings.VariableValues = {};
+handles.Settings.VariableInfoTypes = {};
+handles.Settings.VariableRevisionNumbers = [];
+delete(get(handles.variablepanel,'children'));
+set(handles.slider1,'visible','off');
+handles.VariableBox = {};
+handles.VariableDescription = {};
+set(handles.ModulePipelineListBox,'Value',1);
+handles.Settings.NumbersOfVariables = [];
+handles.Current.NumberOfModules = 0;
+contents = {'No Modules Loaded'};
+set(handles.ModulePipelineListBox,'String',contents);
+guidata(hObject,handles);
+ModulePipelineListBox_Callback(hObject, eventdata, handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOAD PIPELINE BUTTON %%%
@@ -1508,9 +1530,9 @@ set(handles.ModulePipelineListBox,'Value',ModuleHighlighted);
 guidata(gcbo, handles);
 ModulePipelineListBox_Callback(hObject, eventdata, handles);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MOVE UP/DOWN BUTTONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function MoveUpButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');

@@ -8,8 +8,6 @@ Mike's TODO list
 
 - (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 
-- Add 'New Pipeline' button
-
 Requested by Anne - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
 
 DONE Display grid: it looks like the labels are too far one unit to the left and one unit up.

@@ -5,7 +5,7 @@ Susan's TODO list
 >>> Note from Anne - please change the ExampleFlyPIPE to use the 'propagate' option in the IdentifySecondary module because it's the better one! -done
 >>> The settings for the Identify module in ExampleYeastColonyPIPE don't look right - I think we were using the Shape option and the numbers were different at one point in the past. Try retrieving an old version of the pipeline from SVN and doublecheck the settings for this module.-done
 
-- NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!
+- NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!--Started
 
 - NEW FROM ANNE - Try to write a .command script for unmounting the servers. I think the command is "umount". --done updated in connectingtoservers.txt
 
@@ -15,10 +15,15 @@ Susan's TODO list
 - Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
 
 - Process these image sets:
-1. [NEW FROM ANNE: I have written a DVD with the movie and 3 pipelines (contained within OUT files) that need to be converted to the current version of the software. These are very old pipelines so there are likely to be a *lot* of changes necessary!  I have included a .zip archive of the CellProfiler code at the time these pipelines were made, so it might help you to install this old version of CellProfiler, remove your CellProfilerPreferences.mat file from the Matlab applications folder, set the path of MATLAB to look at this old version (rather than your new trunk version), start this old version of CellProfiler, and load the old pipelines and see what they look like.  I think you should be able to convert the old pipelines while i am gone, and then i can check them when I return.] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? 
-2. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication.
+1. [NEW FROM ANNE: I have written a DVD with the movie and 3 pipelines (contained within OUT files) that need to be converted to the current version of the software. These are very old pipelines so there are likely to be a *lot* of changes necessary!  I have included a .zip archive of the CellProfiler code at the time these pipelines were made, so it might help you to install this old version of CellProfiler, remove your CellProfilerPreferences.mat file from the Matlab applications folder, set the path of MATLAB to look at this old version (rather than your new trunk version), start this old version of CellProfiler, and load the old pipelines and see what they look like.  I think you should be able to convert the old pipelines while i am gone, and then i can check them when I return.] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? Started to work on
+
+2. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication.  --running on cluster failed. problem with IdentifySecProg..mexglx 
+
 3. Kc 40x data (Fly217-220) - genome-wide screens! [wait to see how the CPvalid1 comes out and if the data format is good first].
+
 [[NEW FROM ANNE: Susan, you can do the illumination correction on these while I am out of town, because that is exactly like the ones you did already - the only possible change is the degree of smoothing, and I think you already have a good sense of what looks appropriate.]]
+In progress -Fly217_40x -refined the smoothing setting and waiting for updating.
+
 
 2. CPConvertSQL automatically creates column names for the DB from the
 hierarchy in handles.  Sometimes these column names are too long.
@@ -44,7 +49,7 @@ too long names can be fixed just before importing the data. --Will change the ta
 
 Given on 9/7/2005
 
---set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders. [Definitely do this Oct 3-7: write script to update each folder or get SVN upgraded.] Script is done--will automatically do SVN update when a job is submitted 
+--set up SVN on cluster --only do copy for now, SVN client need update on cluster to be able to do check out certain folders. [Definitely do this Oct 3-7: write script to update each folder or get SVN upgraded.] Script is done-- automatically do SVN update when a job is submitted 
 
 --week of 9/12, meet with Tim Pierson, IT dept. to discuss /set up the mySQL database, have Oracle account set up. in progress to test
 

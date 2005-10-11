@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/11) (Requested by Anne 10-10-05) - IdentifyPrimManually - the colormap is not applied to the image when you are asked to click on points.  Also colormap doesn't seem applied in DisplayGridInfo module. DisplayGridInfo seems a little unpolished - e.g. it says 'Figure1' at the top rather than saying which module it is, and it doesn't say what image # it is. We'd like to be able to change the text properties and gridlines in a manner similar to DefineGrid's display, so that code should be copied over to DsiplayGridInfo.
+
+-(Mike 10/11) (Requested by Anne 10-10-05) - send beta terms, current CP code, ExampleFlyPIPE, and link to images to juergen@hedges-klenk.com This should be very similar to what you sent to Max Sonnleitner recently, except it should include fresh code & PIPE. Hello, Anne asked me to send you the beta version of CellProfiler to play with....
+
 -(Mike 10/11) (Requested by Anne 10-10-05) - In the LoadImages module, if the incoming image is 16 bit AND if the maximum value in the image is below 1/16th of the usable range (0.0625 in the 0-1 scale), have a warndlg pop up to warn the user that their incoming image might be a 16 bit image format using an image collected with a 12 bit camera, so they might want to use the rescale intensity module (and then explain how to do that).  Make sure the warn dialog doesn't pop up fresh each time around the pipeline (only if setbeinganalyzed == 1). 
 
 -(Mike 10/11) (SINCE THIS RUNS OF SAVEIMAGES MODULE, CAN NOW ADD FEATURE TO USE OPTIONS WHICH ARE SPECIFIC TO THE IMAGE TYPE, WILL THIS FIX PROBLEMS?) (Requested by Anne) - Save Image As tool: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.

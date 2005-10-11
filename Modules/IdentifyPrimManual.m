@@ -24,18 +24,11 @@ function handles = IdentifyPrimManual(handles)
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-%    Additional image(s) are calculated by this module and can be 
+%    Additional image(s) are calculated by this module and can be
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
 %
-% See also IDENTIFYPRIMTHRESHOLD,
-% IDENTIFYPRIMADAPTTHRESHOLDA,
-% IDENTIFYPRIMADAPTTHRESHOLDB,
-% IDENTIFYPRIMADAPTTHRESHOLDC,
-% IDENTIFYPRIMADAPTTHRESHOLDD,
-% IDENTIFYPRIMSHAPEDIST,
-% IDENTIFYPRIMSHAPEINTENS,
-% IDENTIFYPRIMINTENSINTENS.
+% See also IDENTIFYPRIMAUTOMATIC
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -78,19 +71,19 @@ MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}
 %textVAR04 = What do you want to call the image of the outlines of the objects?
 %defaultVAR04 = OutlinedNuclei
 %infotypeVAR04 = outlinegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 =  What do you want to call the labeled matrix image?
 %choiceVAR05 = Do not save
 %choiceVAR05 = LabeledNuclei
 %infotypeVAR05 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
 %textVAR06 = Do you want to save the labeled matrix image in RGB or grayscale?
 %choiceVAR06 = RGB
 %choiceVAR06 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,6}); 
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %%%VariableRevisionNumber = 02
@@ -128,12 +121,13 @@ drawnow
 
 
 %%% Displays the image in a new figure window.
-FigureHandle = figure;
-ImageHandle = imagesc(LowResOrigImage);axis off,axis image
+FigureHandle = CPfigure;
+ImageHandle = imagesc(LowResOrigImage);
+colormap(handles.Preferences.IntensityColorMap);
+axis off
+axis image
 [nrows,ncols,ncolors] = size(LowResOrigImage);
-if ncolors == 1
-    
-end
+
 AxisHandle = gca;
 set(gca,'fontsize',handles.Current.FontSize)
 title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
@@ -152,13 +146,10 @@ FinalLabelMatrixImage = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
 FinalOutline = logical(zeros(size(FinalLabelMatrixImage,1),size(FinalLabelMatrixImage,2)));
 FinalOutline = bwperim(FinalLabelMatrixImage > 0);
 
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -168,7 +159,7 @@ ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
 drawnow
 CPfigure(handles,ThisModuleFigureNumber);
 
-subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]); 
+subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]);
 
 subplot(2,2,2); imagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
 
@@ -178,7 +169,6 @@ hold on, plot(x,y,'r'),hold off
 subplot(2,2,4); imagesc(ColoredLabelMatrixImage); title(['Segmented ' ObjectName]);
 
 CPFixAspectRatio(LowResOrigImage);
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -208,7 +198,6 @@ tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
@@ -216,8 +205,8 @@ try
         if strcmp(SaveMode,'RGB')
             handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
         else
-           handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-       end
+            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
+        end
     end
     if ~strcmp(SaveOutlined,'Do not save')
         handles.Pipeline.(SaveOutlined) = FinalOutline;

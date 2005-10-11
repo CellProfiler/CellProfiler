@@ -106,13 +106,10 @@ function handles = IdentifyPrimAutomatic(handles)
 % thresholding inherently assumes that 50% of the image is covered by
 % objects. If a larger percentage of the image is covered, the Otsu
 % method will give a slightly biased threshold that may have to be
-% corrected. In a future version, the 'Threshold correction factor'
-% may be removed and the "Approximate percentage covered by objects"
-% information used instead.  For now, however, you may need to enter an
-% adjustment factor which you empirically determine is suitable for
-% your images. The number 1 means no adjustment, 0 to 1 makes the
-% threshold more lenient and greater than 1 (e.g. 1.3) makes the
-% threshold more stringent.
+% corrected. You may need to enter an adjustment factor which you
+% empirically determine is suitable for your images. The number 1 means no
+% adjustment, 0 to 1 makes the threshold more lenient and greater than 1
+% (e.g. 1.3) makes the threshold more stringent.
 %
 % Lower bound on threshold:
 % Can be used as a safety precaution when the threshold is calculated

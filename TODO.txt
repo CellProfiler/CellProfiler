@@ -73,7 +73,7 @@ switch buttons with pathname
 
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 
--(I DONT THINK THESE REALLY GO TOGETHER WELL, IF THEY DO PLEASE EXPLAIN) (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
+-(MIKE > I think you are right, we should not implement this change.  Please remove this description from the help)>>> (I DONT THINK THESE REALLY GO TOGETHER WELL, IF THEY DO PLEASE EXPLAIN) (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently
 % be too stringent or too lenient.  For example, the Otsu automatic

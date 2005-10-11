@@ -170,25 +170,13 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Enter an optional parameter name here (BackgroundColor, Compression, Quality, etc.) or leave / for no optional parameters.
+%textVAR14 = Enter any optional parameter's here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
 %defaultVAR14 = /
-Option1 = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
-%textVAR15 = If using an optional paramter, enter its value here or leave / for no optional paramters.
-%defaultVAR15 = /
-OptionValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%textVAR15 = Warning! It is possible to overwrite existing files using this module!
 
-%textVAR16 = Enter an optional parameter name here (BackgroundColor, Compression, Quality, etc.) or leave / for no optional parameters.
-%defaultVAR16 = /
-Option2 = char(handles.Settings.VariableValues{CurrentModuleNum,16});
-
-%textVAR17 = If using an optional paramter, enter its value here or leave / for no optional paramters.
-%defaultVAR17 = /
-OptionValue2 = char(handles.Settings.VariableValues{CurrentModuleNum,17});
-
-%textVAR18 = Warning! It is possible to overwrite existing files using this module!
-
-%%%VariableRevisionNumber = 10
+%%%VariableRevisionNumber = 11
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -391,32 +379,36 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         end
     end
 
-    OptionDouble1 = strcmp(Option1,'DelayTime') || strcmp(Option1,'TransparentColor') || strcmp(Option1,'BackgroundColor') || strcmp(Option1,'LoopCount') || strcmp(Option1,'ScreenSize') || strcmp(Option1,'Location') || strcmp(Option1,'Quality') || strcmp(Option1,'BitDepth') || strcmp(Option1,'Resolution') || strcmp(Option1,'Transparency') || strcmp(Option1,'Background') || strcmp(Option1,'Gamma') || strcmp(Option1,'Chromaticities') || strcmp(Option1,'XResolution') || strcmp(Option1,'YResolution') || strcmp(Option1,'Alpha') || strcmp(Option1,'SignificantBits') || strcmp(Option1,'MaxValue');
-    OptionDouble2 = strcmp(Option2,'DelayTime') || strcmp(Option2,'TransparentColor') || strcmp(Option2,'BackgroundColor') || strcmp(Option2,'LoopCount') || strcmp(Option2,'ScreenSize') || strcmp(Option2,'Location') || strcmp(Option2,'Quality') || strcmp(Option2,'BitDepth') || strcmp(Option2,'Resolution') || strcmp(Option2,'Transparency') || strcmp(Option2,'Background') || strcmp(Option2,'Gamma') || strcmp(Option2,'Chromaticities') || strcmp(Option2,'XResolution') || strcmp(Option2,'YResolution') || strcmp(Option2,'Alpha') || strcmp(Option2,'SignificantBits') || strcmp(Option2,'MaxValue');
-
-    if ~strcmp(Option1,'/') && ~strcmp(Option2,'/')
-        if OptionDouble1 && OptionDouble2
-            FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',',OptionValue2];
-        elseif ~OptionDouble1 && OptionDouble2
-            FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',',Option2,''',',OptionValue2];
-        elseif OptionDouble1 && ~OptionDouble2
-            FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',''',OptionValue2,''''];
-        elseif ~OptionDouble1 && ~OptionDouble2
-            FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',''',Option2,''',''',OptionValue2,''''];
-        end
-    elseif ~strcmp(Option1,'/') && strcmp(Option2,'/')
-        if OptionDouble1
-            FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1];
-        elseif ~OptionDouble1
-            FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''''];
-        end
-    elseif strcmp(Option1,'/') && ~strcmp(Option2,'/')
-        if OptionDouble2
-            FileSavingParameters = [FileSavingParameters,',''',Option2,''',',OptionValue2];
-        elseif ~OptionDouble2
-            FileSavingParameters = [FileSavingParameters,',''',Option2,''',''',OptionValue2,''''];
-        end
+    if ~strcmp(OptionalParameters,'/')
+        FileSavingParameters = [',',OptionalParameters,FileSavingParameters]
     end
+
+    %OptionDouble1 = strcmp(Option1,'DelayTime') || strcmp(Option1,'TransparentColor') || strcmp(Option1,'BackgroundColor') || strcmp(Option1,'LoopCount') || strcmp(Option1,'ScreenSize') || strcmp(Option1,'Location') || strcmp(Option1,'Quality') || strcmp(Option1,'BitDepth') || strcmp(Option1,'Resolution') || strcmp(Option1,'Transparency') || strcmp(Option1,'Background') || strcmp(Option1,'Gamma') || strcmp(Option1,'Chromaticities') || strcmp(Option1,'XResolution') || strcmp(Option1,'YResolution') || strcmp(Option1,'Alpha') || strcmp(Option1,'SignificantBits') || strcmp(Option1,'MaxValue');
+    %OptionDouble2 = strcmp(Option2,'DelayTime') || strcmp(Option2,'TransparentColor') || strcmp(Option2,'BackgroundColor') || strcmp(Option2,'LoopCount') || strcmp(Option2,'ScreenSize') || strcmp(Option2,'Location') || strcmp(Option2,'Quality') || strcmp(Option2,'BitDepth') || strcmp(Option2,'Resolution') || strcmp(Option2,'Transparency') || strcmp(Option2,'Background') || strcmp(Option2,'Gamma') || strcmp(Option2,'Chromaticities') || strcmp(Option2,'XResolution') || strcmp(Option2,'YResolution') || strcmp(Option2,'Alpha') || strcmp(Option2,'SignificantBits') || strcmp(Option2,'MaxValue');
+
+    %if ~strcmp(Option1,'/') && ~strcmp(Option2,'/')
+    %    if OptionDouble1 && OptionDouble2
+    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',',OptionValue2];
+    %    elseif ~OptionDouble1 && OptionDouble2
+    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',',Option2,''',',OptionValue2];
+    %    elseif OptionDouble1 && ~OptionDouble2
+    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',''',OptionValue2,''''];
+    %    elseif ~OptionDouble1 && ~OptionDouble2
+    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',''',Option2,''',''',OptionValue2,''''];
+    %    end
+    %elseif ~strcmp(Option1,'/') && strcmp(Option2,'/')
+    %    if OptionDouble1
+    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1];
+    %    elseif ~OptionDouble1
+    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''''];
+    %    end
+    %elseif strcmp(Option1,'/') && ~strcmp(Option2,'/')
+    %    if OptionDouble2
+    %        FileSavingParameters = [FileSavingParameters,',''',Option2,''',',OptionValue2];
+    %    elseif ~OptionDouble2
+    %        FileSavingParameters = [FileSavingParameters,',''',Option2,''',''',OptionValue2,''''];
+    %    end
+    %end
 
     if strcmp(FileFormat,'fig')
         if length(ImageName) == 1

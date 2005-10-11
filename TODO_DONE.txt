@@ -1,10 +1,22 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
--(WHICH ERROR DIALOGS, DONT THINK ERROR AND ERRORDLG CAN BE CHANGED) (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
+-(Mike 10/100) (SINCE THIS RUNS OF SAVEIMAGES MODULE, CAN NOW ADD FEATURE TO USE OPTIONS WHICH ARE SPECIFIC TO THE IMAGE TYPE, WILL THIS FIX PROBLEMS?) (Requested by Anne) - Save Image As tool: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
+>>Make the variable descriptions in the Save Image As window match the fuller, better descriptions in the SaveImages module.
 
-- (Requested by Anne 10-10-05) - Move CPsplash.jpg to CPsubfunctions. Take capitals out of other subfunctions' names.
+>>>'color',8,'string,'twttt'
+>>> in the help, point then to the imwrite help.
 
--(IMAGE LOOKUP NOW WORKS, PLEASE SHOW ME *.* PROBLEM) (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames, and when it lets you choose an image file, on the mac it has the annoying {*.*} problem so that you can't choose an image file until you change the dropdown menu for file format in the uigetfile window.
+-(Mike 10/11) (COULDNT REPRODUCE, BUT WE CAN JUST REMOVE RGB BUTTONS FROM TEXT ONLY DISPLAY) (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
+??? Error using ==> set
+Index exceeds matrix dimensions.
+??? Error using ==> set
+Error while evaluating uicontrol Callback.
+
+-(Mike 10/11) (WHICH ERROR DIALOGS, DONT THINK ERROR AND ERRORDLG CAN BE CHANGED) (Requested by Anne) - The error dialogs are not proper CP color. Also, in several places, we use the helpdlg Matlab function and so the color of the resulting help dialog window is not the proper CP color.
+
+-(Mike 10/11) (Requested by Anne 10-10-05) - Move CPsplash.jpg to CPsubfunctions. Take capitals out of other subfunctions' names.
+
+-(Mike 10/11 *.* IS MATLAB BUG) (IMAGE LOOKUP NOW WORKS, PLEASE SHOW ME *.* PROBLEM) (Requested by Anne 8-24-05) - The ShowDataOnImage ImageTool is very buggy lately. In particular, it can't seem to look up the image filenames, and when it lets you choose an image file, on the mac it has the annoying {*.*} problem so that you can't choose an image file until you change the dropdown menu for file format in the uigetfile window.
 
 -(Mike 10/07) (Requested by Anne) - Add a happy dialog box that shows while CellProfiler is loading.  Include the CellProfiler logo, 'CellProfiler is starting up...' text, the authors & contributors, etc.
 

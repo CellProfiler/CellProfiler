@@ -65,17 +65,6 @@ switch buttons with pathname
 
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 
--(SINCE THIS RUNS OF SAVEIMAGES MODULE, CAN NOW ADD FEATURE TO USE OPTIONS WHICH ARE SPECIFIC TO THE IMAGE TYPE, WILL THIS FIX PROBLEMS?) (Requested by Anne) - Save Image As tool: does not work well for all kinds of displayed images (e.g. The mean image produced by correct illum divide all mean comes out weird). Test it with a bunch of image outputs and make it more compatible.
->>Make the variable descriptions in the Save Image As window match the fuller, better descriptions in the SaveImages module.
-
->>>'color',8,'string,'twttt'
->>> in the help, point then to the imwrite help.
-
--(I THINK ANNE SAID THIS WAS DONE) (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:
-       SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res.
-             2004 Jan 1;32 Database issue:D319-22. PMID: 14681423
-Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
-
 -(I DONT THINK THESE REALLY GO TOGETHER WELL, IF THEY DO PLEASE EXPLAIN) (Requested by Anne) - Implement the following threshold calculating stuff as described in the help for IdentifyPrimAutomatic:
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently
@@ -90,12 +79,6 @@ Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial
 % your images. The number 1 means no adjustment, 0 to 1 makes the
 % threshold more lenient and greater than 1 (e.g. 1.3) makes the
 % threshold more stringent.
-
--(COULDNT REPRODUCE, BUT WE CAN JUST REMOVE RGB BUTTONS FROM TEXT ONLY DISPLAY) (Requested by Anne) - The RGB buttons on CPfigures produce an error at the command line when the figure is only displaying text. It should either produce a warning dialog stating what the RGB buttons are for and that there is no image in the window, or it should just do nothing.
-??? Error using ==> set
-Index exceeds matrix dimensions.
-??? Error using ==> set
-Error while evaluating uicontrol Callback.
 
 - (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells). This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
 
@@ -210,6 +193,11 @@ VISION PROJECTS:
 ---------------------------------------------------
 
 PROBABLY DO NOT WANT TO INVEST TIME IN THESE IMMEDIATELY:
+
+-(I THINK ANNE SAID THIS WAS DONE) (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:
+       SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res.
+             2004 Jan 1;32 Database issue:D319-22. PMID: 14681423
+Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
 
 - (Requested by Colin) - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
 

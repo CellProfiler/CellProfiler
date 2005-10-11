@@ -211,7 +211,7 @@ end
 try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
 addpath(Pathname)
 catch 
-    errordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
+    CPCPerrordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
 end
 
 %%% Checks figure handles for current open windows.
@@ -456,7 +456,7 @@ catch error(['CellProfiler was unable to load ',fullfile(SettingsPathname,Settin
 end
 %%% Error Checking for valid settings file.
 if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
-    errordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
+    CPerrordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     errFlg = 1;
     return
 end
@@ -474,12 +474,12 @@ end
 try
     [NumberOfModules, MaxNumberVariables] = size(Settings.VariableValues);
     if (size(Settings.ModuleNames,2) ~= NumberOfModules)||(size(Settings.NumbersOfVariables,2) ~= NumberOfModules);
-        errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+        CPerrordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
         errFlg = 1;
         return
     end
 catch
-    errordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
+    CPerrordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']); 
     errFlg = 1;
     return
 end
@@ -708,7 +708,7 @@ try
     end    
     fclose(fid);
 catch
-    uiwait(errordlg(['The ' ModuleName ' module could not be found in the directory specified. You will be able to see the module''s saved settings, but it is suggested that CellProfiler be shut down since the stored settings are now corrupt.'],'Error'));
+    uiwait(CPerrordlg(['The ' ModuleName ' module could not be found in the directory specified. You will be able to see the module''s saved settings, but it is suggested that CellProfiler be shut down since the stored settings are now corrupt.'],'Error'));
     Failed = 1;
 end
 
@@ -940,7 +940,7 @@ if(~isempty(obj))  %Window already exists
 end
 
 if handles.Current.NumberOfModules == 99
-    errordlg('CellProfiler in its current state can only handle 99 modules. You have just attempted to load the 100th module. It should be fairly straightforward to modify the code in CellProfiler.m to expand its capabilities.');
+    CPerrordlg('CellProfiler in its current state can only handle 99 modules. You have just attempted to load the 100th module. It should be fairly straightforward to modify the code in CellProfiler.m to expand its capabilities.');
     return
 end
 
@@ -972,7 +972,7 @@ if ModuleNamedotm ~= 0,
     if length(differentPaths) == 0,
         %%% If the module's .m file is not found on the search path, the result
         %%% of exist is zero, and the user is warned.
-        errordlg(['Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.'],'Error');
+        CPerrordlg(['Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.'],'Error');
         return
     elseif length(differentPaths) > 1,
         warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' char(differentPaths{1}) ' will likely be used, but this is unpredictable.  Modules should have unique names that are not the same as already existing Matlab functions to avoid confusion.']);
@@ -1401,7 +1401,7 @@ if ModuleNamedotm ~= 0,
     end
    
     if lastVariableCheck == 0
-        errordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
+        CPerrordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
         return
     end
     
@@ -2016,12 +2016,12 @@ elseif strcmp(InputType, 'popupmenu')
 end
 
 if isempty(UserEntry)
-    errordlg('Variable boxes must not be left blank');
+    CPerrordlg('Variable boxes must not be left blank');
     set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string', 'Fill in');
     storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
 else
     if ModuleNumber == 0,
-        errordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');
+        CPerrordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');
     else
         storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
     end
@@ -2110,12 +2110,12 @@ function PixelSizeEditBox_Callback(hObject, eventdata, handles) %#ok We want to 
 %%% error message if it is not a number.
 user_entry = str2double(get(hObject,'string'));
 if isnan(user_entry)
-    errordlg('You must enter a numeric value','Bad Input','modal');
+    CPerrordlg('You must enter a numeric value','Bad Input','modal');
     set(hObject,'string','0.25')
     %%% Checks to see whether the user input is positive, and generates an
     %%% error message if it is not.
 elseif user_entry<=0
-    errordlg('You entered a value less than or equal to zero','Bad Input','modal');
+    CPerrordlg('You entered a value less than or equal to zero','Bad Input','modal');
     set(hObject,'string', '0.25')
 else
     %%% Gets the user entry and stores it in the handles structure.
@@ -2611,7 +2611,7 @@ if exist(pathname,'dir')
     %%% previously selected directory, and change the contents of the
     %%% filenameslistbox back to the previously selected directory.
 else 
-    errordlg('A directory with that name does not exist');
+    CPerrordlg('A directory with that name does not exist');
 end
 %%% Whether or not the directory exists and was updated, we want to
 %%% update the GUI display to show the currrently stored information.
@@ -2669,7 +2669,7 @@ if exist(pathname,'dir') ~= 0
     %%% previously selected directory, and change the contents of the
     %%% filenameslistbox back to the previously selected directory.
 else 
-    errordlg('A directory with that name does not exist');
+    CPerrordlg('A directory with that name does not exist');
 end
 %%% Whether or not the directory exists and was updated, we want to
 %%% update the GUI display to show the currrently stored information.
@@ -2796,7 +2796,7 @@ for i = 1:handles.Current.NumberOfModules;
 end
 TimerStart = 0;
 if sum == 0
-    errordlg('You do not have any analysis modules loaded');
+    CPerrordlg('You do not have any analysis modules loaded');
 else    
     %%% Call Callback function of FileNameEditBox to update filename
     tmp = get(handles.OutputFileNameEditBox,'string');
@@ -2816,15 +2816,15 @@ else
         
     %%% Checks whether an output file name has been specified.
     if isempty(get(handles.OutputFileNameEditBox,'string'))
-        errordlg('You have not entered an output file name in Step 2.');
+        CPerrordlg('You have not entered an output file name in Step 2.');
     else
         %%% Checks whether the default output directory exists.
         if ~exist(handles.Current.DefaultOutputDirectory, 'dir')
-            errordlg('The default output directory does not exist');
+            CPerrordlg('The default output directory does not exist');
         end
         %%% Checks whether the default image directory exists
         if ~exist(handles.Current.DefaultImageDirectory, 'dir')
-            errordlg('The default image directory does not exist');
+            CPerrordlg('The default image directory does not exist');
         else
                 %%% Retrieves the list of image file names from the
                 %%% chosen directory, stores them in the handles
@@ -3009,7 +3009,7 @@ else
                                 end
                             catch
                                 if exist([ModuleName,'.m'],'file') ~= 2,
-                                    errordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
+                                    CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
                                 else
                                     %%% Runs the errorfunction function that catches errors and
                                     %%% describes to the user what to do.
@@ -3425,7 +3425,7 @@ elseif isempty(strfind(Error,'bad magic')) == 0
 else
     ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is module #', CurrentModuleNumber, ' in the pipeline.'];
 end
-errordlg(ErrorExplanation);
+CPerrordlg(ErrorExplanation);
 
 %%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%

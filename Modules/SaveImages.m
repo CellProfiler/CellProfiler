@@ -358,10 +358,13 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %%% (movie) file, because otherwise the check would be done on each
         %%% frame of the movie.
         if exist(NewFileAndPathName) == 2
-            Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+            try Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+            catch error(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
+            end
             if strcmp(Answer,'Cancel') == 1
                 error('Image processing was canceled')
             end
+
         end
     end
 
@@ -439,8 +442,10 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
                 %%% because otherwise the check would be done on each frame
                 %%% of the movie.
                 if exist(NewFileAndPathName) == 2
-                    Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
-                    if strcmp(Answer,'Cancel') == 1
+                   try Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+                   catch erro (['Turn off checking overwriting dialogbox on cluster'])
+                   end
+                   if strcmp(Answer,'Cancel') == 1
                         error('Image processing was canceled')
                     end
                 end

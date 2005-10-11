@@ -5133,6 +5133,6 @@ rmappdata(0,'OpenGuiWhenRunning');
 function SplashScreenHandle = SplashScreen;
 SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
 axis off;
-logo = imread('CPSplash.jpg','jpg');
+logo = imread('CPsplash.jpg','jpg');
 iptsetpref('ImshowBorder','tight')
 test = imshow(logo);

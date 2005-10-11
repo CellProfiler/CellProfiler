@@ -3,6 +3,14 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 WOW! WHAT A SHORT LIST!!!
 
+- (Requested by Anne 10-10-05) - IdentifyPrimManually - the colormap is not applied to the image when you are asked to click on points.  Also colormap doesn't seem applied in DisplayGridInfo module. DisplayGridInfo seems a little unpolished - e.g. it says 'Figure1' at the top rather than saying which module it is, and it doesn't say what image # it is. We'd like to be able to change the text properties and gridlines in a manner similar to DefineGrid's display, so that code should be copied over to DsiplayGridInfo.
+
+- (Requested by Anne 10-10-05) - We should somehow let the user change the path specifying which CellProfiler code will be used since we often have several copies of CP on a single computer. Option 1: allow the user to choose which CellProfiler will be used somewhere in CellProfiler itself (e.g. in the Set/LoadPreferences window). But would this allow the changes to take place immediately, or would it be a problem that CellProfiler is already running when the path is set? I would guess that changing the path would allow the Modules or subfunctions in the new location to be used, but I am not sure whether the CellProfiler.m file in the new location would be used when CP is already open and running. Option 2: we could remember to start up CellProfiler in Matlab using the full path (i.e. type this:  /Users/anne/trunk/CellProfiler/CellProfiler  rather than just typing CellProfiler to start it up). I think the code we have currently in place would work - e.g. adding the Modules subfolder to the path I think is done when you click the Add Modules button but I am not sure it pays attention to which CellProfiler is being run in order to use the same path.
+
+In this process, we should check every use of the command 'path' to make sure that we aren't adding other things to the path so that it behaves as expected.
+
+- (Requested by Anne 10-10-05) - IdentifyPrimAuto has the nice image tools which appear when you click on one of the frames of the movie. I think we still need to adapt all the other modules to have this feature.
+
 - (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.
 
 - (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. 

@@ -1,4 +1,4 @@
-function [Success] = CompileSubfunctionOnCluster(FullPathofSubfunction, SubfunctionName)
+function [Success] = CPcompilesubfunction(FullPathofSubfunction, SubfunctionName)
 
 try
     cd(FullPathofSubfunction)
@@ -9,3 +9,6 @@ catch
     Success = 'There was an error compiling the subfunction';
     
 end
+
+%%% Here is what you would type at the command line to compile a subfunction:
+%%%

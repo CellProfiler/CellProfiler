@@ -3794,9 +3794,9 @@ end
 
 function ZipFiles_Callback(hObject, eventdata, handles)
 if ispc
-    ListOfThingsToSave = {'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.m' 'Modules\IdentifySecPropagateSubfunction.*' 'Help\*.m' 'CellProfiler.m'};
+    ListOfThingsToSave = {'CPsubfunctions\CPsplash.jpg' 'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.m' 'Modules\IdentifySecPropagateSubfunction.*' 'Help\*.m' 'CellProfiler.m'};
 else
-    ListOfThingsToSave = {'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.m' 'Modules/IdentifySecPropagateSubfunction.*' 'Help/*.m' 'CellProfiler.m'};
+    ListOfThingsToSave = {'CPsubfunctions/CPsplash.jpg' 'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.m' 'Modules/IdentifySecPropagateSubfunction.*' 'Help/*.m' 'CellProfiler.m'};
 end
 try
     ZipFileName = [handles.Current.DefaultOutputDirectory '/CellProfilerCode_',date,'.zip'];

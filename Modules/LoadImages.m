@@ -452,6 +452,9 @@ for n = 1:length(ImageName)
             Pathname = handles.Pipeline.(fieldname);
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
 
+            if (max(max(LoadedImage)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
+                CPwarndlg('Your images appear to be 16-bit images taken with a 12-bit camera. Consider re-scaling.');
+            end
             %%% Saves the original image file name to the handles
             %%% structure.  The field is named appropriately based on
             %%% the user's input, in the Pipeline substructure so that

@@ -46,6 +46,5 @@ for i = 1:length(ErrorString)
     ErrorStringCell{end+1} = xlate(ErrorString{i});
 end
 
-handle = msgbox(ErrorStringCell,DlgName,'error',Replace);
-set(handle,'color',[.7 .7 .9]);
+handle = CPmsgbox(ErrorStringCell,DlgName,'error',Replace);
 if nargout==1,varargout(1)={handle};end

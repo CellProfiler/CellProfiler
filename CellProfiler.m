@@ -26,8 +26,15 @@ function varargout = CellProfiler(varargin)
 
 % Begin initialization code - DO NOT EDIT
 if ~nargin
-    tic
     SplashHandle = SplashScreen;
+    tic
+    if sum(strfind(path,fileparts(which('CellProfiler.m')))) == 0
+        try
+            addpath(genpath(fileparts(which('CellProfiler.m'))))
+        catch errordlg('You changed the name of CellProfiler.m file!!');
+        end
+    end
+    toc
 end
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...

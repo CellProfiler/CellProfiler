@@ -1,1 +1,1 @@
-CPfigure
+%pathnametextVAR

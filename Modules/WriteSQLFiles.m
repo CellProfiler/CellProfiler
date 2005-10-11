@@ -65,8 +65,12 @@ if CurrentModuleNum ~= handles.Current.NumberOfModules
     end
 end;
 
-if strcmp(DataPath, '.') == 1
-    DataPath = handles.Current.DefaultOutputDirectory ;
+if strncmp(DataPath, '.',1)
+    if length(DataPath) == 1
+        DataPath = handles.Current.DefaultOutputDirectory;
+    else
+        DataPath = fullfile(handles.Current.DefaultOutputDirectory,DataPath(2:end));
+    end
 end
 
 %% Two possibilities: we're at the end of the pipeline in an

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/11) (Requested by Anne 10-10-05) - For pathnames that are entered as variables, I think most do not allow you to specify relative pathnames, for example:   ./Subfolder1  (meaning the default image folder + /Subfolder1).  We would like to make this possible.
+
 -(Mike 10/11) (Requested by Anne 10-10-05) - IdentifyPrimManually - the colormap is not applied to the image when you are asked to click on points.  Also colormap doesn't seem applied in DisplayGridInfo module. DisplayGridInfo seems a little unpolished - e.g. it says 'Figure1' at the top rather than saying which module it is, and it doesn't say what image # it is. We'd like to be able to change the text properties and gridlines in a manner similar to DefineGrid's display, so that code should be copied over to DsiplayGridInfo.
 
 -(Mike 10/11) (Requested by Anne 10-10-05) - send beta terms, current CP code, ExampleFlyPIPE, and link to images to juergen@hedges-klenk.com This should be very similar to what you sent to Max Sonnleitner recently, except it should include fresh code & PIPE. Hello, Anne asked me to send you the beta version of CellProfiler to play with....

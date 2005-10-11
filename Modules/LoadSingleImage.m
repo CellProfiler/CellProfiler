@@ -123,8 +123,12 @@ TextToFind = tmp1;
 ImageName = tmp2;
 
 %%% Get the pathname and check that it exists
-if strcmp(Pathname, '.')
-    Pathname = handles.Current.DefaultImageDirectory;
+if strncmp(Pathname,'.',1)
+    if length(Pathname) == 1
+        Pathname = handles.Current.DefaultImageDirectory;
+    else
+        Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+    end
 end
 SpecifiedPathname = Pathname;
 if ~exist(SpecifiedPathname,'dir')

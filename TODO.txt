@@ -11,8 +11,6 @@ In this process, we should check every use of the command 'path' to make sure th
 
 - (Requested by Anne 10-10-05) - Can we adjust MeasureObjectTexture and MeasureObjectIntensity to (as an option) measure Texture and Intensity for the Entire Image rather than just objects?  Then we should change the names  of these modules (blech).  We should talk/think about whether to really do this.
 
-- (Requested by Anne 10-10-05) - For pathnames that are entered as variables, I think most do not allow you to specify relative pathnames, for example:   ./Subfolder1  (meaning the default image folder + /Subfolder1).  We would like to make this possible.
-
 - (Requested by Anne 10-10-05) - Change the name of RGBMerge to GraytoRGB, and adjust the ExampleFlyPIPE & OUT accordingly.  Maybe also: should we change "RGB" to "Color", so it's GrayToColor and ColorToGray? I think this might make it nicer for biologists. Not sure if the general public knows what RGB means.
 
 - (Requested by Anne 10-10-05) - Probably most modules should have a warning at the beginning if the image is outside the range 0-1.  Will have to think carefully about which modules would need this warning in order for them to function properly.  Make sure the warn  dialog does not pop up fresh each time - i think there is a way for matlab to only open the dialog if there isn't already a copy open.

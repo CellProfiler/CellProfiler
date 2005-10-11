@@ -69,8 +69,12 @@ BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if strcmp(BatchPath, '.') == 1
-    BatchPath = handles.Current.DefaultOutputDirectory;
+if strncmp(BatchPath,'.',1)
+    if length(BatchPath) == 1
+        BatchPath = handles.Current.DefaultImageDirectory;
+    else
+        BatchPath = fullfile(handles.Current.DefaultImageDirectory,BatchPath(2:end));
+    end
 end
 
 %%% If this isn't the first image set, we're probably running on the

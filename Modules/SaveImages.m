@@ -207,12 +207,16 @@ end
 %%% The module is only carried out if this is the appropriate set being
 %%% analyzed, or if the user wants it done every time.
 if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.Current.SetBeingAnalyzed == 1) | (strncmpi(SaveWhen,'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets)
-
-    if strcmp(FileDirectory,'.') == 1
-        FileDirectoryToSave = handles.Current.DefaultOutputDirectory;
-    elseif strcmpi(FileDirectory,'I') == 1
+    
+    if strcmp(FileDirectory,'.')
+        if length(FileDirectory) == 1
+            FileDirectoryToSave = handles.Current.DefaultOutputDirectory;
+        else
+            FileDirectoryToSave = fullfile(handles.Current.DefaultOutputDirectory,FileDirectory(2:end));
+        end
+    elseif strcmpi(FileDirectory,'I')
         FileDirectoryToSave = handles.Current.DefaultImageDirectory;
-    elseif strcmpi(FileDirectory,'S') == 1
+    elseif strcmpi(FileDirectory,'S')
         %%% If 'S', then the directory name will be determined below,
         %%% when the file name is retrieved.
     else FileDirectoryToSave = FileDirectory;

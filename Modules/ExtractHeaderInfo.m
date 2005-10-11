@@ -81,8 +81,12 @@ ImageName{5} = FifthImageName;
 if SetBeingAnalyzed == 1
     %%% For all 3 image slots, the file names are extracted.
     for n = 1:2:5
-        if strncmp(SpecifiedPathName, 'Default', 7) == 1
-            PathName = handles.Current.DefaultImageDirectory;
+        if strncmp(SpecifiedPathName,'.',1) == 1
+            if length(SpecifiedPathName) == 1
+                PathName = handles.Current.DefaultImageDirectory;
+            else
+                PathName = fullfile(handles.Current.DefaultImageDirectory,PathName(2:end));
+            end
             FileNames = handles.Current.FilenamesInImageDir;
             if SetBeingAnalyzed == 1
                 %%% Determines the number of image sets to be analyzed.

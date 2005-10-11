@@ -292,23 +292,39 @@ NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(BatchSavePath, '.') == 1
-    BatchSavePath = handles.Current.DefaultOutputDirectory;
+if strncmp(BatchSavePath, '.',1)
+    if length(BatchSavePath) == 1
+        BatchSavePath = handles.Current.DefaultOutputDirectory;
+    else
+        BatchSavePath = fullfile(handles.Current.DefaultOutputDirectory,BatchSavePath(2:end));
+    end
 end
 
-if strcmp(BatchRemotePath, '.') == 1
-    BatchRemotePath = handles.Current.DefaultOutputDirectory;
+if strncmp(BatchRemotePath, '.',1)
+    if length(BatchRemotePath) == 1
+        BatchRemotePath = handles.Current.DefaultOutputDirectory;
+    else
+        BatchRemotePath = fullfile(handles.Current.DefaultOutputDirectory,BatchRemotePath(2:end));
+    end
 end
 
-if strcmp(BatchImagePath, '.') == 1
-    BatchImagePath = handles.Current.DefaultImageDirectory;
+if strncmp(BatchImagePath, '.',1)
+    if length(BatchImagePath) == 1
+        BatchImagePath = handles.Current.DefaultImageDirectory;
+    else
+        BatchImagePath = fullfile(handles.Current.DefaultImageDirectory,BatchImagePath(2:end));
+    end
 end
 
-if strcmp(BatchOutputPath, '.') == 1
-    BatchOutputPath = handles.Current.DefaultOutputDirectory;
+if strncmp(BatchOutputPath, '.',1)
+    if length(BatchOutputPath) == 1
+        BatchOutputPath = handles.Current.DefaultOutputDirectory;
+    else
+        BatchOutputPath = fullfile(handles.Current.DefaultOutputDirectory,BatchOutputPath(2:end));
+    end
 end
 
-if strcmp(BatchCellProfilerPath, '.') == 1,
+if strncmp(BatchCellProfilerPath, '.',1)
     BatchCellProfilerPath = fullfile(handles.Preferences.DefaultModuleDirectory, '..');
 end
 

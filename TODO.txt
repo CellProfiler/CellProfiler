@@ -1,7 +1,9 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
-WOW! WHAT A SHORT LIST!!!
+- (Requested by Anne 10-10-05) - send beta terms, current CP code, ExampleFlyPIPE, and link to images to juergen@hedges-klenk.com
+This should be very similar to what you sent to Max Sonnleitner recently, except it should include fresh code & PIPE.
+Hello, Anne asked me to send you the beta version of CellProfiler to play with....
 
 - (Requested by Anne 10-10-05) - IdentifyPrimManually - the colormap is not applied to the image when you are asked to click on points.  Also colormap doesn't seem applied in DisplayGridInfo module. DisplayGridInfo seems a little unpolished - e.g. it says 'Figure1' at the top rather than saying which module it is, and it doesn't say what image # it is. We'd like to be able to change the text properties and gridlines in a manner similar to DefineGrid's display, so that code should be copied over to DsiplayGridInfo.
 
@@ -13,7 +15,7 @@ In this process, we should check every use of the command 'path' to make sure th
 
 - (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.
 
-- (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. 
+- (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. Let me know when it's done and we can calculate the stats on the SBS competition and see how we did!!
 
 - (Requested by Anne 10-10-05) - Can we adjust MeasureObjectTexture and MeasureObjectIntensity to (as an option) measure Texture and Intensity for the Entire Image rather than just objects?  Then we should change the names  of these modules (blech).  We should talk/think about whether to really do this.
 

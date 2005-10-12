@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+-(Mike 10/12) (Requested by Anne 10-11-2005) - Convert SplitUpAviMovie and SpliceAVIMovie (in DeveloperScripts) into a combined, regular CP module called SplitOrSpliceMovie.
+
+-(Mike 10/12) (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. Let me know when it's done and we can calculate the stats on the SBS competition and see how we did!!
+
 -(Mike 10/12) (Requested by Anne 10-12-2005) - Mike, see whether doublegraythresh is used in the code anywhere, and if not, move it to Outdated as per my discussion with Ray:
 I think this was Colin's, when he was looking at using Otsu's method
 to segment three-level images.  I'm not sure if it got incorporated at

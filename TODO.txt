@@ -5,13 +5,9 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
-- (Requested by Anne 10-11-2005) - Convert SplitUpAviMovie and SpliceAVIMovie (in DeveloperScripts) into a combined, regular CP module called SplitOrSpliceMovie.
-
 - Make IdentifySecondary use same thresholding options as IdentifyPrimAutomatic, CPthreshold?
 
 - (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.
-
-- (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. Let me know when it's done and we can calculate the stats on the SBS competition and see how we did!!
 
 - (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
 

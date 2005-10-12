@@ -430,5 +430,7 @@ GridInfo.GridXLocations = GridXLocations;
 GridInfo.GridYLocations = GridYLocations;
 GridInfo.YLocations = YLocations;
 GridInfo.XLocations = XLocations;
+GridInfo.LeftOrRight = LeftOrRight;
+GridInfo.TopOrBottom = TopOrBottom;
 
 handles.Pipeline.(['Grid_' GridName]) = GridInfo;

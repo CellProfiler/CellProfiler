@@ -71,18 +71,21 @@ drawnow
 
 %%% Retrieve grid info from previously run module.
 GridInfo = handles.Pipeline.(['Grid_' GridName]);
-% Rows = GridInfo.Rows;
-% Columns = GridInfo.Columns;
+Rows = GridInfo.Rows;
+Columns = GridInfo.Columns;
 YSpacing = GridInfo.YSpacing;
+XSpacing = GridInfo.XSpacing;
 VertLinesX = GridInfo.VertLinesX;
 VertLinesY = GridInfo.VertLinesY;
 HorizLinesX = GridInfo.HorizLinesX;
 HorizLinesY = GridInfo.HorizLinesY;
 SpotTable = GridInfo.SpotTable;
-% GridXLocations = GridInfo.GridXLocations;
-% GridYLocations = GridInfo.GridYLocations;
+GridXLocations = GridInfo.GridXLocations;
+GridYLocations = GridInfo.GridYLocations;
 YLocations = GridInfo.YLocations;
 XLocations = GridInfo.XLocations;
+LeftOrRight = GridInfo.LeftOrRight;
+TopOrBottom = GridInfo.TopOrBottom;
 
 % GridXLocations = VertLinesX(1,1:end-1);
 % GridXLocations = repmat(GridXLocations,Rows,1);
@@ -114,6 +117,22 @@ line(HorizLinesX,HorizLinesY);
 set(FigHandle,'Toolbar','figure');
 title(['Image set #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',8);
 set(findobj(FigHandle,'type','line'),'color',[.15 1 .15])
+
+%%% Sets the location of Tick marks.
+set(gca, 'XTick', GridXLocations(1,:)+floor(XSpacing/2))
+set(gca, 'YTick', GridYLocations(:,1)+floor(YSpacing/2))
+
+%%% Sets the Tick Labels.
+if strcmp(LeftOrRight,'Right')
+    set(gca, 'XTickLabel',fliplr(1:Columns))
+else
+    set(gca, 'XTickLabel',{1:Columns})
+end
+if strcmp(TopOrBottom,'Bottom')
+    set(gca, 'YTickLabel',{fliplr(1:Rows)})
+else
+    set(gca, 'YTickLabel',{1:Rows})
+end
 
 GridLineCallback = [...
     'button = gco;'...

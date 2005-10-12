@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 10-12-2005) - New Service Pack 3 (version 7.1) requests: We commented out the bug workaround which reverses the slider for macs, but we need to put it back in if the user is using a mac && the user is using version 7.0 or earlier. Also, somewhere in the code when you click on a module in the pipeline, the slider is reset so it's supposed to display the top variables (the slider indicator is in the top position), but on my new SP3 7.1 setup, the slider is always placed in the bottom position - is this working ok on the PC, or is it another workaround that needs to be un-worked around for 7.1 and later?
+
 - Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
 
 - Change installation guide to use "run /Applications/CellProfiler.m"

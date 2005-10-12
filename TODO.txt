@@ -7,6 +7,9 @@ MAJOR ISSUE>>>
 MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
 - (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny.
 
+MINOR ISSUE >>>
+The main GUI mostly looks fine on SP3  7.1, except the text Output filename is shifted over about two characters too far to the right. It'd also look a bit better if we could move Pixel size and Adjust modules just one pixel to the left.
+
 - Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
 
 - Requested by Anne 10-12-2005 - Help > General Help is displaying the correct listbox full of help files but the title of the window and the instructions at the top are referring to Tools rather than just general help.
@@ -106,6 +109,9 @@ colinc@mit.edu
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
+
+- (Requested by Anne 10-12-05) - In the listbox at the lower left, currently clicking on files there does nothing. It would be cool if the user doubleclicks on something in the listbox the following would happen: if if it's a PIPE or OUT file, check that it has the appropriate fields (Settings or handles.Settings) and ask the user if they want to load the pipeline from the file.
+if not, try to open it as an image, using the ImageTool for opening images.
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

@@ -1,9 +1,17 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
+MAJOR ISSUE>>>
 - (Requested by Anne 10-12-2005) - New Service Pack 3 (version 7.1) requests: We commented out the bug workaround which reverses the slider for macs, but we need to put it back in if the user is using a mac && the user is using version 7.0 or earlier. Also, somewhere in the code when you click on a module in the pipeline, the slider is reset so it's supposed to display the top variables (the slider indicator is in the top position), but on my new SP3 7.1 setup, the slider is always placed in the bottom position - is this working ok on the PC, or is it another workaround that needs to be un-worked around for 7.1 and later?
 
+MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
+- (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny.
+
 - Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
+
+- Requested by Anne 10-12-2005 - Help > General Help is displaying the correct listbox full of help files but the title of the window and the instructions at the top are referring to Tools rather than just general help.
+
+- Requested by Anne 10-12-2005 - Help > ImageTools and Help > DataTools doesn't seem to work - doubleclicking something in the list box or clicking OK doesn't seem to do anything, but there isn't any error msg produced either.  I think maybe it works the first time you click something but not subsequent clicks?
 
 - Change installation guide to use "run /Applications/CellProfiler.m"
 

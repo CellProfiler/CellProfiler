@@ -456,8 +456,8 @@ for n = 1:length(ImageName)
             Pathname = handles.Pipeline.(fieldname);
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
 
-            if (max(LoadedImage(:)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
-                CPwarndlg('Your images appear to be 16-bit images taken with a 12-bit camera. Consider re-scaling.');
+            if (max(LoadedImage(:)) <= .0625) && (handles.Current.SetBeingAnalyzed == 1)
+                CPwarndlg('Warning: your images are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. You might consider using the RescaleIntensity module to rescale the images using a factor of 0.0625.');
             end
             %%% Saves the original image file name to the handles
             %%% structure.  The field is named appropriately based on

@@ -1,6 +1,7 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
+- Add text to AddModuleWindow for help buttons?
 
 (Requested by Anne 10-12-2005) - The following disclaimer needs to be added to the LICENSE file. We may also need to change our statement about GPL to read something like "Use of this software is governed by GPL plus the disclaimer present in the LICENSE.txt file".
 
@@ -26,14 +27,9 @@ determine whether this is useful to us at all? My guess is that someone
 was playing around with it and abandoned it, so I was planning to move
 it to Outdated unless you object.
 
+- (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
-(Requested by Anne 10-11-2005) - Check the file MatlabSetup.txt in DeveloperScripts - it seems to indicate that normally we just retrieve updates straight from the Mathworks website rather than waiting for CDs. Maybe give it a try.
-
-(Requested by Anne 10-11-2005) - Retrieve the help from LoadImagesOrder and LoadMovies (Order & Text) and incorporate into LoadImages... we should make sure that we've not lost help from modules that were recently combined b/c a lot of work went into writing it up in the first place!
-
-(Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
-
-(Requested by Anne 10-11-2005) - Convert SplitUpAviMovie and SpliceAVIMovie (in DeveloperScripts) into a combined, regular CP module called SplitOrSpliceMovie.
+- (Requested by Anne 10-11-2005) - Convert SplitUpAviMovie and SpliceAVIMovie (in DeveloperScripts) into a combined, regular CP module called SplitOrSpliceMovie.
 
 - Make IdentifySecondary use same thresholding options as IdentifyPrimAutomatic, CPthreshold?
 
@@ -41,7 +37,7 @@ it to Outdated unless you object.
 
 - (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. Let me know when it's done and we can calculate the stats on the SBS competition and see how we did!!
 
-- (Requested by Anne 10-10-05) - Make MeasureImageTexture based on measureobjecttexture
+- (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
 
 - (Requested by Anne 10-10-05) - Probably most modules should have a warning at the beginning if the image is outside the range 0-1.  Will have to think carefully about which modules would need this warning in order for them to function properly.  Make sure the warn  dialog does not pop up fresh each time - i think there is a way for matlab to only open the dialog if there isn't already a copy open.
 
@@ -78,17 +74,6 @@ MergeBatchOutput
 Restart
 
 WANT IT ASAP:
-
--(MADE INITIAL CHANGES, WHAT TO DO FROM HERE) (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons. I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
-NEW IDEAS>>>  if no module selected and you clikc module help, it shoudl say 'click and then push this button'
-'adding modules' help should be called '? Getting Started'
-Did we lose the ? button above object processing?
-Too much empty space at the top
-change add module to Add Selected Module
-Select a module, then...  [Add to pipeline] [get help on that one]
-Done should be in bottom right or get rid of it altogether
-Get rid of large frame? leave bottom one?
-switch buttons with pathname
 
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 

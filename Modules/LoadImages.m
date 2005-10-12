@@ -7,12 +7,24 @@ function handles = LoadImages(handles)
 % meaningful name for the other modules to access.
 %
 % If more than four images per set must be loaded, more than one Load
-% Images Text module can be run sequentially. Running more than one of
+% Images module can be run sequentially. Running more than one of
 % these modules also allows images to be retrieved from different
 % folders. If you want to load all images in a directory, you can
 % enter the file extension as the text for which to search.
 %
-% This module is different from the Load Images Order module because
+% LOADING IMAGES:
+%
+% ORDER:
+% Load Images Order is useful when images are present in a repeating
+% order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where
+% images are selected based on how many images are in each set and
+% what position within each set a particular color is located (e.g.
+% three images per set, DAPI is always first).  By contrast, Load
+% Images Text is used to load images that have a particular piece of
+% text in the name.
+%
+% TEXT:
+% This method is different from the Load Images Order method because
 % Load Images Text can be used to load images that are not in a
 % defined order.  That is, Load Images Order is useful when images are
 % present in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red,
@@ -28,9 +40,85 @@ function handles = LoadImages(handles)
 % box will select any file containing the digit 1 or 2 immediately in
 % between the text 'image' and 'dapi'.
 %
+% LOADING MOVIES:
+% Tells CellProfiler where to retrieve avi-formatted movies (avi
+% movies must be in uncompressed avi format on UNIX and Mac
+% platforms) or stk-format movies (stacks of tif images produced by
+% MetaMorph or NIH ImageJ). Once the files are identified, this module
+% extracts each frame of each movie as a separate image,
+% and gives these images a meaningful name for the other modules to
+% access.
+%
+% The ability to load by order or by text are the same for both loading
+% movies and loading images. Please refer to the Loading Images section for
+% more information.
+%
 % You may have subfolders within the folder that is being searched, but the
 % names of the folders themselves must not contain the text you are
 % searching for or an error will result.
+%
+% The ability to read stk files is due to code by:
+% Francois Nedelec, EMBL, Copyright 1999-2003.
+%
+% ------------------------------------------------------------------
+% NOTE:  MATLAB only reads AVI files, and only UNCOMPRESSED AVI files
+% on UNIX and MAC platforms.  As a result, you may need to use 3rd party
+% software to uncompress AVI files and convert MOV files.
+%
+% WINDOWS...
+% To convert movies to uncompressed avi format, you can use a free
+% software product called RAD Video Tools, which is available from:
+%   http://www.radgametools.com/down/Bink/RADTools.exe
+%
+% To convert a compressed AVI file or a MOV file into an uncompressed AVI:
+%   1. Open RAD Video Tools
+%   2. Select the file you want to convert
+%   3. Click the "Convert a file" button
+%   4. On the next screen, type the desired output file name, and
+% click the "Convert" button.  Everything else can be left as default.
+%   5. A window will pop up that asks you for the Video Compression to
+% use.  Choose "Full Frames (Uncompressed)", and click OK.
+%
+% MAC OSX...
+% The iMovie program which comes with Mac OSX can be used to convert
+% movies to uncompressed avi format as follows:
+%
+% 1. File > New Project
+% 2. File > Import (select the movie)
+% 3. File > Share
+% 	Choose the QuickTime tab
+% 	Compress movie for Expert Settings, click Share
+% 	Name the file, choose Export: Movie to Avi
+% 	Click Options...
+% 	Click Settings...
+% 		Compression = None
+% 		Depth = Millions of Colors (NOT "+")
+% 		Quality = best
+% 		Frames per second = doesn't matter.
+% 	OK, OK, Save
+%
+% 4. To check/troubleshoot the conversion, you can use the following commands in Matlab:
+% >> MovieInfo = aviinfo('My Great Movie3.avi')
+%
+% MovieInfo =
+%               Filename: 'My Great Movie3.avi'
+%               FileSize: 481292920
+%            FileModDate: '25-Mar-2005 09:59:56'
+%              NumFrames: 422
+%        FramesPerSecond: 20
+%                  Width: 720
+%                 Height: 528
+%              ImageType: 'truecolor'
+%       VideoCompression: 'none'
+%                Quality: 4.2950e+07
+%     NumColormapEntries: 0
+%
+% The following error means that the Depth was improper (either you
+% tried to save in grayscale or the wrong bit depth color):
+% >> movie = aviread('My Great Movie2.avi');
+% ??? Error using ==> aviread
+% Bitmap data must be 8-bit Index images or 24-bit TrueColor images
+% ------------------------------------------------------------------
 %
 % SAVING IMAGES: The images loaded by this module can be easily saved
 % using the Save Images module, using the name you assign (e.g.

@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/12) (Requested by Anne 10-11-2005) - Retrieve the help from LoadImagesOrder and LoadMovies (Order & Text) and incorporate into LoadImages... we should make sure that we've not lost help from modules that were recently combined b/c a lot of work went into writing it up in the first place!
+
+-(Mike 10/12) (MADE INITIAL CHANGES, WHAT TO DO FROM HERE) (Requested by Anne 9-01-05) - The AddModule window still needs a bit of work; it doesn't look very compact and neat. The browse button should be small and placed near the current path.  The other buttons could be smaller and more compact (e.g. move both help buttons up and have the word 'Help' placed between them). I'd vote for getting rid of the frames so that there is less clutter, and having just one frame around the buttons along the bottom, once we've removed the unnecessary buttons. I think we should get rid of the 'Add module' button and instead just have text say "Doubleclick to add modules to your pipeline" (maybe the title of the window itself should state that text; otherwise it could just be text along the top of the window). We could get rid of the Done button and assume the user will use the normal mechanism to close the window.
+NEW IDEAS>>>  if no module selected and you clikc module help, it shoudl say 'click and then push this button'
+'adding modules' help should be called '? Getting Started'
+Did we lose the ? button above object processing?
+Too much empty space at the top
+change add module to Add Selected Module
+Select a module, then...  [Add to pipeline] [get help on that one]
+Done should be in bottom right or get rid of it altogether
+Get rid of large frame? leave bottom one?
+switch buttons with pathname
+
 -(Mike 10/12) (Requested by Anne 10-11-2005)  - Remove makezips.sh from DeveloperScripts. Its functionality is now built into CP, as File > Save current CP code.
 
 -(Mike 10/12) (Requested by Anne 10-11-2005) - Move CreateIlluminationCorrectionImageFromProjection.m to Outdated

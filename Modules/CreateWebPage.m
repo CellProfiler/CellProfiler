@@ -62,8 +62,8 @@ PageTitle = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR06 = CellProfiler Images
 
 %textVAR07 = Choose the background color, or provide the html color code (e.g. #00FF00)
-%choiceVAR07 = White
 %choiceVAR07 = Black
+%choiceVAR07 = White
 %choiceVAR07 = Aqua
 %choiceVAR07 = Blue
 %choiceVAR07 = Fuchsia
@@ -99,6 +99,7 @@ TableBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Choose the table border color, or provide the html color code (e.g. #00FF00)
 %choiceVAR10 = Black
+%choiceVAR10 = White
 %choiceVAR10 = Aqua
 %choiceVAR10 = Blue
 %choiceVAR10 = Fuchsia
@@ -112,7 +113,6 @@ TableBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %choiceVAR10 = Red
 %choiceVAR10 = Silver
 %choiceVAR10 = Teal
-%choiceVAR10 = White
 %choiceVAR10 = Yellow
 TableBorderColor = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu custom
@@ -205,9 +205,10 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
     Lines = strvcat(Lines,['<HEAD><TITLE>',PageTitle,'</TITLE></HEAD>']);
     Lines = strvcat(Lines,['<BODY BGCOLOR=',AddQ(BGColor),'>']);
     Lines = strvcat(Lines,['<CENTER><TABLE BORDER=',TableBorderWidth, ' BORDERCOLOR=', AddQ(TableBorderColor), ' CELLPADDING=0',' CELLSPACING=',ThumbSpacing,'>']);
+    %%% Creates the html to create a link to download the images as a
+    %%% zipped archive.
     if ~strcmp(ZipFileName,'Do not use')
-        zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
-        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download All Images</A></CENTER>']);
+        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download all images as a zipped file</A></CENTER>']);
     end
     while CurrentImage <= NumOrigImage
         Lines = strvcat(Lines,'<TR>');
@@ -242,6 +243,11 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
         end
         Lines = strvcat(Lines,'</TR>');
     end
+    %%% Creates the zip file of all the high resolution images.
+    if ~strcmp(ZipFileName,'Do not use')
+        zip(fullfile(HTMLSavePath,ZipFileName),ZipList);
+    end
+
     Lines = strvcat(Lines,'</TABLE></CENTER>');
 
     Lines = strvcat(Lines,'</BODY>');

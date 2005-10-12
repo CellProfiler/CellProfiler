@@ -1,6 +1,6 @@
-function handles = LoadImagesNEW(handles)
+function handles = LoadImages(handles)
 
-% Help for the Load Images Text module:
+% Help for the Load Images module:
 % Category: File Processing
 %
 % Tells CellProfiler where to retrieve images and gives each image a
@@ -38,7 +38,7 @@ function handles = LoadImagesNEW(handles)
 % different format, allowing this module to function as a file format
 % converter.
 %
-% See also LOADIMAGESORDER.
+% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -456,7 +456,7 @@ for n = 1:length(ImageName)
             Pathname = handles.Pipeline.(fieldname);
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
 
-            if (max(max(LoadedImage)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
+            if (max(LoadedImage(:)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
                 CPwarndlg('Your images appear to be 16-bit images taken with a 12-bit camera. Consider re-scaling.');
             end
             %%% Saves the original image file name to the handles

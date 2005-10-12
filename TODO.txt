@@ -1,7 +1,9 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
-- Add text to AddModuleWindow for help buttons?
+- Change installation guide to use "run /Applications/CellProfiler.m"
+
+- Add text (e.g. After selecting module:) to AddModuleWindow for help buttons?
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
@@ -81,6 +83,8 @@ way of identifying objects.
 
 Best,
 Ola
+
+colinc@mit.edu
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 

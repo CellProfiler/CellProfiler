@@ -1,17 +1,9 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
-Mike - I fixed this bug so it won't fail with RGB images, FYI:
--            if (max(max(LoadedImage)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
-+            if (max(LoadedImage(:)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
-
 (Requested by Anne 10-11-2005) - Check the file MatlabSetup.txt in DeveloperScripts - it seems to indicate that normally we just retrieve updates straight from the Mathworks website rather than waiting for CDs. Maybe give it a try.
 
 (Requested by Anne 10-11-2005) - Retrieve the help from LoadImagesOrder and LoadMovies (Order & Text) and incorporate into LoadImages... we should make sure that we've not lost help from modules that were recently combined b/c a lot of work went into writing it up in the first place!
-
-(Requested by Anne 10-11-2005)  - Remove makezips.sh from DeveloperScripts. Its functionality is now built into CP, as File > Save current CP code.
-
-(Requested by Anne 10-11-2005) - Move CreateIlluminationCorrectionImageFromProjection.m to Outdated
 
 (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
@@ -24,8 +16,6 @@ Mike - I fixed this bug so it won't fail with RGB images, FYI:
 - (Requested by Anne 10-10-05) - Make CalculateStatistics module based on Ilya ravkins m files i emailed. Let me know when it's done and we can calculate the stats on the SBS competition and see how we did!!
 
 - (Requested by Anne 10-10-05) - Make MeasureImageTexture based on measureobjecttexture
-
-- (Requested by Anne 10-10-05) - Change the name of RGBMerge to GraytoRGB, and adjust the ExampleFlyPIPE & OUT accordingly.  Maybe also: should we change "RGB" to "Color", so it's GrayToColor and ColorToGray? I think this might make it nicer for biologists. Not sure if the general public knows what RGB means.
 
 - (Requested by Anne 10-10-05) - Probably most modules should have a warning at the beginning if the image is outside the range 0-1.  Will have to think carefully about which modules would need this warning in order for them to function properly.  Make sure the warn  dialog does not pop up fresh each time - i think there is a way for matlab to only open the dialog if there isn't already a copy open.
 

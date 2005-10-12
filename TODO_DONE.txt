@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/12) (Requested by Anne 10-11-2005)  - Remove makezips.sh from DeveloperScripts. Its functionality is now built into CP, as File > Save current CP code.
+
+-(Mike 10/12) (Requested by Anne 10-11-2005) - Move CreateIlluminationCorrectionImageFromProjection.m to Outdated
+
+-(Mike 10/12) (Requested by Anne 10-10-05) - Change the name of RGBMerge to GraytoRGB, and adjust the ExampleFlyPIPE & OUT accordingly.  Maybe also: should we change "RGB" to "Color", so it's GrayToColor and ColorToGray? I think this might make it nicer for biologists. Not sure if the general public knows what RGB means.
+
 -(Mike 10/12 DECIDED THAT CELLPROFILER SHOULD ONLY ADD FOLDERS TO PATH IF THEY DO NOT EXIST) (Requested by Anne 10-10-05) - We should somehow let the user change the path specifying which CellProfiler code will be used since we often have several copies of CP on a single computer. Option 1: allow the user to choose which CellProfiler will be used somewhere in CellProfiler itself (e.g. in the Set/LoadPreferences window). But would this allow the changes to take place immediately, or would it be a problem that CellProfiler is already running when the path is set? I would guess that changing the path would allow the Modules or subfunctions in the new location to be used, but I am not sure whether the CellProfiler.m file in the new location would be used when CP is already open and running. Option 2: we could remember to start up CellProfiler in Matlab using the full path (i.e. type this:  /Users/anne/trunk/CellProfiler/CellProfiler  rather than just typing CellProfiler to start it up). I think the code we have currently in place would work - e.g. adding the Modules subfolder to the path I think is done when you click the Add Modules button but I am not sure it pays attention to which CellProfiler is being run in order to use the same path.
 
 In this process, we should check every use of the command 'path' to make sure that we aren't adding other things to the path so that it behaves as expected.

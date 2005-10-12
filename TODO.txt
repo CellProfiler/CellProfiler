@@ -3,16 +3,6 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 - Add text to AddModuleWindow for help buttons?
 
-(Requested by Anne 10-12-2005) - The following disclaimer needs to be added to the LICENSE file. We may also need to change our statement about GPL to read something like "Use of this software is governed by GPL plus the disclaimer present in the LICENSE.txt file".
-
-NO REPRESENTATIONS OR WARRANTIES.
-
-The program is delivered "AS IS." WHITEHEAD INSTITUTE FOR BIOMEDICAL RESEARCH makes no representations or warranties of any kind concerning the program or the copyright, express or implied, including, without limitation, warranties of merchantability, fitness for a particular purpose, noninfringement, or the absence of latent or other defects, whether or not discoverable. WHITEHEAD INSTITUTE FOR BIOMEDICAL RESEARCH extends no warranties of any kind as to program conformity with whatever user manuals or other literature may be used from time to time.
-
-Furthermore, and not to limit the foregoing, WHITEHEAD INSTITUTE FOR BIOMEDICAL RESEARCH makes no warranty or representation that the exploitation of the PROGRAM or any DERIVATIVE will not infringe any patents or other intellectual property rights of a third party.
-
-In no event shall WHITEHEAD INSTITUTE FOR BIOMEDICAL RESEARCH, its trustees, directors, officers, employees and affiliates be liable for incidental or consequential damages of any kind, including economic damages of any kind, including economic damages or injury to property and lost profits, regardless of whether WHITEHEAD INSTITUTE FOR BIOMEDICAL RESEARCH shall be advised, shall have other reason to know, or in fact shall know the possibility of the foregoing.
-
 
 (Requested by Anne 10-12-2005) - Mike, see whether doublegraythresh is used in the code anywhere, and if not, move it to Outdated as per my discussion with Ray:
 I think this was Colin's, when he was looking at using Otsu's method

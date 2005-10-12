@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/12) (Requested by Anne 10-12-2005) - Mike, see whether doublegraythresh is used in the code anywhere, and if not, move it to Outdated as per my discussion with Ray:
+I think this was Colin's, when he was looking at using Otsu's method
+to segment three-level images.  I'm not sure if it got incorporated at
+some point, or it was abandoned.
+Ray
+
+On 10/11/05, Anne Carpenter <carpenter@wi.mit.edu> wrote:
+Hi,
+There is a file in DeveloperScripts called doublegraythresh.m  Can you
+determine whether this is useful to us at all? My guess is that someone
+was playing around with it and abandoned it, so I was planning to move
+it to Outdated unless you object.
+
 -(Mike 10/12) (Requested by Anne 10-12-2005) - The following disclaimer needs to be added to the LICENSE file. We may also need to change our statement about GPL to read something like "Use of this software is governed by GPL plus the disclaimer present in the LICENSE.txt file".
 
 -(Mike 10/12) (Requested by Anne 10-11-2005) - Retrieve the help from LoadImagesOrder and LoadMovies (Order & Text) and incorporate into LoadImages... we should make sure that we've not lost help from modules that were recently combined b/c a lot of work went into writing it up in the first place!

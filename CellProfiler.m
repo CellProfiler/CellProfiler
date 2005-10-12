@@ -28,11 +28,10 @@ function varargout = CellProfiler(varargin)
 if ~nargin
     SplashHandle = SplashScreen;
     tic
-    if sum(strfind(path,fileparts(which('CellProfiler.m')))) == 0
-        try
-            addpath(genpath(fileparts(which('CellProfiler.m'))))
-        catch errordlg('You changed the name of CellProfiler.m file!!');
-        end
+    try
+        addpath(genpath(fileparts(which('CellProfiler.m'))))
+        savepath
+    catch errordlg('You changed the name of CellProfiler.m file!!');
     end
 end
 gui_Singleton = 1;
@@ -5140,6 +5139,7 @@ rmappdata(0,'OpenGuiWhenRunning');
 function SplashScreenHandle = SplashScreen;
 SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
 axis off;
-logo = imread('CPsplash.jpg','jpg');
+ImageFile = fullfile(fileparts(which('CellProfiler.m')),'CPsubfunctions','CPsplash.jpg');
+logo = imread(ImageFile,'jpg');
 iptsetpref('ImshowBorder','tight')
 test = imshow(logo);

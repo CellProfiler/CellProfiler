@@ -1,6 +1,22 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
+Mike - I fixed this bug so it won't fail with RGB images, FYI:
+-            if (max(max(LoadedImage)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
++            if (max(LoadedImage(:)) < .0625) && (handles.Current.SetBeingAnalyzed == 1)
+
+(Requested by Anne 10-11-2005) - Check the file MatlabSetup.txt in DeveloperScripts - it seems to indicate that normally we just retrieve updates straight from the Mathworks website rather than waiting for CDs. Maybe give it a try.
+
+(Requested by Anne 10-11-2005) - Retrieve the help from LoadImagesOrder and LoadMovies (Order & Text) and incorporate into LoadImages... we should make sure that we've not lost help from modules that were recently combined b/c a lot of work went into writing it up in the first place!
+
+(Requested by Anne 10-11-2005)  - Remove makezips.sh from DeveloperScripts. Its functionality is now built into CP, as File > Save current CP code.
+
+(Requested by Anne 10-11-2005) - Move CreateIlluminationCorrectionImageFromProjection.m to Outdated
+
+(Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
+
+(Requested by Anne 10-11-2005) - Convert SplitUpAviMovie and SpliceAVIMovie (in DeveloperScripts) into a combined, regular CP module called SplitOrSpliceMovie.
+
 - Make IdentifySecondary use same thresholding options as IdentifyPrimAutomatic, CPthreshold?
 
 - (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.

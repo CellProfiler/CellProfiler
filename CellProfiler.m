@@ -34,7 +34,6 @@ if ~nargin
         catch errordlg('You changed the name of CellProfiler.m file!!');
         end
     end
-    toc
 end
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...

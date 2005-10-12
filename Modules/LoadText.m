@@ -68,12 +68,11 @@ FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 if handles.Current.SetBeingAnalyzed == 1
     %%% Parse text file %%%
     fid = fopen(TextFileName,'r');
-
     if fid == -1
-        try fid = fopen(fullfile(handles.Current.DefaultImageDirectory,TextFileName),'r');
-        catch
-            try fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,TextFileName),'r');
-            catch
+        fid = fopen(fullfile(handles.Current.DefaultImageDirectory,TextFileName),'r');
+        if fid == -1
+            fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,TextFileName),'r');
+            if fid == -1
                 error('Could not open file.  It might not exist or you might not have given its valid path.');
             end
         end

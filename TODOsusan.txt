@@ -1,5 +1,7 @@
 Susan's TODO list
 
+- Update the Example Pipelines. It should be easy - we have just changed the name of a couple of modules - RGBMerge and RGBToGray - so you shouldn't have to start from scratch. RGBMerge is now GrayToColor and RGBSplit & RGBtoGray are now ColorToGray.
+
 - NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!--Started
 
 

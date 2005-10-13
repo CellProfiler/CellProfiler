@@ -9,8 +9,6 @@ MINOR ISSUE >>>
 
 - Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
 
-- Requested by Anne 10-12-2005 - Help > ImageTools and Help > DataTools doesn't seem to work - doubleclicking something in the list box or clicking OK doesn't seem to do anything, but there isn't any error msg produced either.  I think maybe it works the first time you click something but not subsequent clicks?
-
 - Add text (e.g. After selecting module:) to AddModuleWindow for help buttons?
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.

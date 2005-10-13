@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/13) Requested by Anne 10-12-2005 - Help > General Help is displaying the correct listbox full of help files but the title of the window and the instructions at the top are referring to Tools rather than just general help.
+
+-(Mike 10/13) (Requested by Anne 10-12-2005) - New Service Pack 3 (version 7.1) requests: We commented out the bug workaround which reverses the slider for macs, but we need to put it back in if the user is using a mac && the user is using version 7.0 or earlier. Also, somewhere in the code when you click on a module in the pipeline, the slider is reset so it's supposed to display the top variables (the slider indicator is in the top position), but on my new SP3 7.1 setup, the slider is always placed in the bottom position - is this working ok on the PC, or is it another workaround that needs to be un-worked around for 7.1 and later?
+
+-(Mike 10/12) Change installation guide to use "run /Applications/CellProfiler.m"
 
 -(Mike 10/12) (Requested by Anne 10-11-2005) - Convert SplitUpAviMovie and SpliceAVIMovie (in DeveloperScripts) into a combined, regular CP module called SplitOrSpliceMovie.
 

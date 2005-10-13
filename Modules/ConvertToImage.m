@@ -41,34 +41,65 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Do you want the image to be (Binary is the only option that works right now)
-%choiceVAR03 = Binary (black or white)
+%textVAR03 = Do you want the image to be?
+%choiceVAR03 = Binary
 %choiceVAR03 = Grayscale
-%choiceVAR03 = RGB
+%choiceVAR03 = Color
 %inputtypeVAR03 = popupmenu
 ImageMode = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%textVAR04 = For COLOR, what do you want the colormap to be?
+%defaultVAR04 = Default
+ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
 %%%%%%%%
 
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
-handles.Pipeline.(ImageName) = double(LabelMatrixImage > 0);
+if strcmp(ImageMode,'Binary')
+    Image = logical(LabelMatrixImage ~= 0);
+elseif strcmp(ImageMode,'Grayscale')    
+    Image = double(LabelMatrixImage / max(max(LabelMatrixImage)));
+elseif strcmp(ImageMode,'Color')
+    if strcmp(ColorMap,'Default')
+        Image = CPlabel2rgb(handles,LabelMatrixImage);
+    else
+        try
+            cmap = eval([ColorMap '(max(64,max(LabelMatrixImage(:))))']);
+        catch
+            error(['The ColorMap, ' ColorMap ', that you entered, is not valid']);
+        end
+        Image = label2rgb(LabelMatrixImage,cmap,'k');
+    end
+end
+
+handles.Pipeline.(ImageName) = Image;
+        
+        
+    
+    
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% The figure window display is unnecessary for this module, so the figure
-    %%% window is closed the first time through the module.
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
-    %%% Closes the window if it is open.
-    if any(findobj == ThisModuleFigureNumber) == 1;
-        close(ThisModuleFigureNumber)
-    end
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+
+if any(findobj == ThisModuleFigureNumber)
+    
     drawnow
+    CPfigure(handles,ThisModuleFigureNumber);
+    
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
+
+    subplot(2,1,1); imagesc(ColoredLabelMatrixImage);
+    title('Original Identified Objects','fontsize',8);
+
+    
+    subplot(2,1,2);imagesc(Image);
+    title('New Image','fontsize',8);  
+       
 end

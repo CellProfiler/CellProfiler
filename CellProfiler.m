@@ -866,9 +866,9 @@ if FileName ~= 0
         AutoName = CPquestdlg(['Do you want to rather name the file as ', FileNom, 'PIPE', FileExt, ' in order to prevent confusion with output files?'],'Rename file?','Yes');
         if strcmp(AutoName,'Yes')
             FileName = [FileNom,'PIPE',FileExt];
-            helpdlg('The pipeline file has been saved.');
+            CPhelpdlg('The pipeline file has been saved.');
         elseif strcmp(AutoName,'No')
-            helpdlg('The pipeline file has been saved.');
+            CPhelpdlg('The pipeline file has been saved.');
         elseif strcmp(AutoName,'Cancel')
             return
         end
@@ -1683,7 +1683,9 @@ if (length(ModuleHighlighted) > 0)
         %%% If panel location gets changed in GUIDE, must change the
         %%% position values here as well.
         set(handles.variablepanel, 'position', [238 0 563 346]);
-        if ispc
+        MatlabVersion = version;
+        MatlabVersion = str2num(MatlabVersion(1:3));
+        if ispc || (MatlabVersion >= 7.1)
             set(handles.slider1,'value',get(handles.slider1,'max'));
         else
             set(handles.slider1,'value',get(handles.slider1,'min'));
@@ -1700,7 +1702,7 @@ if (length(ModuleHighlighted) > 0)
         if(MaxInfo > 0)
             set(handles.slider1,'visible','on');
             set(handles.slider1,'max',MaxInfo);
-            if ispc
+            if ispc || (MatlabVersion >= 7.1)
                 set(handles.slider1,'value',get(handles.slider1,'max'));
             else
                 set(handles.slider1,'value',get(handles.slider1,'min'));
@@ -1709,10 +1711,10 @@ if (length(ModuleHighlighted) > 0)
         end
         slider1_Callback(handles.slider1,0,handles);
     else
-        helpdlg('No modules are loaded.');
+        CPhelpdlg('No modules are loaded.');
     end
 else
-    helpdlg('No module highlighted.');
+    CPhelpdlg('No module highlighted.');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2049,7 +2051,9 @@ ModuleNumber = ModuleHighlighted(1);
 % Position of the variablePanel.  If the original location of the
 % variablePanel gets changed, then the constant offset must be changed as
 % well.
-%if ispc
+MatlabVersion = version;
+MatlabVersion = str2num(MatlabVersion(1:3));
+if ispc || (MatlabVersion >= 7.1)
     Ypos = get(handles.slider1,'max') - get(handles.slider1,'Value');
     set(handles.variablepanel, 'position', [variablepanelPos(1) Ypos variablepanelPos(3) variablepanelPos(4)]);
     for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
@@ -2077,34 +2081,34 @@ ModuleNumber = ModuleHighlighted(1);
         end
     end
     guidata(handles.figure1,handles);
-% else
-%     set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
-%     for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
-%         tempPos=get(handles.VariableDescription{ModuleNumber}(i),'Position');
-%         if(tempPos(2)+scrollPos)>-20
-%             set(handles.VariableDescription{ModuleNumber}(i),'visible','on');
-%             VarDesOn=1;
-%         else
-%             set(handles.VariableDescription{ModuleNumber}(i),'visible','off');
-%             VarDesOn=0;
-%         end
-%         tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
-%         if ((tempPos(2)+scrollPos)>-20) && VarDesOn  && (size(get(handles.VariableBox{ModuleNumber}(i),'String'),1)~=1 || ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a'))
-%             set(handles.VariableBox{ModuleNumber}(i),'visible','on');
-%         else
-%             set(handles.VariableBox{ModuleNumber}(i),'visible','off');
-%         end
-%         try
-%             tempPos=get(handles.BrowseButton{ModuleNumber}(i),'Position');
-%             if ((tempPos(2)+scrollPos)>-20) && VarDesOn
-%                 set(handles.BrowseButton{ModuleNumber}(i),'visible','on');
-%             else
-%                 set(handles.BrowseButton{ModuleNumber}(i),'visible','off');
-%             end
-%         end
-%     end
-%     guidata(handles.figure1,handles);
-% end
+else
+    set(handles.variablepanel, 'position', [variablepanelPos(1) 0+scrollPos variablepanelPos(3) variablepanelPos(4)]);
+    for i=1:handles.Settings.NumbersOfVariables(ModuleNumber)
+        tempPos=get(handles.VariableDescription{ModuleNumber}(i),'Position');
+        if(tempPos(2)+scrollPos)>-20
+            set(handles.VariableDescription{ModuleNumber}(i),'visible','on');
+            VarDesOn=1;
+        else
+            set(handles.VariableDescription{ModuleNumber}(i),'visible','off');
+            VarDesOn=0;
+        end
+        tempPos=get(handles.VariableBox{ModuleNumber}(i),'Position');
+        if ((tempPos(2)+scrollPos)>-20) && VarDesOn  && (size(get(handles.VariableBox{ModuleNumber}(i),'String'),1)~=1 || ~strcmp(get(handles.VariableBox{ModuleNumber}(i),'String'),'n/a'))
+            set(handles.VariableBox{ModuleNumber}(i),'visible','on');
+        else
+            set(handles.VariableBox{ModuleNumber}(i),'visible','off');
+        end
+        try
+            tempPos=get(handles.BrowseButton{ModuleNumber}(i),'Position');
+            if ((tempPos(2)+scrollPos)>-20) && VarDesOn
+                set(handles.BrowseButton{ModuleNumber}(i),'visible','on');
+            else
+                set(handles.BrowseButton{ModuleNumber}(i),'visible','off');
+            end
+        end
+    end
+    guidata(handles.figure1,handles);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PIXEL SIZE EDIT BOX %%%
@@ -2173,17 +2177,17 @@ try
     save(FullFileName,'SavedPreferences')
     clear SavedPreferences
     if DefaultVal == 1;
-        helpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
+        CPhelpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
     else
-        helpdlg('Your CellProfiler preferences were successfully set.')
+        CPhelpdlg('Your CellProfiler preferences were successfully set.')
     end
 catch
     try
         save(fullfile(CurrentDir,FileName),'SavedPreferences')
         clear SavedPreferences
-        helpdlg('You do not have permission to write anything to the Matlab root directory.  Instead, your default preferences will only function properly when you start CellProfiler from the current directory.')
+        CPhelpdlg('You do not have permission to write anything to the Matlab root directory.  Instead, your default preferences will only function properly when you start CellProfiler from the current directory.')
     catch
-        helpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.');
+        CPhelpdlg('CellProfiler was unable to save your desired preferences, probably because you lack write permission for both the Matlab root directory as well as the current directory.  Your preferences will only be saved for the current session of CellProfiler.');
     end
 end
 clear PixelSize* *Dir* , close(SetPreferencesWindowHandle);
@@ -2910,7 +2914,7 @@ else
             set(CancelAfterImageSetButton_handle, 'Callback', CancelAfterImageSetButtonFunction)
             CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme2; end'];
             set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
-            CancelNowCloseButtonFunction = ['if ~exist(''delme3''); delme3=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); helpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.''); switch enddeleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear enddeleteme; clear delme3; end'];
+            CancelNowCloseButtonFunction = ['if ~exist(''delme3''); delme3=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); CPhelpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.''); switch enddeleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear enddeleteme; clear delme3; end'];
             set(CancelNowCloseButton_handle,'Callback', CancelNowCloseButtonFunction)
             HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after cycle: Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
             %%% HelpButton
@@ -3807,7 +3811,7 @@ try
     ZipFileName = [handles.Current.DefaultOutputDirectory '/CellProfilerCode_',date,'.zip'];
     zip(ZipFileName,ListOfThingsToSave,handles.Current.CellProfilerPathname);
 catch
-    helpdlg(['The Files could not be saved for some reason.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
+    CPhelpdlg(['The Files could not be saved for some reason.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
 end
 CPmsgbox(['The files have been saved to ', ZipFileName, '.']);
 
@@ -3940,7 +3944,7 @@ function HelpButton_Callback(hObject, eventdata, AddModuleWindowHandles)
 % Hint: listbox controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 
-helpdlg('Sorry, there is no help right now.');
+CPhelpdlg('Sorry, there is no help right now.');
 
 
 % --- Creates and returns a handle to the GUI figure.

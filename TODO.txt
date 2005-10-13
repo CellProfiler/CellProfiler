@@ -1,6 +1,10 @@
 CellProfiler cell image analysis software development 
 September 21, 2005  IN ORDER OF PRIORITY
 
+(Requested by Anne) - prepare outlined example images for John Elliott at NIST and prepare email to be sent. We don't need to send CP code right now.
+
+(Requested by Anne) - play with images from Scott Floyd and see if we can count speckles in his images.
+
 MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
 - (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny.
 

@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/13) Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
+
+-(Mike 10/13) (Requested by Anne) - prepare outlined example images for John Elliott at NIST and prepare email to be sent. We don't need to send CP code right now. In the email, ask him why one folder had only red - we could probly still analyze them but weren't sure if that was the point.
+
 -(Mike 10/13) Requested by Anne 10-12-2005 - Help > ImageTools and Help > DataTools doesn't seem to work - doubleclicking something in the list box or clicking OK doesn't seem to do anything, but there isn't any error msg produced either.  I think maybe it works the first time you click something but not subsequent clicks?
 
 -(Mike 10/13) Requested by Anne 10-12-2005 - Help > General Help is displaying the correct listbox full of help files but the title of the window and the instructions at the top are referring to Tools rather than just general help.

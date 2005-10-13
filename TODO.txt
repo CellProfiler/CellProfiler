@@ -5,17 +5,11 @@ September 21, 2005  IN ORDER OF PRIORITY
 
 (Requested by Anne) - Analyze Merck images - set up general morphology pipeline, possibly with illum correction, and we will send them the numerical measurements from all three images. The major goal is to figure out crucial morphological differences between the two images that aren't bright green.
 
-(Requested by Anne) - prepare outlined example images for John Elliott at NIST and prepare email to be sent. We don't need to send CP code right now. In the email, ask him why one folder had only red - we could probly still analyze them but weren't sure if that was the point.
-
-(Requested by Anne) - play with images from Scott Floyd and see if we can count speckles in his images.
-
 MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
 - (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny. Also, the sliders (when there are not enough contents of listboxes for them to be active) have a stark white background.
 
 MINOR ISSUE >>>
 - (Requested by Anne 10-12-2005) - The main GUI mostly looks fine on SP3  7.1, except the text Output filename is shifted over about two characters too far to the right. It'd also look a bit better if we could move Pixel size and Adjust modules just one pixel to the left.
-
-- Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
 
 - Add text (e.g. After selecting module:) to AddModuleWindow for help buttons?
 

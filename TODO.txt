@@ -1,5 +1,5 @@
 CellProfiler cell image analysis software development 
-September 21, 2005  IN ORDER OF PRIORITY
+October 14, 2005  IN ORDER OF PRIORITY
 
 (Requested by Anne) - Analyze Scott Floyd's images by writing a new speckle finding module.
 

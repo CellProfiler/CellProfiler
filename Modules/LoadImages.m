@@ -253,9 +253,9 @@ TextToFind = tmp1;
 ImageName = tmp2;
 
 if strcmp(LoadChoice,'Order')
-    TextToFind{:} = str2num(TextToFind{:});
+    TextToFind = str2num(char(TextToFind));
     %%% Checks whether the position in set exceeds the number per set.
-    if ImagesPerSet < max([TextToFind{:}])
+    if ImagesPerSet < max(TextToFind)
         error(['Image processing was canceled during the Load Images Order module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
     end
 end
@@ -303,7 +303,7 @@ if SetBeingAnalyzed == 1
             %%% For all valid entries, write list of image files to handles structure
             for n = 1:length(ImageName)
                 % Get the list of filenames
-                FileList = FileNames(TextToFind{n}:ImagesPerSet:end);
+                FileList = FileNames(TextToFind(n):ImagesPerSet:end);
 
                 %%% Saves the File Lists and Path Names to the handles structure.
                 fieldname = ['FileList', ImageName{n}];

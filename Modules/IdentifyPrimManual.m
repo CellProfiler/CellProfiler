@@ -43,16 +43,16 @@ function handles = IdentifyPrimManual(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the images you want to use to manually identify an object?
 %infotypeVAR01 = imagegroup
@@ -97,7 +97,7 @@ drawnow
 %%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, ImageName) == 0
-    error(['Image processing has been canceled. Prior to running the Identify Primary Manually module, you must have previously run a module to load an image. You specified in the Identify Primary Manually module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Manually module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Primary Manually module, you must have previously run a module to load an image. You specified in the Identify Primary Manually module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Manually module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(ImageName);
 
@@ -117,8 +117,6 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
@@ -174,7 +172,6 @@ CPFixAspectRatio(LowResOrigImage);
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ObjectName];

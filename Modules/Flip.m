@@ -27,6 +27,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What is the input image?
 %infotypeVAR01 = imagegroup
@@ -62,7 +63,7 @@ drawnow
 fieldname = ['',  ImageName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Flip module, you must have previously run a module to load an image. You specified in the Flip module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Flip module, you must have previously run a module to load an image. You specified in the Flip module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(fieldname);
 
@@ -73,6 +74,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 FlippedImage = OrigImage;
 [Rows,Columns,Dimensions] = size(FlippedImage);

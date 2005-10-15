@@ -24,7 +24,7 @@ function handles = CreateWebPage(handles)
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = 'Create Web Page';
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -266,6 +266,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed.

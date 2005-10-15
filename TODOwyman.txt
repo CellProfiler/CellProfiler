@@ -1,7 +1,7 @@
 TODOwyman
 
 
-Last updated: 09-13-05
+Last updated: 10-15-2005
 
 
 
@@ -28,7 +28,7 @@ Last updated: 09-13-05
 - Take out extra lines
 - 
 
-Progress: @ DefineGrid.m
+Progress: do next -> LoadImages.m
 
 
 

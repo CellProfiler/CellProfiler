@@ -245,7 +245,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = 'Create Batch Scripts';
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = How many image sets should be in each batch?
 %defaultVAR01 = 100

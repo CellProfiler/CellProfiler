@@ -49,7 +49,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = 'Align';
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the first image to be aligned? (will be displayed as blue)
 %infotypeVAR01 = imagegroup

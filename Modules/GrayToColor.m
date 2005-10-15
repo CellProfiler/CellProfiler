@@ -37,21 +37,16 @@ function handles = RGBMerge(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the image to be colored blue?
 %choiceVAR01 = Leave this black
@@ -110,7 +105,7 @@ if ~strcmp(BlueImageName, 'Leave this black')
         %%% button callback.)  That callback recognizes that an error was
         %%% produced because of its try/catch loop and breaks out of the image
         %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', BlueImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', BlueImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
     BlueImage = handles.Pipeline.(fieldname);
@@ -123,7 +118,7 @@ drawnow
 %%% Repeat for Green and Red.
 if strcmp(GreenImageName, 'Leave this black') == 0
     if isfield(handles.Pipeline, GreenImageName) == 0
-        error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     GreenImage = handles.Pipeline.(GreenImageName);
     GreenImageExists = 1;
@@ -131,7 +126,7 @@ else GreenImageExists = 0;
 end
 if strcmp(RedImageName, 'Leave this black') == 0
     if isfield(handles.Pipeline, RedImageName) == 0
-        error(['Image processing was canceled because the RGB Merge module could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     RedImage = handles.Pipeline.(RedImageName);
     RedImageExists = 1;
@@ -142,7 +137,7 @@ drawnow
 %%% If any of the colors are to be left black, creates the appropriate
 %%% image.
 if BlueImageExists == 0 && RedImageExists == 0 && GreenImageExists == 0
-    error('Image processing was canceled because you have not selected any images to be merged in the RGB Merge module.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected any images to be merged in the RGB Merge module.'])
 end
 if BlueImageExists == 0 && RedImageExists == 0 && GreenImageExists == 1
     BlueImage = zeros(size(GreenImage));
@@ -169,19 +164,18 @@ end
 %%% Checks whether the three images are the same size.
 try
     if size(BlueImage) ~= size(GreenImage)
-        error('Image processing was canceled because the three images selected for the RGB Merge module are not the same size.  The pixel dimensions must be identical.')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected for the RGB Merge module are not the same size.  The pixel dimensions must be identical.'])
     end
     if size(RedImage) ~= size(GreenImage)
-        error('Image processing was canceled because the three images selected for the RGB Merge module are not the same size.  The pixel dimensions must be identical.')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected for the RGB Merge module are not the same size.  The pixel dimensions must be identical.'])
     end
-catch error('Image processing was canceled because there was a problem with one of three images selected for the RGB Merge module. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in RGB format.')
+catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected for the RGB Merge module. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in RGB format.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% If any of the images are binary/logical format, they must be
 %%% converted to a double first before immultiply.
@@ -193,8 +187,6 @@ RGBImage(:,:,3) = immultiply(double(BlueImage),str2double(BlueAdjustmentFactor))
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -221,8 +213,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.

@@ -51,16 +51,16 @@ function handles = ExpandOrShrinkPrim(handles)
 %
 % $Revision: 1718 $
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the objects that you want to expand or shrink?
 %infotypeVAR01 = objectgroup
@@ -105,7 +105,7 @@ if strcmp(ObjectChoice,'Primary')
     fieldname = ['UneditedSegmented', ObjectName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
     if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
     end
     UneditedSegmentedImage = handles.Pipeline.(fieldname);
 
@@ -113,7 +113,7 @@ if strcmp(ObjectChoice,'Primary')
     fieldname = ['SmallRemovedSegmented', ObjectName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
     if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
     end
     SmallRemovedSegmentedImage = handles.Pipeline.(fieldname);
 end
@@ -122,7 +122,7 @@ end
 fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
 SegmentedImage = handles.Pipeline.(fieldname);
 
@@ -155,7 +155,7 @@ if strcmp(ShrinkOrExpand),'Shrink') == 1
                 ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thin', ShrinkingNumber);
             end
             ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thin', ShrinkingNumber);
-        catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
+        catch error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).'])
         end
     end
 elseif strcmp(ShrinkOrExpand,'Expand')
@@ -167,7 +167,7 @@ elseif strcmp(ShrinkOrExpand,'Expand')
         ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thicken', ShrinkingNumber);
     end
     ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
-    catch error('Image processing was canceled because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).')
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).'])
 end
 
 %%% TODO >>> The following quickly relabels the three binary images so

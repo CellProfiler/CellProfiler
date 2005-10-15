@@ -75,7 +75,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = 'Correct Illumination_Apply';
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the image to be corrected?
 %infotypeVAR01 = imagegroup

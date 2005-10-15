@@ -23,16 +23,16 @@ function handles = ExtractHeaderInfo(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find 
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What do you want to call the images saved in the first location?
 %defaultVAR01 = CFP
@@ -57,6 +57,7 @@ PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% determines the set number being analyzed
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -75,6 +76,7 @@ ImageName{5} = FifthImageName;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
@@ -112,7 +114,7 @@ if SetBeingAnalyzed == 1
             %%% If a directory was typed in, the filenames are retrieved
             %%% from the chosen directory.
             if exist(SpecifiedPathName) ~= 7
-                error('Image processing was canceled because the directory typed into the Extract Header Info module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because the directory typed into the Extract Header Info module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             else [handles, FileNames] = RetrieveImageFileNames(handles, SpecifiedPathName);
                 if SetBeingAnalyzed == 1
                     %%% Determines the number of image sets to be analyzed.
@@ -143,6 +145,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 for n = 1:2:5
     %%% This try/catch will catch any problems in the EHI module.
@@ -202,6 +205,7 @@ guidata(gcbo, handles);
 %%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%
 %%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure
@@ -218,6 +222,7 @@ end
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
+drawnow
 
 function [exp_time_ms, exp_num, worldxyz, timedate] = ExtractHeaderInfo(filename)
 

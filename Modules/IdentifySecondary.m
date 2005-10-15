@@ -162,6 +162,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the images you want to process? If identifying objects by DISTANCE - R, this will not affect object identification, only the final display.
 %infotypeVAR01 = imagegroup
@@ -245,14 +246,14 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Identify Secondary Watershed module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 OrigImage = handles.Pipeline.(fieldname);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Identify Secondary Propagate module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 %%% Retrieves the preliminary label matrix image that contains the primary
@@ -263,7 +264,7 @@ end
 fieldname = ['SmallRemovedSegmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
 end
 PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -274,13 +275,13 @@ PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 fieldname = ['Segmented', PrimaryObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
 end
 EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
 %%% Check that the sizes of the images are equal.
 if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) | (size(OrigImage) ~= size(PrelimPrimaryLabelMatrixImage))
-    error(['Image processing has been canceled. The incoming images are not all of equal size.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%

@@ -34,6 +34,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What is the already defined grid?
 %infotypeVAR01 = gridgroup
@@ -98,6 +99,7 @@ TopOrBottom = GridInfo.TopOrBottom;
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);

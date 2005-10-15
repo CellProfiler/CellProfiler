@@ -34,6 +34,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What would you like to call the grid that you define in this module?
 %defaultVAR01 = GridBlue
@@ -121,7 +122,7 @@ try
     HorizVertSpacingNumerical = str2num(HorizVertSpacing);%#ok We want to ignore MLint error checking for this line.
     XSpacing = HorizVertSpacingNumerical(1);
     YSpacing = HorizVertSpacingNumerical(2);
-catch error('Image processing was canceled because your entry for the spacing between columns, rows (horizontal spacing, vertical spacing) was not understood.')
+catch error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the spacing between columns, rows (horizontal spacing, vertical spacing) was not understood.'])
 end
 
 %textVAR14 = For MANUAL + ONCE + COORDINATES, where is the center of the control spot (X,Y pixel location)?
@@ -148,7 +149,7 @@ if strcmp(AutoOrManual,'Automatic')
 %%% retrieved from the handles structure.
     try
         ImageToDisplay = handles.Pipeline.(['Segmented' ObjectName]);
-    catch error(['Image processing was canceled during the Define Grid module because you specified automatic mode using the objects you called ', ObjectName, ' and these objects were not found by CellProfiler. Perhaps there is a typo.'])
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because you specified automatic mode using the objects you called ', ObjectName, ' and these objects were not found by CellProfiler. Perhaps there is a typo.'])
     end
 elseif strcmp(AutoOrManual,'Manual')
     ImageToDisplay = handles.Pipeline.(ImageName);
@@ -237,7 +238,7 @@ else
             %pixval
             [x,y] = getpts(ThisModuleFigureNumber);
             if length(x) < 1
-                error('Image processing was canceled during the Define Grid module because you must click on one point then press enter.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because you must click on one point then press enter.'])
             end
             title('')
             XControlSpot = x(end);

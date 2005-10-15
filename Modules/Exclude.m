@@ -56,21 +56,16 @@ function handles = Exclude(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = Ignore the objects you called
 %infotypeVAR01 = objectgroup
@@ -104,7 +99,7 @@ drawnow
 %%% Checks whether the images exist in the handles structure.
 fieldname = ['Segmented',ObjectName];
 if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Exclude Primary Object module, you must have previously run a module to identify primary objects. You specified in the Exclude Primary Object module that these objects were called ', ObjectName, ' which should have produced a field in the handles structure called ', fieldname, '. The Exclude Objects module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Exclude Primary Object module, you must have previously run a module to identify primary objects. You specified in the Exclude Primary Object module that these objects were called ', ObjectName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
 end
 SegmentedObjectImage = handles.Pipeline.(fieldname);
 
@@ -124,20 +119,18 @@ end
 %%% which must be loaded here.
 fieldname = ['Segmented',MaskRegionName];
 if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing has been canceled. Prior to running the Exclude Primary Object module, you must have previously run a module to identify primary objects. You specified in the Exclude Primary Object module that these objects were called ', MaskRegionName, ' which should have produced a field in the handles structure called ', fieldname, '. The Exclude Objects module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Exclude Primary Object module, you must have previously run a module to identify primary objects. You specified in the Exclude Primary Object module that these objects were called ', MaskRegionName, ' which should have produced a field in the handles structure called ', fieldname, '. The Exclude Objects module cannot find this image.']);
 end
 MaskRegionObjectImage = handles.Pipeline.(fieldname);
 
 if size(SegmentedObjectImage) ~= size(MaskRegionObjectImage)
-    error(['Image processing has been canceled because in the Exclude Primary Object module, the two images in which primary objects were identified (', MaskRegionName, ' and ', ObjectName, ') are not the same size.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because the two images in which primary objects were identified (', MaskRegionName, ' and ', ObjectName, ') are not the same size.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Pixels in the objects are deleted if they are not
 %%% within the regions identified in the MaskRegionObjectImage.
@@ -172,8 +165,6 @@ end
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -216,8 +207,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',RemainingObjectName];

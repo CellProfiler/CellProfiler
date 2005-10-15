@@ -64,6 +64,7 @@ function handles = FilterByObjectMeasurement(handles)
 
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the original image?
 %infotypeVAR01 = imagegroup
@@ -206,12 +207,12 @@ handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
 if ~strcmp(SaveColored,'Do not save')
     try handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
     catch
-        errordlg('The colored image was not calculated by the FilterByObjectMeasurement module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg(['The colored image was not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end
 end
 if ~strcmp(SaveOutlined,'Do not save')
     try handles.Pipeline.(SaveOutlined) = PrimaryObjectOutlines;
     catch
-        errordlg('The object outlines were not calculated by the FilterByObjectMeasurement module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        errordlg(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end
 end

@@ -27,17 +27,16 @@ function handles = IdentifyObjectsInGrid(handles)
 %
 % $Revision$
 
-
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What is the already defined grid?
 %infotypeVAR01 = gridgroup
@@ -176,8 +175,6 @@ for i=1:Cols
         FinalLabelMatrixImage(max(1,Topmost - floor(YDiv/2) + (j-1)*YDiv+1):min(Topmost - floor(YDiv/2) + j*YDiv,end),max(1,Leftmost - floor(XDiv/2) + (i-1)*XDiv+1):min(Leftmost - floor(XDiv/2) + i*XDiv,end))=subregion;
     end
 end
-
-
     
 %%% Indicate objects in original image and color excluded objects in red
 OutlinedObjects1 = bwperim(mod(FinalLabelMatrixImage,2));
@@ -190,7 +187,7 @@ FinalOutline = logical(FinalOutline>0);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
+drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -220,11 +217,10 @@ if any(findobj == ThisModuleFigureNumber)
     set(findobj('type','line'), 'color',[.15 .15 .15]) 
 end
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 handles.Pipeline.(['Segmented' NewObjectName]) = FinalLabelMatrixImage;
 

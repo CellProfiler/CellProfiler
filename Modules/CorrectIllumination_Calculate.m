@@ -103,7 +103,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = 'Correct Illumination_Calculate';
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the images to be used to calculate the illumination function?
 %infotypeVAR01 = imagegroup

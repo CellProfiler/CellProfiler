@@ -46,16 +46,16 @@ function handles = IdentifyTertiarySubregion(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %textVAR01 = What did you call the larger identified objects?
 %infotypeVAR01 = objectgroup
@@ -100,7 +100,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Identify Tertiary Subregion module could not find the input image.  It was supposed to be named ', PrimaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', PrimaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 PrimaryObjectImage = handles.Pipeline.(fieldname);
 
@@ -108,25 +108,23 @@ PrimaryObjectImage = handles.Pipeline.(fieldname);
 %%% Retrieves the Secondary object segmented image.
 fieldname = ['Segmented', SecondaryObjectName];
 if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing was canceled because the Identify Tertiary Subregion module could not find the input image.  It was supposed to be named ', SecondaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', SecondaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 SecondaryObjectImage = handles.Pipeline.(fieldname);
 
 %%% Checks that these images are two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(PrimaryObjectImage) ~= 2
-    error('Image processing was canceled because the Identify Tertiary Subregion module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 if ndims(SecondaryObjectImage) ~= 2
-    error('Image processing was canceled because the Identify Tertiary Subregion module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Erodes the primary object image and then subtracts it from the
 %%% secondary object image.  This prevents the subregion from having zero
@@ -138,13 +136,10 @@ SubregionObjectImage = max(0,SecondaryObjectImage - ErodedPrimaryObjectImage);
        
 FinalOutline = bwperim(SubregionObjectImage > 0);
 
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -172,15 +167,10 @@ title([SubregionObjectName, ' Outlines']);
 
 CPFixAspectRatio(PrimaryObjectImage);
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
+drawnow
 
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent modules.

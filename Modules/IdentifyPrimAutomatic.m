@@ -250,12 +250,13 @@ function handles = IdentifyPrimAutomatic(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
 
 %%% Sets up loop for test mode.
 if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,20}),'Yes')
@@ -402,28 +403,29 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+        drawnow
+        
         %%% Reads (opens) the image you want to analyze and assigns it to a variable,
         %%% "OrigImage".
         fieldname = ['',  ImageName];
 
         %%% Checks whether the image exists in the handles structure.
         if isfield(handles.Pipeline, fieldname)==0,
-            error(['Image processing has been canceled. Prior to running the IdentifyPrimAutomatic Intensity module, you must have previously run a module to load an image. You specified in the IdentifyPrimAutomatic module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the IdentifyPrimAutomatic Intensity module, you must have previously run a module to load an image. You specified in the IdentifyPrimAutomatic module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
         end
         OrigImage = handles.Pipeline.(fieldname);
 
         %%% Checks that the original image is two-dimensional (i.e. not a color
         %%% image), which would disrupt several of the image functions.
         if ndims(OrigImage) ~= 2
-            error('Image processing was canceled because the IdentifyPrimAutomatic module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+            error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
         end
         
         %%% Checks that the Laplace parameters have valid values
         if ~strcmp(LaplaceValues,'/')
             index = strfind(LaplaceValues,',');
             if isempty(index) || (length(index) ~= 6)
-                error('The LaplaceValues in the IdentifyPrimAutomatic module is invalid.');
+                error(['The LaplaceValues in the ', ModuleName, ' module is invalid.']);
             end
             NeighborhoodSize(1) = str2num(LaplaceValues(1:index(1)-1));
             NeighborhoodSize(2) = str2num(LaplaceValues(index(1)+1:index(2)-1));
@@ -436,22 +438,22 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         
         %%% Checks that the Min and Max diameter parameters have valid values
         index = strfind(SizeRange,',');
-        if isempty(index),error('The Min and Max size entry in the IdentifyPrimAutomatic module is invalid.'),end
+        if isempty(index),error(['The Min and Max size entry in the ', ModuleName, ' module is invalid.']),end
         MinDiameter = SizeRange(1:index-1);
         MaxDiameter = SizeRange(index+1:end);
 
         MinDiameter = str2double(MinDiameter);
         if isnan(MinDiameter) | MinDiameter < 0
-            error('The Min dimater entry in the IdentifyPrimAutomatic module is invalid.')
+            error(['The Min dimater entry in the ', ModuleName, ' module is invalid.'])
         end
         if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
         else
             MaxDiameter = str2double(MaxDiameter);
             if isnan(MaxDiameter) | MaxDiameter < 0
-                error('The Max Diameter entry in the IdentifyPrimAutomatic module is invalid.')
+                error(['The Max Diameter entry in the ', ModuleName, ' module is invalid.'])
             end
         end
-        if MinDiameter > MaxDiameter, error('Min Diameter larger the Max Diameter in the IdentifyPrimAutomatic module.'),end
+        if MinDiameter > MaxDiameter, error(['Min Diameter larger the Max Diameter in the ', ModuleName, ' module.']),end
         Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
         %%% Convert user-specified percentage of image covered by objects to a prior probability
@@ -465,7 +467,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         else
             MinimumThreshold = str2double(MinimumThreshold);
             if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
-                error('The Minimum threshold entry in the IdentifyPrimAutomatic module is invalid.')
+                error(['The Minimum threshold entry in the ', ModuleName, ' module is invalid.'])
             end
         end
 
@@ -473,7 +475,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         if ~strcmp(SizeOfSmoothingFilter,'Automatic')
             SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
             if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage))
-                error('The specified size of the smoothing filter in the IdentifyPrimAutomatic module is not valid or unreasonable.')
+                error(['The specified size of the smoothing filter in the ', ModuleName, ' module is not valid or unreasonable.'])
             end
         end
 
@@ -481,14 +483,15 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         if ~strcmp(MaximaSuppressionSize,'Automatic')
             MaximaSuppressionSize = str2double(MaximaSuppressionSize);
             if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0
-                error('The specified maxima suppression size in the IdentifyPrimAutomatic module is not valid or unreasonable.')
+                error(['The specified maxima suppression size in the ', ModuleName, ' module is not valid or unreasonable.'])
             end
         end
 
         %%%%%%%%%%%%%%%%%%%%%
         %%% IMAGE ANALYSIS %%%
         %%%%%%%%%%%%%%%%%%%%%
-
+        drawnow
+        
         %%% STEP 1. Find threshold and apply to image
         if strfind(Threshold,'Global')
             if strfind(Threshold,'Otsu')
@@ -565,7 +568,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                     %%% structure.
                     fieldname = ['Pathname', ImageName];
                     try Pathname = handles.Pipeline.(fieldname);
-                    catch error('Image processing was canceled because the Identify Primary Threshold module must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Identify Primary Threshold module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Identify Primary Threshold module onward.')
+                    catch error(['Image processing was canceled in the ', ModuleName, ' module because it must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because you have asked the Identify Primary Threshold module to calculate a threshold based on all of the images before identifying objects within each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Identify Primary Threshold module onward.'])
                     end
                     %%% Retrieves the list of filenames where the images are stored from the
                     %%% handles structure.
@@ -605,7 +608,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                         Threshold = 0.0;
                     end
                 catch [ErrorMessage, ErrorMessage2] = lasterr;
-                    error(['An error occurred in the Identify Primary Threshold module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+                    error(['An error occurred in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
                 end
                 fieldname = ['Threshold', ImageName];
                 handles.Pipeline.(fieldname) = Threshold;
@@ -625,7 +628,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             %%% Checks that the Threshold parameter has a valid value
             Threshold = str2double(Threshold);
             if isnan(Threshold) | Threshold > 1 | Threshold < 0
-                error('The threshold entered in the IdentifyPrimAutomatic module is not a number, or is outside the acceptable range of 0 to 1.')
+                error(['The threshold entered in the ', ModuleName, ' module is not a number, or is outside the acceptable range of 0 to 1.'])
             end
         end
         %%% Correct the threshold using the correction factor given by the user
@@ -949,7 +952,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
         %%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%
         %%%%%%%%%%%%%%%%%%%%%%
-
+        drawnow
+        
         if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
 
             if strcmp(LaplaceValues,'/')
@@ -1071,7 +1075,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%% SAVE DATA TO HANDLES STRUCTURE %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+            drawnow
+            
             %%% Saves the segmented image, not edited for objects along the edges or
             %%% for size, to the handles structure.
             fieldname = ['UneditedSegmented',ObjectName];

@@ -88,12 +88,12 @@ CurrentModuleNum = str2double(CurrentModule);
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Which images' original filenames do you want use as a base for these new images' filenames? Your choice MUST be images loaded directly with a Load module. Type N to use sequential numbers.
+%textVAR02 = Which images' original filenames do you want use as a base for these new images' filenames? Your choice MUST be images loaded directly with a Load module. Type N to use sequential numbers or any word to use the same base name (for avi (movies) you need to have the same base name).
 %infotypeVAR02 = imagegroup
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter text to append to the image name, or leave "\" to keep the name the same except for the file extension.
+%textVAR03 = Enter text to append to the image name, type N to use sequential numbers, or leave "\" to not append anything.
 %defaultVAR03 = \
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -120,6 +120,7 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = dib
 %choiceVAR04 = mat
 %choiceVAR04 = fig
+%choiceVAR04 = avi
 %inputtypeVAR04 = popupmenu
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -139,42 +140,32 @@ BitDepth = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = At what point in the pipeline do you want to save the image? When saving in movie format, choose Every cycle.
+%textVAR08 = At what point in the pipeline do you want to save the image? When saving in avi (movie) format, choose Every cycle.
 %choiceVAR08 = Every cycle
 %choiceVAR08 = First cycle
 %choiceVAR08 = Last cycle
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = If you are only saving the image once (e.g. last or first option), enter the filename to use (with no extension). To use the automatically determined filename (derived from the source images), enter A.
-%defaultVAR09 = A
-OverrideFileName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = If you are saving in avi (movie) format, do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving movies is time-consuming. See the help for this module for more details.
+%defaultVAR09 = L
+SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = If you are saving in movie format, do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving movies is time-consuming. See the help for this module for more details.
-%defaultVAR10 = L
-SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Do you want to rescale the images to use a full 8 bit (256 graylevel) dynamic range (Y or N)?
+%choiceVAR10 = No
+%choiceVAR10 = Yes
+RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
-%textVAR11 = Do you want to rescale the images to use a full 8 bit (256 graylevel) dynamic range (Y or N)?
-%choiceVAR11 = No
-%choiceVAR11 = Yes
-RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu
+%textVAR11 = For grayscale images, specify the colormap to use (e.g. gray, jet, bone) if you are saving movie (avi) files.
+%defaultVAR11 = gray
+ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = For grayscale images, specify the colormap to use (e.g. gray, jet, bone) if you are saving movie (avi) files.
-%defaultVAR12 = gray
-ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%textVAR12 = Enter any optional parameter's here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
+%defaultVAR12 = /
+OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = Update file names within CellProfiler?
-%choiceVAR13 = Yes
-%choiceVAR13 = No
-UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
-
-%textVAR14 = Enter any optional parameter's here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
-%defaultVAR14 = /
-OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-
-%textVAR15 = Warning! It is possible to overwrite existing files using this module!
+%textVAR13 = Warning! It is possible to overwrite existing files using this module!
 
 %%%VariableRevisionNumber = 11
 
@@ -187,185 +178,84 @@ drawnow
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
-    %%% The figure window is closed since there is nothing to display.
-    try close(ThisModuleFigureNumber)
-    end
-end
-drawnow
 
-try
-    fieldname = ['Filename', ImageFileName];
-    FileName = handles.Pipeline.(fieldname);
-catch
-    error(['The original name chosen to base the saved files name''s MUST be from a Load module (images or video) or ''N'' for sequential numbering.  The error is: ', lasterr])
-end
-
-%%% The module is only carried out if this is the appropriate set being
-%%% analyzed, or if the user wants it done every time.
-if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.Current.SetBeingAnalyzed == 1) | (strncmpi(SaveWhen,'L',1) == 1 && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets)
+if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     
-    if strcmp(FileDirectory,'.')
-        if length(FileDirectory) == 1
-            FileDirectoryToSave = handles.Current.DefaultOutputDirectory;
+    
+    try
+        FileName = handles.Pipeline.(['Filename', ImageFileName]){handles.Current.SetBeingAnalyzed};
+        [temp FileName] = fileparts(FileName);
+    catch
+        if strcmp(ImageFileName,'N')
+            FileName = TwoDigitString(handles.Current.SetBeingAnalyzed);
         else
-            FileDirectoryToSave = fullfile(handles.Current.DefaultOutputDirectory,FileDirectory(2:end));
+            Spaces = isspace(FileName);
+            if any(Spaces)
+                error('Image processing was canceled because you have entered one or more spaces in the box of text for the filename of the image in the Save Images module.')
+            end
+            FileName = ImageFileName;
         end
-    elseif strcmpi(FileDirectory,'I')
-        FileDirectoryToSave = handles.Current.DefaultImageDirectory;
-    elseif strcmpi(FileDirectory,'S')
-        %%% If 'S', then the directory name will be determined below,
-        %%% when the file name is retrieved.
-    else FileDirectoryToSave = FileDirectory;
-        %%% If none of the above, the user must have typed an actual
-        %%% path, which will be used.
+    end
+
+    if strcmp(Appendage,'N')
+        FileName = [FileName TwoDigitString(handles.Current.SetBeingAnalyzed)];
+    else
+        if ~strcmp(Appendage,'\')
+            Spaces = isspace(Appendage);
+            if any(Spaces)
+                error('Image processing was canceled because you have entered one or more spaces in the box of text for the filename of the image in the Save Images module.')
+            end
+            FileName = [FileName Appendage];
+        end
+    end
+
+    FileName = [FileName '.' FileFormat];
+
+    if strcmp(FileDirectory,'.')
+        PathName = handles.Current.DefaultOutputDirectory;
+    else
+        PathName = FileDirectory;
+    end
+    
+    %%% Makes sure that the File Directory specified by the user exists.
+    if ~isdir(PathName)
+        error(['Image processing was canceled because the specified directory "', PathName, '" in the Save Images module does not exist.']);
     end
 
     if ~strcmp(FileFormat,'fig')
-        %%% Retrieves the image you want to analyze and assigns it to a variable,
-        %%% "Image".
-        %%% Checks whether image has been loaded.
-        if isfield(handles.Pipeline, ImageName) == 0,
-            %%% If the image is not there, the module tries in a field named
-            %%% 'Segmented' which would be produced by an Identify module.
-            if isfield(handles.Pipeline, ['Segmented',ImageName])==1,
-                ImageName = ['Segmented',ImageName];
-            else %%% If the image is not there, an error message is produced.  The error
-                %%% is not displayed: The error function halts the current function and
-                %%% returns control to the calling function (the analyze all images
-                %%% button callback.)  That callback recognizes that an error was
-                %%% produced because of its try/catch loop and breaks out of the image
-                %%% analysis loop without attempting further modules.
-                error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but neither that nor an image with the name ', ['Segmented',ImageName] , ' exists.  Perhaps there is a typo in the name.'])
-            end
+        if ~isfield(handles.Pipeline, ImageName)
+            error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but that does not exist.'])
         end
         Image = handles.Pipeline.(ImageName);
 
-        if strncmpi(RescaleImage,'Y',1) == 1
+        if strcmp(RescaleImage,'Yes')
             LOW_HIGH = stretchlim(Image,0);
             Image = imadjust(Image,LOW_HIGH,[0 1]);
         end
 
         %%% Checks whether the file format the user entered is readable by Matlab.
-        if strcmp(FileFormat(1),'.')
-            FileFormat = FileFormat(2:end);
-        end
-        IsFormat = imformats(FileFormat);
-        if isempty(IsFormat) == 1
-            if strcmpi(FileFormat,'mat') && strcmpi(FileFormat,'avi') &&strcmpi(FileFormat,'dib')
-                error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
-            end
+        if ~any(strcmp(FileFormat,CPimread)) && ~strcmp(FileFormat,'avi')
+            error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
         end
     end
 
-    %%% Creates the file name automatically, if the user requested.
-    if strcmpi(OverrideFileName,'A')
-        %%% Checks whether the appendage is going to result in a name with
-        %%% spaces.
-        Spaces = isspace(Appendage);
-        if any(Spaces) == 1
-            error('Image processing was canceled because you have entered one or more spaces in the box of text to append to the image name in the Save Images module.')
-        end
-        %%% Determines the file name.
-        if strcmp(upper(ImageFileName), 'N') == 1
-            %%% Sets the filename to be sequential numbers.
-            FileName = num2str(handles.Current.SetBeingAnalyzed);
-            CharFileName = char(FileName);
-            BareFileName = CharFileName;
-            if strcmpi(FileDirectory,'S') == 1
-                %%% Determine the filename of the image to be analyzed, just in order to find the subdirectory.
-                fieldname = ['Filename', ImageFileName];
-                IGNOREFileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-                %%% If subdirectories are being analyzed, the filename will
-                %%% include subdirectory pathnames.
-                [SubdirectoryPathName,IGNOREBAREFILENAME,ext,versn] = fileparts(IGNOREFileName{1});
-                FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
-            end
-        elseif strcmpi(FileFormat,'avi') == 1
-            %%% If it's a movie, we don't want to use different
-            %%% filenames for each image set.
-
-            %%% If it's coming from a LoadMovies module:
-            try
-                %%% Determine the filename of the image to be analyzed.
-                fieldname = ['FileList', ImageFileName];
-                FileName = handles.Pipeline.(fieldname){1}{handles.Current.SetBeingAnalyzed}
-                %%% If subdirectories are being analyzed, the filename will
-                %%% include subdirectory pathnames.
-                [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName);
-                if strcmpi(FileDirectory,'S') == 1
-                    FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
-                end
-            catch
-                %%% If it's coming from a LoadImages module:
-
-                %%% NEED TO JUST PUT ALL IMAGES INTO ONE MOVIE>
-
-                %%% Determine the filename of the image to be analyzed.
-                fieldname = ['Filename', ImageFileName];
-                %%% Here, note that the first filename is always used;
-                %%% it does not increment by setbeinganalyzed.
-                FileName = handles.Pipeline.(fieldname)(1);
-                %%% If subdirectories are being analyzed, the filename will
-                %%% include subdirectory pathnames.
-                [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
-                if strcmpi(FileDirectory,'S') == 1
-                    FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
-                end
-
-            end
-        else
-            %%% Determine the filename of the image to be analyzed.
-            fieldname = ['Filename', ImageFileName];
-            FileName = handles.Pipeline.(fieldname)(handles.Current.SetBeingAnalyzed);
-            %%% If subdirectories are being analyzed, the filename will
-            %%% include subdirectory pathnames.
-            [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(FileName{1});
-            if strcmpi(FileDirectory,'S') == 1
-                FileDirectoryToSave = fullfile(handles.Current.DefaultImageDirectory,SubdirectoryPathName);
-            end
-        end
-        %%% Assembles the new image name.
-        if strcmp(Appendage, '\')
-            NewImageName = [BareFileName '.' FileFormat];
-        elseif strcmp(Appendage(1),'\')
-            NewImageName = [Appendage(2:end) '.' FileFormat];
-        else
-            NewImageName = [BareFileName Appendage '.' FileFormat];
-        end
-    else
-        %%% Otherwise, use the filename the user entered.
-        NewImageName = [OverrideFileName,'.',FileFormat];
-        Spaces = isspace(NewImageName);
-        if any(Spaces) == 1
-            error('Image processing was canceled because you have entered one or more spaces in the proposed filename in the Save Images module.')
-        end
-    end
-
-    %%% Makes sure that the File Directory specified by the user exists.
-    if isdir(FileDirectoryToSave) ~= 1
-        error(['Image processing was canceled because the specified directory "', FileDirectoryToSave, '" in the Save Images module does not exist.']);
-    end
-
-    if strcmp(UpdateFileOrNot,'Yes')
-        handles.Pipeline.(['FileList',ImageName])(handles.Current.SetBeingAnalyzed) = {NewImageName};
-        handles.Pipeline.(['Pathname',ImageName]) = FileDirectoryToSave;
-    end
-
-    NewFileAndPathName = fullfile(FileDirectoryToSave, NewImageName);
-    if strcmpi(CheckOverwrite,'Yes') == 1 && strcmpi(FileFormat,'avi') ~= 1
+    FileAndPathName = fullfile(PathName, FileName);
+    
+    if strcmp(CheckOverwrite,'Yes') && ~strcmp(FileFormat,'avi')
         %%% Checks whether the new image name is going to overwrite the
         %%% original file. This check is not done here if this is an avi
         %%% (movie) file, because otherwise the check would be done on each
         %%% frame of the movie.
-        if exist(NewFileAndPathName) == 2
-            try Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
-            catch error(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
+        if exist(FileAndPathName) == 2
+            try 
+                Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
+            catch
+                error(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
             end
-            if strcmp(Answer,'Cancel') == 1
+            if strcmp(Answer,'Skip Module')
+                return;
+            end
+            if strcmp(Answer,'Cancel')
                 error('Image processing was canceled')
             end
 
@@ -377,11 +267,11 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     FileSavingParameters = [];
-    if strcmpi(BitDepth,'8') ~= 1
+    if ~strcmp(BitDepth,'8')
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
         %%% In jpeg format at 12 and 16 bits, the mode must be set to
         %%% lossless to avoid failure of the imwrite function.
-        if strcmpi(FileFormat,'jpg') == 1 | strcmpi(FileFormat,'jpeg') == 1
+        if strcmp(FileFormat,'jpg') || strcmp(FileFormat,'jpeg')
             FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
         end
     end
@@ -389,33 +279,6 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
     if ~strcmp(OptionalParameters,'/')
         FileSavingParameters = [',',OptionalParameters,FileSavingParameters]
     end
-
-    %OptionDouble1 = strcmp(Option1,'DelayTime') || strcmp(Option1,'TransparentColor') || strcmp(Option1,'BackgroundColor') || strcmp(Option1,'LoopCount') || strcmp(Option1,'ScreenSize') || strcmp(Option1,'Location') || strcmp(Option1,'Quality') || strcmp(Option1,'BitDepth') || strcmp(Option1,'Resolution') || strcmp(Option1,'Transparency') || strcmp(Option1,'Background') || strcmp(Option1,'Gamma') || strcmp(Option1,'Chromaticities') || strcmp(Option1,'XResolution') || strcmp(Option1,'YResolution') || strcmp(Option1,'Alpha') || strcmp(Option1,'SignificantBits') || strcmp(Option1,'MaxValue');
-    %OptionDouble2 = strcmp(Option2,'DelayTime') || strcmp(Option2,'TransparentColor') || strcmp(Option2,'BackgroundColor') || strcmp(Option2,'LoopCount') || strcmp(Option2,'ScreenSize') || strcmp(Option2,'Location') || strcmp(Option2,'Quality') || strcmp(Option2,'BitDepth') || strcmp(Option2,'Resolution') || strcmp(Option2,'Transparency') || strcmp(Option2,'Background') || strcmp(Option2,'Gamma') || strcmp(Option2,'Chromaticities') || strcmp(Option2,'XResolution') || strcmp(Option2,'YResolution') || strcmp(Option2,'Alpha') || strcmp(Option2,'SignificantBits') || strcmp(Option2,'MaxValue');
-
-    %if ~strcmp(Option1,'/') && ~strcmp(Option2,'/')
-    %    if OptionDouble1 && OptionDouble2
-    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',',OptionValue2];
-    %    elseif ~OptionDouble1 && OptionDouble2
-    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',',Option2,''',',OptionValue2];
-    %    elseif OptionDouble1 && ~OptionDouble2
-    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1,',''',Option2,''',''',OptionValue2,''''];
-    %    elseif ~OptionDouble1 && ~OptionDouble2
-    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''',''',Option2,''',''',OptionValue2,''''];
-    %    end
-    %elseif ~strcmp(Option1,'/') && strcmp(Option2,'/')
-    %    if OptionDouble1
-    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',',OptionValue1];
-    %    elseif ~OptionDouble1
-    %        FileSavingParameters = [FileSavingParameters,',''',Option1,''',''',OptionValue1,''''];
-    %    end
-    %elseif strcmp(Option1,'/') && ~strcmp(Option2,'/')
-    %    if OptionDouble2
-    %        FileSavingParameters = [FileSavingParameters,',''',Option2,''',',OptionValue2];
-    %    elseif ~OptionDouble2
-    %        FileSavingParameters = [FileSavingParameters,',''',Option2,''',''',OptionValue2,''''];
-    %    end
-    %end
 
     if strcmp(FileFormat,'fig')
         if length(ImageName) == 1
@@ -428,30 +291,32 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         FigureHandle = handles.Current.(fieldname);
     end
 
-    if strcmpi(FileFormat,'mat')
-        try eval(['save(''',NewFileAndPathName, ''',''Image'')']);
+    if strcmp(FileFormat,'mat')
+        try 
+            eval(['save(''',FileAndPathName, ''',''Image'')']);
         catch
             error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmp(FileFormat,'fig')
-        try eval(['saveas(FigureHandle,NewFileAndPathName,''fig'')']);
+        try 
+            eval(['saveas(FigureHandle,FileAndPathName,''fig'')']);
         catch
             error(['In the save images module, the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi')
-        if handles.Current.SetBeingAnalyzed == 1
-            if strcmpi(CheckOverwrite,'Y') == 1
-                %%% Checks whether the new image name is going to overwrite
-                %%% the original file, but only on the first image set,
-                %%% because otherwise the check would be done on each frame
-                %%% of the movie.
-                if exist(NewFileAndPathName) == 2
-                   try Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', NewFileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
-                   catch erro (['Turn off checking overwriting dialogbox on cluster'])
-                   end
-                   if strcmp(Answer,'Cancel') == 1
-                        error('Image processing was canceled')
-                    end
+        if handles.Current.SetBeingAnalyzed == 1 &&  strcmp(CheckOverwrite,'Y')
+            %%% Checks whether the new image name is going to overwrite
+            %%% the original file, but only on the first image set,
+            %%% because otherwise the check would be done on each frame
+            %%% of the movie.
+            if exist(FileAndPathName) == 2
+               try 
+                   Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+               catch
+                   error (['Turn off checking overwriting dialogbox on cluster']);
+               end
+               if strcmp(Answer,'Cancel')
+                    error('Image processing was canceled')
                 end
             end
         end
@@ -496,7 +361,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
                 TimeToSave = 1;
             end
         else
-            if strncmpi(SaveMovieWhen,'L',1) == 1
+            if strncmpi(SaveMovieWhen,'L',1)
                 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                     TimeToSave = 1;
                 end
@@ -508,7 +373,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
             %%% have been calculated for each frame and are
             %%% already stored in Movie.colormap.
             if IsRGB == 1
-                try movie2avi(Movie,NewFileAndPathName)
+                try movie2avi(Movie,FileAndPathName)
                 catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
                 end
             else
@@ -516,7 +381,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
                 %%% to prevent a bunch of annoying weird errors. I assume
                 %%% the avi format is always 8-bit (=256 levels).
                 eval(['ChosenColormap = colormap(',ColorMap,'(256));']);
-                try movie2avi(Movie,NewFileAndPathName,'colormap',ChosenColormap)
+                try movie2avi(Movie,FileAndPathName,'colormap',ChosenColormap)
                 catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
                 end
             end
@@ -529,7 +394,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %         %%% If this movie file already exists, open it.
         %         try
         %
-        %             Movie = aviread(NewFileAndPathName);
+        %             Movie = aviread(FileAndPathName);
         %             NumberExistingFrames = size(Movie,2);
         %          %%% If the movie does not yet exist, create the colormap
         %          %%% field as empty to prevent errors when trying to save as a
@@ -543,7 +408,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %         Movie(1,NumberExistingFrames+1).cdata = Image*256;
         %         % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
         %         %%% Saves the Movie under the appropriate file name.
-        %         movie2avi(Movie,NewFileAndPathName,'colormap',colormap(gray(256)))
+        %         movie2avi(Movie,FileAndPathName,'colormap',colormap(gray(256)))
 
         %%% TRYING TO FIGURE OUT HOW TO ADD COLORMAP INFO TO RGB IMAGES>>>
         %%% If the image is an RGB image (3-d), convert it to an
@@ -569,7 +434,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         % %%% See if this movie file already exists. If so, just
         %         %%% retrieve the AviHandle from handles
         %         SUCCESSFULHANDLERETIREVAL = 0;
-        %         if exist(NewFileAndPathName) ~= 0
+        %         if exist(FileAndPathName) ~= 0
         %             try
         %                 fieldname = ['AviHandle', ImageName];
         %                 AviHandle = handles.Pipeline.(fieldname)
@@ -583,7 +448,7 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %             %%% If the movie does not exist already, create it using
         %             %%% the avifile function and put the AviHandle into the handles.
         %
-        %             AviHandle = avifile(NewFileAndPathName);
+        %             AviHandle = avifile(FileAndPathName);
         %             AviHandle = addframe(AviHandle,Image);
         %             AviHandle = close(AviHandle);
         %
@@ -593,9 +458,19 @@ if (strncmpi(SaveWhen,'E',1) == 1) | (strncmpi(SaveWhen,'F',1) == 1 && handles.C
         %
 
     else
-        try eval(['imwrite(Image, NewFileAndPathName, FileFormat', FileSavingParameters,')']);
+        try eval(['imwrite(Image, FileAndPathName, FileFormat', FileSavingParameters,')']);
         catch
             error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
         end
     end
 end
+
+
+%%% SUBFUNCTION %%%
+function twodigit = TwoDigitString(val)
+%TwoDigitString is a function like num2str(int) but it returns a two digit
+%representation of a string for our purposes.
+if ((val > 99) || (val < 0)),
+    error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
+end
+twodigit = sprintf('%02d', val);

@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+MINOR ISSUE >>>
+-(Mike 10/17) (Requested by Anne 10-12-2005) - The main GUI mostly looks fine on SP3  7.1, except the text Output filename is shifted over about two characters too far to the right. It'd also look a bit better if we could move Pixel size and Adjust modules just one pixel to the left.
+
 -(Mike 10/13) Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.
 
 -(Mike 10/13) (Requested by Anne) - prepare outlined example images for John Elliott at NIST and prepare email to be sent. We don't need to send CP code right now. In the email, ask him why one folder had only red - we could probly still analyze them but weren't sure if that was the point.

@@ -136,6 +136,82 @@ SubregionObjectImage = max(0,SecondaryObjectImage - ErodedPrimaryObjectImage);
        
 FinalOutline = bwperim(SubregionObjectImage > 0);
 
+if ~isfield(handles.Measurements,SubregionObjectName)
+    handles.Measurements.(SubregionObjectName) = {};
+end
+
+%%% This line creates two rows containing all values for both label matrix
+%%% images. It then takes the unique rows (no repeats), and sorts them
+%%% according to the first column which is the sub object values.
+ChildParentList = sortrows(unique([SubregionObjectImage(:) SecondaryObjectImage(:)],'rows'),1);
+%%% We want to get rid of the children values and keep the parent values.
+ParentList = ChildParentList(:,2);
+%%% This gets rid of all parent values which have no corresponding children
+%%% values (where children = 0 but parent = 1).
+for i = 1:max(ChildParentList(:,1))
+    ParentValue = max(ParentList(ChildParentList(:,1) == i));
+    if isempty(ParentValue)
+        ParentValue = 0;
+    end
+    FinalParentList(i,1) = ParentValue;
+end
+if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
+    error('A subobject cannot have two parents, something is wrong.');
+end
+
+if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
+    if handles.Current.SetBeingAnalyzed == 1
+        NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
+        handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {SecondaryObjectName};
+        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
+    else
+        OldColumn = strmatch(SecondaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
+        if length(OldColumn) ~= 1
+            error('You are attempting to create the same children, please remove redundant module.');
+        end
+        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+    end
+else
+    handles.Measurements.(SubregionObjectName).ParentFeatures = {SecondaryObjectName};
+    handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
+end
+
+%%% This line creates two rows containing all values for both label matrix
+%%% images. It then takes the unique rows (no repeats), and sorts them
+%%% according to the first column which is the sub object values.
+ChildParentList = sortrows(unique([SubregionObjectImage(:) PrimaryObjectImage(:)],'rows'),1);
+%%% We want to get rid of the children values and keep the parent values.
+ParentList = ChildParentList(:,2);
+%%% This gets rid of all parent values which have no corresponding children
+%%% values (where children = 0 but parent = 1).
+for i = 1:max(ChildParentList(:,1))
+    ParentValue = max(ParentList(ChildParentList(:,1) == i));
+    if isempty(ParentValue)
+        ParentValue = 0;
+    end
+    FinalParentList(i,1) = ParentValue;
+end
+if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
+    error('A subobject cannot have two parents, something is wrong.');
+end
+
+if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
+    if handles.Current.SetBeingAnalyzed == 1
+        NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
+        handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {PrimaryObjectName};
+        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
+    else
+        OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
+        if length(OldColumn) ~= 1
+            error('You are attempting to create the same children, please remove redundant module.');
+        end
+        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+    end
+else
+    handles.Measurements.(SubregionObjectName).ParentFeatures = {PrimaryObjectName};
+    handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%

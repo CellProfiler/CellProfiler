@@ -52,7 +52,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the images you want to use to manually identify an object?
 %infotypeVAR01 = imagegroup

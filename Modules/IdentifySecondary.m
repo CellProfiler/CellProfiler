@@ -162,7 +162,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the images you want to process? If identifying objects by DISTANCE - R, this will not affect object identification, only the final display.
 %infotypeVAR01 = imagegroup

@@ -34,7 +34,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What would you like to call the grid that you define in this module?
 %defaultVAR01 = GridBlue

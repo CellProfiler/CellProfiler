@@ -256,7 +256,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %%% Sets up loop for test mode.
 if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,20}),'Yes')

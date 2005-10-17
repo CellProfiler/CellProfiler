@@ -32,7 +32,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = handles.Settings.ModuleNames(CurrentModuleNum);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What do you want to call the images saved in the first location?
 %defaultVAR01 = CFP

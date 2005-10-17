@@ -73,19 +73,6 @@ MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}
 %infotypeVAR04 = outlinegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 =  What do you want to call the labeled matrix image?
-%choiceVAR05 = Do not save
-%choiceVAR05 = LabeledNuclei
-%infotypeVAR05 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu custom
-
-%textVAR06 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR06 = RGB
-%choiceVAR06 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu
-
 %%%VariableRevisionNumber = 02
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,13 +185,6 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if ~strcmp(SaveColored,'Do not save')
-        if strcmp(SaveMode,'RGB')
-            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-        else
-            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-        end
-    end
     if ~strcmp(SaveOutlined,'Do not save')
         handles.Pipeline.(SaveOutlined) = FinalOutline;
     end

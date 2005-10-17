@@ -72,15 +72,10 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 =  What do you want to call the labeled matrix image?
-%defaultVAR04 = Do not save
-%infotypeVAR04 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
-
-%textVAR05 = Would you like to save the outlines of the objects?
-%defaultVAR05 = OutlineBlue
-%infotypeVAR05 = outlinegroup indep
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,5}); 
+%textVAR04 = Would you like to save the outlines of the objects?
+%defaultVAR04 = OutlineBlue
+%infotypeVAR04 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
 
 %%%VariableRevisionNumber = 1
 

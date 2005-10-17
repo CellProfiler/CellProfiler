@@ -233,18 +233,6 @@ RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentMo
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu custom
 
-%textVAR12 = What do you want to call the labeled matrix image?
-%choiceVAR12 = Do not save
-%choiceVAR12 = LabeledNuclei
-%infotypeVAR12 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu custom
-
-%textVAR13 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR13 = RGB
-%choiceVAR13 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
 
 %%%VariableRevisionNumber = 2
 
@@ -743,7 +731,7 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
+if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,2,2).
     %%% Note that the label2rgb function doesn't work when there are no objects
@@ -853,13 +841,6 @@ handles.Measurements.(SecondaryObjectName).Location(handles.Current.SetBeingAnal
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if ~strcmp(SaveColored,'Do not save')
-        if strcmp(SaveMode,'RGB')
-            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-        else
-            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-        end
-    end
     if ~strcmp(SaveOutlined,'Do not save')
         handles.Pipeline.(SaveOutlined) = ObjectOutlinesOnOrigImage;
     end

@@ -70,17 +70,6 @@ Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR06 = outlinegroup indep
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Would you like to save the label matrix image?  and if so, what would you like to call it?
-%defaultVAR07 = Do not save
-%infotypeVAR07 = imagegroup indep
-LabelMatrixImageName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-
-%textVAR08 = If you are saving the label matrix image, would you like to save it is RGB or grayscale?
-%choiceVAR08 = RGB
-%choiceVAR08 = grayscale
-RGBorGray = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
-
 %%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -230,9 +219,6 @@ tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(NewObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-if ~strcmp(LabelMatrixImageName,'Do not save')
-    handles.Pipeline.(LabelMatrixImageName) = ColoredLabelMatrixImage;
-end
 
 if ~strcmp(OutlineName,'Do not save')
     handles.Pipeline.(OutlineName) = FinalOutline;

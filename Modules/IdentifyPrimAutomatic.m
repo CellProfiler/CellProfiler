@@ -380,23 +380,11 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %inputtypeVAR17 = popupmenu custom
 
 
-%textVAR18 =  What do you want to call the labeled matrix image?
-%choiceVAR18 = Do not save
-%infotypeVAR18 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,18});
-%inputtypeVAR18 = popupmenu custom
-
-%textVAR19 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR19 = RGB
-%choiceVAR19 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
-%inputtypeVAR19 = popupmenu
-
-%textVAR20 = Test Mode?
-%choiceVAR20 = No
-%choiceVAR20 = Yes
-TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
-%inputtypeVAR20 = popupmenu
+%textVAR18 = Test Mode?
+%choiceVAR18 = No
+%choiceVAR18 = Yes
+TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+%inputtypeVAR18 = popupmenu
 
 %%%VariableRevisionNumber = 10
 
@@ -891,7 +879,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
             else
                 fieldname = ['FigureNumberForModule',CurrentModule];
                 ThisModuleFigureNumber = handles.Current.(fieldname);
-                if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveColored,'Y',1) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
+                if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
                     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
                     %%% window in subplot(2,2,2).
                     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
@@ -958,23 +946,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,20});
                 end
             end
 
-            if ~strcmp(SaveColored,'Do not save')
-                try
-                    if strcmp(SaveMode,'RGB')
-                        if sum(sum(FinalLabelMatrixImage)) >= 1
-                            cmap = jet(max(64,max(FinalLabelMatrixImage(:))));
-                            ColoredLabelMatrixImage = label2rgb(FinalLabelMatrixImage, cmap, 'k', 'shuffle');
-                        else
-                            ColoredLabelMatrixImage = FinalLabelMatrixImage;
-                        end
-                        handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-                    else
-                        handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-                    end
-                catch
-                    errordlg('The label matrix image was not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
-                end
-            end
+       
 
             %%% Saves the Threshold value to the handles structure.
             %%% Storing the threshold is a little more complicated than storing other measurements

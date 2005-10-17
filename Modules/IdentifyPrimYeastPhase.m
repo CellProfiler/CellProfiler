@@ -175,36 +175,26 @@ IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %infotypeVAR09 = outlinegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
 
-%textVAR10 =  What do you want to call the labeled matrix image?
-%defaultVAR10 = Do not save
-%infotypeVAR10 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,10}); 
 
-%textVAR11 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR11 = RGB
-%choiceVAR11 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,11}); 
-%inputtypeVAR11 = popupmenu
+%textVAR10 = Enter the SmallValue1 (even number, in pixels)
+%defaultVAR10 = 8
+SmallValue1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR12 = Enter the SmallValue1 (even number, in pixels)
-%defaultVAR12 = 8
-SmallValue1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,12}));
+%textVAR11 = Enter the LargeValue1 (even number, in pixels)
+%defaultVAR11 = 14
+LargeValue1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 
-%textVAR13 = Enter the LargeValue1 (even number, in pixels)
-%defaultVAR13 = 14
-LargeValue1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
+%textVAR12 = Enter the Value2 (integer, in pixels)
+%defaultVAR12 = 3
+Value2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,12}));
 
-%textVAR14 = Enter the Value2 (integer, in pixels)
-%defaultVAR14 = 3
-Value2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,14}));
+%textVAR13 = Enter the Value3 (integer, in pixels)
+%defaultVAR13 = 3
+Value3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
 
-%textVAR15 = Enter the Value3 (integer, in pixels)
-%defaultVAR15 = 3
-Value3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
-
-%textVAR16 = Enter the Value4 (integer, in pixels)
-%defaultVAR16 = 6
-Value4 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,16}));
+%textVAR14 = Enter the Value4 (integer, in pixels)
+%defaultVAR15 = 6
+Value4 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
@@ -442,13 +432,6 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if ~strcmp(SaveColored,'Do not save')
-        if strcmp(SaveMode,'RGB')
-            handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-        else
-            handles.Pipeline.(SaveColored) = FinalLabelMatrixImage;
-        end
-    end
     if ~strcmp(SaveOutlined,'Do not save')
         handles.Pipeline.(SaveOutlined) = FinalOutline;
     end

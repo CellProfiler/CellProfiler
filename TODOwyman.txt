@@ -6,13 +6,6 @@ Last updated: 10-15-2005
 
 
 
-- (Requested by Anne 9-12-05) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space).  It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
-
-
-
-
-
-
 --- (Requested by Anne 9-08-05)
 - Wyman, I just noticed in your email you mentioned having ideas for the GUI and features after playing with the code a bit.  I'd love to talk over your ideas when I get back in town!
 

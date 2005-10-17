@@ -75,7 +75,13 @@ ChildParentList = sortrows(unique([SubObjectLabelMatrix(:) ParentObjectLabelMatr
 ParentList = ChildParentList(:,2);
 %%% This gets rid of all parent values which have no corresponding children
 %%% values (where children = 0 but parent = 1).
-FinalParentList = ParentList(ChildParentList(:,1) ~= 0);
+for i = 1:max(ChildParentList(:,1))
+    ParentValue = max(ParentList(ChildParentList(:,1) == i));
+    if isempty(ParentValue)
+        ParentValue = 0;
+    end
+    FinalParentList(i,1) = ParentValue;
+end
 if max(SubObjectLabelMatrix(:)) ~= size(FinalParentList,1)
     error('A subobject cannot have two parents, something is wrong.');
 end

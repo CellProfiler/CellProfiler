@@ -1,6 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
-MINOR ISSUE >>>
+-(Mike 10/17) Make IdentifySecondary use same thresholding options as IdentifyPrimAutomatic, CPthreshold?
+
+-(Mike 10/17) (Requested by Anne) - Analyze Scott Floyd's images by writing a new speckle finding module.
+
+-(Mike 10/17) (Requested by Anne) - Analyze Merck images - set up general morphology pipeline, possibly with illum correction, and we will send them the numerical measurements from all three images. The major goal is to figure out crucial morphological differences between the two images that aren't bright green.
+
 -(Mike 10/17) (Requested by Anne 10-12-2005) - The main GUI mostly looks fine on SP3  7.1, except the text Output filename is shifted over about two characters too far to the right. It'd also look a bit better if we could move Pixel size and Adjust modules just one pixel to the left.
 
 -(Mike 10/13) Requested by Anne 10-12-2005 - Make a new module called "Flip" which uses the Matlab functions flipud and fliplr to flip an image. Simple inputs: Input image name, output image name, and choose between flip left/right and flip top/bottom (popup menu).  We considered adding this to the Rotate module, but rotate has a bunch of other options relating to the angle of rotation, so it seemed better to have a separate module. Still open for debate though.

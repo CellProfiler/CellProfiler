@@ -671,6 +671,71 @@ elseif strcmp(IdentChoice,'Watershed')
     FinalLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0) = EditedPrimaryLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0);
 end
 
+if ~isfield(handles.Measurements,SecondaryObjectName)
+    handles.Measurements.(SecondaryObjectName) = {};
+end
+
+if ~isfield(handles.Measurements,PrimaryObjectName)
+    handles.Measurements.(PrimaryObjectName) = {};
+end
+
+%%% This line creates two rows containing all values for both label matrix
+%%% images. It then takes the unique rows (no repeats), and sorts them
+%%% according to the first column which is the sub object values.
+ChildParentList = sortrows(unique([FinalLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
+%%% We want to get rid of the children values and keep the parent values.
+ParentList = ChildParentList(:,2);
+%%% This gets rid of all parent values which have no corresponding children
+%%% values (where children = 0 but parent = 1).
+for i = 1:max(ChildParentList(:,1))
+    ParentValue = max(ParentList(ChildParentList(:,1) == i));
+    if isempty(ParentValue)
+        ParentValue = 0;
+    end
+    FinalParentList(i,1) = ParentValue;
+end
+if max(FinalLabelMatrixImage(:)) ~= size(FinalParentList,1)
+    error('Secondary Objects cannot have two parents, something is wrong.');
+end
+
+if isfield(handles.Measurements.(SecondaryObjectName),'ParentFeatures')
+    if handles.Current.SetBeingAnalyzed == 1
+        NewColumn = length(handles.Measurements.(SecondaryObjectName).ParentFeatures) + 1;
+        handles.Measurements.(SecondaryObjectName).ParentFeatures(NewColumn) = {PrimaryObjectName};
+        handles.Measurements.(SecondaryObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
+    else
+        OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SecondaryObjectName).ParentFeatures);
+        if length(OldColumn) ~= 1
+            error('You are attempting to create the same children, please remove redundant module.');
+        end
+        handles.Measurements.(SecondaryObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+    end
+else
+    handles.Measurements.(SecondaryObjectName).ParentFeatures = {PrimaryObjectName};
+    handles.Measurements.(SecondaryObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
+end
+
+for i = 1:max(ParentList)
+    ChildList(i,1) = length(FinalParentList(FinalParentList == i));
+end
+
+if isfield(handles.Measurements.(PrimaryObjectName),'ChildrenFeatures')
+    if handles.Current.SetBeingAnalyzed == 1
+        NewColumn = length(handles.Measurements.(PrimaryObjectName).ChildrenFeatures) + 1;
+        handles.Measurements.(PrimaryObjectName).ChildrenFeatures(NewColumn) = {[SecondaryObjectName,' Count']};
+        handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,NewColumn) = ChildList;
+    else
+        OldColumn = strmatch([SecondaryObjectName,' Count'],handles.Measurements.(PrimaryObjectName).ChildrenFeatures);
+        if length(OldColumn) ~= 1
+            error('You are attempting to create the same children, please remove redundant module.');
+        end
+        handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
+    end
+else
+    handles.Measurements.(PrimaryObjectName).ChildrenFeatures = {[SecondaryObjectName,' Count']};
+    handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed} = ChildList;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%

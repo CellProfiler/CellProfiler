@@ -1,18 +1,12 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
 
-(Requested by Anne) - Analyze Scott Floyd's images by writing a new speckle finding module.
-
-(Requested by Anne) - Analyze Merck images - set up general morphology pipeline, possibly with illum correction, and we will send them the numerical measurements from all three images. The major goal is to figure out crucial morphological differences between the two images that aren't bright green.
-
 MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
 - (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny. Also, the sliders (when there are not enough contents of listboxes for them to be active) have a stark white background.
 
 - Add text (e.g. After selecting module:) to AddModuleWindow for help buttons; IMPLEMENT NEW LOOK: Two listboxes, one with heading names and other with modules for that heading. Will change when new heading is highlighted?
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
-
-- Make IdentifySecondary use same thresholding options as IdentifyPrimAutomatic, CPthreshold?
 
 - (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.
 

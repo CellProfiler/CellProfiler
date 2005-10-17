@@ -164,71 +164,89 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the images you want to process? If identifying objects by DISTANCE - R, this will not affect object identification, only the final display.
-%infotypeVAR01 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = What did you call the primary objects you want to create secondary objects around?
+%infotypeVAR01 = objectgroup
+PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the primary objects you want to create secondary objects around?
-%infotypeVAR02 = objectgroup
-PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu
+%textVAR02 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
+%defaultVAR02 = Cells
+%infotypeVAR02 = objectgroup indep
+SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
-%defaultVAR03 = Cells
-%infotypeVAR03 = objectgroup indep
-SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = How do you want to identify the secondary objects (Distance - B uses a background image for identification, Distance - N identifies objects by distance alone)?
+%choiceVAR03 = Distance - N
+%choiceVAR03 = Distance - B
+%choiceVAR03 = Propagation
+%choiceVAR03 = Watershed
+%inputtypeVAR03 = popupmenu
+IdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = How do you want to identify the secondary objects (Distance - B uses a background image for identification, Distance - N identifies objects by distance alone)?
-%choiceVAR04 = Distance - N
-%choiceVAR04 = Distance - B
-%choiceVAR04 = Propagation
-%choiceVAR04 = Watershed
+%textVAR04 = What did you call the images of the secondary objects? If identifying objects by DISTANCE - N, this will not affect object identification, only the final display.
+%infotypeVAR04 = imagegroup
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
-IdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Set the number of pixels by which to expand the primary objects, ONLY if identifying by DISTANCE [Positive number]
-%defaultVAR05 = 10
-DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = Select thresholding method or enter a threshold in the range [0,1] (Choosing 'All' will decide threshold for entire image group).
+%choiceVAR05 = MoG Global
+%choiceVAR05 = MoG Adaptive
+%choiceVAR05 = Otsu Global
+%choiceVAR05 = Otsu Adaptive
+%choiceVAR05 = All
+%choiceVAR05 = Test Mode
+Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
 
-%textVAR06 = Enter the threshold (IGNORED BY DISTANCE - N)(Positive number, Max = 1):
-%choiceVAR06 = Automatic
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu custom
+%textVAR06 = Threshold correction factor
+%defaultVAR06 = 1
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = If auto threshold, enter an adjustment factor (IGNORED BY DISTANCE - N) (Positive number, 1 = no adjustment):
-%defaultVAR07 = 1
-ThresholdAdjustmentFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR07 = Lower bound on threshold in the range [0,1].
+%defaultVAR07 = 0
+MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Enter the minimum allowable threshold (IGNORED BY DISTANCE - N) (Range = 0 to 1; this prevents an unreasonably low threshold from counting noise as objects when there are no bright objects in the field of view). This is intended for use with automatic thresholding, but will override an absolute threshold entered above:
-%defaultVAR08 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = Approximate percentage of image covered by objects (for MoG thresholding only):
+%choiceVAR08 = 10%
+%choiceVAR08 = 20%
+%choiceVAR08 = 30%
+%choiceVAR08 = 40%
+%choiceVAR08 = 50%
+%choiceVAR08 = 60%
+%choiceVAR08 = 70%
+%choiceVAR08 = 80%
+%choiceVAR08 = 90%
+pObject = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
-%textVAR09 = Regularization factor, ONLY if identifying by PROPAGATION or DISTANCE - B (0 to infinity). Larger=distance,0=intensity
-%defaultVAR09 = 0.05
-RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
+%textVAR09 = Set the number of pixels by which to expand the primary objects, ONLY if identifying by DISTANCE [Positive number]
+%defaultVAR09 = 10
+DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = What do you want to call the image of the outlines of the objects?
-%choiceVAR10 = Do not save
-%choiceVAR10 = OutlinedNuclei
-%infotypeVAR10 = imagegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu custom
+%textVAR10 = Regularization factor, ONLY if identifying by PROPAGATION or DISTANCE - B (0 to infinity). Larger=distance,0=intensity
+%defaultVAR10 = 0.05
+RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = What do you want to call the labeled matrix image?
+%textVAR11 = What do you want to call the image of the outlines of the objects?
 %choiceVAR11 = Do not save
-%choiceVAR11 = LabeledNuclei
+%choiceVAR11 = OutlinedNuclei
 %infotypeVAR11 = imagegroup indep
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu custom
 
-%textVAR12 = Do you want to save the labeled matrix image in RGB or grayscale?
-%choiceVAR12 = RGB
-%choiceVAR12 = Grayscale
-SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+%textVAR12 = What do you want to call the labeled matrix image?
+%choiceVAR12 = Do not save
+%choiceVAR12 = LabeledNuclei
+%infotypeVAR12 = imagegroup indep
+SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
 
-%%%VariableRevisionNumber = 1
+%textVAR13 = Do you want to save the labeled matrix image in RGB or grayscale?
+%choiceVAR13 = RGB
+%choiceVAR13 = Grayscale
+SaveMode = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -293,18 +311,8 @@ drawnow
 %%% weak threshold to the original image of the secondary objects.
 drawnow
 %%% Determines the threshold to use.
-if strcmp(Threshold,'Automatic')
-    Threshold = CPgraythresh(OrigImage,handles,ImageName);
-    %%% Replaced the following line to accomodate calculating the
-    %%% threshold for images that have been masked.
-    %    Threshold = CPgraythresh(OrigImage);
-    %%% Adjusts the threshold by a correction factor.
-    Threshold = Threshold*ThresholdAdjustmentFactor;
-else
-    Threshold=str2double(Threshold);
-end
-MinimumThreshold = str2num(MinimumThreshold);
-Threshold = max(MinimumThreshold,Threshold);
+[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+guidata(handles.figure1,handles);
 
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImage, Threshold);

@@ -194,6 +194,9 @@ if ~isfield(handles.Pipeline, fieldname)
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
+if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
+    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+end
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

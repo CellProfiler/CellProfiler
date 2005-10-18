@@ -12,8 +12,6 @@ MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
 
 - (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
 
-- (Requested by Anne 10-10-05) - Probably most modules should have a warning at the beginning if the image is outside the range 0-1.  Will have to think carefully about which modules would need this warning in order for them to function properly.  Make sure the warn  dialog does not pop up fresh each time - i think there is a way for matlab to only open the dialog if there isn't already a copy open.
-
 UROP:
 
 - (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.

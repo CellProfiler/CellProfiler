@@ -126,6 +126,10 @@ end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
 
+if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
+    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+end
+
 %%% Checks that the original image is three-dimensional (i.e. a color
 %%% image)
 if ndims(OrigImage) ~= 3

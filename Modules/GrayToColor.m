@@ -110,6 +110,9 @@ if ~strcmp(BlueImageName, 'Leave this black')
     %%% Reads the image.
     BlueImage = handles.Pipeline.(fieldname);
     BlueImageExists = 1;
+    if max(BlueImage(:)) > 1 || min(BlueImage(:)) < 0
+        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    end
 else
     BlueImageExists = 0;
 end
@@ -122,6 +125,9 @@ if strcmp(GreenImageName, 'Leave this black') == 0
     end
     GreenImage = handles.Pipeline.(GreenImageName);
     GreenImageExists = 1;
+    if max(GreenImage(:)) > 1 || min(GreenImage(:)) < 0
+        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    end
 else GreenImageExists = 0;
 end
 if strcmp(RedImageName, 'Leave this black') == 0
@@ -130,6 +136,9 @@ if strcmp(RedImageName, 'Leave this black') == 0
     end
     RedImage = handles.Pipeline.(RedImageName);
     RedImageExists = 1;
+    if max(RedImage(:)) > 1 || min(RedImage(:)) < 0
+        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    end
 else RedImageExists = 0;
 end
 drawnow

@@ -180,8 +180,6 @@ drawnow
 
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    
-    
     try
         FileName = handles.Pipeline.(['Filename', ImageFileName]){handles.Current.SetBeingAnalyzed};
         [temp FileName] = fileparts(FileName);
@@ -216,7 +214,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     else
         PathName = FileDirectory;
     end
-    
+
     %%% Makes sure that the File Directory specified by the user exists.
     if ~isdir(PathName)
         error(['Image processing was canceled because the specified directory "', PathName, '" in the Save Images module does not exist.']);
@@ -227,6 +225,10 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but that does not exist.'])
         end
         Image = handles.Pipeline.(ImageName);
+        
+        if max(Image(:)) > 1 || min(Image(:)) < 0
+            CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+        end
 
         if strcmp(RescaleImage,'Yes')
             LOW_HIGH = stretchlim(Image,0);
@@ -240,14 +242,14 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 
     FileAndPathName = fullfile(PathName, FileName);
-    
+
     if strcmp(CheckOverwrite,'Yes') && ~strcmp(FileFormat,'avi')
         %%% Checks whether the new image name is going to overwrite the
         %%% original file. This check is not done here if this is an avi
         %%% (movie) file, because otherwise the check would be done on each
         %%% frame of the movie.
         if exist(FileAndPathName) == 2
-            try 
+            try
                 Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
             catch
                 error(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
@@ -292,13 +294,13 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 
     if strcmp(FileFormat,'mat')
-        try 
+        try
             eval(['save(''',FileAndPathName, ''',''Image'')']);
         catch
             error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmp(FileFormat,'fig')
-        try 
+        try
             eval(['saveas(FigureHandle,FileAndPathName,''fig'')']);
         catch
             error(['In the save images module, the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
@@ -310,12 +312,12 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             %%% because otherwise the check would be done on each frame
             %%% of the movie.
             if exist(FileAndPathName) == 2
-               try 
-                   Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
-               catch
-                   error (['Turn off checking overwriting dialogbox on cluster']);
-               end
-               if strcmp(Answer,'Cancel')
+                try
+                    Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+                catch
+                    error (['Turn off checking overwriting dialogbox on cluster']);
+                end
+                if strcmp(Answer,'Cancel')
                     error('Image processing was canceled')
                 end
             end

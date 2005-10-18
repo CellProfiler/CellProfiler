@@ -111,6 +111,10 @@ end
 %%% Reads the image.
 Image1 = handles.Pipeline.(Image1Name);
 
+if max(Image1(:)) > 1 || min(Image1(:)) < 0
+    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+end
+
 %%% Same for Image 2.
 if strcmp(Image2Name,'/') == 1
     error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the second image slot'])
@@ -120,12 +124,19 @@ if isfield(handles.Pipeline, Image2Name) == 0
 end
 Image2 = handles.Pipeline.(Image2Name);
 
+if max(Image2(:)) > 1 || min(Image2(:)) < 0
+    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+end
+
 %%% Same for Image 3.
 if strcmp(Image3Name,'/') ~= 1
     if isfield(handles.Pipeline, Image3Name) == 0
         error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     Image3 = handles.Pipeline.(Image3Name);
+    if max(Image3(:)) > 1 || min(Image3(:)) < 0
+        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -235,10 +246,10 @@ handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy};
 
 %%% If three images were aligned:
 if strcmp(Image3Name,'/') ~= 1
-fieldname = ['ImageXAlignFirstTwoImages',AlignedImage3Name];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx2};
-fieldname = ['ImageYAlignFirstTwoImages',AlignedImage3Name];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy2};
+    fieldname = ['ImageXAlignFirstTwoImages',AlignedImage3Name];
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx2};
+    fieldname = ['ImageYAlignFirstTwoImages',AlignedImage3Name];
+    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy2};
 end
 
 %%%%%%%%%%%%%%%%%%%
@@ -252,35 +263,35 @@ bestx = 0;
 besty = 0;
 %%% Checks which one-pixel move is best.
 for dx=-1:1,
-  for dy=-1:1,
-    cur = mutualinf(subim(in1, dx, dy), subim(in2, -dx, -dy));
-    if (cur > best),
-      best = cur;
-      bestx = dx;
-      besty = dy;
+    for dy=-1:1,
+        cur = mutualinf(subim(in1, dx, dy), subim(in2, -dx, -dy));
+        if (cur > best),
+            best = cur;
+            bestx = dx;
+            besty = dy;
+        end
     end
-  end
 end
 if (bestx == 0) && (besty == 0),
-  shiftx = 0;
-  shifty = 0;
-  return;
+    shiftx = 0;
+    shifty = 0;
+    return;
 end
 %%% Remembers the lastd direction we moved.
 lastdx = bestx;
 lastdy = besty;
 %%% Loops until things stop improving.
 while true,
-  [nextx, nexty, newbest] = one_step(in1, in2, bestx, besty, lastdx, lastdy, best);
-  if (nextx == 0) && (nexty == 0),
-    shiftx = bestx;
-    shifty = besty;
-    return;
-  else
-    bestx = bestx + nextx;
-    besty = besty + nexty;
-    best = newbest;
-  end
+    [nextx, nexty, newbest] = one_step(in1, in2, bestx, besty, lastdx, lastdy, best);
+    if (nextx == 0) && (nexty == 0),
+        shiftx = bestx;
+        shifty = besty;
+        return;
+    else
+        bestx = bestx + nextx;
+        besty = besty + nexty;
+        best = newbest;
+    end
 end
 
 function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
@@ -288,34 +299,34 @@ function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
 %%% moved last time (no sense repeating evaluations)
 nb = best;
 for dx=-1:1,
-  for dy=-1:1,
-    if (dx == ldx) || (dy == ldy),
-      cur = mutualinf(subim(in1, bx+dx, by+dy), subim(in2, -(bx+dx), -(by+dy)));
-      if (cur > nb),
-        nb = cur;
-        nx = dx;
-        ny = dy;
-      end
+    for dy=-1:1,
+        if (dx == ldx) || (dy == ldy),
+            cur = mutualinf(subim(in1, bx+dx, by+dy), subim(in2, -(bx+dx), -(by+dy)));
+            if (cur > nb),
+                nb = cur;
+                nx = dx;
+                ny = dy;
+            end
+        end
     end
-  end
 end
 if (best == nb),
-  %%% no change, so quit searching
-  nx = 0;
-  ny = 0;
+    %%% no change, so quit searching
+    nx = 0;
+    ny = 0;
 end
 
 function sub = subim(im, dx, dy)
 %%% Subimage with positive or negative offsets
 if (dx > 0),
-  sub = im(:,dx+1:end);
+    sub = im(:,dx+1:end);
 else
-  sub = im(:,1:end+dx);
+    sub = im(:,1:end+dx);
 end
 if (dy > 0),
-  sub = sub(dy+1:end,:);
+    sub = sub(dy+1:end,:);
 else
-  sub = sub(1:end+dy,:);
+    sub = sub(1:end+dy,:);
 end
 
 function H = entropy(X)
@@ -324,10 +335,10 @@ S = imhist(X,256);
 %%% if S is probability distribution function N is 1
 N=sum(sum(S));
 if ((N>0) && (min(S(:))>=0))
-   Snz=nonzeros(S);
-   H=log2(N)-sum(Snz.*log2(Snz))/N;
+    Snz=nonzeros(S);
+    H=log2(N)-sum(Snz.*log2(Snz))/N;
 else
-   H=0;
+    H=0;
 end
 
 function H = entropy2(X,Y)
@@ -341,10 +352,10 @@ S = histc(XY(:),0:(256*256-1));
 %%% If S is probability distribution function N is 1
 N=sum(sum(S));
 if ((N>0) && (min(S(:))>=0))
-   Snz=nonzeros(S);
-   H=log2(N)-sum(Snz.*log2(Snz))/N;
+    Snz=nonzeros(S);
+    H=log2(N)-sum(Snz.*log2(Snz))/N;
 else
-   H=0;
+    H=0;
 end
 
 function I = mutualinf(X, Y)

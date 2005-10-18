@@ -1323,6 +1323,10 @@ if ModuleNamedotm ~= 0,
         elseif (strncmp(output,'%inputtypeVAR',13) == 1) && (OptionInCode == SelectedOption);
             lastVariableCheck = str2double(output(14:15));
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'style', output(19:27));
+            VersionCheck = version;
+            if strcmp(output(19:27),'popupmenu') && ~ispc && str2num(VersionCheck(1:3)) >= 7.1
+                set(handles.VariableBox{ModuleNums}(lastVariableCheck),'BackgroundColor',[.7 .7 .9]);
+            end
             if ~(exist('StrSet'))
                 StrSet = cell(1);
                 Count = 1;

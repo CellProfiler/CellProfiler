@@ -259,7 +259,7 @@ CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %%% Sets up loop for test mode.
-if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,20}),'Yes')
+if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,18}),'Yes')
     LocalMaximaTypeList = {'Intensity' 'Shape'};
     WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
 else

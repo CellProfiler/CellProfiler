@@ -52,39 +52,6 @@ WANT IT ASAP:
 
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 
-- (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells). This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
-
-	From: 	  friman@bwh.harvard.edu
-	Subject: 	Storing subobjects
-	Date: 	August 13, 2005 3:03:31 PM EDT
-	To: 	  carpenter@wi.mit.edu
-
-One simple way to store subobjects that fits into the current way
-of saving measurements is simply to have a "feature/measurement" that
-indicates the number of the parent object.
-For example, to have a structure handles.Measurements.Nucleoli that in addition
-to the usual measurements contains a handles.Meaurements.Nucleoli.Parent field
-where the number of the corresponding parent object is stored, and a handles.Measurements.Nucleoli.ParentFeatures
-which indicate the name of the parent (e.g. 'Cells' or 'Nuclei'). It is not straightforward to have a
-similar entry for the parent objects since the parent objects (e.g. Cells) can have
-a different number of children (while each child only has one parent object). Storing the numbers of the
-children of a parent is not straightforward in the current measurement system, because the parent
-objects can have a different number of children. This would require storing a cell array with
-the numbers of the children for each parent object, and that would
-cause problems for all data tools that don't know how to handle this cell array when
-they encounter it. However, I guess there can be a handles.Measurements.Cells.Children field which contains
-the names of the children objects (e.g. 'Nucleoli', 'Organelles', 'Speckles'....) but not corresponding numbers.
-If one wants to find the children of a  certain Cell object with number K, one must then look in
-handles.Measurements.Cells.Children to find the  name of the children (e.g. 'Nucleoli', 'Organelles', 'Speckles'....)
-and then search e.g. handles.Meaurements.Nucleoli.Parent for the Nucleoli objects that have object K as parent.
-It think it would be quite simple to introduce the above system in the IdentifyPrimary/IdentifySecondary/IndentifyTertiary
-way of identifying objects.
-
-Best,
-Ola
-
-colinc@mit.edu
-
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 
 - (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
@@ -93,9 +60,6 @@ colinc@mit.edu
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.
-
-- (Requested by Anne 10-12-05) - In the listbox at the lower left, currently clicking on files there does nothing. It would be cool if the user doubleclicks on something in the listbox the following would happen: if if it's a PIPE or OUT file, check that it has the appropriate fields (Settings or handles.Settings) and ask the user if they want to load the pipeline from the file.
-if not, try to open it as an image, using the ImageTool for opening images.
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

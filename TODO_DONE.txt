@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/18) (Requested by Anne 10-12-05) - In the listbox at the lower left, currently clicking on files there does nothing. It would be cool if the user doubleclicks on something in the listbox the following would happen: if if it's a PIPE or OUT file, check that it has the appropriate fields (Settings or handles.Settings) and ask the user if they want to load the pipeline from the file. If not, try to open it as an image, using the ImageTool for opening images.
+
 -(Colin 10/17)- (Requested by Anne 8-24-05) I HAVE STARTED ADDRESSING THE ABOVE CONCERNS IN THIS MANNER - I have written QuickFixConvertObjectsToImage module. We should develop this further so that it can be used to convert objects into images that are savable by SaveImages. It should also be able to convert objects to images in order to pass them down the pipeline (because if you wanted to process a label matrix image downstream, you can't select its object name in downstream modules because only imagegroup members are selectable in downstream modules). The ability to use this module with the SaveImages module will replace the last few variables and related code from each individual Identify module which will be more streamlined. This module should include options (1) convert entire objects or just outlines, (2) binary, grayscale in range 0 to 1 (be sure to think about what happens if there's more than 256 objects), or RGB. For RGB, allow the user to choose which colormap (e.g. jet, bone, autumn, etc).  We might even include an option to allow overlaying outlines on some image, because that's really handy.
 
 -(Colin 10/17)- (Requested by Anne) - In a similar manner, many identify modules produce a label matrix image and there is an option to save this image in colored label matrix format. I'd like to take this feature out of each individual identify module (it adds another image to the handles structure which takes up space) and instead have the SaveImages module have an option to convert a label matrix to color. Perhaps we can then also have an option in SaveImages to choose the colormap to be used for this conversion. It's useful to take it out of each individual identify module because it's not very common that someone actually wants to save or use the colored label matrix downstream. It's usually just for display purposes during processing. This also is one less thing to make sure is present in every Identify module.
@@ -12,6 +14,36 @@ This also affects the "SAVING IMAGES" portion of the help for each module, so up
 -(Mike 10/17) Make IdentifySecondary use same thresholding options as IdentifyPrimAutomatic, CPthreshold?
 
 -(Mike 10/17) (Requested by Anne) - Analyze Scott Floyd's images by writing a new speckle finding module.
+- (Requested by Anne) - Make a module to identify and count and measure objects within previously identified objects (e.g. nucleoli or organelles or speckles within nuclei or cells). This also requires designing a way to store measurements of Subobjects. Here's Ola's suggestions:
+
+	From: 	  friman@bwh.harvard.edu
+	Subject: 	Storing subobjects
+	Date: 	August 13, 2005 3:03:31 PM EDT
+	To: 	  carpenter@wi.mit.edu
+
+One simple way to store subobjects that fits into the current way
+of saving measurements is simply to have a "feature/measurement" that
+indicates the number of the parent object.
+For example, to have a structure handles.Measurements.Nucleoli that in addition
+to the usual measurements contains a handles.Meaurements.Nucleoli.Parent field
+where the number of the corresponding parent object is stored, and a handles.Measurements.Nucleoli.ParentFeatures
+which indicate the name of the parent (e.g. 'Cells' or 'Nuclei'). It is not straightforward to have a
+similar entry for the parent objects since the parent objects (e.g. Cells) can have
+a different number of children (while each child only has one parent object). Storing the numbers of the
+children of a parent is not straightforward in the current measurement system, because the parent
+objects can have a different number of children. This would require storing a cell array with
+the numbers of the children for each parent object, and that would
+cause problems for all data tools that don't know how to handle this cell array when
+they encounter it. However, I guess there can be a handles.Measurements.Cells.Children field which contains
+the names of the children objects (e.g. 'Nucleoli', 'Organelles', 'Speckles'....) but not corresponding numbers.
+If one wants to find the children of a  certain Cell object with number K, one must then look in
+handles.Measurements.Cells.Children to find the  name of the children (e.g. 'Nucleoli', 'Organelles', 'Speckles'....)
+and then search e.g. handles.Meaurements.Nucleoli.Parent for the Nucleoli objects that have object K as parent.
+It think it would be quite simple to introduce the above system in the IdentifyPrimary/IdentifySecondary/IndentifyTertiary
+way of identifying objects.
+
+Best,
+Ola
 
 -(Mike 10/17) (Requested by Anne) - Analyze Merck images - set up general morphology pipeline, possibly with illum correction, and we will send them the numerical measurements from all three images. The major goal is to figure out crucial morphological differences between the two images that aren't bright green.
 

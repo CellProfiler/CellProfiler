@@ -2693,9 +2693,31 @@ guidata(hObject,handles)
 
 % --- Executes on selection change in FilenamesListBox.
 function FilenamesListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% The list box has no function other than to display its contents,
-%%% so there is no code here.
 
+if strcmp(get(gcf,'SelectionType'),'open')
+    Val = get(handles.FilenamesListBox,'value');
+    String = get(handles.FilenamesListBox,'string');
+    FileName = char(String(Val));
+    PathName = handles.Preferences.DefaultImageDirectory;
+    
+    if strcmpi(FileName(end-3:end),'.mat')
+        Answer = CPquestdlg('Would you like to load a pipeline?','Confirm','Yes','No','Yes');
+        if strcmp(Answer,'Yes')
+            LoadPipeline_Callback(hObject,eventdata,handles)
+        end
+    else
+        try
+            %%% Reads the image.
+            Image = CPimread(fullfile(PathName, FileName));
+            FigureHandle = CPfigure(handles);
+            imagesc(Image);
+            colormap(gray);
+            FileName = strrep(FileName,'_','\_');
+            title(FileName);
+        catch CPerrordlg('There was an error opening this file. It is possible that it is not an image.');
+        end
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% CLOSE WINDOWS BUTTON %%%
@@ -4830,6 +4852,7 @@ h24 = uicontrol(...
     'Parent',h15,...
     'BackgroundColor',[1 1 1],...
     'Callback','CellProfiler(''FilenamesListBox_Callback'',gcbo,[],guidata(gcbo))',...
+    'Interruptible','off',...
     'Position',[12 8 206 105],...
     'String',{  'Listbox' },...
     'Style','listbox',...

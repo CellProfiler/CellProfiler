@@ -1,9 +1,6 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
 
-MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
-- (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny. Also, the sliders (when there are not enough contents of listboxes for them to be active) have a stark white background.
-
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
 - (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.

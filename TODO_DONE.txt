@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
+-(TRYING TO FIND FIX FOR SLIDER, BUT NOT SURE IT EXISTS) (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny. Also, the sliders (when there are not enough contents of listboxes for them to be active) have a stark white background.
+
 
 -(Mike 10/18) Add text (e.g. After selecting module:) to AddModuleWindow for help buttons; IMPLEMENT NEW LOOK: Two listboxes, one with heading names and other with modules for that heading. Will change when new heading is highlighted?
 

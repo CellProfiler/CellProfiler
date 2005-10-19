@@ -2978,12 +2978,15 @@ else
             set(handles.CloseFigureButton,'visible','on')
             set(handles.OpenFigureButton,'visible','on')
 
-
             for i=1:handles.Current.NumberOfModules;
                 if iscellstr(handles.Settings.ModuleNames(i)) == 1
+                    LeftPos = (ScreenWidth*((i-1)/12));
+                    if LeftPos >= ScreenWidth
+                        LeftPos = LeftPos - ScreenWidth;
+                    end
                     handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
                         CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display, Image Set #'],...
-                        'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
+                        'Position',[LeftPos (ScreenHeight-522) 560 442],...
                         'color',[0.7,0.7,0.7]);
                 end
             end

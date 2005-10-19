@@ -325,11 +325,6 @@ BtnPos(:,1)=BtnXOffset;
 BtnPos=num2cell(BtnPos,2);  
 set(BtnHandle,{'Position'},BtnPos);  
 
-if (getappdata(QuestFig, 'DefaultValid') == true)
-    h = uicontrol(QuestFig,'BackgroundColor', 'k', ...
-              'Style','frame','Position',[ BtnXOffset(DefaultButton)-1 BtnYOffset-1 BtnWidth+2 BtnHeight+2 ]);
-    uistack(h,'bottom')
-end
 delete(MsgHandle);
 AxesHandle=axes('Parent',QuestFig,'Position',[0 0 1 1],'Visible','off');
 

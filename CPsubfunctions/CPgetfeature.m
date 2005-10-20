@@ -24,11 +24,11 @@ end
 
 %%% Extract the fieldnames of measurements from the handles structure.
 MeasFieldnames = fieldnames(handles.Measurements);
-for i=1:length(handles.Measurements)
-    if MeasFieldnames{i}=='Image'
-        MeasFieldnames(i) = [];
-    end;
-end;
+% for i=1:length(handles.Measurements)
+%     if MeasFieldnames{i}=='Image'
+%         MeasFieldnames(i) = [];
+%     end;
+% end;
 
 %%% Error detection.
 if isempty(MeasFieldnames)

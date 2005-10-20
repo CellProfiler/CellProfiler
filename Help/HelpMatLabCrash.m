@@ -9,6 +9,3 @@ helpdlg(help(HelpMatLabCrash))
 % recommended that you upgrade MatLab to Service Pack 3(R14SP3).  
 % For more information about this, please visit website at:
 % http://www.mathworks.com/support
-%
-%
- 

@@ -231,7 +231,7 @@ MsgHandle=uicontrol(BoxHandle           , Font          , ...
 NumLines=size(WrapString,1);
 
 MsgTxtWidth=max(MsgTxtWidth,NewMsgTxtPos(3));
-MsgTxtHeight=max(MsgTxtHeight,NewMsgTxtPos(4));
+MsgTxtHeight=max(MsgTxtHeight,(NewMsgTxtPos(4)+NumLines));
 
 if ~strcmp(IconString,'none'),
   MsgTxtXOffset=IconXOffset+IconWidth+MsgOff;
@@ -265,13 +265,6 @@ end
 
 set(BoxHandle,'Position',DefFigPos);
 set(OKHandle,'Position',[OKXOffset OKYOffset OKWidth OKHeight]);  
-  
-set(OKHandle,'Units','pixels');
-BtnPos = get(OKHandle,'Position');
-set(OKHandle,'Units','points');
-h = uicontrol(BoxHandle,'BackgroundColor', 'k', ...
-              'Style','frame','Position',[ BtnPos(1)-1 BtnPos(2)-1 BtnPos(3)+2 BtnPos(4)+2 ]);
-uistack(h,'bottom')
 
 delete(MsgHandle);
 AxesHandle=axes('Parent',BoxHandle,'Position',[0 0 1 1],'Visible','off');

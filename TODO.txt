@@ -1,9 +1,8 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
-- (Requested by Anne 10-18-2005) -
+
 - (Requested by Anne 10-18-2005) - Make sure CP doesn't start if it's already open. 'Modal' is good but not sufficient. whatever code starts up when you start CP should be ignored if CP is open.
 
-<<<<<<< .mine
 - (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example.
 
 - (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.
@@ -13,12 +12,6 @@ October 14, 2005  IN ORDER OF PRIORITY
 - (Requested by Anne 10-18-2005) - Report Mac SP# bug to matlab: questdlg('qstring','title') does not pay attention to tabbing to highlight the button you want to press.
 
 - (Requested by Anne 10-18-2005) - get rid of variables inthe workspace for the add module window.
-
-MINOR ISSUE (should wait for someone to fix it who has SP3 7.1 on a mac)>>>
-- (Requested by Anne 10-12-2005) - Fix the background color for the variable popupmenus - on the mac with new SP3 7.1 they are white instead of .7 .7 .9  Also, the background color of the highlighted 'Yes' button when clicking Close Windows is black so it looks a little funny. Also, the sliders (when there are not enough contents of listboxes for them to be active) have a stark white background.
-=======
-WANT IT ASAP:
->>>>>>> .r2249
 
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 

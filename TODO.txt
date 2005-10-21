@@ -1,6 +1,10 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
 
+- Is IdentPrimAutomatic supposed to be set to default at use lower resolution?
+
+- (Requested by Anne 10-20-2005) - Change File > Exit to File > Quit to be consistent with other applications.
+
 - (Requested by Anne 10-21-2005) - File > New pipeline should ask for confirmation: 'Are you sure you want to clear the current pipeline?'
 
 - (Requested by Anne 10-21-2005) - Change File > Exit to File > Quit to be consistent with other applications.
@@ -63,6 +67,11 @@ MergeBatchOutput
 Restart
 
 - (Requested by Anne 10-20-05) - Do we want to set up a Wiki for cellprofiler.org? It would be great if certain people had access to change the site (e.g. only us!) and the rest of the world saw a non-editable version, but I don't know if that's possible - in other words, giving some people write permission and everyone else read permission, but also making all the editing related stuff not appear on the page. It would be annoying for everyone else to have all the extra clutter on pages. Most likely this won't work but I thought we should look into it.
+
+- Define Grid Changes:
+  1. What is the least amount of information needed to define grid?
+  2. Implement way to handle failed grids (force grid, previous grid, grid = 0)
+  3. Have handle's include if grid failed or grid worked
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

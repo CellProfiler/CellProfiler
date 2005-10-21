@@ -1,5 +1,5 @@
 CellProfiler cell image analysis software development 
-October 14, 2005  IN ORDER OF PRIORITY
+October 21, 2005  IN ORDER OF PRIORITY
 
 - Check why CellProfiler is so slow at end of analysis (is it writing output file or something else?)
 
@@ -132,8 +132,6 @@ GUI 3 +++  (Requested by Anne) -Make sure the ManualCompiler still works (in Dev
 
 VISION PROJECTS:
 
-- IMPROVE AUTOMATIC THRESHOLD CALCULATIONS!!!  Implement Ray's belief propagation idea??
-
   - Write algorithms to compare hand-traced results to CellProfiler
        results quantitatively, then apply them to our hand-traced data
        sets. [2 parts: 1) segment manual images.  2) match object to object, 
@@ -151,8 +149,7 @@ VISION PROJECTS:
        and one for dark lines between objects.  Also try watershedding
        the gradient image rather than the original. 
 
-     - Improve background/cell edge finding - threshold vs. adaptive
-       threshold vs. watershed
+     - Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996).
 ---------------------------------------------------
 
 PROBABLY DO NOT WANT TO INVEST TIME IN THESE IMMEDIATELY:

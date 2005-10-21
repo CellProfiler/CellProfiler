@@ -2702,7 +2702,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
     Val = get(handles.FilenamesListBox,'value');
     String = get(handles.FilenamesListBox,'string');
     FileName = char(String(Val));
-    PathName = handles.Preferences.DefaultImageDirectory;
+    PathName = get(handles.DefaultImageDirectoryEditBox,'string');
     
     if strcmpi(FileName(end-3:end),'.mat')
         Answer = CPquestdlg('Would you like to load a pipeline?','Confirm','Yes','No','Yes');

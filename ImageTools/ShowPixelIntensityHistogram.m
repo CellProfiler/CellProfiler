@@ -20,10 +20,22 @@ function ShowPixelIntensityHistogram(handles)
 %
 % $Revision$
 
-MsgboxHandle = CPmsgbox('Click on an image to generate a histogram of its pixel intensities. This window will be closed automatically - do not close it or click OK.');
-%%% TODO: Should allow canceling.
-waitforbuttonpress
-ClickedImage = getimage(gca);
+ClickedImage = [];
+while isempty(ClickedImage)
+    MsgboxHandle = CPmsgbox('Click on an image to generate a histogram of its pixel intensities. This window will be closed automatically - do not close it or click OK.');
+    OKhandle = findobj(MsgboxHandle,'tag','OKButton');
+    set(OKhandle,'visible','off');
+    %%% TODO: Should allow canceling.
+    try
+    waitforbuttonpress
+    end
+    ClickedImage = getimage(gca);
+    if isempty(ClickedImage)
+        close(MsgboxHandle);
+        uiwait(CPwarndlg('You did not click an image!'));
+    end
+end
+
 try ClickedFigureTitle = get(get(gca,'parent'),'name');
     if isempty(ClickedFigureTitle)
         try ClickedFigureTitle = ['Figure ',num2str(get(gca,'parent'))];
@@ -47,7 +59,7 @@ try
     delete(MsgboxHandle)
 end
 drawnow
-CPfigure(handles)
+CPfigure(handles);
 hist(ClickedImage(:),min(200,round(length(ClickedImage(:))/150)));
 title(['Histogram for ' Title])
 grid on

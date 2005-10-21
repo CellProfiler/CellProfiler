@@ -1,6 +1,7 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
 
+- Check why CellProfiler is so slow at end of analysis (is it writing output file or something else?)
 
 --(requested by Susan 10-21-2005) -got error when I tried to use ImageTool-showPixelIntensityHistogram 
 ??? Error using ==> waitforbuttonpress
@@ -10,11 +11,8 @@ Error in ==> ShowPixelIntensityHistogram at 25
 waitforbuttonpress
 
 ??? Error while evaluating uimenu Callback.
---------------------------------------------------------------------------
-- (Requested by Anne 10-21-2005) - I think you are already working on this, but just in case: when you doubleclick a PIPE or OUT in the lower left file list, it asks you to again choose the file and opens a uigetfile window. We need to rewrite the subfunction to bypass this step if you are running the function from the lower left file list rather than from File > Load pipeline.
 
-- Is IdentPrimAutomatic supposed to be set to default at use lower resolution?
-ANNE SAYS > YES!
+- (Requested by Anne 10-21-2005) - I think you are already working on this, but just in case: when you doubleclick a PIPE or OUT in the lower left file list, it asks you to again choose the file and opens a uigetfile window. We need to rewrite the subfunction to bypass this step if you are running the function from the lower left file list rather than from File > Load pipeline.
 
 - (Requested by Anne 10-21-2005) - File > New pipeline should ask for confirmation: 'Are you sure you want to clear the current pipeline?'
 

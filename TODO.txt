@@ -1,7 +1,9 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Anne 10-20-2005) - Change File > Exit to File > Quit to be consistent with other applications.
+- (Requested by Anne 10-21-2005) - File > New pipeline should ask for confirmation: 'Are you sure you want to clear the current pipeline?'
+
+- (Requested by Anne 10-21-2005) - Change File > Exit to File > Quit to be consistent with other applications.
 
 - (Requested by Anne 10-20-2005) - In the IdentifySecondary module, it says to give a regularization factor for Propagate and for Distance-B. I am pretty sure that the regularization factor is really only needed for the propagate option and that you require it for the Distance-B option just so that the subfunction doesn't fail, right?  we should adjust the variable description to make the regularization factor not required for Distance-B option. Perhaps this would require rewriting the subfunction to not choke if it doesn't receive a regularization factor, or if option = = Distance-B, then reg factor = some arbitrary number, like .05, even though that number won't actually be used.
 

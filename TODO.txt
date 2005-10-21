@@ -1,6 +1,16 @@
 CellProfiler cell image analysis software development 
 October 14, 2005  IN ORDER OF PRIORITY
 
+
+--(requested by Susan 10-21-2005) -got error when I tried to use ImageTool-showPixelIntensityHistogram 
+??? Error using ==> waitforbuttonpress
+waitforbuttonpress exit because all figures have been deleted.
+
+Error in ==> ShowPixelIntensityHistogram at 25
+waitforbuttonpress
+
+??? Error while evaluating uimenu Callback.
+--------------------------------------------------------------------------
 - (Requested by Anne 10-21-2005) - I think you are already working on this, but just in case: when you doubleclick a PIPE or OUT in the lower left file list, it asks you to again choose the file and opens a uigetfile window. We need to rewrite the subfunction to bypass this step if you are running the function from the lower left file list rather than from File > Load pipeline.
 
 - Is IdentPrimAutomatic supposed to be set to default at use lower resolution?

@@ -222,7 +222,7 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = 10
 DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Regularization factor, ONLY if identifying by PROPAGATION or DISTANCE - B (0 to infinity). Larger=distance,0=intensity
+%textVAR10 = Regularization factor, ONLY if identifying by PROPAGATION (0 to infinity). Larger=distance,0=intensity
 %defaultVAR10 = 0.05
 RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 

@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
--(Requested by Susan 10-21-2005) -got error when I tried to use ImageTool-showPixelIntensityHistogram 
+-(Mike 10/21)(E-mailed Ray if 1.0 is correct, it was already default at this) (Requested by Anne 10-20-2005) - In the IdentifySecondary module, it says to give a regularization factor for Propagate and for Distance-B. I am pretty sure that the regularization factor is really only needed for the propagate option and that you require it for the Distance-B option just so that the subfunction doesn't fail, right?  we should adjust the variable description to make the regularization factor not required for Distance-B option. Perhaps this would require rewriting the subfunction to not choke if it doesn't receive a regularization factor, or if option = = Distance-B, then reg factor = some arbitrary number, like .05, even though that number won't actually be used.
+
+-(Mike 10/21) (Requested by Susan 10-21-2005) -got error when I tried to use ImageTool-showPixelIntensityHistogram 
 ??? Error using ==> waitforbuttonpress
 waitforbuttonpress exit because all figures have been deleted.
 

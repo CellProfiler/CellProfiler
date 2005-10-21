@@ -254,49 +254,32 @@ else
         end
     end
 
-    %%% Calculates and arranges the integer numbers for labeling.
-    LinearNumbers = 1:Rows*Columns;
-    if strcmp(RowsOrColumns,'Columns')
-        SpotTable = reshape(LinearNumbers,Rows,Columns);
-    elseif strcmp(RowsOrColumns,'Rows')
-        SpotTable = reshape(LinearNumbers,Columns,Rows);
-        SpotTable = SpotTable';
-    end
-    if strcmp(LeftOrRight,'Right')
-        SpotTable = fliplr(SpotTable);
-    end
-    if strcmp(TopOrBottom,'Bottom')
-        SpotTable = flipud(SpotTable);
-    end
-
-    %%% Calculates the locations for all the sample labelings (whether it is
-    %%% numbers, spot identifying information, or coordinates).
-    GridXLocations = SpotTable;
-    for g = 1:size(GridXLocations,2)
-        GridXLocations(:,g) = XLocationOfLowestXSpot + (g-1)*XSpacing - round(XSpacing/2);
-    end
-    %%% Converts to a single column.
-    XLocations = reshape(GridXLocations, 1, []);
-    %%% Same routine for Y.
-    GridYLocations = SpotTable;
-    for h = 1:size(GridYLocations,1)
-        GridYLocations(h,:) = YLocationOfLowestYSpot + (h-1)*YSpacing - round(YSpacing/2);
-    end
-    YLocations = reshape(GridYLocations, 1, []);
-
-    %%% Calculates the lines.
     TotalHeight = size(ImageToDisplay,1);
     TotalWidth = size(ImageToDisplay,2);
-    %%% Adds extra spaced line to end of X locations
-    VertLinesX(1,:) = [GridXLocations(1,:),GridXLocations(1,end)+XSpacing];
-    VertLinesX(2,:) = [GridXLocations(1,:),GridXLocations(1,end)+XSpacing];
-    VertLinesY(1,:) = repmat(0,1,size(GridXLocations,2)+1); %%% Same as zeros(1,size(GridXLocations,2)+1)
-    VertLinesY(2,:) = repmat(TotalHeight,1,size(GridXLocations,2)+1);
-    %%% Adds extra spaced line to end of X locations
-    HorizLinesY(1,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YSpacing];
-    HorizLinesY(2,:) = [GridYLocations(:,1)',GridYLocations(end,1)+YSpacing];
-    HorizLinesX(1,:) = repmat(0,1,size(GridYLocations,1)+1); %%% Same as zeros(1,size(GridYLocations,2)+1)
-    HorizLinesX(2,:) = repmat(TotalWidth,1,size(GridYLocations,1)+1);
+
+    GridInfo.XLocationOfLowestXSpot = XLocationOfLowestXSpot;
+    GridInfo.YLocationOfLowestYSpot = YLocationOfLowestYSpot;
+    GridInfo.XSpacing = XSpacing;
+    GridInfo.YSpacing = YSpacing;
+    GridInfo.Rows = Rows;
+    GridInfo.Columns = Columns;
+    GridInfo.TotalHeight = TotalHeight;
+    GridInfo.TotalWidth = TotalWidth;
+    GridInfo.LeftOrRight = LeftOrRight;
+    GridInfo.TopOrBottom = TopOrBottom;
+    GridInfo.RowsOrColumns = RowsOrColumns;
+
+    Grid = CPmakegrid(GridInfo);
+
+    VertLinesX = Grid.VertLinesX;
+    VertLinesY = Grid.VertLinesY;
+    HorizLinesX = Grid.HorizLinesX;
+    HorizLinesY = Grid.HorizLinesY;
+    SpotTable = Grid.SpotTable;
+    GridXLocations = Grid.GridXLocations;
+    GridYLocations = Grid.GridYLocations;
+    YLocations = Grid.YLocations;
+    XLocations = Grid.XLocations;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -435,3 +418,41 @@ GridInfo.LeftOrRight = LeftOrRight;
 GridInfo.TopOrBottom = TopOrBottom;
 
 handles.Pipeline.(['Grid_' GridName]) = GridInfo;
+
+%%% We need some way to keep track of these values in
+%%% handles.Measurements.Image.GridInfo so we must convert them to numbers.
+%%% If you retrieve these values anywhere else, you must convert them back
+%%% to strings if you want to send them to CPmakegrid(GridInfo).
+if strcmp(LeftOrRight,'Left')
+    LeftOrRightNum = 1;
+else
+    LeftOrRightNum = 0;
+end
+if strcmp(TopOrBottom,'Top')
+    TopOrBottomNum = 1;
+else
+    TopOrBottomNum = 0;
+end
+if strcmp(RowsOrColumns,'Rows')
+    RowsOrColumnsNum = 1;
+else
+    RowsOrColumnsNum = 0;
+end
+GridInfoList = [XLocationOfLowestXSpot;YLocationOfLowestYSpot;XSpacing;YSpacing;Rows;Columns;TotalHeight;TotalWidth;LeftOrRightNum;TopOrBottomNum;RowsOrColumnsNum];
+
+if isfield(handles.Measurements.Image,'GridInfoFeatures')
+    if handles.Current.SetBeingAnalyzed == 1
+        NewColumn = length(handles.Measurements.Image.GridInfoFeatures) + 1;
+        handles.Measurements.Image.GridInfoFeatures(NewColumn) = {GridName};
+        handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(:,NewColumn) = GridInfoList;
+    else
+        OldColumn = strmatch(GridName,handles.Measurements.Image.GridInfoFeatures);
+        if length(OldColumn) ~= 1
+            error('You are attempting to create a grid with the same name, please rename this grid.');
+        end
+        handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(:,OldColumn) = GridInfoList;
+    end
+else
+    handles.Measurements.Image.GridInfoFeatures = {GridName};
+    handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed} = GridInfoList;
+end

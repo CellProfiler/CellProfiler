@@ -411,22 +411,26 @@ varargout{1} = handles.output;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function NewPipeline_Callback(hObject, eventdata, handles)
-handles.Settings.ModuleNames = {};
-handles.Settings.SelectedOption = [];
-handles.Settings.VariableValues = {};
-handles.Settings.VariableInfoTypes = {};
-handles.Settings.VariableRevisionNumbers = [];
-delete(get(handles.variablepanel,'children'));
-set(handles.slider1,'visible','off');
-handles.VariableBox = {};
-handles.VariableDescription = {};
-set(handles.ModulePipelineListBox,'Value',1);
-handles.Settings.NumbersOfVariables = [];
-handles.Current.NumberOfModules = 0;
-contents = {'No Modules Loaded'};
-set(handles.ModulePipelineListBox,'String',contents);
-guidata(hObject,handles);
-ModulePipelineListBox_Callback(hObject, eventdata, handles);
+
+Answer = CPquestdlg('Are you sure you want to clear the existing pipeline?','Confirm','Yes','No','Yes');
+if strcmp(Answer,'Yes')
+    handles.Settings.ModuleNames = {};
+    handles.Settings.SelectedOption = [];
+    handles.Settings.VariableValues = {};
+    handles.Settings.VariableInfoTypes = {};
+    handles.Settings.VariableRevisionNumbers = [];
+    delete(get(handles.variablepanel,'children'));
+    set(handles.slider1,'visible','off');
+    handles.VariableBox = {};
+    handles.VariableDescription = {};
+    set(handles.ModulePipelineListBox,'Value',1);
+    handles.Settings.NumbersOfVariables = [];
+    handles.Current.NumberOfModules = 0;
+    contents = {'No Modules Loaded'};
+    set(handles.ModulePipelineListBox,'String',contents);
+    guidata(hObject,handles);
+    ModulePipelineListBox_Callback(hObject, eventdata, handles);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOAD PIPELINE BUTTON %%%

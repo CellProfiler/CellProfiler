@@ -45,8 +45,6 @@ end
 YLocations = reshape(GridYLocations, 1, []);
 
 %%% Calculates the lines.
-TotalHeight = size(ImageToDisplay,1);
-TotalWidth = size(ImageToDisplay,2);
 %%% Adds extra spaced line to end of X locations
 VertLinesX(1,:) = [GridXLocations(1,:),GridXLocations(1,end)+XSpacing];
 VertLinesX(2,:) = [GridXLocations(1,:),GridXLocations(1,end)+XSpacing];

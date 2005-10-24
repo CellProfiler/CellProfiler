@@ -686,6 +686,11 @@ try
             end
         elseif strncmp(output,'%textVAR',8) && (OptionInCode == SelectedOption);
             displayval = output(13:end);
+            if(length(displayval) > 8)
+                if(strcmp(displayval(end-8:end),'#LongBox#'))
+                    displayval = displayval(1:end-9);
+                end
+            end
             istr = output(9:10);
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};

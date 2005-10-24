@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/24)(Requested by Anne 10-24-05) - Prevent CellProfiler from starting twice, if it's already open.
+
+-Mike (10/24)(Requested by Anne 9-01-05) - We used to have code that allowed variable edit boxes to expand when the text within them was too long to fit. It mostly became unnecessary when Colin invented the new pathname entry boxes/browse buttons (because this usually only happens when we are dealing with typing pathnames into edit boxes), but I would still like edit boxes to expand if text becomes too long to fit, so we should find that code and re-implement it.
+
 -(Anne 10/24) (Requested by Anne 10-21-2005)(All instances on PC are File > Exit!! :) - Change File > Exit to File > Quit to be consistent with other applications.
 [[OK, WE DECIDED NOT TO DO THIS AFTER ALL, TO BE CONSISTENT WITH THE PC PLATFORM]].
 

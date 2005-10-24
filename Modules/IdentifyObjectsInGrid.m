@@ -27,9 +27,9 @@ function handles = IdentifyObjectsInGrid(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -70,11 +70,17 @@ Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR06 = outlinegroup indep
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%%%VariableRevisionNumber = 1
+%textVAR07 = If the grid fails, would you like to use the previous grid which worked?
+%choiceVAR07 = No
+%choiceVAR07 = Yes
+FailedGridChoice = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%VariableRevisionNumber = 2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 try
@@ -82,7 +88,7 @@ try
 catch
     error('IdentifyObjectsInGrid is unable to open the grid.  Make sure you properly defined it using the DefineGrid module earlier.');
 end
-    
+
 TotalHeight = Grid.TotalHeight;
 TotalWidth = Grid.TotalWidth;
 Cols = Grid.Columns;
@@ -97,18 +103,78 @@ VertLinesY = Grid.VertLinesY;
 HorizLinesX = Grid.HorizLinesX;
 HorizLinesY = Grid.HorizLinesY;
 
-
 if strcmp(Shape,'Natural Shape') || strcmp(Shape,'Circle Natural Location') || strcmp(Shape,'Circle Forced Location') && strcmp(Diameter,'Automatic')
     Image = handles.Pipeline.(['Segmented' OldObjectName]);
 end
 
-if strcmp(Diameter,'Automatic')
-    tmp = regionprops(Image,'Area');
-    Area = cat(1,tmp.Area);
-   
-    radius = floor(sqrt(median(Area)/pi));
-else
-    radius = floor(str2num(Diameter)/2); 
+if strmatch('Circle',Shape) == 1
+    if strcmp(Diameter,'Automatic')
+        tmp = regionprops(Image,'Area');
+        Area = cat(1,tmp.Area);
+        radius = floor(sqrt(median(Area)/pi));
+    else
+        radius = floor(str2num(Diameter)/2);
+    end
+
+    OldColumn = strmatch(GridName,handles.Measurements.Image.GridInfoFeatures);
+
+    if strcmp(FailedGridChoice,'Yes')
+        if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
+            if handles.Current.SetBeingAnalyzed == 1
+                error('The grid you have designed is not working, please check the pipeline.');
+            else
+                FailCheck = 1;
+                SetNum = 1;
+                while FailCheck >= 1
+                    PreviousGrid = handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed - SetNum}(:,OldColumn)
+                    FailCheck = PreviousGrid(12,1);
+                    SetNum = SetNum + 1;
+                end
+                GridInfo.XLocationOfLowestXSpot = PreviousGrid(1,1);
+                GridInfo.YLocationOfLowestYSpot = PreviousGrid(2,1);
+                GridInfo.XSpacing = PreviousGrid(3,1);
+                GridInfo.YSpacing = PreviousGrid(4,1);
+                GridInfo.Rows = PreviousGrid(5,1);
+                GridInfo.Columns = PreviousGrid(6,1);
+                GridInfo.TotalHeight = PreviousGrid(7,1);
+                GridInfo.TotalWidth = PreviousGrid(8,1);
+                if PreviousGrid(9,1) == 1
+                    GridInfo.LeftOrRight = 'Left';
+                else
+                    GridInfo.LeftOrRight = 'Right';
+                end
+                if PreviousGrid(10,1) == 1
+                    GridInfo.TopOrBottom = 'Top';
+                else
+                    GridInfo.TopOrBottom = 'Bottom';
+                end
+                if PreviousGrid(11,1) == 1
+                    GridInfo.RowsOrColumns = 'Rows';
+                else
+                    GridInfo.RowsOrColumns = 'Columns';
+                end
+
+                Grid = CPmakegrid(GridInfo);
+
+                Leftmost = PreviousGrid(1,1);
+                Topmost = PreviousGrid(2,1);
+                XDiv = PreviousGrid(3,1);
+                YDiv = PreviousGrid(4,1);
+                Rows = PreviousGrid(5,1);
+                Cols = PreviousGrid(6,1);
+                TotalWidth = PreviousGrid(8,1);
+                TotalHeight = PreviousGrid(7,1);
+                VertLinesX = Grid.VertLinesX;
+                VertLinesY = Grid.VertLinesY;
+                HorizLinesX = Grid.HorizLinesX;
+                HorizLinesY = Grid.HorizLinesY;
+                SpotTable = Grid.SpotTable;
+            end
+            handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(12,OldColumn) = 1;
+        else
+            handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(12,OldColumn) = 0;
+        end
+    end
 end
 
 FinalLabelMatrixImage = zeros(TotalHeight,TotalWidth);
@@ -131,7 +197,7 @@ for i=1:Cols
             else
                 subregion(subregion>0) = SpotTable(j,i);
             end
-        elseif strcmp(Shape,'Circle Forced Location') 
+        elseif strcmp(Shape,'Circle Forced Location')
             subregion(floor(end/2)-radius:floor(end/2)+radius,floor(end/2)-radius:floor(end/2)+radius)=SpotTable(j,i)*getnhood(strel('disk',radius,0));
         elseif strcmp(Shape,'Circle Natural Location')
             subregion = Image(max(1,Topmost - floor(YDiv/2) + (j-1)*YDiv+1):min(Topmost - floor(YDiv/2) + j*YDiv,end),max(1,Leftmost - floor(XDiv/2) + (i-1)*XDiv+1):min(Leftmost - floor(XDiv/2) + i*XDiv,end));
@@ -164,7 +230,7 @@ for i=1:Cols
         FinalLabelMatrixImage(max(1,Topmost - floor(YDiv/2) + (j-1)*YDiv+1):min(Topmost - floor(YDiv/2) + j*YDiv,end),max(1,Leftmost - floor(XDiv/2) + (i-1)*XDiv+1):min(Leftmost - floor(XDiv/2) + i*XDiv,end))=subregion;
     end
 end
-    
+
 %%% Indicate objects in original image and color excluded objects in red
 OutlinedObjects1 = bwperim(mod(FinalLabelMatrixImage,2));
 OutlinedObjects2 = bwperim(mod(floor(FinalLabelMatrixImage/Rows),2));
@@ -173,42 +239,42 @@ OutlinedObjects4 = bwperim(FinalLabelMatrixImage>0);
 FinalOutline = OutlinedObjects1 + OutlinedObjects2 + OutlinedObjects3 + OutlinedObjects4;
 FinalOutline = logical(FinalOutline>0);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 
 if any(findobj == ThisModuleFigureNumber)
-    
+
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
 
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    
+
     subplot(2,1,1); ImageHandle = imagesc(ColoredLabelMatrixImage);
-        
+
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
 
     title(sprintf('Segmented %s',NewObjectName),'fontsize',8);
 
-    
+
     subplot(2,1,2);imagesc(FinalOutline);
-        
+
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    
-    title('Outlined objects','fontsize',8);  
-       
-    set(findobj('type','line'), 'color',[.15 .15 .15]) 
+
+    title('Outlined objects','fontsize',8);
+
+    set(findobj('type','line'), 'color',[.15 .15 .15])
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 handles.Pipeline.(['Segmented' NewObjectName]) = FinalLabelMatrixImage;

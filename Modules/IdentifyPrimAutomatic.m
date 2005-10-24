@@ -484,7 +484,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         drawnow
         
         [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
-        guidata(handles.figure1,handles);
 
         if strcmp(LaplaceValues,'/')
 

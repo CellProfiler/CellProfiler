@@ -159,8 +159,6 @@ end
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 
-guidata(handles.figure1,handles);
-
 function Threshold = MixtureOfGaussians(OrigImage,pObject)
 %%% This function finds a suitable threshold for the input image
 %%% OrigImage. It assumes that the pixels in the image belong to either

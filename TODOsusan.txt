@@ -1,40 +1,47 @@
 Susan's TODO list
 
+1.change WriteSQL module to export three files:
+
+   perimage -has current image data fields plus means and stdev for every measurement
+   perobject-keep same, 
+   ColumnNameLookup table --has all column names
+
+   The create SQL script file will also need to be updated for this change. 
+
+ -- change ExportData(Excel) to use CPconvert sub function.
+
+
+2. Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
+  license No. has been updated to WI's , didn't see any failed jobs related to this.
+  batchrun.sh script is completed on cluster which does svn update and submit the job at the same time. Queuetype has   
+      been added as another parameter of the script. There is no need to have 8 different scripts.
+  ask Ray for the script to check whether any job is failed , will modify to automaticly re-submit the failed jobs
+ 
+--fix bug in  IdentifySec 
+
+3. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication. 
+    --waiting for writeSQL module to be updated.
+
+
+4. Kc 40x data (Fly217-220) - genome-wide screens! [wait to see how the CPvalid1 comes out and if the data format is good first].--ask Anne to double check the PIPE line
+
+
+
+--change the CPmount.sh script as two script so user can open it either in terminal or GUi
+
+
+--Re-orginize instruction documentation for microscope and post it on WIKI
+--post all developerscript/doc on WIKI and remove them from SVN repository
+--instructions for setting up SVN on cluster
+--post pubs on WIKI
 
 - NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!--Started
+1. [NEW FROM ANNE: I have written a DVD with the movie and 3 pipelines (contained within OUT files) that need to be converted to the current version of the software. These are very old pipelines so there are likely to be a *lot* of changes necessary!  I have included a .zip archive of the CellProfiler code at the time these pipelines were made, so it might help you to install this old version of CellProfiler, remove your CellProfilerPreferences.mat file from the Matlab applications folder, set the path of MATLAB to look at this old version (rather than your new trunk version), start this old version of CellProfiler, and load the old pipelines and see what they look like.  I think you should be able to convert the old pipelines while i am gone, and then i can check them when I return.] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? Started to work on
 
 
 - NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
-- Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
---License No. has been updated to WI's , didn't see any failed jobs related to this.
---batchrun.sh script is completed on cluster which does svn update and submit the job at the same time. Queuetype has been added as another parameter of the script. There is no need to have 8 different scripts.
-
- 
-
-
-- Process these image sets:
-1. [NEW FROM ANNE: I have written a DVD with the movie and 3 pipelines (contained within OUT files) that need to be converted to the current version of the software. These are very old pipelines so there are likely to be a *lot* of changes necessary!  I have included a .zip archive of the CellProfiler code at the time these pipelines were made, so it might help you to install this old version of CellProfiler, remove your CellProfilerPreferences.mat file from the Matlab applications folder, set the path of MATLAB to look at this old version (rather than your new trunk version), start this old version of CellProfiler, and load the old pipelines and see what they look like.  I think you should be able to convert the old pipelines while i am gone, and then i can check them when I return.] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? Started to work on
-
-2. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication.  --in progress to import into oracle
-
-3. Kc 40x data (Fly217-220) - genome-wide screens! [wait to see how the CPvalid1 comes out and if the data format is good first].
-
-[[NEW FROM ANNE: Susan, you can do the illumination correction on these while I am out of town, because that is exactly like the ones you did already - the only possible change is the degree of smoothing, and I think you already have a good sense of what looks appropriate.]]
---All done. For all Sl03 and sl04 the avgBlue/illum images are bad. Possible because the filter was burned at that time. 
- 
-
-
-2. CPConvertSQL automatically creates column names for the DB from the
-hierarchy in handles.  Sometimes these column names are too long.
-Currently, all it does is print a warning if this happens.  This may
-be sufficient, but perhaps it should be more forceful.  In general,
-too long names can be fixed just before importing the data. 
---Will change the table structure to store long column names. Ray agreed to make the changes. We will have tables created in CPConvertSQL: perobjects, perimage,  and table column names look up. Will also change ExportExcel to use CPConvertSQL  
-
- 
-
-- Research the various options for a database/server (e.g. which are backed up, from where can they be accessed, speed, etc). Set up a database/server locally (currently things are set up on Ray's desktop computer "oblique") [Waiting for testing from In Han]-- Learn 5x imaging on the microscope. [wait for Anne to get back]
+-- Learn 5x imaging on the microscope. [wait for Anne to get back]
 
 - Learn 40x imaging on the microscope. [wait for Anne to get back]
 
@@ -45,10 +52,6 @@ too long names can be fixed just before importing the data.
 - (Long-term): Set up 5x imaging on the Cellomics ArrayScan using their Slideport slide holder - is the 'window' of the slideport big enough to image the entire slide.  Wait for the HCi2005 ArrayScan software upgrade, though.
 
 - (Long-term): Play with the genome-wide data!! Use clustering/bioinformatics tools to look for interesting patterns.
-
-Given on 9/7/2005
-
--- practice with large batches (FLY200) + use that
 
 
  

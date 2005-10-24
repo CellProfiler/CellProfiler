@@ -35,9 +35,6 @@ UROP:
 
 - Check for TODO's and FIX ME's throughout the code
 
-- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
-- (Requested by Anne 10-10-05) - IdentifyPrimAuto has the nice image tools which appear when you click on one of the frames of the movie. I think we still need to adapt all the other modules to have this feature.
-
 - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
 
 - (Requested by Anne) - Adjust the boilerplate of authors in each m file:
@@ -53,19 +50,16 @@ UROP:
    Susan Ma
    Wyman Li
 
-- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
-
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 MergeBatchOutput
 Restart
 
 - (Requested by Anne 10-20-05) - Do we want to set up a Wiki for cellprofiler.org? It would be great if certain people had access to change the site (e.g. only us!) and the rest of the world saw a non-editable version, but I don't know if that's possible - in other words, giving some people write permission and everyone else read permission, but also making all the editing related stuff not appear on the page. It would be annoying for everyone else to have all the extra clutter on pages. Most likely this won't work but I thought we should look into it.
 
-- Define Grid Changes:
-  1. What is the least amount of information needed to define grid?
-  2. Implement way to handle failed grids (force grid, previous grid, grid = 0)
-  3. Have handle's include if grid failed or grid worked
-
+- Define Grid Changes: (NEED TO VERIFY)
+  1. (DONE) What is the least amount of information needed to define grid?
+  2. (DONE ONLY PREVIOUS GRID) Implement way to handle failed grids (force grid, previous grid, grid = 0)
+  3. (DONE) Have handle's include if grid failed or grid worked
 
 - CHeck through each module (~2 per day):
 	- Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
@@ -73,7 +67,9 @@ Restart
 	- Smart Indent
 	- M Lint error checking
 	- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
-	- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the 	image, because as it is these images are stretched a lot.
+	- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
+	- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
+	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

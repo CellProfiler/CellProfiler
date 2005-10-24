@@ -50,15 +50,15 @@ function handles = Crop(handles)
 % PlateFix: When cropping identified plates, sometimes pixels within the
 % object are set to zero. This can cause problems with later modules
 % (especially IlluminationCorrection). PlateFix takes the identified object
-% and finds where it covers at least 50% of the image in both the
+% and finds where the object covers at least 50% of the image in both the
 % horizontal and vertical directions. It then crops a rectangle based on
-% this information. This makes pixels that otherwise would be zero set to
-% the background of your picture thus avoiding the problems with other
-% modules. If you are cropping your identified plate after the initial crop
-% (to avoid including the sides), you can specify a rectangle crop and use 
-% PlateFix to make sure the image is computed correctly. If you do not have
-% PlateFix selected, Crop will use the first images coordinates to produce 
-% the rectangle, and will fail. In this case, you MUST use PlateFix.
+% this information. This sets pixels that otherwise would be zero to the
+% background pixel value of your image thus avoiding the problems with
+% other modules. PlateFix also uses the coordinates for rectangle cropping
+% to tighten the edges around your identified plate. This is done because
+% in the majority of plate identifications you do not want to include the
+% sides of the plate. If you would like the entire plate to be shown, you
+% can enter 1:end for both coordinates.
 %
 % Warning: Keep in mind that cropping changes the size of your images,
 % which may have unexpected consequences.  For example, identifying
@@ -107,9 +107,9 @@ function handles = Crop(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -174,9 +174,9 @@ PlateFix = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
@@ -198,43 +198,46 @@ if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
     CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 CropFromObjectFlag = 0;
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
-    if strcmp(IndividualOrOnce, 'Only Once')
-        %%% The user can choose an image from the pipeline or from the hard drive to use for
-        %%% cropping.
-        Answer = CPquestdlg('Choose an image to be used for cropping...','Select image','Image file from hard drive','Image from this image set','Image from this image set');
-        if strcmp(Answer,'Cancel')
-            error(['Image processing was canceled by the user in the ', ModuleName, ' module.']);
-        elseif strcmp(Answer,'Image from this image set')
-            try 
-                ImageToBeCropped = OrigImage;
-            catch
-                error(['Image processing was canceled in the ', ModuleName, ' module because you did not select a valid image to use for cropping in the Crop module.'])
-            end
-        elseif strcmp(Answer,'Image file from hard drive')
-            %%% Asks the user to open an image file upon which to draw the
-            %%% ellipse.
-            %%% Opens a user interface window which retrieves a file name and path
-            %%% name for the image to be used as a test image.
-            [CroppingFileName,CroppingPathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*'),'Select the image to use for cropping');
-            %%% If the user presses "Cancel", the FileName will = 0 and an error
-            %%% message results.
-            if CroppingFileName == 0
-                error(['Image processing was canceled in the ', ModuleName, ' module because you did not select an image to use for cropping in the Crop module.'])
-            else
-                [ImageToBeCropped, handles] = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
-            end
-        end
-    else
-        ImageToBeCropped = OrigImage;
-    end
+    %%% Not sure when this code was used, but IndividualOrOnce can never be
+    %%% 'Only Once' so I have commented it out to see if this creates
+    %%% errors anywhere.
+    %     if strcmp(IndividualOrOnce, 'Only Once')
+    %         %%% The user can choose an image from the pipeline or from the hard drive to use for
+    %         %%% cropping.
+    %         Answer = CPquestdlg('Choose an image to be used for cropping...','Select image','Image file from hard drive','Image from this image set','Image from this image set');
+    %         if strcmp(Answer,'Cancel')
+    %             error(['Image processing was canceled by the user in the ', ModuleName, ' module.']);
+    %         elseif strcmp(Answer,'Image from this image set')
+    %             try
+    %                 ImageToBeCropped = OrigImage;
+    %             catch
+    %                 error(['Image processing was canceled in the ', ModuleName, ' module because you did not select a valid image to use for cropping in the Crop module.'])
+    %             end
+    %         elseif strcmp(Answer,'Image file from hard drive')
+    %             %%% Asks the user to open an image file upon which to draw the
+    %             %%% ellipse.
+    %             %%% Opens a user interface window which retrieves a file name and path
+    %             %%% name for the image to be used as a test image.
+    %             [CroppingFileName,CroppingPathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*'),'Select the image to use for cropping');
+    %             %%% If the user presses "Cancel", the FileName will = 0 and an error
+    %             %%% message results.
+    %             if CroppingFileName == 0
+    %                 error(['Image processing was canceled in the ', ModuleName, ' module because you did not select an image to use for cropping in the Crop module.'])
+    %             else
+    %                 [ImageToBeCropped, handles] = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
+    %             end
+    %         end
+    %     else
+    %     end
+    ImageToBeCropped = OrigImage;
 
     if ~strcmp(Shape,'Ellipse') && ~strcmp(Shape,'Rectangle')
         if strcmp(PlateFix,'Yes')
@@ -270,9 +273,41 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                     end
                 end
             end
+
+            %%% Using PlateFix, we get the pixel values specified by the
+            %%% user and combine them with those calculated from the
+            %%% identified object
+            index = strfind(Pixel1,',');
+            if isempty(index)
+                error('The format of the Left, Right pixel positions is invalid. Please include a comma.');
+            end
+            x1 = str2num(Pixel1(1:index-1));
+            x2 = Pixel1(index+1:end);
+            if strcmp(x2,'end')
+                x2 = LastX-FirstX;
+            else
+                x2 = min(LastX-FirstX,str2num(x2));
+            end
+            
+            
+            
+            index = strfind(Pixel2,',');
+            if isempty(index)
+                error('The format of the Top, Bottom pixel positions is invalid. Please include a comma.');
+            end
+            y1 = str2num(Pixel2(1:index-1));
+            y2 = Pixel2(index+1:end);
+            if strcmp(y2,'end')
+                y2 = LastY-FirstY;
+            else
+                y2 = min(LastY-FirstY,str2num(y2));
+            end
+
+            %%% Combining identified object boundaries with user-specified
+            %%% values
             try
-            Pixel1 = [num2str(FirstX),',',num2str(LastX)];
-            Pixel2 = [num2str(FirstY),',',num2str(LastY)];
+                Pixel1 = [num2str(FirstX+x1),',',num2str(FirstX+x2)];
+                Pixel2 = [num2str(FirstY+y1),',',num2str(FirstY+y2)];
             catch
                 error('There was a problem finding the X and Y pixels from the object. PlateFix is currently hard-coded to crop based on objects which occupy at least 50% of the field of vue. If your object is smaller than this, it will fail.');
             end
@@ -282,9 +317,9 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CropFromObjectFlag = 1;
             try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape);
             catch
-                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], PlateFix);
+                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape],PlateFix);
                 catch
-                    try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], PlateFix);
+                    try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape],PlateFix);
                     catch error('Image cannot be found!');
                     end
                 end
@@ -331,21 +366,21 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% Need to flip X and Y.
             BinaryCropImage = BinaryCropImage';
         elseif strcmp(CropMethod,'Coordinates')
-            
+
             if strcmp(IndividualOrOnce,'Individually')
                 Answers = inputdlg({'What is the center in the form X,Y?' 'What is the length of the radius along the X-axis?' 'What is the length of the radius along the Y-axis?'});
                 Center = Answers{1};
                 X_axis = Answers{2};
                 Y_axis = Answers{3};
             end
-                   
+
             index = strfind(Center,',');
             if isempty(index)
                 error('The format of the center is invalid. Please include a comma.');
             end
             X_center = Center(1:index-1);
             Y_center = Center(index+1:end);
-            
+
             masksize = size(ImageToBeCropped);
             [X,Y] = meshgrid(1:masksize(2), 1:masksize(1));
             if eval([X_axis '>' Y_axis])
@@ -368,37 +403,37 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
-            
+
             if strcmp(IndividualOrOnce,'Individually') && (CropFromObjectFlag == 0)
                 %%% Displays the image so that you can see which
                 %%% pixel positions you want to use to crop. But wait,
                 %%% you would probably just use the Mouse option
                 %%% instead, so I've commented it out.
-%                 TempFigHandle = figure, imagesc(ImageToBeCropped), title('Close this window when you have identified the pixel positions to be used for cropping.'), pixval
-%                 waitfor(TempFigHandle)
+                %                 TempFigHandle = figure, imagesc(ImageToBeCropped), title('Close this window when you have identified the pixel positions to be used for cropping.'), pixval
+                %                 waitfor(TempFigHandle)
                 Answers = inputdlg({'Specify the (Left, Right) pixel positions:' 'Specify the (Top, Bottom) pixel positions:'});
                 Pixel1=Answers{1};
                 Pixel2=Answers{2};
             end
-            
+
             index = strfind(Pixel1,',');
             if isempty(index)
                 error('The format of the Left, Right pixel positions is invalid. Please include a comma.');
             end
             x1 = Pixel1(1:index-1);
             x2 = Pixel1(index+1:end);
-            
+
             index = strfind(Pixel2,',');
             if isempty(index)
                 error('The format of the Top, Bottom pixel positions is invalid. Please include a comma.');
             end
             y1 = Pixel2(1:index-1);
             y2 = Pixel2(index+1:end);
-            
+
             [a b c] = size(ImageToBeCropped);
             BinaryCropImage = zeros(a,b);
             eval(['BinaryCropImage(min(' y1 ',' y2 '):max(' y1 ',' y2 '),min(' x1 ',' x2 '):max(' x1 ',' x2 ')) = 1;']);
-            
+
         elseif strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points.
             CroppingFigureHandle = figure;
@@ -409,7 +444,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             try imcontrast(CroppingImageHandle); end
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
-            
+
             [a b c] = size(ImageToBeCropped);
             BinaryCropImage = zeros(a,b);
             BinaryCropImage(round(min(y)):round(max(y)),round(min(x)):round(max(x))) = 1;
@@ -424,9 +459,9 @@ else
     [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -451,9 +486,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,1,2); imagesc(CroppedImage); title('Cropped Image');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by

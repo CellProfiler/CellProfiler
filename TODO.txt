@@ -1,9 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- What do you think of a CropPlate module instead of users having to use IdentPrimAuto->Crop->Crop
-[[I think we need to retain the flexibility of having the user identify things any way they want. Combining modules only makes sense if the modules are never needed separately and are only run together. Or, if there is one particular application where very few of the variables need to be adjusted and they can essentially be hard coded, then it might make sense to combine the modules. If we were to do this, we would want to call the individual modules as subfunctions (rather than just copying and pasting the raw code) so the code is easier to maintain. I think this is not worth it because there's so much else to do. We should just provide a pipeline for plate cropping as an example on the website, along with all our other examples.]]
-
 - Check why CellProfiler is so slow at end of analysis (is it writing output file or something else?)
 
 - (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.

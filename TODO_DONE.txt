@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/24) (Requested by Anne) - Adjust the boilerplate of authors in each m file:
+ Authors (in order of joining the project):
+   Anne E. Carpenter
+   Thouis Ray Jones
+   In Han Kang
+   Ola Friman
+   Steve Lowe
+   Joo Han Chang
+   Colin Clarke
+   Mike Lamprecht
+   Susan Ma
+   Wyman Li
+
 -(Mike 10/24 ONLY ONE CROP MODULE IS NEEDED AFTER IDENTIFYING PLATE, IT NOW USES RECTANGLE COORDINATES IN FIRST CROP MODULE TO CROP OFF EDGES OF PLATE) What do you think of a CropPlate module instead of users having to use IdentPrimAuto->Crop->Crop
 [[I think we need to retain the flexibility of having the user identify things any way they want. Combining modules only makes sense if the modules are never needed separately and are only run together. Or, if there is one particular application where very few of the variables need to be adjusted and they can essentially be hard coded, then it might make sense to combine the modules. If we were to do this, we would want to call the individual modules as subfunctions (rather than just copying and pasting the raw code) so the code is easier to maintain. I think this is not worth it because there's so much else to do. We should just provide a pipeline for plate cropping as an example on the website, along with all our other examples.]]
 

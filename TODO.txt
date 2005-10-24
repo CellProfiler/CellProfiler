@@ -34,19 +34,6 @@ UROP:
 
 - (Requested by Anne) - Maybe make new pipelines to show off different features of CellProfiler if desired (e.g. the SpotIdentifier or yeast colony finding). [Anne recently did yeast colony finding and human nuclei - we can spruce these up just prior to release, so maybe put this back on the general TODO towards the bottom where we have "Pre-release" stuff to do.
 
-- (Requested by Anne) - Adjust the boilerplate of authors in each m file:
- Authors (in order of joining the project):
-   Anne E. Carpenter
-   Thouis Ray Jones
-   In Han Kang
-   Ola Friman
-   Steve Lowe
-   Joo Han Chang
-   Colin Clarke
-   Mike Lamprecht
-   Susan Ma
-   Wyman Li
-
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 MergeBatchOutput
 Restart

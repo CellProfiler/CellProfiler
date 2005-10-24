@@ -6,8 +6,6 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 - Check why CellProfiler is so slow at end of analysis (is it writing output file or something else?)
 
-- (Requested by Anne 10-21-2005) - I think you are already working on this, but just in case: when you doubleclick a PIPE or OUT in the lower left file list, it asks you to again choose the file and opens a uigetfile window. We need to rewrite the subfunction to bypass this step if you are running the function from the lower left file list rather than from File > Load pipeline.
-
 - (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
 
 - (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.

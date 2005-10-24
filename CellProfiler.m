@@ -445,15 +445,20 @@ end
 function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
     LoadPipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
-errFlg = 0;
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
-    pause(.1);
-    figure(handles.figure1);
+if isempty(eventdata)
+    errFlg = 0;
+    if exist(handles.Current.DefaultOutputDirectory, 'dir')
+        [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
+        pause(.1);
+        figure(handles.figure1);
+    else
+        [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
+        pause(.1);
+        figure(handles.figure1);
+    end
 else
-    [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
-    pause(.1);
-    figure(handles.figure1);
+    SettingsFileName = eventdata.SettingsFileName;
+    SettingsPathname = eventdata.SettingsPathname;
 end
 
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
@@ -2733,8 +2738,10 @@ if strcmp(get(gcf,'SelectionType'),'open')
     PathName = get(handles.DefaultImageDirectoryEditBox,'string');
     
     if strcmpi(FileName(end-3:end),'.mat')
-        Answer = CPquestdlg('Would you like to load a pipeline?','Confirm','Yes','No','Yes');
+        Answer = CPquestdlg('Would you like to load this pipeline or output file?','Confirm','Yes','No','Yes');
         if strcmp(Answer,'Yes')
+            eventdata.SettingsPathname = PathName;
+            eventdata.SettingsFileName = FileName;
             LoadPipeline_Callback(hObject,eventdata,handles)
         end
     else

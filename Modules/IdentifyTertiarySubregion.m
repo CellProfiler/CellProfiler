@@ -268,6 +268,6 @@ tmp = regionprops(SubregionObjectImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(SubregionObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-if ~strcmp(SaveOutlines,'Do Not Save')
+if ~strcmpi(SaveOutlines,'Do not save')
     handles.Pipeline.(SaveOutlines) = FinalOutline;
 end

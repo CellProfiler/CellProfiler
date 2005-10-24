@@ -4890,9 +4890,18 @@ else
 
     % Open fig file with stored settings.  Note: This executes all component
     % specific CreateFunctions with an empty HANDLES structure.
-
+    
     % Do feval on layout code in m-file if it exists
     if ~isempty(gui_State.gui_LayoutFcn)
+        persistent gui_hFigure
+        if ishandle(gui_hFigure)
+            display('CellProfiler is already running!!');
+            SplashHandle = findobj('tag','SplashScreenTag');
+            if ishandle(SplashHandle)
+                close(SplashHandle)
+            end
+            return;
+        end
         gui_hFigure = feval(gui_State.gui_LayoutFcn, gui_SingletonOpt);
         % openfig (called by local_openfig below) does this for guis without
         % the LayoutFcn. Be sure to do it here so guis show up on screen.

@@ -14,7 +14,7 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne 10-21-2005) - I think you are already working on this, but just in case: when you doubleclick a PIPE or OUT in the lower left file list, it asks you to again choose the file and opens a uigetfile window. We need to rewrite the subfunction to bypass this step if you are running the function from the lower left file list rather than from File > Load pipeline.
 
-- (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example.
+- (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
 
 - (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.
 
@@ -33,15 +33,15 @@ imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimA
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
-- (Requested by Anne 10-10-05) - write the software description for the CP manuscript, using the outline Anne gives you.
-
 - (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
+
+GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
+
+- Identify Secondary Test Mode?
 
 UROP:
 
-- (Requested by Anne 8-23-05) - Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
-
-- (Requested by Anne 8-23-05) - Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
+- Check for TODO's and FIX ME's throughout the code
 
 - (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
 - (Requested by Anne 10-10-05) - IdentifyPrimAuto has the nice image tools which appear when you click on one of the frames of the movie. I think we still need to adapt all the other modules to have this feature.
@@ -61,8 +61,6 @@ UROP:
    Susan Ma
    Wyman Li
 
-- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
-
 - (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
@@ -76,14 +74,17 @@ Restart
   2. Implement way to handle failed grids (force grid, previous grid, grid = 0)
   3. Have handle's include if grid failed or grid worked
 
+
+- CHeck through each module (~2 per day):
+	- Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
+	- Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
+	- Smart Indent
+	- M Lint error checking
+	- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
+	- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the 	image, because as it is these images are stretched a lot.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
-- Smart Indent
-- M Lint error checking
-- Check for TODO's and FIX ME's throughout the code
-- Test every module & button
-- Especially, check whether closing figure windows still allows the module to proceed - sometimes we have calculations in there which are necessary downstream that aren't calculated if the figure window is closed. Also, check whether starting a pipeline containing every module properly opens up figure windows when using the Restart module to being at something other than setbeinganalyzed = 1.
 - Prepare updated manual
 - Check whether canceling works 
 - Make reference sheet with short descriptions of the modules.
@@ -120,9 +121,6 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 LONG-TERM:
 
-GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
-
-GUI 3 +++  (Requested by Anne) -Make sure the ManualCompiler still works (in DeveloperScripts). Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
 VISION PROJECTS:
 
@@ -229,14 +227,6 @@ See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into
 - (Requested by Anne) - If we want to extend CP to analyze 3D images, there is a good example available here: Gue, Messaoudi, Sun, Boudier Cytometry 2005 on Smart 3D-FISH. It's available as an imageJ plug in so it might be good as a practice to integrate ImageJ and CP.
 
 - (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
-
-[ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>
-- Adjust ModuleNames or VariableValues so that their dimensions match (if possible). E.g. the following example has 6 modules loaded, so it would make more sense if VariableValues was a 13 x 6 cell rather than 6 x 13, so that all four Settings have 6 columns.
-Settings =      ModuleNames: {1x6 cell}
-             VariableValues: {6x13 cell}
-         NumbersOfVariables: [13 6 5 6 4 8]
-    VariableRevisionNumbers: [2 0 1 0 1 1]
-*Note: This requires editing almost all the modules, while this improvement is not absolutely necessary; the time cost should be considered.
 
 [ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.

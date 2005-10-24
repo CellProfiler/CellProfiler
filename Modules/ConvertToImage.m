@@ -4,7 +4,7 @@ function handles = ConvertToImage(handles)
 % Category: Object Processing
 %
 % This module hasn't really been written yet, much less documented.
-% 
+%
 % See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -14,9 +14,15 @@ function handles = ConvertToImage(handles)
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%   Anne Carpenter
-%   Thouis Jones
-%   In Han Kang
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%   Ola Friman     <friman@bwh.harvard.edu>
+%   Steve Lowe     <stevelowe@alum.mit.edu>
+%   Joo Han Chang  <joohan.chang@gmail.com>
+%   Colin Clarke   <colinc@mit.edu>
+%   Mike Lamprecht <mrl@wi.mit.edu>
+%   Susan Ma       <xuefang_ma@wi.mit.edu>
 %
 % $Revision$
 

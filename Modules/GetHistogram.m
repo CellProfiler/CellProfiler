@@ -2,6 +2,25 @@ function handles = GetHistogram(handles)
 % Help for the Get Histogram module:
 % Category: Other
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%   Ola Friman     <friman@bwh.harvard.edu>
+%   Steve Lowe     <stevelowe@alum.mit.edu>
+%   Joo Han Chang  <joohan.chang@gmail.com>
+%   Colin Clarke   <colinc@mit.edu>
+%   Mike Lamprecht <mrl@wi.mit.edu>
+%   Susan Ma       <xuefang_ma@wi.mit.edu>
+%
+% $Revision$
+
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 

@@ -234,6 +234,7 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % See also <nothing relevant>
 
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -241,15 +242,21 @@ function handles = IdentifyPrimAutomatic(handles)
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%   Anne Carpenter
-%   Thouis Jones
-%   In Han Kang
+%   Anne Carpenter <carpenter@wi.mit.edu>
+%   Thouis Jones   <thouis@csail.mit.edu>
+%   In Han Kang    <inthek@mit.edu>
+%   Ola Friman     <friman@bwh.harvard.edu>
+%   Steve Lowe     <stevelowe@alum.mit.edu>
+%   Joo Han Chang  <joohan.chang@gmail.com>
+%   Colin Clarke   <colinc@mit.edu>
+%   Mike Lamprecht <mrl@wi.mit.edu>
+%   Susan Ma       <xuefang_ma@wi.mit.edu>
 %
 % $Revision: 1879 $
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -388,9 +395,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 %%%VariableRevisionNumber = 10
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         drawnow
         
         %%% Reads (opens) the image you want to analyze and assigns it to a variable,
@@ -478,9 +485,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             end
         end
         
-        %%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%
         %%% IMAGE ANALYSIS %%%
-        %%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%
         drawnow
         
         [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
@@ -797,9 +804,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             [FinalLabelMatrixImage,NumOfObjects] = bwlabel(FinalBinary);
         end
 
-        %%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%
-        %%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%
         drawnow
         
         if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
@@ -920,9 +927,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 end
             end
 
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%% SAVE DATA TO HANDLES STRUCTURE %%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             drawnow
             
             %%% Saves the segmented image, not edited for objects along the edges or

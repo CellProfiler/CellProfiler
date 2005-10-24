@@ -304,7 +304,6 @@ drawnow
 drawnow
 %%% Determines the threshold to use.
 [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
-guidata(handles.figure1,handles);
 
 %%% Thresholds the original image.
 ThresholdedOrigImage = im2bw(OrigImage, Threshold);

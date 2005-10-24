@@ -139,4 +139,3 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
     delete(ThisModuleFigureNumber)
 end
-guidata(handles.figure1,handles)

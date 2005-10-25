@@ -67,16 +67,10 @@ function handles = SubtractBackground(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -125,8 +119,6 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% The first time the module is run, the threshold shifting value must be
 %%% calculated.
@@ -214,17 +206,14 @@ if MinimumTenthMinimumPixelValue ~= 0
     %%% Values below zero are set to zero.
     CorrectedImage(CorrectedImage < 0) = 0;
 
-
     %%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
     %%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
     if any(findobj == ThisModuleFigureNumber) == 1;
-
         drawnow
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
@@ -261,8 +250,6 @@ end % This end goes with the if MinimumTenthMinimumPixelValue ~= 0 line above.
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Saves the corrected image to the handles structure so it can be used by
 %%% subsequent modules.

@@ -3,8 +3,8 @@ function handles = ExtractHeaderInfo(handles)
 % Help for the Extract Header Info module:
 % Category: File Processing
 %
-% This module was written for an old version of CellProfiler and may
-% not be functional anymore, but it serves as an example of how to
+% This module was written for an old version of CellProfiler and is
+% not functional anymore, but it serves as an example of how to
 % extract header info from an unusual file format.  These are images
 % acquired using ISee software from an automated microscope.
 %
@@ -154,7 +154,7 @@ end
 drawnow
 
 for n = 1:2:5
-    %%% This try/catch will catch any problems in the EHI module.
+    %%% This try/catch will catch any problems.
     try 
         %%% Determine which image to analyze.
         fieldname = ['dOTFileList', ImageName{n}];
@@ -245,8 +245,6 @@ fseek(fid, 260, 'bof');
 worldxyz = char(fread(fid, 36, 'char')');
 
 fclose(fid);
-
-
 
 function [handles, FileNames] = RetrieveImageFileNames(handles, PathName)
 %%% Lists all the contents of that path into a structure which includes the

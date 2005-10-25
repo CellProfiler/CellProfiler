@@ -27,6 +27,7 @@ function handles = Rotate(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -56,9 +57,9 @@ RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 HorizOrVert = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Woud you want the rotation for the first image to be applied to all image sets or do you want to determine the rotation for each image individually as you cycle through?
-%choiceVAR05 = Only Once
+%textVAR05 = Do you want to determine the rotation angle for each image individually as you cycle through, or do you want to define it only once (on the first image) and then apply it to all images?
 %choiceVAR05 = Individually
+%choiceVAR05 = Only Once
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
@@ -68,20 +69,24 @@ IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 CropEdges = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = What are the coordinates of the first pixel? (only if you are using 'Coordinates' and 'Only Once').
+%textVAR07 = For COORDINATES and ONLY ONCE, what are the coordinates of the first pixel?
 %defaultVAR07 = 1,1
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What are the coordinates of the second pixel? (only if you are using 'Cooridinates' and 'Only Once').
+%textVAR08 = For COORDINATES and ONLY ONCE, what are the coordinates of the second pixel?
 %defaultVAR08 = 100,5
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = By what angle would you like to rotate the image? (only if you are uisng 'Angle' and 'Only Once').
+%textVAR09 = For ANGLE and ONLY ONCE, by what angle would you like to rotate the image?
 %defaultVAR09 = 5
 Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 1
 
+%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if ~isfield(handles.Pipeline, ImageName)
     error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
@@ -116,7 +121,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         elseif strcmp(HorizOrVert,'vertically')
             AngleToRotateRadians = pi/2-atan(m);
         else
-            error('The value of HoriOrVert is not recognized');
+            error('The value of HorizOrVert is not recognized');
         end
         AngleToRotateDegrees = AngleToRotateRadians*180/pi;
     elseif strcmp(RotateMethod, 'Coordinates')
@@ -212,4 +217,3 @@ try %#ok We want to ignore MLint error checking for this line.
 end
 
 handles.Pipeline.(RotatedImageName) = RotatedImage;
-    

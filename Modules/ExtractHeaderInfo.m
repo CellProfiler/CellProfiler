@@ -5,8 +5,9 @@ function handles = ExtractHeaderInfo(handles)
 %
 % This module was written for an old version of CellProfiler and is
 % not functional anymore, but it serves as an example of how to
-% extract header info from an unusual file format.  These are images
-% acquired using ISee software from an automated microscope.
+% extract header info (time, X Y Z location) from an unusual file
+% format.  These are images acquired using ISee software from an
+% automated microscope.
 %
 % See also <nothing relevant>.
 
@@ -57,6 +58,8 @@ FifthImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %pathnametextVAR04 = Enter the directory path name where the images are saved.  Type period (.) for default directory.
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%textVAR05 = NOTE: This module does not currently function. Its code is provided as an example to help you get started writing your own version.
 
 %%%VariableRevisionNumber = 1
 

@@ -2,12 +2,23 @@ function handles = ProcessOutlines(handles)
 
 % Help for the Process Outlines module:
 % Category: Image Processing
+% 
+% Takes an image with hand-drawn outlines and produces objects based
+% on the outlines. It is useful for validation and when hand-outlining
+% is necessary to accurately identify objects. The incoming outlined
+% image can be hand drawn (e.g. using a marker on a transparency and
+% scanning in the transparency) or it can be drawn in a program like
+% photoshop.
 %
-% Sorry, help does not yet exist for this module.  We wrote it really
-% quickly for a collaborator.
+% SETTINGS:
+% Note that sophisticated options are not offered for thresholding,
+% because the outlined image fed to this module should be essentially
+% a black and white image (Dark background with white outlines). ??? IS
+% THIS CORRECT?
 %
 % SAVING IMAGES: The images of the objects produced by this module can
 % be easily saved using the Save Images module using the name:
+% ????  I THINK THIS IS OUTDATED>>>>
 % Segmented + whatever you called the objects (e.g. SegmentedCells).
 % This will be a grayscale image where each object is a different
 % intensity. If you want to save other intermediate images, alter the
@@ -36,16 +47,10 @@ function handles = ProcessOutlines(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -58,7 +63,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the objects identified by this module?
-%defaultVAR02 = ProcessedOutlines
+%defaultVAR02 = Nuclei
 %infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -93,8 +98,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 BinaryImage = im2bw(imcomplement(OrigImage),Threshold);
 FilledImage = imfill(BinaryImage,'holes');
 ObjectsIdentifiedImage = imsubtract(FilledImage,BinaryImage);
@@ -104,12 +107,9 @@ ObjectsIdentifiedImage = imsubtract(FilledImage,BinaryImage);
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% Sets the width of the figure window to be appropriate (half width).
@@ -131,8 +131,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Saves the processed image to the handles structure.
 fieldname = ['Segmented',ObjectName];

@@ -4,7 +4,8 @@ function handles = Subtract(handles)
 % Category: Image Processing
 %
 % Sorry, this module has not yet been documented. It was written for a
-% very specific purpose and it allows blurring and subtracting images.
+% very specific purpose and it allows blurring and then subtracting
+% images.
 %
 % SPEED OPTIMIZATION: Note that increasing the blur radius increases
 % the processing time exponentially.
@@ -36,29 +37,22 @@ function handles = Subtract(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Subtract this image (enter the name here)
+%textVAR01 = Subtract this image:
 %infotypeVAR01 = imagegroup
 SubtractImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = From this image (enter the name here)
-%defaultVAR02 = NHSw1
+%textVAR02 = From this image (called 'basic image'):
 %infotypeVAR02 = imagegroup
 BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
@@ -79,7 +73,7 @@ Stretch = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 Stretch = Stretch(1);
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Blur radius for the basic image
+%textVAR06 = Blur radius for the basic image:
 %defaultVAR06 = 3
 BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
@@ -117,8 +111,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 AdjustedSubtractImage = MultiplyFactor*SubtractImage;
 if BlurRadius ~= 0
     %%% Blurs the image.
@@ -137,12 +129,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
@@ -159,8 +148,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% Saves the processed image to the handles structure.
 handles.Pipeline.(ResultingImageName) = ResultingImage;

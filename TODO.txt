@@ -1,13 +1,9 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Anne 10-25-2005) - When the AddModule window is open, it would be nice for the selection highlighting to be on the first category (File processing) and the first module (CreateBatchScripts). It's a little confusing when it appears that no category is selected.
-
 - (Requested by Anne 10-25-2005) - The Subtract module is pretty bizarre. We should remove the multiply and contrast stretch and blur options and make this a simple subtraction module.  Change the RescaleIntensity module to have another option 'F' which allows multiplying an image by a factor.
 
 - (Requested by Anne 10-25-2005) - The SubtractBackground module is a bit out of date - I think it looks in the wrong place for the list of file names (FileList is the old way we stored this info). Also, the Background threshold used (MinimumTenthMinimumPixelValue) should be stored in handles.Measurements.Image, in a similar manner to how we normally store thresholds.
-
-- Check why CellProfiler is so slow at end of analysis (is it writing output file or something else?)
 
 - (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
 
@@ -62,6 +58,7 @@ Restart
 	- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 	- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
 	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
+	- Write help if DNE
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

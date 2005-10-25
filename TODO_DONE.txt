@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/25) (Requested by Anne 10-25-2005) - When the AddModule window is open, it would be nice for the selection highlighting to be on the first category (File processing) and the first module (CreateBatchScripts). It's a little confusing when it appears that no category is selected.
+
 -(Mike 10/24) (Requested by Anne) - Adjust the boilerplate of authors in each m file:
  Authors (in order of joining the project):
    Anne E. Carpenter

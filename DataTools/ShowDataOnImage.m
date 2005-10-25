@@ -82,12 +82,10 @@ SampleNumber = str2double(Answer{1});
 %end
 
 %%% Looks up the corresponding image file name.
-Fieldnames = fieldnames(handles.Measurements.Image);
-PotentialImageNames = Fieldnames(strncmp(Fieldnames,'FileName',8)==1);
+PotentialImageNames = handles.Measurements.Image.FileNamesText;
 %%% Error detection.
 if isempty(PotentialImageNames)
-    h = errordlg('CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.')
-    ImageFileName = [];
+    PromptMessage = 'CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.';
 else
     %%% Allows the user to select a filename from the list.
     [Selection, ok] = listdlg('ListString',PotentialImageNames, 'ListSize', [300 300],...
@@ -97,25 +95,42 @@ else
     if ok == 0
         return
     end
-    SelectedImageName = char(PotentialImageNames(Selection));
-    ImageFileName = handles.Measurements.Image.(SelectedImageName){SampleNumber};
-    %%% Prompts the user with the image file name.
-    h = CPmsgbox(['Browse to find the image called ', ImageFileName,'.']);
+    ImageFileName = handles.Measurements.Image.FileNames{SampleNumber}(Selection);
+    PromptMessage = ['Browse to find the image called ', ImageFileName,'.'];
 end
 
-%%% Opens a user interface window which retrieves a file name and path
-%%% name for the image to be displayed.
-[FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
-try delete(h), end
+%LOOK UP THE PATHNAME, Oct24,2005
+  Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
+  FileName=char(ImageFileName);
+  if  ~ exist( fullfile (Pathname, char(ImageFileName)),'file') %path and file does not exist there.
 
-%%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
-if FileName == 0,return,end
+
+      %%% Prompts the user with the image file name.
+      h = CPmsgbox(PromptMessage);
+
+      %%% Opens a user interface window which retrieves a file name and path
+      %%% name for the image to be displayed.
+      [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+      %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
+      if FileName == 0,return,end
+      try delete(h), end
+  end
+
 
 %%% Opens and displays the image, with pixval shown.
-[ImageToDisplay, handles] = CPimread(fullfile(Pathname,FileName), handles);
-
+try
+    [ImageToDisplay, handles] = CPimread(fullfile(Pathname,FileName), handles);
+catch
+    errordlg(['Error opening image ', FileName, ' in folder ', Pathname])
+    return
+end
 %%% Extracts the measurement values.
+ 
 tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+if isempty(tmp) ,
+   errordlg(['Error :there is no object measurement in your file '])
+   return
+end
 ListOfMeasurements = tmp(:,FeatureNo);
 StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 
@@ -125,7 +140,7 @@ Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
  
 
 %%% Create window
-ImageFileName = strrep(ImageFileName,'_','\_');
+%ImageFileName = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure; imagesc(ImageToDisplay), colormap(gray)
 FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
 ImageDisp = ImageFileName{1};

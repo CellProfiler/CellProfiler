@@ -49,13 +49,14 @@ Restart
   2. (DONE ONLY PREVIOUS GRID) Implement way to handle failed grids (force grid, previous grid, grid = 0)
   3. (DONE) Have handle's include if grid failed or grid worked
 
+- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
+
 - CHeck through each module (~2 per day):
 	- Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
 	- Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
 	- Smart Indent
 	- M Lint error checking
 	- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
-	- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 	- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
 	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
 	- Write help if DNE

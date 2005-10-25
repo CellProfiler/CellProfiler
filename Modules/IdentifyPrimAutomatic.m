@@ -955,8 +955,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 end
             end
 
-       
-
             %%% Saves the Threshold value to the handles structure.
             %%% Storing the threshold is a little more complicated than storing other measurements
             %%% because several different modules will write to the handles.Measurements.Image.Threshold

@@ -3,6 +3,11 @@ function handles = Align(handles)
 % Help for the Align module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Aligns two or three images relative to each other. Particularly useful to
+% align different color channels from microscopes.
+% *************************************************************************
+%
 % For two or three input images, this module determines the optimal
 % alignment among them.  This works whether the images are correlated
 % or anti-correlated (bright in one = bright in the other, or bright
@@ -25,7 +30,7 @@ function handles = Align(handles)
 % (see the SaveImages module help) and then use the Save Images
 % module.
 %
-% See also ALIGNANDCROP.
+% See also <nothing>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -151,7 +156,7 @@ end
 drawnow
 
 %%% Aligns three input images.
-if strcmp(Image3Name,'/') ~= 1
+if ~strcmp(Image3Name,'/')
     %%% Aligns 1 and 2 (see subfunctions at the end of the module).
     [sx, sy] = autoalign(Image1, Image2);
     Temp1 = subim(Image1, sx, sy);
@@ -217,14 +222,19 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     if strcmp(AdjustImage,'Yes') == 1
         %%% A subplot of the figure window is set to display the original image.
-        subplot(2,1,1); imagesc(OriginalRGB);
+        subplot(2,1,1);
+        ImageHandle = imagesc(OriginalRGB);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
         title(['Input Images, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the adjusted
         %%%  image.
-        subplot(2,1,2); imagesc(AlignedRGB); title('Aligned Images');
+        subplot(2,1,2);
+        ImageHandle = imagesc(AlignedRGB);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        title('Aligned Images');
     end
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7],'FontSize',handles.Current.FontSize);
-    set(displaytexthandle,'string',Results)
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9],'FontSize',handles.Current.FontSize);
+    set(displaytexthandle,'string',['Offset: ',Results])
     set(ThisModuleFigureNumber,'toolbar','figure')
 end
 

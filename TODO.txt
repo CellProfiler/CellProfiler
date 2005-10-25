@@ -3,6 +3,8 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne 10-25-2005) - When the AddModule window is open, it would be nice for the selection highlighting to be on the first category (File processing) and the first module (CreateBatchScripts). It's a little confusing when it appears that no category is selected.
 
+- (Requested by Anne 10-25-2005) - The Subtract module is pretty bizarre. We should remove the multiply and contrast stretch and blur options and make this a simple subtraction module.  Change the RescaleIntensity module to have another option 'F' which allows multiplying an image by a factor.
+
 - Check why CellProfiler is so slow at end of analysis (is it writing output file or something else?)
 
 - (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.

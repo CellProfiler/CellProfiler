@@ -20,13 +20,15 @@ function handles = SubtractBackground(handles)
 % baseline up and looks prettier (improves signal to noise) without
 % any 'ethical' concerns.
 %
-% If images have already been quantified, then multiply the scalar by
-% the number of pixels in the image to get the number that should be
-% subtracted from the intensity measurements.
+% If images have already been quantified and you want to apply the
+% concept of this module without reprocessing your images, then
+% multiply the background threshold calculated by this module during
+% first image cycle by the number of pixels in the image to get the
+% number that should be subtracted from the intensity measurements.
 %
 % If you want to run this module only to calculate the proper
 % threshold to use, simply run the module as usual and use the button
-% on the Timer to stop processing after the first image set.
+% on the Timer to stop processing after the first image cycle.
 %
 % How it works:
 % Sort each image's pixel values and pick the 10th lowest pixel value

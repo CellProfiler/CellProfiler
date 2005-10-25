@@ -137,6 +137,9 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% handles structure.
         fieldname = ['FileList', ImageName];
         FileList = handles.Pipeline.(fieldname);
+        if size(FileList,1) == 2
+            error('The SubtractBackground module cannot function on movies.');
+        end
         %%% Calculates the pixel intensity of the pixel that is 10th dimmest in
         %%% each image, then finds the Minimum of that value across all
         %%% images. Our typical images have a million pixels. We are not
@@ -150,12 +153,13 @@ if handles.Current.SetBeingAnalyzed == 1
         ScreenHeight = ScreenSize(4);
         PotentialBottom = [0, (ScreenHeight-720)];
         BottomOfMsgBox = max(PotentialBottom);
-        PositionMsgBox = [500 BottomOfMsgBox 350 100];
+        LeftPos = ScreenSize(3)/4;
+        PositionMsgBox = [LeftPos BottomOfMsgBox 280 60];
         TimeStart = clock;
         NumberOfImages = length(FileList);
         WaitbarText = 'Preliminary background calculations underway... ';
         WaitbarHandle = waitbar(1/NumberOfImages, WaitbarText);
-        set(WaitbarHandle, 'Position', PositionMsgBox)
+        set(WaitbarHandle,'Position', PositionMsgBox,'color',[.7 .7 .9])
         for i=1:NumberOfImages
             [Image, handles] = CPimread(fullfile(Pathname,char(FileList(i))), handles);
             SortedColumnImage = sort(reshape(Image, [],1));
@@ -192,7 +196,15 @@ if handles.Current.SetBeingAnalyzed == 1
     end
     %%% Stores the minimum tenth minimum pixel value in the handles structure for
     %%% later use.
-    fieldname = ['IntensityToShift', ImageName];
+    if isfield(handles.Measurements.Image,'IntensityToShiftFeatures')
+        NewPos = length(handles.Measurements.Image.IntensityToShiftFeatures)+1;
+        handles.Measurements.Image.IntensityToShiftFeatures(1,NewPos) = {ImageName};
+        handles.Measurements.Image.IntensityToShift(:,NewPos) = MinimumTenthMinimumPixelValue;
+    else
+        handles.Measurements.Image.IntensityToShiftFeatures = {ImageName};
+        handles.Measurements.Image.IntensityToShift = MinimumTenthMinimumPixelValue;
+    end
+    fieldname = ['IntensityToShift',ImageName];
     handles.Pipeline.(fieldname) = MinimumTenthMinimumPixelValue;
 end
 
@@ -213,8 +225,8 @@ if MinimumTenthMinimumPixelValue ~= 0
     %%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
         %%% Activates the appropriate figure window.
@@ -229,7 +241,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
         newsize(1) = 0;
         newsize(2) = 0;
         newsize(4) = 20;
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','fixedwidth','backgroundcolor',[0.7,0.7,0.7], 'FontSize',handles.Current.FontSize);
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9], 'FontSize',handles.Current.FontSize);
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,1,1); imagesc(OrigImage);
@@ -239,7 +251,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
         %%% so the following subplot is only shown if MeanImage exists in the
         %%% workspace.
         subplot(2,1,2); imagesc(CorrectedImage);
-        title('Corrected Image'); 
+        title('Corrected Image');
         %%% Displays the text.
         displaytext = ['Background threshold used: ', num2str(MinimumTenthMinimumPixelValue)];
         set(displaytexthandle,'string',displaytext)

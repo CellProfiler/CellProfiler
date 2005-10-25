@@ -2751,7 +2751,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
         if strcmp(Answer,'Yes')
             eventdata.SettingsPathname = PathName;
             eventdata.SettingsFileName = FileName;
-            LoadPipeline_Callback(hObject,eventdata,handles)
+            LoadPipeline_Callback(hObject,eventdata,handles);
         end
     else
         try
@@ -3127,11 +3127,14 @@ else
                     for i=1:length(openFig),
                         ModuleNumber = openFig(i);
                         try
+                            LeftPos = (ScreenWidth*((ModuleNumber-1)/12));
+                            if LeftPos >= ScreenWidth
+                                LeftPos = LeftPos - ScreenWidth;
+                            end
                             ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
-                            figure(ThisFigureNumber);
-                            set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display']);
-                            set(ThisFigureNumber, 'Position',[(ScreenWidth*((ModuleNumber-1)/12)) (ScreenHeight-522) 560 442]);
-                            set(ThisFigureNumber,'color',[0.7,0.7,0.7]);
+                            CPfigure(handles,ThisFigureNumber);
+                            set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display, Image Set #']);
+                            set(ThisFigureNumber, 'Position',[LeftPos (ScreenHeight-522) 560 442]);
                             %%% Sets the closing function of the window appropriately. (See way
                             %%% above where 'ClosingFunction's are defined).
                             %set(ThisFigureNumber,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(ModuleNumber)]));
@@ -3141,7 +3144,11 @@ else
                     %%% Finds and records total time to run module.
                     a=clock;
                     finish=a(5:6);
-                    TotalModuleTime = round(60*(finish(1)-begin(1))+(finish(2)-begin(2)));
+                    if begin(1) > finish(1)
+                        TotalModuleTime = round(60*(finish(1)+(60-begin(1)))+(finish(2)-begin(2)));
+                    else
+                        TotalModuleTime = round(60*(finish(1)-begin(1))+(finish(2)-begin(2)));
+                    end
 
                     if TimerStart < handles.Current.NumberOfModules
                         ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) =  TotalModuleTime;
@@ -3150,7 +3157,7 @@ else
                         ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) = ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) + TotalModuleTime;
                     end
 
-                    TotalModuleTime = num2str(round(60*(finish(1)-begin(1))+(finish(2)-begin(2))));
+                    TotalModuleTime = num2str(TotalModuleTime);
                     while numel(TotalModuleTime) <=5
                         TotalModuleTime = [TotalModuleTime ' '];
                     end
@@ -3173,29 +3180,31 @@ else
                     end
                 end
 
-                openFig = openFigures;
-                openFigures = [];
-                for i=1:length(openFig),
-                    ModuleNumber = openFig(i);
-                    try
-                        ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
-                        figure(ThisFigureNumber);
-                        set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display']);
-                        set(ThisFigureNumber, 'Position',[(ScreenWidth*((ModuleNumber-1)/12)) (ScreenHeight-522) 560 442]);
-                        set(ThisFigureNumber,'color',[0.7,0.7,0.7]);
-                        %%% Sets the closing function of the window appropriately. (See way
-                        %%% above where 'ClosingFunction's are defined).
-                        %set(ThisFigureNumber,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(ModuleNumber)]));
-                    catch
-                    end
-                end
+%                 openFig = openFigures;
+%                 openFigures = [];
+%                 for i=1:length(openFig),
+%                     ModuleNumber = openFig(i);
+%                     try
+%                         LeftPos = (ScreenWidth*((ModuleNumber-1)/12));
+%                         if LeftPos >= ScreenWidth
+%                             LeftPos = LeftPos - ScreenWidth;
+%                         end
+%                         ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
+%                         CPfigure(handles,ThisFigureNumber);
+%                         set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display, Image Set #']);
+%                         set(ThisFigureNumber, 'Position',[LeftPos (ScreenHeight-522) 560 442]);
+%                         %%% Sets the closing function of the window appropriately. (See way
+%                         %%% above where 'ClosingFunction's are defined).
+%                         %set(ThisFigureNumber,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(ModuleNumber)]));
+%                     catch
+%                     end
+%                 end
 
                 if (break_outer_loop),
                     break;  %%% this break is out of the outer loop of image analysis
                 end
 
                 CancelWaiting = get(handles.timertexthandle,'string');
-
 
                 %%% Make calculations for the Timer window. Round to
                 %%% 1/10:th of seconds
@@ -3258,19 +3267,17 @@ else
                 %%% StartingImageSet field.
                 handles.Current = rmfield(handles.Current,'StartingImageSet');
                 if (rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == 1) && strcmp(handles.Preferences.StripPipeline,'No') | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-                    
                     %Removes images from he Pipeline
                     if strcmp(handles.Preferences.StripPipeline,'Yes') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                         ListOfFields = fieldnames(handles.Pipeline);
                         tempPipe = handles.Pipeline;
                         for i = 1:length(ListOfFields)
                             if all(size(tempPipe.(ListOfFields{i}))~=1)
-                               tempPipe = rmfield(tempPipe,ListOfFields(i));
+                                tempPipe = rmfield(tempPipe,ListOfFields(i));
                             end
                         end
                         handles.Pipeline = tempPipe;
                     end
-                        
                     eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
                         get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
                 end
@@ -3281,17 +3288,19 @@ else
                 setbeinganalyzed = setbeinganalyzed + 1;
                 handles.Current.SetBeingAnalyzed = setbeinganalyzed;
                 guidata(gcbo, handles)
-
                 %%% If a "cancel" signal is waiting, break and go to the "end" that goes
                 %%% with the "while" loop.
                 if strncmp(CancelWaiting,'Cancel',6) == 1
                     break
                 end
-
                 %%% Record time elapsed for each cycle.
                 a=clock;
                 finish_set=a(5:6);
-                TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
+                if begin_set(1) > finish_set(1)
+                    TotalSetTime=60*(finish_set(1)+(60-begin_set(1)))+(finish_set(2)-begin_set(2));
+                else
+                    TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
+                end
                 set_time_elapsed(handles.Current.SetBeingAnalyzed) = TotalSetTime;
                 ThisSet = handles.Current.SetBeingAnalyzed - 1;
                 if handles.Current.SetBeingAnalyzed-1 == startingImageSet
@@ -3301,7 +3310,6 @@ else
                     set_text = [show_set_text '       Set' num2str(handles.Current.SetBeingAnalyzed-1) '           '];
                     show_set_text = set_text;
                 end
-
             end %%% This "end" goes with the "while" loop (going through the cycles).
 
             %%% After all the cycle have been processed, the following checks to
@@ -4888,10 +4896,10 @@ else
 
     % Open fig file with stored settings.  Note: This executes all component
     % specific CreateFunctions with an empty HANDLES structure.
-    
+
     % Do feval on layout code in m-file if it exists
+    persistent gui_hFigure
     if ~isempty(gui_State.gui_LayoutFcn)
-        persistent gui_hFigure
         if ishandle(gui_hFigure)
             display('CellProfiler is already running!!');
             SplashHandle = findobj('tag','SplashScreenTag');
@@ -4905,6 +4913,14 @@ else
         % the LayoutFcn. Be sure to do it here so guis show up on screen.
         movegui(gui_hFigure,'onscreen')
     else
+        if ishandle(gui_hFigure)
+            display('CellProfiler is already running!!');
+            SplashHandle = findobj('tag','SplashScreenTag');
+            if ishandle(SplashHandle)
+                close(SplashHandle)
+            end
+            return;
+        end
         gui_hFigure = local_openfig(gui_State.gui_Name, gui_SingletonOpt);
         % If the figure has InGUIInitialization it was not completely created
         % on the last pass.  Delete this handle and try again.

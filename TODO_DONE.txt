@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/25) (Requested by Anne 10-25-2005) (I REMOVED BLUR AND CONTRAST STRETCH, BUT THINK MAYBE MULTIPLICATION SHOULD STAY?) - The Subtract module is pretty bizarre. We should remove the multiply and contrast stretch and blur options and make this a simple subtraction module.  Change the RescaleIntensity module to have another option 'F' which allows multiplying an image by a factor.
+
 -(Can't be done across platforms :-( ) (Requested by Anne) - Try to make the CellProfiler logo replace the X11/Matlab logo in the top of the main GUI.
 
 -(Mike 10/25) (Requested by Anne 10-25-2005) - When the AddModule window is open, it would be nice for the selection highlighting to be on the first category (File processing) and the first module (CreateBatchScripts). It's a little confusing when it appears that no category is selected.

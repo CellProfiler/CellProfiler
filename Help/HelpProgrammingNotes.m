@@ -19,7 +19,6 @@ helpdlg(help('ProgrammingNotes'))
 % for maintenance purposes, so anything module-specific should be kept
 % separate.
 %
-% PROGRAMMING NOTE
 % DRAWNOW:
 % The 'drawnow' function allows figure windows to be updated and
 % buttons to be pushed (like the pause, cancel, help, and view
@@ -29,7 +28,6 @@ helpdlg(help('ProgrammingNotes'))
 % somewhat, so it might be reasonable to remove most of these lines
 % when running jobs on a cluster where speed is important.
 %
-% PROGRAMMING NOTE
 % VARIABLE BOXES AND TEXT: 
 % The '%textVAR' lines contain the variable descriptions which are
 % displayed in the CellProfiler main window next to each variable box.
@@ -58,7 +56,6 @@ helpdlg(help('ProgrammingNotes'))
 % the end of the license info at the top of the m-file for revisions
 % that do not affect the user's previously saved settings files.
 %
-% PROGRAMMING NOTE
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
 % figure, imshow(BlurredImage, []), title('BlurredImage') 
 % TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
@@ -70,7 +67,6 @@ helpdlg(help('ProgrammingNotes'))
 % To routinely save images produced by this module, see the help in
 % the SaveImages module.
 %
-% PROGRAMMING NOTE
 % DISPLAYING RESULTS:
 % Each module checks whether its figure is open before calculating
 % images that are for display only. This is done by examining all the
@@ -84,7 +80,6 @@ helpdlg(help('ProgrammingNotes'))
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
 %
-% PROGRAMMING NOTE
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
 % commands.  In general, Matlab does not update figure windows until
@@ -101,7 +96,6 @@ helpdlg(help('ProgrammingNotes'))
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
 %
-% PROGRAMMING NOTE
 % HANDLES STRUCTURE:
 %       In CellProfiler (and Matlab in general), each independent
 % function (module) has its own workspace and is not able to 'see'
@@ -217,7 +211,6 @@ helpdlg(help('ProgrammingNotes'))
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 %
-% PROGRAMMING NOTE
 % VARIABLE ORDER:
 % For CellProfiler to load modules and pipelines correctly, the order of
 % variable information should be as follows:
@@ -233,3 +226,13 @@ helpdlg(help('ProgrammingNotes'))
 % associated with a variable number. Also, the defaultVAR01 value will
 % inadvertently overwrite saved settings when loading a saved pipeline if
 % it is located after infotypeVAR01 or inputtypeVAR01.
+%
+% FILENAMES AND FILELIST:
+% The LoadImages module creates both handles.Pipeline.FilnamesIMAGENAME and
+% handles.Pipeline.FileListIMAGENAME when loading an image or movie. For
+% movies, the FileList field has the original name of the movie file and
+% how many frames it contains. The Filenames field has the original movie
+% file name and appends the frame number for every frame in the movie. This
+% allows the names to be used in other modules such as SaveImages, which
+% would otherwise over-write itself on every cycle using the original file
+% name.

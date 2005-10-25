@@ -66,18 +66,7 @@ ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 1
 MultiplyFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = Contrast stretch the resulting image?
-%choiceVAR05 = No
-%choiceVAR05 = Yes
-Stretch = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-Stretch = Stretch(1);
-%inputtypeVAR05 = popupmenu
-
-%textVAR06 = Blur radius for the basic image:
-%defaultVAR06 = 3
-BlurRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
-
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -112,17 +101,8 @@ end
 drawnow
 
 AdjustedSubtractImage = MultiplyFactor*SubtractImage;
-if BlurRadius ~= 0
-    %%% Blurs the image.
-    %%% Note: using filter2 is much faster than imfilter (e.g. 14.5 sec vs. 99.1 sec).
-    FiltSize = max(3,ceil(4*BlurRadius));
-    BasicImage = filter2(fspecial('gaussian',FiltSize, BlurRadius), BasicImage);
-end
 ResultingImage = imsubtract(BasicImage,AdjustedSubtractImage);
 ResultingImage(ResultingImage < 0) = 0;
-if strcmp(upper(Stretch),'Y') == 1
-    ResultingImage = imadjust(ResultingImage,stretchlim(ResultingImage,[.01 .99]));
-end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -135,12 +115,20 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(BasicImage);
+    subplot(2,2,1);
+    ImageHandle = imagesc(BasicImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title([BasicImageName, ' input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); imagesc(SubtractImage); title([SubtractImageName, ' input image']);
-    subplot(2,2,3); imagesc(ResultingImage); title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
+    subplot(2,2,2);
+    ImageHandle = imagesc(SubtractImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title([SubtractImageName, ' input image']);
+    subplot(2,2,3);
+    ImageHandle = imagesc(ResultingImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
     CPFixAspectRatio(BasicImage);
 end
 

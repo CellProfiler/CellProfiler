@@ -3,7 +3,7 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 - (Requested by Anne 10-25-2005) - Add this to the short descriptions for SaveImages: Can be used as a file format converter to save images in a different format than the original.
 
-- (Requested by Anne 10-25-2005) - The Subtract module is pretty bizarre. We should remove the multiply and contrast stretch and blur options and make this a simple subtraction module.  Change the RescaleIntensity module to have another option 'F' which allows multiplying an image by a factor.
+- (Requested by Anne 10-25-2005) (I REMOVED BLUR AND CONTRAST STRETCH, BUT THINK MAYBE MULTIPLICATION SHOULD STAY?) - The Subtract module is pretty bizarre. We should remove the multiply and contrast stretch and blur options and make this a simple subtraction module.  Change the RescaleIntensity module to have another option 'F' which allows multiplying an image by a factor.
 
 - (Requested by Anne 10-25-2005) - The SubtractBackground module is a bit out of date - I think it looks in the wrong place for the list of file names (FileList is the old way we stored this info). Also, the Background threshold used (MinimumTenthMinimumPixelValue) should be stored in handles.Measurements.Image, in a similar manner to how we normally store thresholds.
 

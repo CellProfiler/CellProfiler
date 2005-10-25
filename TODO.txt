@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- What do you want as output for Calculate Statistics?
+
 - (Requested by Anne 10-25-2005) - Add this to the short descriptions for SaveImages: Can be used as a file format converter to save images in a different format than the original.
 
 -(Not sure this can be fixed, we can talk about it more) (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.

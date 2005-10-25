@@ -3,6 +3,10 @@ function handles = CalculateStatistics(handles)
 % Help for the Calculate Statistics module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Calculates the V and Z factors for measurements made from images.
+% *************************************************************************
+%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -73,8 +77,10 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     end
 
     fieldname = [MeasureType,'Features'];
+    if ~isfield(handles.Measurements.(ObjectName),fieldname)
+        error(['The ',ModuleName,' module could not find the measurements you specified.']);
+    end
     MeasureFeatures = handles.Measurements.(ObjectName).(fieldname);
-
 
     Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
     for i = 1:handles.Current.NumberOfImageSets
@@ -84,30 +90,32 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     end
     [v, z] = VZfactors(GroupingValues,Ymatrix)
 end
+
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
+drawnow
 
 function [v, z] = VZfactors(xcol, ymatr)
 % xcol is (Nobservations,1) column vector of grouping values
 % (in terms of dose curve it may be Dose).
 % ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to observations
 % and columns corresponds to different measures.
-% v, z are (1, Nmeasures) row vectors containing V- and Z-factors 
+% v, z are (1, Nmeasures) row vectors containing V- and Z-factors
 % for the corresponding measures.
 [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr);
 range = max(avers) - min(avers);
 cnstns = find(range == 0);
 if (length(cnstns) > 0) range(cnstns) = 0.000001; end
 vstd = mean(stds);
-v = 1 - 6 .* (vstd ./ range);  
+v = 1 - 6 .* (vstd ./ range);
 zstd = stds(1, :) + stds(length(xs), :);
-z = 1 - 3 .* (zstd ./ range);  
+z = 1 - 3 .* (zstd ./ range);
 return
 % ================================== Local Functions:
 % ================================== LocShrinkMeanStd
 function [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr)
-% 
+%
 [nrows, ncols] = size(ymatr);
 [labels, labnum, xs] = LocVectorLabels(xcol);
 avers = zeros(labnum, ncols);
@@ -123,7 +131,7 @@ function [labels, labnum, uniqsortvals] = LocVectorLabels(x)
 %
 n = length(x);
 labels = zeros(1, n);
-[srt, inds] = sort(x); 
+[srt, inds] = sort(x);
 prev = srt(1) - 1; % absent value
 labnum = 0;
 uniqsortvals = labels;

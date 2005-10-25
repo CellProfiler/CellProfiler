@@ -3,6 +3,10 @@ function handles = Average(handles)
 % Help for the Average module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Images are averaged together, also known as "making a projection".
+% *************************************************************************
+%
 % This module averages a set of images by averaging the pixel
 % intensities at each pixel position. When this module is used to
 % average a Z-stack (3-D image set), this process is known as making a
@@ -38,8 +42,7 @@ function handles = Average(handles)
 % SAVING IMAGES: The image produced by this module can be easily saved
 % using the Save Images module, using the name you assign.
 %
-% See also CORRECTILLUMINATION_APPLY,
-% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES.
+% See also CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -90,9 +93,9 @@ SourceIsLoadedOrPipeline = SourceIsLoadedOrPipeline(1);
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% If running in non-cycling mode (straight from the hard drive using
@@ -144,21 +147,23 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% image from the handles structure.
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
-        imagesc(AveragedImage);
+        ImageHandle = imagesc(AveragedImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
         title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated averaged image so far is displayed each time through
         %%% the pipeline.
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
-        imagesc(AveragedImage);
+        ImageHandle = imagesc(AveragedImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
         title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the averaged image to the handles structure so it can be used by

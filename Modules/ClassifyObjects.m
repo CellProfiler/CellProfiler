@@ -3,6 +3,10 @@ function handles = ClassifyObjects(handles)
 % Help for the Classify Objects module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Classifies objects into categories based on measurements of thos objects.
+% *************************************************************************
+%
 % This module classifies objects into a number of different
 % classes according to the size of a measurement specified
 % by the user.
@@ -33,9 +37,9 @@ function handles = ClassifyObjects(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -81,7 +85,7 @@ try
         NbrOfBins = 0;
     else
         NbrOfBins = str2double(NbrOfBins);
-        if isempty(NbrOfBins) | NbrOfBins < 1
+        if isempty(NbrOfBins) || NbrOfBins < 1
             error(['Image processing was canceled in the ', ModuleName, ' module because an error was found in the number of bins specification.']);
         end
     end
@@ -91,9 +95,9 @@ end
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Retrieves the label matrix image that contains the segmented objects
@@ -102,8 +106,8 @@ fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)
     LabelMatrixImage = handles.Pipeline.(fieldname);
-%%% If we are using a user defined field, there is no corresponding
-%%% image.
+    %%% If we are using a user defined field, there is no corresponding
+    %%% image.
 elseif strcmpi(ObjectName,'Ratio')
     LabelMatrixImage = zeros(100);
 else
@@ -117,13 +121,13 @@ if ~strcmp(ObjectName,'Ratio')
     end
 end
 
-if isempty(LowerBinMin) | isempty(UpperBinMax) | LowerBinMin > UpperBinMax
+if isempty(LowerBinMin) || isempty(UpperBinMax) || LowerBinMin > UpperBinMax
     error(['Image processing was canceled in the ', ModuleName, ' module because an error in the specification of the lower and upper limits was found.']);
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(ObjectName,'Ratio')
@@ -169,9 +173,9 @@ if ~strcmpi(ObjectName,'Ratio')
 else
     FeatureName = FeatureType;
 end
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -236,9 +240,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% If we are using a user defined field, there is no corresponding

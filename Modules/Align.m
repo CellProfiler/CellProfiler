@@ -51,9 +51,9 @@ function handles = Align(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -101,9 +101,9 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(Image1Name,'/') == 1
@@ -148,11 +148,19 @@ if strcmp(Image3Name,'/') ~= 1
     if max(Image3(:)) > 1 || min(Image3(:)) < 0
         CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
     end
+
+    if ndims(Image3) ~= 2
+        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.']);
+    end
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+if ndims(Image1) ~= 2 || ndims(Image2) ~= 2
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.']);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Aligns three input images.
@@ -182,9 +190,9 @@ else %%% Aligns two input images.
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines the figure number to display in.
@@ -238,9 +246,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     set(ThisModuleFigureNumber,'toolbar','figure')
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(AdjustImage,'Yes') == 1
@@ -268,9 +276,9 @@ if strcmp(Image3Name,'/') ~= 1
     handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy2};
 end
 
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 
 function [shiftx, shifty] = autoalign(in1, in2)
 %%% Aligns two images using mutual-information and hill-climbing.

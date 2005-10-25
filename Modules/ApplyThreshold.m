@@ -3,8 +3,10 @@ function handles = ApplyThreshold(handles)
 % Help for the Apply Threshold module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
 % Pixels below (or above) a certain threshold are set to zero. The
 % remaining pixels retain their original value.
+% *************************************************************************
 %
 % 'Bright pixel areas should be expanded by this many pixels' is
 % useful to adjust when you are attempting to exclude bright
@@ -20,7 +22,7 @@ function handles = ApplyThreshold(handles)
 % (see the SaveImages module help) and then use the Save Images
 % module.
 %
-% See also APPLYTHRESHOLDANDSHIFT.
+% See also <nothing>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -41,9 +43,9 @@ function handles = ApplyThreshold(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -76,7 +78,7 @@ LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 %defaultVAR05 = 1
 HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Bright pixel areas should be expanded by this many pixels in every direction
+%textVAR06 = How many pixels do you want to expand bright pixels in every directions?
 %defaultVAR06 = 0
 DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
@@ -86,9 +88,9 @@ BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
@@ -111,9 +113,9 @@ if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
     CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
@@ -140,9 +142,9 @@ else
     ThresholdedImage = im2bw(OrigImage,BinaryChoice);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -159,16 +161,21 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);
+    subplot(2,1,1);
+    ImageHandle = imagesc(OrigImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.
-    subplot(2,1,2); imagesc(ThresholdedImage); title('Thresholded Image');
+    subplot(2,1,2);
+    ImageHandle = imagesc(ThresholdedImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title('Thresholded Image');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The Thresholded image is saved to the handles structure so it can be

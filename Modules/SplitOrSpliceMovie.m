@@ -34,31 +34,33 @@ drawnow
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 
-%textVAR01 = Do you want to split or splice (create from multiple files) a movie?
+%textVAR01 = Do you want to split (create multiple smaller movies from one large movie) or splice (create one large movie from multiple smaller movies)?
 %choiceVAR01 = Split
 %choiceVAR01 = Splice
 %inputtypeVAR01 = popupmenu
 SplitOrSplice = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%pathnametextVAR02 = Where are the existing avi files?
+%pathnametextVAR02 = Where are the existing avi-formatted movie files?
 ExistingPath = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%pathnametextVAR03 = Where do you want to put the final file(s)?
+%pathnametextVAR03 = Where do you want to put the resulting file(s)?
 FinalPath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = If splicing, what is the common text in your movie files. If splitting, what is the entire name including extension of the file to be split?
+%textVAR04 = For SPLICE, what is the common text in your movie files? For SPLIT, what is the entire name, including extension, of the movie file to be split?
 %defaultVAR04 = GFPstain.avi
 TargetMovieFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = If splitting, how many frames per movie do you want?
+%textVAR05 = For SPLIT, how many frames per movie do you want?
 %defaultVAR05 = 100
 FramesPerSplitMovie = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = If splicing, what do you want to call the final movie?
-%defaultVAR06 = GFPstainSPLICE.avi
+%textVAR06 = For SPLICE, what do you want to call the final movie?
+%defaultVAR06 = GFPstainSPLICED.avi
 FinalSpliceName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%%%VariableRevisionNumber = 1
+%textVAR07 = Note: This module is run by itself in a pipeline; there is no need to use a LoadImages or SaveImages module.
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% FILE PROCESSING %%%

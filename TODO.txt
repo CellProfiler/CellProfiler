@@ -39,7 +39,8 @@ UROP:
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 MergeBatchOutput
 Restart
-ProcessOutlines
+
+- (Requested by Anne 10-25-05) - ProcessOutlines needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it. 
 
 - (Requested by Anne 10-20-05) - Do we want to set up a Wiki for cellprofiler.org? It would be great if certain people had access to change the site (e.g. only us!) and the rest of the world saw a non-editable version, but I don't know if that's possible - in other words, giving some people write permission and everyone else read permission, but also making all the editing related stuff not appear on the page. It would be annoying for everyone else to have all the extra clutter on pages. Most likely this won't work but I thought we should look into it.
 

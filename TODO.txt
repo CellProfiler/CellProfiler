@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 10-26-2005) - MeasureObjectTexture doesn't look exactly like MeasureObjectIntensity in terms of how many variables can be entered.  They should look the same.
+
 - (Requested by Anne 10-26-2005) - We would like the classify objects module to be a little more sophisticated. Right now the bins must be evenly 
 spaced, but we would like to allow the user to set up something like:
 Let's say they want three bins: 0 to 300, 300 to 1000, and 1000 to 1500. Right now they can't do it because it only lets them choose 3 bins with min 0 and max 1500 and it will force the bins to be 0 to 500, 500 to 1000, and 1000 to 1500. So they should be allowed to enter the minimum acceptable is 0, the maximum is 1500. Then they should be allowed to type 

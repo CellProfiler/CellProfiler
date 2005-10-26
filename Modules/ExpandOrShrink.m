@@ -176,10 +176,6 @@ elseif strcmp(ShrinkOrExpand,'Expand')
     catch error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).'])
 end
 
-%%% TODO >>> The following quickly relabels the three binary images so
-%%% their labels match the incoming labels, but it only works for
-%%% shrunken objects, not expanded ones >>>
-
 %%% For the ShrunkenSegmentedImage, the objects are relabeled so that their
 %%% numbers correspond to the numbers used for nuclei.  This is important
 %%% so that if the user has made measurements on the non-shrunk objects,

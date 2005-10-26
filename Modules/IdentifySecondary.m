@@ -333,8 +333,6 @@ if strncmp(IdentChoice,'Distance',8)
         %%% DilatedPrelimSecObjectBinaryImage). This is necessary because the
         %%% nearest neighbor function assigns *every* pixel to a nucleus, not just
         %%% the pixels that are part of a secondary object.
-        %%% TODO: This is where we would put in thresholding, if we add this as
-        %%% an option in the future.
         RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelimSecObjectImage));
         RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
         drawnow

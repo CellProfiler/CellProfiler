@@ -1,6 +1,11 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.
+
+- (Requested by Anne 10-26-2005) - Is there any way we can address Sophie's request to allow CP to skip image sets if there's an error?  This would be a nice feature. It should stop processing during the first image set if there are errors (so if there is a fundamental error like image not found, it doesn't just start cycling through and skipping *every* image cycle), but for subsequent image sets it should just skip the rest of the pipeline and maybe deposit a flag = 1 in handles.Measurement.Image.ErrorFlag , and handles.Measurements.Image.ErrorFlagFeatures = {'ImageSkipped'}
+It's worth thinking about this a bit, just to see whether it's feasible.
+
 - (Requested by Anne 10-26-2005) - I'd like to make all the modules consistent: some use OrigImage, some OrigImageToBeAnalyzed. It would be nice to change them all to be InputImage. This is a somewhat simple change, but I'd rather Mike does it because it will affect every module and be disastrous if we screw it up.  It'd be reasonable to change things like OrigImageName to InputImageName.  Most likely, anything with OrigImage can be changed (even if it's part of a bigger variable name like ThresholdedOrigImage), so it's probably a pretty safe change to make.
 
 - What do you want as output for Calculate Statistics?

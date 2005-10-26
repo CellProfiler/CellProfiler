@@ -124,6 +124,24 @@ ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
+%textVAR05 = What did you call the segmented objects that you want to measure?
+%choiceVAR05 = Do not use
+%infotypeVAR05 = objectgroup
+ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
+
+%textVAR06 =
+%choiceVAR06 = Do not use
+%infotypeVAR06 = objectgroup
+ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
+
+%textVAR07 =
+%choiceVAR07 = Do not use
+%infotypeVAR07 = objectgroup
+ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
+
 %%%VariableRevisionNumber = 02
 
 %%% Set up the window for displaying the results
@@ -136,7 +154,7 @@ if any(findobj == ThisModuleFigureNumber);
 end
 
 %%% START LOOP THROUGH ALL THE OBJECTS
-for i = 1:3
+for i = 1:6
     ObjectName = ObjectNameList{i};
     if strcmp(ObjectName,'Do not use') == 1
         continue
@@ -324,51 +342,51 @@ for i = 1:3
             'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average texture features for ',ImageName,', image set #%d'],handles.Current.SetBeingAnalyzed));
 
         % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
         % Text for Gabor features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Gabor features:');
         for k = 1:6
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',GaborFeatures{k});
         end
 
         % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.3 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
         for k = 1:10
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.3 0.03],...
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',HaralickFeatures{k});
         end
 
         % The name of the object image
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.9 0.2 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.9 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',ObjectName);
 
         % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.85 0.2 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.85 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
         if ObjectCount > 0
             % Gabor features
             for k = 1:6
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
             end
 
             % Haralick features
             for k = 1:10
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.5-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
             end

@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 10-26-2005) - Show data on image datatool has a couple of bugs: has *.* problem for uigetfile, and no cellprofiler image tools in the resulting figure.
+
 - (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.
 
 - (Requested by Anne 10-26-2005) - Is there any way we can address Sophie's request to allow CP to skip image sets if there's an error?  This would be a nice feature. It should stop processing during the first image set if there are errors (so if there is a fundamental error like image not found, it doesn't just start cycling through and skipping *every* image cycle), but for subsequent image sets it should just skip the rest of the pipeline and maybe deposit a flag = 1 in handles.Measurement.Image.ErrorFlag , and handles.Measurements.Image.ErrorFlagFeatures = {'ImageSkipped'}

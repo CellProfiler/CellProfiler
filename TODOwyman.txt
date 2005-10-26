@@ -1,7 +1,14 @@
 TODOwyman
 
-
 Last updated: 10-15-2005
+
+
+Hi Wyman - just a note about the error handling and putting in ModuleName: if there is a subfunction in a module, the subfunction does not automatically have access to the same 'workspace' as the module function, so it does not have access to the ModuleName variable. I ran into this problem in the Crop module, which has the subfunction CropImageBasedOnMaskInHandles. If an error was encountered within the subfunction, it would go looking for the ModuleName variable and not be able to find it. It's a simple change: we just have to add ModuleName as an input argument to the subfunction:
+function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, PlateFix, ModuleName)
+
+and then add , ModuleName   to the input arguments for all the lines that use that subfunction, like this:
+    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix, ModuleName);
+
 
 --- (Requested by Anne 9-08-05)
 - Wyman, I just noticed in your email you mentioned having ideas for the GUI and features after playing with the code a bit.  I'd love to talk over your ideas when I get back in town!

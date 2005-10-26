@@ -103,8 +103,6 @@ end
   Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
   FileName=char(ImageFileName);
   if  ~ exist( fullfile (Pathname, char(ImageFileName)),'file') %path and file does not exist there.
-
-
       %%% Prompts the user with the image file name.
       h = CPmsgbox(PromptMessage);
 
@@ -128,7 +126,7 @@ end
  
 tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
 if isempty(tmp) ,
-   errordlg(['Error :there is no object measurement in your file '])
+   errordlg(['Error: there is no object measurement in your file '])
    return
 end
 ListOfMeasurements = tmp(:,FeatureNo);
@@ -145,7 +143,7 @@ FigureHandle = CPfigure; imagesc(ImageToDisplay), colormap(gray)
 FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
 ImageDisp = ImageFileName{1};
 title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])
-set(FigureHandle,'toolbar', 'figure')
+% set(FigureHandle,'toolbar', 'figure')
 
 %%% Overlays the values in the proper location in the image.
 TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...

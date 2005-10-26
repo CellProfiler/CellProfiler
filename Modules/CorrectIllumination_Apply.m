@@ -3,6 +3,11 @@ function handles = CorrectIllumination_Apply(handles)
 % Help for the CorrectIllumination_Apply module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Applies illumination function created by CorrectIllumination_Calculate to
+% an image.
+% *************************************************************************
+%
 % This module corrects for uneven illumination of each image. An
 % illumination function image that represents the variation in
 % illumination across the field of view is either made by a previous
@@ -23,10 +28,9 @@ function handles = CorrectIllumination_Apply(handles)
 % preferable. If, in contrast, the signal to background ratio is quite
 % high (the cells are stained strongly), then the Divide option is
 % probably preferable. Typically, Subtract is used if the illumination
-% function was calculated using the
-% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES module and
-% divide is used if the illumination function was calculated using the
-% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES
+% function was calculated using the background option in the
+% CORRECTILLUMINATION_CALCULATE module and divide is used if the
+% illumination function was calculated using the regular option.
 %
 % Rescaling:
 % If subtracting the illumination function, any pixels that end up
@@ -49,9 +53,7 @@ function handles = CorrectIllumination_Apply(handles)
 % module can be easily saved using the Save Images module, using the
 % name you assign.
 %
-% See also CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES,
-% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES,
-% RESCALEINTENSITY.
+% See also CORRECTILLUMINATION_CALCULATE, RESCALEINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -72,9 +74,9 @@ function handles = CorrectIllumination_Apply(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -113,9 +115,9 @@ RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
@@ -171,9 +173,9 @@ elseif strcmp(RescaleOption,'Match maximums') == 1
     RescaleOption = 'M';
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(DivideOrSubtract,'Divide') == 1
@@ -194,9 +196,9 @@ elseif strcmp(DivideOrSubtract,'Subtract') == 1
 else error(['In the ', ModuleName, ' module, you must enter D or S for the method by which to apply the illumination correction.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -208,27 +210,33 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
-    subplot(2,2,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    
+    subplot(2,2,1);
+    ImageHandle = imagesc(OrigImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+
     %%% The mean image does not absolutely have to be present in order to
     %%% carry out the calculations if the illumination image is provided,
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
-    subplot(2,2,2); imagesc(CorrectedImage);
+    subplot(2,2,2);
+    ImageHandle = imagesc(CorrectedImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title('Illumination Corrected Image');
-    
-    subplot(2,2,3); imagesc(IllumCorrectFunctionImage);
+
+    subplot(2,2,3);
+    ImageHandle = imagesc(IllumCorrectFunctionImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title(['Illumination Correction Function Image']);
-    
+
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
     text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');
     CPFixAspectRatio(OrigImage);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the corrected image to the

@@ -1,21 +1,21 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
--(Has "fix" for *.*, maybe it isn't really fixed that way?) (Requested by Anne 10-26-2005) - Show data on image datatool has a couple of bugs: has *.* problem for uigetfile, and no cellprofiler image tools in the resulting figure.
-
 - (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.
 
 - (Requested by Anne 10-26-2005) - Is there any way we can address Sophie's request to allow CP to skip image sets if there's an error?  This would be a nice feature. It should stop processing during the first image set if there are errors (so if there is a fundamental error like image not found, it doesn't just start cycling through and skipping *every* image cycle), but for subsequent image sets it should just skip the rest of the pipeline and maybe deposit a flag = 1 in handles.Measurement.Image.ErrorFlag , and handles.Measurements.Image.ErrorFlagFeatures = {'ImageSkipped'}
 It's worth thinking about this a bit, just to see whether it's feasible.
 (Mike) IdentifyObjectsInGrid can now skip grids which are broken and will add a flag, although we should talk about where that flag is current stored in handles
-
-- (Requested by Anne 10-26-2005) - I'd like to make all the modules consistent: some use OrigImage, some OrigImageToBeAnalyzed. It would be nice to change them all to be InputImage. This is a somewhat simple change, but I'd rather Mike does it because it will affect every module and be disastrous if we screw it up.  It'd be reasonable to change things like OrigImageName to InputImageName.  Most likely, anything with OrigImage can be changed (even if it's part of a bigger variable name like ThresholdedOrigImage), so it's probably a pretty safe change to make.
+-ADD ERROR CATCHING TO IDENTIFYOBJECTSINGRID
+-ADD PREFERENCE FOR SKIPPING MODULES WHICH FAIL
+-SET PREFERENCES MOVING TEXT TO BUTTON
 
 - What do you want as output for Calculate Statistics?
 
 - (Requested by Anne 10-25-2005) - Add this to the short descriptions for SaveImages: Can be used as a file format converter to save images in a different format than the original.
 
 -(Not sure this can be fixed, we can talk about it more) (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
+-CHECK FOR EASY FIX IF NOT SCRAP
 
 - (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.
 

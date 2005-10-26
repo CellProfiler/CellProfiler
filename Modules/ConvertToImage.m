@@ -3,6 +3,10 @@ function handles = ConvertToImage(handles)
 % Help for the Quick Fix Convert Objects To Image module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION:
+% n/a
+% *************************************************************************
+%
 % This module hasn't really been written yet, much less documented.
 %
 % See also <nothing relevant>
@@ -60,12 +64,10 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%
-
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 if strcmp(ImageMode,'Binary')
     Image = logical(LabelMatrixImage ~= 0);
-elseif strcmp(ImageMode,'Grayscale')    
+elseif strcmp(ImageMode,'Grayscale')
     Image = double(LabelMatrixImage / max(max(LabelMatrixImage)));
 elseif strcmp(ImageMode,'Color')
     if strcmp(ColorMap,'Default')
@@ -81,10 +83,6 @@ elseif strcmp(ImageMode,'Color')
 end
 
 handles.Pipeline.(ImageName) = Image;
-        
-        
-    
-    
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -93,19 +91,16 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-
 if any(findobj == ThisModuleFigureNumber)
-    
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-    
     ColoredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
-
-    subplot(2,1,1); imagesc(ColoredLabelMatrixImage);
+    subplot(2,1,1);
+    ImageHandle = imagesc(ColoredLabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title('Original Identified Objects','fontsize',8);
-
-    
-    subplot(2,1,2);imagesc(Image);
-    title('New Image','fontsize',8);  
-       
+    subplot(2,1,2);
+    ImageHandle = imagesc(Image);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title('New Image','fontsize',8);
 end

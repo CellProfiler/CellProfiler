@@ -1,7 +1,12 @@
-function handles = CorrectIllumination_CalculateUsingIntensitiesNEW(handles)
+function handles = CorrectIllumination_Calculate(handles)
 
 % Help for the Correct Illumination_Calculate Using Intensities module:
 % Category: Image Processing
+%
+% SHORT DESCRIPTION:
+% Calculates an illuminatoiin function, used to correct errors in lighting
+% on images. Can also be used to reduce uneven background in images.
+% *************************************************************************
 %
 % This module calculates an illumination function based on the
 % intensities of images. The illumination function can then be saved
@@ -79,7 +84,6 @@ function handles = CorrectIllumination_CalculateUsingIntensitiesNEW(handles)
 % the quality of the illumination function values will be degraded.
 %
 % See also CORRECTILLUMINATION_APPLY, SMOOTH
-% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -100,9 +104,9 @@ function handles = CorrectIllumination_CalculateUsingIntensitiesNEW(handles)
 %
 % $Revision: 1750 $
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -177,9 +181,9 @@ BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}
 
 %%%VariableRevisionNumber = 4
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(EachOrAll,'Each') && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
@@ -230,9 +234,9 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(AverageImageName,'Do not save')
@@ -353,8 +357,7 @@ else error('Image processing was canceled because you must choose either "E" or 
 end
 
 %%% Dilates the objects, and/or smooths the RawImage if the user requested.
-if strcmp(ReadyFlag, 'Ready') == 1
-
+if strcmp(ReadyFlag, 'Ready')
     if strcmp(IntensityChoice,'Regular')
         if NumericalObjectDilationRadius ~= 0
             DilatedImage = CPdilatebinaryobjects(RawImage, NumericalObjectDilationRadius);
@@ -406,9 +409,9 @@ if strcmp(ReadyFlag, 'Ready') == 1
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -482,9 +485,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves images to the handles structure.

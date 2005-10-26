@@ -1,10 +1,18 @@
-Name of Module:		Who Checked and Verified:
-Align			Mike (Change handles structure?)
+Name of Module:			Who Checked and Verified:
+Align				Mike (Change handles structure?)
 
-ApplyThreshold		Mike
+ApplyThreshold			Mike
 
-Average			Mike
+Average				Mike
 
-ClassifyObjects		Mike
+ClassifyObjects			Mike
 
-ColorToGray		Mike
+ColorToGray			Mike
+
+CorrectIllumination_Apply	Mike
+
+CorrectIllumination_Calculate	Mike
+
+CreateBatchScripts		Mike
+
+CreateWebPage			Mike

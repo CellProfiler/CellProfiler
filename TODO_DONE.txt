@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/26) (Has "fix" for *.*, maybe it isn't really fixed that way?) (Requested by Anne 10-26-2005) - Show data on image datatool has a couple of bugs: has *.* problem for uigetfile, and no cellprofiler image tools in the resulting figure.
+
 -(Mike 10/26) (Requested by Anne 10-26-2005) - We would like the classify objects module to be a little more sophisticated. Right now the bins must be evenly spaced, but we would like to allow the user to set up something like:
 Let's say they want three bins: 0 to 300, 300 to 1000, and 1000 to 1500. Right now they can't do it because it only lets them choose 3 bins with min 0 and max 1500 and it will force the bins to be 0 to 500, 500 to 1000, and 1000 to 1500. So they should be allowed to enter the minimum acceptable is 0, the maximum is 1500. Then they should be allowed to type 
  type in something like [300 1000] to define the 'edges' of the intermediate bins (an infinite number). Maybe it would be easiest to just let them type into a separate variable box at the bottom 'If you want to define all the edges of your bins manually, type them here:' which would just let the user type [0 300 1000 1500] and then the module would ignore the min,max and number of bins.  That way a user could choose to type 

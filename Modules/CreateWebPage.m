@@ -3,6 +3,11 @@ function handles = CreateWebPage(handles)
 % Help for the CreateWebPage module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Creates the html for a webpage to display images, including a link
+% to a zipped file with all of the included images.
+% *************************************************************************
+%
 % This module will create an html file that will display the specified
 % images and also produce a zip-file of these images with a link. The
 % thumbnail images must be in the same directory as the original images.
@@ -151,18 +156,18 @@ ZipFileName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed == NumberOfImageSets) && strcmp(CreateBA,'After'))

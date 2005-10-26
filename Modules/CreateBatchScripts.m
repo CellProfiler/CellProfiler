@@ -3,6 +3,11 @@ function handles = CreateBatchScripts(handles)
 % Help for the Create Batch Scripts module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Produces text script files which allow individual batches of images to be
+% processed seperately on a cluster computer.
+% *************************************************************************
+%
 % This module writes a batch (set) of Matlab scripts (m-files) that
 % can be submitted in parallel to a cluster for faster processing.
 %
@@ -242,9 +247,9 @@ function handles = CreateBatchScripts(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -293,9 +298,9 @@ NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 6
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strncmp(BatchSavePath, '.',1)
@@ -451,9 +456,9 @@ set(handles.timertexthandle,'string','Cancel')
 %%% Undo the changes to handles.Pipeline, above.
 handles = handles_in;
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure

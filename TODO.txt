@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 10-26-2005) - I'd like to make all the modules consistent: some use OrigImage, some OrigImageToBeAnalyzed. It would be nice to change them all to be InputImage. This is a somewhat simple change, but I'd rather Mike does it because it will affect every module and be disastrous if we screw it up.  It'd be reasonable to change things like OrigImageName to InputImageName.  Most likely, anything with OrigImage can be changed (even if it's part of a bigger variable name like ThresholdedOrigImage), so it's probably a pretty safe change to make.
+
 - What do you want as output for Calculate Statistics?
 
 - (Requested by Anne 10-25-2005) - Add this to the short descriptions for SaveImages: Can be used as a file format converter to save images in a different format than the original.

@@ -75,14 +75,21 @@ LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4
 %defaultVAR05 = 100
 UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter number of bins (Note: to measure the percent of objects that are above a threshold, type P:XXX in this box, where XXX is the threshold).
+%textVAR06 = Enter number of bins or type "C:1 2 3 4" to custom define the bins (to measure the percent of objects that are above a threshold, type P:XXX, where XXX is the threshold).
 %defaultVAR06 = 3
 NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
+PercentFlag = 0;
+CustomFlag = 0;
 try
     if strncmpi(NbrOfBins,'P',1)
         MidPointToUse = str2double(NbrOfBins(3:end));
-        NbrOfBins = 0;
+        PercentFlag = 1;
+    elseif strncmpi(NbrOfBins,'C',1)
+        NbrOfBins = str2num(NbrOfBins(3:end));
+        if length(NbrOfBins) >= 2
+            CustomFlag = 1;
+        end
     else
         NbrOfBins = str2double(NbrOfBins);
         if isempty(NbrOfBins) || NbrOfBins < 1
@@ -137,13 +144,17 @@ else
     Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
 end
 
-if NbrOfBins == 0
+if PercentFlag == 1
     edges = [LowerBinMin,MidPointToUse,UpperBinMax];
     NbrOfBins = 2;
+elseif CustomFlag == 1
+    edges = NbrOfBins;
+    NbrOfBins = length(NbrOfBins)-1;
 else
     % Quantize measurements
     edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1);
 end
+
 edges(1) = edges(1) - sqrt(eps);                               % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));
 bins = zeros(1,NbrOfBins);
@@ -229,7 +240,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title(sprintf('Histogram of %s',AdjustedFeatureName))
     axis tight
     xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
-    xlimits(2) = UpperBinMax;                          % so they can be used for the second histogram
+    xlimits(2) = max(UpperBinMax,edges(end));                          % so they can be used for the second histogram
     axis([xlimits ylim])
     set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
 

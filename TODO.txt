@@ -1,14 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Anne 10-26-2005) - MeasureObjectTexture doesn't look exactly like MeasureObjectIntensity in terms of how many variables can be entered.  They should look the same.
-
-- (Requested by Anne 10-26-2005) - We would like the classify objects module to be a little more sophisticated. Right now the bins must be evenly 
-spaced, but we would like to allow the user to set up something like:
-Let's say they want three bins: 0 to 300, 300 to 1000, and 1000 to 1500. Right now they can't do it because it only lets them choose 3 bins with min 0 and max 1500 and it will force the bins to be 0 to 500, 500 to 1000, and 1000 to 1500. So they should be allowed to enter the minimum acceptable is 0, the maximum is 1500. Then they should be allowed to type 
- type in something like [300 1000] to define the 'edges' of the intermediate bins (an infinite number). Maybe it would be easiest to just let them type into a separate variable box at the bottom 'If you want to define all the edges of your bins manually, type them here:' which would just let the user type [0 300 1000 1500] and then the module would ignore the min,max and number of bins.  That way a user could choose to type 
-[0 3 7 99 1500 321403 3434934] and not have to worry about setting the min max and number of bins.
-
 - (Requested by Anne 10-26-2005) - Show data on image datatool has a couple of bugs: has *.* problem for uigetfile, and no cellprofiler image tools in the resulting figure.
 
 - (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.

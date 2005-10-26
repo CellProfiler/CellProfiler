@@ -20,7 +20,6 @@ It's worth thinking about this a bit, just to see whether it's feasible.
 - (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.
 
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
-
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 
 - (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
@@ -46,7 +45,7 @@ UROP:
 MergeBatchOutput
 Restart
 
-- (Requested by Anne 10-25-05) - ProcessOutlines needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it. 
+- (Requested by Anne 10-25-05) - ProcessOutlines needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
 
 - (Requested by Anne 10-20-05) - Do we want to set up a Wiki for cellprofiler.org? It would be great if certain people had access to change the site (e.g. only us!) and the rest of the world saw a non-editable version, but I don't know if that's possible - in other words, giving some people write permission and everyone else read permission, but also making all the editing related stuff not appear on the page. It would be annoying for everyone else to have all the extra clutter on pages. Most likely this won't work but I thought we should look into it.
 

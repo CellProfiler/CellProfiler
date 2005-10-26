@@ -66,7 +66,7 @@ The iterations can be performed on a low-resolution version of the original imag
 +++  (Requested by Anne) -Make modules to identify objects in transmitted light/DIC images. Potentially useful references: Heise, Sonnleitner, Klement, Microsc Research & Technique 66:312-320 (2005).  This paper looks like it has a few options for ways to pre-process DIC images to end up with images that look more like fluorescence images which can then be processed using our normal Identify algorithms.
 
 +++  (Requested by Anne) -Align/resize stack of images (like yeast plates). See Matlab
-       demo on image registration. Did Chris already do this? 
+       demo on image registration.
 
 +++ (Requested by Anne) - Reproduce the major 'big pharma' screening assays:
 cell adhesion

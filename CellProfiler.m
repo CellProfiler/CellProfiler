@@ -3037,7 +3037,7 @@ else
                         LeftPos = LeftPos - ScreenWidth;
                     end
                     handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
-                        CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display, Image Set #'],...
+                        CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display, cycle # '],...
                         'Position',[LeftPos (ScreenHeight-522) 560 442],...
                         'color',[0.7,0.7,0.7]);
                 end
@@ -3142,11 +3142,10 @@ else
                             end
                             ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
                             CPfigure(handles,ThisFigureNumber);
-                            set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display, Image Set #']);
+                            set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display, cycle # ']);
                             set(ThisFigureNumber, 'Position',[LeftPos (ScreenHeight-522) 560 442]);
                             %%% Sets the closing function of the window appropriately. (See way
                             %%% above where 'ClosingFunction's are defined).
-                            %set(ThisFigureNumber,'CloseRequestFcn',eval(['ClosingFunction' TwoDigitString(ModuleNumber)]));
                         catch
                         end
                     end

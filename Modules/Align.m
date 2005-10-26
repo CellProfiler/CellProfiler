@@ -233,7 +233,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         subplot(2,1,1);
         ImageHandle = imagesc(OriginalRGB);
         set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
-        title(['Input Images, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the adjusted
         %%%  image.
         subplot(2,1,2);

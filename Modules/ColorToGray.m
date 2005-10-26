@@ -1,10 +1,14 @@
-function handles = RGBToGrayOrSplit(handles)
+function handles = ColorToGray(handles)
 
 % Help for the RGB To Gray module:
 % Category: Image Processing
 %
-% This module can either convert an RGB image to a single grayscale image
-% or three seperate Red, Green and Blue images.
+% SHORT DESCRIPTION:
+% Converts RGB (Red, Green Blue) color images to grayscale. All channels
+% can be merged into one grayscale image or each channel can extracted into
+% a seperate grayscale image. All identify modules require grayscale
+% images.
+% *************************************************************************
 %
 % Settings:
 %
@@ -193,12 +197,17 @@ if strcmp(GrayOrSplit,'Gray')
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         %%% A subplot of the figure window is set to display the original image.
-        subplot(2,1,1); imagesc(OrigImage);
+        subplot(2,1,1);
+        ImageHandle = imagesc(OrigImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
         colormap(handles.Preferences.IntensityColorMap);
-        title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
-        subplot(2,1,2); imagesc(GrayscaleImage); title('Grayscale Image');
+        subplot(2,1,2);
+        ImageHandle = imagesc(GrayscaleImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        title('Grayscale Image');
     end
 elseif strcmp(GrayOrSplit,'Split')
     if any(findobj == ThisModuleFigureNumber) == 1;
@@ -208,14 +217,25 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% A subplot of the figure window is set to display the Splitd RGB
         %%% image.  Using imagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
-        subplot(2,2,1); imagesc(OrigImage);
-        title(['Input RGB Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        subplot(2,2,1);
+        ImageHandle = imagesc(OrigImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        title(['Input RGB Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
-        subplot(2,2,2); imagesc(BlueImage);  title('Blue Image');
+        subplot(2,2,2);
+        ImageHandle = imagesc(BlueImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        title('Blue Image');
         %%% A subplot of the figure window is set to display the green image.
-        subplot(2,2,3); imagesc(GreenImage); title('Green Image');
+        subplot(2,2,3);
+        ImageHandle = imagesc(GreenImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        title('Green Image');
         %%% A subplot of the figure window is set to display the red image.
-        subplot(2,2,4); imagesc(RedImage); title('Red Image');
+        subplot(2,2,4);
+        ImageHandle = imagesc(RedImage);
+        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        title('Red Image');
         CPFixAspectRatio(OrigImage);
     end
 end

@@ -6,3 +6,5 @@ ApplyThreshold		Mike
 Average			Mike
 
 ClassifyObjects		Mike
+
+ColorToGray		Mike

@@ -164,7 +164,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,1,1);
     ImageHandle = imagesc(OrigImage);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.
     subplot(2,1,2);

@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/26 IMPROVED OUR TEXT DISPLAY BOX)(Not sure this can be fixed, we can talk about it more) (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
+-CHECK FOR EASY FIX IF NOT SCRAP
+
 -(Mike 10/26) (Has "fix" for *.*, maybe it isn't really fixed that way?) (Requested by Anne 10-26-2005) - Show data on image datatool has a couple of bugs: has *.* problem for uigetfile, and no cellprofiler image tools in the resulting figure.
 
 -(Mike 10/26) (Requested by Anne 10-26-2005) - We would like the classify objects module to be a little more sophisticated. Right now the bins must be evenly spaced, but we would like to allow the user to set up something like:

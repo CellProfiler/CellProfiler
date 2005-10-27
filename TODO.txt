@@ -14,9 +14,6 @@ It's worth thinking about this a bit, just to see whether it's feasible.
 
 - (Requested by Anne 10-25-2005) - Add this to the short descriptions for SaveImages: Can be used as a file format converter to save images in a different format than the original.
 
--(Not sure this can be fixed, we can talk about it more) (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
--CHECK FOR EASY FIX IF NOT SCRAP
-
 - (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.
 
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.

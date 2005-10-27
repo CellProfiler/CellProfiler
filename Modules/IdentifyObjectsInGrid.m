@@ -11,7 +11,6 @@ function handles = IdentifyObjectsInGrid(handles)
 % defined.  Note that if an object does not exist, it will create an object
 % with a single pixel in the middle of the grid square.
 %
-%
 % See also DefineGrid.
 
 % CellProfiler is distributed under the GNU General Public License.

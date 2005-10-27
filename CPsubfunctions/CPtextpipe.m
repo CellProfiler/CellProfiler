@@ -45,12 +45,7 @@ else
         CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
         return
     end
-    [ignore,Attributes] = fileattrib(fullfile(SavePathname,filename));
-    if Attributes.UserWrite == 0
-        error(['You do not have permission to write ',fullfile(SavePathname,filename),'!']);
-    else
-        fid = fopen(fullfile(SavePathname,filename),'w');
-    end
+    fid = fopen(fullfile(SavePathname,filename),'w');
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
     end

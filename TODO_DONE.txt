@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/26) (Requested by Anne 10-26-2005) - Is there any way we can address Sophie's request to allow CP to skip image sets if there's an error?  This would be a nice feature. It should stop processing during the first image set if there are errors (so if there is a fundamental error like image not found, it doesn't just start cycling through and skipping *every* image cycle), but for subsequent image sets it should just skip the rest of the pipeline and maybe deposit a flag = 1 in handles.Measurement.Image.ErrorFlag , and handles.Measurements.Image.ErrorFlagFeatures = {'ImageSkipped'}
+It's worth thinking about this a bit, just to see whether it's feasible.
+(Mike) IdentifyObjectsInGrid can now skip grids which are broken and will add a flag, although we should talk about where that flag is current stored in handles
+-ADD ERROR CATCHING TO IDENTIFYOBJECTSINGRID
+-ADD PREFERENCE FOR SKIPPING MODULES WHICH FAIL
+-SET PREFERENCES MOVING TEXT TO BUTTON
+
 -(Mike 10/26 IMPROVED OUR TEXT DISPLAY BOX)(Not sure this can be fixed, we can talk about it more) (Requested by Anne 10-18-2005) - Help for individual modules (within Add Module), the text is cut off sometimes , see SaveImages module for example. doublecheck that you can print from the help windows.
 -CHECK FOR EASY FIX IF NOT SCRAP
 

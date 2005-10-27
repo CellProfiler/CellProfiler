@@ -2638,9 +2638,9 @@ if exist('EnteredPreferences','var') == 1
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% TECHNICAL DIAGNOSIS BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function TechnicalDiagnosis_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% This pauses execution and allows the user to type things in at the
@@ -2652,9 +2652,9 @@ display('Type ''return'' in the MATLAB prompt (where the K>> is) to stop diagnos
 %%% TYPE "return" TO STOP.
 keyboard;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% BROWSE DEFAULT IMAGE DIRECTORY BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in BrowseImageDirectoryButton.
 function BrowseImageDirectoryButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -2695,9 +2695,9 @@ else
     guidata(hObject, handles);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DEFAULT IMAGE DIRECTORY EDIT BOX %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 function handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -2756,9 +2756,9 @@ end
 guidata(hObject,handles)
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% BROWSE DEFAULT OUTPUT DIRECTORY BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in BrowseOutputDirectoryButton.
 function BrowseOutputDirectoryButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -2780,9 +2780,9 @@ else
     guidata(hObject,handles)
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DEFAULT OUTPUT DIRECTORY EDIT BOX %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function DefaultOutputDirectoryEditBox_Callback(hObject, eventdata, handles)
 %%% Retrieves the text that was typed in.
@@ -2805,9 +2805,9 @@ set(handles.DefaultOutputDirectoryEditBox,'String',handles.Current.DefaultOutput
 %%% Updates the handles structure.
 guidata(hObject,handles)
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE LIST BOX %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on selection change in FilenamesListBox.
 function FilenamesListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -2839,9 +2839,9 @@ if strcmp(get(gcf,'SelectionType'),'open')
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% CLOSE WINDOWS BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function CloseWindows_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -2884,9 +2884,9 @@ try
     delete(TimerHandles)
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% OUTPUT FILE NAME EDIT BOX %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function OutputFileNameEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -2933,9 +2933,9 @@ if ~isempty(UserEntry)
 end
 guidata(gcbo, handles);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% ANALYZE IMAGES BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AnalyzeImagesButton.
 function AnalyzeImagesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -3161,17 +3161,23 @@ else
                                 NewNum = handles.Current.SetBeingAnalyzed;
                                 set(SlotNumber,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
                             end
+                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(str2num(ModuleNumberAsString),1) = 0;
                         catch
-                            if exist([ModuleName,'.m'],'file') ~= 2,
-                                CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
+                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(str2num(ModuleNumberAsString),1) = 1;
+                            if strcmp(handles.Preferences.SkipErrors,'No')
+                                if exist([ModuleName,'.m'],'file') ~= 2,
+                                    CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
+                                else
+                                    %%% Runs the errorfunction function that catches errors and
+                                    %%% describes to the user what to do.
+                                    errorfunction(ModuleNumberAsString,handles.Current.FontSize,ModuleName)
+                                end
+                                %%% Causes break out of the image analysis loop (see below)
+                                break_outer_loop = 1;
+                                break;
                             else
-                                %%% Runs the errorfunction function that catches errors and
-                                %%% describes to the user what to do.
                                 errorfunction(ModuleNumberAsString,handles.Current.FontSize,ModuleName)
                             end
-                            %%% Causes break out of the image analysis loop (see below)
-                            break_outer_loop = 1;
-                            break;
                         end % Goes with try/catch.
 
                         %%% Check for a pending "Cancel after Module"
@@ -3570,20 +3576,20 @@ function errorfunction(CurrentModuleNumber,FontSize,ModuleName)
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
-if strncmp(Error,'Error using ==> ', 16) == 1
+if strncmp(Error,'Error using ==> ',16)
     ErrorExplanation = ['There was a problem running the analysis module number ',CurrentModuleNumber, '.', Error];
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
-elseif isempty(strfind(Error,'bad magic')) == 0
+elseif ~isempty(strfind(Error,'bad magic'))
     ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.';
 else
     ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is module #', CurrentModuleNumber, ' in the pipeline.'];
 end
 CPerrordlg(ErrorExplanation);
 
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 %%% HELP BUTTONS %%%
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 
 function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% First, check to see whether there is a specific module loaded.

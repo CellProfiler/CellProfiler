@@ -6,7 +6,7 @@ October 21, 2005  IN ORDER OF PRIORITY
 - (Requested by Anne 10-26-2005) - Is there any way we can address Sophie's request to allow CP to skip image sets if there's an error?  This would be a nice feature. It should stop processing during the first image set if there are errors (so if there is a fundamental error like image not found, it doesn't just start cycling through and skipping *every* image cycle), but for subsequent image sets it should just skip the rest of the pipeline and maybe deposit a flag = 1 in handles.Measurement.Image.ErrorFlag , and handles.Measurements.Image.ErrorFlagFeatures = {'ImageSkipped'}
 It's worth thinking about this a bit, just to see whether it's feasible.
 (Mike) IdentifyObjectsInGrid can now skip grids which are broken and will add a flag, although we should talk about where that flag is current stored in handles
--ADD ERROR CATCHING TO IDENTIFYOBJECTSINGRID
+-(DONE)ADD ERROR CATCHING TO IDENTIFYOBJECTSINGRID
 -ADD PREFERENCE FOR SKIPPING MODULES WHICH FAIL
 -SET PREFERENCES MOVING TEXT TO BUTTON
 

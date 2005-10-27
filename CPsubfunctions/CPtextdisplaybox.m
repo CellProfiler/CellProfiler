@@ -30,8 +30,17 @@ helpUI = uicontrol(...
     'BackgroundColor',[0.7 0.7 0.9],...
     'Style','text', ...
     'FontSize',FontSize);
-outstring = textwrap(helpUI,{Text});
-set(helpUI,'position',[1 1.5+(27-length(outstring))*1.09 80 length(outstring)*1.1]);
+if FontSize <= 8
+    WrapNum = 80;
+elseif FontSize <= 11 && FontSize > 8
+    WrapNum = 50;
+elseif FontSize <= 13 && FontSize > 11
+    WrapNum = 25;
+else
+    WrapNum = 10;
+end
+[outstring,position] = textwrap(helpUI,{Text},WrapNum);
+set(helpUI,'position',[1 1.5+30-position(4) 80 position(4)]);
 if(length(outstring) > 27),
     helpUIPosition = get(helpUI,'position');
     helpScrollCallback = ['set(',num2str(helpUI,'%.13f'),',''position'',[', ...

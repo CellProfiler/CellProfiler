@@ -92,7 +92,7 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the segmented objects that you want to measure?
+%textVAR02 = What did you call the objects that you want to measure?
 %choiceVAR02 = Do not use
 %infotypeVAR02 = objectgroup
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});

@@ -75,7 +75,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the segmented objects that you want to measure?
+%textVAR01 = What did you call the objects that you want to measure?
 %choiceVAR01 = Do not use
 %infotypeVAR01 = objectgroup
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});

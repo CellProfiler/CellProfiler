@@ -99,7 +99,6 @@ else
     PromptMessage = ['Browse to find the image called ', ImageFileName,'.'];
 end
 
-%LOOK UP THE PATHNAME, Oct24,2005
   Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
   FileName=char(ImageFileName);
   if  ~ exist( fullfile (Pathname, char(ImageFileName)),'file') %path and file does not exist there.

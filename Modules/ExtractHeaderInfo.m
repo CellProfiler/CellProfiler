@@ -169,7 +169,7 @@ for n = 1:2:5
         PathName = handles.(fieldname);
         try
             %%% run the header info function on the loaded image
-            [ExpTime, ExpNum, WorldXYZ, TimeDate] = ExtractHeaderInfo(fullfile(PathName,char(CurrentFileName)));
+            [ExpTime, ExpNum, WorldXYZ, TimeDate] = ExtractHeaderInfoSub(fullfile(PathName,char(CurrentFileName)));
         catch error(['You encountered an error during the subfunction "ExtractHeaderInfo".  Not a good thing.'])
         end
         %%% Converts the WorldXYZ data into three separate variables
@@ -233,7 +233,7 @@ end
 %%%%%%%%%%%%%%%%%%%%
 drawnow
 
-function [exp_time_ms, exp_num, worldxyz, timedate] = ExtractHeaderInfo(filename)
+function [exp_time_ms, exp_num, worldxyz, timedate] = ExtractHeaderInfoSub(filename)
 
 fid = fopen(filename, 'r', 'l');
 

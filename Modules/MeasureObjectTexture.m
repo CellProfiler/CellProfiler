@@ -283,13 +283,15 @@ for i = 1:6
               % Pad with zeros if necessary to match the filter kernel size
               if xmin1 < xmin2
                 p = [zeros(size(p,1),xmin2 - xmin1) p];
-              elseif xmax1 > xmax2
+              end
+              if xmax1 > xmax2
                 p = [p zeros(size(p,1),xmax1 - xmax2)];
               end
 
               if ymin1 < ymin2
                 p = [zeros(ymin2 - ymin1,size(p,2));p];
-              elseif ymax1 > ymax2
+              end
+              if ymax1 > ymax2
                 p = [p;zeros(ymax1 - ymax2,size(p,2))];
               end
 

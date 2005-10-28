@@ -298,13 +298,13 @@ if SetBeingAnalyzed == 1
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
-                errordlg(['Image processing was canceled in the ', ModuleName, ' module because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
             end
 
             %%% Determines the number of image sets to be analyzed.
             NumberOfImageSets = length(FileNames)/ImagesPerSet;
             if rem(NumberOfImageSets,1) ~= 0
-                errordlg(['Image processing was canceled in the ', ModuleName, ' module becauses the number of image files (%d) found in the specified directory is not a multiple of the number of images per set (%d), according to the Load Images Order module.',length(FileNames),ImagesPerSet)])
+                error(['Image processing was canceled in the ', ModuleName,' module becauses the number of image files (',length(FileNames),') found in the specified directory is not a multiple of the number of images per set (',ImagesPerSet,'), according to the Load Images Order module.'])
             end
             handles.Current.NumberOfImageSets = NumberOfImageSets;
 
@@ -328,13 +328,13 @@ if SetBeingAnalyzed == 1
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
-                errordlg(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesOrder module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesOrder module.'])
             end
 
             %%% Determines the number of movie sets to be analyzed.
             NumberOfMovieSets = fix(length(FileNames)/ImagesPerSet);
             if rem(NumberOfMovieSets,1) ~= 0
-                errordlg(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (%d) found in the specified directory is not a multiple of the number of movies per set (%d), according to the LoadMoviesOrder module.',length(FileNames),MoviesPerSet))
+                error(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (',length(FileNames),') found in the specified directory is not a multiple of the number of movies per set (',MoviesPerSet,'), according to the LoadMoviesOrder module.'])
             end
             handles.Current.NumberOfMovieSets = NumberOfMovieSets;
 

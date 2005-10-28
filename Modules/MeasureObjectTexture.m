@@ -126,7 +126,7 @@ ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ObjectNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = What did you call the segmented objects that you want to measure?
+%textVAR05 =
 %choiceVAR05 = Do not use
 %infotypeVAR05 = objectgroup
 ObjectNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,5});

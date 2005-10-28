@@ -287,14 +287,16 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
-drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1); imagesc(TracedImage);
     title(['Traced Input, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); imagesc(RealImage); title('Real Input Image');
-    subplot(2,2,3); imagesc(CroppedAlignedTracedImage); %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    subplot(2,2,3); imagesc(CroppedAlignedTracedImage);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The adjusted image is saved to the handles structure so it can be used

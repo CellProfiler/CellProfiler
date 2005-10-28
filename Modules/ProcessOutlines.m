@@ -56,6 +56,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
@@ -83,14 +84,14 @@ drawnow
 %%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, ImageName) == 0
-    error(['Image processing has been canceled. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Intensity module cannot find this image.']);
+    error(['Image was canceled in the ', ModuleName, ' module. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Intensity module cannot find this image.']);
     end
 OrigImage = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
-    error('Image processing was canceled because the Identify Primary Intensity module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%

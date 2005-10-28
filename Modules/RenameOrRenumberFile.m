@@ -36,16 +36,16 @@ function handles = RenameOrRenumberFile(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the images you want to rename/renumber? Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
 %infotypeVAR01 = imagegroup
@@ -73,6 +73,7 @@ NumberDigits = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 Pathname = handles.Current.DefaultImageDirectory;
 %%% Retrieves all the image file names and the number of
@@ -135,6 +136,7 @@ set(handles.timertexthandle,'string','Cancel')
 %%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%
 %%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed if it was previously open.

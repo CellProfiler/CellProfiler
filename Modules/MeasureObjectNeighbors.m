@@ -42,21 +42,16 @@ function handles = MeasureObjectNeighbors(handles)
 %
 % $Revision$
 
-
-%
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the objects whose neighbors you want to measure?
 %infotypeVAR01 = objectgroup
@@ -89,15 +84,14 @@ drawnow
 fieldname = ['Segmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if ~isfield(handles.Pipeline,fieldname)
-    error(['Image processing has been canceled. Prior to running the Measure Neighbors module, you must have previously run a segmentation module.  You specified in the MeasureObjectNeighbors module that the desired image was named ', IncomingLabelMatrixImageName(10:end), ', the Measure Neighbors module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Neighbors module, you must have previously run a segmentation module.  You specified in the MeasureObjectNeighbors module that the desired image was named ', IncomingLabelMatrixImageName(10:end), ', the Measure Neighbors module cannot locate this image.']);
 end
 IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Expands each object until almost 8-connected to its neighbors, if
 %%% requested by the user.
@@ -175,8 +169,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Saves neighbor measurements to handles structure.
 handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {NumberOfNeighbors};
 handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors'};
@@ -225,6 +217,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE IMAGES TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% To make this module produce results similar to an IdentifyPrim
 %%% module, we will save the image IncomingLabelMatrixImage (which may

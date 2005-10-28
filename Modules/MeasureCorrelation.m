@@ -31,16 +31,17 @@ function handles = MeasureCorrelation(handles)
 %   Susan Ma       <xuefang_ma@wi.mit.edu>
 %
 % $Revision$
-drawnow
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = Enter the names of each image type to be compared.
 %choiceVAR01 = Do not use
@@ -130,17 +131,17 @@ for ImageNbr = 1:4
                 %%% button callback.)  That callback recognizes that an error was
                 %%% produced because of its try/catch loop and breaks out of the image
                 %%% analysis loop without attempting further modules.
-                error(['Image processing was canceled because the Measure Correlation module could not find the input image.  It was supposed to be named ', ImageName{ImageNbr}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName{ImageNbr}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
             end
             Image{ImageCount} = handles.Pipeline.(ImageName{ImageNbr});
             tmpImageName{ImageCount} = ImageName{ImageNbr};
             %%% Checks that the original image is two-dimensional (i.e. not a color
             %%% image), which would disrupt several of the image functions.
             if ndims(Image{ImageCount}) ~= 2
-                error('Image processing was canceled because the Measure Correlation module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+                error('Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
             end
 
-        catch error(['There was a problem loading the image you called ', ImageName{ImageNbr}, ' in the Measure Correlation module.'])
+        catch error(['There was a problem loading the image you called ', ImageName{ImageNbr}, ' in the ', ModuleName, ' module.'])
         end
     end
 end
@@ -148,7 +149,7 @@ ImageName = tmpImageName;           % Get rid of '/' in the ImageName cell array
 
 % Check so that at least two images have been entered
 if ImageCount < 2
-    error('At least two image names must be entered in the MeasureCorrelation module.')
+    error(['At least two image names must be entered in the ', ModuleName, ' module.'])
 end
 
 %%% Get the masks of segmented objects
@@ -164,7 +165,7 @@ for ObjectNameNbr = 1:6
             fieldname = ['Segmented', ObjectName{ObjectNameNbr}];
             %%% Checks whether the image exists in the handles structure.
             if isfield(handles.Pipeline, fieldname)==0,
-                error(['Image processing has been canceled. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
+                error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
             end
             LabelMatrixImage{ObjectNameCount} = handles.Pipeline.(fieldname);
         else
@@ -176,7 +177,7 @@ ObjectName = tmpObjectName; % Get rid of '/' in the ObjectName cell array so we 
 
 % Check so that at least one object type have been entered
 if ObjectNameCount < 1
-    errordlg('At least one object type must be entered in the MeasureCorrelation module.')
+    errordlg(['At least one object type must be entered in the ', ModuleName, ' module.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -211,7 +212,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                     end
                     Correlation(ObjectNbr,FeatureNbr) = CorrelationForCurrentObject; % Store the correlation
                     FeatureNbr = FeatureNbr + 1;
-                catch error(['There was a problem calculating the correlation in the MeasureCorrelation module.',])
+                catch error(['There was a problem calculating the correlation in the ', ModuleName, ' module.'])
                 end
 
             end
@@ -225,6 +226,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);

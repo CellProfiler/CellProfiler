@@ -38,18 +38,19 @@ function handles = Restart(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = Use this module if you have canceled processing of a pipeline that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
-
+%textVAR01 = Use this module if you have canceled processing of a pipeline
+%that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
 
 %%%VariableRevisionNumber = 1
 
-drawnow
 if (handles.Current.SetBeingAnalyzed ~= 1)
     return
 end
@@ -62,14 +63,14 @@ catch
 end
 
 if (errFlg ~= 0)
-    error('Processing cancelled because module Restart could not initialize pipeline.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not initialize pipeline.']);
     return;
 end
 
 try
     importhandles = load(fullfile(filepath,filename));
 catch
-    error(['Processing cancelled because module Restart could not load from file ' ...
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not load from file ' ...
         fullfile(filepath,filename),'.']);
 end
 % save figure properties
@@ -108,8 +109,7 @@ guidata(gcbo,handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
+drawnow
 
 return;
 end

@@ -43,21 +43,16 @@ function handles = LoadSingleImage(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-
-
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %filenametextVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -138,13 +133,13 @@ if strncmp(Pathname,'.',1)
 end
 SpecifiedPathname = Pathname;
 if ~exist(SpecifiedPathname,'dir')
-    error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+drawnow
 
 for n = 1:length(ImageName)
     %%% This try/catch will catch any problems in the load images module.
@@ -223,13 +218,10 @@ handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)     = {PathNames};
 %%% ------------------------------------------------------------------------------------------------ %%%
 
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed the first time through the module.

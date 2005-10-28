@@ -29,11 +29,13 @@ function handles = OverlayOutlines(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = On what image would you like to display the outlines?
 %infotypeVAR01 = imagegroup
@@ -61,17 +63,18 @@ SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 try
     OrigImage = handles.Pipeline.(ImageName);
 catch
-    error(['Image processing was canceled because the image ' ImageName ' could not be found. Perhaps there is a typo?']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because the image ' ImageName ' could not be found. Perhaps there is a typo?']);
 end
 
 try
     OutlineImage = handles.Pipeline.(OutlineName);
 catch
-    error(['Image processing was canceled because the image ' OutlineName ' could not be found. Perhaps there is a typo?  Make sure you saved the outlines in an earlier module.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because the image ' OutlineName ' could not be found. Perhaps there is a typo?  Make sure you saved the outlines in an earlier module.']);
 end
 
 if any(size(OrigImage) ~= size(OutlineImage))
@@ -96,6 +99,7 @@ NewImage(OutlineImage ~= 0) = ValueToUseForOutlines;
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -113,6 +117,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if ~strcmp(SavedImageName,'Do not save')
     handles.Pipeline.(SavedImageName) = NewImage;

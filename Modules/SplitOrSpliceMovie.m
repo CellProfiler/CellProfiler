@@ -33,6 +33,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = Do you want to split (create multiple smaller movies from one large movie) or splice (create one large movie from multiple smaller movies)?
 %choiceVAR01 = Split
@@ -95,7 +96,7 @@ if handles.Current.SetBeingAnalyzed == 1
         Filenames = CPretrieveMediaFileNames(ExistingPath,TargetMovieFileName,'N','E','Movie');
         %%% Checks whether any files are left.
         if isempty(Filenames)
-            error(['Image processing was canceled because there are no image files with the text "', TargetMovieFileName, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TargetMovieFileName, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
         end
 
         NewFileAndPathName = fullfile(FinalPath,FinalSpliceName);

@@ -35,6 +35,7 @@ function handles = WriteSQLFiles(handles)
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %pathnametextVAR01 = Enter the directory where the SQL files are to be saved?  Type period (.) for default output directory.
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -56,6 +57,7 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if handles.Current.NumberOfModules == 1
     error('There is no pipeline to write an SQL file.');
@@ -67,7 +69,7 @@ end
 
 if CurrentModuleNum ~= handles.Current.NumberOfModules
     if isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
-        error(['WriteSQLFiles must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
+        error([ModuleName, ' must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
     end
 end;
 
@@ -101,12 +103,12 @@ end
 if DoWriteSQL,
     % Initial checking of variables
     if isempty(DataPath)
-        error('No path specified in the WriteSQLFiles module.');
+        error(['No path specified in the ', ModuleName, ' module.']);
     elseif ~exist(DataPath,'dir')
-        error('Cannot locate the specified directory in the WriteSQLFiles module.');
+        error(['Cannot locate the specified directory in the ', ModuleName, ' module.']);
     end
     if isempty(DatabaseName)
-        error('No database specified in the WriteSQLFiles module.');
+        error(['No database specified in the ', ModuleName, ' module.']);
     end
     
     %%% This is necessary to make sure the export works with the last
@@ -120,6 +122,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed if it was previously open.

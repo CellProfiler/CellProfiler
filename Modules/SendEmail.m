@@ -32,22 +32,16 @@ function handles = SendEmail(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = Send e-mails to these e-mail addresses
 %defaultVAR01 = default@default.com
@@ -102,6 +96,7 @@ Specified5Email = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 %%%%%%%%%%%%%%%%%%%%%
 %%% SENDING EMAILS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 setpref('Internet','SMTP_Server',SMTPServer);
 setpref('Internet','E_mail',AddressFrom);
@@ -151,6 +146,3 @@ end
 drawnow
 
 %%% STANDARD HELP STATEMENTS THAT ARE UNNECESSARY FOR THIS MODULE:
-
-
-

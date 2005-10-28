@@ -32,22 +32,16 @@ function handles = Resize(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the image to be resized?
 %infotypeVAR01 = imagegroup
@@ -99,17 +93,15 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the Resize module could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(fieldname);
 
 %%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS%%%
+%%% IMAGE ANALYSIS%%
 %%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 if ResizingFactor == 1
     ResizeData = SpecificSize;
@@ -122,7 +114,7 @@ elseif strncmpi(InterpolationMethod,'L',1) == 1
     InterpolationMethod = 'bilinear';
 elseif strncmpi(InterpolationMethod,'C',1) == 1
     InterpolationMethod = 'bicubic';
-else error('Image processing was canceled because you must enter "N", "L", or "C" for the interpolation method in the Resize Images module.')
+else error(['Image processing was canceled in the ', ModuleName, ' module because you must enter "N", "L", or "C" for the interpolation method in the Resize Images module.'])
 end
 
 ResizedImage = imresize(OrigImage,ResizeData,InterpolationMethod);
@@ -131,7 +123,7 @@ ResizedImage = imresize(OrigImage,ResizeData,InterpolationMethod);
 %%% rescaled here.
 if strncmpi(InterpolationMethod,'bicubic',1) == 1
     if min(OrigImage(:)) < 0 | max(OrigImage(:)) > 1
-        error('Image processing was canceled because the intensity of the image coming into the Resize module is outside the range 0 to 1')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the intensity of the image coming into the Resize module is outside the range 0 to 1'])
     else
         %%% As long as the incoming image was within 0 to 1, it's ok to
         %%% truncate the resized image at 0 and 1 without losing much image
@@ -142,11 +134,9 @@ if strncmpi(InterpolationMethod,'bicubic',1) == 1
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
+%%% DISPLAY RESULTS %%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -176,8 +166,6 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% The Resized image is saved to the handles structure so it can be
 %%% used by subsequent modules.

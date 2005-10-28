@@ -42,6 +42,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = Output files should be saved every Nth image set (1,2,3,...  Default = 1). Note: the output file is always saved after the first or last image set is processed, no matter what is entered here.
 %defaultVAR01 = 1
@@ -79,15 +80,17 @@ handles.Pipeline = tempPipe;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 try SaveWhen = str2num(SaveWhen);
-catch error('The number of image sets must be entered as a number in the Speed Up CellProfiler module.')
+catch error('The number of image sets must be entered as a number in the ', ModuleName, ' module.')
 end
 handles.Current.SaveOutputHowOften = SaveWhen;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure

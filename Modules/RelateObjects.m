@@ -33,6 +33,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What objects are to become subobjects?
 %infotypeVAR01 = objectgroup
@@ -56,7 +57,7 @@ drawnow
 fieldname = ['Segmented', SubObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Create Subobjects module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Create Subobjects module that the primary objects were named ', SubObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Create Subobjects module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Create Subobjects module that the primary objects were named ', SubObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
 end
 SubObjectLabelMatrix = handles.Pipeline.(fieldname);
 
@@ -72,6 +73,7 @@ ParentObjectLabelMatrix = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% This line creates two rows containing all values for both label matrix
 %%% images. It then takes the unique rows (no repeats), and sorts them

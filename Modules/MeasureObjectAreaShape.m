@@ -67,11 +67,13 @@ function handles = MeasureObjectAreaShape(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the segmented objects that you want to measure?
 %choiceVAR01 = Do not use
@@ -140,21 +142,22 @@ for i = 1:length(ObjectNameList)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    drawnow
 
     %%% Retrieves the label matrix image that contains the segmented objects which
     %%% will be measured with this module.
     fieldname = ['Segmented', ObjectName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing has been canceled. Prior to running the Measure Shape module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Shape module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Shape module cannot locate this image.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Shape module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Shape module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Shape module cannot locate this image.']);
     end
     LabelMatrixImage = handles.Pipeline.(fieldname);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    drawnow
+    
     %%% Initialize
     Basic = [];
     BasicFeatures    = {'Area',...

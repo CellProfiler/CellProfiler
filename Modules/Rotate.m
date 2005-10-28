@@ -33,6 +33,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the image to be rotated?
 %infotypeVAR01 = imagegroup
@@ -89,7 +90,7 @@ Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 drawnow
 
 if ~isfield(handles.Pipeline, ImageName)
-    error(['Image processing has been canceled. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
 end
 
 OrigImage = handles.Pipeline.(ImageName);
@@ -129,7 +130,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         if strcmp(IndividualOrOnce,'Individually')
             Answers = inputdlg({'What is the first pixel?' 'What is the second pixel?'}, 'Enter coordinates', 1, {'1,1' '100,5'});
             if isempty(Answers) == 1
-                error('Image processing was canceled during the rotate module.')
+                error(['Image processing was canceled in the ', ModuleName, ' module.'])
             end
             Pixel1 = str2num(Answers{1});
             Pixel2 = str2num(Answers{2});
@@ -162,7 +163,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         if strcmp(IndividualOrOnce,'Individually')
             Answers = inputdlg({'Enter the angle by which you want to rotate the image'});
             if isempty(Answers) == 1
-                error('Image processing was canceled during the rotate module.')
+                error(['Image processing was canceled in the ', ModuleName, ' module.'])
             end
             AngleToRotateDegrees = str2num(Answers{1});
         elseif strcmp(RotateMethod,'Only Once')

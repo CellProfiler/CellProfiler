@@ -51,16 +51,16 @@ function handles = MergeBatchOutput(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber; 
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %pathnametextVAR01 = What is the path to the directory where the batch files were saved?  Type period (.) for default output directory.
 BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -74,6 +74,7 @@ BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if strncmp(BatchPath,'.',1)
     if length(BatchPath) == 1
@@ -129,6 +130,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed if it was previously open.

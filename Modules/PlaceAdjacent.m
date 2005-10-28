@@ -31,18 +31,16 @@ function handles = PlaceAdjacent(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%
+%%% VARIABLES %%
+%%%%%%%%%%%%%%%%
 drawnow
-
-%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
-
-
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the first image to be placed?
 %infotypeVAR01 = imagegroup
@@ -125,7 +123,7 @@ for i=1:length(ImageName)
         %%% button callback.)  That callback recognizes that an error was
         %%% produced because of its try/catch loop and breaks out of the image
         %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled because the Place Adjacent module could not find the input image.  It was supposed to be named ', ImageName1, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName1, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
     OrigImage{i} = handles.Pipeline.(fieldname);
@@ -139,6 +137,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Check that the images are the same height or width and place them
 %%% adjacent to each other.
@@ -146,7 +145,7 @@ end
 if strcmpi(HorizontalOrVertical,'H')
     for i=1:(length(OrigImage)-1)
         if size(OrigImage{i},1) ~= size(OrigImage{i+1},1)
-            error('Image processing was canceled because the two input images must have the same height if they are to be placed horizontally adjacent to each other.')
+            error(['Image processingwas canceled in the ', ModuleName, ' module because the two input images must have the same height if they are to be placed horizontally adjacent to each other.'])
         end
         %%% If one of the images is multidimensional (color), the other
         %%% one is replicated to match its dimensions.
@@ -168,7 +167,7 @@ if strcmpi(HorizontalOrVertical,'H')
 elseif strcmpi(HorizontalOrVertical,'V')
     for i=1:(length(OrigImage)-1)
         if size(OrigImage{i},2) ~= size(OrigImage{i+1},2)
-            error('Image processing was canceled because the two input images must have the same height if they are to be placed horizontally adjacent to each other.')
+            error(['Image processing was canceled in the ', ModuleName, ' module because the two input images must have the same height if they are to be placed horizontally adjacent to each other.'])
         end
         %%% If one of the images is multidimensional (color), the other
         %%% one is replicated to match its dimensions.
@@ -188,7 +187,7 @@ elseif strcmpi(HorizontalOrVertical,'V')
     end
     AdjacentImage = TempAdjacentImage;
 else
-    error('Image processing was canceled because you must enter H or V to specify whether to place the images adjacent to each other horizontally or vertically.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter H or V to specify whether to place the images adjacent to each other horizontally or vertically.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

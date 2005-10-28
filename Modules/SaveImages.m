@@ -78,16 +78,16 @@ function handles = SaveImages(handles)
 %
 % $Revision$
 
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the images you want to save (If you would like to save a figure, enter the module number here)?
 %infotypeVAR01 = imagegroup
@@ -183,7 +183,7 @@ drawnow
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
+drawnow
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     try
@@ -195,7 +195,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         else
             Spaces = isspace(FileName);
             if any(Spaces)
-                error('Image processing was canceled because you have entered one or more spaces in the box of text for the filename of the image in the Save Images module.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image in the Save Images module.'])
             end
             FileName = ImageFileName;
         end
@@ -207,7 +207,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         if ~strcmp(Appendage,'\')
             Spaces = isspace(Appendage);
             if any(Spaces)
-                error('Image processing was canceled because you have entered one or more spaces in the box of text for the filename of the image in the Save Images module.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image in the Save Images module.'])
             end
             FileName = [FileName Appendage];
         end
@@ -223,12 +223,12 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
 
     %%% Makes sure that the File Directory specified by the user exists.
     if ~isdir(PathName)
-        error(['Image processing was canceled because the specified directory "', PathName, '" in the Save Images module does not exist.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" in the Save Images module does not exist.']);
     end
 
     if ~strcmp(FileFormat,'fig')
         if ~isfield(handles.Pipeline, ImageName)
-            error(['Image processing was canceled because the Save Images module could not find the input image.  It was supposed to be named ', ImageName, ' but that does not exist.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but that does not exist.'])
         end
         Image = handles.Pipeline.(ImageName);
         
@@ -243,7 +243,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
 
         %%% Checks whether the file format the user entered is readable by Matlab.
         if ~any(strcmp(FileFormat,CPimread)) && ~strcmp(FileFormat,'avi')
-            error('The image file type entered in the Save Images module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
+            error('The image file type entered in the ', ModuleName, ' module is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab.')
         end
     end
 
@@ -256,9 +256,9 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         %%% frame of the movie.
         if exist(FileAndPathName) == 2
             try
-                Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
+                Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
             catch
-                error(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
+                error(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
             end
             if strcmp(Answer,'Skip Module')
                 return;
@@ -273,7 +273,8 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% SAVE IMAGE TO HARD DRIVE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    drawnow
+    
     FileSavingParameters = [];
     if ~strcmp(BitDepth,'8')
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
@@ -303,13 +304,13 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         try
             eval(['save(''',FileAndPathName, ''',''Image'')']);
         catch
-            error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+            error(['In the ', ModuleName, ' module, the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmp(FileFormat,'fig')
         try
             eval(['saveas(FigureHandle,FileAndPathName,''fig'')']);
         catch
-            error(['In the save images module, the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+            error(['In the ', ModuleName, ' module, the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi')
         if handles.Current.SetBeingAnalyzed == 1 &&  strcmp(CheckOverwrite,'Y')
@@ -319,7 +320,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             %%% of the movie.
             if exist(FileAndPathName) == 2
                 try
-                    Answer = CPquestdlg(['The settings in the Save Images module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
+                    Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
                 catch
                     error (['Turn off checking overwriting dialogbox on cluster']);
                 end
@@ -382,7 +383,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             %%% already stored in Movie.colormap.
             if IsRGB == 1
                 try movie2avi(Movie,FileAndPathName)
-                catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
+                catch error(['There was an error saving the movie to the hard drive in the ', ModuleName, ' module.'])
                 end
             else
                 %%% Specifying the size of the colormap is critical
@@ -390,7 +391,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
                 %%% the avi format is always 8-bit (=256 levels).
                 eval(['ChosenColormap = colormap(',ColorMap,'(256));']);
                 try movie2avi(Movie,FileAndPathName,'colormap',ChosenColormap)
-                catch error('There was an error saving the movie to the hard drive in the SaveImages module.')
+                catch error(['There was an error saving the movie to the hard drive in the ', ModuleName, ' module.'])
                 end
             end
         end
@@ -468,7 +469,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     else
         try eval(['imwrite(Image, FileAndPathName, FileFormat', FileSavingParameters,')']);
         catch
-            error(['In the save images module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+            error(['In the ', ModuleName, ' module, the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
         end
     end
 end

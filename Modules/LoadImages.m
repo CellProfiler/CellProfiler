@@ -156,6 +156,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = How do you want to load these files?
 %choiceVAR01 = Text-Exact match
@@ -262,13 +263,14 @@ if strcmp(LoadChoice,'Order')
     TextToFind = str2num(char(TextToFind));
     %%% Checks whether the position in set exceeds the number per set.
     if ImagesPerSet < max(TextToFind)
-        error(['Image processing was canceled during the Load Images Order module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Extracting the list of files to be analyzed occurs only the first time
 %%% through this module.
@@ -284,7 +286,7 @@ if SetBeingAnalyzed == 1
     end
     SpecifiedPathname = Pathname;
     if ~exist(SpecifiedPathname,'dir')
-        error(['Image processing was canceled because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
     end
 
     if strcmp(LoadChoice,'Order')
@@ -296,13 +298,13 @@ if SetBeingAnalyzed == 1
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
-                errordlg(['Image processing was canceled because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
+                errordlg(['Image processing was canceled in the ', ModuleName, ' module because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
             end
 
             %%% Determines the number of image sets to be analyzed.
             NumberOfImageSets = length(FileNames)/ImagesPerSet;
             if rem(NumberOfImageSets,1) ~= 0
-                errordlg(sprintf('Image processing was canceled because because the number of image files (%d) found in the specified directory is not a multiple of the number of images per set (%d), according to the Load Images Order module.',length(FileNames),ImagesPerSet));
+                errordlg(['Image processing was canceled in the ', ModuleName, ' module becauses the number of image files (%d) found in the specified directory is not a multiple of the number of images per set (%d), according to the Load Images Order module.',length(FileNames),ImagesPerSet)])
             end
             handles.Current.NumberOfImageSets = NumberOfImageSets;
 
@@ -326,13 +328,13 @@ if SetBeingAnalyzed == 1
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
-                errordlg(['Image processing was canceled because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesOrder module.'])
+                errordlg(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesOrder module.'])
             end
 
             %%% Determines the number of movie sets to be analyzed.
             NumberOfMovieSets = fix(length(FileNames)/ImagesPerSet);
             if rem(NumberOfMovieSets,1) ~= 0
-                errordlg(sprintf('Image processing was canceled because because the number of movie files (%d) found in the specified directory is not a multiple of the number of movies per set (%d), according to the LoadMoviesOrder module.',length(FileNames),MoviesPerSet));
+                errordlg(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (%d) found in the specified directory is not a multiple of the number of movies per set (%d), according to the LoadMoviesOrder module.',length(FileNames),MoviesPerSet))
             end
             handles.Current.NumberOfMovieSets = NumberOfMovieSets;
 
@@ -346,7 +348,7 @@ if SetBeingAnalyzed == 1
                     CurrentMovieFileName = char(FileList(MovieFileNumber));
                     if strcmpi(FileFormat,'avi') == 1
                         try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                        catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
                         end
                         NumFrames = MovieAttributes.NumFrames;
                         for FrameNumber = 1:NumFrames
@@ -365,7 +367,7 @@ if SetBeingAnalyzed == 1
                                 %%% Puts the frame number into the FrameByFrameFileList in the second row.
                                 FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                             end
-                        catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a stk file.'])
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a stk file.'])
                         end
                     end
                     StartingPositionForThisMovie = StartingPositionForThisMovie + NumFrames;
@@ -425,7 +427,7 @@ if SetBeingAnalyzed == 1
                 FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
-                    error(['Image processing was canceled because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
+                    error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
                 end
                 %%% Saves the File Lists and Path Names to the handles structure.
                 fieldname = ['FileList', ImageName{n}];
@@ -443,14 +445,14 @@ if SetBeingAnalyzed == 1
                 FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
-                    error(['Image processing was canceled because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesText module.'])
+                    error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesText module.'])
                 end
                 StartingPositionForThisMovie = 0;
                 for MovieFileNumber = 1:length(FileList)
                     CurrentMovieFileName = char(FileList(MovieFileNumber));
                     if strcmpi(FileFormat,'avi') == 1
                         try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                        catch error(['Image processing was canceled because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
                         end
                         NumFrames = MovieAttributes.NumFrames;
                         for FrameNumber = 1:NumFrames

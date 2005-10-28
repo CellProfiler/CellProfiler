@@ -90,6 +90,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = Which object would you like to use for the numerator (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR01 = Image
@@ -163,7 +164,7 @@ DenominatorMeasurements = handles.Measurements.(DenomObjectName).(DenomMeasure){
 DenominatorMeasurements = DenominatorMeasurements(:,DenomFeatureNumber);
 
 if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
-    error(['The specified object names ',NumObjectName,' and ',DenomObjectName,' in the MeasureRatios do not have the same object count.']);
+    error(['The specified object names ',NumObjectName,' and ',DenomObjectName,' in the ', ModuleName, ' do not have the same object count.']);
 end
 
 try
@@ -188,6 +189,7 @@ end
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
 if SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure
     %%% window is closed the first time through the module.

@@ -51,11 +51,13 @@ function handles = LoadText(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %filenametextVAR01 = What is the file containing the text that you want to load?
 TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -70,6 +72,7 @@ FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if handles.Current.SetBeingAnalyzed == 1
     %%% Parse text file %%%

@@ -56,22 +56,16 @@ function handles = StretchAlignCrop(handles)
 %
 % $Revision$
 
-
-
-
-drawnow
-
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the traced images?
 %infotypeVAR01 = imagegroup
@@ -120,7 +114,7 @@ PrintedWidth = PrintedImageSizeNumerical(2);
 %%% Checks that the page orientation is a valid entry
 if strcmp(upper(Orientation),'PORTRAIT') ~= 1
     if strcmp(upper(Orientation),'LANDSCAPE') ~= 1
-        error('Image processing was canceled because you have not entered a valid response for the page orientaion in the AlignAndCrop module.  Type either landscape or portrait and try again.')
+        error(['Image processing was canceled in the ', ModuleName, ' module because you have not entered a valid response for the page orientaion in the AlignAndCrop module.  Type either landscape or portrait and try again.'])
     end
 end
 
@@ -132,7 +126,7 @@ if isfield(handles.Pipeline, TracedImageName) == 0
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the AlignAndCrop module could not find the input image.  It was supposed to be named ', TracedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', TracedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 TracedImage = handles.Pipeline.(TracedImageName);
@@ -146,7 +140,7 @@ if isfield(handles, RealImageName) == 0
     %%% button callback.)  That callback recognizes that an error was
     %%% produced because of its try/catch loop and breaks out of the image
     %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled because the AlignAndCrop module could not find the input image.  It was supposed to be named ', RealImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', RealImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
 RealImage = handles.Pipeline.(RealImageName);
@@ -156,8 +150,6 @@ RealImage = handles.Pipeline.(RealImageName);
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-
 
 %%% creates a two-dimensional, b&w Traced Image to work with during this section
 ExTracedImage = TracedImage(:,:,1);
@@ -173,9 +165,9 @@ PreRealImage = im2bw(ExRealImage,.5);
 %%% real one
 drawnow
 if TracedX < RealX
-    error('Image processing was canceled in the AlignAndCrop module because the real image is wider than the traced image. Make sure that the resolution is the same for both images.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because the real image is wider than the traced image. Make sure that the resolution is the same for both images.'])
 elseif TracedY < RealY
-    error('Image processing was canceled in the AlignAndCrop module because the real image is taller than the traced image.  Make sure that the resolution is the same for both images.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because the real image is taller than the traced image.  Make sure that the resolution is the same for both images.'])
 end
 
 %%% Finds the resolution along both axes for both sets of images
@@ -291,8 +283,6 @@ CroppedAlignedRealImage = imcrop(AlignedRealImage,CropRectARI);
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -307,8 +297,6 @@ drawnow
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%% The adjusted image is saved to the handles structure so it can be used
 %%% by subsequent modules.
 handles.Pipeline.(FinishedTracedImageName) = CroppedAlignedTracedImage;
@@ -317,6 +305,7 @@ handles.Pipeline.(FinishedRealImageName) = CroppedAlignedRealImage;
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Written by Thouis R. Jones in the Align module
 

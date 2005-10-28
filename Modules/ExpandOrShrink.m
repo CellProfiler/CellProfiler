@@ -32,7 +32,7 @@ function handles = ExpandOrShrinkPrim(handles)
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-%    Additional image(s) are calculated by this module and can be 
+%    Additional image(s) are calculated by this module and can be
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
 %
@@ -137,7 +137,7 @@ SegmentedImage = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(ShrinkOrExpand),'Shrink') == 1
+if strcmp(ShrinkOrExpand,'Shrink') == 1
     %%% Shrinks the three incoming images.  The "thin" option nicely removes
     %%% one pixel border from objects with each iteration.  When carried out
     %%% for an infinite number of iterations, however, it produces one-pixel
@@ -167,13 +167,16 @@ if strcmp(ShrinkOrExpand),'Shrink') == 1
 elseif strcmp(ShrinkOrExpand,'Expand')
     %%% Converts the ShrinkingNumber entry to a number if possible
     %%% (or leaves it as Inf otherwise).
-    try ShrinkingNumber = str2double(ShrinkingNumber); end
-    if strcmp(ObjectChoice,'Primary')
-        ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thicken', ShrinkingNumber);
-        ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thicken', ShrinkingNumber);
+    try
+        ShrinkingNumber = str2double(ShrinkingNumber);
+        if strcmp(ObjectChoice,'Primary')
+            ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thicken', ShrinkingNumber);
+            ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thicken', ShrinkingNumber);
+        end
+        ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
+    catch
+        error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).']);
     end
-    ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
-    catch error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).'])
 end
 
 %%% For the ShrunkenSegmentedImage, the objects are relabeled so that their

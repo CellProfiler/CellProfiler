@@ -23,7 +23,7 @@ imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimA
 
 - (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
 
-GUI 1  (Requested by Anne) -(Joo Han might work on this) +++ Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
+-(UPDATED, BUT NEED TO TALK ABOUT COMBINING FEWER LABELS AND FEWER DECIMALS) (Requested by Anne) Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
 
 - Identify Secondary Test Mode?
 

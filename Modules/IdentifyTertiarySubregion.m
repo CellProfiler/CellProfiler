@@ -220,30 +220,22 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-
-ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
-SecondaryObjectImage = CPlabel2rgb(handles,SecondaryObjectImage);
-PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
-
-drawnow
-
-%%% Activates the appropriate figure window.
-CPfigure(handles,ThisModuleFigureNumber);
-
-subplot(2,2,1); imagesc(PrimaryObjectImage);
-title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-
-subplot(2,2,2); imagesc(SecondaryObjectImage);
-title([SecondaryObjectName, ' Image']);
-
-subplot(2,2,3); imagesc(ColoredLabelMatrixImage);
-title([SubregionObjectName, ' Image']);
-
-subplot(2,2,4); imagesc(FinalOutline);
-title([SubregionObjectName, ' Outlines']);
-
-CPFixAspectRatio(PrimaryObjectImage);
-
+if any(findobj == ThisModuleFigureNumber);
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
+    SecondaryObjectImage = CPlabel2rgb(handles,SecondaryObjectImage);
+    PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,ThisModuleFigureNumber);
+    subplot(2,2,1); imagesc(PrimaryObjectImage);
+    title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,2); imagesc(SecondaryObjectImage);
+    title([SecondaryObjectName, ' Image']);
+    subplot(2,2,3); imagesc(ColoredLabelMatrixImage);
+    title([SubregionObjectName, ' Image']);
+    subplot(2,2,4); imagesc(FinalOutline);
+    title([SubregionObjectName, ' Outlines']);
+    CPFixAspectRatio(PrimaryObjectImage);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

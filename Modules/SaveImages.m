@@ -175,14 +175,19 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 11
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    %%% Determines the figure number.
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    %%% The figure window is closed since there is nothing to display.
+    try close(ThisModuleFigureNumber)
+    end
+end
 drawnow
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
@@ -231,7 +236,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but that does not exist.'])
         end
         Image = handles.Pipeline.(ImageName);
-        
+
         if max(Image(:)) > 1 || min(Image(:)) < 0
             CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
         end
@@ -274,7 +279,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     %%% SAVE IMAGE TO HARD DRIVE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
-    
+
     FileSavingParameters = [];
     if ~strcmp(BitDepth,'8')
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];

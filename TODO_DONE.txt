@@ -1,5 +1,13 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/28)(IT IS ALSO AN OPTION IN SET PREFERENCES :) (Requested by Anne 10-26-05) -  It seems recently things changed so that the output file is not saved after every cycle of processing - it looks like it's saved only after the last one.  This might be related to Colin's changes in the Set Preferences feature that strips out the Pipeline prior to saving - he got the code for this from SppedUpCellProfiler, which also has code for not saving the output file every time through. I wonder if he changed CP to not save every time (this is a feature which should remain optional via the SpeedUpCellProfiler module).
+
+-(Mike 10/28) (Requested by Anne 10-26-05) - Why does MeasureObjectTexture have two identical variable descriptions?
+
+-(Mike 10/28) (Requested by Anne 10-26-05) - The IdentifyTertiary module seems to pop itself a window open even if I closed it during a previous cycle.
+
+-(Mike 10/28) (Requested by Anne 10-26-05) - I think the SaveImages window stays open (not sure). It should close itself during the first cycle.
+
 -(Mike 10/27) (Requested by Anne 10-18-2005) - Make the delete/backspace keys clear an algorithm in the pipeline.
 
 -(Mike 10/27) (Requested by Anne 10-26-2005) - Is there any way we can address Sophie's request to allow CP to skip image sets if there's an error?  This would be a nice feature. It should stop processing during the first image set if there are errors (so if there is a fundamental error like image not found, it doesn't just start cycling through and skipping *every* image cycle), but for subsequent image sets it should just skip the rest of the pipeline and maybe deposit a flag = 1 in handles.Measurement.Image.ErrorFlag , and handles.Measurements.Image.ErrorFlagFeatures = {'ImageSkipped'}

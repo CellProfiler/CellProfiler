@@ -214,7 +214,7 @@ NewImageSizeY = TracedY - 2*(YMargin);
 if isequal(NewImageSizeX,RRealX) == 0
     error('The value (TracedX - 2(XMargin)) is not the same as the value (RRealX) in the AlignAndCrop module')
 elseif isequal(NewImageSizeY,RRealY) == 0
-    error('The value (TracedY - 2(YMargin)) is not the same as the value (RRealY) in the AlignAndCrop')
+    error('The value (TracedY - 2(YMargin)) is not the same as the value (RRealY) in the AlignAndCrop module')
 end
 drawnow
 %%% rounds each number up, then subtracts the original from that and tests

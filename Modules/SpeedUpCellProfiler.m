@@ -83,7 +83,7 @@ handles.Pipeline = tempPipe;
 drawnow
 
 try SaveWhen = str2num(SaveWhen);
-catch error('The number of image sets must be entered as a number in the ', ModuleName, ' module.')
+catch error(['The number of image sets must be entered as a number in the ', ModuleName, ' module.'])
 end
 handles.Current.SaveOutputHowOften = SaveWhen;
 

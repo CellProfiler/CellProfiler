@@ -52,9 +52,9 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 %%% INITIAL SETTINGS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes just before CellProfiler is made visible.
 function CellProfiler_OpeningFcn(hObject, eventdata, handles, varargin) %#ok We want to ignore MLint error checking for this line.
@@ -586,7 +586,20 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
             handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
             savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
         elseif (varChoice == 2),
-            handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
+            for k = 1:handles.Settings.NumbersOfVariables(ModuleNum)
+                if strcmp(defVariableValues(k),'Pipeline Value')
+                    handles.Settings.VariableValues(ModuleNum,k) = {''};
+                    if exist('FixList')
+                        FixList(end+1,1) = ModuleNum;
+                        FixList(end+1,2) = k;
+                    else
+                        FixList(1,1) = ModuleNum;
+                        FixList(1,2) = k;
+                    end
+                else
+                    handles.Settings.VariableValues(ModuleNum,k) = defVariableValues(k);
+                end
+            end
             handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
             handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
             savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
@@ -600,8 +613,6 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
         break;
     end
 end
-
-
 
 if (varChoice == 0) || Failed == 1,
     %%% Update handles structure.
@@ -638,6 +649,16 @@ else
         handles.Current.NumberOfModules = i;
         CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
     end
+
+    if exist('FixList')
+        for k = 1:size(FixList,1)
+            PipeList = get(handles.VariableBox{FixList(k,1)}(FixList(k,2)),'string');
+            FirstValue = PipeList(1);
+            handles.Settings.VariableValues(FixList(k,1),FixList(k,2)) = FirstValue;
+        end
+    end
+
+    guidata(hObject,handles);
 
     set(handles.ModulePipelineListBox,'String',contents);
 
@@ -721,7 +742,7 @@ try
             istr = output(13:14);
             i = str2num(istr);
             VariableInfoTypes(i) = {displayval};
-            if ~strcmp(output((length(output)-4):end),'indep')
+            if ~strcmp(output((length(output)-4):end),'indep') && isempty(VariableValues{i})
                 VariableValues(i) = {'Pipeline Value'};
             end
         elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
@@ -931,9 +952,9 @@ if FileName ~= 0
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE DISPLAY BUTTONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% These buttons appear after analysis has begun, and disappear
 %%% when it is over.
@@ -954,9 +975,9 @@ for i=1:length(ModuleHighlighted),
 end
 guidata(hObject, handles);
 
-%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% ADD MODULE BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in AddModule.
 function AddModule_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
@@ -1485,9 +1506,9 @@ if ((val > 99) || (val < 0)),
 end
 twodigit = sprintf('%02d', val);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% REMOVE MODULE BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press for RemoveModule button.
 function RemoveModule_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -2065,9 +2086,9 @@ else
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE WINDOW SLIDER %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on slider movement.
 function slider1_Callback(hObject, eventdata, handles)
@@ -2141,9 +2162,9 @@ else
     guidata(handles.figure1,handles);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PIXEL SIZE EDIT BOX %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function PixelSizeEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Checks to see whether the user input is a number, and generates an
@@ -2164,9 +2185,9 @@ else
     guidata(gcbo, handles);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SET PREFERENCES BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function SaveButton_Callback (hObject, eventdata, handles)
 

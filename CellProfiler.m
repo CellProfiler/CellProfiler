@@ -2043,7 +2043,7 @@ elseif strcmp(InputType, 'popupmenu')
     ChoiceList = get(hObject,'string');
     if strcmp('Other..', ChoiceList{UserEntry})
         CustomInput = inputdlg('Enter your custom input: ');
-        if isempty(CustomInput)
+        if isempty(CustomInput{1})
             set(hObject,'value',1);
         else
             ChoiceList(numel(ChoiceList)) = CustomInput;
@@ -2055,8 +2055,8 @@ end
 
 if isempty(UserEntry)
     CPerrordlg('Variable boxes must not be left blank');
-    set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string', 'Fill in');
-    storevariable(ModuleNumber,VariableNumberStr, 'Fill in', handles);
+    set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string','Fill in');
+    storevariable(ModuleNumber,VariableNumberStr, 'Fill in',handles);
 else
     if ModuleNumber == 0,
         CPerrordlg('Something strange is going on: none of the analysis modules are active right now but somehow you were able to edit a setting.','weirdness has occurred');

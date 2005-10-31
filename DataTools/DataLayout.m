@@ -39,7 +39,7 @@ end
 load(fullfile(RawPathname, RawFileName));
 
 % Ask the user for the feature
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
 
 % Get the measurements cell array
 CellArray = handles.Measurements.(ObjectTypename).(FeatureType);

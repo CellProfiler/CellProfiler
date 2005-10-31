@@ -54,7 +54,7 @@ FontSize = handles.Current.FontSize;
 if PlotType == 1
 
     %%% Get the feature type
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
     if isempty(ObjectTypename),return,end
 
     %%% Extract the measurement and calculate mean and standard deviation
@@ -92,7 +92,7 @@ if PlotType == 1
 elseif PlotType == 2
     
     %%% Get the feature type
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
     if isempty(ObjectTypename),return,end
 
     %%% Extract the measurement and calculate mean and standard deviation
@@ -129,7 +129,7 @@ elseif PlotType == 2
 elseif PlotType == 3
 
     %%% Get the feature type
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
     if isempty(ObjectTypename),return,end
 
     %%% Extract the measurements 
@@ -157,11 +157,11 @@ elseif PlotType == 3
 elseif PlotType == 4
     
     %%% Get the feature type 1
-    [ObjectTypename1,FeatureType1,FeatureNo1] = CPgetfeature(handles);
+    [ObjectTypename1,FeatureType1,FeatureNo1] = CPgetfeature(handles,0);
     if isempty(ObjectTypename1),return,end
     
     %%% Get the feature type 2
-    [ObjectTypename2,FeatureType2,FeatureNo2] = CPgetfeature(handles);
+    [ObjectTypename2,FeatureType2,FeatureNo2] = CPgetfeature(handles,0);
     if isempty(ObjectTypename2),return,end
     
     %%% Extract the measurements

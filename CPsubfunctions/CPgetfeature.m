@@ -1,5 +1,5 @@
-function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,Suffix)
-%
+function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,ImageCheck,Suffix)
+
 %   This function takes the user through three list dialogs where a
 %   specific feature is chosen. It is possible to go back and forth
 %   between the list dialogs. The chosen feature can be identified
@@ -12,6 +12,10 @@ function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handle
 %   'Text'. If ommitted, the default is to look for suffix 'Features'.
 
 if nargin < 2
+    ImageCheck = 0;
+end
+
+if nargin < 3
     Suffix = {'Features'};
 end
 
@@ -24,11 +28,13 @@ end
 
 %%% Extract the fieldnames of measurements from the handles structure.
 MeasFieldnames = fieldnames(handles.Measurements);
-% for i=1:length(handles.Measurements)
-%     if MeasFieldnames{i}=='Image'
-%         MeasFieldnames(i) = [];
-%     end;
-% end;
+if ImageCheck == 1
+    for i=1:length(handles.Measurements)
+        if MeasFieldnames{i}=='Image'
+            MeasFieldnames(i) = [];
+        end
+    end
+end
 
 %%% Error detection.
 if isempty(MeasFieldnames)
@@ -41,7 +47,7 @@ dlgno = 1;                            % This variable keeps track of which list 
 while dlgno < 4
     switch dlgno
         case 1
-            [Selection, ok] = listdlg('ListString',MeasFieldnames, 'ListSize', [300 400],...
+            [Selection, ok] = listdlg('ListString',MeasFieldnames,'ListSize', [300 400],...
                 'Name','Select measurement',...
                 'PromptString','Choose an object type',...
                 'CancelString','Cancel',...

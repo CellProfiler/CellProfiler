@@ -70,7 +70,7 @@ end
 
 %%% Let the user select which feature to delete
 Suffix = {'Features','Text'};
-[ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,Suffix);
+[ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
 
 %%% If Cancel button pressed
 if isempty(ObjectTypename),return,end

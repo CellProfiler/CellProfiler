@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/31) (USES CPGETFEATURE, SHOULD THINK ABOUT IF ITS WORTH CHANGING) (Requested by Anne 10-26-05) - Show data on image - it has you choose an object type, but the first thing in the list is 'Image'. We should filter out the field 'Image' and not even allow the user to choose it, because it doesn't work with this tool.
+
 -(Mike 10/28)(IT IS ALSO AN OPTION IN SET PREFERENCES :) (Requested by Anne 10-26-05) -  It seems recently things changed so that the output file is not saved after every cycle of processing - it looks like it's saved only after the last one.  This might be related to Colin's changes in the Set Preferences feature that strips out the Pipeline prior to saving - he got the code for this from SppedUpCellProfiler, which also has code for not saving the output file every time through. I wonder if he changed CP to not save every time (this is a feature which should remain optional via the SpeedUpCellProfiler module).
 
 -(Mike 10/28) (Requested by Anne 10-26-05) - Why does MeasureObjectTexture have two identical variable descriptions?

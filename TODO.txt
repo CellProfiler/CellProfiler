@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
--(USES CPGETFEATURE, SHOULD THINK ABOUT IF ITS WOTH CHANGING) (Requested by Anne 10-26-05) - Show data on image - it has you choose an object type, but the first thing in the list is 'Image'. We should filter out the field 'Image' and not even allow the user to choose it, because it doesn't work with this tool.
-
 - (Requested by Anne 10-26-05) - As of SP3, I am pretty sure the propedit command works on the mac. There are several places in the code where propedit is used (e.g. ShowDataOnImage). We need to put in some 'if' statements - if you are on a mac and SP2 or earlier, then don't try running the propedit command (it makes matlab crash, or at least freak out a bit). otherwise, go ahead and run propedit as normal.
 
 - (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.

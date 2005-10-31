@@ -506,6 +506,8 @@ end
 %%% Displays histogram data for non-compressed histograms %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+VersionCheck = version;
+
 if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     %%% Calculates the square root in order to determine the dimensions for the
     %%% display window.
@@ -583,30 +585,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     NewFigurePosition = [NewFigurePosition(1) NewFigurePosition(2) NewFigurePosition(3) NewHeight];
     set(FigureHandle,'Position',NewFigurePosition)
     set(AxesHandles,'Units','normalized');
-
-    %%% Creates the frames and buttons and text for the "Change display"
-    %%% buttons.
-    %%% LeftFrame
-    %     uicontrol('Parent',FigureHandle, ...
-    %         'Unit',StdUnit, ...
-    %         'BackgroundColor',[0.5 0.5 0.7], ...
-    %         'Position',PointsPerPixel*[0 NewHeight-52 0.5*NewFigurePosition(3) 60], ...
-    %         'Units','Normalized',...
-    %         'Style','frame');
-    %     %%% RightFrame
-    %     uicontrol('Parent',FigureHandle, ...
-    %         'Unit',StdUnit, ...
-    %         'BackgroundColor',[0.5 0.5 0.7], ...
-    %         'Position',PointsPerPixel*[0.5*NewFigurePosition(3) NewHeight-52 0.5*NewFigurePosition(3) 60], ...
-    %         'Units','Normalized',...
-    %         'Style','frame');
-    %     %%% MiddleFrame
-    %     uicontrol('Parent',FigureHandle, ...
-    %         'Unit',StdUnit, ...
-    %         'BackgroundColor',[0.5 0.5 0.7], ...
-    %         'Position',PointsPerPixel*[100 NewHeight-26 240 30], ...
-    %         'Units','Normalized',...
-    %         'Style','frame');
+    
     %%% Creates text 1
     uicontrol('Parent',FigureHandle, ...
         'BackgroundColor',[.7 .7 .9], ...
@@ -637,8 +616,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     %%% These callbacks control what happens when display
     %%% buttons are pressed within the histogram display
     %%% window.
-
-    if strcmp(computer,'MAC') == 1
+    if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button1Callback = 'FigureHandle = gcf; AxesHandles = findobj(''Parent'', FigureHandle, ''Type'', ''axes''); drawnow';
     else
         Button1Callback = 'FigureHandle = gcf; AxesHandles = findobj(''Parent'', FigureHandle, ''Type'', ''axes''); try, propedit(AxesHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
@@ -652,7 +630,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
         'String','This window', ...
         'Style','pushbutton', ...
         'FontSize',handles.Current.FontSize);
-    if strcmp(computer, 'MAC') == 0
+    if ispc || str2num(VersionCheck(1:3)) >= 7.1
         Button2Callback = 'propedit(gca,''v6''); drawnow';
         uicontrol('Parent',FigureHandle, ...
             'Unit',StdUnit, ...
@@ -664,7 +642,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
             'Style','pushbutton', ...
             'FontSize',handles.Current.FontSize);
     end
-    if strcmp(computer,'MAC') == 1
+    if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button3Callback = 'FigureHandles = findobj(''Parent'', 0); AxesHandles = findobj(FigureHandles, ''Type'', ''axes''); axis(AxesHandles, ''manual''); drawnow';
     else
         Button3Callback = 'FigureHandles = findobj(''Parent'', 0); AxesHandles = findobj(FigureHandles, ''Type'', ''axes''); axis(AxesHandles, ''manual''); try, propedit(AxesHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end, drawnow';
@@ -678,7 +656,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
         'String','All windows', ...
         'Style','pushbutton', ...
         'FontSize',handles.Current.FontSize);
-    if strcmp(computer,'MAC') == 1
+    if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button4Callback = 'FigureHandle = gcf; PatchHandles = findobj(FigureHandle, ''Type'', ''patch''); drawnow';
     else
         Button4Callback = 'FigureHandle = gcf; PatchHandles = findobj(FigureHandle, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
@@ -692,7 +670,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
         'String','This window', ...
         'Style','pushbutton', ...
         'FontSize',handles.Current.FontSize);
-    if strcmp(computer,'MAC') == 1
+    if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button5Callback = 'AxisHandle = gca; PatchHandles = findobj(''Parent'', AxisHandle, ''Type'', ''patch''); drawnow';
     else
         Button5Callback = 'AxisHandle = gca; PatchHandles = findobj(''Parent'', AxisHandle, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
@@ -706,7 +684,7 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
         'String','Current', ...
         'Style','pushbutton', ...
         'FontSize',handles.Current.FontSize);
-    if strcmp(computer,'MAC') == 1
+    if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button6Callback = 'FigureHandles = findobj(''Parent'', 0); PatchHandles = findobj(FigureHandles, ''Type'', ''patch''); drawnow';
     else
         Button6Callback = 'FigureHandles = findobj(''Parent'', 0); PatchHandles = findobj(FigureHandles, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';

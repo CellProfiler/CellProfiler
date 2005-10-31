@@ -1,3 +1,4 @@
+- (Requested by Anne 10-31-05) - http://wiki.na-mic.org/Wiki/index.php/Main_Page has open source algorithms we could implement.
 
 - (Requested by Anne 10-31-05) - Add a nice alignment (image registration) algorithm for ImageJ that can be found at: http://bigwww.epfl.ch/algorithms.html
 Which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the same as the algorithm we already have in Align.m!

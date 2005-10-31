@@ -220,7 +220,7 @@ end
 %%% Checks whether the user has the Image Processing Toolbox.
 Answer = license('test','image_toolbox');
 if Answer ~= 1
-    warndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
+    CPwarndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
 
@@ -228,7 +228,7 @@ end
 try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
     addpath(Pathname)
 catch
-    CPCPerrordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
+    CPerrordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
 end
 
 %%% Checks figure handles for current open windows.
@@ -481,7 +481,7 @@ try
 catch error(['CellProfiler was unable to load ',fullfile(SettingsPathname,SettingsFileName),'. The file may be corrupt.']);
 end
 %%% Error Checking for valid settings file.
-if ~ (isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
+if ~(isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     CPerrordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     errFlg = 1;
     return
@@ -580,7 +580,6 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
             revisionConfirm = 1;
         end
         if (varChoice == 1),
-
             handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
             handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
             handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
@@ -592,6 +591,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
             handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
             savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
         elseif (varChoice == 0),
+            set(handles.ModulePipelineListBox,'String','No Modules Loaded');
             break;
         end
         clear defVariableInfoTypes;
@@ -847,17 +847,19 @@ descriptiontext = uicontrol(...
     'Style','text',...
     'Tag','descriptiontext');
 
+varChoice = 0;
+
 uiwait(LoadSavedWindowHandle);
 if exist('variableChoice','var') == 1
-    if isempty(variableChoice) ~= 1
+    if ~isempty(variableChoice)
         varChoice = variableChoice;
         clear global variableChoice;
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE PIPELINE BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function SavePipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -1011,8 +1013,6 @@ if ModuleNamedotm ~= 0,
     elseif length(differentPaths) > 1,
         warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' char(differentPaths{1}) ' will likely be used, but this is unpredictable.  Modules should have unique names that are not the same as already existing Matlab functions to avoid confusion.']);
     end
-
-
 
     %%% 3. The last two characters (=.m) are removed from the
     %%% ModuleName.m and called ModuleName.
@@ -1445,7 +1445,11 @@ if ModuleNamedotm ~= 0,
     handles.Settings.SelectedOption(ModuleNums) = SelectedOption;
     if ~RunInBG
         contents = get(handles.ModulePipelineListBox,'String');
-        contents{ModuleNums} = ModuleName;
+        if iscell(contents)
+            contents{ModuleNums} = ModuleName;
+        else
+            contents = {ModuleName};
+        end
         set(handles.ModulePipelineListBox,'String',contents);
     end
 
@@ -1510,7 +1514,12 @@ MaxInfo = get(handles.slider1,'UserData');
 for ModuleDelete = 1:length(ModuleHighlighted);
     handles = RemoveVariables(handles,ModuleHighlighted(ModuleDelete)-ModuleDelete+1);
     %%% Remove variable names from other modules
-    delete(findobj('Parent',handles.variablepanel,'Visible','on'));
+    for VariableNumber = 1:length(handles.VariableBox{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
+        delete(handles.VariableBox{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber))
+    end
+    for VariableNumber = 1:length(handles.VariableDescription{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
+        delete(handles.VariableDescription{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber))
+    end
     %%% 2. Removes the ModuleName from the handles structure.
     handles.Settings.ModuleNames(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     %%% 3. Clears the variable values in the handles structure.
@@ -1519,12 +1528,9 @@ for ModuleDelete = 1:length(ModuleHighlighted);
     handles.Settings.NumbersOfVariables(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     %%% 4. Clears the Variable Revision Numbers in each module slot from handles structure.
     handles.Settings.VariableRevisionNumbers(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
-
     handles.Settings.VariableInfoTypes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1,:) = [];
-
     handles.VariableDescription(ModuleHighlighted(ModuleDelete)-ModuleDelete+1)=[];
     handles.VariableBox(ModuleHighlighted(ModuleDelete)-ModuleDelete+1)=[];
-
     MaxInfo = [MaxInfo(1:(ModuleHighlighted(ModuleDelete)-ModuleDelete)) MaxInfo((ModuleHighlighted(ModuleDelete)-ModuleDelete+2):end)];
 end
 
@@ -1681,9 +1687,9 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
     ModulePipelineListBox_Callback(hObject, eventdata, handles)
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MODULE PIPELINE LISTBOX %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on selection change in ModulePipelineListBox.
 function ModulePipelineListBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -1737,18 +1743,17 @@ else
     CPhelpdlg('No module highlighted.');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function handles = RemoveVariables(handles,ModuleNumber)
 %%% This function removes all variables of a specified Module from the
 %%% handles structure.
+
 for i = 1:length(handles.VariableBox{ModuleNumber})
     InfoType = get(handles.VariableBox{ModuleNumber}(i),'UserData');
     StrSet = get(handles.VariableBox{ModuleNumber}(i),'string');
-
     if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
-
         ModList = findobj('UserData',InfoType(1:end-6));
         ModList2 = findobj('UserData',InfoType);
         ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(i));
@@ -1765,7 +1770,6 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
         end
 
         if isempty(OtherIndepWithSameValue)
-
             for m=1:numel(ModList)
                 PrevList = get(ModList(m),'string');
                 VarVal = get(ModList(m),'value');
@@ -1801,8 +1805,11 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
         end
     end
 end
-guidata(handles.figure1, handles);
+guidata(handles.figure1,handles);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% VARIABLE EDIT BOXES %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% This function stores a variable's value in the handles structure,
 %%% when given the Module Number, the Variable Number,

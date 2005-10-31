@@ -3,35 +3,31 @@ function handles = Crop(handles)
 % Help for the Crop module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Images can be cropped into a rectangle, ellipse, an arbitrary shape
+% provided by the user, or a shape identified by an identify module.
+% *************************************************************************
+%
 % Allows the images to be cropped in any shape:
 %
 % Shape: You can crop by rectangular coordinates, ellipse, or by an object
 % identified in a previous module. To crop by an object, simply type in the
-% name of that identified object instead of Rectangular or Ellipse. Please
+% name of that identified object instead of Rectangle or Ellipse. Please
 % see PlateFix for information on identifying crop plates.
 %
-% Rectangular: enter the pixel coordinates for the left, top and
-% right, bottom corners, and every image will be cropped at these
-% locations.  For the right, bottom corner, you can type "end" instead
+% Rectangle: enter the pixel coordinates for the left to right and
+% top to bottom pixels, and every image will be cropped at these
+% locations.  For the right and bottom pixels, you can type "end" instead
 % of a numerical pixel position if you want the right-most or
 % bottom-most pixel position to be calculated automatically.
 %
-% Ellipse Each: To draw an ellipse on each image, type EE. Each image
-% in the set will be opened as CellProfiler cycles through the image
-% sets and you will be asked to click five or more points to define an
+% Ellipse: You will be asked to click five or more points to define an
 % ellipse around the part of the image you want to analyze.  Keep in
 % mind that the more points you click, the longer it will take to
 % calculate the ellipse shape.
 %
-% Ellipse All: To draw one ellipse to be applied to all images, type
-% EA. In this case, you will be asked during the first image set's
-% processing to choose an image on which to draw an ellipse. This
-% ellipse will then be used for all the images that will be cycled
-% through.  This image need not be one that is part of the image set
-% you are analyzing. You will be asked to click five or more points to
-% define an ellipse around the part of the image you want to analyze.
-% Keep in mind that the more points you click, the longer it will take
-% to calculate the ellipse shape.
+% Individually or Once: This option will allow you to apply the same
+% cropping to all images or define each image seperately.
 %
 % File: You can crop images to any arbitrary shape by loading that
 % shape into CellProfiler. Use the LoadSingleImage module to load the
@@ -485,11 +481,16 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);
+    subplot(2,1,1);
+    ImageHandle = imagesc(OrigImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
-    subplot(2,1,2); imagesc(CroppedImage); title('Cropped Image');
+    subplot(2,1,2);
+    ImageHandle = imagesc(CroppedImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title('Cropped Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

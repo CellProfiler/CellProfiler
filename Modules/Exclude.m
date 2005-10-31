@@ -3,6 +3,11 @@ function handles = Exclude(handles)
 % Help for the Exclude Objects module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION:
+% Remove objects outside of specified region (nuclei outside tissue
+% region).
+% *************************************************************************
+%
 % This image analysis module allows you to delete the objects and
 % portions of objects that are outside of a region you specify (e.g.
 % nuclei outside of a tissue region).  The objects and the region
@@ -62,9 +67,9 @@ function handles = Exclude(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -73,12 +78,12 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = Ignore the objects you called
+%textVAR01 = What are the objects you want to ignore?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = If they are outside the region(s) called
+%textVAR02 = What is the region you want your objects to be in?
 %infotypeVAR02 = objectgroup
 MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
@@ -96,9 +101,9 @@ Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 01
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the images to be used for analysis.
@@ -133,9 +138,9 @@ if size(SegmentedObjectImage) ~= size(MaskRegionObjectImage)
     error(['Image processing was canceled in the ', ModuleName, ' module because the two images in which primary objects were identified (', MaskRegionName, ' and ', ObjectName, ') are not the same size.']);
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Pixels in the objects are deleted if they are not
@@ -167,9 +172,9 @@ if exist('SmallRemovedSegmentedObjectImage','var') == 1
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -192,26 +197,31 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     else  ColoredSegmentedObjectImage = SegmentedObjectImage;
     end
 
-
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(ColoredSegmentedObjectImage);
+    subplot(2,2,1);
+    ImageHandle = imagesc(ColoredSegmentedObjectImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(['Previously identified ', ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,2); imagesc(ColoredNewSegmentedObjectImage);
+    subplot(2,2,2);
+    ImageHandle = imagesc(ColoredNewSegmentedObjectImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,3); imagesc(ColoredMaskRegionObjectImage);
+    subplot(2,2,3);
+    ImageHandle = imagesc(ColoredMaskRegionObjectImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     CPFixAspectRatio(ColoredSegmentedObjectImage);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.

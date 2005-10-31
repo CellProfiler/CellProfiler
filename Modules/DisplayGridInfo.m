@@ -3,6 +3,10 @@ function handles = DisplayGridInfo(handles)
 % Help for the Display Grid Information module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Displays text info on grid (i.e. gene names)
+% *************************************************************************
+%
 % This module will display text information in a grid pattern.  It requires
 % that you define a grid in an earlier module using the DefineGrid module
 % and also load text data using the AddTextData module.  The data need to
@@ -31,9 +35,9 @@ function handles = DisplayGridInfo(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -71,9 +75,9 @@ DataName3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Retrieve grid info from previously run module.
@@ -94,29 +98,19 @@ XLocations = GridInfo.XLocations;
 LeftOrRight = GridInfo.LeftOrRight;
 TopOrBottom = GridInfo.TopOrBottom;
 
-% GridXLocations = VertLinesX(1,1:end-1);
-% GridXLocations = repmat(GridXLocations,Rows,1);
-% GridXLocations = reshape(GridXLocations,1,[]);
-%
-% GridYLocations = HorizLinesY(1,1:end-1) + YSpacing/2;
-% GridYLocations = repmat(GridYLocations',1,Cols);
-% GridYLocations = reshape(GridYLocations,1,[]);
-
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-%try
-%    delete(ThisModuleFigureNumber)
-%end
 %%% Opens a new window. Because the whole purpose of this module is to
 %%% display info, the user probably doesn't want to overwrite the
 %%% figure after each cycle.
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
-imagesc(handles.Pipeline.(ImageName));
+ImageHandle = imagesc(handles.Pipeline.(ImageName));
+set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
 colormap(handles.Preferences.IntensityColorMap);
 title(['Image #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
 line(VertLinesX,VertLinesY);

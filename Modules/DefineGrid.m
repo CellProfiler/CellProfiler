@@ -3,12 +3,17 @@ function handles = DefineGrid(handles)
 % Help for the Define Grid module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Produces a grid of desired specifications either manually or
+% automatically based on previosly identified objects (i.e. yeast spots)
+% *************************************************************************
+%
 % This module defines a grid that can be used by modules downstream.  If
 % you would like the grid to be identified automatically, then you need to
-% identify objects in a module before this one.  If you are using manual, you still need some
-% type of picture to get height and width of the image.  Note that
-% automatic mode will create a skewed grid if there is an object on the far
-% left or far right that is not supposed to be there. 
+% identify objects in a module before this one.  If you are using manual,
+% you still need some type of picture to get height and width of the image.
+% Note that automatic mode will create a skewed grid if there is an object
+% on the far left or far right that is not supposed to be there. 
 %
 % See also IdentifyObjectsInGrid, DisplayGridInfo.
 
@@ -31,9 +36,9 @@ function handles = DefineGrid(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -144,9 +149,9 @@ end
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The image to display is retrieved from the handles.
@@ -159,7 +164,7 @@ if strcmp(AutoOrManual,'Automatic')
     end
 elseif strcmp(AutoOrManual,'Manual')
     ImageToDisplay = handles.Pipeline.(ImageName);
-else error('This shoulde never happen. Check the code in Define Grid module.')
+else error('This should never happen. Check the code in Define Grid module.')
 end
 
 %%% If we are in 'Once' mode and this is not the first image cycle,
@@ -275,6 +280,7 @@ else
     GridInfo.TopOrBottom = TopOrBottom;
     GridInfo.RowsOrColumns = RowsOrColumns;
 
+    %%% Send data to subfunction to get grid lines.
     Grid = CPmakegrid(GridInfo);
 
     VertLinesX = Grid.VertLinesX;
@@ -288,9 +294,9 @@ else
     XLocations = Grid.XLocations;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
@@ -301,7 +307,8 @@ if any(findobj == ThisModuleFigureNumber)
     %%% delete(ThisModuleFigureNumber)
     %%% Recreates the figure.
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
-    imagesc(ImageToDisplay);
+    ImageHandle = imagesc(ImageToDisplay);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     colormap(handles.Preferences.IntensityColorMap)
     set(gca,'fontsize',handles.Current.FontSize)
     %%% Draws the lines.
@@ -399,9 +406,9 @@ if any(findobj == ThisModuleFigureNumber)
         'Callback',GridColorButtonCallback);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 GridInfo.XLocationOfLowestXSpot = XLocationOfLowestXSpot;
 GridInfo.YLocationOfLowestYSpot = YLocationOfLowestYSpot;

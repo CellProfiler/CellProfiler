@@ -16,3 +16,11 @@ CorrectIllumination_Calculate	Mike
 CreateBatchScripts		Mike
 
 CreateWebPage			Mike
+
+Crop				Mike
+
+DefineGrid			Mike
+
+DisplayGridInfo			Mike
+
+Exclude				Mike

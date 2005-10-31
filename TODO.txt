@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- Make overlay on Histogram Data Tool for control
+
 - (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.
 
 - What do you want as output for Calculate Statistics?
@@ -21,10 +23,6 @@ imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimA
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
-- (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
-
--(UPDATED, BUT NEED TO TALK ABOUT COMBINING FEWER LABELS AND FEWER DECIMALS) (Requested by Anne) Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
-
 - Identify Secondary Test Mode?
 
 UROP:
@@ -34,8 +32,6 @@ MergeBatchOutput
 Restart
 
 - (Requested by Anne 10-25-05) - ProcessOutlines needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
-
-- (Requested by Anne 10-20-05) - Do we want to set up a Wiki for cellprofiler.org? It would be great if certain people had access to change the site (e.g. only us!) and the rest of the world saw a non-editable version, but I don't know if that's possible - in other words, giving some people write permission and everyone else read permission, but also making all the editing related stuff not appear on the page. It would be annoying for everyone else to have all the extra clutter on pages. Most likely this won't work but I thought we should look into it.
 
 - Define Grid Changes: (NEED TO VERIFY)
   1. (DONE) What is the least amount of information needed to define grid?

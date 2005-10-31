@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 10/31) (Requested by Anne 10-10-05) (waiting for Ola) - Make MeasureImageTexture based on measureobjecttexture
+
+-(Mike 10/31) (going to set up SVN) (Requested by Anne 10-20-05) - Do we want to set up a Wiki for cellprofiler.org? It would be great if certain people had access to change the site (e.g. only us!) and the rest of the world saw a non-editable version, but I don't know if that's possible - in other words, giving some people write permission and everyone else read permission, but also making all the editing related stuff not appear on the page. It would be annoying for everyone else to have all the extra clutter on pages. Most likely this won't work but I thought we should look into it.
+
+-(Mike 10/31)(Requested by Anne) Histogram DataTool is kind of hacked together at the moment. Streamline it and update its help; possible other improvements: allow fewer labels, plus fewer decimals (right now, it's either-or). If you choose option P (percentage) rather than N (number), the y axis is still labeled 'Number of objects' rather than 'percentage of objects'.
+
 -(Mike 10/31) (Requested by Anne 10-26-05) - As of SP3, I am pretty sure the propedit command works on the mac. There are several places in the code where propedit is used (e.g. ShowDataOnImage). We need to put in some 'if' statements - if you are on a mac and SP2 or earlier, then don't try running the propedit command (it makes matlab crash, or at least freak out a bit). otherwise, go ahead and run propedit as normal.
 
 -(Mike 10/31) (USES CPGETFEATURE, SHOULD THINK ABOUT IF ITS WORTH CHANGING) (Requested by Anne 10-26-05) - Show data on image - it has you choose an object type, but the first thing in the list is 'Image'. We should filter out the field 'Image' and not even allow the user to choose it, because it doesn't work with this tool.

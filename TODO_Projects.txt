@@ -1,4 +1,6 @@
-VISION PROJECTS:
+
+- (Requested by Anne 10-31-05) - Add a nice alignment (image registration) algorithm for ImageJ that can be found at: http://bigwww.epfl.ch/algorithms.html
+Which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the same as the algorithm we already have in Align.m!
 
   - Write algorithms to compare hand-traced results to CellProfiler
        results quantitatively, then apply them to our hand-traced data
@@ -18,9 +20,6 @@ VISION PROJECTS:
        the gradient image rather than the original. 
 
      - Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996).
----------------------------------------------------
-
-PROBABLY DO NOT WANT TO INVEST TIME IN THESE IMMEDIATELY:
 
 - (Requested by Anne 10-13-05) - There is a fairly simple routine in Janssens, et al., Dev Genes Evol 2005 (215:374-381) for drosophila cells in embryos. It might be fun to implement this routine into a CP pipeline.
 

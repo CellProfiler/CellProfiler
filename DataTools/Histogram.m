@@ -485,12 +485,7 @@ FigureSettings{3} = FinalHistogramData;
 if strcmpi(GreaterOrLessThan,'A') ~= 1
     AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
     try
-        [ignore,Attributes] = fileattrib(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}));
-        if Attributes.UserWrite == 0
-            error(['You do not have permission to write ',fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'!']);
-        else
-            save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
-        end
+        save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
     catch errordlg('Saving did not work.')
     end
 end
@@ -827,12 +822,8 @@ image => each row is one image, bin => each row is one bin.
 (Actually, first letter only is checked, case insensitively.)
 %}
 %%% Open the file and name it appropriately.
-[ignore,Attributes] = fileattrib(FileName);
-if Attributes.UserWrite == 0
-    error(['You do not have permission to write ',FileName,'!']);
-else
-    fid = fopen(FileName, 'wt');
-end
+
+fid = fopen(FileName, 'wt');
 if fid < 0
     h = errordlg(['Unable to open output file ',FileName,'.']);
     waitfor(h);

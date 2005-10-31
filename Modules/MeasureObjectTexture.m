@@ -21,12 +21,12 @@ function handles = MeasureObjectTexture(handles)
 % Texture Measurements:
 %
 % Haralick Features:
-% These features are derived from the co-occurence matrix, which contains 
-% information about how image intensities in pixel with a certain position 
-% in relation to each other occur together. For example, how often does a 
+% These features are derived from the co-occurence matrix, which contains
+% information about how image intensities in pixel with a certain position
+% in relation to each other occur together. For example, how often does a
 % pixel with intensity 43 have a neighbor to the right with intensity
 % 48? The current implementation in CellProfiler uses a shift of 1 pixel to
-% the right for calculating the co-occurence matrix. A different set of 
+% the right for calculating the co-occurence matrix. A different set of
 % measurements is obtained for larger shifts, measuring texture on a larger
 % scale.
 %
@@ -59,13 +59,13 @@ function handles = MeasureObjectTexture(handles)
 % -------------------------------------------------------------------------
 % Gabor "wavelet" features
 %
-% These features are similar to wavelet features, and they are obtained by 
+% These features are similar to wavelet features, and they are obtained by
 % applying so-called Gabor filters to the image. The Gabor filters measures
 % the frequency content in different orientations. They are very similar to
 % wavelets, and in the current context they work exactly as wavelets, but
 % they are not wavelets in a strict mathematical definition. As currently
 % implemented, the frequency content of the object is measured along the x-
-% and y-axis (i.e., in two different orientations) and for three different 
+% and y-axis (i.e., in two different orientations) and for three different
 % scales, resulting in 2*3 = 6 measurements per object.
 %
 % See also MEASUREAREAOCCUPIED,
@@ -95,13 +95,11 @@ function handles = MeasureObjectTexture(handles)
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
-drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 %textVAR01 = What did you call the greyscale images you want to measure?
 %infotypeVAR01 = imagegroup
@@ -109,6 +107,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the objects that you want to measure?
+%choiceVAR02 = Image
 %choiceVAR02 = Do not use
 %infotypeVAR02 = objectgroup
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -144,6 +143,10 @@ ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
+%textVAR08 = What is the scale of texture?
+%defaultVAR08 = 3
+ScaleOfTexture = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+
 %%%VariableRevisionNumber = 02
 
 %%% Set up the window for displaying the results
@@ -158,21 +161,20 @@ end
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:6
     ObjectName = ObjectNameList{i};
-    if strcmp(ObjectName,'Do not use') == 1
+    if strcmp(ObjectName,'Do not use')
         continue
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-    
+
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImage".
     fieldname = ['', ImageName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Texture module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureObjectTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+        error(['Image processing has been canceled. Prior to running the Measure Texture module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureObjectTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
     end
     OrigImage = handles.Pipeline.(fieldname);
 
@@ -180,23 +182,24 @@ for i = 1:6
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
     if ndims(OrigImage) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
+        error('Image processing was canceled because the Measure Texture module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
     end
 
-    %%% Retrieves the label matrix image that contains the segmented objects which
-    %%% will be measured with this module.
-    fieldname = ['Segmented', ObjectName];
-    %%% Checks whether the image exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Texture module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Texture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+    if ~strcmp(ObjectName,'Image')
+        %%% Retrieves the label matrix image that contains the segmented objects which
+        %%% will be measured with this module.
+        fieldname = ['Segmented', ObjectName];
+        %%% Checks whether the image exists in the handles structure.
+        if isfield(handles.Pipeline, fieldname) == 0,
+            error(['Image processing has been canceled. Prior to running the Measure Texture module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Texture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+        end
+        LabelMatrixImage = handles.Pipeline.(fieldname);
     end
-    LabelMatrixImage = handles.Pipeline.(fieldname);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-    
+
     %%% Initilize measurement structure
     Haralick = [];
     HaralickFeatures = {'AngularSecondMoment',...
@@ -215,120 +218,145 @@ for i = 1:6
 
     Gabor = [];
     GaborFeatures    = {'Gabor1x',...
-        'Gabor1y',...
-        'Gabor2x',...
-        'Gabor2y',...
-        'Gabor3x',...
-        'Gabor3y'};
+        'Gabor1y'};
 
-    %%% Count objects
-    ObjectCount = max(LabelMatrixImage(:));
+    if strcmp(ObjectName,'Image')
+        ObjectCount = 1;
+    else
+        %%% Count objects
+        ObjectCount = max(LabelMatrixImage(:));
+    end
 
-    if ObjectCount > 0
+    if ObjectCount > 0 || strcmp(ObjectName,'Image')
 
         %%% Get Gabor features.
         %%% The Gabor features are calculated by convolving the entire
         %%% image with Gabor filters and then extracting the filter output
         %%% value in the centroids of the objects in LabelMatrixImage
 
-        % Adjust size of filter to size of objects in the image
-        % The centroids indicate where we should measure the Gabor
-        % filter output
-        tmp = regionprops(LabelMatrixImage,'Area','Centroid');
-        MedianArea = median(cat(1,tmp.Area));
-        sigma = sqrt(MedianArea/pi);                            % Set width of filter to the median radius
+        if ~strcmp(ObjectName,'Image')
+            % Adjust size of filter to size of objects in the image
+            % The centroids indicate where we should measure the Gabor
+            % filter output
+            tmp = regionprops(LabelMatrixImage,'Area','Centroid');
+            MedianArea = median(cat(1,tmp.Area));
 
-        % Round centroids and find linear index for them.
-        % The centroids are stored in [column,row] order.
-        Centroids = round(cat(1,tmp.Centroid));
-        Centroidsindex = sub2ind(size(LabelMatrixImage),Centroids(:,2),Centroids(:,1));
+            % Round centroids and find linear index for them.
+            % The centroids are stored in [column,row] order.
+            Centroids = round(cat(1,tmp.Centroid));
+            Centroidsindex = sub2ind(size(LabelMatrixImage),Centroids(:,2),Centroids(:,1));
+        else
+            MedianArea = size(OrigImage,1)*size(OrigImage,2);
+        end
+
+        sigma = sqrt(MedianArea/pi)/3;  % Set width of filter to a third of the median radius
 
         % Use Gabor filters with three different frequencies
-        f = [0.06 0.12 0.24];
+        f = 1/(2*ScaleOfTexture);
 
         % Angle direction, filter along the x-axis and y-axis
         theta = [0 pi/2];
 
-        % Create kernel coordinates
-        KernelSize = round(sigma);                                 % The filter size is set somewhat arbitrary
+        if ~strcmp(ObjectName,'Image')
+            % Create kernel coordinates
+            KernelSize = round(2.5*sigma); % The filter size is set somewhat arbitrary
+        else
+            KernelSize = max(size(OrigImage,1)/2,size(OrigImage,2)/2);
+        end
         [x,y] = meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
 
         % Apply Gabor filters and store filter outputs in the Centroid pixels
         GaborFeatureNo = 1;
         Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
         for m = 1:length(f)
-          for n = 1:length(theta)
+            for n = 1:length(theta)
 
-            % Calculate Gabor filter kernel
-            % Scale by 1000 to get measurements in a convenient range
-            g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-            g = g - mean(g(:));           % Important that the filters has DC zero, otherwise they will be sensitive to the intensity of the image
+                % Calculate Gabor filter kernel
+                % Scale by 1000 to get measurements in a convenient range
+                g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
+                g = g - mean(g(:));           % Important that the filters has DC zero, otherwise they will be sensitive to the intensity of the image
 
 
-            % Center the Gabor kernel over the centroid and calculate the filter response.
-            for k = 1:ObjectCount
+                % Center the Gabor kernel over the centroid and calculate the filter response.
+                if strcmp(ObjectName,'Image')
+                    % Cut patch
+                    p = OrigImage;
 
-              xmin1 = Centroids(k,1)-KernelSize;
-              xmax1 = Centroids(k,1)+KernelSize;
-              ymin1 = Centroids(k,2)-KernelSize;
-              ymax1 = Centroids(k,2)+KernelSize;
-              xmin2 = max(1,xmin1);
-              xmax2 = min(size(OrigImage,2),xmax1);
-              ymin2 = max(1,ymin1);
-              ymax2 = min(size(OrigImage,1),ymax1);
+                    if size(OrigImage,1) ~= size(g,1)
+                        p = [p;zeros(size(g,1)-size(p,1),size(p,2))];
+                    end
+                    
+                    if size(OrigImage,2) ~= size(g,2)
+                        p = [p zeros(size(p,1),size(g,2)-size(p,2))];
+                    end
+                    % Calculate the filter output
+                    Gabor(1,GaborFeatureNo) = abs(sum(sum(g.*p)));
+                else
+                    for k = 1:ObjectCount
+                        xmin1 = Centroids(k,1)-KernelSize;
+                        xmax1 = Centroids(k,1)+KernelSize;
+                        ymin1 = Centroids(k,2)-KernelSize;
+                        ymax1 = Centroids(k,2)+KernelSize;
+                        xmin2 = max(1,xmin1);
+                        xmax2 = min(size(OrigImage,2),xmax1);
+                        ymin2 = max(1,ymin1);
+                        ymax2 = min(size(OrigImage,1),ymax1);
 
-              % Cut patch
-              p = OrigImage(ymin2:ymax2,xmin2:xmax2);
+                        % Cut patch
+                        p = OrigImage(ymin2:ymax2,xmin2:xmax2);
 
-              % Pad with zeros if necessary to match the filter kernel size
-              if xmin1 < xmin2
-                p = [zeros(size(p,1),xmin2 - xmin1) p];
-              end
-              if xmax1 > xmax2
-                p = [p zeros(size(p,1),xmax1 - xmax2)];
-              end
+                        % Pad with zeros if necessary to match the filter kernel size
+                        if xmin1 < xmin2
+                            p = [zeros(size(p,1),xmin2 - xmin1) p];
+                        elseif xmax1 > xmax2
+                            p = [p zeros(size(p,1),xmax1 - xmax2)];
+                        end
 
-              if ymin1 < ymin2
-                p = [zeros(ymin2 - ymin1,size(p,2));p];
-              end
-              if ymax1 > ymax2
-                p = [p;zeros(ymax1 - ymax2,size(p,2))];
-              end
+                        if ymin1 < ymin2
+                            p = [zeros(ymin2 - ymin1,size(p,2));p];
+                        elseif ymax1 > ymax2
+                            p = [p;zeros(ymax1 - ymax2,size(p,2))];
+                        end
 
-              % Calculate the filter output
-              Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
+                        % Calculate the filter output
+                        Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
+                    end
+                end
+
+                GaborFeatureNo = GaborFeatureNo + 1;
             end
-
-            GaborFeatureNo = GaborFeatureNo + 1;
-          end
         end
 
 
-        %%% Get Haralick features.
-        %%% Have to loop over the objects
-        Haralick = zeros(ObjectCount,13);
-        [sr sc] = size(LabelMatrixImage);
-        props = regionprops(LabelMatrixImage,'PixelIdxList');   % Get pixel indexes in a fast way
-        for Object = 1:ObjectCount
-
-            %%% Cut patch so that we don't have to deal with entire image
-            [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
-            rmax = min(sr,max(r));
-            rmin = max(1,min(r));
-            cmax = min(sc,max(c));
-            cmin = max(1,min(c));
-            BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-            Greyim = OrigImage(rmin:rmax,cmin:cmax);
-
+        if strcmp(ObjectName,'Image')
+            [m,n] = size(OrigImage);
+            BWim = ones(m,n);
             %%% Get Haralick features
-            Haralick(Object,:) = CalculateHaralick(Greyim,BWim);
-        end
+            Haralick(1,:) = CalculateHaralick(OrigImage,BWim,ScaleOfTexture);
+        else
+            %%% Get Haralick features.
+            %%% Have to loop over the objects
+            Haralick = zeros(ObjectCount,13);
+            [sr sc] = size(LabelMatrixImage);
+            props = regionprops(LabelMatrixImage,'PixelIdxList');   % Get pixel indexes in a fast way
+            for Object = 1:ObjectCount
+                %%% Cut patch so that we don't have to deal with entire image
+                [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
+                rmax = min(sr,max(r));
+                rmin = max(1,min(r));
+                cmax = min(sc,max(c));
+                cmin = max(1,min(c));
+                BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+                Greyim = OrigImage(rmin:rmax,cmin:cmax);
 
+                %%% Get Haralick features
+                Haralick(Object,:) = CalculateHaralick(Greyim,BWim,0);
+            end
+        end
     end
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
     handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
-
 
     %%% Report measurements
     FontSize = handles.Current.FontSize;
@@ -348,51 +376,51 @@ for i = 1:6
             'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average texture features for ',ImageName,', image set #%d'],handles.Current.SetBeingAnalyzed));
 
         % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.25 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
         % Text for Gabor features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.25 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Gabor features:');
-        for k = 1:6
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.25 0.03],...
+        for k = 1:2
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',GaborFeatures{k});
         end
 
         % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.25 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
         for k = 1:10
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.25 0.03],...
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','times',...
                 'fontsize',FontSize,'string',HaralickFeatures{k});
         end
 
         % The name of the object image
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.9 0.1 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.9 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'fontweight','bold','string',ObjectName);
 
         % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.85 0.1 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.85 0.2 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
         if ObjectCount > 0
             % Gabor features
-            for k = 1:6
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
+            for k = 1:2
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
             end
 
             % Haralick features
             for k = 1:10
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.5-0.04*k 0.1 0.03],...
+                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
             end
@@ -404,7 +432,7 @@ for i = 1:6
 end
 drawnow
 
-function H = CalculateHaralick(im,mask)
+function H = CalculateHaralick(im,mask,ScaleOfTexture)
 %
 % This function calculates so-called Haralick features, which are
 % based on the co-occurence matrix. The function takes two inputs:
@@ -447,14 +475,25 @@ for k = 1:Levels
     qim(find(im > BinEdges(k))) = k;
 end
 
+% if ScaleOfTexture == 0
+%     % Shift 1 step to the right
+%     im1 = qim(:,1:end-1); im1 = im1(:);
+%     im2 = qim(:,2:end);   im2 = im2(:);
+%
+%     % Remove cases where at least one position is
+%     % outside the mask.
+%     m1 = mask(:,1:end-1); m1 = m1(:);
+%     m2 = mask(:,2:end);   m2 = m2(:);
+% else
 % Shift 1 step to the right
-im1 = qim(:,1:end-1); im1 = im1(:);
-im2 = qim(:,2:end);   im2 = im2(:);
+im1 = qim(:,1:end-ScaleOfTexture); im1 = im1(:);
+im2 = qim(:,ScaleOfTexture+1:end); im2 = im2(:);
 
 % Remove cases where at least one position is
 % outside the mask.
-m1 = mask(:,1:end-1); m1 = m1(:);
-m2 = mask(:,2:end);   m2 = m2(:);
+m1 = mask(:,1:end-ScaleOfTexture); m1 = m1(:);
+m2 = mask(:,ScaleOfTexture+1:end); m2 = m2(:);
+
 index = (sum([m1 m2],2) == 2);
 im1 = im1(index);
 im2 = im2(index);
@@ -470,7 +509,6 @@ for k = 1:Levels
     end
 end
 P = P/length(im1);
-
 
 %%% Calculate features from the co-occurence matrix
 % First, pre-calculate a few quantities that are used in
@@ -548,11 +586,6 @@ H13 = real(sqrt(1-exp(-2*(HXY2-HXY))));             % An imaginary result has be
 
 H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 
-
-
-
-
-
 % % This function calculates Gabor features in a different way
 % % It may be better but it's also considerably slower.
 % % It's called by Gabor(Object,:) = CalculateGabor(Greyim,BWim,sigma);
@@ -605,4 +638,3 @@ H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
 %     end
 % end
 % G = G(:)';
-%

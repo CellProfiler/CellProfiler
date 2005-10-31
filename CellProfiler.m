@@ -3155,7 +3155,7 @@ else
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
                             %%% argument.
-                            eval(['handles = ',ModuleName,'(handles);'])
+                            handles = feval(ModuleName,handles);
                             if ishandle(SlotNumber)
                                 OldText = get(SlotNumber,'name');
                                 NewNum = handles.Current.SetBeingAnalyzed;
@@ -3279,10 +3279,11 @@ else
                 %%% Save everything, but don't want to write out
                 %%% StartingImageSet field.
                 handles.Current = rmfield(handles.Current,'StartingImageSet');
-                if (rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0 | handles.Current.SetBeingAnalyzed == 1) && strcmp(handles.Preferences.StripPipeline,'No') | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-                    %Removes images from he Pipeline
-                    if strcmp(handles.Preferences.StripPipeline,'Yes') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                if (rem(handles.Current.SetBeingAnalyzed,handles.Current.SaveOutputHowOften) == 0) || (handles.Current.SetBeingAnalyzed == 1) || (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets)
+                    %Removes images from the Pipeline
+                    if strcmp(handles.Preferences.StripPipeline,'Yes')
                         ListOfFields = fieldnames(handles.Pipeline);
+                        restorePipe = handles.Pipeline;
                         tempPipe = handles.Pipeline;
                         for i = 1:length(ListOfFields)
                             if all(size(tempPipe.(ListOfFields{i}))~=1)
@@ -3293,6 +3294,7 @@ else
                     end
                     eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
                         get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    handles.Pipeline = restorePipe;
                 end
                 %%% Restore StartingImageSet for those modules that
                 %%% need it.

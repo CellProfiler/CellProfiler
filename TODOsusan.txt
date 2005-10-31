@@ -1,40 +1,19 @@
 Susan's TODO list
 
-1.change WriteSQL module to export three files:
-
-   perimage -has current image data fields plus means and stdev for every measurement
-   perobject-keep same, 
-   ColumnNameLookup table --has all column names
-
-   The create SQL script file will also need to be updated for this change. 
-
- -- change ExportData(Excel) to use CPconvert sub function.
+1 -- change ExportData(Excel) to use CPconvert sub function.
 
 
-2. Improve automation of running jobs on the cluster - use some of the pending image sets below to start processing some images to get an idea of what automation we already have and decide what steps to improve.
-  license No. has been updated to WI's , didn't see any failed jobs related to this.
-  batchrun.sh script is completed on cluster which does svn update and submit the job at the same time. Queuetype has   
-      been added as another parameter of the script. There is no need to have 8 different scripts.
-  ask Ray for the script to check whether any job is failed , will modify to automaticly re-submit the failed jobs
+2. Improve automation of running jobs on the cluster -    ask Ray for the script to check whether any job is failed , will modify to automaticly re-submit the failed jobs
  
---fix bug in  IdentifySec 
+--fix bug in  IdentifySec and other measurement modules -Ray is working on it
 
 3. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication. 
-    --waiting for writeSQL module to be updated.
+    --waiting for  bug to fix to be updated.
 
 
 4. Kc 40x data (Fly217-220) - genome-wide screens! [wait to see how the CPvalid1 comes out and if the data format is good first].--ask Anne to double check the PIPE line
 
-
-
---change the CPmount.sh script as two script so user can open it either in terminal or GUi
-
-
---Re-orginize instruction documentation for microscope and post it on WIKI
---post all developerscript/doc on WIKI and remove them from SVN repository
---instructions for setting up SVN on cluster
---post pubs on WIKI
-
+ 
 - NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!--Started
 1. [NEW FROM ANNE: I have written a DVD with the movie and 3 pipelines (contained within OUT files) that need to be converted to the current version of the software. These are very old pipelines so there are likely to be a *lot* of changes necessary!  I have included a .zip archive of the CellProfiler code at the time these pipelines were made, so it might help you to install this old version of CellProfiler, remove your CellProfilerPreferences.mat file from the Matlab applications folder, set the path of MATLAB to look at this old version (rather than your new trunk version), start this old version of CellProfiler, and load the old pipelines and see what they look like.  I think you should be able to convert the old pipelines while i am gone, and then i can check them when I return.] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? Started to work on
 

@@ -1785,7 +1785,11 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
                 end
                 if strcmp(get(ModList(m),'style'),'popupmenu')
                     if strcmp(PrevList(VarVal),StrSet)
-                        NewStrSet = cat(1,PrevList(1:(VarVal-1)),PrevList((VarVal+1):end));
+                        if size(PrevList,1) == 1
+                            NewStrSet = PrevList;
+                        else
+                            NewStrSet = cat(1,PrevList(1:(VarVal-1)),PrevList((VarVal+1):end));
+                        end
                         set(ModList(m),'string',NewStrSet);
                         set(ModList(m),'value',1);
                         handles.Settings.VariableValues(ModNum,BoxNum) = NewStrSet(1);

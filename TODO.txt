@@ -22,12 +22,6 @@ imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimA
 
 UROP:
 
-- (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
-MergeBatchOutput
-Restart
-
-- (Requested by Anne 10-25-05) - ProcessOutlines needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
-
 - Define Grid Changes: (NEED TO VERIFY)
   1. (DONE) What is the least amount of information needed to define grid?
   2. (DONE ONLY PREVIOUS GRID) Implement way to handle failed grids (force grid, previous grid, grid = 0)

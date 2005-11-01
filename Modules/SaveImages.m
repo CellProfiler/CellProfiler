@@ -3,6 +3,12 @@ function handles = SaveImages(handles)
 % Help for the Save Images module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Save's any image produced during the image analysis, in any image format.
+% Can be used as a file format converter to save images in a different
+% format than the original.
+% *************************************************************************
+%
 % This module allows you to save images to the hard drive.  Any of the
 % processed images created by CellProfiler during the analysis can be
 % saved. SaveImages can also be used as a file format converter by

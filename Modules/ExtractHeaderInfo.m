@@ -3,6 +3,10 @@ function handles = ExtractHeaderInfo(handles)
 % Help for the Extract Header Info module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Extracts text info from unusual image format headers.
+% *************************************************************************
+%
 % This module was written for an old version of CellProfiler and is
 % not functional anymore, but it serves as an example of how to
 % extract header info (time, X Y Z location) from an unusual file

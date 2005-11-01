@@ -3,6 +3,10 @@ function handles = ExpandOrShrinkPrim(handles)
 % Help for the Expand Or Shrink Primary Objects module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION:
+% Expands or shrinks identified objects by a defined distance.
+% *************************************************************************
+%
 % The module expands or shrinks primary objects by adding or removing
 % border pixels. The user can specify a certain number of times the
 % border pixels are added or removed, or type 'Inf' to expand objects
@@ -57,9 +61,9 @@ function handles = ExpandOrShrinkPrim(handles)
 %
 % $Revision: 1718 $
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -132,9 +136,9 @@ if isfield(handles.Pipeline, fieldname)==0,
 end
 SegmentedImage = handles.Pipeline.(fieldname);
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(ShrinkOrExpand,'Shrink') == 1
@@ -220,9 +224,9 @@ elseif strcmp(ShrinkOrExpand,'Expand')
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -256,9 +260,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OriginalColoredLabelMatrixImage);
+    subplot(2,1,1);
+    ImageHandle = imagesc(OriginalColoredLabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title([ObjectName, ' Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); imagesc(ShrunkenColoredLabelMatrixImage); title(ShrunkenObjectName);
+    subplot(2,1,2);
+    ImageHandle = imagesc(ShrunkenColoredLabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title(ShrunkenObjectName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

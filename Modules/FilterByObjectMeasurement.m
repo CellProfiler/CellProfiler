@@ -3,6 +3,11 @@ function handles = FilterByObjectMeasurement(handles)
 % Help for the Filter Objects by Measurement module: 
 % Category: Object Processing
 %
+% SHORT DESCRIPTION:
+% Eliminates objects based on their measurements (e.g. Area, Shape,
+% Texture, Intensity).
+% *************************************************************************
+%
 % This module applies a filter using measurements produced by either
 % MeasureObjectAreaShape, MeasureObjectIntensity, or MeasureObjectTexture
 % modules. All objects outside of the specified parameters will be
@@ -187,9 +192,9 @@ ObjectOutlinesOnOrigImage = OrigImage;
 LineIntensity = max(OrigImage(:));
 ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow 
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -198,11 +203,16 @@ if any(findobj == ThisModuleFigureNumber) == 1
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); imagesc(OrigImage);
+    subplot(2,2,1);
+    ImageHandle = imagesc(OrigImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,3); imagesc(LabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,3);
+    ImageHandle = imagesc(LabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     try
@@ -210,15 +220,21 @@ if any(findobj == ThisModuleFigureNumber) == 1
     catch
         ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Filtered ' ObjectName]);
+    subplot(2,2,2);
+    ImageHandle = imagesc(ColoredLabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title(['Filtered ' ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage); title([TargetName, ' Outlines on Input Image']);
+    subplot(2,2,4);
+    ImageHandle = imagesc(ObjectOutlinesOnOrigImage);
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    title([TargetName, ' Outlines on Input Image']);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;

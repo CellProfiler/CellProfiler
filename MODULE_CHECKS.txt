@@ -24,3 +24,7 @@ DefineGrid			Mike
 DisplayGridInfo			Mike
 
 Exclude				Mike
+
+ExpandOrShrink			Mike
+
+FilterByObjectMeasurement	Mike

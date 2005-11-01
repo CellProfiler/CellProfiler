@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/1) The help window for General help, image tools, data tools, is not using the user's preference for font size.
+
 -(Mike 11/1) Make overlay on Histogram Data Tool for control
 
 -(Mike 11/1 CODE IS COMPILED) (Requested by Anne 8-29-05) - Not sure if this is feasible (especially across platforms), but it would be nice to have CellProfiler start by the user doubleclicking an icon rather than starting up Matlab and typing CellProfiler.

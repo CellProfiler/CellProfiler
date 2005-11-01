@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- Make overlay on Histogram Data Tool for control
-
 - Make compiled CellProfiler work on cluster
 
 - What do you want as output for Calculate Statistics?

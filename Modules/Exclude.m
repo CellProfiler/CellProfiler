@@ -202,19 +202,19 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
     ImageHandle = imagesc(ColoredSegmentedObjectImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title(['Previously identified ', ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
     subplot(2,2,2);
     ImageHandle = imagesc(ColoredNewSegmentedObjectImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title(RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,3);
     ImageHandle = imagesc(ColoredMaskRegionObjectImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     CPFixAspectRatio(ColoredSegmentedObjectImage);
 end

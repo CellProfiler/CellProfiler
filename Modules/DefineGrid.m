@@ -308,7 +308,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Recreates the figure.
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
     ImageHandle = imagesc(ImageToDisplay);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     colormap(handles.Preferences.IntensityColorMap)
     set(gca,'fontsize',handles.Current.FontSize)
     %%% Draws the lines.

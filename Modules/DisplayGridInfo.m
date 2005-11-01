@@ -110,7 +110,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% figure after each cycle.
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 ImageHandle = imagesc(handles.Pipeline.(ImageName));
-set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
 colormap(handles.Preferences.IntensityColorMap);
 title(['Image #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
 line(VertLinesX,VertLinesY);

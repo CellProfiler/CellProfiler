@@ -90,29 +90,36 @@ for i = 1:max(ChildParentList(:,1))
     end
     FinalParentList(i,1) = ParentValue;
 end
-if max(SubObjectLabelMatrix(:)) ~= size(FinalParentList,1)
-    error('A subobject cannot have two parents, something is wrong.');
-end
 
-if isfield(handles.Measurements.(SubObjectName),'ParentFeatures')
-    if handles.Current.SetBeingAnalyzed == 1
-        NewColumn = length(handles.Measurements.(SubObjectName).ParentFeatures) + 1;
-        handles.Measurements.(SubObjectName).ParentFeatures(NewColumn) = {ParentName};
-        handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
-    else
-        OldColumn = strmatch(ParentName,handles.Measurements.(SubObjectName).ParentFeatures);
-        if length(OldColumn) ~= 1
-            error('You are attempting to create the same children, please remove redundant module.');
-        end
-        handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+if exist('FinalParentList')
+    if max(SubObjectLabelMatrix(:)) ~= size(FinalParentList,1)
+        error('A subobject cannot have two parents, something is wrong.');
     end
-else
-    handles.Measurements.(SubObjectName).ParentFeatures = {ParentName};
-    handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
+
+    if isfield(handles.Measurements.(SubObjectName),'ParentFeatures')
+        if handles.Current.SetBeingAnalyzed == 1
+            NewColumn = length(handles.Measurements.(SubObjectName).ParentFeatures) + 1;
+            handles.Measurements.(SubObjectName).ParentFeatures(NewColumn) = {ParentName};
+            handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
+        else
+            OldColumn = strmatch(ParentName,handles.Measurements.(SubObjectName).ParentFeatures);
+            if length(OldColumn) ~= 1
+                error('You are attempting to create the same children, please remove redundant module.');
+            end
+            handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+        end
+    else
+        handles.Measurements.(SubObjectName).ParentFeatures = {ParentName};
+        handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
+    end
 end
 
 for i = 1:max(ParentList)
-    ChildList(i,1) = length(FinalParentList(FinalParentList == i));
+    if exist('FinalParentList')
+        ChildList(i,1) = length(FinalParentList(FinalParentList == i));
+    else
+        ChildList(i,1) = 0;
+    end
 end
 
 if isfield(handles.Measurements.(ParentName),'ChildrenFeatures')
@@ -135,8 +142,12 @@ end
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to
 %%% their parents values. This does not get saved and is only for display.
-FinalParentListLM = [0;FinalParentList];
-NewObjectParentLabelMatrix = FinalParentListLM(SubObjectLabelMatrix+1);
+if exist('FinalParentList')
+    FinalParentListLM = [0;FinalParentList];
+    NewObjectParentLabelMatrix = FinalParentListLM(SubObjectLabelMatrix+1);
+else
+    NewObjectParentLabelMatrix = SubObjectLabelMatrix;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

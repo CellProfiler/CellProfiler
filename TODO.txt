@@ -3,7 +3,7 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 - Make overlay on Histogram Data Tool for control
 
-- (Requested by Anne 10-26-2005) - Any other redundant code we can make into a subfunction?  Wyman will do a CPretrieveimage function to retrieve images from the pipeline and do a bunch of error checking, but it's worth looking through a few modules to determine if there's anything else recurring that we want to streamline by moving out of each module.
+- Make compiled CellProfiler work on cluster
 
 - What do you want as output for Calculate Statistics?
 

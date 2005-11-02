@@ -5,8 +5,6 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 - Make compiled CellProfiler work on cluster
 
-- What do you want as output for Calculate Statistics?
-
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 

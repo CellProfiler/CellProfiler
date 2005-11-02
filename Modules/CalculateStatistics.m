@@ -28,9 +28,9 @@ function handles = CalculateStatistics(handles)
 %
 % $Revision: 1725 $
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -44,23 +44,9 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 %inputtypeVAR01 = popupmenu
 DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What measure do you want to use?
-%choiceVAR02 = Intensity
-%inputtypeVAR02 = popupmenu
-MeasureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = In order to run this module, you must load grouping values which correspond to 1 value per image set. All measured values (Intensity, AreaShape) will be calculated for both Z and V factors. When analysis is finished, you can export the Experiment group to see all V and Z factors in excel.
 
-%textVAR03 = If using Intensity or Texture, what image did you use for calculations?
-%infotypeVAR03 = imagegroup
-%inputtypeVAR03 = popupmenu
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-
-%textVAR04 = What objects do you want to use (or Image for whole image calculations)?
-%infotypeVAR04 = objectgroup
-%choiceVAR04 = Image
-%inputtypeVAR04 = popupmenu
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -68,27 +54,91 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 drawnow
 
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+
+    %%% Get all fieldnames in Measurements
+    ObjectFields = fieldnames(handles.Measurements);
+
     GroupingStrings = handles.Measurements.(DataName);
     %%% Need column vector
     GroupingValues = str2num(char(GroupingStrings'));
 
-    if strcmp(MeasureType,'Intensity') || strcmp(MeasureType,'Texture')
-        MeasureType = [MeasureType,'_',ImageName];
-    end
+    for i = 1:length(ObjectFields)
 
-    fieldname = [MeasureType,'Features'];
-    if ~isfield(handles.Measurements.(ObjectName),fieldname)
-        error(['The ',ModuleName,' module could not find the measurements you specified.']);
-    end
-    MeasureFeatures = handles.Measurements.(ObjectName).(fieldname);
+        ObjectName = char(ObjectFields(i));
 
-    Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
-    for i = 1:handles.Current.NumberOfImageSets
-        for j = 1:length(MeasureFeatures)
-            Ymatrix(i,j) = mean(handles.Measurements.Cells.Intensity_CropBlue{i}(:,j));
+        %%% Filter out Experiment and Image fields
+        if ~strcmp(ObjectName,'Experiment') && ~strcmp(ObjectName,'Image')
+
+            try
+                %%% Get all fieldnames in Measurements.(ObjectName)
+                MeasureFields = fieldnames(handles.Measurements.(ObjectName));
+            catch %%% Must have been text field and ObjectName is class 'cell'
+                continue
+            end
+
+            for j = 1:length(MeasureFields)
+
+                MeasureFeatureName = char(MeasureFields(j));
+
+                if length(MeasureFeatureName) > 7
+                    if strcmp(MeasureFeatureName(end-7:end),'Features')
+
+                        %%% Not placed with above if statement since
+                        %%% MeasureFeatureName may not be 8 characters long
+                        if ~strcmp(MeasureFeatureName(1:8),'Location')
+
+                            %%% Get Features
+                            MeasureFeatures = handles.Measurements.(ObjectName).(MeasureFeatureName);
+
+                            %%% Get Measure name
+                            MeasureName = MeasureFeatureName(1:end-8);
+                            %%% Check for measurements
+                            if ~isfield(handles.Measurements.(ObjectName),MeasureName)
+                                error(['The ',ModuleName,' module could not find the measurements you specified.']);
+                            end
+
+                            Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
+                            for k = 1:handles.Current.NumberOfImageSets
+                                for l = 1:length(MeasureFeatures)
+                                    Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
+                                end
+                            end
+
+                            [v, z] = VZfactors(GroupingValues,Ymatrix);
+
+                            measurefield = [ObjectName,'Statistics'];
+                            featuresfield = [ObjectName,'StatisticsFeatures'];
+                            if isfield(handles.Measurements,'Experiment')
+                                if isfield(handles.Measurements.Experiment,measurefield)
+                                    OldEnd = length(handles.Measurements.Experiment.(measurefield));
+                                    for a = 1:length(z)
+                                        handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+a) = z(a);
+                                        handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+length(z)+a) = v(a);
+                                        handles.Measurements.Experiment.(featuresfield){OldEnd+a} = ['Zfactor_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){OldEnd+length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                    end
+                                else
+                                    for a = 1:length(z)
+                                        handles.Measurements.Experiment.(measurefield){1}(1,a) = z(a);
+                                        handles.Measurements.Experiment.(measurefield){1}(1,length(z)+a) = v(a);
+                                        handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                    end
+                                end
+                            else
+                                for a = 1:length(z)
+                                    handles.Measurements.Experiment.(measurefield){1}(1,a) = z(a);
+                                    handles.Measurements.Experiment.(measurefield){1}(1,length(z)+a) = v(a);
+                                    handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureFeatures{a}];
+                                    handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                end
+                            end
+                        end
+                    end
+                end
+            end
         end
     end
-    [v, z] = VZfactors(GroupingValues,Ymatrix)
 end
 
 %%%%%%%%%%%%%%%%%%%%

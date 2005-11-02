@@ -1,5 +1,7 @@
 Colin's TODO list
 
+- Put CP logo in main GUI ??
+
 - Move ImageTool to CPsubfunctions, save as CPimagetool to be consistent with other CP functions
 
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!

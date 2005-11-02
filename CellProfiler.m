@@ -3187,15 +3187,16 @@ else
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
                             %%% argument.
+                            handles.Measurements.Image.ModuleErrorFeatures(str2num(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
                             if ishandle(SlotNumber)
                                 OldText = get(SlotNumber,'name');
                                 NewNum = handles.Current.SetBeingAnalyzed;
                                 set(SlotNumber,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
                             end
-                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(str2num(ModuleNumberAsString),1) = 0;
+                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2num(ModuleNumberAsString)) = 0;
                         catch
-                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(str2num(ModuleNumberAsString),1) = 1;
+                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2num(ModuleNumberAsString)) = 1;
                             if strcmp(handles.Preferences.SkipErrors,'No')
                                 if exist([ModuleName,'.m'],'file') ~= 2,
                                     CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);

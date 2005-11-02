@@ -5,6 +5,8 @@
 - (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
 >>> See practice ImageJ integration ideas below (two of them). Build a wrapping function that is a CP module which allows using ImageJ as a back end.
 
+- (Requested by Anne 11-02-05) - The paper Ortiz de Solorzano, Malladi, Lockett, J Microscopy 2001 has what looks like a really nice segmentation method. I think that the only problem is that it is slow, which they were planning to address in future work. It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
+
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne 10-31-05) - http://wiki.na-mic.org/Wiki/index.php/Main_Page has open source algorithms we could implement.

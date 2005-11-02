@@ -105,7 +105,7 @@ load(fullfile(RawPathname, RawFileName));
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
+[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
 if isempty(ObjectTypename),return,end
 MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
@@ -156,6 +156,7 @@ Prompts{11} = 'Do you want the histogram data to be exported? To export the hist
 Prompts{12} = 'If exporting histograms or displaying as a compressed histogram (heatmap), is each row to be one image or one histogram bin? Enter "image" or "bin".';
 Prompts{13} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
 Prompts{14} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
+Prompts{15} = 'Do you want a line or bar graph?';
 
 AcceptableAnswers = 0;
 global Answers
@@ -174,6 +175,7 @@ while AcceptableAnswers == 0
     Defaults{12} = 'image';
     Defaults{13} = 'yes';
     Defaults{14} = 'N';
+    Defaults{15} = 'bar';
     %%% Loads the Defaults from the global workspace (i.e. from the
     %%% previous time the user ran this tool) if possible.
     for i = 1: length(Prompts)
@@ -192,7 +194,7 @@ while AcceptableAnswers == 0
     if isempty(Answers1)
         return
     end
-    Answers2 = inputdlg(Prompts(8:14),'Choose histogram settings - page 2',1,Defaults(8:14),'on');
+    Answers2 = inputdlg(Prompts(8:15),'Choose histogram settings - page 2',1,Defaults(8:15),'on');
 
     %%% If user clicks cancel button Answers2 will be empty.
     if isempty(Answers2)
@@ -262,6 +264,7 @@ while AcceptableAnswers == 0
         errordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']);
         continue
     end
+    
     CompressedHistogram = Answers{10};
     if strncmpi(CompressedHistogram,'Y',1) ~= 1 && strncmpi(CompressedHistogram,'N',1) ~= 1
         errordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{10}, '.']);
@@ -301,9 +304,19 @@ while AcceptableAnswers == 0
         continue
     end
 
+    %%% Error checking for the line or bar question.
+    try LineOrBar = lower(Answers{15});
+    catch errordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']);
+        continue
+    end
+    if ~strcmpi(LineOrBar, 'line') && ~strcmpi(LineOrBar,'bar')
+        errordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']);
+        continue
+    end
+
     %%% If the user selected A for all, the measurements are not thresholded on some other measurement.
     if ~strcmpi(GreaterOrLessThan,'A')
-        [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
+        [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
         MeasurementToThresholdValueOnName = handles.Measurements.(ObjectTypename).([FeatureType,'Features'])(FeatureNo);
         tmp = handles.Measurements.(ObjectTypename).(FeatureType);
         MeasurementToThresholdValueOn = cell(length(tmp),1);
@@ -518,7 +531,11 @@ if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
     for ImageNumber = FirstImage:LastImage
         Increment = Increment + 1;
         h = subplot(NumberDisplayRows,NumberDisplayColumns,Increment);
-        bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+        if strcmpi(LineOrBar,'bar')
+            bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+        else
+            plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2)
+        end
         set(get(h,'XLabel'),'String',{MeasurementToExtract;AdditionalInfoForTitle})
         set(h,'XTickLabel',XTickLabels)
         set(h,'XTick',PlotBinLocations)

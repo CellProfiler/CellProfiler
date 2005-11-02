@@ -1,16 +1,16 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
-
-- Make compiled CellProfiler work on cluster
-
 -(IS THIS FEASIBLE? CODE IS ALREADY COMPILED) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
 
 - Identify Secondary Test Mode?
+
+- Make compiled CellProfiler work on cluster
+
+- (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
 UROP:
 
@@ -22,15 +22,26 @@ UROP:
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
 - CHeck through each module (~2 per day):
-	- Go through the code looking for instances of the term "image set" and replace with "cycle" where appropriate.
-	- Make sure all code is using CPfigure rather than figure. I think the DataLayout tool in particular is using figure.
-	- Smart Indent
-	- M Lint error checking
-	- (Requested by Anne) - Test each module on color vs grayscale and make sure they all work or have some type of error catching.
-	- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click on one of the images within the figure that allows you to open in its own window, etc. We should implement this feature into all the modules.
-	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions consistent - at the very least we should try to be consistent with stating "Choose" (rather than "select"), and phrasing things as questions versus "Enter the ..."   Also, look through the variable descriptions for uses of computer-ific words like 'segmentation'.
+EVERYONE:
+	- Go through the code looking for instances of the term "image set" and
+		replace with "cycle" where appropriate.
+	- (Requested by Anne) - Test each module on color vs grayscale and make
+		sure they all work or have some type of error catching.
+	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions
+		consistent - at the very least we should try to be consistent with
+		stating "Choose" (rather than "select"), and phrasing things as
+		questions versus "Enter the ..."   Also, look through the variable
+		descriptions for uses of computer-ific words like 'segmentation'.
 	- Write help if DNE
 	- Check that fontsize is never hard-coded and instead uses the user's preference.
+MIKE:
+	- Make sure all code is using CPfigure rather than figure. I think the
+		DataLayout tool in particular is using figure.
+	- Smart Indent
+	- M Lint error checking
+	- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click
+		on one of the images within the figure that allows you to open in its
+		own window, etc. We should implement this feature into all the modules.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

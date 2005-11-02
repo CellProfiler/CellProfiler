@@ -56,7 +56,7 @@ while FinalOK == 0
    
     %%% Let the user select which feature to view
     Suffix = {'Features','Text'};
-    [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,Suffix);
+    [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
     if isempty(ObjectTypename),return,end
     
     %%% Get the description

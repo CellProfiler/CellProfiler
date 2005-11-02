@@ -258,7 +258,6 @@ if strcmp(EachOrAll,'All')
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [250 BottomOfMsgBox 350 100];
             h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination_Calculate Using Background Intensities module.  Subsequent image sets will be processed more quickly than the first image set.');
             OldPos = get(h,'position');
             set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
@@ -405,7 +404,7 @@ if strcmp(ReadyFlag, 'Ready')
     if strcmp(RescaleOption,'Yes') == 1
         %%% To save time, the handles argument is not fed to this
         %%% subfunction because it is not needed.
-        [ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]);
+        [ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]); %#ok
     end
 end
 
@@ -497,7 +496,7 @@ drawnow
 %%% processed. If running in cycling mode (Pipeline mode), the
 %%% average image and its flag are saved to the handles structure
 %%% after every cycle is processed.
-if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') == 1 | (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1)
+if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && handles.Current.SetBeingAnalyzed == 1)
     if strcmp(ReadyFlag, 'Ready') == 1
         handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
     end

@@ -1,4 +1,4 @@
-function handles = ExpandOrShrinkPrim(handles)
+function handles = ExpandOrShrink(handles)
 
 % Help for the Expand Or Shrink Primary Objects module:
 % Category: Object Processing
@@ -159,7 +159,8 @@ if strcmp(ShrinkOrExpand,'Shrink') == 1
         end
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'shrink', Inf);
     else
-        try ShrinkingNumber = str2double(ShrinkingNumber)
+        try
+            ShrinkingNumber = str2double(ShrinkingNumber);
             if strcmp(ObjectChoice,'Primary')
                 ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thin', ShrinkingNumber);
                 ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thin', ShrinkingNumber);

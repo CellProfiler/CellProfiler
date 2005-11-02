@@ -227,7 +227,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3);
     ImageHandle = imagesc(IllumCorrectFunctionImage);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
-    title(['Illumination Correction Function Image']);
+    title('Illumination Correction Function Image');
 
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
     text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');

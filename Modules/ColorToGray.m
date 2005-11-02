@@ -248,7 +248,7 @@ drawnow
 if strcmp(GrayOrSplit,'Gray')
     %%% Saves the Grayscaled image to the handles structure so it can be
     %%% used by subsequent modules.
-    fieldname = [GrayscaleImageName];
+    fieldname = GrayscaleImageName;
     handles.Pipeline.(fieldname) = GrayscaleImage;
 elseif strcmp(GrayOrSplit,'Split')
     %%% Saves the adjusted image to the handles structure so it can be used by

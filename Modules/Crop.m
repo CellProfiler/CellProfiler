@@ -317,11 +317,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CropFromObjectFlag = 1;
         else
             CropFromObjectFlag = 1;
-            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape, ModuleName);
+            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
             catch
-                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape],PlateFix, ModuleName);
+                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], ModuleName);
                 catch
-                    try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape],PlateFix, ModuleName);
+                    try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], ModuleName);
                     catch error('Image cannot be found!');
                     end
                 end
@@ -337,8 +337,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CroppingImageHandle = imagesc(ImageToBeCropped);
             pixval
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
-            try imcontrast(CroppingImageHandle); end
-            try imcontrast(CroppingImageHandle); end
+            try imcontrast(CroppingImageHandle); end %#ok
+            try imcontrast(CroppingImageHandle); end %#ok
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle)
             x = Pre_y;
@@ -383,8 +383,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             X_center = Center(1:index-1);
             Y_center = Center(index+1:end);
 
-            masksize = size(ImageToBeCropped);
-            [X,Y] = meshgrid(1:masksize(2), 1:masksize(1));
+            masksize = size(ImageToBeCropped); %#ok
+            [X,Y] = meshgrid(1:masksize(2), 1:masksize(1)); %#ok
             if eval([X_axis '>' Y_axis])
                 eval(['foci_1_x = ' X_center '+ sqrt(' X_axis '^2-' Y_axis '^2);']);
                 eval(['foci_2_x = ' X_center '- sqrt(' X_axis '^2-' Y_axis '^2);']);
@@ -402,7 +402,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix, ModuleName);
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
 
@@ -432,7 +432,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             y1 = Pixel2(1:index-1);
             y2 = Pixel2(index+1:end);
 
-            [a b c] = size(ImageToBeCropped);
+            [a b c] = size(ImageToBeCropped); %#ok
             BinaryCropImage = zeros(a,b);
             eval(['BinaryCropImage(min(' y1 ',' y2 '):max(' y1 ',' y2 '),min(' x1 ',' x2 '):max(' x1 ',' x2 ')) = 1;']);
 
@@ -442,8 +442,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CroppingImageHandle = imagesc(ImageToBeCropped);
             colormap('gray'); pixval
             title({'Click on at least two points that are inside the region to be retained (e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
-            try imcontrast(CroppingImageHandle); end
-            try imcontrast(CroppingImageHandle); end
+            try imcontrast(CroppingImageHandle); end %#ok
+            try imcontrast(CroppingImageHandle); end %#ok
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
 
@@ -454,11 +454,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix, ModuleName);
+        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
     end
     %%% See subfunction below.
 else
-    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], PlateFix, ModuleName);
+    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -502,7 +502,7 @@ drawnow
 %%% subsequent modules.
 handles.Pipeline.(CroppedImageName) = CroppedImage;
 
-function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, PlateFix, ModuleName)
+function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
 %%% Retrieves the Cropping image from the handles structure.
 try
     BinaryCropImage = handles.Pipeline.(CroppedImageName);

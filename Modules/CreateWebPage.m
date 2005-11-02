@@ -201,6 +201,8 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
         OrigImagePathName = OrigImagePathName(LastDirPos:end);
         try
             ThumbImagePathName = ThumbImagePathName(LastDirPos:end);
+        catch
+            error(['Something went wrong, search for ThumbImagePathName in ',ModuleName,' m-file.']);
         end
     else
         HTMLSavePath = OrigImagePathName;

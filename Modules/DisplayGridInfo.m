@@ -179,7 +179,7 @@ if ~strcmp(DataName1,'/')
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text1;
-    for i=[1:length(temp)]
+    for i=1:length(temp)
         Text1{i} = tempText{temp(i)};
     end
 
@@ -227,7 +227,7 @@ if ~strcmp(DataName2,'/')
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text2;
-    for i=[1:length(temp)]
+    for i=1:length(temp)
         Text2{i} = tempText{temp(i)};
     end
 
@@ -276,7 +276,7 @@ if ~strcmp(DataName3,'/')
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text3;
-    for i=[1:length(temp)]
+    for i=1:length(temp)
         Text3{i} = tempText{temp(i)};
     end
 

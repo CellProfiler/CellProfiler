@@ -34,6 +34,15 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
                 continue;
             end
         end
+        
+        if strfind(ssf, 'ModuleError'),
+                continue;
+            end
+        
+        if strfind(ssf, 'TimeElapsed'),
+                continue;
+            end
+        
                        
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
@@ -213,7 +222,7 @@ for img_idx = FirstSet:LastSet,
         substructfields = fieldnames(substruct)';
         for ssfc = substructfields,
             ssf = ssfc{1};
-
+            %fprintf (ssf);
             if strfind(ssf, 'Features'),
                 continue;
             end
@@ -221,7 +230,13 @@ for img_idx = FirstSet:LastSet,
             if strfind(ssf, 'PathnameOrig'),
                 continue;
             end
-
+           if strfind(ssf, 'ModuleError'),
+                continue;
+            end
+           if strfind(ssf, 'TimeElapsed'),
+                continue;
+            end 
+            
             if strfind(ssf, 'Text'),
                 if (strfind(ssf, 'Text') + 3) == length(ssf),
                     continue;
@@ -249,7 +264,7 @@ for img_idx = FirstSet:LastSet,
                         fprintf(fimage, '\t%g', cell2mat(vals));
                     end
                 elseif isempty(vals)
-                    fprintf(fimage, '\t%g','0');
+                    fprintf(fimage, '\t%g',vals);
                 else %vals is number
                     
                     fprintf(fimage, '\t%g', vals);

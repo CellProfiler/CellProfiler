@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/3 TRIED IMFILTER,CONV2 AND CHANGING ORDFILT2 TO USE UINT8, UINT16, AND SINGLE ALL TO NO AVAIL) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
+imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
+
 -(Mike 11/1) Histogram: Choose line or bar graphs
 
 -(Mike 11/1) What do you want as output for Calculate Statistics?

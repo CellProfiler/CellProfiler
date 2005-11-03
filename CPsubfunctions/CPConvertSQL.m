@@ -263,8 +263,8 @@ for img_idx = FirstSet:LastSet,
                     else, %vals{cellindex} is not char
                         fprintf(fimage, '\t%g', cell2mat(vals));
                     end
-                elseif isempty(vals)
-                    fprintf(fimage, '\t%g',vals);
+                %elseif isempty(vals)
+                 %   fprintf(fimage, '\t%g',vals);
                 else %vals is number
                     
                     fprintf(fimage, '\t%g', vals);

@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+Requested by Anne - IdentifyNeighbors produces a field in the handles.Meas structure called IdentityofNeighbors which does not match all the other measurements, because it is listing the identity of however many neighbors each objects has. So, in order for this to not make the exporting fail, we should move this data to its own structure. I guess handles.Measurements.Neighbors because it won't fit any other place.
+
 Requested by Anne - when you try starting CP and it's already running, is there a simple way to bring the main CP window to the front of all the other windows?
 
 - (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.

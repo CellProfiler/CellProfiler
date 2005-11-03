@@ -7,6 +7,8 @@
 
 - (Requested by Anne 11-02-05) - The paper Ortiz de Solorzano, Malladi, Lockett, J Microscopy 2001 has what looks like a really nice segmentation method. I think that the only problem is that it is slow, which they were planning to address in future work. It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
 
+- (Requested by Anne 11-02-05) - The paper Malladi & Sethian PNAS 1995 has what looks like a really nice filter that makes objects more obvious in images with lots of noise.   It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
+
 - (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
 - (Requested by Anne 10-31-05) - http://wiki.na-mic.org/Wiki/index.php/Main_Page has open source algorithms we could implement.
@@ -103,7 +105,7 @@ membrane potential
 gap junction formation
 p-glycoprotein activity
 
-- Neurite tracing algorithm: see potentially useful references: J Neurosci Methods. 2005 Sep 17; Automated identification of axonal growth cones in time-lapse image sequences. Keenan TM, Hooker A, Spilker ME, Li N, Boggy GJ, Vicini P, Folch A.
+- Neurite tracing algorithm: see potentially useful references: J Neurosci Methods. 2005 Sep 17; Automated identification of axonal growth cones in time-lapse image sequences. Keenan TM, Hooker A, Spilker ME, Li N, Boggy GJ, Vicini P, Folch A.  Also, two articles: Weaver_NeuralComput_2004.pdfWeaver_JNeuroMeth_2003.pdf. See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.
 
 +++  (Requested by Anne) -Particle tracking over time module. Good references:
 Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.

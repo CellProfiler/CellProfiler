@@ -106,11 +106,13 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(Image1Name,'/') == 1
+%This error should not occur with because of popupboxes now.
+if strcmp(Image1Name,'/')
     error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the first image slot'])
 end
+
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, Image1Name) == 0
+if ~isfield(handles.Pipeline, Image1Name)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -123,30 +125,30 @@ end
 Image1 = handles.Pipeline.(Image1Name);
 
 if max(Image1(:)) > 1 || min(Image1(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg('The first image that you loaded is outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
 
 %%% Same for Image 2.
-if strcmp(Image2Name,'/') == 1
+if strcmp(Image2Name,'/')
     error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the second image slot'])
 end
-if isfield(handles.Pipeline, Image2Name) == 0
+if ~isfield(handles.Pipeline, Image2Name)
     error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 Image2 = handles.Pipeline.(Image2Name);
 
 if max(Image2(:)) > 1 || min(Image2(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg('The second image that you loaded is outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
 
 %%% Same for Image 3.
-if strcmp(Image3Name,'/') ~= 1
-    if isfield(handles.Pipeline, Image3Name) == 0
+if ~strcmp(Image3Name,'/')
+    if ~isfield(handles.Pipeline, Image3Name)
         error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     Image3 = handles.Pipeline.(Image3Name);
     if max(Image3(:)) > 1 || min(Image3(:)) < 0
-        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+        CPwarndlg('The third image that you loaded is outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
     end
 
     if ndims(Image3) ~= 2
@@ -232,13 +234,13 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
         ImageHandle = imagesc(OriginalRGB);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the adjusted
         %%%  image.
         subplot(2,1,2);
         ImageHandle = imagesc(AlignedRGB);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Aligned Images');
     end
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9],'FontSize',handles.Current.FontSize);

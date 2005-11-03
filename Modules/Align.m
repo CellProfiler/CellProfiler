@@ -83,7 +83,7 @@ Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = What did you call the third image to be aligned? (will be displayed as red)
-%defaultVAR05 = /
+%choiceVAR05 = /
 %infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu

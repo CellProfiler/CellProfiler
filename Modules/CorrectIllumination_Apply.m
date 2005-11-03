@@ -212,7 +212,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% image, some intermediate images, and the final corrected image.
     subplot(2,2,1);
     ImageHandle = imagesc(OrigImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
     %%% The mean image does not absolutely have to be present in order to
@@ -221,12 +221,12 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% workspace.
     subplot(2,2,2);
     ImageHandle = imagesc(CorrectedImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title('Illumination Corrected Image');
 
     subplot(2,2,3);
     ImageHandle = imagesc(IllumCorrectFunctionImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title('Illumination Correction Function Image');
 
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');

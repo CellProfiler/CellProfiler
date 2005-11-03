@@ -203,7 +203,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
         axis image
         set(gca,'Fontsize',handles.Current.FontSize)
         title(sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
@@ -227,7 +227,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
         ImageHandle = image(QuantizedRGBimage);axis image
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Classified ', AdjustedObjectName])
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',['Classified ', AdjustedObjectName])
         set(gca,'Fontsize',handles.Current.FontSize)
         title(['Classified ', AdjustedObjectName],'fontsize',handles.Current.FontSize);
     end

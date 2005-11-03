@@ -118,17 +118,17 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
     ImageHandle = imagesc(BasicImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title([BasicImageName, ' input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2);
     ImageHandle = imagesc(SubtractImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title([SubtractImageName, ' input image']);
     subplot(2,2,3);
     ImageHandle = imagesc(ResultingImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
     CPFixAspectRatio(BasicImage);
 end

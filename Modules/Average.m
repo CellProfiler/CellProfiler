@@ -148,7 +148,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         ImageHandle = imagesc(AveragedImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated averaged image so far is displayed each time through
@@ -156,7 +156,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         ImageHandle = imagesc(AveragedImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
     end
 end

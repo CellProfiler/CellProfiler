@@ -97,10 +97,10 @@ if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
     subplot(2,1,1);
     ImageHandle = imagesc(ColoredLabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title('Original Identified Objects','fontsize',8);
     subplot(2,1,2);
     ImageHandle = imagesc(Image);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title('New Image','fontsize',8);
 end

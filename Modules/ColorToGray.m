@@ -199,14 +199,14 @@ if strcmp(GrayOrSplit,'Gray')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
         ImageHandle = imagesc(OrigImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         colormap(handles.Preferences.IntensityColorMap);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
         subplot(2,1,2);
         ImageHandle = imagesc(GrayscaleImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Grayscale Image');
     end
 elseif strcmp(GrayOrSplit,'Split')
@@ -219,22 +219,22 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% some of the pixels are saturated.
         subplot(2,2,1);
         ImageHandle = imagesc(OrigImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title(['Input RGB Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
         subplot(2,2,2);
         ImageHandle = imagesc(BlueImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Blue Image');
         %%% A subplot of the figure window is set to display the green image.
         subplot(2,2,3);
         ImageHandle = imagesc(GreenImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Green Image');
         %%% A subplot of the figure window is set to display the red image.
         subplot(2,2,4);
         ImageHandle = imagesc(RedImage);
-        set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Red Image');
         CPFixAspectRatio(OrigImage);
     end

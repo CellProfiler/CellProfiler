@@ -836,7 +836,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     CPfigure(handles,ThisModuleFigureNumber);
                     subplot(2,2,1)
                     ImageHandle = imagesc(OrigImage);
-                    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
                     axis image
                     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Current.FontSize);
                     set(gca,'fontsize',handles.Current.FontSize)
@@ -847,14 +847,14 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                         im = Objects;
                     end
                     ImageHandle = image(im);
-                    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
                     title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Current.FontSize);
                     axis image,set(gca,'fontsize',handles.Current.FontSize)
 
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     ImageHandle = image(OutlinedObjects);
-                    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag','Outlined objects')
                     title('Outlined objects','fontsize',handles.Current.FontSize);
                     axis image,set(gca,'fontsize',handles.Current.FontSize)
 

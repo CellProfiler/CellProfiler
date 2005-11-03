@@ -81,8 +81,8 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the region measured by this module?
-%defaultVAR02 = StainedRegion
+%textVAR02 = What do you want to call the staining measured by this module?
+%defaultVAR02 = CellStain
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Select thresholding method or enter a threshold in the range [0,1].

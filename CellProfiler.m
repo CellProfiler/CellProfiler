@@ -4995,6 +4995,7 @@ else
     if ~isempty(gui_State.gui_LayoutFcn)
         if ishandle(gui_hFigure)
             display('CellProfiler is already running!!');
+            figure(gui_hFigure);
             SplashHandle = findobj('tag','SplashScreenTag');
             if ishandle(SplashHandle)
                 close(SplashHandle)

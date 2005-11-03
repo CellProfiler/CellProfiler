@@ -395,7 +395,7 @@ elseif strcmp(IdentChoice,'Propagation')
     %%% Filters the image for minima (Plus sign neighborhood).
     MinimaImage = ordfilt2(TempImage, 5, [0 1 0; 1 1 1 ; 0 1 0]);
     %%% Marks and labels the zero regions.
-    ZeroRegionImage = bwlabel(HoleyPrelimLabelMatrixImage==0, 4);
+    ZeroRegionImage = imclearborder(bwlabel(HoleyPrelimLabelMatrixImage==0, 4));
     drawnow
     %%% Uses sparse matrices to find the minimum and maximum label adjacent
     %%% to each zero-region.

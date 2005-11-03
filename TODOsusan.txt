@@ -3,8 +3,6 @@ Susan's TODO list
 1 -- change ExportData(Excel) to use CPconvert sub function.
 
 
-2. Improve automation of running jobs on the cluster -    ask Ray for the script to check whether any job is failed , will modify to automaticly re-submit the failed jobs
- 
 --fix bug in  IdentifySec and other measurement modules -Ray is working on it
 
 3. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication. 

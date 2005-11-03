@@ -37,6 +37,8 @@ Which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the
 
 - (Requested by Anne 10-13-05) - There is a fairly simple routine in Janssens, et al., Dev Genes Evol 2005 (215:374-381) for drosophila cells in embryos. It might be fun to implement this routine into a CP pipeline.
 
+- (Requested by Anne 11-03-05) - There is a paper: Kam, Bioimaging 1998 on line integration and deconvolution of DIC images which would be a cool filter to implement that might allow people to analyze DIC images.
+
 -(Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - we set up something for SErge Pelet, but haven't really gone at this application in a systematic way - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images:
        SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res.
              2004 Jan 1;32 Database issue:D319-22. PMID: 14681423

@@ -5,8 +5,6 @@ Requested by Anne - IdentifyNeighbors produces a field in the handles.Meas struc
 
 Requested by Anne - when you try starting CP and it's already running, is there a simple way to bring the main CP window to the front of all the other windows?
 
-- (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
-
 - Identify Secondary Test Mode?
 
 - Make compiled CellProfiler work on cluster

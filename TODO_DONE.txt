@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/3) (Requested by Anne 10-11-2005) - Can you figure out what TempMovieGenerate.m in the DeveloperScripts folder is trying to do? I think it was making a movie from histograms that were plotted over time. We'd like to have this type of functionality built into a module. Once you get oriented in that m-file let me know and we can figure out how we should implement this sort of thing into a regular module.
+
 -(Mike 11/3 TRIED IMFILTER,CONV2 AND CHANGING ORDFILT2 TO USE UINT8, UINT16, AND SINGLE ALL TO NO AVAIL) (Requested by Anne 8-30-05) - It seems to take forever to smooth images when using a large artifact width in CPsmooth.  Can we make it faster?  Perhaps if the artifact width is large relative to the image size, we could resize the image first or something like that.
 imfilter? ordfilt2? conv2? which is faster? are there others?  See IdentifyPrimAutomatic for blurring ideas, and also for an example of resizing.
 

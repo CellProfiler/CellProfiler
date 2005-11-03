@@ -1,5 +1,3 @@
-
-
 % Help for the Plot Measurement tool:
 % Category: Data Tools
 %
@@ -168,7 +166,6 @@ elseif strcmp(Display,'Line chart') == 1
         Xmo=addframe(Xmo,gcf);
         l
         close
-        
     end
 end
 

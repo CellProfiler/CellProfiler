@@ -158,11 +158,11 @@ for i = 1:max(ChildParentList(:,1))
     end
     FinalParentList(i,1) = ParentValue;
 end
-if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
-    error('A subobject cannot have two parents, something is wrong.');
-end
 
 if exist('FinalParentList')
+    if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
+        error('A subobject cannot have two parents, something is wrong.');
+    end
     if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
         if handles.Current.SetBeingAnalyzed == 1
             NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
@@ -196,11 +196,11 @@ for i = 1:max(ChildParentList(:,1))
     end
     FinalParentList(i,1) = ParentValue;
 end
-if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
-    error('A subobject cannot have two parents, something is wrong.');
-end
 
 if exist('FinalParentList')
+    if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
+        error('A subobject cannot have two parents, something is wrong.');
+    end
     if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
         if handles.Current.SetBeingAnalyzed == 1
             NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;

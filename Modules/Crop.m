@@ -136,7 +136,7 @@ CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Would you like to crop by coordinates, mouse, or number of pixels from edges (only for rectangle)?
+%textVAR04 = Would you like to crop by coordinates or mouse?
 %choiceVAR04 = Coordinates
 %choiceVAR04 = Mouse
 CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});

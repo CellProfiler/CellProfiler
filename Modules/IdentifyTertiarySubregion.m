@@ -162,21 +162,23 @@ if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
     error('A subobject cannot have two parents, something is wrong.');
 end
 
-if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
-    if handles.Current.SetBeingAnalyzed == 1
-        NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
-        handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {SecondaryObjectName};
-        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
-    else
-        OldColumn = strmatch(SecondaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
-        if length(OldColumn) ~= 1
-            error('You are attempting to create the same children, please remove redundant module.');
+if exist('FinalParentList')
+    if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
+        if handles.Current.SetBeingAnalyzed == 1
+            NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
+            handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {SecondaryObjectName};
+            handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
+        else
+            OldColumn = strmatch(SecondaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
+            if length(OldColumn) ~= 1
+                error('You are attempting to create the same children, please remove redundant module.');
+            end
+            handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
         end
-        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+    else
+        handles.Measurements.(SubregionObjectName).ParentFeatures = {SecondaryObjectName};
+        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
     end
-else
-    handles.Measurements.(SubregionObjectName).ParentFeatures = {SecondaryObjectName};
-    handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
 end
 
 %%% This line creates two rows containing all values for both label matrix
@@ -198,26 +200,28 @@ if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
     error('A subobject cannot have two parents, something is wrong.');
 end
 
-if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
-    if handles.Current.SetBeingAnalyzed == 1
-        NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
-        handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {PrimaryObjectName};
-        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
-    else
-        OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
-        if length(OldColumn) ~= 1
-            error('You are attempting to create the same children, please remove redundant module.');
+if exist('FinalParentList')
+    if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
+        if handles.Current.SetBeingAnalyzed == 1
+            NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
+            handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {PrimaryObjectName};
+            handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
+        else
+            OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
+            if length(OldColumn) ~= 1
+                error('You are attempting to create the same children, please remove redundant module.');
+            end
+            handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
         end
-        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
+    else
+        handles.Measurements.(SubregionObjectName).ParentFeatures = {PrimaryObjectName};
+        handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
     end
-else
-    handles.Measurements.(SubregionObjectName).ParentFeatures = {PrimaryObjectName};
-    handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];

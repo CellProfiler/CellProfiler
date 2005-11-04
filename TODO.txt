@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- Identify Secondary is not saving outlines properly. See IdentifyPrimAuto or IdentifyTertiary for an example that is working well. Check the other Identify modules to be sure they are doing the right things with outlines.
-
 - Identify Secondary Test Mode?
 
 - Make compiled CellProfiler work on cluster

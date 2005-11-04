@@ -392,8 +392,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 eval(['foci_2_y = ' Y_center ';']);
                 eval(['BinaryCropImage = sqrt((X-foci_1_x).^2+(Y-foci_1_y).^2)+sqrt((X-foci_2_x).^2+(Y-foci_2_y).^2) < 2*' X_axis ';']);
             else
-                eval(['foci_1_x = ' x_center ';']);
-                eval(['foci_2_x = ' x_center ';']);
+                eval(['foci_1_x = ' X_center ';']);
+                eval(['foci_2_x = ' X_center ';']);
                 eval(['foci_1_y = ' Y_center ' + sqrt(' Y_axis '^2-' X_axis '^2);']);
                 eval(['foci_2_y = ' Y_center ' - sqrt(' Y_axis '^2-' X_axis '^2);']);
                 eval(['BinaryCropImage = sqrt((X-foci_1_x).^2+(Y-foci_1_y).^2)+sqrt((X-foci_2_x).^2+(Y-foci_2_y).^2) < 2*' Y_axis ';']);

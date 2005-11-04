@@ -454,21 +454,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         if MinDiameter > MaxDiameter, error(['Min Diameter larger the Max Diameter in the ', ModuleName, ' module.']),end
         Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
-%         %%% Convert user-specified percentage of image covered by objects to a prior probability
-%         %%% of a pixel being part of an object.
-%         pObject = str2num(pObject(1:2))/100;
-
-%         %%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
-%         %%% Otherwise make sure that the user gave a valid input.
-%         if strcmp(MinimumThreshold,'Do not use')
-%             MinimumThreshold = 0;
-%         else
-%             MinimumThreshold = str2double(MinimumThreshold);
-%             if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
-%                 error(['The Minimum threshold entry in the ', ModuleName, ' module is invalid.'])
-%             end
-%         end
-
         %%% Check the smoothing filter size parameter
         if ~strcmp(SizeOfSmoothingFilter,'Automatic')
             SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
@@ -568,25 +553,24 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
                 if strcmp(LocalMaximaType,'Intensity')
 
-                    % Old code without image resizing
-                    %MaximaMask = getnhood(strel('disk', min(50,max(1,floor(MinDiameter/1.5)))));
-                    % Initialize MaximaImage
-                    %MaximaImage = BlurredImage;
-                    % Save only local maxima
-                    %MaximaImage(BlurredImage < ...
-                    %    ordfilt2(BlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-                    % Remove dim maxima
-                    %MaximaImage = MaximaImage > Threshold;
-
-                    %%% Find local maxima in a lower resolution image
-                    ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
+                    if strcmp(UseLowRes,'Yes')
+                        %%% Find local maxima in a lower resolution image
+                        ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
+                    else
+                        ResizedBlurredImage = BlurredImage;
+                    end
+                    
                     %%% Initialize MaximaImage
                     MaximaImage = ResizedBlurredImage;
                     %%% Save only local maxima
                     MaximaImage(ResizedBlurredImage < ...
                         ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-                    %%% Restore image size
-                    MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
+                    
+                    if strcmp(UseLowRes,'Yes')
+                        %%% Restore image size
+                        MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
+                    end
+                    
                     %%% Remove dim maxima
                     MaximaImage = MaximaImage > Threshold;
                     %%% Shrink to points (needed because of the resizing)
@@ -597,14 +581,20 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     %%% Add some noise to get distinct maxima
                     DistanceTransformedImage = DistanceTransformedImage + ...
                         0.001*rand(size(DistanceTransformedImage));
-                    ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
+                    if strcmp(UseLowRes,'Yes')
+                        ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
+                    else
+                        ResizedDistanceTransformedImage = DistanceTransformedImage;
+                    end
                     %%% Initialize MaximaImage
                     MaximaImage = ones(size(ResizedDistanceTransformedImage));
                     %%% Set all pixels that are not local maxima to zero
                     MaximaImage(ResizedDistanceTransformedImage < ...
                         ordfilt2(ResizedDistanceTransformedImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-                    %%% Restore image size
-                    MaximaImage = imresize(MaximaImage,size(Objects),'bilinear');
+                    if strcmp(UseLowRes,'Yes')
+                        %%% Restore image size
+                        MaximaImage = imresize(MaximaImage,size(Objects),'bilinear');
+                    end
                     %%% We are only interested in maxima within thresholded objects
                     MaximaImage(~Objects) = 0;
                     %%% Shrink to points (needed because of the resizing)

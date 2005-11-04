@@ -77,28 +77,40 @@ catch
     error(['Image processing was canceled in the ', ModuleName, ' module because the image ' OutlineName ' could not be found. Perhaps there is a typo?  Make sure you saved the outlines in an earlier module.']);
 end
 
-if any(size(OrigImage) ~= size(OutlineImage))
+if any(size(OrigImage,1) ~= size(OutlineImage,1)) ||  any(size(OrigImage,2) ~= size(OutlineImage,2))
     error(['The size of the image, ' size(OrigImage) ' is not the same as the size of the outlines, ' size(OutlineImage)]);
 end
 
-if strcmp(MaxType,'Max of image')
-    ValueToUseForOutlines = max(max(OrigImage));
-elseif strcmp(MaxType,'Max possible')
-    if isfloat(OrigImage(1,1))
-        ValueToUseForOutlines=1;
+if size(OrigImage,3) ~= 3
+    if strcmp(MaxType,'Max of image')
+        ValueToUseForOutlines = max(max(OrigImage));
+    elseif strcmp(MaxType,'Max possible')
+        if isfloat(OrigImage(1,1))
+            ValueToUseForOutlines=1;
+        else
+            ValueToUseForOutlines = intmax(class(OrigImage(1,1)));
+        end
     else
-        ValueToUseForOutlines = intmax(class(OrigImage(1,1)));
+        error('The value of MaxType was not recognized');
     end
+
+    NewImage = OrigImage;
+    NewImage(OutlineImage ~= 0) = ValueToUseForOutlines;
 else
-    error('The value of MaxType was not recognized');
+    NewImage1 = OrigImage(:,:,1);
+    NewImage2 = OrigImage(:,:,2);
+    NewImage3 = OrigImage(:,:,3);
+    NewImage1(OutlineImage ~= 0) = 1;
+    NewImage2(OutlineImage ~= 0) = 1;
+    NewImage3(OutlineImage ~= 0) = 1;
+    NewImage(:,:,1) = NewImage1;
+    NewImage(:,:,2) = NewImage2;
+    NewImage(:,:,3) = NewImage3;
 end
 
-NewImage = OrigImage;
-NewImage(OutlineImage ~= 0) = ValueToUseForOutlines;
-
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];

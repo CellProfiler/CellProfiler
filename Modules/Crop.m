@@ -365,8 +365,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 params(3) * (Y .* Y) + ...
                 params(4) * X + ...
                 params(5) * Y) < 1);
-            %%% Need to flip X and Y.
-            BinaryCropImage = BinaryCropImage';
+            %%% Need to flip X and Y. Why? It doesnt work.
+            % BinaryCropImage = BinaryCropImage';
         elseif strcmp(CropMethod,'Coordinates')
 
             if strcmp(IndividualOrOnce,'Individually')

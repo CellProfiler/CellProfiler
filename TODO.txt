@@ -9,14 +9,9 @@ October 21, 2005  IN ORDER OF PRIORITY
 
 UROP:
 
-- Define Grid Changes: (NEED TO VERIFY)
-  1. (DONE) What is the least amount of information needed to define grid?
-  2. (DONE ONLY PREVIOUS GRID) Implement way to handle failed grids (force grid, previous grid, grid = 0)
-  3. (DONE) Have handle's include if grid failed or grid worked
-
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
-- CHeck through each module (~2 per day):
+- Check through each module (~2 per day):
 EVERYONE:
 	- Go through the code looking for instances of the term "image set" and
 		replace with "cycle" where appropriate.

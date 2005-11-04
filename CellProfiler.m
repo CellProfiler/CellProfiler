@@ -2851,7 +2851,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
     PathName = get(handles.DefaultImageDirectoryEditBox,'string');
 
     if strcmpi(FileName(end-3:end),'.mat')
-        Answer = CPquestdlg('Would you like to load this pipeline or output file?','Confirm','Yes','No','Yes');
+        Answer = CPquestdlg('Would you like to load the pipeline from this file?','Confirm','Yes','No','Yes');
         if strcmp(Answer,'Yes')
             eventdata.SettingsPathname = PathName;
             eventdata.SettingsFileName = FileName;

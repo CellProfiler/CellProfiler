@@ -1,10 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-Requested by Anne - MeasureImageAreaOccupied produces a field in the handles.Meas structure called ImageAreaOccupiedCellStain. I think we can take 'Image' off the front of the name, and it seems like perhaps there should be an underscore before CellStain, which is the part the user typed in?  Not really sure about that, but it seems like that would make it more like the Intensity_OrigBlue fields.
-
-Requested by Anne - IdentifyNeighbors produces a field in the handles.Meas structure called IdentityofNeighbors which does not match all the other measurements, because it is listing the identity of however many neighbors each objects has. So, in order for this to not make the exporting fail, we should move this data to its own structure. I guess handles.Measurements.Neighbors because it won't fit any other place.
-
 - Identify Secondary Test Mode?
 
 - Make compiled CellProfiler work on cluster

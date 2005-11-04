@@ -42,9 +42,9 @@ function handles = MeasureObjectNeighbors(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -74,9 +74,9 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4})
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
@@ -88,9 +88,9 @@ if ~isfield(handles.Pipeline,fieldname)
 end
 IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Expands each object until almost 8-connected to its neighbors, if
@@ -164,9 +164,9 @@ if sum(sum(ImageOfNeighbors)) >= 1
 else  ColoredImageOfNeighbors = ImageOfNeighbors;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves neighbor measurements to handles structure.
@@ -176,17 +176,17 @@ handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbor
 % This field is different from the usual measurements. To avoid problems with export modules etc we don't
 % add a IdentityOfNeighborsFeatures field. It will then be "invisible" to
 % export modules, which look for fields with 'Features' in the name.
-handles.Measurements.(ObjectName).IdentityOfNeighbors(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
+handles.Measurements.Neighbors.IdentityOfNeighbors(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
 
 
 %%% Example: To extract the number of neighbor for objects called Cells, use code like this:
-%%% handles.Measurements.Cells.IdentityOfNeighborsCells{1}{3}
+%%% handles.Measurements.Neighbors.IdentityOfNeighborsCells{1}{3}
 %%% where 1 is the image number and 3 is the object number. This
 %%% yields a list of the objects who are neighbors with Cell object 3.
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -214,9 +214,9 @@ if any(findobj == ThisModuleFigureNumber) == 1
     set(gca,'FontSize',FontSize)
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE IMAGES TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% To make this module produce results similar to an IdentifyPrim

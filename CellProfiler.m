@@ -3620,7 +3620,7 @@ Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
 if strncmp(Error,'Error using ==> ',16)
-    ErrorExplanation = ['There was a problem running the analysis module number ',CurrentModuleNumber, '.', Error];
+    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '.', Error];
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
 elseif ~isempty(strfind(Error,'bad magic'))

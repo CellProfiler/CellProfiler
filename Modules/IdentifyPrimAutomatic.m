@@ -234,7 +234,6 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % See also <nothing relevant>
 
-
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -381,7 +380,7 @@ LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
 %textVAR17 = What do you want to call the image of the outlines of the objects?
 %choiceVAR17 = Do not save
-%choiceVAR17 = OutlineBlue
+%choiceVAR17 = OutlinedNuclei
 %infotypeVAR17 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %inputtypeVAR17 = popupmenu custom

@@ -1,5 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
+Requested by Anne - can you check that cancel after module works on your computer still? it isn't working on mine.
 
 Requested by Anne - in crop, the 4th variable says you can do number of pixels from edge, but there's no way to enter the info - should this be a custom popup menu so you can type in the number of pixels?
 

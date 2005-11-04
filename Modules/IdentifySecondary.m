@@ -712,6 +712,8 @@ if exist('FinalParentList')
     end
 end
 
+MaxParent = max(ParentList);
+
 for i = 1:max(ParentList)
     if exist('FinalParentList')
         ChildList(i,1) = length(FinalParentList(FinalParentList == i));
@@ -720,21 +722,23 @@ for i = 1:max(ParentList)
     end
 end
 
-if isfield(handles.Measurements.(PrimaryObjectName),'ChildrenFeatures')
-    if handles.Current.SetBeingAnalyzed == 1
-        NewColumn = length(handles.Measurements.(PrimaryObjectName).ChildrenFeatures) + 1;
-        handles.Measurements.(PrimaryObjectName).ChildrenFeatures(NewColumn) = {[SecondaryObjectName,' Count']};
-        handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,NewColumn) = ChildList;
-    else
-        OldColumn = strmatch([SecondaryObjectName,' Count'],handles.Measurements.(PrimaryObjectName).ChildrenFeatures);
-        if length(OldColumn) ~= 1
-            error('You are attempting to create the same children, please remove redundant module.');
+if exist('ChildList')
+    if isfield(handles.Measurements.(PrimaryObjectName),'ChildrenFeatures')
+        if handles.Current.SetBeingAnalyzed == 1
+            NewColumn = length(handles.Measurements.(PrimaryObjectName).ChildrenFeatures) + 1;
+            handles.Measurements.(PrimaryObjectName).ChildrenFeatures(NewColumn) = {[SecondaryObjectName,' Count']};
+            handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,NewColumn) = ChildList;
+        else
+            OldColumn = strmatch([SecondaryObjectName,' Count'],handles.Measurements.(PrimaryObjectName).ChildrenFeatures);
+            if length(OldColumn) ~= 1
+                error('You are attempting to create the same children, please remove redundant module.');
+            end
+            handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
         end
-        handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
+    else
+        handles.Measurements.(PrimaryObjectName).ChildrenFeatures = {[SecondaryObjectName,' Count']};
+        handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed} = ChildList;
     end
-else
-    handles.Measurements.(PrimaryObjectName).ChildrenFeatures = {[SecondaryObjectName,' Count']};
-    handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed} = ChildList;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

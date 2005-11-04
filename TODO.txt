@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 11-04-05) - We seem to be accumulating variables in the workspace. It seems like when this happens, someone is using a shortcut - e.g. making variables global, and we should be able to not do that. Or at least clear the variables when we are done with them.
+
 - Identify Secondary Test Mode?
 
 - Make compiled CellProfiler work on cluster

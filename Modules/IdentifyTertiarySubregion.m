@@ -78,10 +78,12 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Would you like to save the outlines of the objects?
-%defaultVAR04 = OutlineBlue
+%textVAR04 = What do you want to call the image of the outlines of the objects?
+%choiceVAR11 = Do not save
+%choiceVAR11 = OutlinedCytoplasm
 %infotypeVAR04 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+%inputtypeVAR04 = popupmenu custom
 
 %%%VariableRevisionNumber = 1
 

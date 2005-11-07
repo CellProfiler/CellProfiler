@@ -83,8 +83,8 @@ elseif strfind(Threshold,'Adaptive')
     %%% Calculates the threshold for each block in the image, and a global threshold used
     %%% to constrain the adaptive threshholds.
     if strfind(Threshold,'Otsu')
-        GlobalThreshold = graythresh(OrigImage);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'graythresh(x)');
+        GlobalThreshold = CPgraythresh(OrigImage);
+        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],'CPgraythresh(x)');
     elseif strfind(Threshold,'MoG')
         GlobalThreshold = MixtureOfGaussians(OrigImage,pObject);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject);

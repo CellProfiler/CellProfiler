@@ -1,10 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Anne 11-05-05) - Have Id Secondary display what threshold was used, and percent of image consists of objects (like IdPrim does).
-
-- (Requested by Anne 11-05-05) - There is something very strange with CPthreshold when running in adaptive mode. the threshold fails in IdSecondary - i fixed that problem (see ANNE REPLACED THIS LINE 11-06-05 in IdSecondary to make sure it looks ok to do what I did), but the results just look bad when using MoG adaptive.  Also, it seems very confusing to have CPthreshold, CPgraythresh and CPdoublegraythresh. What's going on? Does it make sense? We put in some effort to figure out whether log transforming was helpful and incorporated it into CPgraythresh, but then CPthreshold doesn't have  log transforming? Maybe Ola did this and he knew what he was doing.
-
 - (Requested by Anne 11-05-05) - The Histogram tool isn't exporting the data to excel properly (at least when combining several histograms into one histogram) - it has the bin column headings accurate, but the number of cells per bin has blank columns in between each value.
 
 - (Requested by Anne 11-05-05) - ExportData is not using the proper font size. At normal font size, the different objects' names are kind of cut off a bit on their bottom edge.  The swap rows/columns prompt should state something about which way it will be - like "Each measurement is a " and then the popup would say 'column' or 'row' (I think that is accurate for both Image and Object files). Change 'Choose base of output' to say 'Base file name for exported files:' (or whatever you think is user friendly). The Export process info popup menu is too small to display its text, so it needs to be wider, or perhaps better yet it should be a checkbox like the rest. Export process info doesn't seem to work at the moment - I get an error. The text prompt should be renamed something more meaningful - like 'Export modules and settings in the pipeline as a text file' (I think that's what it does).  If you deselect all the objects and just try to export process info, nothing happens.

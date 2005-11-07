@@ -836,6 +836,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             drawnow
             %%% Activates the appropriate figure window.
             CPfigure(handles,ThisModuleFigureNumber);
+            ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/prod(size(FinalLabelMatrixImage));
+            uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
+                'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Current.FontSize);
             %%% A subplot of the figure window is set to display the original image.
             subplot(2,2,1); imagesc(OrigImage);
             title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
@@ -852,9 +855,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPFixAspectRatio(OrigImage);
         end
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% SAVE DATA TO HANDLES STRUCTURE %%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         drawnow
 
         %%% Saves the final, segmented label matrix image of secondary objects to

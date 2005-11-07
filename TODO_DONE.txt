@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/7) (Requested by Anne 11-05-05) - There is something very strange with CPthreshold when running in adaptive mode. the threshold fails in IdSecondary - i fixed that problem (see ANNE REPLACED THIS LINE 11-06-05 in IdSecondary to make sure it looks ok to do what I did), but the results just look bad when using MoG adaptive.  Also, it seems very confusing to have CPthreshold, CPgraythresh and CPdoublegraythresh. What's going on? Does it make sense? We put in some effort to figure out whether log transforming was helpful and incorporated it into CPgraythresh, but then CPthreshold doesn't have log transforming? Maybe Ola did this and he knew what he was doing.
+
+-(Mike 11/7) (Requested by Anne 11-05-05) - Have Id Secondary display what threshold was used, and percent of image consists of objects (like IdPrim does).
+
 -(Mike 11/7) (Requested by Anne 11-05-05) - Is it possible to have the figure windows, during the first cycle, open when you get to the module?  This would make things run better on the mac, where opening the windows takes a while now that matlab SP3 is using java instead of X11 (so if you have an error in the first module, you have to wait for all 20 windows to open first). It would also fix the problem of images being displayed in the wrong windows if you close windows while the windows are still in the process of opening up.  Or maybe actually this problem would get worse - I guess you could have multiple modules assigned to the same figure window if you closed some windows during the first cycle. Hmm.
 
 -(Mike 11/7) (Requested by Anne 11-05-05) - We are getting errors again in MeasureTexture:

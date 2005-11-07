@@ -885,8 +885,7 @@ try
             %%% Write the HistogramTitle as a heading for the column.
             fwrite(fid, char(HistogramTitles{ImageNumber}), 'char');
             for BinNum = 1:NumberBinsToWrite
-                fwrite(fid, sprintf('\t'), 'char');
-                fwrite(fid, sprintf('\t%g', FinalHistogramData(BinNum,ImageNumber)), 'char');
+                fwrite(fid, sprintf('\t%g',FinalHistogramData(BinNum,ImageNumber)), 'char');
             end
             fwrite(fid, sprintf('\n'), 'char');
             waitbar(ImageNumber/NumImages);

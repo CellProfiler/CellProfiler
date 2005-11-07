@@ -159,6 +159,7 @@ set(FigureHandle,'UserData',Info);
 StdUnit = 'point';
 StdColor = get(0,'DefaultUIcontrolBackgroundColor');
 PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
+VersionCheck = version;
 if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
     DisplayButtonCallback1 = 'CPmsgbox(''A bug in Matlab is preventing this function from working on the Mac platform. Service Request #1-RR6M1''), drawnow';
 else

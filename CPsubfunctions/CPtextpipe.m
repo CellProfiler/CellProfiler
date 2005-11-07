@@ -29,14 +29,9 @@ if isstruct(ExportInfo)
         ExportInfo.ProcessInfoExtension = ['.',ExportInfo.ProcessInfoExtension];
     end
     filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
-    [ignore,Attributes] = fileattrib(fullfile(RawPathname,filename));
-    if Attributes.UserWrite == 0
-        error(['You do not have permission to write ',fullfile(RawPathname,filename),'!']);
-    else
-        fid = fopen(fullfile(RawPathname,filename),'w');
-    end
+    fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
-        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name, or you do not have permission to write this file.',filename));
     end
 else
     %Prompt what to save file as, and where to save it.
@@ -77,12 +72,7 @@ for p = 1:VariableSize(1)
     Module = [char(ModuleNames(p))];
     fprintf(fid,['\nModule #' num2str(p) ': ' Module ' revision - ' num2str(RevNums(p)) '\n']);
     ModuleNamedotm = [Module '.m'];
-    [ignore,Attributes] = fileattrib(fullfile(PathnameModules,ModuleNamedotm));
-    if Attributes.UserWrite == 0
-        error(['You do not have permission to write ',fullfile(PathnameModules,ModuleNamedotm),'!']);
-    else
-        fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
-    end
+    fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
     while 1
         output = fgetl(fid2);
         if ~ischar(output), break, end

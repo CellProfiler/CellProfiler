@@ -7,10 +7,14 @@ function handles = MeasureImageSaturationBlur(handles)
 % is equal to the maximum possible intensity value for that image
 % type) is calculated and stored as a measurement in the output file.
 %
-% The module can also compute and record a focus score (lower =
+% The module can also compute and record a focus score (higher =
 % better focus). This calculation takes much longer than the
 % saturation checking, so it is optional. We are calculating the focus
-% using the normalized variance.
+% using the normalized variance. We used this algorithm because it was
+% ranked 1st in this paper:
+% Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
+%    Selecting the optimals focus algorithm." Microscopy Research and
+%    Technique 65:139-149 (2004)
 %
 % How it works:
 % The calculation of the focus score is as follows:

@@ -1,7 +1,45 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
+- (Requested by Anne 11-05-05) - None of the image tools work that are embedded in IdentifyPrim figure window - i.e. clicking on one of the panels yields the little pop up window of image tools, but none of them works - here is the error:
+??? There is no 'Title' property in the 'figure' class.
+
+Error in ==> CPImageTool at 52
+        Title = get(get(get(handle,'Parent'),'Title'),'String');      % Get title of image
+
+??? Error while evaluating uicontrol Callback.
+
+
+- (Requested by Anne 11-05-05) - We are getting errors again in MeasureTexture:
+Warning: Divide by zero.
+> In MeasureObjectTexture>CalculateHaralick at 546
+  In MeasureObjectTexture at 355
+  In CellProfiler>AnalyzeImagesButton_Callback at 3199
+  In CellProfiler>gui_mainfcn at 4989
+  In CellProfiler at 51
+
+- (Requested by Anne 11-05-05) - Have Id Secondary display what threshold was used, and percent of image consists of objects (like IdPrim does).
+
+- (Requested by Anne 11-05-05) - Is it possible to have the figure windows, during the first cycle, open when you get to the module?  This would make things run better on the mac, where opening the windows takes a while now that matlab SP3 is using java instead of X11 (so if you have an error in the first module, you have to wait for all 20 windows to open first). It would also fix the problem of images being displayed in the wrong windows if you close windows while the windows are still in the process of opening up.  Or maybe actually this problem would get worse - I guess you could have multiple modules assigned to the same figure window if you closed some windows during the first cycle. Hmm.
+
+
+- (Requested by Anne 11-05-05) - There are some eval commands still in the code. (saw in Crop). Don't we have to remove these for compiled functions to work?
+
 - (Requested by Anne 11-04-05) - We seem to be accumulating variables in the workspace. It seems like when this happens, someone is using a shortcut - e.g. making variables global, and we should be able to not do that. Or at least clear the variables when we are done with them.
+
+- (Requested by Anne 11-05-05) - There is something very strange with CPthreshold when running in adaptive mode. the threshold fails in IdSecondary - i fixed that problem (see ANNE REPLACED THIS LINE 11-06-05 in IdSecondary to make sure it looks ok to do what I did), but the results just look bad when using MoG adaptive.  Also, it seems very confusing to have CPthreshold, CPgraythresh and CPdoublegraythresh. What's going on? Does it make sense? We put in some effort to figure out whether log transforming was helpful and incorporated it into CPgraythresh, but then CPthreshold doesn't have  log transforming? Maybe Ola did this and he knew what he was doing.
+
+- (Requested by Anne 11-05-05) - The Histogram tool isn't exporting the data to excel properly (at least when combining several histograms into one histogram) - it has the bin column headings accurate, but the number of cells per bin has blank columns in between each value.
+
+- (Requested by Anne 11-05-05) - when adding a control histogram to the histogram plot, it doesn't ask you or tell you which sample it's using - is it the first image cycle in the output file.?
+
+- (Requested by Anne 11-05-05) - The text "Loading Pipeline" that displays while pipelines are loading in the little status bar dialog box is not the user's font size.
+
+- (Requested by Anne 11-05-05) - ExportData is not using the proper font size. At normal font size, the different objects' names are kind of cut off a bit on their bottom edge.  The swap rows/columns prompt should state something about which way it will be - like "Each measurement is a " and then the popup would say 'column' or 'row' (I think that is accurate for both Image and Object files). Change 'Choose base of output' to say 'Base file name for exported files:' (or whatever you think is user friendly). The Export process info popup menu is too small to display its text, so it needs to be wider, or perhaps better yet it should be a checkbox like the rest. Export process info doesn't seem to work at the moment - I get an error. The text prompt should be renamed something more meaningful - like 'Export modules and settings in the pipeline as a text file' (I think that's what it does).  If you deselect all the objects and just try to export process info, nothing happens.
+
+- (Requested by Anne 11-05-05) - The error message needs to be made modal (not open a new one for each cycle) and to have the proper CP color:  It occurred as a result of one of the identify modules - not sure which - and said this: The object outlines or colored objects were not calculate by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. It's strange, because I don't think the message was necessary - i think the outlines were calculated and then saved properly, so we should also check whether this message even ought to be shown.
+
+- (Requested by Anne 11-05-05) - In Crop, when cropping by clicking pixels, esp. in rectangle shape, it would be nice when you accidentally click a little bit off the image (e.g. you are trying to click the top left most pixel of the image) if it would not fail. Right now, it probably records it as a negative number or something, so it would be nice if positions less than 1 are rounded to 1 and if pixels greater than the size of the image are rounded to the 'end' of the image. If this occurs, however, there should be a warning dialog so you are aware that you clicked off the image (in case you accidentally clicked way off the image and did not intend to). I guess the same thing should be done for clicking points to make an ellipse, right?
 
 - Identify Secondary Test Mode?
 

@@ -325,9 +325,9 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = 1
 ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Lower bound on threshold in the range [0,1].
-%defaultVAR09 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Lower and upper bounds on threshold (in the range [0,1])
+%defaultVAR09 = 0,1
+ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
 %choiceVAR10 = 10%
@@ -392,7 +392,7 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 %inputtypeVAR18 = popupmenu
 
-%%%VariableRevisionNumber = 10
+%%%VariableRevisionNumber = 11
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -435,23 +435,36 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         
         %%% Checks that the Min and Max diameter parameters have valid values
         index = strfind(SizeRange,',');
-        if isempty(index),error(['The Min and Max size entry in the ', ModuleName, ' module is invalid.']),end
+        if isempty(index),
+            error(['The Min and Max size entry in the ', ModuleName, ' module is invalid.'])
+        end
         MinDiameter = SizeRange(1:index-1);
         MaxDiameter = SizeRange(index+1:end);
 
         MinDiameter = str2double(MinDiameter);
         if isnan(MinDiameter) | MinDiameter < 0
-            error(['The Min dimater entry in the ', ModuleName, ' module is invalid.'])
+            error(['The Min diameter entry in the ', ModuleName, ' module is invalid.'])
         end
-        if strcmp(MaxDiameter,'Inf') ,MaxDiameter = Inf;
+        if strcmp(MaxDiameter,'Inf')
+            MaxDiameter = Inf;
         else
             MaxDiameter = str2double(MaxDiameter);
             if isnan(MaxDiameter) | MaxDiameter < 0
-                error(['The Max Diameter entry in the ', ModuleName, ' module is invalid.'])
+                error(['The Max diameter entry in the ', ModuleName, ' module is invalid.'])
             end
         end
-        if MinDiameter > MaxDiameter, error(['Min Diameter larger the Max Diameter in the ', ModuleName, ' module.']),end
+        if MinDiameter > MaxDiameter
+            error(['Min Diameter larger the Max Diameter in the ', ModuleName, ' module.'])
+        end
         Diameter = min((MinDiameter + MaxDiameter)/2,50);
+
+        %%% Checks that the Min and Max threshold bounds have valid values
+        index = strfind(ThresholdRange,',');
+        if isempty(index)
+            error(['The Min and Max threshold bounds in the ', ModuleName, ' module are invalid.'])
+        end
+        MinimumThreshold = ThresholdRange(1:index-1);
+        MaximumThreshold = ThresholdRange(index+1:end);
 
         %%% Check the smoothing filter size parameter
         if ~strcmp(SizeOfSmoothingFilter,'Automatic')
@@ -474,7 +487,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         %%%%%%%%%%%%%%%%%%%%%%
         drawnow
         
-        [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+        [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
 
         if strcmp(LaplaceValues,'/')
 

@@ -207,9 +207,9 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 1
 ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Lower bound on threshold in the range [0,1].
-%defaultVAR07 = 0
-MinimumThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Lower and upper bounds on threshold (in the range [0,1])
+%defaultVAR07 = 0,1
+ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Approximate percentage of image covered by objects (for MoG thresholding only):
 %choiceVAR08 = 10%
@@ -239,7 +239,7 @@ RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentMo
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu custom
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -299,6 +299,14 @@ if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) | (size(OrigImage) ~
     error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
 end
 
+%%% Checks that the Min and Max threshold bounds have valid values
+index = strfind(ThresholdRange,',');
+if isempty(index)
+    error(['The Min and Max threshold bounds in the ', ModuleName, ' module are invalid.'])
+end
+MinimumThreshold = ThresholdRange(1:index-1);
+MaximumThreshold = ThresholdRange(index+1:end);
+
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%
@@ -308,10 +316,15 @@ drawnow
 %%% weak threshold to the original image of the secondary objects.
 drawnow
 %%% Determines the threshold to use.
-[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+
+%%% ANNE REPLACED THIS LINE 11-06-05.
+%%% Thresholds the original image.
+%ThresholdedOrigImage = im2bw(OrigImage, Threshold);
 
 %%% Thresholds the original image.
-ThresholdedOrigImage = im2bw(OrigImage, Threshold);
+ThresholdedOrigImage = OrigImage > Threshold;
+Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
 
 if strncmp(IdentChoice,'Distance',8)
     if strcmp(IdentChoice(12),'N')

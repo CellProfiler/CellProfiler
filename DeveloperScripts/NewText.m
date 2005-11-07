@@ -1,1 +1,1 @@
-'CPImageTool(gco)'
+pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection

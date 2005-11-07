@@ -1,4 +1,19 @@
-function [handles,Threshold] = CPThreshold(handles,Threshold,pObject,MinimumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName)
+function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName)
+
+%%% If the image was produced using a cropping mask, we do not
+%%% want to include the Masked part in the calculation of the
+%%% proper threshold, because there will be many zeros in the
+%%% image.  So, we check to see whether there is a field in the
+%%% handles structure that goes along with the image of interest.
+fieldname = ['CropMask', ImageName];
+if isfield(handles.Pipeline,fieldname) == 1
+    %%% Retrieves previously selected cropping mask from handles
+    %%% structure.
+    BinaryCropImage = handles.Pipeline.(fieldname);
+    %%% Masks the image and I think turns it into a linear
+    %%% matrix.
+    OrigImage = OrigImage(logical(BinaryCropImage));
+end
 
 %%% Convert user-specified percentage of image covered by objects to a prior probability
 %%% of a pixel being part of an object.
@@ -12,6 +27,19 @@ else
     MinimumThreshold = str2double(MinimumThreshold);
     if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
         error(['The Minimum threshold entry in the ', ModuleName, ' module is invalid.'])
+    end
+end
+
+if strcmp(MaximumThreshold,'Do not use')
+    MaximumThreshold = 1;
+else
+    MaximumThreshold = str2double(MaximumThreshold);
+    if isnan(MaximumThreshold) | MaximumThreshold < 0 | MaximumThreshold > 1
+        error(['The Maximum bound on the threshold in the ', ModuleName, ' module is invalid.'])
+    end
+
+    if MinimumThreshold > MaximumThreshold,
+        error(['Min bound on the threshold larger the Max bound on the threshold in the ', ModuleName, ' module.'])
     end
 end
 
@@ -158,6 +186,7 @@ end
 %%% and make sure that the threshold is not larger than the minimum threshold
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
+Threshold = min(Threshold,MaximumThreshold);
 
 function Threshold = MixtureOfGaussians(OrigImage,pObject)
 %%% This function finds a suitable threshold for the input image

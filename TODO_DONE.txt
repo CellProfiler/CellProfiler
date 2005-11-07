@@ -1,5 +1,13 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/7) (Requested by Anne 11-05-05) - We are getting errors again in MeasureTexture:
+Warning: Divide by zero.
+> In MeasureObjectTexture>CalculateHaralick at 546
+  In MeasureObjectTexture at 355
+  In CellProfiler>AnalyzeImagesButton_Callback at 3199
+  In CellProfiler>gui_mainfcn at 4989
+  In CellProfiler at 51
+
 -(Mike 11/7) (Requested by Anne 11-05-05) - The error message needs to be made modal (not open a new one for each cycle) and to have the proper CP color:  It occurred as a result of one of the identify modules - not sure which - and said this: The object outlines or colored objects were not calculate by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. It's strange, because I don't think the message was necessary - i think the outlines were calculated and then saved properly, so we should also check whether this message even ought to be shown.
 
 -(Mike 11/7) (Requested by Anne 11-05-05) - The text "Loading Pipeline" that displays while pipelines are loading in the little status bar dialog box is not the user's font size.

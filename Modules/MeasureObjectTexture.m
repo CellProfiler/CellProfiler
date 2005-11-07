@@ -435,7 +435,8 @@ end
 drawnow
 
 function H = CalculateHaralick(im,mask,ScaleOfTexture)
-%
+
+warning off MATLAB:DivideByZero
 % This function calculates so-called Haralick features, which are
 % based on the co-occurence matrix. The function takes two inputs:
 %
@@ -574,6 +575,8 @@ H12 = (HXY-HXY1)/max(HX,HY);
 
 % H13. Information Measure of Correlation 2
 H13 = real(sqrt(1-exp(-2*(HXY2-HXY))));             % An imaginary result has been encountered once, reason unclear
+
+warning on MATLAB:DivideByZero
 
 % H14. Max correlation coefficient (not currently used)
 % Q = zeros(Levels);

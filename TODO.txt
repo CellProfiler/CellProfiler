@@ -1,14 +1,6 @@
 CellProfiler cell image analysis software development 
 October 21, 2005  IN ORDER OF PRIORITY
 
-- (Requested by Anne 11-05-05) - We are getting errors again in MeasureTexture:
-Warning: Divide by zero.
-> In MeasureObjectTexture>CalculateHaralick at 546
-  In MeasureObjectTexture at 355
-  In CellProfiler>AnalyzeImagesButton_Callback at 3199
-  In CellProfiler>gui_mainfcn at 4989
-  In CellProfiler at 51
-
 - (Requested by Anne 11-05-05) - Have Id Secondary display what threshold was used, and percent of image consists of objects (like IdPrim does).
 
 - (Requested by Anne 11-05-05) - Is it possible to have the figure windows, during the first cycle, open when you get to the module?  This would make things run better on the mac, where opening the windows takes a while now that matlab SP3 is using java instead of X11 (so if you have an error in the first module, you have to wait for all 20 windows to open first). It would also fix the problem of images being displayed in the wrong windows if you close windows while the windows are still in the process of opening up.  Or maybe actually this problem would get worse - I guess you could have multiple modules assigned to the same figure window if you closed some windows during the first cycle. Hmm.

@@ -634,9 +634,6 @@ else
     handles.Current.NumberOfModules = 0;
 
     contents = handles.Settings.ModuleNames;
-    %  set(handles.ModulePipelineListBox,'String',contents);
-    %  set(handles.ModulePipelineListBox,'Value',1);
-    %  set(handles.PixelSizeEditBox,'string',handles.Settings.PixelSize);
 
     %%% Update handles structure.
 

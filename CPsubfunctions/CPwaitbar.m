@@ -1,4 +1,4 @@
-function fout = CPwaitbar(x,whichbar, varargin)
+function fout = CPwaitbar(x,whichbar,varargin)
 %WAITBAR Display wait bar.
 %   H = WAITBAR(X,'title', property, value, property, value, ...) 
 %   creates and displays a waitbar of fractional length X.  The 
@@ -47,14 +47,13 @@ if nargin>=2
     end
 elseif nargin==1
     f = findobj(allchild(0),'flat','Tag','TMWWaitbar');
-    
     if isempty(f)
         type=2;
         name='Waitbar';
     else
         type=1;
         f=f(1);
-    end   
+    end
 else
     error('Input arguments not valid.');
 end
@@ -102,6 +101,12 @@ switch type
   width = 360 * pointsPerPixel;
   height = 75 * pointsPerPixel;
   pos = [screenSize(3)/2-width/2 screenSize(4)/2-height/2 width height];
+
+  try
+      FontSize = handles.Preferences.FontSize;
+  catch
+      FontSize = 12;
+  end
 
   f = CPfigure(...
       'Units', 'points', ...
@@ -167,7 +172,12 @@ switch type
   
   
   colormap([]);
-  
+
+  try
+      handles = guidata(gcbo);
+      axFontSize = handles.Current.FontSize;
+  end
+
   axNorm=[.05 .3 .9 .2];
   axPos=axNorm.*[pos(3:4),pos(3:4)] + [0 vertMargin 0 0];
   

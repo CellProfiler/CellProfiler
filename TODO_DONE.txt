@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/7) (Requested by Anne 11-05-05) - The text "Loading Pipeline" that displays while pipelines are loading in the little status bar dialog box is not the user's font size.
+
 -(Mike 11/7 No, only certain types) (Requested by Anne 11-05-05) - There are some eval commands still in the code. (saw in Crop). Don't we have to remove these for compiled functions to work?
 
 -(Mike 11/7) Identify Secondary Test Mode?

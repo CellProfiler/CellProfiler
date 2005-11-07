@@ -54,7 +54,7 @@ FontSize = handles.Current.FontSize;
 if PlotType == 1
 
     %%% Get the feature type
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
     if isempty(ObjectTypename),return,end
 
     %%% Extract the measurement and calculate mean and standard deviation
@@ -168,9 +168,21 @@ elseif PlotType == 4
     Measurements1 = handles.Measurements.(ObjectTypename1).(FeatureType1);
     Measurements2 = handles.Measurements.(ObjectTypename2).(FeatureType2);
 
+    %%% Calculates some values for the next dialog box.
+    TotalNumberImageSets = length(Measurements1);
+    TextTotalNumberImageSets = num2str(TotalNumberImageSets);
+    %%% Ask the user to specify histogram settings.
+    Prompts{1} = 'Enter the first image set to use for the scatter plot';
+    Prompts{2} = ['Enter the last last image set to use for scatter plot (the total number of image sets with data in the file is ',TextTotalNumberImageSets,').'];
+    Defaults{1} = '1';
+    Defaults{2} = TextTotalNumberImageSets;
+    Answers = inputdlg(Prompts(1:2),'Choose histogram settings',1,Defaults(1:2),'on');
+    FirstImage = str2num(Answers{1});
+    LastImage = str2num(Answers{2});
+
     %%% Plot
     hold on
-    for k = 1:length(Measurements1)
+    for k = FirstImage:LastImage
         if size(Measurements1{k},1) ~= size(Measurements2{k})
             errordlg('The number object for the chosen measurements does not match.')
             return

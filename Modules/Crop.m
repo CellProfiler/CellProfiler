@@ -27,7 +27,7 @@ function handles = Crop(handles)
 % calculate the ellipse shape.
 %
 % Individually or Once: This option will allow you to apply the same
-% cropping to all images or define each image seperately.
+% cropping to all images or define each image separately.
 %
 % File: You can crop images to any arbitrary shape by loading that
 % shape into CellProfiler. Use the LoadSingleImage module to load the
@@ -248,7 +248,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 fieldname = ['Segmented',Shape];
                 try BinaryCropImage = handles.Pipeline.(fieldname);
                 catch
-                    fieldname = ['Cropping',Shape'];
+                    fieldname = ['Cropping',Shape];
                     try BinaryCropImage = handles.Pipeline.(fieldname);
                     catch error('Image cannot be found!');
                     end
@@ -317,15 +317,18 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CropFromObjectFlag = 1;
         else
             CropFromObjectFlag = 1;
-            try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
+            try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
             catch
-                try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], ModuleName);
+                try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], ModuleName);
                 catch
-                    try [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], ModuleName);
+                    try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], ModuleName);
                     catch error('Image cannot be found!');
                     end
                 end
             end
+            
+        handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
+
         end
     end
 
@@ -402,7 +405,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
+        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
 
@@ -454,11 +457,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
+        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
     end
     %%% See subfunction below.
 else
-    [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
+    [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -502,7 +505,7 @@ drawnow
 %%% subsequent modules.
 handles.Pipeline.(CroppedImageName) = CroppedImage;
 
-function [handles, CroppedImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
+function [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
 %%% Retrieves the Cropping image from the handles structure.
 try
     BinaryCropImage = handles.Pipeline.(CroppedImageName);

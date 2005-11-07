@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/7) (Requested by Anne 11-05-05) - Is it possible to have the figure windows, during the first cycle, open when you get to the module?  This would make things run better on the mac, where opening the windows takes a while now that matlab SP3 is using java instead of X11 (so if you have an error in the first module, you have to wait for all 20 windows to open first). It would also fix the problem of images being displayed in the wrong windows if you close windows while the windows are still in the process of opening up.  Or maybe actually this problem would get worse - I guess you could have multiple modules assigned to the same figure window if you closed some windows during the first cycle. Hmm.
+
 -(Mike 11/7) (Requested by Anne 11-05-05) - We are getting errors again in MeasureTexture:
 Warning: Divide by zero.
 > In MeasureObjectTexture>CalculateHaralick at 546

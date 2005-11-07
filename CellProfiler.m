@@ -3131,19 +3131,6 @@ else
             set(handles.CloseFigureButton,'visible','on')
             set(handles.OpenFigureButton,'visible','on')
 
-            for i=1:handles.Current.NumberOfModules;
-                if iscellstr(handles.Settings.ModuleNames(i)) == 1
-                    LeftPos = (ScreenWidth*((i-1)/12));
-                    if LeftPos >= ScreenWidth
-                        LeftPos = LeftPos - ScreenWidth;
-                    end
-                    handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
-                        CPfigure(handles,'name',[char(handles.Settings.ModuleNames(i)), ' Display, cycle # '],...
-                        'Position',[LeftPos (ScreenHeight-522) 560 442],...
-                        'color',[0.7,0.7,0.7]);
-                end
-            end
-
             %%% For the first time through, the number of cycles
             %%% will not yet have been determined.  So, the Number of
             %%% cycles is set temporarily.
@@ -3160,9 +3147,9 @@ else
             %%% Update the handles structure.
             guidata(gcbo, handles);
 
-            %%%%%%
-            %%% Begin loop (going through all the cycles).
-            %%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%% Begin loop (going through all the cycles). %%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             %%% This variable allows breaking out of nested loops.
             break_outer_loop = 0;
@@ -3189,15 +3176,30 @@ else
                         %%% analysis loop, and completes the refreshing
                         %%% process.
                         try
+                            if handles.Current.SetBeingAnalyzed == 1
+                                if iscellstr(handles.Settings.ModuleNames(SlotNumber))
+                                    LeftPos = (ScreenWidth*((SlotNumber-1)/12));
+                                    if LeftPos >= ScreenWidth
+                                        LeftPos = LeftPos - ScreenWidth;
+                                    end
+                                    handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]) = ...
+                                        CPfigure(handles,'name',[char(handles.Settings.ModuleNames(SlotNumber)), ' Display, cycle # '],...
+                                        'Position',[LeftPos (ScreenHeight-522) 560 442],...
+                                        'color',[0.7,0.7,0.9]);
+                                end
+                            end
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
                             %%% argument.
                             handles.Measurements.Image.ModuleErrorFeatures(str2num(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
-                            if ishandle(SlotNumber)
-                                OldText = get(SlotNumber,'name');
+                            try
+                            FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
+                            end
+                            if ishandle(FigHandle)
+                                OldText = get(FigHandle,'name');
                                 NewNum = handles.Current.SetBeingAnalyzed;
-                                set(SlotNumber,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
+                                set(FigHandle,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
                             end
                             handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2num(ModuleNumberAsString)) = 0;
                         catch

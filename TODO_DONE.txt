@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/7 No, only certain types) (Requested by Anne 11-05-05) - There are some eval commands still in the code. (saw in Crop). Don't we have to remove these for compiled functions to work?
+
+-(Mike 11/7) Identify Secondary Test Mode?
+
 -(Mike 11/4) Identify Secondary is not saving outlines properly. See IdentifyPrimAuto or IdentifyTertiary for an example that is working well. Check the other Identify modules to be sure they are doing the right things with outlines.
 
 -(Mike 11/4) Requested by Anne - IdentifyNeighbors produces a field in the handles.Meas structure called IdentityofNeighbors which does not match all the other measurements, because it is listing the identity of however many neighbors each objects has. So, in order for this to not make the exporting fail, we should move this data to its own structure. I guess handles.Measurements.Neighbors because it won't fit any other place.

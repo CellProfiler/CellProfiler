@@ -7,16 +7,18 @@ function handles = MeasureImageSaturationBlur(handles)
 % is equal to the maximum possible intensity value for that image
 % type) is calculated and stored as a measurement in the output file.
 %
-% The module can also compute and record a focus score (higher =
+% The module can also compute and record a focus score (lower =
 % better focus). This calculation takes much longer than the
-% saturation checking, so it is optional.
+% saturation checking, so it is optional. We are calculating the focus
+% using the normalized variance.
 %
 % How it works:
 % The calculation of the focus score is as follows:
-% RightImage = Image(:,2:end)
-% LeftImage = Image(:,1:end-1)
-% MeanImageValue = mean(Image(:))
-% BlurScore = std(RightImage(:) - LeftImage(:)) / MeanImageValue
+% [m,n] = size(Image);
+% MeanImageValue = mean(Image(:));
+% SquaredNormalizedImage = (Image-MeanImageValue).^2;
+% BlurScore{ImageNumber} = ...
+%    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 %
 % SAVING IMAGES: If you want to save images produced by this module,
 % alter the code for this module to save those images to the handles
@@ -44,9 +46,9 @@ function handles = MeasureImageSaturationBlur(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -100,9 +102,9 @@ BlurCheck = BlurCheck(1);
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 tmp1 = {};
@@ -144,14 +146,27 @@ for ImageNumber = 1:length(NameImageToCheck);
     Measurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber}];
     Featurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber},'Features'];
     %%% Checks the focus of the images, if desired.
-    if ~strcmp(upper(BlurCheck),'N')
-        RightImage = ImageToCheck{ImageNumber}(:,2:end);
-        LeftImage = ImageToCheck{ImageNumber}(:,1:end-1);
-        MeanImageValue = mean(ImageToCheck{ImageNumber}(:));
+    if ~strcmpi(BlurCheck,'N')
+%         Old method of scoring focus, not justified
+%         RightImage = ImageToCheck{ImageNumber}(:,2:end);
+%         LeftImage = ImageToCheck{ImageNumber}(:,1:end-1);
+%         MeanImageValue = mean(ImageToCheck{ImageNumber}(:));
+%         if MeanImageValue == 0
+%             BlurScore{ImageNumber} = 0;
+%         else
+%             BlurScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
+%         end
+        Image = ImageToCheck{ImageNumber};
+        if ~strcmp(class(Image),'double')
+            Image = im2double(Image);
+        end
+        [m,n] = size(Image);
+        MeanImageValue = mean(Image(:));
+        SquaredNormalizedImage = (Image-MeanImageValue).^2;
         if MeanImageValue == 0
             BlurScore{ImageNumber} = 0;
         else
-            BlurScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
+            BlurScore{ImageNumber} = sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
         end
         Featurenames = {'BlurScore','PercentSaturated'};
         handles.Measurements.Image.(Featurefieldname) = Featurenames;
@@ -164,9 +179,9 @@ for ImageNumber = 1:length(NameImageToCheck);
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];

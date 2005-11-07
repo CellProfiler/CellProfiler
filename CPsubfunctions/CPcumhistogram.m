@@ -117,5 +117,7 @@ for i = 1:length(AxesHandles)
     set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
     set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top');
     set(findobj(findobj('tag',LineColor),'type','line'),'color',LineColor);
+    set(h2,'XLim',get(AxesHandles(i),'XLim'))
+    set(h2,'YLim',get(AxesHandles(i),'YLim'))
     axis tight
 end

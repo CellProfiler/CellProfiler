@@ -26,9 +26,25 @@ MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Fea
 %%% Put the measurements for this feature in a cell array, one
 %%% cell for each image set.
 tmp = handles.Measurements.(ObjectTypename).(FeatureType);
-Measurements = cell(length(tmp),1);
-for k = 1:length(tmp)
-    Measurements{k} = tmp{k}(:,FeatureNo);
+%%% Calculates some values for the next dialog box.
+TotalNumberImageSets = length(tmp);
+TextTotalNumberImageSets = num2str(TotalNumberImageSets);
+%%% Ask the user to specify histogram settings.
+Prompts{1} = 'Enter the first image set to use for Histogram';
+Prompts{2} = ['Enter the last last image set to use for Histogram (the total number of image sets with data in the file is ',TextTotalNumberImageSets,').'];
+Prompts{3} = 'What color do you want this histogram to be?';
+Defaults{1} = '1';
+Defaults{2} = TextTotalNumberImageSets;
+Defaults{3} = 'red';
+Answers = inputdlg(Prompts(1:3),'Choose histogram settings',1,Defaults(1:3),'on');
+FirstImage = str2num(Answers{1});
+LastImage = str2num(Answers{2});
+LineColor = Answers{3};
+Measurements = cell((FirstImage-LastImage),1);
+i = 1;
+for k = FirstImage:LastImage
+    Measurements{i} = tmp{k}(:,FeatureNo);
+    i = i+1;
 end
 
 if ~strcmpi(GreaterOrLessThan,'A')
@@ -97,9 +113,9 @@ PlotBinLocations = FigureSettings{1};
 AxesHandles = findobj(h_Parent,'Tag','BarTag');
 for i = 1:length(AxesHandles)
     h2 = axes('Position',get(AxesHandles(i),'Position'));
-    plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2);
+    plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
     set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
     set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top');
-    set(findobj(h2,'type','line'),'color','red');
+    set(findobj(findobj('tag',LineColor),'type','line'),'color',LineColor);
     axis tight
 end

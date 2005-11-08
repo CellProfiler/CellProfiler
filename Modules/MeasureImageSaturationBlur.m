@@ -16,7 +16,6 @@ function handles = MeasureImageSaturationBlur(handles)
 %    Selecting the optimals focus algorithm." Microscopy Research and
 %    Technique 65:139-149 (2004)
 %
-% How it works:
 % The calculation of the focus score is as follows:
 % [m,n] = size(Image);
 % MeanImageValue = mean(Image(:));

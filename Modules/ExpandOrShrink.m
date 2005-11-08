@@ -82,13 +82,13 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are the Objects Primary or Secondary?
+%textVAR03 = Were the objects identified using an IdentifyPrimary or IdentifySecondary module?
 %choiceVAR03 = Primary
 %choiceVAR03 = Secondary
-%inputtypeVAR02 = popupmenu
+%inputtypeVAR03 = popupmenu
 ObjectChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Enter E for Expand or S for Shrink.
+%textVAR04 = Choose expand or shrink:
 %choiceVAR04 = Shrink
 %choiceVAR04 = Expand
 ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,4});

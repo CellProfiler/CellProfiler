@@ -157,6 +157,7 @@ Prompts{12} = 'If exporting histograms or displaying as a compressed histogram (
 Prompts{13} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
 Prompts{14} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
 Prompts{15} = 'Do you want a line or bar graph?';
+Prompts{16} = 'Do you want the axis to be log scale?';
 
 AcceptableAnswers = 0;
 global Answers
@@ -176,6 +177,7 @@ while AcceptableAnswers == 0
     Defaults{13} = 'yes';
     Defaults{14} = 'N';
     Defaults{15} = 'bar';
+    Defaults{16} = 'no';
     %%% Loads the Defaults from the global workspace (i.e. from the
     %%% previous time the user ran this tool) if possible.
     for i = 1: length(Prompts)
@@ -194,7 +196,7 @@ while AcceptableAnswers == 0
     if isempty(Answers1)
         return
     end
-    Answers2 = inputdlg(Prompts(8:15),'Choose histogram settings - page 2',1,Defaults(8:15),'on');
+    Answers2 = inputdlg(Prompts(8:16),'Choose histogram settings - page 2',1,Defaults(8:16),'on');
 
     %%% If user clicks cancel button Answers2 will be empty.
     if isempty(Answers2)
@@ -208,7 +210,7 @@ while AcceptableAnswers == 0
     ErrorFlag = 0;
     for i = 1:length(Prompts)
         if isempty(Answers{i}) == 1
-            errordlg(['The box was left empty in response to the question: ', Prompts{i},'.'])
+            uiwait(CPerrordlg(['The box was left empty in response to the question: ', Prompts{i},'.']))
             ErrorFlag = 1;
             break
         end
@@ -218,61 +220,61 @@ while AcceptableAnswers == 0
     end
 
     try FirstImage = str2double(Answers{1});
-    catch errordlg(['You must enter a number in answer to the question: ', Prompts{1}, '.']);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{1}, '.']));
         continue
     end
 
     try LastImage = str2double(Answers{2});
-    catch errordlg(['You must enter a number in answer to the question: ', Prompts{2}, '.']);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{2}, '.']));
         continue
     end
     NumberOfImages = LastImage - FirstImage + 1;
     if NumberOfImages == 0
         NumberOfImages = TotalNumberImageSets;
     elseif NumberOfImages > TotalNumberImageSets
-        errordlg(['There are only ', TextTotalNumberImageSets, ' image sets total, but you specified that you wanted to view image set number ', num2str(LastImage),'.'])
+        uiwait(CPerrordlg(['There are only ', TextTotalNumberImageSets, ' image sets total, but you specified that you wanted to view image set number ', num2str(LastImage),'.']))
         continue
     end
     try NumberOfBins = str2double(Answers{3});
-    catch errordlg(['You must enter a number in answer to the question: ', Prompts{3}, '.']);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{3}, '.']));
         continue
     end
     MinHistogramValue = Answers{4};
     try str2double(MinHistogramValue);
-    catch errordlg(['You must enter a number in answer to the question: ', Prompts{4}, '.']);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{4}, '.']));
         continue
     end
 
     MaxHistogramValue = Answers{5};
     try str2double(MaxHistogramValue);
-    catch errordlg(['You must enter a number in answer to the question: ', Prompts{5}, '.']);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{5}, '.']));
         continue
     end
     CumulativeHistogram = Answers{6};
     GreaterOrLessThan = Answers{7};
     try ThresholdValue = str2double(Answers{8});
-    catch errordlg(['You must enter a number in answer to the question: ', Prompts{8}, '.']);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{8}, '.']));
         continue
     end
 
     %%% Error checking for the Y Axis Scale question.
     try YAxisScale = lower(Answers{9});
-    catch errordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']);
+    catch uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']));
         continue
     end
     if strcmpi(YAxisScale, 'relative') ~= 1 && strcmpi(YAxisScale, 'absolute') ~= 1
-        errordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']);
+        uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']));
         continue
     end
     
     CompressedHistogram = Answers{10};
     if strncmpi(CompressedHistogram,'Y',1) ~= 1 && strncmpi(CompressedHistogram,'N',1) ~= 1
-        errordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{10}, '.']);
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{10}, '.']));
         continue
     end
     SaveData = Answers{11};
     if isempty(SaveData)
-        errordlg(['You must enter "no", or a filename, in answer to the question: ', Prompts{11}, '.']);
+        uiwait(CPerrordlg(['You must enter "no", or a filename, in answer to the question: ', Prompts{11}, '.']));
         continue
     end
     %%% Adds the full pathname to the filename.
@@ -288,29 +290,29 @@ while AcceptableAnswers == 0
     end
     RowImageOrBin = Answers{12};
     if ~strncmpi(RowImageOrBin,'I',1) && ~strncmpi(RowImageOrBin,'B',1)
-        errordlg(['You must enter "image" or "bin" in answer to the question: ', Prompts{12}, '.']);
+        uiwait(CPerrordlg(['You must enter "image" or "bin" in answer to the question: ', Prompts{12}, '.']));
         continue
     end
 
     ShowDisplay = Answers{13};
     if ~strncmpi(ShowDisplay,'N',1) && ~strncmpi(ShowDisplay,'Y',1)
-        errordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{13}, '.']);
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{13}, '.']));
         continue
     end
 
     NumberOrPercent = Answers{14};
     if ~strncmpi(NumberOrPercent,'N',1) && ~strncmpi(NumberOrPercent,'P',1)
-        errordlg(['You must enter "N" or "P" in answer to the question: ', Prompts{14}, '.']);
+        uiwait(CPerrordlg(['You must enter "N" or "P" in answer to the question: ', Prompts{14}, '.']));
         continue
     end
 
     %%% Error checking for the line or bar question.
     try LineOrBar = lower(Answers{15});
-    catch errordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']);
+    catch uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
     if ~strcmpi(LineOrBar, 'line') && ~strcmpi(LineOrBar,'bar')
-        errordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']);
+        uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
 
@@ -332,33 +334,49 @@ while AcceptableAnswers == 0
     PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
     %%% See whether the min and max histogram values were user-entered numbers or should be automatically calculated.
     if isempty(str2num(MinHistogramValue)) %#ok
-        if strcmp(MinHistogramValue,'automatic') == 1
+        if strcmp(MinHistogramValue,'automatic')
             MinHistogramValue = PotentialMinHistogramValue;
         else
-            errordlg('The value entered for the minimum histogram value must be either a number or the word ''automatic''.')
+            uiwait(CPerrordlg('The value entered for the minimum histogram value must be either a number or the word ''automatic''.'))
             continue
         end
     else MinHistogramValue = str2num(MinHistogramValue); %#ok
     end
     if isempty(str2num(MaxHistogramValue)) %#ok
-        if strcmp(MaxHistogramValue,'automatic') == 1
+        if strcmp(MaxHistogramValue,'automatic')
             MaxHistogramValue = PotentialMaxHistogramValue;
         else
-            errordlg('The value entered for the maximum histogram value must be either a number or the word ''automatic''.')
+            uiwait(CPerrordlg('The value entered for the maximum histogram value must be either a number or the word ''automatic''.'))
             continue
         end
     else MaxHistogramValue = str2num(MaxHistogramValue); %#ok
     end
-    %%% Determine plot bin locations.
-    HistogramRange = MaxHistogramValue - MinHistogramValue;
-    if HistogramRange <= 0
-        errordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.')
-        continue
+
+    if strcmpi(Answers{16},'Yes')
+        MaxLog = log10(MaxHistogramValue);
+        MinLog = log10(MinHistogramValue);
+        HistogramRange = MaxLog - MinLog;
+        if HistogramRange <= 0
+            uiwait(CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.'))
+            continue
+        end
+        BinWidth = HistogramRange/NumberOfBins;
+        for n = 1:(NumberOfBins+2);
+            PlotBinLocations(n) = 10^(MinLog + BinWidth*(n-2));
+        end
+    else
+        %%% Determine plot bin locations.
+        HistogramRange = MaxHistogramValue - MinHistogramValue;
+        if HistogramRange <= 0
+            uiwait(CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.'))
+            continue
+        end
+        BinWidth = HistogramRange/NumberOfBins;
+        for n = 1:(NumberOfBins+2);
+            PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2);
+        end
     end
-    BinWidth = HistogramRange/NumberOfBins;
-    for n = 1:(NumberOfBins+2);
-        PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2);
-    end
+    
     %%% Now, for histogram-calculating bins (BinLocations), replace the
     %%% initial and final PlotBinLocations with + or - infinity.
     PlotBinLocations = PlotBinLocations';
@@ -366,9 +384,18 @@ while AcceptableAnswers == 0
     BinLocations(1) = -inf;
     BinLocations(n+1) = +inf;
     %%% Calculates the XTickLabels.
-    for i = 1:(length(BinLocations)-1), XTickLabels{i} = BinLocations(i); end
+    for i = 1:(length(BinLocations)-1)
+        XTickLabels{i} = BinLocations(i);
+    end
     XTickLabels{1} = ['< ', num2str(BinLocations(2),3)];
     XTickLabels{i} = ['>= ', num2str(BinLocations(i),3)];
+    
+    if strcmpi(Answers{16},'Yes')
+        for n = 1:length(PlotBinLocations);
+            PlotBinLocations(n) = log10(PlotBinLocations(n));
+        end
+    end
+    
     %%% Saves this info in a variable, FigureSettings, which
     %%% will be stored later with the figure.
     FigureSettings{1} = PlotBinLocations;
@@ -494,7 +521,7 @@ if ~strcmpi(GreaterOrLessThan,'A')
     AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
     try
         save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
-    catch errordlg('Saving did not work.')
+    catch uiwait(CPerrordlg('Saving did not work.'))
     end
 end
 
@@ -511,7 +538,7 @@ end
 
 VersionCheck = version;
 
-if strcmp(CompressedHistogram,'no') == 1 && strncmpi(ShowDisplay,'Y',1) == 1
+if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     %%% Calculates the square root in order to determine the dimensions for the
     %%% display window.
     SquareRoot = sqrt(NumberOfImages);
@@ -857,7 +884,7 @@ image => each row is one image, bin => each row is one bin.
 
 fid = fopen(FileName, 'wt');
 if fid < 0
-    h = errordlg(['Unable to open output file ',FileName,'.']);
+    h = uiwait(CPerrordlg(['Unable to open output file ',FileName,'.']));
     waitfor(h);
     return;
 end
@@ -955,11 +982,11 @@ try
         end
         close(WaitbarHandle)
     else
-        h = errordlg('Neither "image" nor "bin" selected, ',FileName,' will be empty.');
+        h = uiwait(CPerrordlg('Neither "image" nor "bin" selected, ',FileName,' will be empty.'));
         waitfor(h);
     end
 catch
-    h = errordlg(['Problem occurred while writing to ',FileName,'. File is incomplete.']);
+    h = uiwait(CPerrordlg(['Problem occurred while writing to ',FileName,'. File is incomplete.']));
     waitfor(h);
 end
 %%% Close the file
@@ -968,7 +995,7 @@ try
     h = CPhelpdlg(['The file ', FileName, ' has been written to the directory where the raw measurements file is located.']);
     waitfor(h)
 catch
-    h = errordlg(['Unable to close file ',FileName,'.']);
+    h = uiwait(CPerrordlg(['Unable to close file ',FileName,'.']));
     waitfor(h);
     return;
 end

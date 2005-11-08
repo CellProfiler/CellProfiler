@@ -34,6 +34,8 @@ Error in ==> Histogram at 108
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
+- (Requested by Anne 11-08-05) - When you load a non-valid settings file, you get an error message, but the text "Loading" still appears in the pipeline listbox, and it seems to me that there are variables and stuff left loaded in handles.Settings - maybe because I previously had some modules in the pipeline when I tried loading a new one?
+
 UROP:
 
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.

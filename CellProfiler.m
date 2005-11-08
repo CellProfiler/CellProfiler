@@ -3334,7 +3334,11 @@ else
                     end
                     eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
                         get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
-                    handles.Pipeline = restorePipe;
+                    if strcmp(handles.Preferences.StripPipeline,'Yes')
+                        %%% restores the handles.Pipeline structure if
+                        %%% it was removed above.
+                        handles.Pipeline = restorePipe;
+                    end
                 end
                 %%% Restore StartingImageSet for those modules that
                 %%% need it.

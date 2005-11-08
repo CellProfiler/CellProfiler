@@ -141,9 +141,8 @@ end
 
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:6
-    
     ObjectName = ObjectNameList{i};
-    if strcmp(ObjectName,'Do not use') == 1
+    if strcmpi(ObjectName,'Do not use')
         continue
     end
 
@@ -245,6 +244,8 @@ for i = 1:6
             Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
             Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
+    else
+        Basic(1,1:11) = 0;
     end
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Intensity_',ImageName,'Features']) = BasicFeatures;

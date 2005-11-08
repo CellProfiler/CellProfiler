@@ -105,14 +105,14 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What measurement do you want to filter by?
+%textVAR04 = What measurement do you want to filter by?  This module must be run after a MeasureObject module.
 %choiceVAR04 = AreaShape
 %choiceVAR04 = Intensity
 %choiceVAR04 = Texture
 %inputtypeVAR04 = popupmenu
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What feature number do you want to  use as a filter? Please run this module after MeasureObject module.
+%textVAR05 = What feature number do you want to  use as a filter? See the help for this module.
 %defaultVAR05 = 1
 FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 FeatureNum = str2num(FeatureNum);

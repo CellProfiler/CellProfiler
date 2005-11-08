@@ -3,7 +3,7 @@ November 8, 2005
 
 - (Requested by Anne 11-08-05) - show data on image needs the underscores to be displayed properly in the title for the image. see other image tools for example of this.
 
-- (Requested by Anne 11-08-05) - The time for each pipeline window is using wrong font type (looks like times new roman).
+- (Requested by Anne 11-08-05) - The time for each pipeline window is using wrong font type (looks like times new roman). Also, the set preferences confirmation dialogs after you set the prefs. Also, the error dlg that says your default image folder does not exist.
 
 -Update pipelines for new threshold
 

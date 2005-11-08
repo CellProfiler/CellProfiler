@@ -239,6 +239,18 @@ drawnow
 
 handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
 
+fieldname = ['SmallRemovedSegmented', ObjectName];
+%%% Checks whether the image exists in the handles structure.
+if isfield(handles.Pipeline, fieldname)
+    handles.Pipeline.(['SmallRemovedSegmented' TargetName]) = handles.Pipeline.(['SmallRemovedSegmented',ObjectName]);
+end
+
+fieldname = ['UneditedSegmented',ObjectName];
+%%% Checks whether the image exists in the handles structure.
+if isfield(handles.Pipeline, fieldname)
+    handles.Pipeline.(['UneditedSegmented' TargetName]) = handles.Pipeline.(['UneditedSegmented',ObjectName]);
+end
+
 if ~strcmp(SaveColored,'Do not save')
     try handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
     catch

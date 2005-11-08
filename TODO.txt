@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
-- (Requested by Anne 11-08-05) - The Save Images module pops open and then closes a window each time through a cycle.
-
 - (Requested by Anne 11-08-05) -Mike - please add log scale option for histograms. The user would still specify the min and max in terms of the actual, original measurements, but the bin widths would be made on a log scale.  Also, can we add a button onto the histogram figure that's "Export data to Matlab workspace" which runs that line you gave me? It's a different command depending on whether it's bar or line data, and you'd want to run two lines - one for X data (bins) and the other for the data itself:
 Bins = cell2mat(get(findobj(gcf,'type','line'),'XData'))
 Data = cell2mat(get(findobj(gcf,'type','line'),'YData'))

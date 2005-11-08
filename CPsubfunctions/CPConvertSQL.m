@@ -293,7 +293,6 @@ for img_idx = FirstSet:LastSet,
     fprintf(fimage,'\t');
     fprintf(fimage,formatstr,nanstd(perobjectvals_mean));%ignore NaN
     fprintf(fimage, '\n');
-
 end
 
 formatstr = ['%g' repmat('\t%g',1,size(perobjectvals, 2)-1) '\n'];

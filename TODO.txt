@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
+- (Requested by Anne 11-08-05) - The time for each pipeline window is using wrong font type (looks like times new roman).
+
 -Update pipelines for new threshold
 
 - (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part.

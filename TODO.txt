@@ -11,7 +11,7 @@ November 8, 2005
 
 -Fix ellipse by clicking points in crop module
 
-- (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part.
+- (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part. I also wonder whether the outlines are stored in the same format as they are in the IdentifyPrim modules.
 
 - (Requested by Anne 11-08-05) -Mike - please add ***log scale option for histograms. The user would still specify the min and max in terms of the actual, original measurements, but the bin widths would be made on a log scale.  ***Also, can we add a button onto the histogram figure that's "Export data to Matlab workspace" which runs that line you gave me? It's a different command depending on whether it's bar or line data, and you'd want to run two lines - one for X data (bins) and the other for the data itself:
 Bins = cell2mat(get(findobj(gcf,'type','line'),'XData'))

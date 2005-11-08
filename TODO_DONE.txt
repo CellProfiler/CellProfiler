@@ -1,5 +1,14 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/8) (Requested by Anne 11-05-05)
+-(DONE) ExportData is not using the proper font size. At normal font size, the different objects' names are kind of cut off a bit on their bottom edge.
+-(DONE) The swap rows/columns prompt should state something about which way it will be - like "Each measurement is a " and then the popup would say 'column' or 'row' (I think that is accurate for both Image and Object files).
+-(DONE)Change 'Choose base of output' to say 'Base file name for exported files:' (or whatever you think is user friendly).
+-(CHECK ON MAC)The Export process info popup menu is too small to display its text, so it needs to be wider, or perhaps better yet it should be a checkbox like the rest.
+-(DONE)Export process info doesn't seem to work at the moment - I get an error.
+-(DONE)The text prompt should be renamed something more meaningful - like 'Export modules and settings in the pipeline as a text file' (I think that's what it does).
+-(DONE)If you deselect all the objects and just try to export process info, nothing happens.
+
 -(Mike 11/7) (Requested by Anne 11-08-05) - The back button fails sometimes when plotting histograms. yields this:
 ??? Attempted to access SuffixNbr(6); index out of bounds because numel(SuffixNbr)=1.
 

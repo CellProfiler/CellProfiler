@@ -3153,21 +3153,20 @@ else
 
             %%% This variable allows breaking out of nested loops.
             break_outer_loop = 0;
-
             startingImageSet = 1;
             handles.Current.StartingImageSet = startingImageSet;
             while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
                 setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                 a=clock;
                 begin_set=a(5:6);
-                for SlotNumber = 1:handles.Current.NumberOfModules,
+                for SlotNumber = 1:handles.Current.NumberOfModules
                     %%% Variables for timer, time per module.
                     a=clock;
                     begin=a(5:6);
                     %%% If a module is not chosen in this slot, continue on to the next.
                     ModuleNumberAsString = TwoDigitString(SlotNumber);
                     ModuleName = char(handles.Settings.ModuleNames(SlotNumber));
-                    if iscellstr(handles.Settings.ModuleNames(SlotNumber)) == 0
+                    if ~iscellstr(handles.Settings.ModuleNames(SlotNumber))
                     else
                         %%% Saves the current module number in the handles structure.
                         handles.Current.CurrentModuleNumber = ModuleNumberAsString;
@@ -3187,6 +3186,17 @@ else
                                         'Position',[LeftPos (ScreenHeight-522) 560 442],...
                                         'color',[0.7,0.7,0.9]);
                                 end
+                                TempFigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
+                                if exist('FigHandleList')
+                                    if any(TempFigHandle == FigHandleList)
+                                        for z = 1:length(FigHandleList)
+                                            if TempFigHandle == FigHandleList(z)
+                                                handles.Current.(['FigureNumberForModule' TwoDigitString(z)]) = ceil(max(findobj))+z;
+                                            end
+                                        end
+                                    end
+                                end
+                                FigHandleList(SlotNumber) = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
                             end
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
@@ -3194,7 +3204,7 @@ else
                             handles.Measurements.Image.ModuleErrorFeatures(str2num(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
                             try
-                            FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
+                                FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
                             end
                             if ishandle(FigHandle)
                                 OldText = get(FigHandle,'name');

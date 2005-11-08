@@ -13,7 +13,7 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
         end
         Font = userData.MyHandles.Current.FontSize;
         set(FigHandle,'Toolbar','figure');
-        
+
         ToggleColorR = 'ImageHandles = findobj(gcf,''Type'',''Image'');for i = length(ImageHandles):-1:1,if size(size(get(ImageHandles(i),''CData'')),2)~=3,ImageHandles(i)=[];end;end;if ~isempty(ImageHandles),AllData=get(ImageHandles,''CData'');ImageHandles = num2cell(ImageHandles);if ~iscell(AllData), AllData={AllData};end;button=findobj(gcf,''tag'',''ToggleColorR'');for i = 1:length(AllData),tempdata{i}=AllData{i}(:,:,1);end;for i = 1:length(AllData), data=AllData{i}; if get(button,''value'')==0,set(button,''UserData'',tempdata);data(:,:,1)=0;set(ImageHandles{i},''CData'',data);else,tempdata=get(button,''UserData'');if ~iscell(tempdata),tempdata={tempdata};end;data(:,:,1)=tempdata{i};AllData{i}=data;set(ImageHandles{i},''CData'',data);end;end;end;clear data AllData button ImageHandles;';
         uicontrol('Style', 'checkbox', ...
             'Units','normalized',...
@@ -37,9 +37,6 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
             'Callback', ToggleColorB, 'parent',FigHandle, ...
             'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
             'max',1,'value',1,'tag','ToggleColorB','string','B');
-        
-        
-        
     end
     set(FigHandle,'UserData',userData);
     set(FigHandle,'Color',[0.7 0.7 0.9]);

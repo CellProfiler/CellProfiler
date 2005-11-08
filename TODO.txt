@@ -7,17 +7,6 @@ Data = cell2mat(get(findobj(gcf,'type','line'),'YData'))
 I'm not sure what order these come out as (if you have two plots on the chart): I guess in order of how they were put on? or does it depend which plotted line you recently selected?
 
 - (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
- 
-- (Requested by Anne 11-08-05) - The back button fails sometimes when plotting histograms. yields this:
-??? Attempted to access SuffixNbr(6); index out of bounds because numel(SuffixNbr)=1.
-
-Error in ==> CPgetfeature at 87
-                SuffixNbr = SuffixNbr(Selection);
-
-Error in ==> Histogram at 108
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
-
-??? Error while evaluating uimenu Callback.
 
 - (Requested by Anne 11-05-05)
 -(DONE) ExportData is not using the proper font size. At normal font size, the different objects' names are kind of cut off a bit on their bottom edge.

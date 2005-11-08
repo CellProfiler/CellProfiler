@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/7) (Requested by Anne 11-08-05) - The back button fails sometimes when plotting histograms. yields this:
+??? Attempted to access SuffixNbr(6); index out of bounds because numel(SuffixNbr)=1.
+
 -(Mike 11/7) (Requested by Anne 11-05-05) - The Histogram tool isn't exporting the data to excel properly (at least when combining several histograms into one histogram) - it has the bin column headings accurate, but the number of cells per bin has blank columns in between each value.
 
 -(Mike 11/7) (Requested by Anne 11-05-05) - There is something very strange with CPthreshold when running in adaptive mode. the threshold fails in IdSecondary - i fixed that problem (see ANNE REPLACED THIS LINE 11-06-05 in IdSecondary to make sure it looks ok to do what I did), but the results just look bad when using MoG adaptive.  Also, it seems very confusing to have CPthreshold, CPgraythresh and CPdoublegraythresh. What's going on? Does it make sense? We put in some effort to figure out whether log transforming was helpful and incorporated it into CPgraythresh, but then CPthreshold doesn't have log transforming? Maybe Ola did this and he knew what he was doing.

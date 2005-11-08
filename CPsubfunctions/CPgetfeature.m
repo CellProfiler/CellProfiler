@@ -84,6 +84,9 @@ while dlgno < 4
                 dlgno = 1;                  % Back button pressed, go back one step in the menu system
             else
                 FeatureType = FeatureTypes{Selection};
+                if length(SuffixNbr) < Selection
+                    Selection = length(SuffixNbr);
+                end
                 SuffixNbr = SuffixNbr(Selection);
                 Features = handles.Measurements.(ObjectTypename).([FeatureType Suffix{SuffixNbr}]);
                 dlgno = 3;                  % Indicates that the next dialog box is to be shown next

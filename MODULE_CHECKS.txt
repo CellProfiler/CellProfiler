@@ -1,9 +1,7 @@
 Name of Module:			Who Checked and Verified:
-Align				Mike (Change handles structure?)
-				Colin
+Align				Mike (Change handles structure?)	Colin
 
-ApplyThreshold			Mike
-				Colin
+ApplyThreshold			Mike					Colin
 
 Average				Mike
 

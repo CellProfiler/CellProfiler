@@ -1,11 +1,18 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
+-------
+STUFF NEEDED FOR STEVE'S PROJECT:
 - (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part. I also wonder whether the outlines are stored in the same format as they are in the IdentifyPrim modules.  THEY AREN'T! Need to fix this too.
 
-- (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
+- (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules (this is for the general TODO, not steve's but maybe it's quick to check it while you are doing this) to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
 
-- (Requested by Anne 11-08-05) - IdTertiarySubregion doesn't produce nice outlines, they all run together. Can we fix this?
+- (Requested by Anne 11-08-05) - Expand or Shrink does not work properly for shrinking secondary objects that are touching each other. it looks like the edges that border the background shrink but the edges that touch each other stay the same. Probably b/c we initially wrote this moduel for primary objects which always have a black line between the objects.
+
+- (Requested by Anne 11-08-05) - Fix Export SQL, ExportData, Histograms, PlotMeasurement, etc. for when number of objects = zero.
+
+WOULD BE NICE TO HAVE FOR STEVE's PROJECT- (Requested by Anne 11-08-05) - IdTertiarySubregion doesn't produce nice outlines, they all run together. Can we fix this?
+-----------
 
 - (Requested by Anne 11-08-05)
 -please add log scale option for histograms. The user would still specify the min and max in terms of the actual, original measurements, but the bin widths would be made on a log scale.
@@ -26,7 +33,7 @@ I'm not sure what order these come out as (if you have two plots on the chart): 
 
 - (Requested by Anne 11-08-05) - In my opinion, LoadImages window should stay open (though it could be resized to be not very tall) and display the current image filenames that were loaded. Otherwise, there is no easy way to tell which images are being analyzed, esp. if you are working in subfolders.
 
-- (Requested by Anne 11-08-05) - When in PlotMeasurement, if you click on another window sometime in the process of choosing features, etc, it ends up plotting the data in whatever window you clicked. Which sometimes is the main CP GUI. Which looks kind of cool, but is probably not intended.
+- (Requested by Anne 11-08-05) - When in PlotMeasurement, if you click on another window sometime in the process of choosing features, etc, it ends up plotting the data in whatever window you clicked. Which sometimes is the main CP GUI. Which looks kind of cool, but is probably not intended. :)
 
 -Update pipelines for new threshold
 
@@ -35,6 +42,8 @@ I'm not sure what order these come out as (if you have two plots on the chart): 
 - (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
 
 - (Requested by Anne 11-05-05) - In Crop, when cropping by clicking pixels, esp. in rectangle shape, it would be nice when you accidentally click a little bit off the image (e.g. you are trying to click the top left most pixel of the image) if it would not fail. Right now, it probably records it as a negative number or something, so it would be nice if positions less than 1 are rounded to 1 and if pixels greater than the size of the image are rounded to the 'end' of the image. If this occurs, however, there should be a warning dialog so you are aware that you clicked off the image (in case you accidentally clicked way off the image and did not intend to). I guess the same thing should be done for clicking points to make an ellipse, right?
+
+- (Requested by Anne 11-08-05) -  FilterByObject Measurement fails if there are no objects in an image.
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 

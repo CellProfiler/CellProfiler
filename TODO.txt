@@ -16,6 +16,8 @@ I'm not sure what order these come out as (if you have two plots on the chart): 
 
 - (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part. I also wonder whether the outlines are stored in the same format as they are in the IdentifyPrim modules.  THEY AREN'T! Need to fix this too.
 
+- (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
+
 - (Requested by Anne 11-08-05) - Gray to Color has some text as a variable description that says type N to leave that color black, but I think that's outdated, right?
 
 - (Requested by Anne 11-08-05) - show data on image needs the underscores to be displayed properly in the title for the image. see other image tools for example of this.

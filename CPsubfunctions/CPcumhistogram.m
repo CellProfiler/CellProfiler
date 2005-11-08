@@ -19,7 +19,7 @@ load(fullfile(RawPathname, RawFileName));
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
+[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
 if isempty(ObjectTypename),return,end
 MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
@@ -48,7 +48,7 @@ for k = FirstImage:LastImage
 end
 
 if ~strcmpi(GreaterOrLessThan,'A')
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
     MeasurementToThresholdValueOnName = handles.Measurements.(ObjectTypename).([FeatureType,'Features'])(FeatureNo);
     tmp = handles.Measurements.(ObjectTypename).(FeatureType);
     MeasurementToThresholdValueOn = cell(length(tmp),1);

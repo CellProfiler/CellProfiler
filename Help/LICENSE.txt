@@ -1,18 +1,9 @@
 CellProfiler is distributed under the GNU General Public License,
 and disclaimer, included below.
 
-Additional terms of use during the beta testing period:
-(1) You must not redistribute CellProfiler until after its publication and public release.
-(2) We prefer that CellProfiler not be used to compete with our own group's work (genome-wide RNAi screens), until that work has been published. Please let us know if your interests overlap with ours.
-(3) If CellProfiler plays a significant role in your research leading to a publication prior to CellProfiler's publication and public release, we would hope that you would include us (Anne E. Carpenter and Thouis R. Jones) as co-authors if warranted, or please credit the software, refer to the website (www.cellprofiler.org), cite the publication in preparation, and email the article to cellprofiler@csail.mit.edu . Funding for continued work on CellProfiler relies on this.
-
-----------------------------------------------------------------------
 Please credit CellProfiler in publications by citing the website
-(www.cellprofiler.org) and the publication (in preparation, authors:
-Carpenter AE, Jones TR, Wheeler DB, Guertin DA, Kang, IH, Golland P,
-and Sabatini DM), and send us the reference of the publication by
-email.  This will help us to maintain funding for the project and
-continue to improve and support it.
+(www.cellprofiler.org) and the publication (in preparation, Carpenter AE, et al.), and send us the publication or its citation by
+email: cellprofiler@csail.mit.edu .  This will help us to maintain funding for the project and continue to improve and support it.
 
 CellProfiler has been developed as an open source project at a
 non-profit institution.  Commercial users who find it useful should

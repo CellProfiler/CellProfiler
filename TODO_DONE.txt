@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/9) (Requested by Anne 11-08-05) - When in PlotMeasurement, if you click on another window sometime in the process of choosing features, etc, it ends up plotting the data in whatever window you clicked. Which sometimes is the main CP GUI. Which looks kind of cool, but is probably not intended. :)
+
 -(Mike 11/9) (Requested by Anne 11-08-05) - In my opinion, LoadImages window should stay open (though it could be resized to be not very tall) and display the current image filenames that were loaded. Otherwise, there is no easy way to tell which images are being analyzed, esp. if you are working in subfolders.
 
 -(Mike 11/9) (Requested by Anne 11-08-05) - The time for each pipeline window is using wrong font type (looks like times new roman). Also, the set preferences confirmation dialogs after you set the prefs. Also, the error dlg that says your default image folder does not exist. Also, the LoadSavedWindow that helps you load old pipelines is not using proper font size.

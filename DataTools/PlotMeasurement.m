@@ -43,12 +43,10 @@ PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListS
     'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});
 if isempty(PlotType), return,end
 
-
 % Open figure
 fig = CPfigure;
 set(gcf,'Color',[1 1 1])
 FontSize = handles.Current.FontSize;
-
 
 % Bar chart
 if PlotType == 1
@@ -68,6 +66,7 @@ if PlotType == 1
         end
     end
 
+    CPfigure(fig);
     %%% Do the plotting
     bar(MeasurementsMean);
     hold on
@@ -85,8 +84,6 @@ if PlotType == 1
     axis([0 length(Measurements)+1 ylim])
     set(gca,'xtick',1:length(Measurements))
     titlestr = [str,' of ', ObjectTypename];
-
-
 
 %%% Line chart
 elseif PlotType == 2
@@ -109,6 +106,7 @@ elseif PlotType == 2
     %%% Plots a line chart, where the X dimensions are incremented
     %%% from 1 to the number of measurements to be PlotTypeed, and Y is
     %%% the measurement of interest.
+    CPfigure(fig);
     hold on
     plot(1:length(MeasurementsMean), MeasurementsMean,'Color',[0 0 0],'LineWidth',1);
 
@@ -135,6 +133,7 @@ elseif PlotType == 3
     %%% Extract the measurements 
     Measurements = handles.Measurements.(ObjectTypename).(FeatureType);
 
+    CPfigure(fig);
     %%% Plot
     hold on
     for k = 1:length(Measurements)
@@ -150,8 +149,6 @@ elseif PlotType == 3
     ylabel(gca,str,'fontname','times','fontsize',FontSize+2)
     set(gca,'xtick',1:length(Measurements))
     titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
-
-
 
 %%% Scatter plot, 2 measurements
 elseif PlotType == 4
@@ -180,6 +177,7 @@ elseif PlotType == 4
     FirstImage = str2num(Answers{1});
     LastImage = str2num(Answers{2});
 
+    CPfigure(fig);
     %%% Plot
     hold on
     for k = FirstImage:LastImage
@@ -199,6 +197,7 @@ elseif PlotType == 4
     titlestr = [str1,' vs. ',str2];
 end
 
+CPfigure(fig);
 % Set some general figure and axes properties
 set(gca,'fontname','times','fontsize',FontSize)
 title(titlestr,'Fontname','times','fontsize',FontSize+2)

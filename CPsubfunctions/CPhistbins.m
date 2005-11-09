@@ -1,6 +1,6 @@
 function [BinLocations,PlotBinLocations,XTickLabels] = CPhistbins(Measurements,NumberOfBins,MinVal,MaxVal,PlotLog)
 
-SelectedMeasurementsMatrix = cell2mat(Measurements(:));
+SelectedMeasurementsMatrix = Measurements(:);
 PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
 PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
 
@@ -52,8 +52,8 @@ end
 %%% initial and final PlotBinLocations with + or - infinity.
 PlotBinLocations = PlotBinLocations';
 BinLocations = PlotBinLocations;
-BinLocations(1) = -inf;
-BinLocations(n+1) = +inf;
+% BinLocations(1) = -inf;
+% BinLocations(n+1) = +inf;
 %%% Calculates the XTickLabels.
 for i = 1:(length(BinLocations)-1)
     XTickLabels{i} = BinLocations(i);

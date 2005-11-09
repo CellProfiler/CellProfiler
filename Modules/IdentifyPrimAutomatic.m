@@ -953,7 +953,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             if ~strcmp(SaveOutlines,'Do not save')
                 try    handles.Pipeline.(SaveOutlines) = FinalOutline;
                 catch
-                    errordlg('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+                    error('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
                 end
             end
 

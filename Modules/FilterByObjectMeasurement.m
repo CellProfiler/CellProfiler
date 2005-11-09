@@ -128,19 +128,13 @@ MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR07 = popupmenu custom
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call the image of the colored objects?
+%textVAR08 = What do you want to call the image of the outlines of the objects?
 %choiceVAR08 = Do not save
-%infotypeVAR08 = imagegroup indep
+%infortypeVAR08 = imagegroup indep
 %inputtypeVAR08 = popupmenu custom
-SaveColored = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call the image of the outlines of the objects?
-%choiceVAR09 = Do not save
-%infortypeVAR09 = imagegroup indep
-%inputtypeVAR09 = popupmenu custom
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 OrigImage = handles.Pipeline.(ImageName);
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
@@ -175,22 +169,16 @@ end
 
 FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage);
 
-%%% Calculates the object outlines, which are overlaid on the original
-%%% image and displayed in figure subplot (2,2,4).
-%%% Creates the structuring element that will be used for dilation.
-StructuringElement = strel('square',3);
-%%% Converts the FinalLabelMatrixImage to binary.
-FinalBinaryImage = im2bw(FinalLabelMatrixImage,.1);
-%%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
-DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
-%%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
-%%% which leaves the PrimaryObjectOutlines.
-PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
+%%% Finds the perimeter of the objects
+PerimObjects = bwperim(FinalLabelMatrixImage > 0);
+%%% Pre-allocates space
+PrimaryObjectOutlines = logical(zeros(size(FinalLabelMatrixImage,1),size(FinalLabelMatrixImage,2)));
+%%% Places outlines on image
+PrimaryObjectOutlines(PerimObjects) = 1;
+
 %%% Overlays the object outlines on the original image.
 ObjectOutlinesOnOrigImage = OrigImage;
-%%% Determines the grayscale intensity to use for the cell outlines.
-LineIntensity = max(OrigImage(:));
-ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
+ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -251,15 +239,9 @@ if isfield(handles.Pipeline, fieldname)
     handles.Pipeline.(['UneditedSegmented' TargetName]) = handles.Pipeline.(['UneditedSegmented',ObjectName]);
 end
 
-if ~strcmp(SaveColored,'Do not save')
-    try handles.Pipeline.(SaveColored) = ColoredLabelMatrixImage;
-    catch
-        errordlg(['The colored image was not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
-    end
-end
 if ~strcmp(SaveOutlined,'Do not save')
     try handles.Pipeline.(SaveOutlined) = PrimaryObjectOutlines;
     catch
-        errordlg(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+        error(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end
 end

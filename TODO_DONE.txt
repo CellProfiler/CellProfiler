@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/9) (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part. I also wonder whether the outlines are stored in the same format as they are in the IdentifyPrim modules.  THEY AREN'T! Need to fix this too.
+
 -(Mike 11/8) (Requested by Anne 11-05-05)
 -(DONE) ExportData is not using the proper font size. At normal font size, the different objects' names are kind of cut off a bit on their bottom edge.
 -(DONE) The swap rows/columns prompt should state something about which way it will be - like "Each measurement is a " and then the popup would say 'column' or 'row' (I think that is accurate for both Image and Object files).

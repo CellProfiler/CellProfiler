@@ -3,7 +3,6 @@ November 8, 2005
 
 -------
 STUFF NEEDED FOR STEVE'S PROJECT:
-- (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part. I also wonder whether the outlines are stored in the same format as they are in the IdentifyPrim modules.  THEY AREN'T! Need to fix this too.
 
 - (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules (this is for the general TODO, not steve's but maybe it's quick to check it while you are doing this) to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
 
@@ -13,6 +12,8 @@ STUFF NEEDED FOR STEVE'S PROJECT:
 
 WOULD BE NICE TO HAVE FOR STEVE's PROJECT- (Requested by Anne 11-08-05) - IdTertiarySubregion doesn't produce nice outlines, they all run together. Can we fix this?
 -----------
+
+- Make sure all modules are using error and not errordlg
 
 - (Requested by Anne 11-08-05)
 -please add log scale option for histograms. The user would still specify the min and max in terms of the actual, original measurements, but the bin widths would be made on a log scale.

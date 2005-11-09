@@ -72,30 +72,28 @@ GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = Choosing "Leave this black" will leave that channel black.
+%textVAR06 = What do you want to call the resulting image?
+%defaultVAR06 = RGBImage
+%infotypeVAR06 = imagegroup indep
+RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR05 = What do you want to call the resulting image?
-%defaultVAR05 = RGBImage
-%infotypeVAR05 = imagegroup indep
-RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
-%textVAR06 = Enter the adjustment factor for the blue image
-%defaultVAR06 = 1
-BlueAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-
-%textVAR07 = Enter the adjustment factor for the green image
+%textVAR07 = Enter the adjustment factor for the blue image
 %defaultVAR07 = 1
-GreenAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+BlueAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR08 = Enter the adjustment factor for the red image
+%textVAR08 = Enter the adjustment factor for the green image
 %defaultVAR08 = 1
-RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+GreenAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%textVAR09 = Enter the adjustment factor for the red image
+%defaultVAR09 = 1
+RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines whether the user has specified an image to be loaded in

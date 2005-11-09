@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
--(Requested by Anne 11-08-05) - Gray to Color has some text as a variable description that says type N to leave that color black, but I think that's outdated, right?
-
 - (Wyman?)Make sure all modules are using error and not errordlg
 
 - Make compiled CellProfiler work on cluster

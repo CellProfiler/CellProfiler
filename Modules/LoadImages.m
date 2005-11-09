@@ -649,22 +649,30 @@ handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
 %%% ------------------------------------------------------------------------------------------------ %%%
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 
-if SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% The figure window display is unnecessary for this module, so the figure
-    %%% window is closed the first time through the module.
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
-    %%% Closes the window if it is open.
-    if any(findobj == ThisModuleFigureNumber) == 1;
-        close(ThisModuleFigureNumber)
+%%% Determines the figure number.
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+%%% Closes the window if it is open.
+if any(findobj == ThisModuleFigureNumber);
+    for n = 1:length(ImageName)
+        CPfigure(handles,ThisModuleFigureNumber);
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            %%% Sets the window to be half as wide as usual.
+            originalsize = get(ThisModuleFigureNumber, 'position');
+            newsize = originalsize;
+            newsize(3) = 250;
+            set(ThisModuleFigureNumber, 'position', newsize);
+        end
+
+        TextString = [ImageName{n},': ',FileNames{n}];
+        uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
-    drawnow
 end
+drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%

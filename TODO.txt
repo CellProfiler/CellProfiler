@@ -21,10 +21,6 @@ STUFF TO ASK ANNE:
 
 - (Requested by Anne 11-08-05) - It looks like there is a little bug in the pipeline loading - whatever setting it is that controls whether a browse button/long pathname box is displayed is not moved up and down the pipeline when the rest of the stuff moves. I had a long pipeline with save images at the end that has one of these pathname/browse variables. It looked fine until I added a module to the pipeline several steps before the end. Then, the save images was moved down one spot but lost its browse button. Meanwhile, the module before the save images gained a mysterious browse button.
 
-- (Requested by Anne 11-08-05) - The time for each pipeline window is using wrong font type (looks like times new roman). Also, the set preferences confirmation dialogs after you set the prefs. Also, the error dlg that says your default image folder does not exist. Also, the LoadSavedWindow that helps you load old pipelines is not using proper font size.
-
-- (Requested by Anne 11-08-05) - In my opinion, LoadImages window should stay open (though it could be resized to be not very tall) and display the current image filenames that were loaded. Otherwise, there is no easy way to tell which images are being analyzed, esp. if you are working in subfolders.
-
 - (Requested by Anne 11-08-05) - When in PlotMeasurement, if you click on another window sometime in the process of choosing features, etc, it ends up plotting the data in whatever window you clicked. Which sometimes is the main CP GUI. Which looks kind of cool, but is probably not intended. :)
 
 -Update pipelines for new threshold

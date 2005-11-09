@@ -3,24 +3,25 @@ function handles = ApplyThreshold(handles)
 % Help for the Apply Threshold module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION:
-% Pixels below (or above) a certain threshold are set to zero. The
-% remaining pixels retain their original value.
+% SHORT DESCRIPTION: Pixels below (or above) a certain threshold are set to
+% zero. The remaining pixels retain their original value or (if settings
+% pixels below a boundary to zero and the user chooses to do so), are
+% shifted to match the threshold used.
 % *************************************************************************
 %
-% 'Bright pixel areas should be expanded by this many pixels' is
-% useful to adjust when you are attempting to exclude bright
-% artifactual objects: you can first set the threshold to exclude
-% these bright objects, but it may also be desirable to expand the
-% identified region by a certain distance so as to avoid a 'halo'
-% effect.
+% SETTINGS: 'If your answer was not 1, you can expand the thresholding
+% around those excluded bright pixels by entering the number of pixels to
+% expand here:' This setting is useful to adjust when you are attempting to
+% exclude bright artifactual objects: you can first set the threshold to
+% exclude these bright objects, but it may also be desirable to expand the
+% thresholded region around those bright objects by a certain distance so
+% as to avoid a 'halo' effect.
 %
 % SAVING IMAGES: The thresholded images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
+% easily saved using the Save Images module, using the name you assign. If
+% you want to save other intermediate images, alter the code for this
+% module to save those images to the handles structure (see the SaveImages
+% module help) and then use the Save Images module.
 %
 % See also <nothing>.
 
@@ -64,21 +65,21 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 ThresholdedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Do you want to shift the image to lower boundary?
-%choiceVAR03 = No
-%choiceVAR03 = Yes
-%inputtypeVAR03 = popupmenu
-Shift = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Pixels below this value (Range = 0-1) will be set to zero (0 will not threshold any pixels)
+%defaultVAR03 = 0
+LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Pixels below this value (Range = 0-1) will be set to zero
-%defaultVAR04 = 0
-LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR04 = If your answer was not 0, do you want to shift the remaining pixels' intensities down by that intensity or retain their original values?
+%choiceVAR04 = Retain
+%choiceVAR04 = Shift
+%inputtypeVAR04 = popupmenu
+Shift = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Pixels above this value (Range = 0-1) will be set to zero
+%textVAR05 = Pixels above this value (Range = 0-1) will be set to zero (1 will not threshold any pixels)
 %defaultVAR05 = 1
 HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = How many pixels do you want to expand bright pixels in every directions?
+%textVAR06 = If your answer was not 1, you can expand the thresholding around those excluded bright pixels by entering the number of pixels to expand here:
 %defaultVAR06 = 0
 DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
@@ -86,7 +87,7 @@ DilationValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum
 %defaultVAR07 = 0
 BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -96,7 +97,8 @@ drawnow
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
 fieldname = ['', ImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
+%%% Checks whether the image to be analyzed exists in the handles
+%%% structure.
 if isfield(handles.Pipeline, fieldname)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
@@ -113,16 +115,16 @@ if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
     CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
 if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if BinaryChoice == 0
     %%% Identifies bright object pixels.
@@ -132,9 +134,9 @@ if BinaryChoice == 0
     DilatedBinaryBrightObjectsImage = imdilate(BinaryBrightObjectsImage,StructuringElement);
     ThresholdedImage = OrigImage;
     ThresholdedImage(DilatedBinaryBrightObjectsImage == 1) = 0;
-    if strcmp(Shift,'No')
+    if strcmp(Shift,'Retain')
         ThresholdedImage(ThresholdedImage <= LowThreshold) = 0;
-    elseif strcmp(Shift,'Yes')
+    elseif strcmp(Shift,'Shift')
         ThresholdedImage = ThresholdedImage - LowThreshold;
         ThresholdedImage(ThresholdedImage < 0) = 0;
     end
@@ -160,7 +162,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
+    %%% A subplot of the figure window is set to display the original
+    %%% image.
     subplot(2,1,1);
     ImageHandle = imagesc(OrigImage);
     set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');

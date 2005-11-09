@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/9) (Requested by Anne 11-08-05)
+-please add log scale option for histograms. The user would still specify the min and max in terms of the actual, original measurements, but the bin widths would be made on a log scale.
+-Also, can we add a button onto the histogram figure that's "Export data to Matlab workspace" which runs that line you gave me? It's a different command depending on whether it's bar or line data, and you'd want to run two lines - one for X data (bins) and the other for the data itself:
+Bins = cell2mat(get(findobj(gcf,'type','line'),'XData'))
+Data = cell2mat(get(findobj(gcf,'type','line'),'YData'))
+I'm not sure what order these come out as (if you have two plots on the chart): I guess in order of how they were put on? or does it depend which plotted line you recently selected?
+
 -(Mike 11/9) (Requested by Anne 11-08-05) - I think FilterByObject Measurement should not be producing 'image of the colored objects', so this variable should be removed and the associated code taken out. We now use ConvertObjectsToImage to do that part. I also wonder whether the outlines are stored in the same format as they are in the IdentifyPrim modules.  THEY AREN'T! Need to fix this too.
 
 -(Mike 11/8) (Requested by Anne 11-05-05)

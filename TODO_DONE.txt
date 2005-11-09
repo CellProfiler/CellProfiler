@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/9) (HOW DO YOU WANT TO HANDLE NO DATA IN HISTOGRAM/PLOTMEASUREMENT, SKIP IT, WARN USER??) (Requested by Anne 11-08-05) - Fix (DONE) Export SQL, (DONE) ExportData, Histograms, PlotMeasurement, etc. for when number of objects = zero.
+
 -(Mike 11/9) (Requested by Anne 11-05-05) - In Crop, when cropping by clicking pixels, esp. in rectangle shape, it would be nice when you accidentally click a little bit off the image (e.g. you are trying to click the top left most pixel of the image) if it would not fail. Right now, it probably records it as a negative number or something, so it would be nice if positions less than 1 are rounded to 1 and if pixels greater than the size of the image are rounded to the 'end' of the image. If this occurs, however, there should be a warning dialog so you are aware that you clicked off the image (in case you accidentally clicked way off the image and did not intend to). I guess the same thing should be done for clicking points to make an ellipse, right?
 
 -(Mike 11/9) (Requested by Anne 11-08-05) - When in PlotMeasurement, if you click on another window sometime in the process of choosing features, etc, it ends up plotting the data in whatever window you clicked. Which sometimes is the main CP GUI. Which looks kind of cool, but is probably not intended. :)

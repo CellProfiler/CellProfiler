@@ -112,9 +112,13 @@ MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Fea
 %%% Put the measurements for this feature in a cell array, one
 %%% cell for each image set.
 tmp = handles.Measurements.(ObjectTypename).(FeatureType);
+ImageSets = length(tmp);
 Measurements = cell(length(tmp),1);
-for k = 1:length(tmp)
-    Measurements{k} = tmp{k}(:,FeatureNo);
+SkipList = [];
+for k = 1:ImageSets
+    if length(tmp{k}) >= FeatureNo
+        Measurements{k} = tmp{k}(:,FeatureNo);
+    end
 end
 
 %%% Determines whether any sample info has been loaded.  If sample
@@ -139,7 +143,7 @@ end
 
 
 %%% Calculates some values for the next dialog box.
-TotalNumberImageSets = length(Measurements);
+TotalNumberImageSets = ImageSets;
 TextTotalNumberImageSets = num2str(TotalNumberImageSets);
 %%% Ask the user to specify histogram settings.
 Prompts{1} = 'Enter the first image number to show or export';

@@ -343,6 +343,14 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             try imcontrast(CroppingImageHandle); end %#ok
             try imcontrast(CroppingImageHandle); end %#ok
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
+            [a b c] = size(ImageToBeCropped);
+            if any(x < 1) || any(y < 1) || any(x > b) || any(y > a)
+                x(x<1) = 1;
+                x(x>b) = b-1;
+                y(y<1) = 1;
+                y(y>a) = a-1;
+                CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
+            end
             close(CroppingFigureHandle)
             x = Pre_y;
             y = Pre_x;
@@ -441,16 +449,21 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
 
         elseif strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points.
-            CroppingFigureHandle = figure;
+            CroppingFigureHandle = CPfigure(handles,'name','Manual Rectangle Cropping');
             CroppingImageHandle = imagesc(ImageToBeCropped);
-            colormap('gray'); pixval
-            title({'Click on at least two points that are inside the region to be retained (e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
-            try imcontrast(CroppingImageHandle); end %#ok
-            try imcontrast(CroppingImageHandle); end %#ok
+            colormap('gray');
+            title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
 
             [a b c] = size(ImageToBeCropped);
+            if any(x < 1) || any(y < 1) || any(x > b) || any(y > a)
+                x(x<1) = 1;
+                x(x>b) = b-1;
+                y(y<1) = 1;
+                y(y>a) = a-1;
+                CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
+            end
             BinaryCropImage = zeros(a,b);
             BinaryCropImage(round(min(y)):round(max(y)),round(min(x)):round(max(x))) = 1;
         else

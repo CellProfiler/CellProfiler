@@ -3,32 +3,26 @@ function handles = Align(handles)
 % Help for the Align module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION:
-% Aligns two or three images relative to each other. Particularly useful to
-% align different color channels from microscopes.
+% SHORT DESCRIPTION: Aligns two or three images relative to each other.
+% Particularly useful to align microscopy images acquired from different
+% color channels.
 % *************************************************************************
 %
 % For two or three input images, this module determines the optimal
-% alignment among them.  This works whether the images are correlated
-% or anti-correlated (bright in one = bright in the other, or bright
-% in one = dim in the other).  This is useful when the microscope is
-% not perfectly calibrated, because, for example, proper alignment is
-% necessary for primary objects to be helpful to identify secondary
-% objects. The images are cropped appropriately according to this
-% alignment, so the final images will be smaller than the originals by
-% a few pixels if alignment is necessary.
+% alignment among them.  This works whether the images are correlated or
+% anti-correlated (bright in one = bright in the other, or bright in one =
+% dim in the other).  This is useful when the microscope is not perfectly
+% calibrated, because, for example, proper alignment is necessary for
+% primary objects to be helpful to identify secondary objects. The images
+% are cropped appropriately according to this alignment, so the final
+% images will be smaller than the originals by a few pixels if alignment is
+% necessary.
 %
-% Which image is displayed as which color can be changed by going into
-% the module's '.m' file and changing the lines after 'FOR DISPLAY
-% PURPOSES ONLY'.  The first line in each set is red, then green, then
-% blue.
-%
-% SAVING IMAGES: The three aligned images produced by this module can
-% be easily saved using the Save Images module, using the names you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
+% SAVING IMAGES: Any of the three aligned images produced by this module
+% can be easily saved using the Save Images module, using the names you
+% assign. If you want to save other intermediate images, alter the code for
+% this module to save those images to the handles structure (see the
+% SaveImages module help) and then use the Save Images module.
 %
 % See also <nothing>.
 
@@ -83,17 +77,17 @@ Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = What did you call the third image to be aligned? (will be displayed as red)
-%choiceVAR05 = /
+%choiceVAR05 = Do not use
 %infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 = What do you want to call the aligned third image?
-%defaultVAR06 = /
+%defaultVAR06 = Do not use
 %infotypeVAR06 = imagegroup indep
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = This module calculates the alignment shift. Do you want to actually adjust the images?
+%textVAR07 = This module calculates the alignment shift and stores it as a measurement. Do you want to actually shift the images and crop them to produce the aligned images?
 %choiceVAR07 = Yes
 %choiceVAR07 = No
 AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
@@ -105,11 +99,6 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-%This error should not occur with because of popupboxes now.
-if strcmp(Image1Name,'/')
-    error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the first image slot'])
-end
 
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if ~isfield(handles.Pipeline, Image1Name)
@@ -129,9 +118,6 @@ if max(Image1(:)) > 1 || min(Image1(:)) < 0
 end
 
 %%% Same for Image 2.
-if strcmp(Image2Name,'/')
-    error(['Image processing was canceled in the ', ModuleName, ' module because no image was loaded in the second image slot'])
-end
 if ~isfield(handles.Pipeline, Image2Name)
     error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
@@ -142,7 +128,7 @@ if max(Image2(:)) > 1 || min(Image2(:)) < 0
 end
 
 %%% Same for Image 3.
-if ~strcmp(Image3Name,'/')
+if ~strcmp(Image3Name,'Do not use')
     if ~isfield(handles.Pipeline, Image3Name)
         error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
@@ -166,7 +152,7 @@ end
 drawnow
 
 %%% Aligns three input images.
-if ~strcmp(Image3Name,'/')
+if ~strcmp(Image3Name,'Do not use')
     %%% Aligns 1 and 2 (see subfunctions at the end of the module).
     [sx, sy] = autoalign(Image1, Image2);
     Temp1 = subim(Image1, sx, sy);
@@ -203,7 +189,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
     if strcmp(AdjustImage,'Yes') == 1
         %%% For three input images.
-        if strcmp(Image3Name,'/') ~= 1
+        if strcmp(Image3Name,'Do not use') ~= 1
             OriginalRGB(:,:,1) = Image3;
             OriginalRGB(:,:,2) = Image2;
             OriginalRGB(:,:,3) = Image1;
@@ -258,7 +244,7 @@ if strcmp(AdjustImage,'Yes') == 1
     %%% handles structure so it can be used by subsequent modules.
     handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
     handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
-    if strcmp(Image3Name,'/') ~= 1
+    if strcmp(Image3Name,'Do not use') ~= 1
         handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
     end
 end
@@ -271,7 +257,7 @@ fieldname = ['ImageYAlign', AlignedImage1Name,AlignedImage2Name];
 handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy};
 
 %%% If three images were aligned:
-if strcmp(Image3Name,'/') ~= 1
+if strcmp(Image3Name,'Do not use') ~= 1
     fieldname = ['ImageXAlignFirstTwoImages',AlignedImage3Name];
     handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx2};
     fieldname = ['ImageYAlignFirstTwoImages',AlignedImage3Name];

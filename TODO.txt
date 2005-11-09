@@ -1,6 +1,7 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
+
 -------
 STUFF TO ASK ANNE:
 
@@ -26,6 +27,8 @@ STUFF TO ASK ANNE:
 -Fix ellipse by clicking points in crop module
 
 - (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
+
+-(Requested by Anne 11-09-05) - When exporting data with features as rows, the wait bar doesn't display anything. It's ok if that doesn't work, but since exporting takes a long time I think most people will think it froze and try to quit. We should have the waitbar display a msg saying it takes a really long time and be patient.
 
 - (Requested by Anne 11-05-05) - In Crop, when cropping by clicking pixels, esp. in rectangle shape, it would be nice when you accidentally click a little bit off the image (e.g. you are trying to click the top left most pixel of the image) if it would not fail. Right now, it probably records it as a negative number or something, so it would be nice if positions less than 1 are rounded to 1 and if pixels greater than the size of the image are rounded to the 'end' of the image. If this occurs, however, there should be a warning dialog so you are aware that you clicked off the image (in case you accidentally clicked way off the image and did not intend to). I guess the same thing should be done for clicking points to make an ellipse, right?
 

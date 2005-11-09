@@ -76,7 +76,7 @@ end
 
 %%% Create a waitbarhandle that can be accessed from the functions below
 global waitbarhandle
-waitbarhandle = waitbar(0,'');
+waitbarhandle = CPwaitbar(0,'');
 
 %%% Export process info
 if strcmp(ExportInfo.ExportProcessInfo,'Yes')
@@ -104,7 +104,7 @@ function WriteMeasurements(handles,ExportInfo,RawPathname)
 
 %%% Get the handle to the waitbar and update the text in the waitbar
 global waitbarhandle
-CPwaitbar(0,waitbarhandle,'')
+CPwaitbar(0,waitbarhandle,'Export Status');
 
 %%% Step 1: Create a cell array containing matrices with all measurements for each object type
 %%% concatenated.
@@ -193,6 +193,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     ObjectName = ExportInfo.ObjectNames{Object};
 
+    %%% Update waitbar
+    CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
+    
     % Open a file for exporting the measurements
     % Add dot in extension if it's not there
     if ExportInfo.MeasurementExtension(1) ~= '.';
@@ -251,8 +254,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
         % Loop over the images sets
         for imageset = 1:max(length(Measurements),length(Text))
-            % Update waitbar
-            CPwaitbar(imageset/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
 
             % Write info about the image set (some unnecessary code here)
             fprintf(fid,'Set #%d, %s',imageset,handles.Measurements.Image.FileNames{imageset}{1});
@@ -276,7 +277,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 if ~strcmp(ObjectName,'Image')
                     fprintf(fid,'\t%d',row);
                 end
-
                 % Write text
                 strText = {};
                 if ~isempty(TextNames)

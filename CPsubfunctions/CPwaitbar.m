@@ -85,7 +85,7 @@ switch type
   if nargin > 2,
       % we have optional arguments: property-value pairs
       if rem (nargin, 2 ) ~= 0
-          error( 'Optional initialization arguments must be passed in pairs' );
+          error('Optional initialization arguments must be passed in pairs' );
       end
   end
   

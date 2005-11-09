@@ -155,8 +155,15 @@ if strcmp(ShrinkOrExpand,'Shrink') == 1
     %%% put in some edges. It doesn't catch all of the edges but at
     %%% least it puts most in so that some shrinking can occur.
     if strcmp(ObjectChoice,'Secondary')
-        PartialOutlines = edge(SegmentedImage, 'sobel',0);
-        SegmentedImage(PartialOutlines) = 0;
+        %%% Calculates object outlines
+        MaxFilteredImage = ordfilt2(SegmentedImage,9,ones(3,3),'symmetric');
+        %%% Determines the outlines.
+        IntensityOutlines = SegmentedImage - MaxFilteredImage;
+        %%% Converts to logical.
+        warning off MATLAB:conversionToLogical
+        FinalOutline = logical(IntensityOutlines);
+        warning on MATLAB:conversionToLogical
+        SegmentedImage(FinalOutline) = 0;
     end
     %%% Shrinks the three incoming images.  The "thin" option nicely removes
     %%% one pixel border from objects with each iteration.  When carried out

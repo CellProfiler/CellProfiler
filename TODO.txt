@@ -1,10 +1,6 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
--(HARD TO FIX, NEED TO TALK) (Requested by Anne 11-08-05) - Expand or Shrink does not work properly for shrinking secondary objects that are touching each other. it looks like the edges that border the background shrink but the edges that touch each other stay the same. Probably b/c we initially wrote this moduel for primary objects which always have a black line between the objects.
-
--(HARD TO FIX, SAME AS ABOVE) (Requested by Anne 11-08-05) - IdTertiarySubregion doesn't produce nice outlines, they all run together. Can we fix this?
-
 -(Requested by Anne 11-08-05) - Gray to Color has some text as a variable description that says type N to leave that color black, but I think that's outdated, right?
 
 - (Wyman?)Make sure all modules are using error and not errordlg

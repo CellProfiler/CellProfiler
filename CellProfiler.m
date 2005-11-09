@@ -1101,6 +1101,11 @@ if ModuleNamedotm ~= 0,
     if ModuleNums <= handles.Current.NumberOfModules
         handles.VariableDescription = [handles.VariableDescription(1:ModuleNums-1) {[]} handles.VariableDescription(ModuleNums:end)];
         handles.VariableBox = [handles.VariableBox(1:ModuleNums-1) {[]} handles.VariableBox(ModuleNums:end)];
+        if isfield(handles,'BrowseButton')
+            if length(handles.BrowseButton) >= ModuleNums
+                handles.BrowseButton = [handles.BrowseButton(1:ModuleNums-1) {[]} handles.BrowseButton(ModuleNums:end)];
+            end
+        end
     end
 
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
@@ -1653,6 +1658,14 @@ if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
         handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleUp);
         handles.VariableBox(ModuleUp) = CopyVariableBox;
 
+        if isfield(handles,'BrowseButton')
+            if length(handles.BrowseButton) >= ModuleNow
+                CopyBrowseButton = handles.BrowseButton(ModuleNow)
+                handles.BrowseButton(ModuleNow) = handles.VariableBox(ModuleUp);
+                handles.BrowseButton(ModuleUp) = CopyBrowseButton;
+            end
+        end
+
         CopyMaxInfo = MaxInfo(ModuleNow);
         MaxInfo(ModuleNow) = MaxInfo(ModuleUp);
         MaxInfo(ModuleUp) = CopyMaxInfo;
@@ -1712,10 +1725,17 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
         handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleDown);
         handles.VariableBox(ModuleDown) = CopyVariableBox;
 
+        if isfield(handles,'BrowseButton')
+            if length(handles.BrowseButton) >= ModuleNow
+                CopyBrowseButton = handles.BrowseButton(ModuleNow)
+                handles.BrowseButton(ModuleNow) = handles.VariableBox(ModuleDown);
+                handles.BrowseButton(ModuleDown) = CopyBrowseButton;
+            end
+        end
+            
         CopyMaxInfo = MaxInfo(ModuleNow);
         MaxInfo(ModuleNow) = MaxInfo(ModuleDown);
         MaxInfo(ModuleDown) = CopyMaxInfo;
-
     end
     %%% 7. Changes the Listbox to show the changes
     contents = handles.Settings.ModuleNames;

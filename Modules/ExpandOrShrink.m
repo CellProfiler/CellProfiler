@@ -102,11 +102,18 @@ ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
-%%%VariableRevisionNumber = 1
+%textVAR06 = What do you want to call the image of the outlines of the objects?
+%choiceVAR06 = Do not save
+%choiceVAR06 = OutlinedObjects
+%infotypeVAR06 = outlinegroup indep
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu custom
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%VariableRevisionNumber = 2
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(ObjectChoice,'Primary')
@@ -271,9 +278,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title(ShrunkenObjectName);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(ObjectChoice,'Primary')
@@ -291,6 +298,18 @@ end
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ShrunkenObjectName];
 handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;
+
+if ~strcmpi(SaveOutlined,'Do not save')
+    %%% Calculates object outlines
+    MaxFilteredImage = ordfilt2(FinalShrunkenSegmentedImage,9,ones(3,3),'symmetric');
+    %%% Determines the outlines.
+    IntensityOutlines = FinalShrunkenSegmentedImage - MaxFilteredImage;
+    %%% Converts to logical.
+    warning off MATLAB:conversionToLogical
+    LogicalOutlines = logical(IntensityOutlines);
+    warning on MATLAB:conversionToLogical
+    handles.Pipeline.(SaveOutlined) = LogicalOutlines;
+end
 
 %%% Saves the ObjectCount, i.e., the number of segmented objects.
 %%% See comments for the Threshold saving above

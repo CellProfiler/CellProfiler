@@ -4,14 +4,14 @@ November 8, 2005
 -------
 STUFF NEEDED FOR STEVE'S PROJECT:
 
-- (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules (this is for the general TODO, not steve's but maybe it's quick to check it while you are doing this) to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
-
 - (Requested by Anne 11-08-05) - Expand or Shrink does not work properly for shrinking secondary objects that are touching each other. it looks like the edges that border the background shrink but the edges that touch each other stay the same. Probably b/c we initially wrote this moduel for primary objects which always have a black line between the objects.
 
 - (Requested by Anne 11-08-05) - Fix Export SQL, ExportData, Histograms, PlotMeasurement, etc. for when number of objects = zero.
 
 WOULD BE NICE TO HAVE FOR STEVE's PROJECT- (Requested by Anne 11-08-05) - IdTertiarySubregion doesn't produce nice outlines, they all run together. Can we fix this?
 -----------
+
+- imclearborder ImageProcessing toolbox
 
 - Make sure all modules are using error and not errordlg
 
@@ -49,6 +49,8 @@ I'm not sure what order these come out as (if you have two plots on the chart): 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
 - (Requested by Anne 11-08-05) - When you load a non-valid settings file, you get an error message, but the text "Loading" still appears in the pipeline listbox, and it seems to me that there are variables and stuff left loaded in handles.Settings - maybe because I previously had some modules in the pipeline when I tried loading a new one?
+
+-(EXPAND OR SHRINK FIXED) (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules (this is for the general TODO, not steve's but maybe it's quick to check it while you are doing this) to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
 
 UROP:
 

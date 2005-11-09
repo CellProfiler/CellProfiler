@@ -136,9 +136,9 @@ if ~exist(SpecifiedPathname,'dir')
     error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 for n = 1:length(ImageName)
@@ -196,19 +196,20 @@ end
 %%% Here we check if any of the modules above the current module in the pipline has written to
 %%% handles.Measurements.Image.Filenames. Then we should append the current filenames and path
 %%% names to the already written ones.
-if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-        length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
-    % Get existing file/path names. Returns a cell array of names
-    ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
-    ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
-    ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
-    ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') && isfield(handles.Measurements.Image,'FileNames')
+    if length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+        % Get existing file/path names. Returns a cell array of names
+        ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
+        ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+        ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
+        ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
 
-    % Append current file names to existing file names
-    FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
-    FileNames     = cat(2,ExistingFileNames,FileNames);
-    PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
-    PathNames     = cat(2,ExistingPathNames,PathNames);
+        % Append current file names to existing file names
+        FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
+        FileNames     = cat(2,ExistingFileNames,FileNames);
+        PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
+        PathNames     = cat(2,ExistingPathNames,PathNames);
+    end
 end
 
 %%% Write to the handles.Measurements.Image structure
@@ -216,11 +217,10 @@ handles.Measurements.Image.FileNamesText                   = FileNamesText;
 handles.Measurements.Image.FileNames(SetBeingAnalyzed)     = {FileNames};
 handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)     = {PathNames};
-%%% ------------------------------------------------------------------------------------------------ %%%
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
@@ -232,8 +232,3 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
     close(ThisModuleFigureNumber)
 end
-
-% PROGRAM NOTES THAT ARE UNNECESSARY FOR THIS MODULE:
-
-
-

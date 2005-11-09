@@ -94,7 +94,7 @@ ObjectChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Enter the number of pixels by which to expand or shrink the objects (or "Inf" to either shrink to a point or expand until almost touching).
+%textVAR05 = Enter the number of pixels by which to expand or shrink the objects (or "Inf" to either shrink to a point or expand until almost touching). Or type 0 (the number zero) to simply add partial dividing lines between objects that are touching (experimental feature).
 %choiceVAR05 = 1
 %choiceVAR05 = 2
 %choiceVAR05 = 3
@@ -142,6 +142,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
 SegmentedImage = handles.Pipeline.(fieldname);
+OrigSegmentedImage = SegmentedImage;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -149,6 +150,14 @@ SegmentedImage = handles.Pipeline.(fieldname);
 drawnow
 
 if strcmp(ShrinkOrExpand,'Shrink') == 1
+    %%% Secondary objects physically touch each other and then the
+    %%% shrinking function does not work. So this is a quick fix to
+    %%% put in some edges. It doesn't catch all of the edges but at
+    %%% least it puts most in so that some shrinking can occur.
+    if strcmp(ObjectChoice,'Secondary')
+        PartialOutlines = edge(SegmentedImage, 'sobel',0);
+        SegmentedImage(PartialOutlines) = 0;
+    end
     %%% Shrinks the three incoming images.  The "thin" option nicely removes
     %%% one pixel border from objects with each iteration.  When carried out
     %%% for an infinite number of iterations, however, it produces one-pixel
@@ -245,8 +254,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
     if sum(sum(SegmentedImage)) >= 1
-        OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,SegmentedImage);
-    else  OriginalColoredLabelMatrixImage = SegmentedImage;
+        OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,OrigSegmentedImage);
+    else  OriginalColoredLabelMatrixImage = OrigSegmentedImage;
     end
     %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,1,2).

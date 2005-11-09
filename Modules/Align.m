@@ -56,36 +56,40 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the first image to be aligned? (will be
-%displayed as blue) infotypeVAR01 = imagegroup
+%textVAR01 = What did you call the first image to be aligned? (will be displayed as blue) 
+%infotypeVAR01 = imagegroup
 Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the aligned first image? defaultVAR02
-%= AlignedBlue infotypeVAR02 = imagegroup indep
+%textVAR02 = What do you want to call the aligned first image?
+%defaultVAR02 = AlignedBlue 
+%infotypeVAR02 = imagegroup indep
 AlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the second image to be aligned? (will be
-%displayed as green) infotypeVAR03 = imagegroup
+%textVAR03 = What did you call the second image to be aligned? (will be displayed as green) 
+%infotypeVAR03 = imagegroup
 Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the aligned second image?
-%defaultVAR04 = AlignedGreen infotypeVAR04 = imagegroup indep
+%defaultVAR04 = AlignedGreen 
+%infotypeVAR04 = imagegroup indep
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What did you call the third image to be aligned? (will be
-%displayed as red) choiceVAR05 = Do not use infotypeVAR05 = imagegroup
+%textVAR05 = What did you call the third image to be aligned? (will be displayed as red) 
+%choiceVAR05 = Do not use 
+%infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = What do you want to call the aligned third image? defaultVAR06
-%= Do not use infotypeVAR06 = imagegroup indep
+%textVAR06 = What do you want to call the aligned third image?
+%defaultVAR06 = Do not use 
+%infotypeVAR06 = imagegroup indep
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = This module calculates the alignment shift and stores it as a
-%measurement. Do you want to actually shift the images and crop them to
-%produce the aligned images? choiceVAR07 = Yes choiceVAR07 = No
+%textVAR07 = This module calculates the alignment shift and stores it as a measurement. Do you want to actually shift the images and crop them to produce the aligned images? 
+%choiceVAR07 = Yes 
+%choiceVAR07 = No
 AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 

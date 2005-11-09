@@ -136,8 +136,15 @@ drawnow
 %%% primary object.
 ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
 SubregionObjectImage = max(0,SecondaryObjectImage - ErodedPrimaryObjectImage);
-       
-FinalOutline = bwperim(SubregionObjectImage > 0);
+
+%%% Calculates object outlines
+MaxFilteredImage = ordfilt2(SubregionObjectImage,9,ones(3,3),'symmetric');
+%%% Determines the outlines.
+IntensityOutlines = SubregionObjectImage - MaxFilteredImage;
+%%% Converts to logical.
+warning off MATLAB:conversionToLogical
+FinalOutline = logical(IntensityOutlines);
+warning on MATLAB:conversionToLogical
 
 if ~isfield(handles.Measurements,SubregionObjectName)
     handles.Measurements.(SubregionObjectName) = {};

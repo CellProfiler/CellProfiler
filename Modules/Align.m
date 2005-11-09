@@ -50,46 +50,42 @@ function handles = Align(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find
-%%% the variable values that the user entered.
+%%% Reads the current module number, because this is needed to find the
+%%% variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the first image to be aligned? (will be displayed as blue)
-%infotypeVAR01 = imagegroup
+%textVAR01 = What did you call the first image to be aligned? (will be
+%displayed as blue) infotypeVAR01 = imagegroup
 Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the aligned first image?
-%defaultVAR02 = AlignedBlue
-%infotypeVAR02 = imagegroup indep
+%textVAR02 = What do you want to call the aligned first image? defaultVAR02
+%= AlignedBlue infotypeVAR02 = imagegroup indep
 AlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the second image to be aligned? (will be displayed as green)
-%infotypeVAR03 = imagegroup
+%textVAR03 = What did you call the second image to be aligned? (will be
+%displayed as green) infotypeVAR03 = imagegroup
 Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the aligned second image?
-%defaultVAR04 = AlignedGreen
-%infotypeVAR04 = imagegroup indep
+%defaultVAR04 = AlignedGreen infotypeVAR04 = imagegroup indep
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What did you call the third image to be aligned? (will be displayed as red)
-%choiceVAR05 = Do not use
-%infotypeVAR05 = imagegroup
+%textVAR05 = What did you call the third image to be aligned? (will be
+%displayed as red) choiceVAR05 = Do not use infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = What do you want to call the aligned third image?
-%defaultVAR06 = Do not use
-%infotypeVAR06 = imagegroup indep
+%textVAR06 = What do you want to call the aligned third image? defaultVAR06
+%= Do not use infotypeVAR06 = imagegroup indep
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = This module calculates the alignment shift and stores it as a measurement. Do you want to actually shift the images and crop them to produce the aligned images?
-%choiceVAR07 = Yes
-%choiceVAR07 = No
+%textVAR07 = This module calculates the alignment shift and stores it as a
+%measurement. Do you want to actually shift the images and crop them to
+%produce the aligned images? choiceVAR07 = Yes choiceVAR07 = No
 AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
@@ -100,7 +96,8 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Checks whether the image to be analyzed exists in the handles structure.
+%%% Checks whether the image to be analyzed exists in the handles
+%%% structure.
 if ~isfield(handles.Pipeline, Image1Name)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
@@ -217,7 +214,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     if strcmp(AdjustImage,'Yes') == 1
-        %%% A subplot of the figure window is set to display the original image.
+        %%% A subplot of the figure window is set to display the original
+        %%% image.
         subplot(2,1,1);
         ImageHandle = imagesc(OriginalRGB);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
@@ -240,8 +238,8 @@ end
 drawnow
 
 if strcmp(AdjustImage,'Yes') == 1
-    %%% Saves the adjusted image to the
-    %%% handles structure so it can be used by subsequent modules.
+    %%% Saves the adjusted image to the handles structure so it can be used
+    %%% by subsequent modules.
     handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
     handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
     if strcmp(Image3Name,'Do not use') ~= 1
@@ -354,8 +352,8 @@ else
 end
 
 function H = entropy2(X,Y)
-%%% joint entropy of paired samples X and Y
-%%% Makes sure images are binned to 256 graylevels
+%%% joint entropy of paired samples X and Y Makes sure images are binned to
+%%% 256 graylevels
 X = double(im2uint8(X));
 Y = double(im2uint8(Y));
 %%% Creates a combination image of X and Y

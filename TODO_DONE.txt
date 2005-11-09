@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/9) (Requested by Anne 11-08-05) - show data on image needs the underscores to be displayed properly in the title for the image. see other image tools for example of this.
+
 -(Mike 11/9) (Requested by Anne 11-08-05)
 -please add log scale option for histograms. The user would still specify the min and max in terms of the actual, original measurements, but the bin widths would be made on a log scale.
 -Also, can we add a button onto the histogram figure that's "Export data to Matlab workspace" which runs that line you gave me? It's a different command depending on whether it's bar or line data, and you'd want to run two lines - one for X data (bins) and the other for the data itself:

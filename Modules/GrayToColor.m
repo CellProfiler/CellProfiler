@@ -72,7 +72,7 @@ GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = Type "N" in any slots above to leave that color black.
+%textVAR04 = Choosing "Leave this black" will leave that channel black.
 
 %textVAR05 = What do you want to call the resulting image?
 %defaultVAR05 = RGBImage

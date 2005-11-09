@@ -197,7 +197,7 @@ MsgTxtBackClr=FigColor;
 Font.FontUnits = 'points';
 handles = guidata(findobj('Tag','figure1'));
 Font.FontSize = handles.Current.FontSize;
-Font.FontName = 'Times';
+Font.FontName = 'Helvetica';
 
 OKHandle=uicontrol(BoxHandle           , Font                             , ...
                   'Style'              ,'pushbutton'                      , ...

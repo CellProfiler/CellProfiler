@@ -7,8 +7,8 @@ function handles = ShowDataOnImage(handles)
 % overlay any measurements that you have made on any image. For
 % example, you could look at the DNA content (e.g.
 % IntegratedIntensityOrigBlue) of each cell on an image of nuclei.
-% Or, you could look at cell area on an image of nuclei.  
-% 
+% Or, you could look at cell area on an image of nuclei.
+%
 % First, you are asked to select the measurement you want to be
 % displayed on the image.  Next, you are asked to select the X and
 % then the Y locations where these measurements should be displayed.
@@ -16,7 +16,7 @@ function handles = ShowDataOnImage(handles)
 % XY locations of the cells, and these are usually named something
 % like 'CenterXNuclei'.  If your output file has measurements from
 % many images, you then select which sample number to view.
-% 
+%
 % Then, CellProfilerTM tries to guide you to find the image that
 % corresponds to this sample number.  First, it asks which file name
 % would be most helpful for you to find the image. CellProfilerTM
@@ -24,14 +24,14 @@ function handles = ShowDataOnImage(handles)
 % looking for, so that you can browse to find the image. Once the
 % image is selected, extraction ensues and eventually the image will
 % be shown with the measurements on top.
-% 
+%
 % You can use the tools at the top to zoom in on this image. If the
 % text is overlapping and not easily visible, you can change the
 % number of decimal places shown with the 'Fewer significant digits'
 % button, or you can change the font size with the 'Text Properties'.
 % You can also change the font style, color, and other properties with
-% this button.  
-% 
+% this button.
+%
 % The resulting figure can be saved in Matlab format (.fig) or
 % exported in a traditional image file format.
 %
@@ -99,19 +99,19 @@ else
     PromptMessage = ['Browse to find the image called ', ImageFileName,'.'];
 end
 
-  Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
-  FileName=char(ImageFileName);
-  if  ~ exist( fullfile (Pathname, char(ImageFileName)),'file') %path and file does not exist there.
-      %%% Prompts the user with the image file name.
-      h = CPmsgbox(PromptMessage);
+Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
+FileName=char(ImageFileName);
+if  ~ exist( fullfile (Pathname, char(ImageFileName)),'file') %path and file does not exist there.
+    %%% Prompts the user with the image file name.
+    h = CPmsgbox(PromptMessage);
 
-      %%% Opens a user interface window which retrieves a file name and path
-      %%% name for the image to be displayed.
-      [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
-      %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
-      if FileName == 0,return,end
-      try delete(h), end
-  end
+    %%% Opens a user interface window which retrieves a file name and path
+    %%% name for the image to be displayed.
+    [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+    %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
+    if FileName == 0,return,end
+    try delete(h), end
+end
 
 
 %%% Opens and displays the image, with pixval shown.
@@ -122,11 +122,11 @@ catch
     return
 end
 %%% Extracts the measurement values.
- 
+
 tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
 if isempty(tmp) ,
-   errordlg(['Error: there is no object measurement in your file '])
-   return
+    errordlg(['Error: there is no object measurement in your file '])
+    return
 end
 ListOfMeasurements = tmp(:,FeatureNo);
 StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
@@ -134,15 +134,13 @@ StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 %%% Extracts the XY locations. This is temporarily hard-coded
 Xlocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,1);
 Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
- 
 
 %%% Create window
-%ImageFileName = strrep(ImageFileName,'_','\_');
+ImageFileName = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure; imagesc(ImageToDisplay), colormap(gray)
 FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
 ImageDisp = ImageFileName{1};
 title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])
-% set(FigureHandle,'toolbar', 'figure')
 
 %%% Overlays the values in the proper location in the image.
 TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...

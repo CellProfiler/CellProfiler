@@ -4,7 +4,7 @@ November 8, 2005
 -------
 STUFF NEEDED FOR STEVE'S PROJECT:
 
-- (Requested by Anne 11-08-05) - Fix Export SQL, ExportData, Histograms, PlotMeasurement, etc. for when number of objects = zero.
+- (Requested by Anne 11-08-05) - Fix (DONE) Export SQL, (DONE) ExportData, Histograms, PlotMeasurement, etc. for when number of objects = zero.
 -----------
 
 -(HARD TO FIX, NEED TO TALK) (Requested by Anne 11-08-05) - Expand or Shrink does not work properly for shrinking secondary objects that are touching each other. it looks like the edges that border the background shrink but the edges that touch each other stay the same. Probably b/c we initially wrote this moduel for primary objects which always have a black line between the objects.

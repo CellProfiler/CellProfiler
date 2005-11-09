@@ -104,7 +104,7 @@ function WriteMeasurements(handles,ExportInfo,RawPathname)
 
 %%% Get the handle to the waitbar and update the text in the waitbar
 global waitbarhandle
-waitbar(0,waitbarhandle,'')
+CPwaitbar(0,waitbarhandle,'')
 
 %%% Step 1: Create a cell array containing matrices with all measurements for each object type
 %%% concatenated.
@@ -239,7 +239,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     % Write data in columns or rows?
     if strcmp(ExportInfo.SwapRowsColumnInfo,'No')
-
         % Write feature names in one row
         % Interleave feature names with commas and write to file
         strMeasurement = cell(2*length(MeasurementNames),1);
@@ -252,9 +251,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
         % Loop over the images sets
         for imageset = 1:max(length(Measurements),length(Text))
-
             % Update waitbar
-            waitbar(imageset/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
+            CPwaitbar(imageset/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
 
             % Write info about the image set (some unnecessary code here)
             fprintf(fid,'Set #%d, %s',imageset,handles.Measurements.Image.FileNames{imageset}{1});
@@ -264,6 +262,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
             %%% for the cases of no Measurements or no Text.
             if ~isempty(Measurements)
                 NbrOfRows = size(Measurements{imageset},1);
+                if NbrOfRows == 0
+                    fprintf(fid,sprintf('\n'));
+                end
             elseif ~isempty(Text)
                 NbrOfRows = size(Text{imageset},1);
             else
@@ -271,7 +272,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
 
             for row = 1:NbrOfRows    % Loop over the rows
-
                 % If not the 'Image' field, write an object number
                 if ~strcmp(ObjectName,'Image')
                     fprintf(fid,'\t%d',row);
@@ -291,7 +291,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
                     end
                     strText(2:2:end) = tmp;                    % Interleave with tabs
                 end
-
                 % Write measurements
                 strMeasurement = {};
                 if ~isempty(MeasurementNames)
@@ -302,9 +301,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 end
                 fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));            % Write to file
             end
-
         end
-
         %%% Write each measurement as a row, with each object as a column
     else
         %%% Write first row where the image set starting points are indicated
@@ -350,7 +347,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
         for row = 1:length(MeasurementNames)
             fprintf(fid,'%s',MeasurementNames{row});
             for imageset = 1:length(Measurements)
-                tmp = cellstr(num2str(Measurements{imageset}(:,row),'%g'));  % Create cell array with measurements
+                if size(Measurements{imageset},2) >= row
+                    tmp = cellstr(num2str(Measurements{imageset}(:,row),'%g'));  % Create cell array with measurements
+                else
+                    tmp = {' '};
+                end
                 strMeasurement = cell(2*size(Measurements{imageset},1),1);
                 strMeasurement(1:2:end) = {'\t'};
                 strMeasurement(2:2:end) = tmp;                    % Interleave with tabs
@@ -358,10 +359,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
             fprintf(fid,'\n');
         end
-
-
     end % Ends 'if' row/column flip
-
     fclose(fid);
 end % Ends 'for'-loop over object types
 

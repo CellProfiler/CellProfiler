@@ -322,6 +322,17 @@ while AcceptableAnswers == 0
         uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
+    
+
+    %%% Error checking for the log or linear question.
+    try LogOrLinear = lower(Answers{16});
+    catch uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{16}, '.']));
+        continue
+    end
+    if ~strcmp(LogOrLinear, 'yes') && ~strcmpi(LogOrLinear,'no')
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{16}, '.']));
+        continue
+    end
 
     %%% If the user selected A for all, the measurements are not thresholded on some other measurement.
     if ~strcmpi(GreaterOrLessThan,'A')
@@ -359,7 +370,7 @@ while AcceptableAnswers == 0
     else MaxHistogramValue = str2num(MaxHistogramValue); %#ok
     end
 
-    if strcmpi(Answers{16},'Yes')
+    if strcmpi(LogOrLinear,'Yes')
         MaxLog = log10(MaxHistogramValue);
         MinLog = log10(MinHistogramValue);
         HistogramRange = MaxLog - MinLog;
@@ -397,7 +408,7 @@ while AcceptableAnswers == 0
     XTickLabels{1} = ['< ', num2str(BinLocations(2),3)];
     XTickLabels{i} = ['>= ', num2str(BinLocations(i),3)];
     
-    if strcmpi(Answers{16},'Yes')
+    if strcmpi(LogOrLinear,'Yes')
         for n = 1:length(PlotBinLocations);
             PlotBinLocations(n) = log10(PlotBinLocations(n));
         end

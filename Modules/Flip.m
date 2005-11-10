@@ -3,6 +3,10 @@ function handles = Flip(handles)
 % Help for the Flip module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION: Flips an image from top to bottom, left to right, or
+% both.
+% *************************************************************************
+%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -115,11 +119,12 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        %%% Sets the window to be half as wide as usual.
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
+if any(findobj == ThisModuleFigureNumber);
+
+    %%% Sets the window to be half as wide as usual.
+    originalsize = get(ThisModuleFigureNumber, 'position');
+    newsize = originalsize;
+    if newsize(3) ~= 250
         newsize(3) = 250;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
@@ -128,11 +133,16 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);
+    subplot(2,1,1);
+    ImageHandle = imagesc(OrigImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
-    subplot(2,1,2); imagesc(FlippedImage); title('Flipped Image');
+    subplot(2,1,2);
+    ImageHandle = imagesc(FlippedImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title('Flipped Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

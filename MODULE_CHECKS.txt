@@ -1,5 +1,5 @@
 Name of Module:			Who Checked and Verified:
-Align				Mike (Change handles structure?), Colin, Anne
+Align				Mike, Colin, Anne
 
 ApplyThreshold			Mike, Colin, Anne
 
@@ -28,3 +28,5 @@ Exclude				Mike
 ExpandOrShrink			Mike
 
 FilterByObjectMeasurement	Mike
+
+Flip				Mike

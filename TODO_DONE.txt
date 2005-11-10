@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/10) (Requested by Anne 11-08-05) - Filter by object measurement should have its variables rearranged - What did you call the original image is only necessary for intensity & texture (not shape), right? so it should come after What measurement do you want to filter by.
+
+-(Mike 11/10) (Requested by Anne 11-08-05) -  FilterByObject Measurement fails if there are no objects in an image.
+
 -(Mike 11/10) (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules (this is for the general TODO, not steve's but maybe it's quick to check it while you are doing this) to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
 
 -(Mike 11/10) GrayToColor --get "Error while evaluating uicontrol Callback." couldn't even add to pipleine.

@@ -25,15 +25,17 @@ function handles = Average(handles)
 %
 % Settings:
 %
-% Enter L or P:
-% If you choose L, the module will calculate the single, averaged
+% Enter Load Image Module or Pipeline:
+%
+% If you Load Image Module, the module will calculate the single, averaged
 % averaged image the first time through the pipeline by loading
 % every image of the type specified in the Load Images module. It is
-% then acceptable to use the resulting image later in the pipeline. If
-% you choose P, the module will allow the pipeline to cycle through
-% all of the image sets.  With this option, the module does not need
-% to follow a Load Images module; it is acceptable to make the single,
-% averaged image from images resulting from other image
+% then acceptable to use the resulting image later in the pipeline.
+%
+% If you choose Pipeline, the module will allow the pipeline to cycle 
+% through all of the image sets.  With this option, the module does not
+% need to follow a Load Images module; it is acceptable to make the 
+% single, averaged image from images resulting from other image
 % processing steps in the pipeline. However, the resulting averaged
 % image will not be available until the last cycle has been
 % processed, so it cannot be used in subsequent modules unless they
@@ -87,7 +89,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 AveragedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are the images you want to use to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
+%textVAR03 = Are the images you want to use to be loaded straight from a Load Images module, or are they being produced by the pipeline? See the help for details.
 %choiceVAR03 = Load Images module
 %choiceVAR03 = Pipeline
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -116,7 +118,11 @@ try
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% If we are in LoadImages mode, the averaged image is
         %%% calculated the first time the module is run.
-        [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+        if  isfield(handles.Pipeline,['Pathname', ImageName]);
+            [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+        else
+            error(['The field Pathname' ImageName ' could not be found.  This is most likely because this module is not using images that were loaded directly from a load image module.  By picking the "Load Image module" option, images need to have been loaded directly from a load image module.  If you change this to "Pipeline," you can average other images, but the final image will not be available until the last cycle.  See help for more details.']);
+        end
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
     else

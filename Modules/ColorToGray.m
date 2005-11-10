@@ -1,6 +1,6 @@
 function handles = ColorToGray(handles)
 
-% Help for the RGB To Gray module:
+% Help for the Color To Gray module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
@@ -13,11 +13,11 @@ function handles = ColorToGray(handles)
 % Settings:
 %
 % Split:
-% Takes an RGB image and splits into three separate grayscale images.
+% Takes a color image and splits into three separate grayscale images.
 %
-% Gray:
-% Takes an RGB image and converts it to grayscale.  Each color's
-% contribution to the final image can be adjusted independently.
+% Combine:
+% Takes a color image and converts it to grayscale by taking the intensity
+% of each color (red, green, and blue) and combining them together.
 %
 % Adjustment factors: Leaving the adjustment factors set to 1 will
 % balance all three colors equally in the final image, which will
@@ -33,7 +33,7 @@ function handles = ColorToGray(handles)
 % (see the SaveImages module help) and then use the Save Images
 % module.
 %
-% See also RGBSPLIT, RGBMERGE.
+% See also GrayToColor.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -74,13 +74,13 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = How do you want to convert the RGB image?
+%textVAR02 = How do you want to convert the color image?
 %choiceVAR02 = Gray
-%choiceVAR02 = Split
+%choiceVAR02 = Combine
 GrayOrSplit = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = GRAY OPTIONS:
+%textVAR03 = Combine OPTIONS:
 
 %textVAR04 = What do you want to call the grayscale image?
 %defaultVAR04 = OrigGray
@@ -154,11 +154,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(GrayOrSplit,'Gray')
+if strcmp(GrayOrSplit,'Combine')
     %%% Converts Image to Gray
-    InitialGrayscaleImage = OrigImage(:,:,1)*RedIntensity+OrigImage(:,:,2)*GreenIntensity+OrigImage(:,:,3)*BlueIntensity;
-    %%% Divides by the sum of the weights to make sure the image is in the proper 0 to 1 range.
-    GrayscaleImage = InitialGrayscaleImage/sum(RedIntensity+GreenIntensity+BlueIntensity);
+    InitialGrayscaleImage = (OrigImage(:,:,1)*RedIntensity+OrigImage(:,:,2)*GreenIntensity+OrigImage(:,:,3)*BlueIntensity)/(RedIntensity+GreenIntensity+BlueIntensity);
 elseif strcmp(GrayOrSplit,'Split')
     %%% Determines whether the user has specified an image to be loaded in
     %%% red.
@@ -187,7 +185,7 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 
-if strcmp(GrayOrSplit,'Gray')
+if strcmp(GrayOrSplit,'Combine')
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
         %%% Sets the width of the figure window to be appropriate (half width).
@@ -223,7 +221,7 @@ elseif strcmp(GrayOrSplit,'Split')
         subplot(2,2,1);
         ImageHandle = imagesc(OrigImage);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-        title(['Input RGB Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Input Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
         subplot(2,2,2);
         ImageHandle = imagesc(BlueImage);
@@ -248,7 +246,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(GrayOrSplit,'Gray')
+if strcmp(GrayOrSplit,'Combine')
     %%% Saves the Grayscaled image to the handles structure so it can be
     %%% used by subsequent modules.
     fieldname = GrayscaleImageName;

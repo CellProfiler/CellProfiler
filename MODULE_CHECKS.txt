@@ -9,7 +9,7 @@ CalculateStatistics
 
 ClassifyObjects			Mike
 
-ColorToGray			Mike
+ColorToGray			Mike, Colin
 
 ConvertToImage
 

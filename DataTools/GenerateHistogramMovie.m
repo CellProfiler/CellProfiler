@@ -16,9 +16,18 @@ function GenerateHistogramMovie(handles)
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
+%   Anne Carpenter
+%   Thouis Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
 %
 % $Revision: 1011 $
 

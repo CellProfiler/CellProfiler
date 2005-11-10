@@ -18,15 +18,18 @@ function PlotMeasurement(handles)
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
-%   Ola Friman     <friman@bwh.harvard.edu>
-%   Steve Lowe     <stevelowe@alum.mit.edu>
-%   Joo Han Chang  <joohan.chang@gmail.com>
-%   Colin Clarke   <colinc@mit.edu>
-%   Mike Lamprecht <mrl@wi.mit.edu>
-%   Susan Ma       <xuefang_ma@wi.mit.edu>
+%   Anne Carpenter
+%   Thouis Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
 %
 % $Revision$
 

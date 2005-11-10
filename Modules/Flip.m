@@ -90,7 +90,7 @@ end
 drawnow
 
 FlippedImage = OrigImage;
-[Rows,Columns,Dimensions] = size(FlippedImage);
+[Rows,Columns,Dimensions] = size(FlippedImage); %#ok
 
 if strcmp(LeftToRight,'Yes')
     if Dimensions == 1

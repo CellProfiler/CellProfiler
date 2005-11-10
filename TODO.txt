@@ -5,8 +5,6 @@ November 8, 2005
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
--(EXPAND OR SHRINK FIXED) (Requested by Anne 11-08-05) - Expand or Shrink does not have the option to save outlines. Can you add it and also check any other object processing modules (this is for the general TODO, not steve's but maybe it's quick to check it while you are doing this) to be sure they all are capable of saving outlines properly, and *not* saving colored objects?
-
 - Browse buttons now move when adding or subtracting modules, but should check when deleting modules and also what about callback function for these buttons when the module number changes? Does this change the value in the wrong modules?
 
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.

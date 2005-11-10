@@ -202,8 +202,8 @@ Value2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,12}));
 Value3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
 
 %textVAR14 = Enter the Value4 (integer, in pixels)
-%defaultVAR15 = 6
-Value4 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
+%defaultVAR14 = 6
+Value4 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,14}));
 
 %%% Determines what the user entered for the size range.
 SizeRangeNumerical = str2num(SizeRange); %#ok We want to ignore MLint error checking for this line.
@@ -354,9 +354,9 @@ FinalBinary = imfill(FinalBinaryPre, 'holes');
 %%% object, with no numbers skipped.
 FinalLabelMatrixImage = bwlabel(FinalBinary);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -367,24 +367,25 @@ ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
 FinalOutline = logical(zeros(size(OrigImage,1),size(OrigImage,2)));
 FinalOutline = bwperim(FinalLabelMatrixImage > 0);
 
+if any(findobj == ThisModuleFigureNumber)
+    drawnow
+    CPfigure(handles,ThisModuleFigureNumber);
 
-drawnow
-CPfigure(handles,ThisModuleFigureNumber);
+    subplot(2,2,1); imagesc(OrigImage);
+    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
-subplot(2,2,1); imagesc(OrigImage);
-title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
 
-subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,3); imagesc(EnhancedInvertedImage); title(['Inverted enhanced contrast image']);
 
-subplot(2,2,3); imagesc(EnhancedInvertedImage); title(['Inverted enhanced contrast image']);
+    subplot(2,2,4); imagesc(FinalOutline); title([ObjectName, ' Outlines']);
 
-subplot(2,2,4); imagesc(FinalOutline); title([ObjectName, ' Outlines']);
+    CPFixAspectRatio(OrigImage);
+end
 
-CPFixAspectRatio(OrigImage);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the segmented image, not edited for objects along the edges or

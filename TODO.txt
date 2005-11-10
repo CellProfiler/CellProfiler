@@ -7,8 +7,6 @@ November 8, 2005
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
-- Browse buttons now move when adding or subtracting modules, but should check when deleting modules and also what about callback function for these buttons when the module number changes? Does this change the value in the wrong modules?
-
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
 - Make compiled CellProfiler work on cluster

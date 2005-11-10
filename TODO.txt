@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
-Hi - not sure if I put this on already: When exporting data with features as rows, the wait bar doesn't display anything. It's ok if that doesn't work, but since exporting takes a long time I think most people will think it froze and try to quit. We should have the waitbar display a msg saying it takes a really long time and be patient.
-
 - (Requested by Anne 11-09-05) - I don't think we want all our email addresses on the Boilerplate of each file. You know, too much fan mail and all that.   :)   Instead we should just have our names plus the website, right?
 
 - (Wyman?)Make sure all modules are using error and not errordlg

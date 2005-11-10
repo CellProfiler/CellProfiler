@@ -385,7 +385,7 @@ guidata(hObject, handles);
 
 FileMenu=uimenu('Label','File');
 DataToolsMenu=uimenu('Label','Data Tools');
-uimenu('Label','Close Windows','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));')
+WindowsMenu=uimenu('Label','Windows');
 HelpMenu=uimenu('Label','Help');
 
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
@@ -403,12 +403,13 @@ for j=2:length(ListOfDataTools)
     uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));clear ans']);
 end
 
+uimenu(WindowsMenu,'Label','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
+
 uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Image Tools Help','Callback','CellProfiler(''ImageToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 %uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
 %uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
-
 
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/10) (Requested by Anne 11-10-05) - Filterbyobjectmeas is not putting out objectcount. make sure it is doing everything that a prim module does - locations, too.
+
 -(Mike 11/10) (Requested by Anne 11-10-05) - When exporting, if you choose Image only, it doesn't give you the mean measurements from the objects in the Image file. This might seem reasonable, but it leads to this weirdness that I found really confusing:  If I export everything in the file (Image and Nuclei), then I get all these nice nuclei average measurements in the output file.  If I export just Image only, suddenly all my nice average measurements are gone.  So I think when Image is selected, the other objects' mean measurements should be exported into the image file too (if it's not a nightmare in the code). I am pretty sure that most people would want this.  If we don't do this, we should at least make a prominent note that says Image will contain mean measures of objects only if you are simultaneously export the objects.
 
 -(Mike 11/10) Browse buttons now move when adding or subtracting modules, but should check when deleting modules and also what about callback function for these buttons when the module number changes? Does this change the value in the wrong modules?

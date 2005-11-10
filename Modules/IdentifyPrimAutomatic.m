@@ -998,7 +998,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             tmp = regionprops(FinalLabelMatrixImage,'Centroid');
             Centroid = cat(1,tmp.Centroid);
             handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-
         end
 
         if strcmp(TestMode,'Yes')

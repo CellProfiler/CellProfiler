@@ -242,6 +242,25 @@ if isfield(handles.Pipeline, fieldname)
     handles.Pipeline.(['UneditedSegmented' TargetName]) = handles.Pipeline.(['UneditedSegmented',ObjectName]);
 end
 
+%%% Saves the ObjectCount, i.e., the number of segmented objects.
+%%% See comments for the Threshold saving above
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,TargetName)));
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' TargetName]};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
+
+%%% Saves the location of each segmented object
+handles.Measurements.(TargetName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(TargetName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
 if ~strcmp(SaveOutlined,'Do not save')
     try handles.Pipeline.(SaveOutlined) = PrimaryObjectOutlines;
     catch

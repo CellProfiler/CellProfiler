@@ -133,7 +133,7 @@ MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What do you want to call the image of the outlines of the objects?
 %choiceVAR08 = Do not save
-%infortypeVAR08 = imagegroup indep
+%infotypeVAR08 = outlinegroup indep
 %inputtypeVAR08 = popupmenu custom
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 

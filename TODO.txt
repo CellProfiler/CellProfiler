@@ -1,14 +1,6 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
-- when plotting a scatterplot, it asks 'choose histogram settings' as the dialog box label when asking you to pick which image sets.
-
-- GrayToColor --get "Error while evaluating uicontrol Callback." couldn't even add to pipleine.
-
--Update pipelines for new threshold
-
--Fix ellipse by clicking points in crop module
-
 - (Requested by Anne 11-08-05) -  FilterByObject Measurement fails if there are no objects in an image.
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.

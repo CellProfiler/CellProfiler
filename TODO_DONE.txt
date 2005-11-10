@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/10) GrayToColor --get "Error while evaluating uicontrol Callback." couldn't even add to pipleine.
+
+-(Mike 11/10) when plotting a scatterplot, it asks 'choose histogram settings' as the dialog box label when asking you to pick which image sets.
+
+-(Mike 11/10) Fix ellipse by clicking points in crop module
+
 -(Mike 11/10) (Requested by Anne 11-08-05) - When you load a non-valid settings file, you get an error message, but the text "Loading" still appears in the pipeline listbox, and it seems to me that there are variables and stuff left loaded in handles.Settings - maybe because I previously had some modules in the pipeline when I tried loading a new one?
 
 -(Mike 11/10 ALL MODULES NOW USE ERROR, NOT SURE WHAT TO DO ABOUT DATA TOOLS) Make sure all modules are using error and not errordlg

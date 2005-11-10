@@ -171,12 +171,12 @@ elseif PlotType == 4
     %%% Calculates some values for the next dialog box.
     TotalNumberImageSets = length(Measurements1);
     TextTotalNumberImageSets = num2str(TotalNumberImageSets);
-    %%% Ask the user to specify histogram settings.
+    %%% Ask the user to specify scatter plot settings.
     Prompts{1} = 'Enter the first image set to use for the scatter plot';
     Prompts{2} = ['Enter the last last image set to use for scatter plot (the total number of image sets with data in the file is ',TextTotalNumberImageSets,').'];
     Defaults{1} = '1';
     Defaults{2} = TextTotalNumberImageSets;
-    Answers = inputdlg(Prompts(1:2),'Choose histogram settings',1,Defaults(1:2),'on');
+    Answers = inputdlg(Prompts(1:2),'Choose scatter plot settings',1,Defaults(1:2),'on');
     FirstImage = str2num(Answers{1});
     LastImage = str2num(Answers{2});
 

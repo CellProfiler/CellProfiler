@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
+- when plotting a scatterplot, it asks 'choose histogram settings' as the dialog box label when asking you to pick which image sets.
+
 - GrayToColor --get "Error while evaluating uicontrol Callback." couldn't even add to pipleine.
 
 -Update pipelines for new threshold

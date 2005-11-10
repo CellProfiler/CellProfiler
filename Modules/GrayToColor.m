@@ -75,22 +75,22 @@ GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR06 = What do you want to call the resulting image?
-%defaultVAR06 = RGBImage
-%infotypeVAR06 = imagegroup indep
-RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR04 = What do you want to call the resulting image?
+%defaultVAR04 = RGBImage
+%infotypeVAR04 = imagegroup indep
+RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR07 = Enter the adjustment factor for the blue image
+%textVAR05 = Enter the adjustment factor for the blue image
+%defaultVAR05 = 1
+BlueAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%textVAR06 = Enter the adjustment factor for the green image
+%defaultVAR06 = 1
+GreenAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
+%textVAR07 = Enter the adjustment factor for the red image
 %defaultVAR07 = 1
-BlueAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-
-%textVAR08 = Enter the adjustment factor for the green image
-%defaultVAR08 = 1
-GreenAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-
-%textVAR09 = Enter the adjustment factor for the red image
-%defaultVAR09 = 1
-RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %%%VariableRevisionNumber = 1
 

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/10) (Requested by Anne 11-08-05) - When you load a non-valid settings file, you get an error message, but the text "Loading" still appears in the pipeline listbox, and it seems to me that there are variables and stuff left loaded in handles.Settings - maybe because I previously had some modules in the pipeline when I tried loading a new one?
+
 -(Mike 11/10 ALL MODULES NOW USE ERROR, NOT SURE WHAT TO DO ABOUT DATA TOOLS) Make sure all modules are using error and not errordlg
 
 -(Mike 11/10 Fixed how handles are stored in Align) (Requested by Anne 11-09-05) - Why does module checks say "Change handles structure?"

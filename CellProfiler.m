@@ -425,7 +425,12 @@ varargout{1} = handles.output;
 
 function NewPipeline_Callback(hObject, eventdata, handles)
 
-Answer = CPquestdlg('Are you sure you want to clear the existing pipeline?','Confirm','Yes','No','Yes');
+if isempty(eventdata)
+    Answer = CPquestdlg('Are you sure you want to clear the existing pipeline?','Confirm','Yes','No','Yes');
+else
+    Answer = 'Yes';
+end
+
 if strcmp(Answer,'Yes')
     handles.Settings.ModuleNames = {};
     handles.Settings.SelectedOption = [];
@@ -479,11 +484,14 @@ drawnow
 %%% Loads the Settings file.
 try
     LoadedSettings = load(fullfile(SettingsPathname,SettingsFileName));
-catch error(['CellProfiler was unable to load ',fullfile(SettingsPathname,SettingsFileName),'. The file may be corrupt.']);
+catch
+    error(['CellProfiler was unable to load ',fullfile(SettingsPathname,SettingsFileName),'. The file may be corrupt.']);
 end
 %%% Error Checking for valid settings file.
 if ~(isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     CPerrordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
+    eventdata = 1;
+    NewPipeline_Callback(hObject, eventdata, handles)
     errFlg = 1;
     return
 end

@@ -3,6 +3,8 @@ November 8, 2005
 
 - (Requested by Anne 11-08-05) -  FilterByObject Measurement fails if there are no objects in an image.
 
+- (Requested by Anne 11-08-05) - Filter by object measurement should have its variables rearranged - What did you call the original image is only necessary for intensity & texture (not shape), right? so it should come after What measurement do you wan tto filte rby .
+
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
 - Browse buttons now move when adding or subtracting modules, but should check when deleting modules and also what about callback function for these buttons when the module number changes? Does this change the value in the wrong modules?

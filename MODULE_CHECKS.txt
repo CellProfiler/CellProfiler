@@ -5,9 +5,13 @@ ApplyThreshold			Mike, Colin, Anne
 
 Average				Mike
 
+CalculateStatistics
+
 ClassifyObjects			Mike
 
 ColorToGray			Mike
+
+ConvertToImage
 
 CorrectIllumination_Apply	Mike
 
@@ -27,6 +31,90 @@ Exclude				Mike
 
 ExpandOrShrink			Mike
 
+ExtractHeaderInfo
+
 FilterByObjectMeasurement	Mike
 
 Flip				Mike
+
+GetHistogram
+
+GrayToColor			Mike
+
+IdentifyObjectsInGrid
+
+IdentifyPrimAutomatic
+
+IdentifyPrimManual
+
+IdentifyPrimYeastPhase
+
+IdentifySecondary
+
+IdentifyTertiarySubregion
+
+InvertIntensity
+
+LoadImages
+
+LoadSingleImage
+
+LoadText
+
+MeasureCorrelation
+
+MeasureImageAreaOccupied
+
+MeasureImageIntensity
+
+MeasureImageSaturationBlur
+
+MeasureObjectAreaShape
+
+MeasureObjectIntensity
+
+MeasureObjectNeighbors
+
+MeasureObjectTexture
+
+MeasureRatios
+
+MergeBatchOutput
+
+OverlayOutlines
+
+PlaceAdjacent
+
+ProcessOutlines
+
+RelateObjects
+
+RenameOrRenumberFile
+
+RescaleIntensity
+
+Resize
+
+Restart
+
+Rotate
+
+SaveImages
+
+SendEmail
+
+Smooth
+
+SpeedUpCellProfiler
+
+SplitOrSpliceMovie
+
+StretchAlignCrop
+
+Subtract
+
+SubtractBackground
+
+Tile
+
+WriteSQLFiles

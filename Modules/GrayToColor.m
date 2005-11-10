@@ -3,8 +3,9 @@ function handles = RGBMerge(handles)
 % Help for the RGB Merge module:
 % Category: Image Processing
 %
-% Takes 1 to 3 images and assigns them to colors in a final, RGB
-% image.  Each color's brightness can be adjusted independently.
+% SHORT DESCRIPTION: Takes 1 to 3 images and assigns them to colors in a
+% final, RGBimage.  Each color's brightness can be adjusted independently.
+% *************************************************************************
 %
 % Settings:
 %
@@ -46,9 +47,9 @@ function handles = RGBMerge(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -103,7 +104,7 @@ drawnow
 %%% blue.
 if ~strcmp(BlueImageName, 'Leave this black')
     %%% Read (open) the images and assign them to variables.
-    fieldname = ['', BlueImageName];
+    fieldname = BlueImageName;
     %%% Checks whether the image to be analyzed exists in the handles structure.
     if ~isfield(handles.Pipeline, fieldname)
         %%% If the image is not there, an error message is produced.  The error
@@ -112,7 +113,7 @@ if ~strcmp(BlueImageName, 'Leave this black')
         %%% button callback.)  That callback recognizes that an error was
         %%% produced because of its try/catch loop and breaks out of the image
         %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', BlueImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ',BlueImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
     BlueImage = handles.Pipeline.(fieldname);
@@ -126,8 +127,8 @@ end
 
 drawnow
 %%% Repeat for Green and Red.
-if strcmp(GreenImageName, 'Leave this black') == 0
-    if isfield(handles.Pipeline, GreenImageName) == 0
+if ~strcmp(GreenImageName, 'Leave this black')
+    if ~isfield(handles.Pipeline, GreenImageName)
         error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     GreenImage = handles.Pipeline.(GreenImageName);
@@ -137,8 +138,9 @@ if strcmp(GreenImageName, 'Leave this black') == 0
     end
 else GreenImageExists = 0;
 end
-if strcmp(RedImageName, 'Leave this black') == 0
-    if isfield(handles.Pipeline, RedImageName) == 0
+
+if ~strcmp(RedImageName, 'Leave this black')
+    if ~isfield(handles.Pipeline, RedImageName)
         error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     RedImage = handles.Pipeline.(RedImageName);
@@ -152,28 +154,28 @@ drawnow
 
 %%% If any of the colors are to be left black, creates the appropriate
 %%% image.
-if BlueImageExists == 0 && RedImageExists == 0 && GreenImageExists == 0
+if ~BlueImageExists && ~RedImageExists && ~GreenImageExists
     error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected any images to be merged in the RGB Merge module.'])
 end
-if BlueImageExists == 0 && RedImageExists == 0 && GreenImageExists == 1
+if ~BlueImageExists && ~RedImageExists && GreenImageExists
     BlueImage = zeros(size(GreenImage));
     RedImage = zeros(size(GreenImage));
 end
-if BlueImageExists == 0 && RedImageExists == 1 && GreenImageExists == 0
+if ~BlueImageExists && RedImageExists && ~GreenImageExists
     BlueImage = zeros(size(RedImage));
     GreenImage = zeros(size(RedImage));
 end
-if BlueImageExists == 1 && RedImageExists == 0 && GreenImageExists == 0
+if BlueImageExists && ~RedImageExists && ~GreenImageExists
     RedImage = zeros(size(BlueImage));
     GreenImage = zeros(size(BlueImage));
 end
-if BlueImageExists == 1 && RedImageExists == 1 && GreenImageExists == 0
+if BlueImageExists && RedImageExists && ~GreenImageExists
     GreenImage = zeros(size(BlueImage));
 end
-if BlueImageExists == 0 && RedImageExists == 1 && GreenImageExists == 1
+if ~BlueImageExists && RedImageExists && GreenImageExists
     BlueImage = zeros(size(GreenImage));
 end
-if BlueImageExists == 1 && RedImageExists == 0 && GreenImageExists == 1
+if BlueImageExists && ~RedImageExists && GreenImageExists
     RedImage = zeros(size(BlueImage));
 end
 
@@ -188,9 +190,9 @@ try
 catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected for the RGB Merge module. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in RGB format.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% If any of the images are binary/logical format, they must be
@@ -199,14 +201,14 @@ RGBImage(:,:,1) = immultiply(double(RedImage),str2double(RedAdjustmentFactor));
 RGBImage(:,:,2) = immultiply(double(GreenImage),str2double(GreenAdjustmentFactor));
 RGBImage(:,:,3) = immultiply(double(BlueImage),str2double(BlueAdjustmentFactor));
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber);
 
     drawnow
     %%% Activates the appropriate figure window.
@@ -225,9 +227,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPFixAspectRatio(RGBImage);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by

@@ -269,7 +269,7 @@ LogicalIsDirectory = [FilesAndDirsStructure.isdir];
 FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
 
 if isempty(FileNamesNoDir) == 1
-    errordlg('There are no files in the chosen directory')
+    error('There are no files in the chosen directory')
     handles.Current.FilenamesInImageDir = [];
 else
     %%% Makes a logical array that marks with a "1" all file names that start
@@ -315,6 +315,6 @@ else
     end
     %%% Checks whether any files are left.
     if isempty(FileNames) == 1
-        errordlg('There are no image files in the chosen directory')
+        error('There are no image files in the chosen directory')
     end
 end

@@ -180,7 +180,7 @@ ObjectName = tmpObjectName; % Get rid of '/' in the ObjectName cell array so we 
 
 % Check so that at least one object type have been entered
 if ObjectNameCount < 1
-    errordlg(['At least one object type must be entered in the ', ModuleName, ' module.'])
+    error(['At least one object type must be entered in the ',ModuleName,' module.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%

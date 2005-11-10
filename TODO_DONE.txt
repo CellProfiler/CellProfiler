@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/10 ALL MODULES NOW USE ERROR, NOT SURE WHAT TO DO ABOUT DATA TOOLS) Make sure all modules are using error and not errordlg
+
 -(Mike 11/10 Fixed how handles are stored in Align) (Requested by Anne 11-09-05) - Why does module checks say "Change handles structure?"
 
 -(Mike 11/10) (Requested by Anne 11-09-05) - I don't think we want all our email addresses on the Boilerplate of each file. You know, too much fan mail and all that.   :)   Instead we should just have our names plus the website, right?

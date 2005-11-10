@@ -102,7 +102,7 @@ if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
 end
 
 if isempty(MaxResolution)
-    errordlg('Invalid specification of the image size in the Identify Primary Manually module.')
+    error('Invalid specification of the image size in the Identify Primary Manually module.')
 end
 
 % Use a low resolution image for outlining the primary region

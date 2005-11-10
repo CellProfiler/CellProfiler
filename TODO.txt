@@ -1,13 +1,9 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
-- (Wyman?)Make sure all modules are using error and not errordlg
-
 -Update pipelines for new threshold
 
 -Fix ellipse by clicking points in crop module
-
-- (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
 
 - (Requested by Anne 11-08-05) -  FilterByObject Measurement fails if there are no objects in an image.
 
@@ -22,6 +18,8 @@ November 8, 2005
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
 
 - Make compiled CellProfiler work on cluster
+
+- (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
 
 - Check through each module (~2 per day):
 EVERYONE:

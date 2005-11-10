@@ -198,7 +198,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     %%% Update waitbar
     CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
-    
+
     % Open a file for exporting the measurements
     % Add dot in extension if it's not there
     if ExportInfo.MeasurementExtension(1) ~= '.';
@@ -219,18 +219,60 @@ for Object = 1:length(ExportInfo.ObjectNames)
     % The 'Image' object type is gets some special treatement.
     % Add the average values for all other measurements
     if strcmp(ObjectName,'Image')
-        for k = 1:length(ExportInfo.ObjectNames)
-            if ~strcmp('Image',ExportInfo.ObjectNames{k})
-                MeasurementNames = cat(2,MeasurementNames,SuperMeasurementNames{k});
-                tmpMeasurements = SuperMeasurements{k};
-                if ExportInfo.IgnoreNaN == 1
-                    for imageset = 1:length(Measurements)
-                        Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));
+        AllFields = fieldnames(handles.Measurements);
+        AllMeasurementNames = {};
+        AllMeasurements = {};
+        ObjectNumber = 0;
+        AllSuperMeasurements = {};
+        AllSuperMeasurementNames = {};
+        for i = 1:length(AllFields)
+            ObjectName = AllFields{i};
+            if ~strcmpi(ObjectName,'Image') && ~strcmpi(ObjectName,'Experiment')
+                ObjectNumber = ObjectNumber + 1;
+                fields = fieldnames(handles.Measurements.(ObjectName));
+                for k = 1:length(fields)
+                    if length(fields{k}) > 8 & strcmp(fields{k}(end-7:end),'Features')
+                        % Get the associated cell array of measurements
+                        try
+                            CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
+                        catch
+                            error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
+                        end
+                        if length(AllMeasurements) == 0
+                            AllMeasurements = CellArray;
+                        else
+                            % Loop over the image sets
+                            for j = 1:length(CellArray)
+                                AllMeasurements{j} = cat(2,AllMeasurements{j},CellArray{j});
+                            end
+                        end
+                        % Construct informative feature names
+                        tmp = handles.Measurements.(ObjectName).(fields{k});     % Get the feature names
+                        for j = 1:length(tmp)
+                            tmp{j} = [tmp{j} ' (', ObjectName,', ',fields{k}(1:end-8),')'];
+                        end
+                        AllMeasurementNames = cat(2,AllMeasurementNames,tmp);
                     end
-                else
-                    for imageset = 1:length(Measurements)
-                        Measurements{imageset} = cat(2,Measurements{imageset},mean(tmpMeasurements{imageset},1));
-                    end
+                end
+                %%% Create the super measurement structure
+                AllSuperMeasurements{ObjectNumber} = AllMeasurements;
+                AllSuperMeasurementNames{ObjectNumber} = AllMeasurementNames;
+            end
+        end
+
+        Measurements     = SuperMeasurements{Object};
+        MeasurementNames = SuperMeasurementNames{Object};
+
+        for k = 1:ObjectNumber
+            MeasurementNames = cat(2,MeasurementNames,AllSuperMeasurementNames{k});
+            tmpMeasurements = AllSuperMeasurements{k};
+            if ExportInfo.IgnoreNaN == 1
+                for imageset = 1:length(Measurements)
+                    Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));
+                end
+            else
+                for imageset = 1:length(Measurements)
+                    Measurements{imageset} = cat(2,Measurements{imageset},mean(tmpMeasurements{imageset},1));
                 end
             end
         end

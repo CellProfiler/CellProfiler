@@ -3,8 +3,6 @@ November 8, 2005
 
 - (Requested by Anne 11-10-05) - Filterbyobjectmeas is not putting out objectcount. make sure it is doing everything that a prim module does - locations, too.
 
-- (Requested by Anne 11-10-05) - When exporting, if you choose Image only, it doesn't give you the mean measurements from the objects in the Image file. This might seem reasonable, but it leads to this weirdness that I found really confusing:  If I export everything in the file (Image and Nuclei), then I get all these nice nuclei average measurements in the output file.  If I export just Image only, suddenly all my nice average measurements are gone.  So I think when Image is selected, the other objects' mean measurements should be exported into the image file too (if it's not a nightmare in the code). I am pretty sure that most people would want this.  If we don't do this, we should at least make a prominent note that says Image will contain mean measures of objects only if you are simultaneously export the objects.
-
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.

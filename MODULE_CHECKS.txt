@@ -3,7 +3,7 @@ Align				Mike, Colin, Anne
 
 ApplyThreshold			Mike, Colin, Anne
 
-Average				Mike
+Average				Mike, Colin
 
 CalculateStatistics
 

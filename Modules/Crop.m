@@ -217,37 +217,7 @@ drawnow
 CropFromObjectFlag = 0;
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
-    %%% Not sure when this code was used, but IndividualOrOnce can never be
-    %%% 'Only Once' so I have commented it out to see if this creates
-    %%% errors anywhere.
-    %     if strcmp(IndividualOrOnce, 'Only Once')
-    %         %%% The user can choose an image from the pipeline or from the hard drive to use for
-    %         %%% cropping.
-    %         Answer = CPquestdlg('Choose an image to be used for cropping...','Select image','Image file from hard drive','Image from this image set','Image from this image set');
-    %         if strcmp(Answer,'Cancel')
-    %             error(['Image processing was canceled by the user in the ', ModuleName, ' module.']);
-    %         elseif strcmp(Answer,'Image from this image set')
-    %             try
-    %                 ImageToBeCropped = OrigImage;
-    %             catch
-    %                 error(['Image processing was canceled in the ', ModuleName, ' module because you did not select a valid image to use for cropping in the Crop module.'])
-    %             end
-    %         elseif strcmp(Answer,'Image file from hard drive')
-    %             %%% Asks the user to open an image file upon which to draw the
-    %             %%% ellipse.
-    %             %%% Opens a user interface window which retrieves a file name and path
-    %             %%% name for the image to be used as a test image.
-    %             [CroppingFileName,CroppingPathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*'),'Select the image to use for cropping');
-    %             %%% If the user presses "Cancel", the FileName will = 0 and an error
-    %             %%% message results.
-    %             if CroppingFileName == 0
-    %                 error(['Image processing was canceled in the ', ModuleName, ' module because you did not select an image to use for cropping in the Crop module.'])
-    %             else
-    %                 [ImageToBeCropped, handles] = CPimread(fullfile(CroppingPathname,CroppingFileName), handles);
-    %             end
-    %         end
-    %     else
-    %     end
+    
     ImageToBeCropped = OrigImage;
 
     if ~strcmp(Shape,'Ellipse') && ~strcmp(Shape,'Rectangle')
@@ -349,15 +319,13 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CroppingImageHandle = imagesc(ImageToBeCropped);
             pixval
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
-            try imcontrast(CroppingImageHandle); end %#ok
-            try imcontrast(CroppingImageHandle); end %#ok
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
             [a b c] = size(ImageToBeCropped);
-            if any(x < 1) || any(y < 1) || any(x > b) || any(y > a)
-                x(x<1) = 1;
-                x(x>b) = b-1;
-                y(y<1) = 1;
-                y(y>a) = a-1;
+            if any(Pre_x < 1) || any(Pre_y < 1) || any(Pre_x > b) || any(Pre_y > a)
+                Pre_x(Pre_x<1) = 1;
+                Pre_x(Pre_x>b) = b-1;
+                Pre_y(Pre_y<1) = 1;
+                Pre_y(Pre_y>a) = a-1;
                 CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
             end
             close(CroppingFigureHandle)
@@ -375,18 +343,14 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             X = [New_x.^2, New_x.*New_y, New_y.^2, New_x, New_y ];
             params = sum(X)/(X'*X);
             masksize = size(ImageToBeCropped);
-            [X,Y] = meshgrid(1:masksize(2), 1:masksize(1));
+            [X,Y] = meshgrid(1:masksize(1), 1:masksize(2));
             X = X - mean_x;
             Y = Y - mean_y;
             drawnow
             %%% Produces the BinaryCropImage.
-            BinaryCropImage = ((params(1) * (X .* X) + ...
-                params(2) * (X .* Y) + ...
-                params(3) * (Y .* Y) + ...
-                params(4) * X + ...
-                params(5) * Y) < 1);
+            BinaryCropImage = ((params(1) * (X .* X) + params(2) * (X .* Y) + params(3) * (Y .* Y) + params(4) * X + params(5) * Y) < 1);
             %%% Need to flip X and Y. Why? It doesnt work.
-            % BinaryCropImage = BinaryCropImage';
+            BinaryCropImage = BinaryCropImage';
         elseif strcmp(CropMethod,'Coordinates')
 
             if strcmp(IndividualOrOnce,'Individually')

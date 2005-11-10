@@ -10,7 +10,7 @@ Error in ==> CPImageTool at 52
 
 - Put CP logo in main GUI ??
 
-- Move ImageTool to CPsubfunctions, save as CPimagetool to be consistent with other CP functions
+- Move ImageTool to CPsubfunctions, save as CPimagetool to be consistent with other CP functions. I think most modules aren't using the CPimagetool yet, so we need to add it.  Perhaps actually we should make CPimagesc so that every time we show an image in a figure it automatically has the image tool embedded?
 
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 MergeBatchOutput

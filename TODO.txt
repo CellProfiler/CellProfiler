@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
-- (Requested by Anne 11-09-05) - Why does module checks say "Change handles structure?"
-
 - (Wyman?)Make sure all modules are using error and not errordlg
 
 -Update pipelines for new threshold

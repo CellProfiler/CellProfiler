@@ -65,7 +65,7 @@ Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the aligned first image?
-%defaultVAR02 = AlignedBlue 
+%defaultVAR02 = AlignedBlue
 %infotypeVAR02 = imagegroup indep
 AlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -75,23 +75,23 @@ Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the aligned second image?
-%defaultVAR04 = AlignedGreen 
+%defaultVAR04 = AlignedGreen
 %infotypeVAR04 = imagegroup indep
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = What did you call the third image to be aligned? (will be displayed as red) 
-%choiceVAR05 = Do not use 
+%choiceVAR05 = Do not use
 %infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 = What do you want to call the aligned third image?
-%defaultVAR06 = Do not use 
+%defaultVAR06 = Do not use
 %infotypeVAR06 = imagegroup indep
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = This module calculates the alignment shift and stores it as a measurement. Do you want to actually shift the images and crop them to produce the aligned images? 
-%choiceVAR07 = Yes 
+%choiceVAR07 = Yes
 %choiceVAR07 = No
 AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
@@ -190,10 +190,10 @@ drawnow
 %%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-    if strcmp(AdjustImage,'Yes') == 1
+if any(findobj == ThisModuleFigureNumber)
+    if strcmp(AdjustImage,'Yes')
         %%% For three input images.
-        if strcmp(Image3Name,'Do not use') ~= 1
+        if ~strcmp(Image3Name,'Do not use')
             OriginalRGB(:,:,1) = Image3;
             OriginalRGB(:,:,2) = Image2;
             OriginalRGB(:,:,3) = Image1;
@@ -220,7 +220,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    if strcmp(AdjustImage,'Yes') == 1
+    if strcmp(AdjustImage,'Yes')
         %%% A subplot of the figure window is set to display the original
         %%% image.
         subplot(2,1,1);
@@ -244,7 +244,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(AdjustImage,'Yes') == 1
+if strcmp(AdjustImage,'Yes')
     %%% Saves the adjusted image to the handles structure so it can be used
     %%% by subsequent modules.
     handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
@@ -256,18 +256,24 @@ end
 
 %%% Stores the shift in alignment as a measurement for quality control
 %%% purposes.
-fieldname = ['ImageXAlign', AlignedImage1Name,AlignedImage2Name];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx};
-fieldname = ['ImageYAlign', AlignedImage1Name,AlignedImage2Name];
-handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy};
 
 %%% If three images were aligned:
-if strcmp(Image3Name,'Do not use') ~= 1
-    fieldname = ['ImageXAlignFirstTwoImages',AlignedImage3Name];
-    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx2};
-    fieldname = ['ImageYAlignFirstTwoImages',AlignedImage3Name];
-    handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy2};
+if ~strcmp(Image3Name,'Do not use')
+    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'_',AlignedImage3Name,'Features'];
+    handles.Measurements.Image.(fieldname) = {'ImageXAlign' 'ImageYAlign' 'ImageXAlignFirstTwoImages' 'ImageYAlignFirstTwoImages'};
+    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'_',AlignedImage3Name];
+    handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = [sx sy sx2 sy2];
+else
+    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'Features'];
+    handles.Measurements.Image.(fieldname) = {'ImageXAlign' 'ImageYAlign'};
+    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name];
+    handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = [sx sy];
 end
+
+% fieldname = ['ImageXAlign', AlignedImage1Name,AlignedImage2Name];
+% handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx};
+% fieldname = ['ImageYAlign', AlignedImage1Name,AlignedImage2Name];
+% handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy};
 
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

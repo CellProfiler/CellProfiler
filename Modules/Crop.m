@@ -43,12 +43,18 @@ function handles = Crop(handles)
 % white pixels, because keep in mind that the cropping module will
 % remove rows and columns that are completely blank.
 %
-% PlateFix: When cropping identified plates, sometimes pixels within the
-% object are set to zero. This can cause problems with later modules
-% (especially IlluminationCorrection). PlateFix takes the identified object
-% and finds where the object covers at least 50% of the image in both the
-% horizontal and vertical directions. It then crops a rectangle based on
-% this information. This sets pixels that otherwise would be zero to the
+% PlateFix: When attempting to crop based on a previously identified object
+% (such as a yeast plate), sometimes the identified plate does not
+% precisely straight edges - there might be a tiny, almost unnoticeable
+% 'appendage' sticking out of the plate.  Without plate fix, the crop
+% module would not crop the image tightly enough - it would include enough
+% of the image to retain even the tiny appendage, so there would be a lot
+% of blank space around the plate. This can cause problems with later
+% modules (especially IlluminationCorrection). PlateFix takes the
+% identified object and crops to exclude any minor appendages (technically,
+% any horizontal or vertical line where the object covers less than 50% of
+% the image). It also sets pixels around the edge of the object (for
+% regions > 50% but less than 100%) that otherwise would be zero to the
 % background pixel value of your image thus avoiding the problems with
 % other modules. PlateFix also uses the coordinates for rectangle cropping
 % to tighten the edges around your identified plate. This is done because

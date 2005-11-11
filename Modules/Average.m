@@ -3,48 +3,46 @@ function handles = Average(handles)
 % Help for the Average module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION:
-% Images are averaged together, also known as "making a projection".
+% SHORT DESCRIPTION: Images are averaged together (a projection is made).
 % *************************************************************************
 %
-% This module averages a set of images by averaging the pixel
-% intensities at each pixel position. When this module is used to
-% average a Z-stack (3-D image set), this process is known as making a
-% projection.
-%
-% How it works:
-% This module works by averaging together all of the images. The first
-% time through the pipeline (i.e. for cycle 1), the whole set of
-% images (as defined by a Load Images module) is used to calculate one
-% averaged image. Subsequent runs through the pipeline (i.e. for
-% cycle 2 through the end) produce no new results, but processing
-% is not aborted in case other pmodules are being run for some reason.
-% The averaged image calculated the first time through the pipeline
-% is still available to other modules during subsequent runs through
-% the pipeline.
+% This module averages a set of images by averaging the pixel intensities
+% at each pixel position. When this module is used to average a Z-stack
+% (3-D image set), this process is known as making a projection.
 %
 % Settings:
 %
-% Enter Load Image Module or Pipeline:
+% Enter Load Images Module or Pipeline:
 %
-% If you Load Image Module, the module will calculate the single, averaged
-% averaged image the first time through the pipeline by loading
-% every image of the type specified in the Load Images module. It is
-% then acceptable to use the resulting image later in the pipeline.
+% If you choose Load Images Module, the module will calculate the single,
+% averaged image the first time through the pipeline (i.e. for
+% cycle 1) by loading every image of the type specified in the Load Images
+% module and averaging them together. It is then acceptable to use the
+% resulting image later in the pipeline. Subsequent runs through the
+% pipeline (i.e. for cycle 2 through the end) produce no new results. The
+% averaged image calculated during the first cycle is still available to
+% other modules during subsequent cycles.
 %
-% If you choose Pipeline, the module will allow the pipeline to cycle 
-% through all of the image sets.  With this option, the module does not
-% need to follow a Load Images module; it is acceptable to make the 
-% single, averaged image from images resulting from other image
-% processing steps in the pipeline. However, the resulting averaged
-% image will not be available until the last cycle has been
-% processed, so it cannot be used in subsequent modules unless they
-% are instructed to wait until the last cycle.
+% If you choose Pipeline, the module will calculate the single, averaged
+% image during the last cycle of the pipeline. This is because it must wait
+% for preceding modules in the pipeline to produce their results before it
+% can calculate an averaged image. For example, you cannot calculate the
+% average of all Cropped images until after the last image cycle completes
+% and the last cropped image is produced. With this option, the module does
+% not need to follow a Load Images module; it is acceptable to make the
+% single, averaged image from images produced by other image processing
+% steps in the pipeline. Note that in this mode, the resulting averaged
+% image will not be available until the last cycle has been processed, so
+% the averaged image it produces cannot be used in subsequent modules
+% unless they are instructed to wait until the last cycle.
 %
-% SAVING IMAGES: The image produced by this module can be easily saved
-% using the Save Images module, using the name you assign.
+% SAVING IMAGES: The averaged image produced by this module can be
+% easily saved using the Save Images module, using the names you assign. If
+% you want to save other intermediate images, alter the code for this
+% module to save those images to the handles structure (see the SaveImages
+% module help) and then use the Save Images module.
 %
-% See also CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE.
+% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -84,7 +82,7 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the resulting averaged image?
+%textVAR02 = What do you want to call the averaged image?
 %defaultVAR02 = AveragedBlue
 %infotypeVAR02 = imagegroup indep
 AveragedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -103,12 +101,12 @@ SourceIsLoadedOrPipeline = SourceIsLoadedOrPipeline(1);
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% If running in non-cycling mode (straight from the hard drive using
-%%% a LoadImages module), the averaged image and its flag need only
-%%% be calculated and saved to the handles structure after the first cycle is
-%%% processed. If running in cycling mode (Pipeline mode), the
-%%% averaged image and its flag are saved to the handles structure
-%%% after every cycle is processed.
+%%% If running in non-cycling mode (straight from the hard drive using a
+%%% LoadImages module), the averaged image and its flag need only be
+%%% calculated and saved to the handles structure after the first cycle is
+%%% processed. If running in cycling mode (Pipeline mode), the averaged
+%%% image and its flag are saved to the handles structure after every cycle
+%%% is processed.
 if strncmpi(SourceIsLoadedOrPipeline, 'L',1) && handles.Current.SetBeingAnalyzed ~= 1
     return
 end
@@ -116,17 +114,17 @@ end
 ReadyFlag = 'Not Ready';
 try
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
-        %%% If we are in LoadImages mode, the averaged image is
-        %%% calculated the first time the module is run.
+        %%% If we are in LoadImages mode, the averaged image is calculated
+        %%% the first time the module is run.
         if  isfield(handles.Pipeline,['Pathname', ImageName]);
             [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
         else
-            error(['The field Pathname' ImageName ' could not be found.  This is most likely because this module is not using images that were loaded directly from a load image module.  By picking the "Load Image module" option, images need to have been loaded directly from a load image module.  If you change this to "Pipeline," you can average other images, but the final image will not be available until the last cycle.  See help for more details.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not look up the name of the folder where the ' ImageName ' images were loaded from.  This is most likely because this module is not using images that were loaded directly from the load images module. See help for more details.']);
         end
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AveragedImageName);
     else
-        error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either "L" or "P" in the Average module']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either "Load images" or "Pipeline".']);
     end
 catch [ErrorMessage, ErrorMessage2] = lasterr;
     error(['An error occurred in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
@@ -150,19 +148,17 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
     end
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
-        %%% The averaged image is displayed the first time through
-        %%% the set. For subsequent cycles, this figure is not
-        %%% updated at all, to prevent the need to load the averaged
-        %%% image from the handles structure.
-        %%% Activates the appropriate figure window.
+        %%% The averaged image is displayed the first time through the set.
+        %%% For subsequent cycles, this figure is not updated at all, to
+        %%% prevent the need to load the averaged image from the handles
+        %%% structure. Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         ImageHandle = imagesc(AveragedImage);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
-        %%% The accumulated averaged image so far is displayed each time through
-        %%% the pipeline.
-        %%% Activates the appropriate figure window.
+        %%% The accumulated averaged image so far is displayed each time
+        %%% through the pipeline. Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         ImageHandle = imagesc(AveragedImage);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');

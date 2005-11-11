@@ -220,12 +220,12 @@ for Object = 1:length(ExportInfo.ObjectNames)
     % Add the average values for all other measurements
     if strcmp(ObjectName,'Image')
         AllFields = fieldnames(handles.Measurements);
-        AllMeasurementNames = {};
-        AllMeasurements = {};
         ObjectNumber = 0;
         AllSuperMeasurements = {};
         AllSuperMeasurementNames = {};
         for i = 1:length(AllFields)
+            AllMeasurementNames = {};
+            AllMeasurements = {};
             ObjectName = AllFields{i};
             if ~strcmpi(ObjectName,'Image') && ~strcmpi(ObjectName,'Experiment')
                 ObjectNumber = ObjectNumber + 1;

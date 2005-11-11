@@ -454,21 +454,10 @@ if strcmp(RowsOrColumns,'Rows')
 else
     RowsOrColumnsNum = 0;
 end
-GridInfoList = [XLocationOfLowestXSpot;YLocationOfLowestYSpot;XSpacing;YSpacing;Rows;Columns;TotalHeight;TotalWidth;LeftOrRightNum;TopOrBottomNum;RowsOrColumnsNum];
+GridInfoList = [XLocationOfLowestXSpot,YLocationOfLowestYSpot,XSpacing,YSpacing,Rows,Columns,TotalHeight,TotalWidth,LeftOrRightNum,TopOrBottomNum,RowsOrColumnsNum];
 
-if isfield(handles.Measurements.Image,'GridInfoFeatures')
-    if handles.Current.SetBeingAnalyzed == 1
-        NewColumn = length(handles.Measurements.Image.GridInfoFeatures) + 1;
-        handles.Measurements.Image.GridInfoFeatures(NewColumn) = {GridName};
-        handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(:,NewColumn) = GridInfoList;
-    else
-        OldColumn = strmatch(GridName,handles.Measurements.Image.GridInfoFeatures);
-        if length(OldColumn) ~= 1
-            error('You are attempting to create a grid with the same name, please rename this grid.');
-        end
-        handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(:,OldColumn) = GridInfoList;
-    end
-else
-    handles.Measurements.Image.GridInfoFeatures = {GridName};
-    handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed} = GridInfoList;
-end
+featfield = [GridName,'InfoFeatures'];
+measfield = [GridName,'Info'];
+GridFeatures = {'XLocationOfLowestXSpot' 'YLocationOfLowestYSpot' 'XSpacing' 'YSpacing' 'Rows' 'Columns' 'TotalHeight' 'TotalWidth' 'LeftOrRightNum' 'TopOrBottomNum' 'RowsOrColumnsNum'};
+handles.Measurements.Image.(featfield) = GridFeatures;
+handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed} = GridInfoList;

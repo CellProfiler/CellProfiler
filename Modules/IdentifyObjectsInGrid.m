@@ -128,9 +128,12 @@ if strmatch('Circle',Shape)
         radius = floor(str2num(Diameter)/2);
     end
 
-    OldColumn = strmatch(GridName,handles.Measurements.Image.GridInfoFeatures);
-
     if strcmp(FailedGridChoice,'Yes')
+        measfield = [GridName,'Info'];
+        if handles.Current.SetBeingAnalyzed == 1
+            featfield = [GridName,'InfoFeatures'];
+            handles.Measurements.Image.(featfield){12} = 'GridFailed';
+        end
         if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
             if handles.Current.SetBeingAnalyzed == 1
                 error('The grid you have designed is not working, please check the pipeline.');
@@ -138,29 +141,29 @@ if strmatch('Circle',Shape)
                 FailCheck = 1;
                 SetNum = 1;
                 while FailCheck >= 1
-                    PreviousGrid = handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed - SetNum}(:,OldColumn)
-                    FailCheck = PreviousGrid(12,1);
+                    PreviousGrid = handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed - SetNum};
+                    FailCheck = PreviousGrid(1,12);
                     SetNum = SetNum + 1;
                 end
                 GridInfo.XLocationOfLowestXSpot = PreviousGrid(1,1);
-                GridInfo.YLocationOfLowestYSpot = PreviousGrid(2,1);
-                GridInfo.XSpacing = PreviousGrid(3,1);
-                GridInfo.YSpacing = PreviousGrid(4,1);
-                GridInfo.Rows = PreviousGrid(5,1);
-                GridInfo.Columns = PreviousGrid(6,1);
-                GridInfo.TotalHeight = PreviousGrid(7,1);
-                GridInfo.TotalWidth = PreviousGrid(8,1);
-                if PreviousGrid(9,1) == 1
+                GridInfo.YLocationOfLowestYSpot = PreviousGrid(1,2);
+                GridInfo.XSpacing = PreviousGrid(1,3);
+                GridInfo.YSpacing = PreviousGrid(1,4);
+                GridInfo.Rows = PreviousGrid(1,5);
+                GridInfo.Columns = PreviousGrid(1,6);
+                GridInfo.TotalHeight = TotalHeight;
+                GridInfo.TotalWidth = TotalWidth;
+                if PreviousGrid(1,9) == 1
                     GridInfo.LeftOrRight = 'Left';
                 else
                     GridInfo.LeftOrRight = 'Right';
                 end
-                if PreviousGrid(10,1) == 1
+                if PreviousGrid(1,10) == 1
                     GridInfo.TopOrBottom = 'Top';
                 else
                     GridInfo.TopOrBottom = 'Bottom';
                 end
-                if PreviousGrid(11,1) == 1
+                if PreviousGrid(1,11) == 1
                     GridInfo.RowsOrColumns = 'Rows';
                 else
                     GridInfo.RowsOrColumns = 'Columns';
@@ -169,22 +172,22 @@ if strmatch('Circle',Shape)
                 Grid = CPmakegrid(GridInfo);
 
                 Leftmost = PreviousGrid(1,1);
-                Topmost = PreviousGrid(2,1);
-                XDiv = PreviousGrid(3,1);
-                YDiv = PreviousGrid(4,1);
-                Rows = PreviousGrid(5,1);
-                Cols = PreviousGrid(6,1);
-                TotalWidth = PreviousGrid(8,1);
-                TotalHeight = PreviousGrid(7,1);
+                Topmost = PreviousGrid(1,2);
+                XDiv = PreviousGrid(1,3);
+                YDiv = PreviousGrid(1,4);
+                Rows = PreviousGrid(1,5);
+                Cols = PreviousGrid(1,6);
+                TotalWidth = TotalWidth;
+                TotalHeight = TotalHeight;
                 VertLinesX = Grid.VertLinesX;
                 VertLinesY = Grid.VertLinesY;
                 HorizLinesX = Grid.HorizLinesX;
                 HorizLinesY = Grid.HorizLinesY;
                 SpotTable = Grid.SpotTable;
             end
-            handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(12,OldColumn) = 1;
+            handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 1;
         else
-            handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(12,OldColumn) = 0;
+            handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 0;
         end
     else
         if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)

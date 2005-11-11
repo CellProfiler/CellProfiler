@@ -1,10 +1,5 @@
 Mike's TODO list
 
-- Define Grid Changes: (NEED TO VERIFY)
-  1. (DONE) What is the least amount of information needed to define grid?
-  2. (DONE ONLY PREVIOUS GRID) Implement way to handle failed grids (force grid, previous grid, grid = 0)
-  3. (DONE) Have handle's include if grid failed or grid worked
-
 - from Anne >>> Don't forget the BioImage image processing project (for the manuscript). Still no rush, just wanted to make sure it didn't get lost in the shuffle.
 
 - (Requested by Anne 10-31-05) - It'd be fun to see how long an image processing run takes on Matlab developer's version vs. the compiled version (which ought to be faster).  Eventually, we probably should do some real test runs (on the final version) so we can state in the paper the expected difference in speed between the two versions.

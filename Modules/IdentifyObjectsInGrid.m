@@ -119,7 +119,7 @@ if strcmp(Shape,'Natural Shape') || strcmp(Shape,'Circle Natural Location') || s
     Image = handles.Pipeline.(['Segmented' OldObjectName]);
 end
 
-if strmatch('Circle',Shape) == 1
+if strmatch('Circle',Shape)
     if strcmp(Diameter,'Automatic')
         tmp = regionprops(Image,'Area');
         Area = cat(1,tmp.Area);
@@ -186,10 +186,10 @@ if strmatch('Circle',Shape) == 1
         else
             handles.Measurements.Image.GridInfo{handles.Current.SetBeingAnalyzed}(12,OldColumn) = 0;
         end
-    end
-else
-    if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-        error('Your grid failed. Please check the DefineGrid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.');
+    else
+        if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
+            error('Your grid failed. Please check the DefineGrid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.');
+        end
     end
 end
 

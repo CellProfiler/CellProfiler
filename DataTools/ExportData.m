@@ -226,15 +226,15 @@ for Object = 1:length(ExportInfo.ObjectNames)
         for i = 1:length(AllFields)
             AllMeasurementNames = {};
             AllMeasurements = {};
-            ObjectName = AllFields{i};
-            if ~strcmpi(ObjectName,'Image') && ~strcmpi(ObjectName,'Experiment')
+            AllObjectName = AllFields{i};
+            if ~strcmpi(AllObjectName,'Image') && ~strcmpi(AllObjectName,'Experiment')
                 ObjectNumber = ObjectNumber + 1;
-                fields = fieldnames(handles.Measurements.(ObjectName));
+                fields = fieldnames(handles.Measurements.(AllObjectName));
                 for k = 1:length(fields)
                     if length(fields{k}) > 8 & strcmp(fields{k}(end-7:end),'Features')
                         % Get the associated cell array of measurements
                         try
-                            CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
+                            CellArray = handles.Measurements.(AllObjectName).(fields{k}(1:end-8));
                         catch
                             error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
                         end
@@ -247,9 +247,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
                             end
                         end
                         % Construct informative feature names
-                        tmp = handles.Measurements.(ObjectName).(fields{k});     % Get the feature names
+                        tmp = handles.Measurements.(AllObjectName).(fields{k});     % Get the feature names
                         for j = 1:length(tmp)
-                            tmp{j} = [tmp{j} ' (', ObjectName,', ',fields{k}(1:end-8),')'];
+                            tmp{j} = [tmp{j} ' (', AllObjectName,', ',fields{k}(1:end-8),')'];
                         end
                         AllMeasurementNames = cat(2,AllMeasurementNames,tmp);
                     end

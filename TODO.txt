@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
+- (Requested by Anne 11-10-05) -When a control histogram is plotted and then you use View > Property Editor to adjust the axes (e.g. change the X or Y axis), only the most recently plotted graph changes. It's really misleading!  The same thing happens if you zoom: only the most recently plotted line zooms. I think everything needs to be plotted to the same axis in order for them to all stay linked to each other?
+
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
 - Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.

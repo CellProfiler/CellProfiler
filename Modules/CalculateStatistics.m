@@ -7,6 +7,22 @@ function handles = CalculateStatistics(handles)
 % Calculates the V and Z' factors for measurements made from images.
 % *************************************************************************
 %
+% The V and Z' factors are statistical measures of assay quality and are
+% calculated for each measurement that you have made in the pipeline. This
+% allows you to choose which measures are most powerful for distinguishing
+% positive and negative control samples. You must tell the module which
+% samples are positive and negative controls, or the concentrations of
+% drugs, in a simple text file with one entry per image set, loaded using
+% the LoadText module.
+%
+% The reference for Z' factor is: JH Zhang, TD Chung, et al. (1999) "A
+% simple statistical parameter for use in evaluation and validation of high
+% throughput screening assays." J Biomolecular Screening 4(2): 67-73.
+%
+% The reference for V factor is: I Ravkin (2004): Poster #P12024 - Quality
+% Measures for Imaging-based Cellular Assays. Society for Biomolecular
+% Screening Annual Meeting Abstracts.
+%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -42,12 +58,12 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the grouping values (must be loaded by LoadText)?
+%textVAR01 = What did you call the grouping values?
 %infotypeVAR01 = datagroup
 %inputtypeVAR01 = popupmenu
 DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = In order to run this module, you must load grouping values which correspond to 1 value per image set. All measured values (Intensity, AreaShape) will be calculated for both Z and V factors. When analysis is finished, you can export the Experiment group to see all V and Z factors in excel.
+%textVAR02 = In order to run this module, you must use LoadText to load a grouping value for each image set. This is either a marking of whether each image set is a positive or negative control (for Z factor) or it is concentrations for each curve (required for meaningful V factors). Both Z and V factors will be calculated for all measured values (Intensity, AreaShape, Texture, etc.). These measurements can be exported as the "Experiment" set of data.
 
 %%%VariableRevisionNumber = 2
 

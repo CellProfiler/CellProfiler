@@ -258,7 +258,7 @@ for i=1:length(disks)
     EnhancedInvertedImage    = imsubtract(imadd(EnhancedInvertedImage,top), bot);
     drawnow
 end
-figure, imshow(EnhancedInvertedImage)
+%figure, imshow(EnhancedInvertedImage)
 
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
@@ -282,29 +282,29 @@ BW = EnhancedInvertedImage;
 BW(BW>Threshold) = 1;
 BW(BW<=Threshold) = 0;
 drawnow
-figure, imshow(BW)
+%figure, imshow(BW)
 
 %%  2. Erode edges so only centers remain
 BWerode = imerode(BW,strel('disk', ErodeSize));
 drawnow
-figure, imshow(BWerode)
+%figure, imshow(BWerode)
 %%  3. Clean it up
 OrigImageMinima = imopen(BWerode,strel('disk', Value2));
 drawnow
 
 %% Segment the image with watershed
 WS = watershed(imcomplement(OrigImageMinima));
-figure, imshow(OrigImageMinima)
+%figure, imshow(OrigImageMinima)
 %% Watershed regions are irregularly shaped.
 %% To fix the edges: Smooth BW border, then impose this border onto the WS
 BWsmoothed  = imclose(BW,strel('disk',Value3));
 WS          = immultiply(WS,BWsmoothed);
 drawnow
-figure, imshow(WS)
+%figure, imshow(WS)
 
 %% Smooth the edges
 PrelimLabelMatrixImage1 = imopen(WS,strel('disk', Value4));
-figure, imshow(PrelimLabelMatrixImage1)
+%figure, imshow(PrelimLabelMatrixImage1)
 drawnow
 
 %%% Fills holes, then identifies objects in the binary image.

@@ -47,7 +47,7 @@ IdentifyPrimAutomatic		Mike
 
 IdentifyPrimManual		Mike
 
-IdentifyPrimYeastPhase		Mike (Anne check with images?)
+IdentifyPrimYeastPhase		??
 
 IdentifySecondary
 

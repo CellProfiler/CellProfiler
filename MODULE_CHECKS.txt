@@ -3,9 +3,9 @@ Align				Mike, Colin, Anne
 
 ApplyThreshold			Mike, Colin, Anne
 
-Average				Mike, Colin
+Average				Mike, Colin, Anne
 
-CalculateStatistics		Mike
+CalculateStatistics		Mike,        Anne (didn't check code until we are ready to play around with it for real)
 
 ClassifyObjects			Mike
 

@@ -3,6 +3,9 @@ function handles = IdentifyPrimYeastPhase(handles)
 % Help for the Identify Primary Yeast Phase module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION: Identifies yeast in phase contrast images.
+% *************************************************************************
+%
 % This module contains code contributed by Ben Kaufmann of MIT.
 %
 % This module has been designed to identify yeast cells
@@ -97,17 +100,11 @@ function handles = IdentifyPrimYeastPhase(handles)
 % objects outside the size range can be saved using the name:
 % Segmented + whatever you called the objects (e.g. SegmentedNuclei)
 %
-%    Additional image(s) are calculated by this module and can be 
+%    Additional image(s) are calculated by this module and can be
 % saved by altering the code for the module (see the SaveImages module
 % help for instructions).
 %
-% See also IDENTIFYPRIMADAPTTHRESHOLDA,
-% IDENTIFYPRIMADAPTTHRESHOLDB,
-% IDENTIFYPRIMADAPTTHRESHOLDC,
-% IDENTIFYPRIMADAPTTHRESHOLDD,
-% IDENTIFYPRIMTHRESHOLD,
-% IDENTIFYPRIMSHAPEDIST,
-% IDENTIFYPRIMSHAPEINTENS.
+% See also IDENTIFYPRIMAUTOMATIC
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -182,8 +179,7 @@ IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %textVAR09 = What do you want to call the image of the outlines of the objects?
 %defaultVAR09 = Do not save
 %infotypeVAR09 = outlinegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9}); 
-
+SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Enter the SmallValue1 (even number, in pixels)
 %defaultVAR10 = 8
@@ -302,7 +298,7 @@ figure, imshow(OrigImageMinima)
 %% Watershed regions are irregularly shaped.
 %% To fix the edges: Smooth BW border, then impose this border onto the WS
 BWsmoothed  = imclose(BW,strel('disk',Value3));
-WS          = immultiply(WS,BW);
+WS          = immultiply(WS,BWsmoothed);
 drawnow
 figure, imshow(WS)
 
@@ -339,7 +335,7 @@ if MaxSize ~= 99999
 end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly.
-if strncmpi(IncludeEdge,'N',1) == 1
+if strncmpi(IncludeEdge,'N',1)
     PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
 end
@@ -354,6 +350,8 @@ FinalBinary = imfill(FinalBinaryPre, 'holes');
 %%% object, with no numbers skipped.
 FinalLabelMatrixImage = bwlabel(FinalBinary);
 
+FinalOutline = bwperim(FinalLabelMatrixImage > 0);
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -362,23 +360,30 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 
-ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-
-FinalOutline = logical(zeros(size(OrigImage,1),size(OrigImage,2)));
-FinalOutline = bwperim(FinalLabelMatrixImage > 0);
-
 if any(findobj == ThisModuleFigureNumber)
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
 
-    subplot(2,2,1); imagesc(OrigImage);
+    subplot(2,2,1); 
+    ImageHandle = imagesc(OrigImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
-    subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
+    subplot(2,2,2);
+    ImageHandle = imagesc(ColoredLabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title(['Segmented ',ObjectName]);
 
-    subplot(2,2,3); imagesc(EnhancedInvertedImage); title(['Inverted enhanced contrast image']);
+    subplot(2,2,3);
+    ImageHandle = imagesc(EnhancedInvertedImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title('Inverted enhanced contrast image');
 
-    subplot(2,2,4); imagesc(FinalOutline); title([ObjectName, ' Outlines']);
+    subplot(2,2,4);
+    ImageHandle = imagesc(FinalOutline);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title([ObjectName, ' Outlines']);
 
     CPFixAspectRatio(OrigImage);
 end

@@ -41,13 +41,13 @@ GetHistogram
 
 GrayToColor			Mike
 
-IdentifyObjectsInGrid		Need to verify Failed Grids
+IdentifyObjectsInGrid		Mike
 
 IdentifyPrimAutomatic		Mike
 
-IdentifyPrimManual
+IdentifyPrimManual		Mike
 
-IdentifyPrimYeastPhase
+IdentifyPrimYeastPhase		Mike (Anne check with images?)
 
 IdentifySecondary
 

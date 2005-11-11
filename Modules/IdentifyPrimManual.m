@@ -3,6 +3,10 @@ function handles = IdentifyPrimManual(handles)
 % Help for the Identify Primary Manually module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION: Identifies an object based on manual intervention
+% (clicking) by the user.
+% *************************************************************************
+%
 % This module allows the user to identify an single object by manually
 % outlining it by using the mouse to click at multiple points around
 % the object.
@@ -52,9 +56,9 @@ function handles = IdentifyPrimManual(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -75,7 +79,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Resize the image to this size before manual identification (pixels)
 %defaultVAR03 = 512
-MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3})); %#ok
 
 %textVAR04 = What do you want to call the image of the outlines of the objects?
 %defaultVAR04 = OutlinedNuclei
@@ -84,15 +88,15 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 02
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, ImageName) == 0
+if ~isfield(handles.Pipeline, ImageName)
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Primary Manually module, you must have previously run a module to load an image. You specified in the Identify Primary Manually module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Manually module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(ImageName);
@@ -113,18 +117,18 @@ else
     LowResOrigImage = OrigImage;
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
-ImageHandle = imagesc(LowResOrigImage);
+imagesc(LowResOrigImage);
 colormap(handles.Preferences.IntensityColorMap);
 axis off
 axis image
-[nrows,ncols,ncolors] = size(LowResOrigImage);
+[nrows,ncols] = size(LowResOrigImage);
 
 AxisHandle = gca;
 set(gca,'fontsize',handles.Current.FontSize)
@@ -141,36 +145,50 @@ close(FigureHandle)
 LowResInterior = inpolygon(X,Y, x,y);
 FinalLabelMatrixImage = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
 
-FinalOutline = logical(zeros(size(FinalLabelMatrixImage,1),size(FinalLabelMatrixImage,2)));
 FinalOutline = bwperim(FinalLabelMatrixImage > 0);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 
-ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
+if any(findobj == ThisModuleFigureNumber)
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
 
-drawnow
-CPfigure(handles,ThisModuleFigureNumber);
+    drawnow
+    CPfigure(handles,ThisModuleFigureNumber);
 
-subplot(2,2,1);imagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,1);
+    ImageHandle = imagesc(LowResOrigImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]);
 
-subplot(2,2,2); imagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
+    subplot(2,2,2);
+    ImageHandle = imagesc(LowResInterior);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title(['Manually Identified ',ObjectName]);
 
-subplot(2,2,3); imagesc(FinalOutline); title([ObjectName, ' Outline']);
-hold on, plot(x,y,'r'),hold off
+    FinalOutlineOnOrigImage = OrigImage;
+    FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
+    subplot(2,2,3);
+    ImageHandle = imagesc(FinalOutlineOnOrigImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title([ObjectName, ' Outline']);
 
-subplot(2,2,4); imagesc(ColoredLabelMatrixImage); title(['Segmented ' ObjectName]);
+    subplot(2,2,4);
+    ImageHandle = imagesc(ColoredLabelMatrixImage);
+    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    title(['Segmented ' ObjectName]);
 
-CPFixAspectRatio(LowResOrigImage);
+    CPFixAspectRatio(LowResOrigImage);
+end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
@@ -205,9 +223,9 @@ catch
     error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
 end
 
-%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION %%%
-%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
 
 function [xpts_spline,ypts_spline] = getpoints(AxisHandle)
 
@@ -227,7 +245,7 @@ while ~done;
     CharacterType = get(FigureHandle,'CurrentCharacter');      % Get information about the character entered
 
     % Left mouse button was pressed, add a point
-    if UserInput == 0 & strcmp(SelectionType,'normal')
+    if UserInput == 0 && strcmp(SelectionType,'normal')
 
         % Get the new point and store it
         CurrentPoint  = get(AxisHandle, 'CurrentPoint');
@@ -241,7 +259,7 @@ while ~done;
         PointHandles = [PointHandles h];
 
         % If there are any points, and the right mousebutton or the backspace key was pressed, remove a points
-    elseif NbrOfPoints > 0 & ((UserInput == 0 & strcmp(SelectionType,'alt')) | (UserInput == 1 & CharacterType == char(8)))   % The ASCII code for backspace is 8
+    elseif NbrOfPoints > 0 && ((UserInput == 0 && strcmp(SelectionType,'alt')) || (UserInput == 1 && CharacterType == char(8)))   % The ASCII code for backspace is 8
 
         NbrOfPoints = NbrOfPoints - 1;
         xpts = xpts(1:end-1);
@@ -250,7 +268,7 @@ while ~done;
         PointHandles = PointHandles(1:end-1);
 
         % Enter key was pressed, manual outlining done, and the number of points are at least 3
-    elseif NbrOfPoints >= 3 & UserInput == 1 & CharacterType == char(13)
+    elseif NbrOfPoints >= 3 && UserInput == 1 && CharacterType == char(13)
 
         % Indicate that we are done
         done = 1;

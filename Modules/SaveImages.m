@@ -228,9 +228,13 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 
     FileName = [FileName '.' FileFormat];
-
-    if strcmp(FileDirectory,'.')
-        PathName = handles.Current.DefaultOutputDirectory;
+    
+    if strncmp(FileDirectory,'.',1)
+        if strcmp(FileDirectory,'.')
+            PathName = handles.Current.DefaultOutputDirectory;
+        else
+            PathName = fullfile(handles.Current.DefaultOutputDirectory,FileDirectory(2:end));
+        end
     else
         PathName = FileDirectory;
     end

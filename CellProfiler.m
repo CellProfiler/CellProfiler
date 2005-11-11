@@ -294,13 +294,17 @@ try addpath(Pathname)
     LogicalIsDirectory = [FilesAndDirsStructure.isdir];
     %%% Eliminates directories from the list of file names.
     FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-    ToolHelpInfo = 'Help information from individual image tool files, which are Matlab m-files located within the ImageTools directory:';
+    %%% I don't think we really want to display this text for each tools'
+    %%% help. This info is already provided at the stage where the user
+    %%% chooses which tool; it's confusing to show it again.
+    %    ToolHelpInfo = 'Help information from individual image tool files, which are Matlab m-files located within the ImageTools directory:';
+    ToolHelpInfo = '';
     if isempty(FileNamesNoDir) ~= 1
         %%% Looks for .m files.
         for i = 1:length(FileNamesNoDir),
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
                 ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                ToolHelp{length(ListOfTools)-1} = [ToolHelpInfo, '-----------' 10 help(char(FileNamesNoDir{i}(1:end-2)))];
+                ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
             end
         end
         if length(ListOfTools) > 1
@@ -3793,11 +3797,7 @@ elseif strcmp(ImageDataOrHelp,'Help')
     TextString = 'Please choose specific help below:';
 end
 
-try
-    FontSize = str2num(handles.Preferences.FontSize);
-catch
-    FontSize = 8;
-end
+FontSize = handles.Current.FontSize;
 
 choosetext = uicontrol(...
     'Parent',ToolsHelpWindowHandle,...
@@ -3814,7 +3814,7 @@ toolsbox = uicontrol(...
     'Parent',ToolsHelpWindowHandle,...
     'Units','normalized',...
     'backgroundColor',Color,...
-    'Position',[0.30 0.18 0.45 0.464],...
+    'Position',[0.20 0.18 0.65 0.464],...
     'String',ToolsCellArray,...
     'Style','listbox',...
     'Callback',listboxcallback,...

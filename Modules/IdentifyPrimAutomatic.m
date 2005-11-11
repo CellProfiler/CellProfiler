@@ -3,6 +3,11 @@ function handles = IdentifyPrimAutomatic(handles)
 % Help for the Identify Primary Automatic module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION: Identifies objects (e.g. nuclei) given only an image
+% as input. These objects provide the "seeds" for secondary identificaiton
+% of objects such as cells and/or proteins of interest.
+% *************************************************************************
+%
 % General module for identifying (segmenting) primary objects in
 % grayscale images that show bright objects on a dark background. The
 % module has many options which vary in terms of speed and
@@ -276,8 +281,8 @@ else
     WatershedTransformImageTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,12})};
 end
 
-for LocalMaximaTypeNumber = [1:length(LocalMaximaTypeList)]
-    for WatershedTransformImageTypeNumber = [1:length(WatershedTransformImageTypeList)]
+for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
+    for WatershedTransformImageTypeNumber = 1:length(WatershedTransformImageTypeList)
         
 %%% NOTE: We cannot indent the variables or they will not be read
 %%% properly.
@@ -326,7 +331,7 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Threshold correction factor
 %defaultVAR08 = 1
-ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8})); %#ok Ignore MLint
 
 %textVAR09 = Lower and upper bounds on threshold (in the range [0,1])
 %defaultVAR09 = 0,1
@@ -388,7 +393,6 @@ LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %inputtypeVAR17 = popupmenu custom
 
-
 %textVAR18 = Test Mode?
 %choiceVAR18 = No
 %choiceVAR18 = Yes
@@ -404,7 +408,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         
         %%% Reads (opens) the image you want to analyze and assigns it to a variable,
         %%% "OrigImage".
-        fieldname = ['',  ImageName];
+        fieldname = ImageName;
 
         %%% Checks whether the image exists in the handles structure.
         if isfield(handles.Pipeline, fieldname)==0,
@@ -427,13 +431,13 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             if isempty(index) || (length(index) ~= 6)
                 error(['The LaplaceValues in the ', ModuleName, ' module is invalid.']);
             end
-            NeighborhoodSize(1) = str2num(LaplaceValues(1:index(1)-1));
-            NeighborhoodSize(2) = str2num(LaplaceValues(index(1)+1:index(2)-1));
-            Sigma = str2num(LaplaceValues(index(2)+1:index(3)-1));
-            MinArea = str2num(LaplaceValues(index(3)+1:index(4)-1));
-            WienerSize(1) = str2num(LaplaceValues(index(4)+1:index(5)-1));
-            WienerSize(2) = str2num(LaplaceValues(index(5)+1:index(6)-1));
-            LaplaceThreshold = str2num(LaplaceValues(index(6)+1:end));
+            NeighborhoodSize(1) = str2num(LaplaceValues(1:index(1)-1)); %#ok Ignore MLint
+            NeighborhoodSize(2) = str2num(LaplaceValues(index(1)+1:index(2)-1)); %#ok Ignore MLint
+            Sigma = str2num(LaplaceValues(index(2)+1:index(3)-1)); %#ok Ignore MLint
+            MinArea = str2num(LaplaceValues(index(3)+1:index(4)-1)); %#ok Ignore MLint
+            WienerSize(1) = str2num(LaplaceValues(index(4)+1:index(5)-1)); %#ok Ignore MLint
+            WienerSize(2) = str2num(LaplaceValues(index(5)+1:index(6)-1)); %#ok Ignore MLint
+            LaplaceThreshold = str2num(LaplaceValues(index(6)+1:end)); %#ok Ignore MLint
         end
         
         %%% Checks that the Min and Max diameter parameters have valid values
@@ -445,21 +449,20 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         MaxDiameter = SizeRange(index+1:end);
 
         MinDiameter = str2double(MinDiameter);
-        if isnan(MinDiameter) | MinDiameter < 0
+        if isnan(MinDiameter) | MinDiameter < 0 %#ok Ignore MLint
             error(['The Min diameter entry in the ', ModuleName, ' module is invalid.'])
         end
         if strcmp(MaxDiameter,'Inf')
             MaxDiameter = Inf;
         else
             MaxDiameter = str2double(MaxDiameter);
-            if isnan(MaxDiameter) | MaxDiameter < 0
+            if isnan(MaxDiameter) | MaxDiameter < 0 %#ok Ignore MLint
                 error(['The Max diameter entry in the ', ModuleName, ' module is invalid.'])
             end
         end
         if MinDiameter > MaxDiameter
             error(['Min Diameter larger the Max Diameter in the ', ModuleName, ' module.'])
         end
-        Diameter = min((MinDiameter + MaxDiameter)/2,50);
 
         %%% Checks that the Min and Max threshold bounds have valid values
         index = strfind(ThresholdRange,',');
@@ -472,7 +475,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         %%% Check the smoothing filter size parameter
         if ~strcmp(SizeOfSmoothingFilter,'Automatic')
             SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-            if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage))
+            if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
                 error(['The specified size of the smoothing filter in the ', ModuleName, ' module is not valid or unreasonable.'])
             end
         end
@@ -480,7 +483,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         %%% Check the maxima suppression size parameter
         if ~strcmp(MaximaSuppressionSize,'Automatic')
             MaximaSuppressionSize = str2double(MaximaSuppressionSize);
-            if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0
+            if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0 %#ok Ignore MLint
                 error(['The specified maxima suppression size in the ', ModuleName, ' module is not valid or unreasonable.'])
             end
         end
@@ -515,7 +518,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
             %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
             %%% to separate neighboring objects.
-            if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
+            if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
 
                 %%% Smooth images for maxima suppression
                 if strcmp(SizeOfSmoothingFilter,'Automatic')
@@ -713,12 +716,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             rgLoG=fspecial('log',NeighborhoodSize,Sigma);
             %%% Filters the image.
             imLoGout=imfilter(double(OrigImage),rgLoG);
-            %figure, imagesc(imLoGout),  title('imLoGout')
             %%% Removes noise using the weiner filter.
             imLoGoutW=wiener2(imLoGout,WienerSize);
-            %figure, imagesc(imLoGoutW),  title('imLoGoutW')
 
-            %%%%%%%%%%%%%%
             rgNegCurve = imLoGoutW < LaplaceThreshold;
             class(rgNegCurve)
             min(min(rgNegCurve))
@@ -746,21 +746,11 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             %(Smart)closing
             % rgDilated=RgSmartDilate(rgLabelled,50); %%% IMPORTANT VARIABLE
             rgDilated=CPRgSmartDilate(rgLabelled,2); %%% IMPORTANT VARIABLE
-            rgFill=imfill(rgDilated,'holes');
-
-            %%%%SE=strel('diamond',1);
-            %%%%rgErode=imerode(rgFill,SE);
-            %%%%rgOut=rgErode;
-
-            %%%%%%%%%%%%
 
             % InvertedBinaryImage = RgSmartDilate(rgNegCurve,1);
             InvertedBinaryImage = rgDilated;
 
             %%% Creates label matrix image.
-            % rgLabelled2=uint16(bwlabel(imLoGoutW,4));
-            % figure, imagesc(rgLabelled2),  title('rgLabelled2')
-            % FinalLabelMatrixImage = bwlabel(FinalBinary,4);
 
             PrelimLabelMatrixImage1 = bwlabel(imfill(InvertedBinaryImage,'holes'));
             UneditedLabelMatrixImage = PrelimLabelMatrixImage1;
@@ -829,7 +819,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
                 OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
                 
-                FinalOutline = logical(zeros(size(OrigImage,1),size(OrigImage,2)));
+                FinalOutline = false(size(OrigImage,1),size(OrigImage,2));
                 FinalOutline(PerimObjects) = 1;
                 FinalOutline(PerimDiameter) = 0;
                 FinalOutline(PerimBorder) = 0;
@@ -876,10 +866,10 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range [%0.1f, %0.1f] pixels',...
                         Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
-                    ObjectCoverage = 100*sum(sum(Objects > 0))/prod(size(Objects));
+                    ObjectCoverage = 100*sum(sum(Objects > 0))/numel(Objects);
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
-                    if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None')
+                    if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
                             'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Current.FontSize);
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
@@ -893,7 +883,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             else
                 fieldname = ['FigureNumberForModule',CurrentModule];
                 ThisModuleFigureNumber = handles.Current.(fieldname);
-                if any(findobj == ThisModuleFigureNumber) == 1 | strncmpi(SaveOutlined,'Y',1) == 1
+                if any(findobj == ThisModuleFigureNumber) | strncmpi(SaveOutlined,'Y',1) %#ok Ignore MLint
                     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
                     %%% window in subplot(2,2,2).
                     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
@@ -917,17 +907,24 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1); imagesc(OrigImage);
+                    subplot(2,2,1);
+                    ImageHandle = imagesc(OrigImage);
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
                     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
-                    subplot(2,2,2); imagesc(ColoredLabelMatrixImage);title(['Segmented ',ObjectName]);
+                    subplot(2,2,2);
+                    ImageHandle = imagesc(ColoredLabelMatrixImage);
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+                    title(['Segmented ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); imagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
-                    subplot(2,2,4); imagesc(ObjectOutlinesOnOrigImage); title([ObjectName, ' Outlines on Input Image']);
+                    subplot(2,2,4);ImageHandle = imagesc(ObjectOutlinesOnOrigImage);
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+                    title([ObjectName, ' Outlines on Input Image']);
                     CPFixAspectRatio(OrigImage);
                 end
             end
@@ -1005,25 +1002,26 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 drawnow;
                 SegmentedFigures = findobj('Tag','SegmentedFigure');
                 if isempty(SegmentedFigures)
-                    SegFig=CPfigure('Tag','SegmentedFigure');
+                    CPfigure('Tag','SegmentedFigure');
                     uicontrol('style','text','units','normalized','string','SEGMENTED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 else
-                    SegFig = CPfigure(SegmentedFigures(1));
+                    CPfigure(SegmentedFigures(1));
                 end
 
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                 cmap = jet(max(64,max(Objects(:))));
                 im = label2rgb(Objects, cmap, 'k', 'shuffle');
                 ImageHandle = imagesc(im);
+                set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
 
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Current.FontSize);
 
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
-                    OutFig=CPfigure('Tag','OutlinedFigure');
+                    CPfigure('Tag','OutlinedFigure');
                     uicontrol('style','text','units','normalized','string','OUTLINED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 else
-                    OutFig = CPfigure(OutlinedFigures(1));
+                    CPfigure(OutlinedFigures(1));
                 end
 
                 tmp = OrigImage/max(OrigImage(:));
@@ -1040,6 +1038,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                 ImageHandle = imagesc(OutlinedObjects);
+                set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Current.FontSize);
 
             end
@@ -1153,8 +1152,8 @@ while ~isempty(MergeIndex)
     %%% Let each feature rank which neighbor to merge with. Then calculate
     %%% a score for each neighbor. If the neighbors is ranked 1st, it will get
     %%% 1 point; 2nd, it will get 2 points; and so on. The lower score the better.
-    [ignore,LikelihoodRank]   = sort(LikelihoodRatio,'descend');                  % The higher the LikelihoodRatio the better
-    [ignore,EccentricityRank] = sort(MergedEccentricity,'ascend');                % The lower the eccentricity the better
+    [ignore,LikelihoodRank]   = sort(LikelihoodRatio,'descend'); %#ok Ignore MLint % The higher the LikelihoodRatio the better
+    [ignore,EccentricityRank] = sort(MergedEccentricity,'ascend'); %#ok Ignore MLint % The lower the eccentricity the better
     NeighborScore = zeros(length(NeighborsNbr),1);
     for j = 1:length(NeighborsNbr)
         NeighborScore(j) = find(LikelihoodRank == j) +  find(EccentricityRank == j);
@@ -1163,7 +1162,7 @@ while ~isempty(MergeIndex)
     %%% Go through the neighbors, starting with the highest ranked, and merge
     %%% with the first neighbor for which certain basic criteria are fulfilled.
     %%% If no neighbor fulfil the basic criteria, there will be no merge.
-    [ignore,TotalRank] = sort(NeighborScore);
+    [ignore,TotalRank] = sort(NeighborScore); %#ok Ignore MLint
     for j = 1:length(NeighborsNbr)
         CurrentNeighborNbr = NeighborsNbr(TotalRank(j));
 

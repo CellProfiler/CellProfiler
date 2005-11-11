@@ -5,7 +5,7 @@ ApplyThreshold			Mike, Colin, Anne
 
 Average				Mike, Colin
 
-CalculateStatistics
+CalculateStatistics		Mike
 
 ClassifyObjects			Mike
 
@@ -41,9 +41,9 @@ GetHistogram
 
 GrayToColor			Mike
 
-IdentifyObjectsInGrid
+IdentifyObjectsInGrid		Need to verify Failed Grids
 
-IdentifyPrimAutomatic
+IdentifyPrimAutomatic		Mike
 
 IdentifyPrimManual
 

@@ -4,7 +4,7 @@ function handles = CalculateStatistics(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Calculates the V and Z factors for measurements made from images.
+% Calculates the V and Z' factors for measurements made from images.
 % *************************************************************************
 %
 % See also <nothing relevant>.
@@ -144,6 +144,18 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+%%% Closes the window if it is open.
+if any(findobj == ThisModuleFigureNumber) == 1;
+    close(ThisModuleFigureNumber)
+end
+
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
@@ -159,27 +171,28 @@ function [v, z] = VZfactors(xcol, ymatr)
 [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr);
 range = max(avers) - min(avers);
 cnstns = find(range == 0);
-if (length(cnstns) > 0) range(cnstns) = 0.000001; end
+if (length(cnstns) > 0)
+    range(cnstns) = 0.000001;
+end
 vstd = mean(stds);
 v = 1 - 6 .* (vstd ./ range);
 zstd = stds(1, :) + stds(length(xs), :);
 z = 1 - 3 .* (zstd ./ range);
 return
-% ================================== Local Functions:
-% ================================== LocShrinkMeanStd
+
 function [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr)
-%
-[nrows, ncols] = size(ymatr);
+
+ncols = size(ymatr,2);
 [labels, labnum, xs] = LocVectorLabels(xcol);
 avers = zeros(labnum, ncols);
 stds = avers;
 for ilab = 1 : labnum
     labinds = find(labels == ilab);
-    labmatr = ymatr(labinds, :);
+    labmatr = ymatr(labinds,:);
     avers(ilab, :) = mean(labmatr);
     stds(ilab, :) = std(labmatr, 1);
 end
-% ================================== LocVectorLabels
+
 function [labels, labnum, uniqsortvals] = LocVectorLabels(x)
 %
 n = length(x);
@@ -198,4 +211,3 @@ for i = 1 : n
     labels(inds(i)) = labnum;
 end
 uniqsortvals = uniqsortvals(1 : labnum);
-% ==================================

@@ -3,6 +3,10 @@ function handles = IdentifyObjectsInGrid(handles)
 % Help for the Identify Objects In Grid module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION: After a grid has been established by DefineGrid, this
+% module will dientify objects within each section of the grid.
+% *************************************************************************
+%
 % This module identifies objects what are in a grid.  It requires that you
 % create a grid in an earlier module using the DefineGrid module.  If you
 % are using natural shape, the module need to use objects that are already
@@ -296,7 +300,6 @@ handles.Measurements.(NewObjectName).LocationFeatures = {'CenterX','CenterY'};
 tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(NewObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-
 
 if ~strcmp(OutlineName,'Do not save')
     handles.Pipeline.(OutlineName) = FinalOutline;

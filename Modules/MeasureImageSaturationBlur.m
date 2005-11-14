@@ -23,6 +23,18 @@ function handles = MeasureImageSaturationBlur(handles)
 % BlurScore{ImageNumber} = ...
 %    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 %
+% Example Output:
+%
+% Percent of pixels that are Saturated:
+% OrigBlue:   0.086173
+% OrigGreen:  0
+% OrigRed:    0
+%
+% Focus Score:
+% OrigBlue:   0.47135
+% OrigGreen:  0.03440
+% OrigRed:    0.04652
+%
 % SAVING IMAGES: If you want to save images produced by this module,
 % alter the code for this module to save those images to the handles
 % structure (see the SaveImages module help) and then use the Save

@@ -7,7 +7,7 @@ Average				Mike, Colin, Anne
 
 CalculateStatistics		Mike,        Anne (didn't check code until we are ready to play around with it for real)
 
-ClassifyObjects			Mike
+ClassifyObjects			Mike, Colin
 
 ColorToGray			Mike, Colin
 

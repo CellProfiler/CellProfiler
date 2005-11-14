@@ -3,18 +3,31 @@ function handles = ClassifyObjects(handles)
 % Help for the Classify Objects module:
 % Category: Other
 %
-% SHORT DESCRIPTION:
-% Classifies objects into categories based on measurements of thos objects.
-% *************************************************************************
+% This module classifies objects into a number of different classes
+% according to the size of a measurement specified by the user.  It does
+% this by specifying a range for the value and dividing each object into a
+% bin based on equal divisions of that range.  It requires that the user
+% run a measurement module before so it has measurement values with which
+% to classify the objects.
 %
-% This module classifies objects into a number of different
-% classes according to the size of a measurement specified
-% by the user.
+% This modules also has the option to classify objects based on the ratio
+% of two measurements.  For this option, the user must run the
+% MeasureRatios modules, which creates the ratio of two already existing
+% measurements (thus two measure modules must be run before that).
 %
-% SAVING IMAGES: To save images using this module, use the SaveImages
-% module with the images to be saved called 'ColorClassified' plus
-% the object name you enter in the module, e.g.
-% 'ColorClassifiedCells'.
+% Feature Number:
+% If you are not selecting Ratio, then this is the number of the
+% submeasurement that you want to take.  For instance, MeasureAreaShape
+% calculates measurements for Area, Eccentricity, Solidity, Extent, Euler
+% number, Perimeter, Form factor,... so if you wanted the values for the
+% Perimeter for each object, this would be 6. 
+% If you are selecting Ratio, this is the order of ratio measurements that
+% you calculated for the numerator.  For instance, if you previously
+% calculated the ratio of Area to Perimeter for nuclei, MajorAxisLength to
+% MinorAxisLength for cells, and MeanIntensity to MaxIntensity for nuclei,
+% the value for the Area to Perimeter for nuclei would be 1, the value for
+% MajorAxisLength to MinorAxisLength for cells would be 1, and the value
+% for MeanIntensity to MaxiIntensity for nuclei would be 2.
 %
 % See also <nothing relevant>.
 
@@ -51,18 +64,18 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the identified objects (or Ratio)?
+%textVAR01 = What did you call the identified objects (for Ratio, enter the numerator object)?
 %infotypeVAR01 = objectgroup
-%choiceVAR01 = Ratio
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Enter the feature type (e.g. AreaShape, Texture, Intensity)(for Ratio, enter the numerator object, e.g. Nuclei, Cells):
+%textVAR02 = Enter the feature type (e.g. AreaShape, Texture, Intensity):
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Correlation
 %choiceVAR02 = Texture
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
+%choiceVAR02 = Ratio
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
@@ -118,13 +131,13 @@ if isfield(handles.Pipeline, fieldname)
     LabelMatrixImage = handles.Pipeline.(fieldname);
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-elseif strcmpi(ObjectName,'Ratio')
+elseif strcmpi(FeatureType,'Ratio')
     LabelMatrixImage = zeros(100);
 else
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have previously run a module that generates an image with the objects identified.  You specified in the ', ModuleName, ' module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have previously run a module that generates an image with the objects identified.  You specified in the ', ModuleName, ' module that the primary objects were named ',FeatureType,' which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);
 end
 
-if ~strcmp(ObjectName,'Ratio')
+if ~strcmp(FeatureType,'Ratio')
     %%% Checks whether the feature type exists in the handles structure.
     if ~isfield(handles.Measurements.(ObjectName),FeatureType)
         error(['The feature type entered in the ', ModuleName, ' module does not exist.']);
@@ -140,8 +153,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(ObjectName,'Ratio')
-    Measurements = handles.Measurements.(FeatureType).Ratios{handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
+if strcmp(FeatureType,'Ratio')
+    Measurements = handles.Measurements.(ObjectName).Ratios{handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
 else
     % Get Measurements
     Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
@@ -171,7 +184,7 @@ NbrOfObjects = length(Measurements);
 
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-if ~strcmpi(ObjectName,'Ratio')
+if ~strcmpi(FeatureType,'Ratio')
     % Produce image where the the objects are colored according to the original
     % measurements and the quantized measurements
     NonQuantizedImage = zeros(size(LabelMatrixImage));
@@ -185,7 +198,7 @@ if ~strcmpi(ObjectName,'Ratio')
     QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
     FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 else
-    FeatureName = FeatureType;
+    FeatureName = ObjectName;
 end
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -202,7 +215,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     AdjustedFeatureName = strrep(FeatureName,'_','\_');
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-    if ~strcmpi(ObjectName,'Ratio')
+    if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
@@ -225,7 +238,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     axis([xlimits ylimits])
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-    if ~strcmpi(ObjectName,'Ratio')
+    if ~strcmpi(FeatureType,'Ratio')
 
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
@@ -249,7 +262,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
-    if ~strcmpi(ObjectName,'Ratio')
+    if ~strcmpi(FeatureType,'Ratio')
         CPFixAspectRatio(NonQuantizedImage);
     end
 end
@@ -261,7 +274,7 @@ drawnow
 
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-if ~strcmpi(ObjectName,'Ratio')
+if ~strcmpi(FeatureType,'Ratio')
     %%% Saves images to the handles structure so they can be saved to the hard
     %%% drive, if the user requests.
     fieldname = ['ColorClassified',ObjectName];

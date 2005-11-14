@@ -256,7 +256,7 @@ for i = 1:6
 
 
     %%% Report measurements
-    FontSize = handles.Current.FontSize;
+    FontSize = handles.Preferences.FontSize;
     
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times

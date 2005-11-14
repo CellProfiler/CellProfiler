@@ -292,7 +292,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         imagesc(TiledImage)
         %%% Sets the figure to take up most of the screen.
         ScreenSize = get(0,'ScreenSize');
-        Font = handles.Current.FontSize;
+        Font = handles.Preferences.FontSize;
         NewFigureSize = [60,250, ScreenSize(3)-200, ScreenSize(4)-350];
         set(ThisModuleFigureNumber, 'Position', NewFigureSize)
         axis image

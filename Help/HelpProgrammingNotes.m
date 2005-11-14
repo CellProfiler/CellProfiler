@@ -28,34 +28,6 @@ helpdlg(help('ProgrammingNotes'))
 % somewhat, so it might be reasonable to remove most of these lines
 % when running jobs on a cluster where speed is important.
 %
-% VARIABLE BOXES AND TEXT: 
-% The '%textVAR' lines contain the variable descriptions which are
-% displayed in the CellProfiler main window next to each variable box.
-% This text will wrap appropriately so it can be as long as desired.
-% The '%defaultVAR' lines contain the default values which are
-% displayed in the variable boxes when the user loads the module.
-% The line of code after the textVAR and defaultVAR extracts the value
-% that the user has entered from the handles structure and saves it as
-% a variable in the workspace of this module with a descriptive
-% name. The syntax is important for the %textVAR and %defaultVAR
-% lines: be sure there is a space before and after the equals sign and
-% also that the capitalization is as shown. We cannot indent the
-% variables or they will not be read properly.
-
-% CellProfiler uses VariableRevisionNumbers to help programmers notify
-% users when something significant has changed about the variables.
-% For example, if you have switched the position of two variables,
-% loading a pipeline made with the old version of the module will not
-% behave as expected when using the new version of the module, because
-% the settings (variables) will be mixed up. The line should use this
-% syntax, with a two digit number for the VariableRevisionNumber:
-% '%%%VariableRevisionNumber = 01'  If the module does not have this
-% line, the VariableRevisionNumber is assumed to be 00.  This number
-% need only be incremented when a change made to the modules will affect
-% a user's previously saved settings. There is a revision number at
-% the end of the license info at the top of the m-file for revisions
-% that do not affect the user's previously saved settings files.
-%
 % TO TEMPORARILY SHOW IMAGES DURING DEBUGGING: 
 % figure, imshow(BlurredImage, []), title('BlurredImage') 
 % TO TEMPORARILY SAVE IMAGES DURING DEBUGGING: 
@@ -95,6 +67,16 @@ helpdlg(help('ProgrammingNotes'))
 % figure which is active is not necessarily the correct one. This
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
+%
+% FILENAMES AND FILELIST:
+% The LoadImages module creates both handles.Pipeline.FilnamesIMAGENAME and
+% handles.Pipeline.FileListIMAGENAME when loading an image or movie. For
+% movies, the FileList field has the original name of the movie file and
+% how many frames it contains. The Filenames field has the original movie
+% file name and appends the frame number for every frame in the movie. This
+% allows the names to be used in other modules such as SaveImages, which
+% would otherwise over-write itself on every cycle using the original file
+% name.
 %
 % HANDLES STRUCTURE:
 %       In CellProfiler (and Matlab in general), each independent
@@ -155,10 +137,13 @@ helpdlg(help('ProgrammingNotes'))
 % fields can be changed for the current session by the user using edit
 % boxes in the main CellProfiler window, which changes their values in
 % handles.Current. Therefore, handles.Current is most likely where you
-% should retrieve this information if needed within a module.
-%   Fields currently in handles.Preferences: PixelSize, FontSize,
-% DefaultModuleDirectory, DefaultOutputDirectory,
-% DefaultImageDirectory.
+% should retrieve this information if needed within a module. Use the
+% following context to call these variables:
+% DefaultImageDirectory = handles.Current.DefaultImageDirectory
+% DefaultModuleDirectory = handles.Current.DefaultModuleDirectory
+% DefaultOutputDirectory = handles.Current.DefaultOutputDirectory
+% FontSize = handles.Preferences.FontSize %%% Note this is in Preferences
+% PixelSize = handles.Current.PixelSize
 %
 % handles.Measurements:
 %       Everything in handles.Measurements contains data specific to each
@@ -211,6 +196,34 @@ helpdlg(help('ProgrammingNotes'))
 % will just repeatedly use the processed image of nuclei leftover from
 % the last image set, which was left in handles.Pipeline.
 %
+% VARIABLE BOXES AND TEXT: 
+% The '%textVAR' lines contain the variable descriptions which are
+% displayed in the CellProfiler main window next to each variable box.
+% This text will wrap appropriately so it can be as long as desired.
+% The '%defaultVAR' lines contain the default values which are
+% displayed in the variable boxes when the user loads the module.
+% The line of code after the textVAR and defaultVAR extracts the value
+% that the user has entered from the handles structure and saves it as
+% a variable in the workspace of this module with a descriptive
+% name. The syntax is important for the %textVAR and %defaultVAR
+% lines: be sure there is a space before and after the equals sign and
+% also that the capitalization is as shown. We cannot indent the
+% variables or they will not be read properly.
+
+% CellProfiler uses VariableRevisionNumbers to help programmers notify
+% users when something significant has changed about the variables.
+% For example, if you have switched the position of two variables,
+% loading a pipeline made with the old version of the module will not
+% behave as expected when using the new version of the module, because
+% the settings (variables) will be mixed up. The line should use this
+% syntax, with a two digit number for the VariableRevisionNumber:
+% '%%%VariableRevisionNumber = 01'  If the module does not have this
+% line, the VariableRevisionNumber is assumed to be 00.  This number
+% need only be incremented when a change made to the modules will affect
+% a user's previously saved settings. There is a revision number at
+% the end of the license info at the top of the m-file for revisions
+% that do not affect the user's previously saved settings files.
+%
 % VARIABLE ORDER:
 % For CellProfiler to load modules and pipelines correctly, the order of
 % variable information should be as follows:
@@ -226,13 +239,3 @@ helpdlg(help('ProgrammingNotes'))
 % associated with a variable number. Also, the defaultVAR01 value will
 % inadvertently overwrite saved settings when loading a saved pipeline if
 % it is located after infotypeVAR01 or inputtypeVAR01.
-%
-% FILENAMES AND FILELIST:
-% The LoadImages module creates both handles.Pipeline.FilnamesIMAGENAME and
-% handles.Pipeline.FileListIMAGENAME when loading an image or movie. For
-% movies, the FileList field has the original name of the movie file and
-% how many frames it contains. The Filenames field has the original movie
-% file name and appends the frame number for every frame in the movie. This
-% allows the names to be used in other modules such as SaveImages, which
-% would otherwise over-write itself on every cycle using the original file
-% name.

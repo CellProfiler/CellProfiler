@@ -81,7 +81,7 @@ MeanImage = reshape(Measurements,NumberRows,NumberColumns);
 
 %%% Shows the results.
 TitleString = sprintf('Objects: %s, Feauture classification: %s, Feature: %s',ObjectTypename, FeatureType, handles.Measurements.(ObjectTypename).([FeatureType ,'Features']){FeatureNo});
-figure, imagesc(MeanImage), title(TitleString,'fontsize',handles.Current.FontSize), colorbar
+figure, imagesc(MeanImage), title(TitleString,'fontsize',handles.Preferences.FontSize), colorbar
 
 
 

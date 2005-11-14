@@ -208,7 +208,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         ImageHandle = imagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
         axis image
-        set(gca,'Fontsize',handles.Current.FontSize)
+        set(gca,'Fontsize',handles.Preferences.FontSize)
         title(sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
     end
     %%% Produce and plot histogram of original data
@@ -216,7 +216,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     Nbins = min(round(NbrOfObjects/5),40);
     hist(Measurements,Nbins)
     set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-    set(gca,'Fontsize',handles.Current.FontSize);
+    set(gca,'Fontsize',handles.Preferences.FontSize);
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName]);
     title(sprintf('Histogram of %s',AdjustedFeatureName));
     ylimits = ylim;
@@ -231,14 +231,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         subplot(2,2,3)
         ImageHandle = image(QuantizedRGBimage);axis image
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',['Classified ', AdjustedObjectName])
-        set(gca,'Fontsize',handles.Current.FontSize)
-        title(['Classified ', AdjustedObjectName],'fontsize',handles.Current.FontSize);
+        set(gca,'Fontsize',handles.Preferences.FontSize)
+        title(['Classified ', AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
     end
     %%% Produce and plot histogram
     subplot(2,2,4)
     x = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(x,bins,1);
-    set(gca,'Fontsize',handles.Current.FontSize);
+    set(gca,'Fontsize',handles.Preferences.FontSize);
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName])
     title(sprintf('Histogram of %s',AdjustedFeatureName))
     axis tight

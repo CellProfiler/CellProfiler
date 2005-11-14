@@ -11,7 +11,7 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
         for j=2:length(ListOfImageTools)
             uimenu(TempMenu,'Label',char(ListOfImageTools(j)),'Callback',['UserData=get(gcf,''userData'');' char(ListOfImageTools(j)) '(UserData.MyHandles); clear UserData ans;']);
         end
-        Font = userData.MyHandles.Current.FontSize;
+        Font = userData.MyHandles.Preferences.FontSize;
         set(FigHandle,'Toolbar','figure');
 
         ToggleColorR = 'ImageHandles = findobj(gcf,''Type'',''Image'');for i = length(ImageHandles):-1:1,if size(size(get(ImageHandles(i),''CData'')),2)~=3,ImageHandles(i)=[];end;end;if ~isempty(ImageHandles),AllData=get(ImageHandles,''CData'');ImageHandles = num2cell(ImageHandles);if ~iscell(AllData), AllData={AllData};end;button=findobj(gcf,''tag'',''ToggleColorR'');for i = 1:length(AllData),tempdata{i}=AllData{i}(:,:,1);end;for i = 1:length(AllData), data=AllData{i}; if get(button,''value'')==0,set(button,''UserData'',tempdata);data(:,:,1)=0;set(ImageHandles{i},''CData'',data);else,tempdata=get(button,''UserData'');if ~iscell(tempdata),tempdata={tempdata};end;data(:,:,1)=tempdata{i};AllData{i}=data;set(ImageHandles{i},''CData'',data);end;end;end;clear data AllData button ImageHandles;';

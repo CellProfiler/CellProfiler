@@ -364,7 +364,7 @@ for i = 1:6
     handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
 
     %%% Report measurements
-    FontSize = handles.Current.FontSize;
+    FontSize = handles.Preferences.FontSize;
 
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times

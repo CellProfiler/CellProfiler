@@ -833,8 +833,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     ImageHandle = imagesc(OrigImage);
                     set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
                     axis image
-                    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Current.FontSize);
-                    set(gca,'fontsize',handles.Current.FontSize)
+                    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
+                    set(gca,'fontsize',handles.Preferences.FontSize)
                     hx = subplot(2,2,2);
                     if sum(sum(Objects(:)))>0
                         im = CPlabel2rgb(handles,Objects);
@@ -843,15 +843,15 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     end
                     ImageHandle = image(im);
                     set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
-                    title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Current.FontSize);
-                    axis image,set(gca,'fontsize',handles.Current.FontSize)
+                    title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Preferences.FontSize);
+                    axis image,set(gca,'fontsize',handles.Preferences.FontSize)
 
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     ImageHandle = image(OutlinedObjects);
                     set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)','Tag','Outlined objects')
-                    title('Outlined objects','fontsize',handles.Current.FontSize);
-                    axis image,set(gca,'fontsize',handles.Current.FontSize)
+                    title('Outlined objects','fontsize',handles.Preferences.FontSize);
+                    axis image,set(gca,'fontsize',handles.Preferences.FontSize)
 
                     CPFixAspectRatio(OrigImage);
 
@@ -860,24 +860,24 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     posy = get(hy,'Position');
                     bgcolor = get(ThisModuleFigureNumber,'Color');
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
-                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Current.FontSize);
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Preferences.FontSize);
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
-                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Current.FontSize);
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Preferences.FontSize);
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range [%0.1f, %0.1f] pixels',...
-                        Lower90Limit,Upper90Limit),'FontSize',handles.Current.FontSize);
+                        Lower90Limit,Upper90Limit),'FontSize',handles.Preferences.FontSize);
                     ObjectCoverage = 100*sum(sum(Objects > 0))/numel(Objects);
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.20 posx(3)+0.1 0.04],...
-                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Current.FontSize);
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Preferences.FontSize);
                     if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Current.FontSize);
+                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Preferences.FontSize);
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
-                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Current.FontSize);
+                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Preferences.FontSize);
                     end
                     if strcmp(MergeChoice,'Yes')
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.32 posx(3)+0.1 0.04],...
-                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of Merged Objects:  %d',NumberOfMergedObjects),'FontSize',handles.Current.FontSize);
+                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of Merged Objects:  %d',NumberOfMergedObjects),'FontSize',handles.Preferences.FontSize);
                     end
                 end
             else
@@ -1014,7 +1014,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 ImageHandle = imagesc(im);
                 set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
 
-                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Current.FontSize);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
 
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
@@ -1039,7 +1039,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                 ImageHandle = imagesc(OutlinedObjects);
                 set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Current.FontSize);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
 
             end
         end

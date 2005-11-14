@@ -841,7 +841,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPfigure(handles,ThisModuleFigureNumber);
             ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/prod(size(FinalLabelMatrixImage));
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
-                'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Current.FontSize);
+                'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
             subplot(2,2,1); imagesc(OrigImage);
             title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);

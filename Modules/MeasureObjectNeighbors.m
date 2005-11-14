@@ -195,7 +195,7 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1
-    FontSize = handles.Current.FontSize;
+    FontSize = handles.Preferences.FontSize;
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');

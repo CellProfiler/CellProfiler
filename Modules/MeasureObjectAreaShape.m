@@ -271,7 +271,7 @@ for i = 1:length(ObjectNameList)
     handles.Measurements.(ObjectName).AreaShape(handles.Current.SetBeingAnalyzed) = {[Basic Zernike]};
 
     %%% Report measurements
-    FontSize = handles.Current.FontSize;
+    FontSize = handles.Preferences.FontSize;
     if any(findobj == ThisModuleFigureNumber)
         if handles.Current.SetBeingAnalyzed == 1
             delete(findobj('parent',ThisModuleFigureNumber,'string','R'));

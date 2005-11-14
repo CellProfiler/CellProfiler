@@ -245,7 +245,7 @@ if MinimumTenthMinimumPixelValue ~= 0
         newsize(1) = 0;
         newsize(2) = 0;
         newsize(4) = 20;
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9], 'FontSize',handles.Current.FontSize);
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9], 'FontSize',handles.Preferences.FontSize);
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,1,1); imagesc(OrigImage);

@@ -196,7 +196,7 @@ MsgTxtBackClr=FigColor;
 
 Font.FontUnits = 'points';
 handles = guidata(findobj('Tag','figure1'));
-Font.FontSize = handles.Current.FontSize;
+Font.FontSize = handles.Preferences.FontSize;
 Font.FontName = 'Helvetica';
 
 OKHandle=uicontrol(BoxHandle           , Font                             , ...

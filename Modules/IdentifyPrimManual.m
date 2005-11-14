@@ -131,7 +131,7 @@ axis image
 [nrows,ncols] = size(LowResOrigImage);
 
 AxisHandle = gca;
-set(gca,'fontsize',handles.Current.FontSize)
+set(gca,'fontsize',handles.Preferences.FontSize)
 title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
     {'Press enter when finished, the first and last points will be connected automatically.'},...
     {'The backspace key or right mouse button will erase the last clicked point.'}]);

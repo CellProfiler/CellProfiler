@@ -103,7 +103,7 @@ FigPos(4) =  70;
 FigPos    = getnicedialoglocation(FigPos, get(0,'DefaultFigureUnits'));
 handles = guidata(findobj('Tag','figure1'));
 if isfield(handles.Current,'FontSize')
-    FontSize = handles.Current.FontSize;
+    FontSize = handles.Preferences.FontSize;
 else
     FontSize = 8;
 end

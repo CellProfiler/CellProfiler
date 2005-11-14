@@ -252,7 +252,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% matrix image.
     subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
     if handles.Current.SetBeingAnalyzed == 1
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [20 0 250 40],'fontname','fixedwidth','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Current.FontSize);
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [20 0 250 40],'fontname','fixedwidth','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
     else
         displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
     end

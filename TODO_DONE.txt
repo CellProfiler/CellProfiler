@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/14) (Requested by Anne 11-11-05) - Mike - why isn't font size in handles.Preferences.FontSize? Does that mean it's not saved as a user preference? It's in handles.Current.FontSize
+A programming note should be added to prognotes telling the user that when they generate figures they should use CPfigure, when they need the font size they should look it up in handles.WHEREVER.FontSize, if they need pixel size it should be in wherever, if they want to generate an error it should be like Whatever and include ModuleName. And so on for anything that is frequently used by programmers so they know where to find stuff and they use the proper syntax.
+
 -(Mike 11/11) Define Grid Changes:
   1. (DONE) What is the least amount of information needed to define grid?
   2. (DONE ONLY PREVIOUS GRID) Implement way to handle failed grids (force grid, previous grid, grid = 0)

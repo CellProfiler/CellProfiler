@@ -175,7 +175,7 @@ switch type
 
   try
       handles = guidata(gcbo);
-      axFontSize = handles.Current.FontSize;
+      axFontSize = handles.Preferences.FontSize;
   end
 
   axNorm=[.05 .3 .9 .2];

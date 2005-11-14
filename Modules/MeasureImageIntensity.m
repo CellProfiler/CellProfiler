@@ -165,7 +165,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
     %delete(findobj('Parent',ThisModuleFigureNumber));
 
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [65 -10 265 55],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Current.FontSize);
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [65 -10 265 55],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
     displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...
         ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]};

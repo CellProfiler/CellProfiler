@@ -16,7 +16,7 @@ set(helpFig,'position',[helpFigPos(1),helpFigPos(2),WidthOfWindow,helpFigPos(4)]
 
 try
     handles = guidata(findobj('Tag','figure1'));
-    FontSize = handles.Current.FontSize;
+    FontSize = handles.Preferences.FontSize;
 catch
     FontSize = 11;
 end

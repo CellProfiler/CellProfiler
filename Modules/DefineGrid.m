@@ -313,7 +313,7 @@ if any(findobj == ThisModuleFigureNumber)
     ImageHandle = imagesc(ImageToDisplay);
     set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
     colormap(handles.Preferences.IntensityColorMap)
-    set(gca,'fontsize',handles.Current.FontSize)
+    set(gca,'fontsize',handles.Preferences.FontSize)
     %%% Draws the lines.
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);

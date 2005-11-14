@@ -14,6 +14,9 @@ A programming note should be added to prognotes telling the user that when they 
 
 - (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
 
+- Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
+
+
 - Check through each module (~2 per day):
 EVERYONE:
 	- Go through the code looking for instances of the term "image set" and
@@ -38,20 +41,18 @@ MIKE:
 		own window, etc. We should implement this feature into all the modules.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
-- Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
 - Prepare updated manual
-- Check whether canceling works 
-- Make reference sheet with short descriptions of the modules.
+- Make reference sheet with short descriptions of the modules (see manuscript table).
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.
 - copy CP code onto CDs for Colin to take to ASCB meeting in San Francisco.
-Sites that review and list software:
+NO... let's just give people the web address, so they get the freshest copy of the code!  And, it's less work for us!
+- tell the following sites that review and list software:
 www.zdnet.com	downloads.mycomputer.com	www.windows95.sk
 directory.google.com	www.libpng.org	cn.tech.yahoo.com
 www.dmoz.org	softload.narod.ru	www.chinabyte.com
-www.winsite.com	www.cheta.net www.open-bio.org 
-- Submit CellProfiler to caBIG (check license terms and maybe use them instead of GPL.
+www.winsite.com	www.cheta.net www.open-bio.org    caBIG
 - Get the email addresses of all corresponding authors from all the research articles Anne has collected, and also microscope facility directors and send them an email telling them to visit cellprofiler.org and sign up for the email list if desired.
 - The Broad institute has done a lot of thinking and infrastructure for distributing free software. They have narrowed down to 3 licenses (GPL, a variant of academic open source, and one other) that their scientists use and they also have pages to help register users who download their software etc. this might be useful for us.
 
@@ -69,4 +70,5 @@ POST-PUBLIC RELEASE SUPPORT:
      - Present at conferences, especially microscope facility director-oriented ones.
 ---------------------------------------------------
 THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
-- update the image file formats that are readable in LoadImages modules.
+- update the image file formats that are readable in LoadImages modules. 
+- For many functions we have made our own CP versions - check the new matlab code to see if they've changed anything that would warrant us re-creating the CP subfunctions to use the new code.

@@ -7,10 +7,18 @@ function handles = RenameOrRenumberFile(handles)
 % within image file names.
 % It can also serve as a File renumbering utility that converts numbers
 % within image file names to solve improper ordering of files on
-% Unix/Mac OSX systems.  For example:
-% DrosDAPI_1.tif becomes DrosDAPI_001.tif
-% DrosDAPI_10.tif	becomes DrosDAPI_010.tif
-
+% Unix/Mac OSX systems.  Examples:
+%
+% Renumber:
+% DrosDAPI_1.tif    -> DrosDAPI_001.tif
+% DrosDAPI_10.tif   -> DrosDAPI_010.tif
+% DrosDAPI_100.tif  -> DrosDAPI_100.tif
+%
+% Rename:
+% DrosDAPI_1.tif    -> D_1.tif
+% DrosDAPI_10.tif   -> D_10.tif
+% DrosDAPI_100.tif  -> D_100.tif
+%
 % Be very careful since you will be renaming (=
 % overwriting) your files!! You will have the opportunity to
 % confirm the name change for the first image set only.  The folder

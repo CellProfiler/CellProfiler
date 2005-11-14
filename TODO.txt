@@ -1,13 +1,9 @@
 CellProfiler cell image analysis software development 
 November 8, 2005
 
-- (Requested by Colin 11-08-05) - I think the MeasureRatio module should have a display window, which displays the values similar to other measure modules. (Right now it says it is unnecessary).
-
 - (Requested by Colin 11-08-05) - The help for the skip modules preference isn't working (should be an easy fix).
 
 - (Requested by Colin 11-08-05) - When there is a custom input drop down menu and you close out of the input box without typing anything in, there is an error.  Also, it should be use cellprofiler colors.
-
-- (Requested by Color 11-08-5) - It would be nice to be able to some variables in multiple groups for menus.  For instance, we could put images from load modules in both imagegroup and a new origimagegroup.  That way for the modules that require and original image (such as for the filenames in SaveImages) would only have the original images from load modules instead of everything.
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 

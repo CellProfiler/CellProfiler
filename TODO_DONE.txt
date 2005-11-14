@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/14 only one value to display, don't think whole window for one value is worth it)(Requested by Colin 11-08-05) - I think the MeasureRatio module should have a display window, which displays the values similar to other measure modules. (Right now it says it is unnecessary).
+
 -(Mike 11/14) Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
 
 -(Mike 11/14) Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.

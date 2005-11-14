@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/14) Price fix
+SaveImages module at line 201:
+
+    FileName = handles.Pipeline.(['Filename', ImageFileName]){...}
+
 - (Requested by Anne 11-10-05) -When a control histogram is plotted and then you use View > Property Editor to adjust the axes (e.g. change the X or Y axis), only the most recently plotted graph changes. It's really misleading!  The same thing happens if you zoom: only the most recently plotted line zooms. I think everything needs to be plotted to the same axis in order for them to all stay linked to each other?
 
 -(Mike 11/14) (Requested by Anne 11-11-05) - Mike - why isn't font size in handles.Preferences.FontSize? Does that mean it's not saved as a user preference? It's in handles.Current.FontSize

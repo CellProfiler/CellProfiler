@@ -201,7 +201,11 @@ drawnow
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     try
-        FileName = handles.Pipeline.(['Filename', ImageFileName]){handles.Current.SetBeingAnalyzed};
+        if iscell(handles.Pipeline.(['Filename', ImageFileName]))
+            FileName = handles.Pipeline.(['Filename', ImageFileName]){handles.Current.SetBeingAnalyzed};
+        else
+            FileName = handles.Pipeline.(['Filename', ImageFileName]);
+        end
         [temp FileName] = fileparts(FileName);
     catch
         if strcmp(ImageFileName,'N')

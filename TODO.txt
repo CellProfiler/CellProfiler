@@ -11,11 +11,6 @@ November 8, 2005
 
 - Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
 
--Price fix
-SaveImages module at line 201:
-
-    FileName = handles.Pipeline.(['Filename', ImageFileName]){...}
-
 - Check through each module (~2 per day):
 EVERYONE:
 	- Go through the code looking for instances of the term "image set" and

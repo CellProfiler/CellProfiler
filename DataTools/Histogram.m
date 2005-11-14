@@ -163,7 +163,7 @@ Prompts{11} = 'Do you want the histogram data to be exported? To export the hist
 Prompts{12} = 'If exporting histograms or displaying as a compressed histogram (heatmap), is each row to be one image or one histogram bin? Enter "image" or "bin".';
 Prompts{13} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
 Prompts{14} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
-Prompts{15} = 'Do you want a line or bar graph?';
+Prompts{15} = 'Do you want a line, area, or bar graph?';
 Prompts{16} = 'Do you want the axis to be log scale?';
 
 AcceptableAnswers = 0;
@@ -315,10 +315,10 @@ while AcceptableAnswers == 0
 
     %%% Error checking for the line or bar question.
     try LineOrBar = lower(Answers{15});
-    catch uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
+    catch uiwait(CPerrordlg(['You must enter "line", "area", or "bar" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
-    if ~strcmpi(LineOrBar, 'line') && ~strcmpi(LineOrBar,'bar')
+    if ~strcmpi(LineOrBar, 'line') && ~strcmpi(LineOrBar,'bar') && ~strcmpi(LineOrBar,'area')
         uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
@@ -578,6 +578,8 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         h = subplot(NumberDisplayRows,NumberDisplayColumns,Increment);
         if strcmpi(LineOrBar,'bar')
             bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+        elseif strcmpi(LineOrBar,'area')
+            area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
         else
             plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2)
         end

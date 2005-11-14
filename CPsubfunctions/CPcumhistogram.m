@@ -112,11 +112,18 @@ PlotBinLocations = FigureSettings{1};
 
 AxesHandles = findobj(h_Parent,'Tag','BarTag');
 for i = 1:length(AxesHandles)
-    h2 = axes('Position',get(AxesHandles(i),'Position'));
-    plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
-    set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
-    set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top');
+    if strcmp(get(get(AxesHandles(i),'children'),'type'),'line')
+        hold on
+        h2 = AxesHandles(i);
+        plot(h2,PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
+        hold off
+    else
+        h2 = axes('Position',get(AxesHandles(i),'Position'));
+        plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
+        set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
+        set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top');
+        set(h2,'XLim',get(AxesHandles(i),'XLim'))
+        set(h2,'YLim',get(AxesHandles(i),'YLim'))
+    end
     set(findobj(findobj('tag',LineColor),'type','line'),'color',LineColor);
-    set(h2,'XLim',get(AxesHandles(i),'XLim'))
-    set(h2,'YLim',get(AxesHandles(i),'YLim'))
 end

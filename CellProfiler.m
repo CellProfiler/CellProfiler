@@ -412,7 +412,7 @@ uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Call
 uimenu(HelpMenu,'Label','Image Tools Help','Callback','CellProfiler(''ImageToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 %uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
-%uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
 
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
@@ -3863,42 +3863,99 @@ clear toolsChoice;
 
 function DownloadModules_Callback(hObject, eventdata, handles)
 %%% TEMPORARY
-CPwarndlg('Sorry, the ftp site has not yet been established to allow downloading modules.');
-return
-
-
-try
-    CPServer = ftp('cellprofiler.org');
-catch
-    CPwarndlg('Error while establishing connection with server!');
-    return;
-end
+% CPwarndlg('Sorry, the ftp site has not yet been established to allow downloading modules.');
+% return
+% try
+%     CPServer = ftp('cellprofiler.org');
+% catch
+%     CPwarndlg('Error while establishing connection with server!');
+%     return;
+% end
 
 CPPath = which('CellProfiler.m');
-CPPath = CPPath(1:max(find(CPPath,'/'))-1);
+if ispc
+    CPPath = CPPath(1:max(strfind(CPPath,'\'))-1);
+else
+    CPPath = CPPath(1:max(strfind(CPPath,'/'))-1);
+end
 ModulePathName = fullfile(CPPath, 'Modules');
+DataPathName = fullfile(CPPath, 'DataTools');
+ImagePathName = fullfile(CPPath, 'ImageTools');
 
 try
-    mget(CPServer,'ModuleList.txt',CPPath);
+%     mget(CPServer,'ModuleList.txt',CPPath);
+    Modules = urlread('http://jura.wi.mit.edu/cellprofiler/updates/Modules/ModuleList.txt');
+    DataTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/DataTools/DataList.txt');
+    ImageTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/ImageList.txt');
 catch
     CPwarndlg('The file containing the list of modules could not be downloaded.');
     return;
 end
 
-fid = fopen(fullfile(CPPath,'ModuleList.txt'),'r');
-while ~feof(fid)
-    'a'
-    line = fgetl(fid);
-    if isempty(line), break, end;
-    if ~exist(line)
-        try
-            mget(CPServer,line,ModulePathName);
-        catch
-            CPwarndlg([line,' could not be downloaded.']);
-        end
+p=1;
+while true
+    [t,y] = strtok(Modules(p:end));
+    try
+        urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/Modules/',t],fullfile(ModulePathName,t));
+    catch
+        CPwarndlg([t,' could not be downloaded.']);
     end
+    if isempty(y)
+        break
+    end
+    p = p + length(t) + 1;
 end
-msgbox('Update Complete!');
+
+p=1;
+while true
+    [t,y] = strtok(DataTools(p:end));
+    try
+        urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/DataTools/',t],fullfile(DataPathName,t));
+    catch
+        CPwarndlg([t,' could not be downloaded.']);
+    end
+    if isempty(y)
+        break
+    end
+    p = p + length(t) + 1;
+end
+
+p=1;
+while true
+    [t,y] = strtok(ImageTools(p:end));
+    try
+        urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/',t],fullfile(ImagePathName,t));
+    catch
+        CPwarndlg([t,' could not be downloaded.']);
+    end
+    if isempty(y)
+        break
+    end
+    p = p + length(t) + 1;
+end
+
+try
+    urlwrite('http://jura.wi.mit.edu/cellprofiler/updates/CellProfiler.m',fullfile(CPPath,'CellProfiler.m'));
+catch
+    CPwarndlg(['CellProfiler.m could not be downloaded.']);
+end
+
+CPhelpdlg('Update Complete!');
+% fid = fopen(fullfile(CPPath,'ModuleList.txt'),'r');
+% while ~feof(fid)
+%     module = fgetl(fid);
+%     if isempty(module)
+%         break
+%     end;
+%     if strcmpi(module(end-1:end),'.m')
+%         try
+%             urlwrite(fullfile('http://jura.wi.mit.edu/cellprofiler/updates/',module),fullfile(ModulePathName,module));
+%         catch
+%             CPwarndlg([module,' could not be downloaded.']);
+%         end
+%     end
+% end
+% CPmsgbox('Update Complete!');
 
 function ReportBugs_Callback(hObject, eventdata, handles)
 

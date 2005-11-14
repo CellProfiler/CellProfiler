@@ -3,13 +3,9 @@ November 8, 2005
 
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 
-- Make the help/manual prettier: For each example image that is just text, type the text into the help for that file instead of referring to the image, because as it is these images are stretched a lot.
-
 - Make compiled CellProfiler work on cluster
 
 - (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
-
-- Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.
 
 - Check through each module (~2 per day):
 EVERYONE:

@@ -6,12 +6,18 @@ function handles = MeasureCorrelation(handles)
 % Given two or more images, calculates the correlation between the
 % pixel intensities. The correlation can be measured for the entire
 % images, or individual correlation measurements can be made for each
-% individual object, as defined by another module.
+% individual object, as defined by another module. For example:
 %
-% See also MEASUREIMAGEAREAOCCUPIED,
-% MEASUREOBJECTAREASHAPE,
-% MEASUREOBJECTINTENSITYTEXTURE,
-% MEASUREIMAGEINTENSITY.
+% OrigBlue  /OrigGreen      Correlation: 0.49955  -0.07395
+% OrigBlue  /OrigRed        Correlation: 0.59886  -0.02752
+% OrigGreen /OrigRed        Correlation: 0.83605   0.68489
+%
+% OrigGreen /InvertedBlue   Correlation: -0.49955
+% OrigRed   /InvertedBlue   Correlation: -0.59886
+% OrigBlue  /InvertedBlue   Correlation: -1
+%
+% See also MEASUREIMAGEAREAOCCUPIED, MEASUREOBJECTAREASHAPE,
+% MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY, MEASUREIMAGEINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

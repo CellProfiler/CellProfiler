@@ -27,6 +27,7 @@ EVERYONE:
 		descriptions for uses of computer-ific words like 'segmentation'.
 	- Write help if DNE
 	- Check that fontsize is never hard-coded and instead uses the user's preference.
+	- Remove 'saving images' text
 MIKE:
 	- Make sure all code is using CPfigure rather than figure. I think the
 		DataLayout tool in particular is using figure.

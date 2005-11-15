@@ -75,8 +75,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = How do you want to convert the color image?
-%choiceVAR02 = Gray
 %choiceVAR02 = Combine
+%choiceVAR02 = Split
 GrayOrSplit = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
@@ -156,7 +156,7 @@ drawnow
 
 if strcmp(GrayOrSplit,'Combine')
     %%% Converts Image to Gray
-    InitialGrayscaleImage = (OrigImage(:,:,1)*RedIntensity+OrigImage(:,:,2)*GreenIntensity+OrigImage(:,:,3)*BlueIntensity)/(RedIntensity+GreenIntensity+BlueIntensity);
+    GrayscaleImage = (OrigImage(:,:,1)*RedIntensity+OrigImage(:,:,2)*GreenIntensity+OrigImage(:,:,3)*BlueIntensity)/(RedIntensity+GreenIntensity+BlueIntensity);
 elseif strcmp(GrayOrSplit,'Split')
     %%% Determines whether the user has specified an image to be loaded in
     %%% red.

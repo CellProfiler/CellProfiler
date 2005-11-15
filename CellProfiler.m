@@ -2120,7 +2120,7 @@ elseif strcmp(InputType, 'popupmenu')
     ChoiceList = get(hObject,'string');
     if strcmp('Other..', ChoiceList{UserEntry})
         CustomInput = inputdlg('Enter your custom input: ');
-        if isempty(CustomInput{1})
+        if isempty(CustomInput) | isempty(CustomInput{1}) %#ok
             set(hObject,'value',1);
         else
             ChoiceList(numel(ChoiceList)) = CustomInput;

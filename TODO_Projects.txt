@@ -1,3 +1,5 @@
+- Find better way to calculate perimeters or just use regionprops and force people to update. Possibly for Zernike features have diameter calculated for each cell individually.
+
 -(Mike 11/14 This idea was shot down a long time ago because of all the issues with popup menus, maybe in the future, but definitely not before release) (Requested by Color 11-08-5) - It would be nice to be able to some variables in multiple groups for menus.  For instance, we could put images from load modules in both imagegroup and a new origimagegroup.  That way for the modules that require and original image (such as for the filenames in SaveImages) would only have the original images from load modules instead of everything.
 
 - (Requested by Anne 11-01-05) - There are many ways to measure the best focus of an image. Right now our MeasureSaturationBlur module has only one of these methods. Implement many of the focus methods in this paper, and have the 'best'/fastest one be the default: Sun, Duthaler, Nelson, Microscopy Research & Technique 2004 (Anne has the pdf of this).

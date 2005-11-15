@@ -248,11 +248,10 @@ for i = 1:length(ObjectNameList)
             % Get perimeter for object
             perim = bwperim(BWpatch);
             Perimeter(Object) = sum(perim(:));
-
         end
 
         % Form factor
-        FormFactor = 4*pi*cat(1,props.Area) ./ (Perimeter+1).^2;       % Add 1 to perimeter to avoid divide by zero
+        FormFactor = (4*pi*cat(1,props.Area)) ./ ((Perimeter+1).^2);       % Add 1 to perimeter to avoid divide by zero
 
         % Save basic shape features
         Basic = [cat(1,props.Area)*PixelSize^2,...

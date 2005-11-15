@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/15) (Requested by Colin 11-08-05) - The help for the skip modules preference isn't working (should be an easy fix).
+
 -(Mike 11/14 only one value to display, don't think whole window for one value is worth it)(Requested by Colin 11-08-05) - I think the MeasureRatio module should have a display window, which displays the values similar to other measure modules. (Right now it says it is unnecessary).
 
 -(Mike 11/14) Make the download new modules work - I think it should also download new CellProfiler.m and ImageTools and DataTools, etc.

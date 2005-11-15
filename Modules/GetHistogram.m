@@ -113,7 +113,6 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = How many bins do you want?
-%choiceVAR06 = Automatic
 %choiceVAR06 = 2
 %choiceVAR06 = 16
 %choiceVAR06 = 256
@@ -166,8 +165,8 @@ end
 index = strfind(MinAndMax,',');
 if isempty(index)
     if strcmpi(MinAndMax,'automatic')
-        MinHistogramValue = 'automatic'
-        MaxHistogramValue = 'automatic'
+        MinHistogramValue = 'automatic';
+        MaxHistogramValue = 'automatic';
     else
         error(['The Min and Max size entry in the ', ModuleName, ' module is invalid.'])
     end
@@ -180,7 +179,7 @@ else
 end
 
 try
-    Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
+        Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
 catch
     error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
 end
@@ -191,8 +190,8 @@ end
 drawnow
 
 %%% Calculates the default bin size and range based on all the data.
-SelectedMeasurementsCellArray = Measurements;
-SelectedMeasurementsMatrix = cell2mat(SelectedMeasurementsCellArray(:));
+% SelectedMeasurementsCellArray = Measurements;
+SelectedMeasurementsMatrix = Measurements;
 PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
 PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
 
@@ -275,12 +274,14 @@ PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 %%% Creates the display window.
 HistHandle = CPfigure(handles,ThisModuleFigureNumber);
 
+h = subplot(1,1,1);
+
 if strcmpi(LineOrBar,'bar')
-    h = bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+    bar('v6',PlotBinLocations,FinalHistogramData(:,1))
 elseif strcmpi(LineOrBar,'area')
-    h = area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+    area('v6',PlotBinLocations,FinalHistogramData(:,1))
 else
-    h = plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2)
+    plot('v6',PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2)
 end
 
 set(h,'XTickLabel',XTickLabels)

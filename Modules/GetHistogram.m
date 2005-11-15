@@ -80,7 +80,7 @@ NumberOfImageSets = handles.Current.NumberOfImageSets;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-OrigImage= handles.Pipeline.(ImageName);
+OrigImage=handles.Pipeline.(ImageName);
 
 if strcmp(LogOption,'Yes')
     OrigImage(OrigImage == 0) = min(OrigImage(OrigImage > 0));
@@ -112,4 +112,4 @@ end
 
 OneFrame = getframe(HistHandle);
 handles.Pipeline.(HistImage)=OneFrame.cdata;
-close (ThisModuleFigureNumber);
+close(ThisModuleFigureNumber);

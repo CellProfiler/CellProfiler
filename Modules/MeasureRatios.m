@@ -9,7 +9,7 @@ function handles = MeasureRatios(handles)
 %
 % Feature Number:
 % The feature number is the parameter from the chosen module (AreaShape,
-% Intensity, Texture) which will be used for the filter. The following
+% Intensity, Texture) which will be used for the ratio. The following
 % tables provide the feature numbers for each measurement made by the three
 % modules:
 %

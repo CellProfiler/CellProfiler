@@ -1,6 +1,54 @@
 function handles = GetHistogram(handles)
 % Help for the Get Histogram module:
 % Category: Other
+%
+%
+% Feature Number:
+% The feature number is the parameter from the chosen module (AreaShape,
+% Intensity, Texture) which will be used for the histogram. The following
+% tables provide the feature numbers for each measurement made by the three
+% modules:
+%
+% Area Shape:               Feature Number:
+% Area                    |       1
+% Eccentricity            |       2
+% Solidity                |       3
+% Extent                  |       4
+% Euler Number            |       5
+% Perimeter               |       6
+% Form factor             |       7
+% MajorAxisLength         |       8
+% MinorAxisLength         |       9
+%
+% Intensity:                Feature Number:
+% IntegratedIntensity     |       1
+% MeanIntensity           |       2
+% StdIntensity            |       3
+% MinIntensity            |       4
+% MaxIntensity            |       5
+% IntegratedIntensityEdge |       6
+% MeanIntensityEdge       |       7
+% StdIntensityEdge        |       8
+% MinIntensityEdge        |       9
+% MaxIntensityEdge        |      10
+% MassDisplacement        |      11
+%
+% Texture:                  Feature Number:
+% AngularSecondMoment     |       1
+% Contrast                |       2
+% Correlation             |       3
+% Variance                |       4
+% InverseDifferenceMoment |       5
+% SumAverage              |       6
+% SumVariance             |       7
+% SumEntropy              |       8
+% Entropy                 |       9
+% DifferenceVariance      |      10
+% DifferenceEntropy       |      11
+% InformationMeasure      |      12
+% InformationMeasure2     |      13
+% Gabor1x                 |      14
+% Gabor1y                 |      15
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -31,56 +79,68 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = What did you call the images you want to include?
-%infotypeVAR01 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = Which object would you like to use for the histogram (The option IMAGE currently only works with Correlation measurements)?
+%choiceVAR01 = Image
+%infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the generated histograms?
-%defaultVAR02 = OrigHist
-%infotypeVAR02 = imagegroup indep
-HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = Which category of measurements would you like to use?
+%choiceVAR02 = AreaShape
+%choiceVAR02 = Correlation
+%choiceVAR02 = Intensity
+%choiceVAR02 = Neighbors
+%choiceVAR02 = Texture
+%inputtypeVAR02 = popupmenu custom
+Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = How many bins do you want?
-%choiceVAR03 = Automatic
-%choiceVAR03 = 2
-%choiceVAR03 = 16
-%choiceVAR03 = 256
-NumBins = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu custom
+%textVAR03 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%defaultVAR03 = 1
+FeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Set the range for frequency counts
-%choiceVAR04 = Automatic
-FreqRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu custom
+%textVAR04 = If using INTENSITY or TEXTURE measures, which image would you like to process?
+%infotypeVAR04 = imagegroup
+%inputtypeVAR04 = popupmenu
+Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Log transform the histogram?
-%choiceVAR05 = No
-%choiceVAR05 = Yes
-LogOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+%textVAR05 = What do you want to call the generated histograms?
+%defaultVAR05 = OrigHist
+%infotypeVAR05 = imagegroup indep
+HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Enter any optional commands or leave a period.
-OptionalCmds = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%defaultVAR06 = .
+%textVAR06 = How many bins do you want?
+%choiceVAR06 = Automatic
+%choiceVAR06 = 2
+%choiceVAR06 = 16
+%choiceVAR06 = 256
+NumBins = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu custom
+
+%textVAR07 = Log transform the histogram?
+%choiceVAR07 = No
+%choiceVAR07 = Yes
+LogOption = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines which image set is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
+    Measure = [Measure, '_',Image];
+end
 
-OrigImage=handles.Pipeline.(ImageName);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST IMAGE SET FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 if strcmp(LogOption,'Yes')
     OrigImage(OrigImage == 0) = min(OrigImage(OrigImage > 0));
@@ -90,26 +150,11 @@ if strcmp(LogOption,'Yes')
     OrigImage = (OrigImage - lo)/(hi - lo);
 end
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+HistHandle = CPfigure(handles,ThisModuleFigureNumber);
+
 drawnow
 
-HistHandle = CPfigure(handles,ThisModuleFigureNumber);
-if strcmp(NumBins,'Automatic')
-    imhist(OrigImage);
-else
-    imhist(OrigImage, str2double(NumBins));
-end
-
-if ~strcmp(FreqRange,'Automatic')
-    YRange = strread(FreqRange);
-    ylim(YRange);
-end
-
-if ~strcmp(OptionalCmds, '.')
-    eval(OptionalCmds);
-end
-
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
 OneFrame = getframe(HistHandle);
 handles.Pipeline.(HistImage)=OneFrame.cdata;
-close(ThisModuleFigureNumber);

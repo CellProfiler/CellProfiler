@@ -1,6 +1,6 @@
 Mike's TODO list
 
-- from Anne >>> Don't forget the BioImage image processing project (for the manuscript). Still no rush, just wanted to make sure it didn't get lost in the shuffle.
+-(Combine codes?) (Requested by Anne 11-15-05) percentage of objects (for histograms) was actually coming up as fractions (0.2 instead of 20%), so I multiplied the fractions by 100 in the code for Histogram.m. But I had to make the same change in CPcumhistogram.m Why do we have the same code in two places?  Just checking whether Histogram should be calling CPcumhistogram.
 
 - (Requested by Anne 10-31-05) - It'd be fun to see how long an image processing run takes on Matlab developer's version vs. the compiled version (which ought to be faster).  Eventually, we probably should do some real test runs (on the final version) so we can state in the paper the expected difference in speed between the two versions.
 

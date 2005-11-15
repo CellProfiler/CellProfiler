@@ -256,7 +256,7 @@ FinalHistogramData(:,1) = HistogramData;
 if strncmpi(NumberOrPercent,'P',1)
     for i = 1: size(FinalHistogramData,2)
         SumForThatColumn = sum(FinalHistogramData(:,i));
-        FinalHistogramData(:,i) = FinalHistogramData(:,i)/SumForThatColumn;
+        FinalHistogramData(:,i) = 100*FinalHistogramData(:,i)/SumForThatColumn;
     end
 end
 

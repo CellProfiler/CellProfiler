@@ -157,11 +157,11 @@ elseif PlotType == 3
 elseif PlotType == 4
     
     %%% Get the feature type 1
-    [ObjectTypename1,FeatureType1,FeatureNo1] = CPgetfeature(handles,0);
+    [ObjectTypename1,FeatureType1,FeatureNo1] = CPgetfeature(handles);
     if isempty(ObjectTypename1),return,end
     
     %%% Get the feature type 2
-    [ObjectTypename2,FeatureType2,FeatureNo2] = CPgetfeature(handles,0);
+    [ObjectTypename2,FeatureType2,FeatureNo2] = CPgetfeature(handles);
     if isempty(ObjectTypename2),return,end
     
     %%% Extract the measurements

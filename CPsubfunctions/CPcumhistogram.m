@@ -121,9 +121,7 @@ for i = 1:length(AxesHandles)
         h2 = axes('Position',get(AxesHandles(i),'Position'));
         plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
         set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
-        set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top');
-        set(h2,'XLim',get(AxesHandles(i),'XLim'))
-        set(h2,'YLim',get(AxesHandles(i),'YLim'))
+        set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top','YLim',get(AxesHandles(i),'YLim'));
     end
     set(findobj(findobj('tag',LineColor),'type','line'),'color',LineColor);
 end

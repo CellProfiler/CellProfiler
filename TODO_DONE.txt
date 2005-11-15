@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Requested by Anne) - DONE Display grid: it looks like the labels are too far one unit to the left and one unit up.
+
+DONE Define grid:  I think the description for MANUAL + MOUSE what is the distance? is incorrect because it says distance from control to the bottom left. In my case, I had the settings: first spot = top left, count by columns, and then MANUAL + MOUSE distance from control to the bottom left = 1,0 (spot units).  In reality, the grid was placed (as I desired) as if that question was asking 'MANUAL + MOUSE distance from control to the *top left*'. So I think we need to change the text to read either 'top left' or maybe 'the first spot' (in other words, as defined by your settings for 'first spot'). Ideally, it would be first spot. I am just not sure how the code actually works.
+
 -(Mike 11/15) from Anne >>> Don't forget the BioImage image processing project (for the manuscript). Still no rush, just wanted to make sure it didn't get lost in the shuffle.
 
 -(Mike 11/15) (Requested by Anne 11-15-05) When plotting intensity measures on scatterplots (and probably other types of plots), the axes and titles and such do not indicate which color stain is being shown (e.g. OrigBlue, Green, etc).

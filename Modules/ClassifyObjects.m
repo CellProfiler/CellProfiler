@@ -69,7 +69,7 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Enter the feature type (e.g. AreaShape, Texture, Intensity):
+%textVAR02 = Enter the feature type (e.g. AreaShape, Texture, Intensity) or Ratio:
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Correlation
 %choiceVAR02 = Texture

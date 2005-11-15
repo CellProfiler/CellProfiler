@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/15) (Requested by Anne 11-15-05) When plotting intensity measures on scatterplots (and probably other types of plots), the axes and titles and such do not indicate which color stain is being shown (e.g. OrigBlue, Green, etc).
+
 -(Mike 11/15) (Requested by Anne 11-15-05)  the Add module window didn't go away when i shut down CP.
 
 -(Mike 11/15) (Requested by Colin 11-08-05) - When there is a custom input drop down menu and you close out of the input box without typing anything in, there is an error.  Also, it should be use cellprofiler colors.

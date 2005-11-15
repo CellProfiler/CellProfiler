@@ -42,7 +42,7 @@ if RawFileName == 0
 end
 load(fullfile(RawPathname, RawFileName));
 
-PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListSize',[200 200],... 
+PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListSize',[200 200],...
     'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});
 if isempty(PlotType), return,end
 
@@ -81,16 +81,24 @@ if PlotType == 1
         plot([k-0.075,k+0.075],[MeasurementsMean(k)+MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
     end
     hold off
-    str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+
+    if (length(FeatureType) > 10) & strncmp(FeatureType,'Intensity_',10)
+        str = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' in ',FeatureType(11:end)];
+    elseif (length(FeatureType1) > 8) & strncmp(FeatureType1,'Texture_',8)
+        str = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' in ',FeatureType(9:end)];
+    else
+        str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+    end
+
     xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
     ylabel(gca,[str,', mean +/- standard deviation'],'fontname','times','fontsize',FontSize+2)
     axis([0 length(Measurements)+1 ylim])
     set(gca,'xtick',1:length(Measurements))
     titlestr = [str,' of ', ObjectTypename];
 
-%%% Line chart
+    %%% Line chart
 elseif PlotType == 2
-    
+
     %%% Get the feature type
     [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
     if isempty(ObjectTypename),return,end
@@ -118,7 +126,15 @@ elseif PlotType == 2
     plot(1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,':','Color',[0.7 0.7 0.7]);
     hold off
     axis([0 length(Measurements)+1 ylim])
-    str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+
+    if (length(FeatureType) > 10) & strncmp(FeatureType,'Intensity_',10)
+        str = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' in ',FeatureType(11:end)];
+    elseif (length(FeatureType1) > 8) & strncmp(FeatureType1,'Texture_',8)
+        str = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' in ',FeatureType(9:end)];
+    else
+        str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+    end
+
     xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
     ylabel(gca,[str,', mean +/- standard deviation'],'fontname','times','fontsize',FontSize+2)
     set(gca,'xtick',1:length(Measurements))
@@ -126,14 +142,14 @@ elseif PlotType == 2
 
 
 
-%%% Scatter plot, 1 measurement
+    %%% Scatter plot, 1 measurement
 elseif PlotType == 3
 
     %%% Get the feature type
     [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0);
     if isempty(ObjectTypename),return,end
 
-    %%% Extract the measurements 
+    %%% Extract the measurements
     Measurements = handles.Measurements.(ObjectTypename).(FeatureType);
 
     CPfigure(fig);
@@ -147,23 +163,31 @@ elseif PlotType == 3
     end
     hold off
     axis([0 length(Measurements)+1 ylim])
-    str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+
+    if (length(FeatureType) > 10) & strncmp(FeatureType,'Intensity_',10)
+        str = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' in ',FeatureType(11:end)];
+    elseif (length(FeatureType1) > 8) & strncmp(FeatureType1,'Texture_',8)
+        str = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' in ',FeatureType(9:end)];
+    else
+        str = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+    end
+
     xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
     ylabel(gca,str,'fontname','times','fontsize',FontSize+2)
     set(gca,'xtick',1:length(Measurements))
     titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
-%%% Scatter plot, 2 measurements
+    %%% Scatter plot, 2 measurements
 elseif PlotType == 4
-    
+
     %%% Get the feature type 1
     [ObjectTypename1,FeatureType1,FeatureNo1] = CPgetfeature(handles);
     if isempty(ObjectTypename1),return,end
-    
+
     %%% Get the feature type 2
     [ObjectTypename2,FeatureType2,FeatureNo2] = CPgetfeature(handles);
     if isempty(ObjectTypename2),return,end
-    
+
     %%% Extract the measurements
     Measurements1 = handles.Measurements.(ObjectTypename1).(FeatureType1);
     Measurements2 = handles.Measurements.(ObjectTypename2).(FeatureType2);
@@ -193,8 +217,23 @@ elseif PlotType == 4
         end
     end
     hold off
-    str1 = [handles.Measurements.(ObjectTypename1).([FeatureType1,'Features']){FeatureNo1},' of ', ObjectTypename1];
-    str2 = [handles.Measurements.(ObjectTypename2).([FeatureType2,'Features']){FeatureNo2},' of ', ObjectTypename2];
+
+    if (length(FeatureType1) > 10) & strncmp(FeatureType1,'Intensity_',10)
+        str1 = [handles.Measurements.(ObjectTypename1).([FeatureType1,'Features']){FeatureNo1},' of ', ObjectTypename1, ' in ',FeatureType1(11:end)];
+    elseif (length(FeatureType1) > 8) & strncmp(FeatureType1,'Texture_',8)
+        str1 = [handles.Measurements.(ObjectTypename1).([FeatureType1,'Features']){FeatureNo1},' of ', ObjectTypename1, ' in ',FeatureType1(9:end)];
+    else
+        str1 = [handles.Measurements.(ObjectTypename1).([FeatureType1,'Features']){FeatureNo1},' of ', ObjectTypename1];
+    end
+
+    if (length(FeatureType2) > 10) & strncmp(FeatureType2,'Intensity_',10)
+        str2 = [handles.Measurements.(ObjectTypename2).([FeatureType2,'Features']){FeatureNo2},' of ', ObjectTypename2, ' in ',FeatureType2(11:end)];
+    elseif (length(FeatureType2) > 8) & strncmp(FeatureType2,'Texture_',8)
+        str2 = [handles.Measurements.(ObjectTypename2).([FeatureType2,'Features']){FeatureNo2},' of ', ObjectTypename2, ' in ',FeatureType2(9:end)];
+    else
+        str2 = [handles.Measurements.(ObjectTypename2).([FeatureType2,'Features']){FeatureNo2},' of ', ObjectTypename2];
+    end
+
     xlabel(gca,str1,'fontsize',FontSize+2,'fontname','times')
     ylabel(gca,str2,'fontsize',FontSize+2,'fontname','times')
     titlestr = [str1,' vs. ',str2];

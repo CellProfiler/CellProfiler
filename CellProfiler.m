@@ -3872,75 +3872,79 @@ function DownloadModules_Callback(hObject, eventdata, handles)
 %     return;
 % end
 
-CPPath = which('CellProfiler.m');
-if ispc
-    CPPath = CPPath(1:max(strfind(CPPath,'\'))-1);
-else
-    CPPath = CPPath(1:max(strfind(CPPath,'/'))-1);
-end
-ModulePathName = fullfile(CPPath, 'Modules');
-DataPathName = fullfile(CPPath, 'DataTools');
-ImagePathName = fullfile(CPPath, 'ImageTools');
+Answer = CPquestdlg('Are you sure you want to over-write all your existing CellProfiler files?','Overwrite Files?','Yes','No','No');
+if strcmp(Answer,'Yes')
+    CPPath = which('CellProfiler.m');
+    if ispc
+        CPPath = CPPath(1:max(strfind(CPPath,'\'))-1);
+    else
+        CPPath = CPPath(1:max(strfind(CPPath,'/'))-1);
+    end
+    ModulePathName = fullfile(CPPath, 'Modules');
+    DataPathName = fullfile(CPPath, 'DataTools');
+    ImagePathName = fullfile(CPPath, 'ImageTools');
 
-try
-%     mget(CPServer,'ModuleList.txt',CPPath);
-    Modules = urlread('http://jura.wi.mit.edu/cellprofiler/updates/Modules/ModuleList.txt');
-    DataTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/DataTools/DataList.txt');
-    ImageTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/ImageList.txt');
-catch
-    CPwarndlg('The file containing the list of modules could not be downloaded.');
-    return;
-end
-
-p=1;
-while true
-    [t,y] = strtok(Modules(p:end));
     try
-        urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/Modules/',t],fullfile(ModulePathName,t));
+        %     mget(CPServer,'ModuleList.txt',CPPath);
+        Modules = urlread('http://jura.wi.mit.edu/cellprofiler/updates/Modules/ModuleList.txt');
+        DataTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/DataTools/DataList.txt');
+        ImageTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/ImageList.txt');
     catch
-        CPwarndlg([t,' could not be downloaded.']);
+        CPwarndlg('The file containing the list of modules could not be downloaded.');
+        return;
     end
-    if isempty(y)
-        break
-    end
-    p = p + length(t) + 1;
-end
 
-p=1;
-while true
-    [t,y] = strtok(DataTools(p:end));
+    p=1;
+    while true
+        [t,y] = strtok(Modules(p:end));
+        try
+            urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/Modules/',t],fullfile(ModulePathName,t));
+        catch
+            CPwarndlg([t,' could not be downloaded.']);
+        end
+        if isempty(y)
+            break
+        end
+        p = p + length(t) + 1;
+    end
+
+    p=1;
+    while true
+        [t,y] = strtok(DataTools(p:end));
+        try
+            urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/DataTools/',t],fullfile(DataPathName,t));
+        catch
+            CPwarndlg([t,' could not be downloaded.']);
+        end
+        if isempty(y)
+            break
+        end
+        p = p + length(t) + 1;
+    end
+
+    p=1;
+    while true
+        [t,y] = strtok(ImageTools(p:end));
+        try
+            urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/',t],fullfile(ImagePathName,t));
+        catch
+            CPwarndlg([t,' could not be downloaded.']);
+        end
+        if isempty(y)
+            break
+        end
+        p = p + length(t) + 1;
+    end
+
     try
-        urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/DataTools/',t],fullfile(DataPathName,t));
+        urlwrite('http://jura.wi.mit.edu/cellprofiler/updates/CellProfiler.m',fullfile(CPPath,'CellProfiler.m'));
     catch
-        CPwarndlg([t,' could not be downloaded.']);
+        CPwarndlg(['CellProfiler.m could not be downloaded.']);
     end
-    if isempty(y)
-        break
-    end
-    p = p + length(t) + 1;
+
+    CPhelpdlg('Update Complete!');
 end
 
-p=1;
-while true
-    [t,y] = strtok(ImageTools(p:end));
-    try
-        urlwrite(['http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/',t],fullfile(ImagePathName,t));
-    catch
-        CPwarndlg([t,' could not be downloaded.']);
-    end
-    if isempty(y)
-        break
-    end
-    p = p + length(t) + 1;
-end
-
-try
-    urlwrite('http://jura.wi.mit.edu/cellprofiler/updates/CellProfiler.m',fullfile(CPPath,'CellProfiler.m'));
-catch
-    CPwarndlg(['CellProfiler.m could not be downloaded.']);
-end
-
-CPhelpdlg('Update Complete!');
 % fid = fopen(fullfile(CPPath,'ModuleList.txt'),'r');
 % while ~feof(fid)
 %     module = fgetl(fid);

@@ -117,7 +117,6 @@ MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Fea
 tmp = handles.Measurements.(ObjectTypename).(FeatureType);
 ImageSets = length(tmp);
 Measurements = cell(length(tmp),1);
-SkipList = [];
 for k = 1:ImageSets
     if length(tmp{k}) >= FeatureNo
         Measurements{k} = tmp{k}(:,FeatureNo);

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/16) Added the option to log ratios
+
 -(Mike 11/16) (Requested by Anne 11-15-05) percentage of objects (for histograms) was actually coming up as fractions (0.2 instead of 20%), so I multiplied the fractions by 100 in the code for Histogram.m. But I had to make the same change in CPcumhistogram.m Why do we have the same code in two places?  Just checking whether Histogram should be calling CPcumhistogram.
 
 -(Mike 11/16) (Requested by Anne 11-16-05) - This is potentially very difficult, but thought I'd ask: right now, we can exclude objects touching the edge for identifyprimautomatic. This only works for objects touching the edge of the rectangular image. If we were feeding in an image to ID Prim Auto that had been cropped into a circle, the cropping shape is stored in the handles structure (CropMask or CroppingMask - one is the size of the original image and the other is the size of the cropped image) so can we use this information to discard objects touching the edge of whatever shape is depicted in the CropMask or CroppingMask (can't remember which one is the size of the cropped image)?

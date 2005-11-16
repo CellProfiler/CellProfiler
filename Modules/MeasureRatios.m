@@ -84,9 +84,9 @@ function handles = MeasureRatios(handles)
 %
 % $Revision: 1843 $
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -132,7 +132,7 @@ DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %choiceVAR06 = Neighbors
 %choiceVAR06 = Texture
 %inputtypeVAR06 = popupmenu custom
-DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,06});
+DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
 %defaultVAR07 = 1
@@ -143,11 +143,17 @@ DenomFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,7}
 %inputtypeVAR08 = popupmenu
 DenomImage = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 3
+%textVAR09 = Do you want the log of the ratio?
+%choiceVAR09 = No
+%choiceVAR09 = Yes
+%inputtypeVAR06 = popupmenu
+LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%VariableRevisionNumber = 4
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -171,26 +177,36 @@ if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
 end
 
 try
-NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber)];
-if isfield(handles.Measurements.(NumObjectName),'Ratios')
-    OldPos = strmatch(NewFieldName,handles.Measurements.(NumObjectName).RatiosFeatures,'exact');
-    if isempty(OldPos)
-        handles.Measurements.(NumObjectName).RatiosFeatures(end+1) = {NewFieldName};
-        handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,end+1) = NumeratorMeasurements./DenominatorMeasurements;
+    NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber)];
+    if isfield(handles.Measurements.(NumObjectName),'Ratios')
+        OldPos = strmatch(NewFieldName,handles.Measurements.(NumObjectName).RatiosFeatures,'exact');
+        if isempty(OldPos)
+            handles.Measurements.(NumObjectName).RatiosFeatures(end+1) = {NewFieldName};
+            if strcmp(LogChoice,'No')
+                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,end+1) = NumeratorMeasurements./DenominatorMeasurements;
+            else
+                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,end+1) = log10(NumeratorMeasurements./DenominatorMeasurements);
+            end
+        else
+            if strcmp(LogChoice,'No')
+                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,OldPos) = NumeratorMeasurements./DenominatorMeasurements;
+            else
+                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,OldPos) = log10(NumeratorMeasurements./DenominatorMeasurements);
+            end
+        end
     else
-        handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,OldPos) = NumeratorMeasurements./DenominatorMeasurements;
+        handles.Measurements.(NumObjectName).RatiosFeatures = {NewFieldName};
+        if strcmp(LogChoice,'No')
+            handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = NumeratorMeasurements./DenominatorMeasurements;
+        else
+            handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = log10(NumeratorMeasurements./DenominatorMeasurements);
+        end
     end
-else
-    handles.Measurements.(NumObjectName).RatiosFeatures = {NewFieldName};
-    handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = NumeratorMeasurements./DenominatorMeasurements;
 end
-end
-%NewFieldNameFeatures = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber),'Features'];
-%handles.Measurements.(NumObjectName).(NewFieldName)(SetBeingAnalyzed) = {NumeratorMeasurements./DenominatorMeasurements};
-%handles.Measurements.(NumObjectName).(NewFieldNameFeatures) = {NewFieldName};
-%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if SetBeingAnalyzed == handles.Current.StartingImageSet

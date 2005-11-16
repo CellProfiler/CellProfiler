@@ -914,7 +914,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             if ~strcmp(SaveOutlined,'Do not save')
                 handles.Pipeline.(SaveOutlined) = LogicalOutlines;
             end
-        catch error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        catch error('The object outlines or colored objects were not calculated by an identify module so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
         end
     end
 end

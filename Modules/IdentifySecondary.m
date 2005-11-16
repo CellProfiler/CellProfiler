@@ -3,6 +3,10 @@ function handles = IdentifySecondary(handles)
 % Help for the Identify Secondary module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION: Identifies objects (e.g. cell edges) using "seed"
+% objects identified by a 1st order module (e.g. nuclei)
+% *************************************************************************
+%
 % METHODS OF IDENTIFICATION
 %
 % Distance:
@@ -215,7 +219,7 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Threshold correction factor
 %defaultVAR06 = 1
-ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+ThresholdCorrection = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %textVAR07 = Lower and upper bounds on threshold (in the range [0,1])
 %defaultVAR07 = 0,1
@@ -315,7 +319,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
     %%% Check that the sizes of the images are equal.
-    if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) | (size(OrigImage) ~= size(PrelimPrimaryLabelMatrixImage))
+    if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) || (size(OrigImage) ~= size(PrelimPrimaryLabelMatrixImage))
         error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
     end
 
@@ -742,9 +746,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     if strcmp(TestMode,'Yes')
         SecondaryTestFig = findobj('Tag','SecondaryTestFigure');
         if isempty(SecondaryTestFig)
-            TestFig = CPfigure(handles,'Tag','SecondaryTestFigure','Name','Secondary Test Figure');
+            CPfigure(handles,'Tag','SecondaryTestFigure','Name','Secondary Test Figure');
         else
-            TestFig = CPfigure(handles,SecondaryTestFig);
+            CPfigure(handles,SecondaryTestFig);
         end
         subplot(2,2,IdentChoiceNumber);
         imagesc(ObjectOutlinesOnOrigImage);
@@ -776,7 +780,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             FinalParentList(i,1) = ParentValue;
         end
 
-        if exist('FinalParentList')
+        if exist('FinalParentList','var')
             if max(FinalLabelMatrixImage(:)) ~= size(FinalParentList,1)
                 error('Secondary Objects cannot have two parents, something is wrong.');
             end
@@ -799,17 +803,15 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             end
         end
 
-        MaxParent = max(ParentList);
-
         for i = 1:max(ParentList)
-            if exist('FinalParentList')
+            if exist('FinalParentList','var')
                 ChildList(i,1) = length(FinalParentList(FinalParentList == i));
             else
                 ChildList(i,1) = 0;
             end
         end
 
-        if exist('ChildList')
+        if exist('ChildList','var')
             if isfield(handles.Measurements.(PrimaryObjectName),'ChildrenFeatures')
                 if handles.Current.SetBeingAnalyzed == 1
                     NewColumn = length(handles.Measurements.(PrimaryObjectName).ChildrenFeatures) + 1;
@@ -835,26 +837,37 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         fieldname = ['FigureNumberForModule',CurrentModule];
         ThisModuleFigureNumber = handles.Current.(fieldname);
-        if any(findobj == ThisModuleFigureNumber) | strncmpi(SaveOutlined,'Y',1)
+        if any(findobj == ThisModuleFigureNumber)
             drawnow
             %%% Activates the appropriate figure window.
             CPfigure(handles,ThisModuleFigureNumber);
-            ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/prod(size(FinalLabelMatrixImage));
+            ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/numel(FinalLabelMatrixImage);
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
-            subplot(2,2,1); imagesc(OrigImage);
+            subplot(2,2,1);
+            ImageHandle = imagesc(OrigImage);
+            set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
             title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
-            subplot(2,2,2); imagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
+            subplot(2,2,2);
+            ImageHandle = imagesc(ColoredLabelMatrixImage);
+            set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+            title(['Segmented ',SecondaryObjectName]);
             %%% A subplot of the figure window is set to display the original image
             %%% with secondary object outlines drawn on top.
-            subplot(2,2,3); imagesc(ObjectOutlinesOnOrigImage);  title([SecondaryObjectName, ' Outlines on Input Image']);
+            subplot(2,2,3);
+            ImageHandle = imagesc(ObjectOutlinesOnOrigImage);
+            set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+            title([SecondaryObjectName, ' Outlines on Input Image']);
             %%% A subplot of the figure window is set to display the original
             %%% image with outlines drawn for both the primary and secondary
             %%% objects.
-            subplot(2,2,4); imagesc(BothOutlinesOnOrigImage);  title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+            subplot(2,2,4);
+            ImageHandle = imagesc(BothOutlinesOnOrigImage);
+            set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+            title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
             CPFixAspectRatio(OrigImage);
         end
 

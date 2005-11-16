@@ -49,7 +49,7 @@ IdentifyPrimManual		Mike
 
 IdentifyPrimYeastPhase		??
 
-IdentifySecondary
+IdentifySecondary		Mike
 
 IdentifyTertiarySubregion
 

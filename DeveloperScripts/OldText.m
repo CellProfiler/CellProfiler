@@ -1,1 +1,1 @@
-CPaverageimages
+handles.Current,'FontSize'

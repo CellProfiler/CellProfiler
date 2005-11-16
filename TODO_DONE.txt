@@ -1,5 +1,15 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/16) (Requested by Anne 11-16-05) - The Save as default? question during set preferences has a teeny tiny font size; I couldn't really read it. I had my font size at 12, and didn't change it.
+
+-(Mike 11/16) (Requested by Anne 11-16-05) - Fairly frequently if something goes wrong during closing the CP window, it stays open and it seems like there is no way to force it to close. Can you figure this out?  Is there something we can do at the command line - I tried close all but that didn't help.
+
+e.g. I tried to close CP and got this error:
+??? Reference to non-existent field 'FontSize'.
+Error in ==> CPquestdlg at 106
+    FontSize = handles.Preferences.FontSize;
+??? Error while evaluating figure CloseRequestFcn.
+
 -(Mike 11/16) (Requested by Anne 11-15-05) - when plotting histograms on log scale using CPhistbins, the resulting plots comes out with tick labels that are 1, 2, 3 instead of 10superscript1, 10superscript2, 10superscript3. Is it possible to change this? At the very least, the x axis label should say "log scale, 10^x" but it'd be better to have superscripts.
 
 -(Mike 11/15) (Requested by Anne) - DONE Display grid: it looks like the labels are too far one unit to the left and one unit up.

@@ -703,7 +703,23 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             %%% Remove objects along the border of the image (depends on user input)
             tmp = Objects;
             if strcmp(ExcludeBorderObjects,'Yes')
+                PrevObjects = Objects;
                 Objects = imclearborder(Objects);
+                
+                %%% TESTING CODE TO REMOVE BORDERS FROM ELLIPSE CROPPED
+                %%% OBJECTS
+                if sum(PrevObjects(:)) == sum(Objects(:))
+                    try
+                        CropMask = handles.Pipeline.(['CropMaskCropping',ImageName]);
+                        CropBorders = bwperim(CropMask);
+                        BorderTable = sortrows(unique([CropBorders(:) Objects(:)],'rows'),1);
+                        for z = 1:size(BorderTable,1)
+                            if BorderTable(z,1) ~= 0 && BorderTable(z,2) ~= 0
+                                Objects(Objects == BorderTable(z,2)) = 0;
+                            end
+                        end
+                    end
+                end
             end
             %%% Store objects that touch the border for display
             BorderObjects = tmp - Objects;

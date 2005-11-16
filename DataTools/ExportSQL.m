@@ -141,7 +141,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
     % for calling from data tool, no tableprefix is asked from user, leave
     % it as blank
-    CPConvertSQL(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);
+    CPConvertSQL(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet,'');
 
 end % End loop over data files
 

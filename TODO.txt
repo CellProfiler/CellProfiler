@@ -3,6 +3,14 @@ November 8, 2005
 
 - (Requested by Anne 11-16-05) - This is potentially very difficult, but thought I'd ask: right now, we can exclude objects touching the edge for identifyprimautomatic. This only works for objects touching the edge of the rectangular image. If we were feeding in an image to ID Prim Auto that had been cropped into a circle, the cropping shape is stored in the handles structure (CropMask or CroppingMask - one is the size of the original image and the other is the size of the cropped image) so can we use this information to discard objects touching the edge of whatever shape is depicted in the CropMask or CroppingMask (can't remember which one is the size of the cropped image)?
 
+- (Requested by Anne 11-16-05) - Fairly frequently if something goes wrong during closing the CP window, it stays open and it seems like there is no way to force it to close. Can you figure this out?  Is there something we can do at the command line - I tried close all but that didn't help.
+
+e.g. I tried to close CP and got this error:
+??? Reference to non-existent field 'FontSize'.
+Error in ==> CPquestdlg at 106
+    FontSize = handles.Preferences.FontSize;
+??? Error while evaluating figure CloseRequestFcn.
+
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 Histogram: DONE (can talk about options)
 PlotMeasurements: DONE (can talk about options)

@@ -119,7 +119,7 @@ if DoWriteSQL,
     %%% element.  The corresponding 'tic' is in CellProfiler.m.
     handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
 
-    CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet);
+    CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

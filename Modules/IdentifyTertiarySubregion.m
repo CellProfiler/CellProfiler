@@ -3,6 +3,11 @@ function handles = IdentifyTertiarySubregion(handles)
 % Help for the Identify Tertiary Subregion module:
 % Category: Object Processing
 %
+% SHORT DESCRIPTION: Identifies 3rd order obects (e.g. cytoplasm) by
+% removing the 1st order objects (e.g. nuclei) from 2nd order objects (e.g.
+% cells) leaving a doughnut shape.
+% *************************************************************************
+%
 % This module will take the identified objects specified in the first
 % box and remove from them the identified objects specified in the
 % second box. For example, "subtracting" the nuclei from the cells
@@ -85,7 +90,7 @@ SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR11 = Do not save
 %choiceVAR11 = OutlinedCytoplasm
 %infotypeVAR04 = outlinegroup indep
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4}); 
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
 %%%VariableRevisionNumber = 1
@@ -109,7 +114,6 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', PrimaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 PrimaryObjectImage = handles.Pipeline.(fieldname);
-
 
 %%% Retrieves the Secondary object segmented image.
 fieldname = ['Segmented', SecondaryObjectName];
@@ -169,7 +173,7 @@ for i = 1:max(ChildParentList(:,1))
     FinalParentList(i,1) = ParentValue;
 end
 
-if exist('FinalParentList')
+if exist('FinalParentList','var')
     if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
         error('A subobject cannot have two parents, something is wrong.');
     end
@@ -207,7 +211,7 @@ for i = 1:max(ChildParentList(:,1))
     FinalParentList(i,1) = ParentValue;
 end
 
-if exist('FinalParentList')
+if exist('FinalParentList','var')
     if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
         error('A subobject cannot have two parents, something is wrong.');
     end
@@ -242,13 +246,17 @@ if any(findobj == ThisModuleFigureNumber);
     PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); imagesc(PrimaryObjectImage);
+    subplot(2,2,1);
+    ImageHandle = imagesc(PrimaryObjectImage);
     title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); imagesc(SecondaryObjectImage);
+    subplot(2,2,2);
+    ImageHandle = imagesc(SecondaryObjectImage);
     title([SecondaryObjectName, ' Image']);
-    subplot(2,2,3); imagesc(ColoredLabelMatrixImage);
+    subplot(2,2,3);
+    ImageHandle = imagesc(ColoredLabelMatrixImage);
     title([SubregionObjectName, ' Image']);
-    subplot(2,2,4); imagesc(FinalOutline);
+    subplot(2,2,4);
+    ImageHandle = imagesc(FinalOutline);
     title([SubregionObjectName, ' Outlines']);
     CPFixAspectRatio(PrimaryObjectImage);
 end
@@ -274,7 +282,6 @@ if isempty(column)
     column = length(handles.Measurements.Image.ObjectCountFeatures);
 end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(SubregionObjectImage(:));
-
 
 %%% Saves the location of each segmented object
 handles.Measurements.(SubregionObjectName).LocationFeatures = {'CenterX','CenterY'};

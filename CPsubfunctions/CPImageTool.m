@@ -7,14 +7,11 @@ function CPImageTool(handles,varargin)
 % Example of usage:
 % ImageHandle = imagesc(SegmentedObjects);
 % set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)')
-%
-
 
 % Check that the input argument is an action in the form of a string
 if ~isempty(varargin)
     action = varargin{1};
     [foo, ITh] = gcbo;
-
     if ishandle(get(ITh,'UserData'))  % The user might have closed the figure with the current image handle, check that it exists!
         switch action
             case {'NewWindow'}        % Show image in a new window
@@ -89,7 +86,5 @@ else
         if ndims(get(handle,'Cdata')) ~= 2
             set(Histogram,'Enable','off')
         end
-
-
     end
 end

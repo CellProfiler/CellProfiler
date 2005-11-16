@@ -307,7 +307,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
     %%% Check that the sizes of the images are equal.
-    if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) || (size(OrigImage) ~= size(PrelimPrimaryLabelMatrixImage))
+    if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) | (size(OrigImage) ~= size(PrelimPrimaryLabelMatrixImage))
         error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
     end
 

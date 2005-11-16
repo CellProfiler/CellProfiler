@@ -52,6 +52,14 @@ helpdlg(help('ProgrammingNotes'))
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
 %
+% Display your image like this:
+% ImageHandle = imagesc(Image);
+% set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+%
+% This CPImageTool is important so that any images that are displayed
+% in your figure windows can be clicked on, revealing several handy
+% image tools, like saving that image, opening it in a new window, etc.
+%
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
 % commands.  In general, Matlab does not update figure windows until

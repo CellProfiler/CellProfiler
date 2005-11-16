@@ -49,7 +49,12 @@ if isempty(PlotType), return,end
 % Open figure
 fig = CPfigure;
 set(gcf,'Color',[1 1 1])
-FontSize = handles.Preferences.FontSize;
+try FontSize = handles.Preferences.FontSize;
+    %%% We used to store the font size in Current, so this line makes old
+    %%% output files compatible. Shouldn't be necessary with any files made
+    %%% after November 15th, 2006.
+catch FontSize = handles.Current.FontSize;
+end
 
 % Bar chart
 if PlotType == 1

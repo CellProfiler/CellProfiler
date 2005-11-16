@@ -2,7 +2,6 @@ function handles = GetPlotMeasurement(handles)
 % Help for the Get Histogram module:
 % Category: Other
 %
-%
 % Feature Number:
 % The feature number is the parameter from the chosen module (AreaShape,
 % Intensity, Texture) which will be used for the plotted measurement. The

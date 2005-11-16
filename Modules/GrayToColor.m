@@ -17,12 +17,6 @@ function handles = RGBMerge(handles)
 % it.  Setting the adjustment factor to zero will cause that color to
 % be entirely blank.
 %
-% SAVING IMAGES: The RGB image produced by this module can be easily
-% saved using the Save Images module, using the name you assign. If
-% you want to save other intermediate images, alter the code for this
-% module to save those images to the handles structure (see the
-% SaveImages module help) and then use the Save Images module.
-%
 % See also RGBSPLIT, RGBTOGRAY.
 
 % CellProfiler is distributed under the GNU General Public License.

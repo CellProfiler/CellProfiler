@@ -17,12 +17,6 @@ function handles = ApplyThreshold(handles)
 % thresholded region around those bright objects by a certain distance so
 % as to avoid a 'halo' effect.
 %
-% SAVING IMAGES: The thresholded images produced by this module can be
-% easily saved using the Save Images module, using the name you assign. If
-% you want to save other intermediate images, alter the code for this
-% module to save those images to the handles structure (see the SaveImages
-% module help) and then use the Save Images module.
-%
 % See also <nothing>.
 
 % CellProfiler is distributed under the GNU General Public License.

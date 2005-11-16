@@ -21,15 +21,15 @@ CreateBatchScripts		Mike
 
 CreateWebPage			Mike
 
-Crop				Mike
+Crop				Mike (Saving Images help?)
 
 DefineGrid			Mike
 
 DisplayGridInfo			Mike
 
-Exclude				Mike
+Exclude				Mike (Saving Images help?)
 
-ExpandOrShrink			Mike
+ExpandOrShrink			Mike (Saving Images help?)
 
 ExtractHeaderInfo
 
@@ -43,11 +43,11 @@ GrayToColor			Mike
 
 IdentifyObjectsInGrid		Mike
 
-IdentifyPrimAutomatic		
+IdentifyPrimAutomatic		 (Saving Images help?)
 
 IdentifyPrimManual		Mike
 
-IdentifyPrimYeastPhase		??
+IdentifyPrimYeastPhase		??  (Saving Images help?)
 
 IdentifySecondary		Mike
 

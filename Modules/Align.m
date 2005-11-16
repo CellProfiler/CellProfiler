@@ -18,12 +18,6 @@ function handles = Align(handles)
 % images will be smaller than the originals by a few pixels if alignment is
 % necessary.
 %
-% SAVING IMAGES: Any of the three aligned images produced by this module
-% can be easily saved using the Save Images module, using the names you
-% assign. If you want to save other intermediate images, alter the code for
-% this module to save those images to the handles structure (see the
-% SaveImages module help) and then use the Save Images module.
-%
 % See also <nothing>.
 
 % CellProfiler is distributed under the GNU General Public License.

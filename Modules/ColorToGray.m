@@ -26,13 +26,6 @@ function handles = ColorToGray(handles)
 % increased (to increase the weighting) or decreased (to decrease the
 % weighting).
 %
-% SAVING IMAGES: The grayscale image produced by this module can be
-% easily saved using the Save Images module, using the names you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
-%
 % See also GrayToColor.
 
 % CellProfiler is distributed under the GNU General Public License.

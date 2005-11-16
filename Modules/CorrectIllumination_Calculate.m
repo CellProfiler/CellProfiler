@@ -73,16 +73,6 @@ function handles = CorrectIllumination_Calculate(handles)
 % across the field of view, the rescaling of each image might be
 % dramatic, causing the corrected images to be very dark.
 %
-% SAVING IMAGES:
-% The illumination correction function produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. Intermediate images - prior to dilation and smoothing, or
-% after dilation but prior to smoothing - can be saved in a similar
-% manner using the name you assign. If you want to save the
-% illumination image to use it in a later analysis, it is very
-% important to save the illumination image in '.mat' format or else
-% the quality of the illumination function values will be degraded.
-%
 % See also CORRECTILLUMINATION_APPLY, SMOOTH
 
 % CellProfiler is distributed under the GNU General Public License.

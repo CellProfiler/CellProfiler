@@ -109,18 +109,6 @@ function handles = IdentifySecondary(handles)
 % with different labels (as there would be using, e.g., watershed).
 % Such boundaries must be added in a postprocess.
 %
-% SAVING IMAGES: In addition to the object outlines and the
-% pseudo-colored object images that can be saved using the
-% instructions in the main CellProfiler window for this module, this
-% module produces a grayscale image where each object is a different
-% intensity, which you can save using the Save Images module using the
-% name: Segmented + whatever you called the objects (e.g.
-% SegmentedCells).
-%
-%    Additional image(s) are calculated by this module and can be
-% saved by altering the code for the module (see the SaveImages module
-% help for instructions).
-%
 % Information on IdentifySecPropagateSubfunction:
 %
 % This is a subfunction implemented in C and MEX to perform the

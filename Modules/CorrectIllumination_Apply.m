@@ -49,10 +49,6 @@ function handles = CorrectIllumination_Apply(handles)
 % used in interpreting intensity measurements from images that have
 % been rescaled. See the help for RESCALEINTENSITY for details.
 %
-% SAVING IMAGES: The illumination corrected images produced by this
-% module can be easily saved using the Save Images module, using the
-% name you assign.
-%
 % See also CORRECTILLUMINATION_CALCULATE, RESCALEINTENSITY.
 
 % CellProfiler is distributed under the GNU General Public License.

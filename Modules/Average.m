@@ -36,12 +36,6 @@ function handles = Average(handles)
 % the averaged image it produces cannot be used in subsequent modules
 % unless they are instructed to wait until the last cycle.
 %
-% SAVING IMAGES: The averaged image produced by this module can be
-% easily saved using the Save Images module, using the names you assign. If
-% you want to save other intermediate images, alter the code for this
-% module to save those images to the handles structure (see the SaveImages
-% module help) and then use the Save Images module.
-%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.

@@ -279,7 +279,7 @@ while AcceptableAnswers == 0
         uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']));
         continue
     end
-    
+
     CompressedHistogram = Answers{10};
     if strncmpi(CompressedHistogram,'Y',1) ~= 1 && strncmpi(CompressedHistogram,'N',1) ~= 1
         uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{10}, '.']));
@@ -328,7 +328,7 @@ while AcceptableAnswers == 0
         uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
-    
+
 
     %%% Error checking for the log or linear question.
     try LogOrLinear = lower(Answers{16});
@@ -353,73 +353,13 @@ while AcceptableAnswers == 0
 
     %%% Calculates the default bin size and range based on all the data.
     SelectedMeasurementsCellArray = Measurements(FirstImage:LastImage);
-    SelectedMeasurementsMatrix = cell2mat(SelectedMeasurementsCellArray(:));
-    PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
-    PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
-    %%% See whether the min and max histogram values were user-entered numbers or should be automatically calculated.
-    if isempty(str2num(MinHistogramValue)) %#ok
-        if strcmp(MinHistogramValue,'automatic')
-            MinHistogramValue = PotentialMinHistogramValue;
-        else
-            uiwait(CPerrordlg('The value entered for the minimum histogram value must be either a number or the word ''automatic''.'))
-            continue
-        end
-    else MinHistogramValue = str2num(MinHistogramValue); %#ok
-    end
-    if isempty(str2num(MaxHistogramValue)) %#ok
-        if strcmp(MaxHistogramValue,'automatic')
-            MaxHistogramValue = PotentialMaxHistogramValue;
-        else
-            uiwait(CPerrordlg('The value entered for the maximum histogram value must be either a number or the word ''automatic''.'))
-            continue
-        end
-    else MaxHistogramValue = str2num(MaxHistogramValue); %#ok
+    SelectedMeasurementsMatrix = cell2mat(Measurements(:));
+
+    [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbins(SelectedMeasurementsMatrix,NumberOfBins,MinHistogramValue,MaxHistogramValue,LogOrLinear,'Count');
+    if ErrorFlag == 1
+        continue;
     end
 
-    if strcmpi(LogOrLinear,'Yes')
-        MaxLog = log10(MaxHistogramValue);
-        MinLog = log10(MinHistogramValue);
-        HistogramRange = MaxLog - MinLog;
-        if HistogramRange <= 0
-            uiwait(CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.'))
-            continue
-        end
-        BinWidth = HistogramRange/NumberOfBins;
-        for n = 1:(NumberOfBins+2);
-            PlotBinLocations(n) = 10^(MinLog + BinWidth*(n-2));
-        end
-    else
-        %%% Determine plot bin locations.
-        HistogramRange = MaxHistogramValue - MinHistogramValue;
-        if HistogramRange <= 0
-            uiwait(CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.'))
-            continue
-        end
-        BinWidth = HistogramRange/NumberOfBins;
-        for n = 1:(NumberOfBins+2);
-            PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2);
-        end
-    end
-    
-    %%% Now, for histogram-calculating bins (BinLocations), replace the
-    %%% initial and final PlotBinLocations with + or - infinity.
-    PlotBinLocations = PlotBinLocations';
-    BinLocations = PlotBinLocations;
-    BinLocations(1) = -inf;
-    BinLocations(n+1) = +inf;
-    %%% Calculates the XTickLabels.
-    for i = 1:(length(BinLocations)-1)
-        XTickLabels{i} = BinLocations(i);
-    end
-    XTickLabels{1} = ['< ', num2str(BinLocations(2),3)];
-    XTickLabels{i} = ['>= ', num2str(BinLocations(i),3)];
-    
-    if strcmpi(LogOrLinear,'Yes')
-        for n = 1:length(PlotBinLocations);
-            PlotBinLocations(n) = log10(PlotBinLocations(n));
-        end
-    end
-    
     %%% Saves this info in a variable, FigureSettings, which
     %%% will be stored later with the figure.
     FigureSettings{1} = PlotBinLocations;
@@ -467,7 +407,7 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
     %%% Deletes the last value of HistogramData, which is
     %%% always a zero (because it's the number of values
     %%% that match + inf).
-    HistogramData(n+1) = [];
+    HistogramData(end) = [];
     FinalHistogramData(:,1) = HistogramData;
     HistogramTitles{1} = ['Histogram of data from Image #', num2str(FirstImage), ' to #', num2str(LastImage)];
     FirstImage = 1;
@@ -519,7 +459,7 @@ else
         %%% Deletes the last value of HistogramData, which
         %%% is always a zero (because it's the number of values that match
         %%% + inf).
-        HistogramData(n+1) = [];
+        HistogramData(end) = [];
         FinalHistogramData(:,ImageNumber) = HistogramData;
         if exist('SampleNames','var') == 1
             SampleName = SampleNames{ImageNumber};
@@ -646,7 +586,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     NewFigurePosition = [NewFigurePosition(1) NewFigurePosition(2) NewFigurePosition(3) NewHeight];
     set(FigureHandle,'Position',NewFigurePosition)
     set(AxesHandles,'Units','normalized');
-    
+
     %%% Creates text 1
     uicontrol('Parent',FigureHandle, ...
         'BackgroundColor',[.7 .7 .9], ...

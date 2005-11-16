@@ -4,6 +4,7 @@ November 8, 2005
 - (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
 Histogram: DONE (can talk about options)
 PlotMeasurements: DONE (can talk about options)
+ShowDataOnImage: DONE (can talk about options)
 ExportData:
 
 - Make compiled CellProfiler work on cluster

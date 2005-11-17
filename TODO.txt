@@ -9,7 +9,7 @@ ExportData:
 
 - Combine code for:
 Histograms
-PlotMeasurements
+PlotMeasurements: DONE!
 
 - Make compiled CellProfiler work on cluster
 

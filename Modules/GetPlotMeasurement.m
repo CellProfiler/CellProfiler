@@ -165,7 +165,7 @@ if strcmp(FeatureType,'Intensity') || strcmp(FeatureType,'Texture')
 end
 
 if strcmp(FeatureType2,'Intensity') || strcmp(FeatureType2,'Texture')
-    FeatureType2 = [FeatureType2, '_',Image];
+    FeatureType2 = [FeatureType2, '_',Image2];
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -173,123 +173,27 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-FontSize = handles.Preferences.FontSize;
+if strcmp(PlotType,'Bar')
+    PlotType = 1;
+    %%% Line chart
+elseif strcmp(PlotType,'Line')
+    PlotType = 2;
+    %%% Scatter plot, 1 measurement
+elseif strcmp(PlotType,'Scatter 1')
+    PlotType = 3;
+    %%% Scatter plot, 2 measurements
+elseif strcmp(PlotType,'Scatter 2')
+    PlotType = 4;
+end
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
+FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 
-if strcmp(PlotType,'Bar')
-
-    %%% Extract the measurement and calculate mean and standard deviation
-    Measurements = handles.Measurements.(ObjectName).(FeatureType);
-    MeasurementMean = zeros(length(Measurements),1);
-    MeasurementStd = zeros(length(Measurements),1);
-    for k = 1:length(Measurements)
-        if ~isempty(Measurements{k})
-            MeasurementsMean(k) = mean(Measurements{k}(:,FeatureNo));
-            MeasurementsStd(k)  = std(Measurements{k}(:,FeatureNo));
-        end
-    end
-
-    HistHandle = CPfigure(handles,ThisModuleFigureNumber);
-    %%% Do the plotting
-    bar(MeasurementsMean);
-    hold on
-    colormap([.7 .7 .7])
-    shading flat
-    for k = 1:length(MeasurementsMean)
-        plot([k k],[MeasurementsMean(k)-MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
-        plot([k-0.075,k+0.075],[MeasurementsMean(k)-MeasurementsStd(k),MeasurementsMean(k)-MeasurementsStd(k)],'k','linewidth',1)
-        plot([k-0.075,k+0.075],[MeasurementsMean(k)+MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
-    end
-    hold off
-    str = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNo};
-    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
-    ylabel(gca,[str,', mean +/- standard deviation'],'fontname','times','fontsize',FontSize+2)
-    axis([0 length(Measurements)+1 ylim])
-    set(gca,'xtick',1:length(Measurements))
-    titlestr = [str,' of ', ObjectName];
-
-    %%% Line chart
-elseif strcmp(PlotType,'Line')
-
-    %%% Extract the measurement and calculate mean and standard deviation
-    Measurements = handles.Measurements.(ObjectName).(FeatureType);
-    MeasurementMean = zeros(length(Measurements),1);
-    MeasurementStd = zeros(length(Measurements),1);
-    for k = 1:length(Measurements)
-        if ~isempty(Measurements{k})
-            MeasurementsMean(k) = mean(Measurements{k}(:,FeatureNo));
-            MeasurementsStd(k)  = std(Measurements{k}(:,FeatureNo));
-        end
-    end
-
-    %%% Plots a line chart, where the X dimensions are incremented
-    %%% from 1 to the number of measurements to be PlotTypeed, and Y is
-    %%% the measurement of interest.
-    HistHandle = CPfigure(handles,ThisModuleFigureNumber);
-    hold on
-    plot(1:length(MeasurementsMean), MeasurementsMean,'Color',[0 0 0],'LineWidth',1);
-
-    %%% Plots the Standard deviations as lines, too.
-    plot(1:length(MeasurementsMean), MeasurementsMean-MeasurementsStd,':','Color',[0.7 0.7 0.7]);
-    plot(1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,':','Color',[0.7 0.7 0.7]);
-    hold off
-    axis([0 length(Measurements)+1 ylim])
-    str = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNo};
-    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
-    ylabel(gca,[str,', mean +/- standard deviation'],'fontname','times','fontsize',FontSize+2)
-    set(gca,'xtick',1:length(Measurements))
-    titlestr = [str,' of ', ObjectName];
-
-    %%% Scatter plot, 1 measurement
-elseif strcmp(PlotType,'Scatter 1')
-
-    %%% Extract the measurements
-    Measurements = handles.Measurements.(ObjectName).(FeatureType);
-
-    HistHandle = CPfigure(handles,ThisModuleFigureNumber);
-    %%% Plot
-    hold on
-    for k = 1:length(Measurements)
-        if ~isempty(Measurements{k})
-            plot(k*ones(length(Measurements{k}(:,FeatureNo))),Measurements{k}(:,FeatureNo),'.k')
-            plot(k,mean(Measurements{k}(:,FeatureNo)),'.r','Markersize',20)
-        end
-    end
-    hold off
-    axis([0 length(Measurements)+1 ylim])
-    str = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNo};
-    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
-    ylabel(gca,str,'fontname','times','fontsize',FontSize+2)
-    set(gca,'xtick',1:length(Measurements))
-    titlestr = [handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNo},' of ', ObjectName];
-
-    %%% Scatter plot, 2 measurements
-elseif strcmp(PlotType,'Scatter 2')
-
-    %%% Extract the measurements
-    Measurements1 = handles.Measurements.(ObjectName).(FeatureType);
-    Measurements2 = handles.Measurements.(ObjectName2).(FeatureType2);
-
-    HistHandle = CPfigure(handles,ThisModuleFigureNumber);
-    %%% Plot
-    hold on
-    for k = 1:length(Measurements1)
-        if size(Measurements1{k},1) ~= size(Measurements2{k})
-            errordlg('The number object for the chosen measurements does not match.')
-            return
-        end
-        if ~isempty(Measurements1{k})
-            plot(Measurements1{k}(:,FeatureNo),Measurements2{k}(:,FeatureNo2),'.k')
-        end
-    end
-    hold off
-    str1 = [handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNo},' of ', ObjectName];
-    str2 = [handles.Measurements.(ObjectName2).([FeatureType2,'Features']){FeatureNo2},' of ', ObjectName2];
-    xlabel(gca,str1,'fontsize',FontSize+2,'fontname','times')
-    ylabel(gca,str2,'fontsize',FontSize+2,'fontname','times')
-    titlestr = [str1,' vs. ',str2];
+if PlotType == 4
+    CPplotmeasurement(handles,FigHandle,PlotType,1,ObjectName,FeatureType,FeatureNo,ObjectName2,FeatureType2,FeatureNo2);
+else
+    CPplotmeasurement(handles,FigHandle,PlotType,1,ObjectName,FeatureType,FeatureNo);
 end
 
 %%%%%%%%%%%%%%%
@@ -297,5 +201,5 @@ end
 %%%%%%%%%%%%%%%
 drawnow
 
-OneFrame = getframe(HistHandle);
+OneFrame = getframe(FigHandle);
 handles.Pipeline.(PlotImage)=OneFrame.cdata;

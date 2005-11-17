@@ -1,16 +1,11 @@
 Susan's TODO list
 
-Maybe ask Mike about how to use compiled version of CP on the cluster.
 
 1 -- change ExportData(Excel) to use CPconvert sub function.
-Maybe clean up a bit.  add stdev file to excel output.
-
- 
+ swap column/row and final interface for both ExportExcel and ExportSQL 
 
 3. CPvalid1 - compare results to Flow cytometry and Coulter measurements for main CellProfiler publication. 
-
      
-Practice in matlab with histograms, export DNA content data to matlab and draw histogram plots.
 
 4. Kc 40x data (Fly217-220) - genome-wide screens! [wait to see how the CPvalid1 comes out and if the data format is good first].--ask Anne to double check the PIPE line
 [Susan - I think we are ready to start processing these images... I should doublecheck the pipeline first and then we can start!]

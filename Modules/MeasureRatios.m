@@ -146,7 +146,7 @@ DenomImage = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %textVAR09 = Do you want the log of the ratio?
 %choiceVAR09 = No
 %choiceVAR09 = Yes
-%inputtypeVAR06 = popupmenu
+%inputtypeVAR09 = popupmenu
 LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 4

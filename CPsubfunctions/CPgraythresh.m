@@ -1,5 +1,6 @@
 function [level] = CPgraythresh(varargin)
 
+%%% This is the Otsu method of thresholding.
 if nargin == 1
     im = varargin{1};
 else

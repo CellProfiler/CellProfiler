@@ -12,7 +12,6 @@ helpdlg(help('HelpGettingStarted'))
 % the selected module. Properly formatted image analysis modules for  
 % CellProfiler are Matlab m-files that end with .m.
 %
-%
 % SAVING IMAGES: The thresholded images produced by this module can be
 % easily saved using the Save Images module, using the name you assign. If
 % you want to save other intermediate images, alter the code for this

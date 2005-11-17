@@ -192,9 +192,8 @@ drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if ~isfield(handles.Pipeline, fieldname)
+if ~isfield(handles.Pipeline, ImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -204,7 +203,7 @@ if ~isfield(handles.Pipeline, fieldname)
     error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(ImageName);
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
     CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
@@ -217,7 +216,7 @@ drawnow
 CropFromObjectFlag = 0;
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
-    
+
     ImageToBeCropped = OrigImage;
 
     if ~strcmp(Shape,'Ellipse') && ~strcmp(Shape,'Rectangle')
@@ -269,9 +268,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             else
                 x2 = min(LastX-FirstX,str2num(x2));
             end
-            
-            
-            
+
             index = strfind(Pixel2,',');
             if isempty(index)
                 error('The format of the Top, Bottom pixel positions is invalid. Please include a comma.');
@@ -305,9 +302,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                     end
                 end
             end
-            
-        handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-
+            handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
         end
     end
 
@@ -386,10 +381,9 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
+        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
-
             if strcmp(IndividualOrOnce,'Individually') && (CropFromObjectFlag == 0)
                 %%% Displays the image so that you can see which
                 %%% pixel positions you want to use to crop. But wait,
@@ -443,11 +437,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error('The value of CropMethod is not recognized');
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
+        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName);
     end
     %%% See subfunction below.
 else
-    [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, ['Cropping',CroppedImageName], ModuleName);
+    [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -494,9 +488,13 @@ handles.Pipeline.(CroppedImageName) = CroppedImage;
 function [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
 %%% Retrieves the Cropping image from the handles structure.
 try
-    BinaryCropImage = handles.Pipeline.(CroppedImageName);
+    BinaryCropImage = handles.Pipeline.(['Cropping',CroppedImageName]);
 catch
-    error(['You must choose rectangular cropping, ellipse or the name of something from a previous module.']);
+    try
+        BinaryCropImage = handles.Pipeline.(CroppedImageName);
+    catch
+        error(['You must choose rectangular cropping, ellipse or the name of something from a previous module.']);
+    end
 end
 
 if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))
@@ -528,5 +526,5 @@ CroppedImage(RowsToDelete,:,:) = [];
 BinaryCropMaskImage = BinaryCropImage;
 BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
 BinaryCropMaskImage(RowsToDelete,:,:) = [];
-fieldname = ['CropMask', CroppedImageName];
+fieldname = ['CropMask',CroppedImageName];
 handles.Pipeline.(fieldname) = BinaryCropMaskImage;

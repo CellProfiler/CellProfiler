@@ -710,7 +710,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 %%% OBJECTS
                 if sum(PrevObjects(:)) == sum(Objects(:))
                     try
-                        CropMask = handles.Pipeline.(['CropMaskCropping',ImageName]);
+                        CropMask = handles.Pipeline.(['CropMask',ImageName]);
                         CropBorders = bwperim(CropMask);
                         BorderTable = sortrows(unique([CropBorders(:) Objects(:)],'rows'),1);
                         for z = 1:size(BorderTable,1)

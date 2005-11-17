@@ -152,7 +152,7 @@ drawnow
 %%% STEP 1. Find threshold and apply to image
 if strfind(Threshold,'Global')
     if strfind(Threshold,'Otsu')
-        Threshold = CPgraythresh(OrigImage,handles,ImageName);
+        [handles,Threshold] = CPthreshold(handles,'Otsu Global','01',0,1,1,OrigImage,ImageName,ModuleName);
     elseif strfind(Threshold,'MoG')
         Threshold = MixtureOfGaussians(OrigImage,pObject);
     end

@@ -89,21 +89,21 @@ function handles = IdentifyPrimAutomatic(handles)
 % calculated threshold was unusually high or low compared to the
 % other images.
 %    There are two methods for finding thresholds automatically,
-% Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu
-% method uses CPgraythresh, which is a modification of the Matlab
-% function 'graythresh'. Our modifications include taking into account
-% the max and min values in the image and log-transforming the image
-% prior to calculating the threshold. Otsu's method is probably better
-% if you don't know anything about the image. But if you can supply
-% the object coverage percentage the MoG can be better, especially if
-% the coverage percentage differs much from 50%. Note however that the
-% MoG function is experimental and has not been thoroughly validated.
+% Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu method
+% uses our version of graythresh in CPthreshold, which is a modification of
+% the Matlab function 'graythresh'. Our modifications include taking into
+% account the max and min values in the image and log-transforming the
+% image prior to calculating the threshold. Otsu's method is probably
+% better if you don't know anything about the image. But if you can supply
+% the object coverage percentage the MoG can be better, especially if the
+% coverage percentage differs much from 50%. Note however that the MoG
+% function is experimental and has not been thoroughly validated.
 %    You can also choose between global and adaptive thresholding,
-% where global means that one threshold is used for the entire image
-% and adaptive means that the threshold varies across the image.
-% Adaptive is slower to calculate but provides more accurate edge
-% determination which may help to separate clumps, especially if you
-% are not using a clump-separation method (see below).
+% where global means that one threshold is used for the entire image and
+% adaptive means that the threshold varies across the image. Adaptive is
+% slower to calculate but provides more accurate edge determination which
+% may help to separate clumps, especially if you are not using a
+% clump-separation method (see below).
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently

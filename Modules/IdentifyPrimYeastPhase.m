@@ -263,10 +263,9 @@ end
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if strcmp(Threshold,'Automatic')
-    Threshold = CPgraythresh(EnhancedInvertedImage,handles,ImageName);
+    [handles,Threshold] = CPthreshold(handles,'Otsu Global','01',0,1,1,EnhancedInvertedImage,ImageName,ModuleName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
-    %    Threshold = CPgraythresh(EnhancedInvertedImage);
     Threshold = Threshold*ThresholdAdjustmentFactor;
 else
     Threshold=str2double(Threshold);

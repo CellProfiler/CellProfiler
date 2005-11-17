@@ -87,7 +87,7 @@ function handles = Crop(handles)
 % also save the cropping shape, trimmed for any unused rows and
 % columns at the edges.  This image has the prefix "CropMask" plus the
 % name you called the cropped image (e.g. CropMaskCropBlue).  This
-% image is used for downstream modules that use the CPgraythresh
+% image is used for downstream modules that use the CPthreshold
 % function.  The Cropping and CropMask images are similar (both are
 % binary and contain the cropping shape you used), but the Cropping
 % image is the same size as the original images to be processed
@@ -522,7 +522,7 @@ CroppedImage(RowsToDelete,:,:) = [];
 %%% The Binary Crop Mask image is saved to the handles
 %%% structure so it can be used in subsequent image sets to
 %%% show which parts of the image were cropped (this will be used
-%%% by CPgraythresh).
+%%% by CPthreshold).
 BinaryCropMaskImage = BinaryCropImage;
 BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
 BinaryCropMaskImage(RowsToDelete,:,:) = [];

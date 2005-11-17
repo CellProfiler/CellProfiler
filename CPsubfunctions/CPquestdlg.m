@@ -102,10 +102,15 @@ FigPos(3) = 267;
 FigPos(4) =  70;
 FigPos    = getnicedialoglocation(FigPos, get(0,'DefaultFigureUnits'));
 handles = guidata(findobj('Tag','figure1'));
-if isfield(handles.Preferences,'FontSize')
-    FontSize = handles.Preferences.FontSize;
-else
-    FontSize = 8;
+
+try FontSize = handles.Preferences.FontSize;
+    %%% We used to store the font size in Current, so this line makes old
+    %%% output files compatible. Shouldn't be necessary with any files made
+    %%% after November 15th, 2006.
+catch
+    try FontSize = handles.Current.FontSize;
+    catch FontSize = 10;
+    end
 end
 
 QuestFig=dialog(                                    ...

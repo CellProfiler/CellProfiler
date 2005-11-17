@@ -33,7 +33,7 @@ if strfind(Threshold,'Global')
     if strfind(Threshold,'Otsu')
         Threshold = CPgraythresh(OrigImage,handles,ImageName);
     elseif strfind(Threshold,'MoG')
-        Threshold = MixtureOfGaussians(OrigImage,pObject,ImageName);
+        Threshold = MixtureOfGaussians(handles,OrigImage,pObject,ImageName);
     end
 elseif strfind(Threshold,'Adaptive')
 
@@ -71,8 +71,8 @@ elseif strfind(Threshold,'Adaptive')
         GlobalThreshold = CPgraythresh(OrigImage);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@CPgraythresh);
     elseif strfind(Threshold,'MoG')
-        GlobalThreshold = MixtureOfGaussians(OrigImage,pObject,ImageName);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,pObject,ImageName);
+        GlobalThreshold = MixtureOfGaussians(handles,OrigImage,pObject,ImageName);
+        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,handles,pObject,ImageName);
     end
     %%% Resizes the block-produced image to be the size of the padded image.
     %%% Bilinear prevents dipping below zero. The crop the image
@@ -173,7 +173,7 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
 
-function Threshold = MixtureOfGaussians(OrigImage,pObject,ImageName)
+function Threshold = MixtureOfGaussians(handles,OrigImage,pObject,ImageName)
 %%% This function finds a suitable threshold for the input image
 %%% OrigImage. It assumes that the pixels in the image belong to either
 %%% a background class or an object class. 'pObject' is an initial guess

@@ -3,6 +3,11 @@ function handles = MeasureImageSaturationBlur(handles)
 % Help for the Measure Image Saturation & Blur module:
 % Category: Measurement
 %
+% SHORT DESCRIPTION:
+% Measures the percentage of pixels in the image that are satureated and
+% measures a focus score.
+% *************************************************************************
+%
 % The percentage of pixels that are saturated (their intensity value
 % is equal to the maximum possible intensity value for that image
 % type) is calculated and stored as a measurement in the output file.
@@ -148,7 +153,7 @@ for ImageNumber = 1:length(NameImageToCheck);
         error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', NameImageToCheck{ImageNumber}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
-    ImageToCheck{ImageNumber} = handles.Pipeline.(fieldname);
+    ImageToCheck{ImageNumber} = handles.Pipeline.(fieldname); %#ok Ignore MLint
 
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
@@ -159,21 +164,21 @@ for ImageNumber = 1:length(NameImageToCheck);
     [m,n] = size(ImageToCheck{ImageNumber});
     TotalPixels = m*n;
     PercentPixelsSaturated = 100*NumberPixelsSaturated/TotalPixels;
-    PercentSaturation{ImageNumber} = PercentPixelsSaturated;
+    PercentSaturation{ImageNumber} = PercentPixelsSaturated;  %#ok Ignore MLint
 
     Measurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber}];
     Featurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber},'Features'];
     %%% Checks the focus of the images, if desired.
     if ~strcmpi(BlurCheck,'N')
-%         Old method of scoring focus, not justified
-%         RightImage = ImageToCheck{ImageNumber}(:,2:end);
-%         LeftImage = ImageToCheck{ImageNumber}(:,1:end-1);
-%         MeanImageValue = mean(ImageToCheck{ImageNumber}(:));
-%         if MeanImageValue == 0
-%             BlurScore{ImageNumber} = 0;
-%         else
-%             BlurScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
-%         end
+        %         Old method of scoring focus, not justified
+        %         RightImage = ImageToCheck{ImageNumber}(:,2:end);
+        %         LeftImage = ImageToCheck{ImageNumber}(:,1:end-1);
+        %         MeanImageValue = mean(ImageToCheck{ImageNumber}(:));
+        %         if MeanImageValue == 0
+        %             BlurScore{ImageNumber} = 0;
+        %         else
+        %             BlurScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
+        %         end
         Image = ImageToCheck{ImageNumber};
         if ~strcmp(class(Image),'double')
             Image = im2double(Image);
@@ -182,7 +187,7 @@ for ImageNumber = 1:length(NameImageToCheck);
         MeanImageValue = mean(Image(:));
         SquaredNormalizedImage = (Image-MeanImageValue).^2;
         if MeanImageValue == 0
-            BlurScore{ImageNumber} = 0;
+            BlurScore{ImageNumber} = 0;  %#ok Ignore MLint
         else
             BlurScore{ImageNumber} = sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
         end

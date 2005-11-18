@@ -3,6 +3,10 @@ function handles = MeasureObjectIntensity(handles)
 % Help for the Measure Object Intensity module:
 % Category: Measurement
 %
+% SHORT DESCRIPTION:
+% Measures several intensity features of identified objects.
+% *************************************************************************
+%
 % Given an image with objects identified (e.g. nuclei or cells), this
 % module extracts intensity features of each
 % object based on a corresponding grayscale image. Measurements are
@@ -79,9 +83,9 @@ function handles = MeasureObjectIntensity(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -149,19 +153,18 @@ for i = 1:6
         continue
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
-    
+
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImage".
-    fieldname = ['', ImageName];
     %%% Checks whether the image exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname) == 0,
+    if ~isfield(handles.Pipeline, ImageName)
         error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Intensity module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureObjectIntensity module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Intensity module cannot locate this image.']);
     end
-    OrigImage = handles.Pipeline.(fieldname);
+    OrigImage = handles.Pipeline.(ImageName);
 
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
@@ -183,11 +186,11 @@ for i = 1:6
     end
     LabelMatrixImage = handles.Pipeline.(fieldname);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
-    
+
     %%% Initialize measurement structure
     Basic = [];
     BasicFeatures    = {'IntegratedIntensity',...
@@ -230,7 +233,7 @@ for i = 1:6
 
             % Get perimeter in order to calculate edge features
             perim = bwperim(BWim);
-            perim = Greyim(find(perim));
+            perim = Greyim(find(perim)); %#ok Ignore MLint
             Basic(Object,6)  = sum(perim);
             Basic(Object,7)  = mean(perim);
             Basic(Object,8)  = std(perim);
@@ -241,10 +244,10 @@ for i = 1:6
             % the center of gravity in the gray level image and the binary
             % image.
             PixelSize = str2double(handles.Settings.PixelSize);
-            BWx = sum([1:size(BWim,2)].*sum(BWim,1))/sum([1:size(BWim,2)]);
-            BWy = sum([1:size(BWim,1)]'.*sum(BWim,2))/sum([1:size(BWim,1)]);
-            Greyx = sum([1:size(Greyim,2)].*sum(Greyim,1))/sum([1:size(Greyim,2)]);
-            Greyy = sum([1:size(Greyim,1)]'.*sum(Greyim,2))/sum([1:size(Greyim,1)]);
+            BWx = sum((1:size(BWim,2)).*sum(BWim,1))/sum(1:size(BWim,2));
+            BWy = sum((1:size(BWim,1))'.*sum(BWim,2))/sum(1:size(BWim,1));
+            Greyx = sum((1:size(Greyim,2)).*sum(Greyim,1))/sum(1:size(Greyim,2));
+            Greyy = sum((1:size(Greyim,1))'.*sum(Greyim,2))/sum(1:size(Greyim,1));
             Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
     else
@@ -257,7 +260,7 @@ for i = 1:6
 
     %%% Report measurements
     FontSize = handles.Preferences.FontSize;
-    
+
     if any(findobj == ThisModuleFigureNumber);
         % This first block writes the same text several times
         % Header
@@ -311,5 +314,3 @@ for i = 1:6
     end
 end
 drawnow
-
-

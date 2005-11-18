@@ -67,19 +67,19 @@ MeasureImageAreaOccupied	Mike
 
 MeasureImageIntensity		Mike (VARIABLE 2 IS UNUSED, SHOULD THIS BE USED FOR HANDLES SAVING?)
 
-MeasureImageSaturationBlur
+MeasureImageSaturationBlur	Mike
 
-MeasureObjectAreaShape
+MeasureObjectAreaShape		Mike
 
-MeasureObjectIntensity
+MeasureObjectIntensity		Mike
 
-MeasureObjectNeighbors
+MeasureObjectNeighbors		Mike
 
-MeasureObjectTexture
+MeasureObjectTexture		Mike
 
-MeasureRatios
+MeasureRatios			Mike
 
-MergeBatchOutput
+MergeBatchOutput		Mike (Should have Susan check)
 
 OverlayOutlines
 

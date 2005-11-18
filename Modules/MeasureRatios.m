@@ -3,6 +3,11 @@ function handles = MeasureRatios(handles)
 % Help for the Measure Ratios module:
 % Category: Measurement
 %
+% SHORT DESCRIPTION:
+% Measures the ratio between any measurements already taken
+% (e.g. Intensity/Area)
+% *************************************************************************
+%
 % This module can take any measurement produced by previous modules and
 % calculate a ratio. Ratios can also be used to calculate other ratios and
 % be used in ClassifyObjects.
@@ -112,7 +117,7 @@ NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
 %defaultVAR03 = 1
-NumFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,3});
+NumFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = If using INTENSITY or TEXTURE measures, which image would you like to process?
 %infotypeVAR04 = imagegroup
@@ -136,7 +141,7 @@ DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
 %defaultVAR07 = 1
-DenomFeatureNumber = str2num(handles.Settings.VariableValues{CurrentModuleNum,7});
+DenomFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = If using INTENSITY or TEXTURE measures, which image would you like to process?
 %infotypeVAR08 = imagegroup
@@ -202,6 +207,8 @@ try
             handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = log10(NumeratorMeasurements./DenominatorMeasurements);
         end
     end
+catch
+    error(['Storing the measurements in the ',ModuleName,' module has failed.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -209,12 +216,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% The figure window display is unnecessary for this module, so the figure
-    %%% window is closed the first time through the module.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
-    if any(findobj == ThisModuleFigureNumber) == 1;
-        close(ThisModuleFigureNumber);
-    end
+%%% The figure window display is unnecessary for this module, so the figure
+%%% window is closed the first time through the module.
+fieldname = ['FigureNumberForModule',CurrentModule];
+ThisModuleFigureNumber = handles.Current.(fieldname);
+if any(findobj == ThisModuleFigureNumber)
+    close(ThisModuleFigureNumber);
 end

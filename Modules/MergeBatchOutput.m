@@ -3,8 +3,13 @@ function handles = MergeBatchOutput(handles)
 % Help for the Merge Batch Output module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Combines output files together which were run as separate batches using
+% CreateBatchScripts.
+% *************************************************************************
+%
 % This module merges the output from several output files, each
-% resulting from scripts created by the the CreateBatchFiles module.
+% resulting from scripts created by the the CreateBatchScripts module.
 %
 % After a batch run has completed, the individual output files contain
 % results from a subset of images and can be merged into a single
@@ -54,9 +59,9 @@ function handles = MergeBatchOutput(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -74,9 +79,9 @@ BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strncmp(BatchPath,'.',1)
@@ -130,9 +135,9 @@ for i = 1:length(FileList),
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
@@ -141,6 +146,6 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% If the window is open, it is closed.
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     delete(ThisModuleFigureNumber)
 end

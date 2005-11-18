@@ -3,6 +3,10 @@ function handles = MeasureObjectNeighbors(handles)
 % Help for the Measure Object Neighbors module:
 % Category: Measurement
 %
+% SHORT DESCRIPTION:
+% Calculates how many neighbors each object has.
+% *************************************************************************
+%
 % Given an image with objects identified (e.g. nuclei or cells), this
 % module determines how many neighbors each object has. The user
 % selects the distance within which objects should be considered
@@ -63,7 +67,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
 %defaultVAR02 = 0
-NeighborDistance = str2num(handles.Settings.VariableValues{CurrentModuleNum,2});
+NeighborDistance = str2double(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
 %defaultVAR03 = ExpandedCells
@@ -87,7 +91,7 @@ drawnow
 fieldname = ['Segmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if ~isfield(handles.Pipeline,fieldname)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Neighbors module, you must have previously run a segmentation module.  You specified in the MeasureObjectNeighbors module that the desired image was named ', IncomingLabelMatrixImageName(10:end), ', the Measure Neighbors module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a segmentation module.  You specified that the desired objects were named ', ObjectName, '. These objects were not found.']);
 end
 IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -206,12 +210,9 @@ if any(findobj == ThisModuleFigureNumber) == 1
     drawnow
 
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,1,1)
-    imagesc(ColoredLabelMatrixImage)
-    title('Cells colored according to their original colors','FontSize',FontSize)
+    subplot(2,1,1); CPimagesc(ColoredLabelMatrixImage); title('Cells colored according to their original colors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)
-    subplot(2,1,2)
-    imagesc(ImageOfNeighbors)
+    subplot(2,1,2); CPimagesc(ImageOfNeighbors);
     colorbar('SouthOutside','FontSize',FontSize)
     title('Cells colored according to the number of neighbors','FontSize',FontSize)
     set(gca,'FontSize',FontSize)

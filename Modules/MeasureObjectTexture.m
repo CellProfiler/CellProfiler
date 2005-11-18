@@ -3,6 +3,10 @@ function handles = MeasureObjectTexture(handles)
 % Help for the Measure Object Texture module:
 % Category: Measurement
 %
+% SHORT DESCRIPTION:
+% Measures several texture features for identified objects.
+% *************************************************************************
+%
 % Given an image with objects identified (e.g. nuclei or cells), this
 % module extracts texture features of each
 % object based on a corresponding grayscale image. Measurements are
@@ -148,14 +152,14 @@ ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What is the scale of texture?
 %defaultVAR08 = 3
-ScaleOfTexture = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+ScaleOfTexture = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 2
 
 %%% Set up the window for displaying the results
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber);
+if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,ThisModuleFigureNumber);
     set(ThisModuleFigureNumber,'color',[1 1 1])
     columns = 1;
@@ -247,7 +251,6 @@ for i = 1:6
             % Round centroids and find linear index for them.
             % The centroids are stored in [column,row] order.
             Centroids = round(cat(1,tmp.Centroid));
-            Centroidsindex = sub2ind(size(LabelMatrixImage),Centroids(:,2),Centroids(:,1));
         else
             MedianArea = size(OrigImage,1)*size(OrigImage,2);
         end
@@ -288,7 +291,7 @@ for i = 1:6
                     if size(OrigImage,1) ~= size(g,1)
                         p = [p;zeros(size(g,1)-size(p,1),size(p,2))];
                     end
-                    
+
                     if size(OrigImage,2) ~= size(g,2)
                         p = [p zeros(size(p,1),size(g,2)-size(p,2))];
                     end
@@ -418,14 +421,14 @@ for i = 1:6
         if ObjectCount > 0
             % Gabor features
             for k = 1:2
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
             end
 
             % Haralick features
             for k = 1:10
-                q = uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
             end
@@ -478,20 +481,10 @@ end
 % Do the quantization
 qim = zeros(size(im));
 for k = 1:Levels
-    qim(find(im > BinEdges(k))) = k;
+    qim(find(im > BinEdges(k))) = k; %#ok Ignore MLint
 end
 
-% if ScaleOfTexture == 0
-%     % Shift 1 step to the right
-%     im1 = qim(:,1:end-1); im1 = im1(:);
-%     im2 = qim(:,2:end);   im2 = im2(:);
-%
-%     % Remove cases where at least one position is
-%     % outside the mask.
-%     m1 = mask(:,1:end-1); m1 = m1(:);
-%     m2 = mask(:,2:end);   m2 = m2(:);
-% else
-% Shift 1 step to the right
+% Shift ScaleOfTexture step to the right
 im1 = qim(:,1:end-ScaleOfTexture); im1 = im1(:);
 im2 = qim(:,ScaleOfTexture+1:end); im2 = im2(:);
 
@@ -509,7 +502,7 @@ P = zeros(Levels);
 for k = 1:Levels
     index = find(im1==k);
     if ~isempty(index)
-        P(k,:) = hist(im2(index),[1:Levels]);
+        P(k,:) = hist(im2(index),(1:Levels));
     else
         P(k,:) = zeros(1,Levels);
     end
@@ -521,10 +514,10 @@ P = P/length(im1);
 % several features.
 px = sum(P,2);
 py = sum(P,1);
-mux = sum([1:Levels]'.*px);
-muy = sum([1:Levels].*py);
-sigmax = sqrt(sum(([1:Levels]' - mux).^2.*px));
-sigmay = sqrt(sum(([1:Levels] - muy).^2.*py));
+mux = sum((1:Levels)'.*px);
+muy = sum((1:Levels).*py);
+sigmax = sqrt(sum(((1:Levels)' - mux).^2.*px));
+sigmay = sqrt(sum(((1:Levels) - muy).^2.*py));
 HX = -sum(px.*log(px+eps));
 HY = -sum(py.*log(py+eps));
 HXY = -sum(P(:).*log(P(:)+eps));
@@ -544,10 +537,10 @@ end
 H1 = sum(P(:).^2);
 
 % H2. Contrast
-H2 = sum([0:Levels-1]'.^2.*p_xminusy);
+H2 = sum((0:Levels-1)'.^2.*p_xminusy);
 
 % H3. Correlation
-H3 = (sum(sum([1:Levels]'*[1:Levels].*P)) - mux*muy)/(sigmax*sigmay);
+H3 = (sum(sum((1:Levels)'*(1:Levels).*P)) - mux*muy)/(sigmax*sigmay);
 
 % H4. Sum of Squares: Variation
 H4 = sigmax^2;
@@ -556,10 +549,10 @@ H4 = sigmax^2;
 H5 = sum(sum(1./(1+toeplitz(0:Levels-1).^2).*P));
 
 % H6. Sum Average
-H6 = sum([2:2*Levels]'.*p_xplusy);
+H6 = sum((2:2*Levels)'.*p_xplusy);
 
 % H7. Sum Variance (error in Haralick's original paper here)
-H7 = sum(([2:2*Levels]' - H6).^2 .* p_xplusy);
+H7 = sum(((2:2*Levels)' - H6).^2 .* p_xplusy);
 
 % H8. Sum Entropy
 H8 = -sum(p_xplusy .* log(p_xplusy+eps));
@@ -568,7 +561,7 @@ H8 = -sum(p_xplusy .* log(p_xplusy+eps));
 H9 = - sum(P(:).*log(P(:)+eps));
 
 % H10. Difference Variance
-H10 = sum(p_xminusy.*([0:Levels-1]' - sum([0:Levels-1]'.*p_xminusy)).^2);
+H10 = sum(p_xminusy.*((0:Levels-1)' - sum((0:Levels-1)'.*p_xminusy)).^2);
 
 % H11. Difference Entropy
 H11 = - sum(p_xminusy.*log(p_xminusy+eps));

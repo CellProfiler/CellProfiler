@@ -112,8 +112,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% display info, the user probably doesn't want to overwrite the
 %%% figure after each cycle.
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
-ImageHandle = imagesc(handles.Pipeline.(ImageName));
-set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+CPimagesc(handles.Pipeline.(ImageName));
 colormap(handles.Preferences.IntensityColorMap);
 title(['Image #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
 line(VertLinesX,VertLinesY);

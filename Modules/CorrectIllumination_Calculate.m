@@ -424,7 +424,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% are in All mode, there is no OrigImage, so we can plot both to
         %%% the 2,2,1 location.
         if strcmp(EachOrAll,'All')
-            subplot(2,2,1); imagesc(RawImage);
+            subplot(2,2,1);
+            CPimagesc(RawImage);
             if strcmp(ReadyFlag, 'Ready')
                 title('Averaged image');
             else
@@ -444,7 +445,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
                 title('Smoothed image');
             end
             subplot(2,2,2);
-            imagesc(FinalIlluminationFunction);
+            CPimagesc(FinalIlluminationFunction);
             text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red');
             text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red');
             title('Final illumination function');
@@ -452,12 +453,12 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     elseif strcmp(IntensityChoice,'Background')
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
-        subplot(2,2,1); imagesc(OrigImage);
+        subplot(2,2,1);
+        CPimagesc(OrigImage);
         title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
         if exist('FinalIlluminationFunction','var') == 1
             subplot(2,2,4);
-            imagesc(FinalIlluminationFunction);
-
+            CPimagesc(FinalIlluminationFunction);
             text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red');
             text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red');
             title('Final illumination correction function');
@@ -470,7 +471,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% whether the user has chosen to smooth the average minimums
         %%% image.
         if exist('AverageMinimumsImage','var') == 1
-            subplot(2,2,3); imagesc(AverageMinimumsImage);
+            subplot(2,2,3);
+            CPimagesc(AverageMinimumsImage);
             title('Average minimums image');
         end
         CPFixAspectRatio(OrigImage);

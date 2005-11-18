@@ -3,9 +3,9 @@ function handles = Align(handles)
 % Help for the Align module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION: Aligns two or three images relative to each other.
-% Particularly useful to align microscopy images acquired from different
-% color channels.
+% SHORT DESCRIPTION:
+% Aligns two or three images relative to each other. Particularly useful to
+% align microscopy images acquired from different color channels.
 % *************************************************************************
 %
 % For two or three input images, this module determines the optimal

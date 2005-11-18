@@ -63,7 +63,7 @@ LoadText
 
 MeasureCorrelation		Mike
 
-MeasureImageAreaOccupied
+MeasureImageAreaOccupied	Mike
 
 MeasureImageIntensity
 

@@ -267,27 +267,17 @@ fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 
 if any(findobj == ThisModuleFigureNumber)
-
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-
-    subplot(2,1,1); ImageHandle = imagesc(ColoredLabelMatrixImage);
-
+    subplot(2,1,1); CPimagesc(ColoredLabelMatrixImage);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-
     title(sprintf('Segmented %s',NewObjectName),'fontsize',8);
-
-
-    subplot(2,1,2);imagesc(FinalOutline);
-
+    subplot(2,1,2); CPimagesc(FinalOutline);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-
     title('Outlined objects','fontsize',8);
-
     set(findobj('type','line'), 'color',[.15 .15 .15])
 end
 

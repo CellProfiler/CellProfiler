@@ -362,28 +362,12 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-
     subplot(2,2,1); 
-    ImageHandle = imagesc(OrigImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-
+    CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    subplot(2,2,2);
-    ImageHandle = imagesc(ColoredLabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title(['Segmented ',ObjectName]);
-
-    subplot(2,2,3);
-    ImageHandle = imagesc(EnhancedInvertedImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title('Inverted enhanced contrast image');
-
-    subplot(2,2,4);
-    ImageHandle = imagesc(FinalOutline);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title([ObjectName, ' Outlines']);
-
+    subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+    subplot(2,2,3); CPimagesc(EnhancedInvertedImage); title('Inverted enhanced contrast image');
+    subplot(2,2,4); CPimagesc(FinalOutline); title([ObjectName, ' Outlines']);
     CPFixAspectRatio(OrigImage);
 end
 

@@ -246,18 +246,10 @@ if any(findobj == ThisModuleFigureNumber);
     PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1);
-    ImageHandle = imagesc(PrimaryObjectImage);
-    title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2);
-    ImageHandle = imagesc(SecondaryObjectImage);
-    title([SecondaryObjectName, ' Image']);
-    subplot(2,2,3);
-    ImageHandle = imagesc(ColoredLabelMatrixImage);
-    title([SubregionObjectName, ' Image']);
-    subplot(2,2,4);
-    ImageHandle = imagesc(FinalOutline);
-    title([SubregionObjectName, ' Outlines']);
+    subplot(2,2,1); CPimagesc(PrimaryObjectImage); title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,2); CPimagesc(SecondaryObjectImage); title([SecondaryObjectName, ' Image']);
+    subplot(2,2,3); CPimagesc(ColoredLabelMatrixImage); title([SubregionObjectName, ' Image']);
+    subplot(2,2,4); CPimagesc(FinalOutline); title([SubregionObjectName, ' Outlines']);
     CPFixAspectRatio(PrimaryObjectImage);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

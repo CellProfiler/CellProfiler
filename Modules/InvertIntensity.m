@@ -106,7 +106,7 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');
@@ -119,11 +119,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,1,1); CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Inverted
     %%% Image.
-    subplot(2,1,2); imagesc(InvertedImage); title('Inverted Image');
+    subplot(2,1,2); CPimagesc(InvertedImage); title('Inverted Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

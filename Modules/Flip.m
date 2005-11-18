@@ -134,14 +134,12 @@ if any(findobj == ThisModuleFigureNumber);
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    ImageHandle = imagesc(OrigImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
     subplot(2,1,2);
-    ImageHandle = imagesc(FlippedImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(FlippedImage);
     title('Flipped Image');
 end
 

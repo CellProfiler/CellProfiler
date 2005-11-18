@@ -195,14 +195,12 @@ if any(findobj == ThisModuleFigureNumber) == 1
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
-    ImageHandle = imagesc(OrigImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    CPimagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,3);
-    ImageHandle = imagesc(LabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    CPimagesc(LabelMatrixImage);
     title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
@@ -212,14 +210,12 @@ if any(findobj == ThisModuleFigureNumber) == 1
         ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
     subplot(2,2,2);
-    ImageHandle = imagesc(ColoredLabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    CPimagesc(ColoredLabelMatrixImage);
     title(['Filtered ' ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
     subplot(2,2,4);
-    ImageHandle = imagesc(ObjectOutlinesOnOrigImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    CPimagesc(ObjectOutlinesOnOrigImage);
     title([TargetName, ' Outlines on Input Image']);
 end
 

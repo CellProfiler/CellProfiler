@@ -173,7 +173,7 @@ fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% Creates the display window.
 DataHandle = CPfigure(handles,ThisModuleFigureNumber);
-imagesc(OrigImage);
+CPimagesc(OrigImage);
 colormap(gray);
 FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};
 title([ObjectName,', ',FeatureDisp,' on ',Image])

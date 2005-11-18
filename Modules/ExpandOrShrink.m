@@ -288,12 +288,10 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    ImageHandle = imagesc(OriginalColoredLabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    CPimagesc(OriginalColoredLabelMatrixImage);
     title([ObjectName, ' Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2);
-    ImageHandle = imagesc(ShrunkenColoredLabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)');
+    CPimagesc(ShrunkenColoredLabelMatrixImage);
     title(ShrunkenObjectName);
 end
 

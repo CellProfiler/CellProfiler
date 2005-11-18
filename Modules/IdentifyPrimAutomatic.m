@@ -846,8 +846,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);
                     subplot(2,2,1)
-                    ImageHandle = imagesc(OrigImage);
-                    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
+                    ImageHandle = CPimagesc(OrigImage);
+                    set(ImageHandle,'Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
                     axis image
                     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
                     set(gca,'fontsize',handles.Preferences.FontSize)
@@ -923,24 +923,17 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1);
-                    ImageHandle = imagesc(OrigImage);
-                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-                    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+                    subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
                     subplot(2,2,2);
-                    ImageHandle = imagesc(ColoredLabelMatrixImage);
-                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-                    title(['Segmented ',ObjectName]);
+                    CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); imagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
-                    subplot(2,2,4);ImageHandle = imagesc(ObjectOutlinesOnOrigImage);
-                    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-                    title([ObjectName, ' Outlines on Input Image']);
+                    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage); title([ObjectName, ' Outlines on Input Image']);
                     CPFixAspectRatio(OrigImage);
                 end
             end
@@ -1027,11 +1020,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                 cmap = jet(max(64,max(Objects(:))));
                 im = label2rgb(Objects, cmap, 'k', 'shuffle');
-                ImageHandle = imagesc(im);
-                set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-
+                CPimagesc(im);
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
-
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
                     CPfigure('Tag','OutlinedFigure');
@@ -1053,8 +1043,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                ImageHandle = imagesc(OutlinedObjects);
-                set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+                CPimagesc(OutlinedObjects);
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
 
             end

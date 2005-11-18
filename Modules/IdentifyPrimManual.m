@@ -157,32 +157,14 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 
 if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-
-    subplot(2,2,1);
-    ImageHandle = imagesc(LowResOrigImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]);
-
-    subplot(2,2,2);
-    ImageHandle = imagesc(LowResInterior);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title(['Manually Identified ',ObjectName]);
-
+    subplot(2,2,1); CPimagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,2); CPimagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
     FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
-    subplot(2,2,3);
-    ImageHandle = imagesc(FinalOutlineOnOrigImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title([ObjectName, ' Outline']);
-
-    subplot(2,2,4);
-    ImageHandle = imagesc(ColoredLabelMatrixImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title(['Segmented ' ObjectName]);
-
+    subplot(2,2,3); CPimagesc(FinalOutlineOnOrigImage); title([ObjectName, ' Outline']);
+    subplot(2,2,4); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ' ObjectName]);
     CPFixAspectRatio(LowResOrigImage);
 end
 

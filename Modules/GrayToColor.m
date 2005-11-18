@@ -210,14 +210,14 @@ if any(findobj == ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the Merged RGB
     %%% image.  Using imagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
-    subplot(2,2,1); imagesc(RGBImage);
+    subplot(2,2,1); CPimagesc(RGBImage);
     title(['Merged RGB Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the blue image.
-    subplot(2,2,2); imagesc(BlueImage); title('Blue Image');
+    subplot(2,2,2); CPimagesc(BlueImage); title('Blue Image');
     %%% A subplot of the figure window is set to display the green image.
-    subplot(2,2,3); imagesc(GreenImage); title('Green Image');
+    subplot(2,2,3); CPimagesc(GreenImage); title('Green Image');
     %%% A subplot of the figure window is set to display the red image.
-    subplot(2,2,4); imagesc(RedImage); title('Red Image');
+    subplot(2,2,4); CPimagesc(RedImage); title('Red Image');
     CPFixAspectRatio(RGBImage);
 end
 

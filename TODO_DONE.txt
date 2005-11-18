@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/18) (Requested by Anne 11-17-05) - In IdentifyPrimAuto, when throwing out objects at the edge based on a cropped image, they aren't colored with yellow outlines as is the case when throwing out objects at the edge of rectangular images.  Also, just wanted to make sure whether this function (edge-throwing-out) also works for the case where you have typed an image name in (instead of ellipse or rectangular). Just curious.
+
 -(Mike 11/16) Added the option to log ratios
 
 -(Mike 11/16) (Requested by Anne 11-15-05) percentage of objects (for histograms) was actually coming up as fractions (0.2 instead of 20%), so I multiplied the fractions by 100 in the code for Histogram.m. But I had to make the same change in CPcumhistogram.m Why do we have the same code in two places?  Just checking whether Histogram should be calling CPcumhistogram.

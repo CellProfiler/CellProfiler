@@ -63,9 +63,9 @@ SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 try
@@ -81,7 +81,7 @@ catch
 end
 
 if any(size(OrigImage,1) ~= size(OutlineImage,1)) ||  any(size(OrigImage,2) ~= size(OutlineImage,2))
-    error(['The size of the image, ' size(OrigImage) ' is not the same as the size of the outlines, ' size(OutlineImage)]);
+    error(['Image processing was canceled in the ', ModuleName, ' module because the size of the image, ' num2str(size(OrigImage)) ' is not the same as the size of the outlines, ' num2str(size(OutlineImage))]);
 end
 
 if size(OrigImage,3) ~= 3
@@ -94,7 +94,7 @@ if size(OrigImage,3) ~= 3
             ValueToUseForOutlines = intmax(class(OrigImage(1,1)));
         end
     else
-        error('The value of MaxType was not recognized');
+        error('Image processing was canceled in the ', ModuleName, ' module because the value of MaxType was not recognized');
     end
 
     NewImage = OrigImage;
@@ -129,9 +129,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),imagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if ~strcmp(SavedImageName,'Do not save')

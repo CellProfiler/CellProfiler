@@ -4,20 +4,21 @@ function handles = ColorToGray(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Converts RGB (Red, Green Blue) color images to grayscale. All channels
+% Converts RGB (Red, Green, Blue) color images to grayscale. All channels
 % can be merged into one grayscale image or each channel can extracted into
-% a seperate grayscale image. All identify modules require grayscale
+% a separate grayscale image. All identify modules require grayscale
 % images.
 % *************************************************************************
 %
 % Settings:
 %
 % Split:
-% Takes a color image and splits into three separate grayscale images.
+% Takes a color image and splits the three channels (red, green, blue) into
+% three separate grayscale images.
 %
 % Combine:
-% Takes a color image and converts it to grayscale by taking the intensity
-% of each color (red, green, and blue) and combining them together.
+% Takes a color image and converts it to grayscale by combining the three
+% channels (red, green, blue) together.
 %
 % Adjustment factors: Leaving the adjustment factors set to 1 will
 % balance all three colors equally in the final image, which will
@@ -50,11 +51,10 @@ function handles = ColorToGray(handles)
 %
 % $Revision: 1718 $
 
-drawnow
-
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
@@ -73,7 +73,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 GrayOrSplit = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Combine OPTIONS:
+%textVAR03 = COMBINE options:
 
 %textVAR04 = What do you want to call the grayscale image?
 %defaultVAR04 = OrigGray
@@ -92,7 +92,7 @@ GreenIntensity = str2double(char(handles.Settings.VariableValues{CurrentModuleNu
 %defaultVAR07 = 1
 BlueIntensity = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = SPLIT OPTIONS:
+%textVAR08 = SPLIT options:
 
 %textVAR09 = What do you want to call the image that was red? Type N to ignore red.
 %defaultVAR09 = OrigRed
@@ -111,9 +111,9 @@ BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,

@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/18) (Requested by Anne 11-02-05) - Susan will eventually work on making ExportData (datatool) into a module.  Is it possible in a general way to make all our data tools easily wrapped so they can be run as modules as well? I think perhaps the easiest way to accomplish this would be to write all the data tools as modules, and then when running them as a data tool, pass the module a fake handles structure.
+Histogram: DONE (can talk about options)
+PlotMeasurements: DONE (can talk about options)
+ShowDataOnImage: DONE (can talk about options)
+
 -(Mike 11/18) (Requested by Anne 11-17-05) - In IdentifyPrimAuto, when throwing out objects at the edge based on a cropped image, they aren't colored with yellow outlines as is the case when throwing out objects at the edge of rectangular images.  Also, just wanted to make sure whether this function (edge-throwing-out) also works for the case where you have typed an image name in (instead of ellipse or rectangular). Just curious.
 
 -(Mike 11/16) Added the option to log ratios

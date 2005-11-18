@@ -7,8 +7,6 @@ PlotMeasurements: DONE!
 
 - Make compiled CellProfiler work on cluster
 
-- (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
-
 - Check through each module (~2 per day):
 EVERYONE:
 	- Go through the code looking for instances of the term "image set" and

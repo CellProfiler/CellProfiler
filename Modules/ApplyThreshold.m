@@ -162,14 +162,12 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original
     %%% image.
     subplot(2,1,1);
-    ImageHandle = imagesc(OrigImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.
     subplot(2,1,2);
-    ImageHandle = imagesc(ThresholdedImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(ThresholdedImage);
     title('Thresholded Image');
 end
 

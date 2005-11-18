@@ -218,14 +218,12 @@ if any(findobj == ThisModuleFigureNumber)
         %%% A subplot of the figure window is set to display the original
         %%% image.
         subplot(2,1,1);
-        ImageHandle = imagesc(OriginalRGB);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        CPimagesc(OriginalRGB);
         title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the adjusted
         %%%  image.
         subplot(2,1,2);
-        ImageHandle = imagesc(AlignedRGB);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        CPimagesc(AlignedRGB);
         title('Aligned Images');
     end
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9],'FontSize',handles.Preferences.FontSize);

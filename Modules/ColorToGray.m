@@ -212,23 +212,19 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% image.  Using imagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
         subplot(2,2,1);
-        ImageHandle = imagesc(OrigImage);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        CPimagesc(OrigImage);
         title(['Input Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
         subplot(2,2,2);
-        ImageHandle = imagesc(BlueImage);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        CPimagesc(BlueImage);
         title('Blue Image');
         %%% A subplot of the figure window is set to display the green image.
         subplot(2,2,3);
-        ImageHandle = imagesc(GreenImage);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        CPimagesc(GreenImage);
         title('Green Image');
         %%% A subplot of the figure window is set to display the red image.
         subplot(2,2,4);
-        ImageHandle = imagesc(RedImage);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        CPimagesc(RedImage);
         title('Red Image');
         CPFixAspectRatio(OrigImage);
     end

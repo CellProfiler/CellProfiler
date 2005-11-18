@@ -210,8 +210,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
     subplot(2,2,1);
-    ImageHandle = imagesc(OrigImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
     %%% The mean image does not absolutely have to be present in order to
@@ -219,13 +218,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
     subplot(2,2,2);
-    ImageHandle = imagesc(CorrectedImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(CorrectedImage);
     title('Illumination Corrected Image');
 
     subplot(2,2,3);
-    ImageHandle = imagesc(IllumCorrectFunctionImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+    CPimagesc(IllumCorrectFunctionImage);
     title('Illumination Correction Function Image');
 
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');

@@ -1578,10 +1578,12 @@ for ModuleDelete = 1:length(ModuleHighlighted);
         delete(handles.VariableDescription{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
     end
     if isfield(handles,'BrowseButton')
-        if ~isempty(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
-            for VariableNumber = 1:length(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
-                if handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber) ~= 0
-                delete(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
+        if length(handles.BrowseButton) >= (ModuleHighlighted(ModuleDelete)-ModuleDelete+1)
+            if ~isempty(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
+                for VariableNumber = 1:length(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
+                    if handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber) ~= 0
+                        delete(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
+                    end
                 end
             end
         end

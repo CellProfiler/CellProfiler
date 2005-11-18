@@ -113,7 +113,7 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 DisplayImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call the generated image with data?
-%defaultVAR06 = OrigHist
+%defaultVAR06 = OrigDataDisp
 %infotypeVAR06 = imagegroup indep
 DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 

@@ -1,11 +1,5 @@
 function CPplotmeasurement(handles,FigHandle,PlotType,ModuleFlag,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
 
-% if nargin == 7
-%     Object2 = [];
-%     Feature2 = [];
-%     FeatureNo2 = [];
-% end
-
 try FontSize = handles.Preferences.FontSize;
     %%% We used to store the font size in Current, so this line makes old
     %%% output files compatible. Shouldn't be necessary with any files made

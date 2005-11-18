@@ -1572,10 +1572,19 @@ for ModuleDelete = 1:length(ModuleHighlighted);
     handles = RemoveVariables(handles,ModuleHighlighted(ModuleDelete)-ModuleDelete+1);
     %%% Remove variable names from other modules
     for VariableNumber = 1:length(handles.VariableBox{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
-        delete(handles.VariableBox{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber))
+        delete(handles.VariableBox{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
     end
     for VariableNumber = 1:length(handles.VariableDescription{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
-        delete(handles.VariableDescription{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber))
+        delete(handles.VariableDescription{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
+    end
+    if isfield(handles,'BrowseButton')
+        if ~isempty(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
+            for VariableNumber = 1:length(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
+                if handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber) ~= 0
+                delete(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
+                end
+            end
+        end
     end
     %%% 2. Removes the ModuleName from the handles structure.
     handles.Settings.ModuleNames(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
@@ -1617,6 +1626,7 @@ end
 
 if(handles.Current.NumberOfModules == 0)
     ModuleHighlighted = 1;
+    set(handles.slider1,'visible','off');
 elseif (isempty(ModuleHighlighted))
     ModuleHighlighted = handles.Current.NumberOfModules;
 end
@@ -2155,6 +2165,12 @@ scrollPos = get(hObject, 'Value');
 variablepanelPos = get(handles.variablepanel, 'position');
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 ModuleNumber = ModuleHighlighted(1);
+
+if isempty(handles.Settings.NumbersOfVariables)
+    set(handles.slider1,'visible','off');
+    guidata(handles.figure1,handles);
+    return
+end
 % Note:  The yPosition is 0 + scrollPos because 0 is the original Y
 % Position of the variablePanel.  If the original location of the
 % variablePanel gets changed, then the constant offset must be changed as

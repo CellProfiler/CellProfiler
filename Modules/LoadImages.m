@@ -3,6 +3,11 @@ function handles = LoadImages(handles)
 % Help for the Load Images module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION: Allows the user to specify which images or movies are
+% to be loaded and in which order. Groups of images will be loaded per
+% cycle of CellProfiler processing.
+% *************************************************************************
+%
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access.
 %
@@ -210,7 +215,7 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = If using ORDER, how many images are there in each group (i.e. each field of view)?
 %defaultVAR10 = 3
-ImagesPerSet = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
+ImagesPerSet = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
 %textVAR11 = Are you loading image or movie files?
 %choiceVAR11 = Image
@@ -241,9 +246,9 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines which image set is being analyzed.
@@ -263,16 +268,16 @@ TextToFind = tmp1;
 ImageName = tmp2;
 
 if strcmp(LoadChoice,'Order')
-    TextToFind = str2num(char(TextToFind));
+    TextToFind = str2double(char(TextToFind));
     %%% Checks whether the position in set exceeds the number per set.
     if ImagesPerSet < max(TextToFind)
         error(['Image processing was canceled in the ', ModuleName, ' module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Extracting the list of files to be analyzed occurs only the first time
@@ -536,10 +541,9 @@ if SetBeingAnalyzed == 1
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FileName = {};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for n = 1:length(ImageName)
     if strcmp(ImageOrMovie,'Image')
         %%% This try/catch will catch any problems in the load images module.
@@ -598,7 +602,7 @@ for n = 1:length(ImageName)
             %%% this field will be deleted at the end of the analysis
             %%% batch.
             fieldname = ['Filename', ImageName{n}];
-            [SubdirectoryPathName,BareFileName,ext,versn] = fileparts(char(CurrentFileName(1)));
+            [SubdirectoryPathName,BareFileName,ext] = fileparts(char(CurrentFileName(1))); %#ok Ignore MLint
             CurrentFileNameWithFrame = [BareFileName, '_', num2str(cell2mat(CurrentFileName(2))),ext];
             %%% Saves the loaded image to the handles structure.  The field is named
             %%% appropriately based on the user's input, and put into the Pipeline
@@ -677,9 +681,9 @@ if any(findobj == ThisModuleFigureNumber);
 end
 drawnow
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [S, stack_cnt] = tiffread(filename, img_first, img_last)
 % [S, nbimages] = tiffread;
@@ -710,8 +714,13 @@ if (nargin == 0)
     filename = [ pathname, filename ];
 end
 
-if (nargin<=1)  img_first = 1; img_last = 10000; end
-if (nargin==2)  img_last = img_first;            end
+if (nargin<=1)
+    img_first = 1;
+    img_last = 10000;
+end
+if (nargin==2)
+    img_last = img_first;
+end
 
 img_skip  = 0;
 img_read  = 0;
@@ -735,10 +744,10 @@ if  isempty(findstr(filename,'.'))
     filename=[filename,'.tif'];
 end
 
-[TIF.file, message] = fopen(filename,'r','l');
+TIF.file = fopen(filename,'r','l');
 if TIF.file == -1
     filename = strrep(filename, '.tif', '.stk');
-    [TIF.file, message] = fopen(filename,'r','l');
+    TIF.file = fopen(filename,'r','l');
     if TIF.file == -1
         error(['file <',filename,'> not found.']);
     end
@@ -746,7 +755,7 @@ end
 
 % read header
 % read byte order: II = little endian, MM = big endian
-byte_order = setstr(fread(TIF.file, 2, 'uchar'));
+byte_order = char(fread(TIF.file, 2, 'uchar')); %#ok Ignore MLint
 if ( strcmp(byte_order', 'II') )
     TIF.BOS = 'l';                                %normal PC format
 elseif ( strcmp(byte_order','MM') )
@@ -757,7 +766,9 @@ end
 
 %----- read in a number which identifies file as TIFF format
 tiff_id = fread(TIF.file,1,'uint16', TIF.BOS);
-if (tiff_id ~= 42)  error('This is not a TIFF file (missing 42).'); end
+if (tiff_id ~= 42)
+    error('This is not a TIFF file (missing 42).');
+end
 
 %----- read the byte offset for the first image file directory (IFD)
 ifd_pos = fread(TIF.file,1,'uint32', TIF.BOS);
@@ -793,7 +804,9 @@ while (ifd_pos ~= 0)
                 TIF.bytes_per_pixel  = entry.val / 8;
                 %disp(sprintf('%i bits per pixels', entry.val));
             case 259         % compression
-                if (entry.val ~= 1) error('Compression format not supported.'); end
+                if (entry.val ~= 1)
+                    error('Compression format not supported.');
+                end
             case 262         % photometric interpretatio
                 TIFIM.photo_type     = entry.val;
             case 269
@@ -808,7 +821,9 @@ while (ifd_pos ~= 0)
                 %disp(strcat('num_strips =', num2str(TIF.num_strips)));
             case 277         % sample_per pixel
                 TIF.samples_per_pixel = entry.val;
-                if (TIF.samples_per_pixel ~= 1) error('color not supported'); end
+                if (TIF.samples_per_pixel ~= 1)
+                    error('color not supported');
+                end
             case 278         % rows per strip
                 TIF.rows_per_strip   = entry.val;
             case 279         % strip byte counts - number of bytes in each strip after any compressio
@@ -826,14 +841,16 @@ while (ifd_pos ~= 0)
             case 315
                 TIFIM.artist         = entry.val;
             case 317        %predictor for compression
-                if (entry.val ~= 1) error('unsuported predictor value'); end
+                if (entry.val ~= 1)
+                    error('unsuported predictor value');
+                end
             case 320         % color map
                 TIFIM.cmap          = entry.val;
                 TIFIM.colors        = entry.cnt/3;
             case 339
                 TIF.sample_format   = entry.val;
                 if ( TIF.sample_format > 2 )
-                    error(sprintf('unsuported sample format = %i', TIF.sample_format));
+                    error('unsuported sample format = %i',TIF.sample_format);
                 end
             case 33628       %metamorph specific data
                 TIFIM.MM_private1   = entry.val;
@@ -854,19 +871,21 @@ while (ifd_pos ~= 0)
 
     %read the next IFD address:
     ifd_pos = fread(TIF.file, 1, 'uint32', TIF.BOS);
-    %if (ifd_pos) disp(['next ifd at', num2str(ifd_pos)]); end
 
-    if ( img_last > stack_cnt ) img_last = stack_cnt; end
-
+    if img_last > stack_cnt
+        img_last = stack_cnt;
+    end
 
     stack_pos = 0;
 
     for i=1:stack_cnt
 
-        if ( img_skip + 1 >= img_first )
+        if img_skip + 1 >= img_first
             img_read = img_read + 1;
             %disp(sprintf('reading MM frame %i at %i',num2str(img_read),num2str(TIF.strip_offsets(1)+stack_pos)));
-            if ( stack_cnt > 1 ) disp(sprintf('\b\b\b\b\b%4i', img_read)); end
+            if (stack_cnt > 1)
+                disp(sprintf('\b\b\b\b\b%4i', img_read));
+            end
             TIFIM.data = read_strips(TIF, TIF.strip_offsets + stack_pos, TIFIM.width, TIFIM.height);
             S( img_read ) = TIFIM;
 
@@ -913,7 +932,7 @@ function data = read_strips(TIF, strip_offsets, width, height)
 % compute the width of each row in bytes:
 numRows     = width * TIF.samples_per_pixel;
 width_bytes = numRows * TIF.bytes_per_pixel;
-numCols     = sum( TIF.strip_bytes / width_bytes );
+numCols     = sum( TIF.strip_bytes / width_bytes ); %#ok Ignore MLint
 
 typecode = sprintf('int%i', 8 * TIF.bytes_per_pixel / TIF.samples_per_pixel );
 if TIF.sample_format == 1
@@ -1000,6 +1019,8 @@ else
         entry.val = fread(TIF.file, entry.cnt, entry.typechar, TIF.BOS);
     end
 end
-if ( entry.typecode == 2 ) entry.val = char(entry.val'); end
+if (entry.typecode == 2)
+    entry.val = char(entry.val');
+end
 
 return;

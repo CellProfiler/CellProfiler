@@ -51,17 +51,17 @@ IdentifyPrimYeastPhase		??  (Saving Images help?)
 
 IdentifySecondary		Mike
 
-IdentifyTertiarySubregion
+IdentifyTertiarySubregion	Mike
 
-InvertIntensity
+InvertIntensity			Mike
 
-LoadImages
+LoadImages			Mike (Should try all options)
 
 LoadSingleImage
 
 LoadText
 
-MeasureCorrelation
+MeasureCorrelation		Mike
 
 MeasureImageAreaOccupied
 

@@ -35,7 +35,7 @@ function handles = IdentifyTertiarySubregion(handles)
 % including the object outlines alone. These images can be saved by
 % altering the code for this module to save those images to the
 % handles structure (see the SaveImages module help) and then using
-% the Save Images module.%
+% the Save Images module.
 % See also identify Primary and Identify Secondary modules.
 
 % CellProfiler is distributed under the GNU General Public License.

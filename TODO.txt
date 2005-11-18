@@ -22,13 +22,10 @@ EVERYONE:
 	- Check that fontsize is never hard-coded and instead uses the user's preference.
 	- Remove 'saving images' text
 MIKE:
-	- Make sure all code is using CPfigure rather than figure. I think the
-		DataLayout tool in particular is using figure.
+	- CPfigure rather than figure. DataLayout tool in particular is using figure.
 	- Smart Indent
 	- M Lint error checking
-	- (Requested by Anne)- IdentifyPrimAutomatic has a nice thing when you click
-		on one of the images within the figure that allows you to open in its
-		own window, etc. We should implement this feature into all the modules.
+	- CPimagesc
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Prepare updated manual

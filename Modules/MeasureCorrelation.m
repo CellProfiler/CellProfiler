@@ -3,6 +3,11 @@ function handles = MeasureCorrelation(handles)
 % Help for the Measure Correlation module:
 % Category: Measurement
 %
+% SHORT DESCRIPTION: Measures the correlation between intensities of
+% different wavelengths on a pixel by pixel basis within identified
+% objects or an entire image.
+% *************************************************************************
+%
 % Given two or more images, calculates the correlation between the
 % pixel intensities. The correlation can be measured for the entire
 % images, or individual correlation measurements can be made for each
@@ -142,12 +147,12 @@ for ImageNbr = 1:4
                 %%% analysis loop without attempting further modules.
                 error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName{ImageNbr}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
             end
-            Image{ImageCount} = handles.Pipeline.(ImageName{ImageNbr});
-            tmpImageName{ImageCount} = ImageName{ImageNbr};
+            Image{ImageCount} = handles.Pipeline.(ImageName{ImageNbr}); %#ok Ignore MLint
+            tmpImageName{ImageCount} = ImageName{ImageNbr}; %#ok Ignore MLint
             %%% Checks that the original image is two-dimensional (i.e. not a color
             %%% image), which would disrupt several of the image functions.
             if ndims(Image{ImageCount}) ~= 2
-                error('Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
             end
 
         catch error(['There was a problem loading the image you called ', ImageName{ImageNbr}, ' in the ', ModuleName, ' module.'])
@@ -166,7 +171,7 @@ ObjectNameCount = 0;
 for ObjectNameNbr = 1:6
     if ~strcmp(ObjectName{ObjectNameNbr},'Do not use')
         ObjectNameCount = ObjectNameCount + 1;
-        tmpObjectName{ObjectNameCount} = ObjectName{ObjectNameNbr};
+        tmpObjectName{ObjectNameCount} = ObjectName{ObjectNameNbr}; %#ok Ignore MLint
         if ~strcmp(ObjectName{ObjectNameNbr},'Image')
             %%% Retrieves the label matrix image that contains the
             %%% segmented objects which will be used as a mask. Checks first to see
@@ -176,7 +181,7 @@ for ObjectNameNbr = 1:6
             if isfield(handles.Pipeline, fieldname)==0,
                 error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
             end
-            LabelMatrixImage{ObjectNameCount} = handles.Pipeline.(fieldname);
+            LabelMatrixImage{ObjectNameCount} = handles.Pipeline.(fieldname); %#ok Ignore MLint
         else
             LabelMatrixImage{ObjectNameCount} = ones(size(Image{1}));        % Use mask of ones to indicate that the correlation should be calcualted for the entire image
         end
@@ -239,11 +244,11 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    
+
     % Set white background color
     set(ThisModuleFigureNumber,'Color',[1 1 1])
 

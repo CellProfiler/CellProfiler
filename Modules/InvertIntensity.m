@@ -3,14 +3,9 @@ function handles = InvertIntensity(handles)
 % Help for the Invert Intensity module:
 % Category: Image Processing
 %
-% The intensities of the image are inverted, so that black becomes white.
-%
-% SAVING IMAGES: The inverted images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
+% SHORT DESCRIPTION: Converts the intensities of an image so that black
+% becomes white.
+% *************************************************************************
 %
 % See also <nothing relevant>.
 
@@ -36,9 +31,9 @@ function handles = InvertIntensity(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -59,17 +54,17 @@ InvertedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-fieldname = ['', ImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-%%% TEST
-if isfield(handles.Pipeline, fieldname)==0,
+fieldname = ImageName;
+%%% Checks whether the image to be analyzed exists in the handles
+%%% structure.
+if ~isfield(handles.Pipeline, fieldname)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -91,17 +86,17 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Inverts the image.
 InvertedImage = imcomplement(OrigImage);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -125,9 +120,9 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,1,2); CPimagesc(InvertedImage); title('Inverted Image');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the Inverted image to the

@@ -2,7 +2,7 @@ function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThre
 
 %%% Convert user-specified percentage of image covered by objects to a prior probability
 %%% of a pixel being part of an object.
-pObject = str2num(pObject(1:2))/100;
+pObject = str2double(pObject(1:2))/100;
 
 %%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
 %%% Otherwise make sure that the user gave a valid input.
@@ -10,7 +10,7 @@ if strcmp(MinimumThreshold,'Do not use')
     MinimumThreshold = 0;
 else
     MinimumThreshold = str2double(MinimumThreshold);
-    if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1
+    if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1 %#ok Ignore MLint
         error(['The Minimum threshold entry in the ', ModuleName, ' module is invalid.'])
     end
 end
@@ -19,7 +19,7 @@ if strcmp(MaximumThreshold,'Do not use')
     MaximumThreshold = 1;
 else
     MaximumThreshold = str2double(MaximumThreshold);
-    if isnan(MaximumThreshold) | MaximumThreshold < 0 | MaximumThreshold > 1
+    if isnan(MaximumThreshold) | MaximumThreshold < 0 | MaximumThreshold > 1 %#ok Ignore MLint
         error(['The Maximum bound on the threshold in the ', ModuleName, ' module is invalid.'])
     end
 
@@ -52,7 +52,7 @@ elseif strfind(Threshold,'Adaptive')
 
     %%% Calculates a range of acceptable block sizes as plus-minus 10% of the suggested block size.
     BlockSizeRange = floor(1.1*BlockSize):-1:ceil(0.9*BlockSize);
-    [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n);
+    [ignore,index] = min(ceil(m./BlockSizeRange).*BlockSizeRange-m + ceil(n./BlockSizeRange).*BlockSizeRange-n); %#ok Ignore MLint
     BestBlockSize = BlockSizeRange(index);
 
     %%% Pads the image so that the blocks fit properly.
@@ -163,7 +163,7 @@ else
     %%% The threshold is manually set by the user
     %%% Checks that the Threshold parameter has a valid value
     Threshold = str2double(Threshold);
-    if isnan(Threshold) | Threshold > 1 | Threshold < 0
+    if isnan(Threshold) | Threshold > 1 | Threshold < 0 %#ok Ignore MLint
         error(['The threshold entered in the ', ModuleName, ' module is not a number, or is outside the acceptable range of 0 to 1.'])
     end
 end
@@ -292,15 +292,12 @@ end
 
 %%% Now, find the threshold at the intersection of the background distribution
 %%% and the object distribution.
-[ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution));
+[ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution)); %#ok Ignore MLint
 Threshold = Threshold(index);
 
-%%% Inverse transformation to log((x-a)/(b-x)) is (a+b*exp(t))/(1+exp(t))
-%Threshold = (a + b*exp(Threshold))/(1+exp(Threshold));
-
 function level = CPgraythresh(varargin)
-
 %%% This is the Otsu method of thresholding.
+
 if nargin == 1
     im = varargin{1};
 else

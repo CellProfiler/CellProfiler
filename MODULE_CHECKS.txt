@@ -65,7 +65,7 @@ MeasureCorrelation		Mike
 
 MeasureImageAreaOccupied	Mike
 
-MeasureImageIntensity
+MeasureImageIntensity		Mike (VARIABLE 2 IS UNUSED, SHOULD THIS BE USED FOR HANDLES SAVING?)
 
 MeasureImageSaturationBlur
 

@@ -3,9 +3,11 @@ function handles = MeasureImageIntensity(handles)
 % Help for the Measure Image Intensity module:
 % Category: Measurement
 %
-% Measures the total intensity of staining in an image by adding up
-% every pixel's intensity. The user can choose to ignore pixels below
-% or above a particular intensity level.
+% SHORT DESCRIPTION:
+% Measures the total image intensity by summing every pixels intensity. The
+% user can choose to ignore pixels below or above a particular intensity
+% level.
+% *************************************************************************
 %
 % Settings:
 %
@@ -20,10 +22,7 @@ function handles = MeasureImageIntensity(handles)
 % structure (see the SaveImages module help) and then use the Save
 % Images module.
 %
-% See also MEASUREAREAOCCUPIED,
-% MEASUREAREASHAPECOUNTLOCATION,
-% MEASURECORRELATION,
-% MEASUREINTENSITYTEXTURE.
+% See also MEASUREAREAOCCUPIED, MEASUREOBJECTINTENSITY, MEASURECORRELATION.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -47,9 +46,9 @@ function handles = MeasureImageIntensity(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find  the
@@ -84,16 +83,15 @@ PixelSize = str2double(handles.Settings.PixelSize);
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['', ImageName];
 %%% Checks whether image has been loaded.
-if isfield(handles.Pipeline, fieldname)==0,
+if isfield(handles.Pipeline, ImageName)==0,
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -102,7 +100,7 @@ if isfield(handles.Pipeline, fieldname)==0,
     %%% analysis loop without attempting further modules.
     error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
-OrigImage = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(ImageName);
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
 %%% image), which would disrupt several of the image functions.
@@ -110,9 +108,9 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Subtracts the threshold from the original image.
@@ -136,16 +134,14 @@ TotalArea = sum(sum(ThresholdedOrigImage>0));
 TotalArea = TotalArea*PixelSize*PixelSize;
 MeanIntensity = TotalIntensity/TotalArea;
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-
-    drawnow
+if any(findobj == ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Sets the width of the figure window to be appropriate (half width).
         originalsize = get(ThisModuleFigureNumber, 'position');
@@ -157,36 +153,26 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,1,1); imagesc(OrigImage);
+    subplot(2,1,1); CPimagesc(OrigImage);
     title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the processed
     %%% image.
-    subplot(2,1,2); imagesc(ThresholdedOrigImage); title('Thresholded Image');
-
-    %delete(findobj('Parent',ThisModuleFigureNumber));
+    subplot(2,1,2); CPimagesc(ThresholdedOrigImage); title('Thresholded Image');
 
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [65 -10 265 55],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
     displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...
         ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]};
     set(displaytexthandle,'string',displaytext, 'HorizontalAlignment', 'left')
-    set(ThisModuleFigureNumber,'toolbar','figure')
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves measurements to the handles structure.
-%fieldname = ['ImageTotalIntensity', ObjectName];
-%handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalIntensity};
-%fieldname = ['ImageMeanIntensity', ObjectName];
-%handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {MeanIntensity};
-%fieldname = ['ImageTotalArea', ObjectName];
-%handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {TotalArea};
 featurefieldname = ['Intensity_',ImageName,'Features'];
 fieldname = ['Intensity_',ImageName];
 handles.Measurements.Image.(featurefieldname) = {'Total intensity','Mean intensity','Total area'};
 handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = {[TotalIntensity MeanIntensity TotalArea]};
-

@@ -1,5 +1,5 @@
 function CPImageTool(handles,varargin)
-%
+
 % This function opens or updates the Image Tool window.
 % It should be invoked when the user clicks on an image produced
 % by a module. 

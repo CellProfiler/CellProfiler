@@ -5,15 +5,11 @@ function handles = Crop(handles)
 %
 % SHORT DESCRIPTION:
 % Images can be cropped into a rectangle, ellipse, an arbitrary shape
-% provided by the user, or a shape identified by an identify module.
+% provided by the user, a shape identified by an identify module, or a
+% shape used at a previous step in the pipeline on another image.
 % *************************************************************************
 %
-% Allows the images to be cropped in any shape:
-%
-% Shape: You can crop by rectangular coordinates, ellipse, or by an object
-% identified in a previous module. To crop by an object, simply type in the
-% name of that identified object instead of Rectangle or Ellipse. Please
-% see PlateFix for information on identifying crop plates.
+% Shape: 
 %
 % Rectangle: enter the pixel coordinates for the left to right and
 % top to bottom pixels, and every image will be cropped at these
@@ -26,22 +22,32 @@ function handles = Crop(handles)
 % mind that the more points you click, the longer it will take to
 % calculate the ellipse shape.
 %
+% Other...
+% To crop based on an object identified in a previous module, type in the
+% name of that identified object instead of Rectangle or Ellipse. Please
+% see PlateFix for information on cropping based on previously identified
+% plates.
+%
+% To crop into an arbitrary shape you define, use the LoadSingleImage
+% module to load a black and white image (that you have already prepared)
+% from a file. If you have created this image in an image program such as
+% Photoshop, this binary image should actually contain only the values 0
+% and 255, with zeros (black) for the parts you want to remove and 255
+% (white) for the parts you want to retain.  Or, you may have previously
+% generated a binary image using this module (e.g. using the ellipse
+% option) and saved it using the SaveImages module (see SAVING IMAGES
+% below).  In any case, the image must be the exact same starting size as
+% your image and should contain a contiguous block of white pixels, because
+% keep in mind that the cropping module will remove rows and columns that
+% are completely blank.
+%
+% To crop into the same shape as was used previously in the pipeline to
+% crop another image, type in CroppingPreviousCroppedImageName, where
+% PreviousCroppedImageName is the image you produced with the previous Crop
+% module.
+%
 % Individually or Once: This option will allow you to apply the same
 % cropping to all images or define each image separately.
-%
-% File: You can crop images to any arbitrary shape by loading that
-% shape into CellProfiler. Use the LoadSingleImage module to load the
-% black and white image (that you have already prepared) from a file.
-% If you have created this image in an image program such as
-% Photoshop, this binary image should actually contain only the values
-% 0 and 255, with zeros (black) for the parts you want to remove and
-% 255 (white) for the parts you want to retain.  Or, you may have
-% previously generated a binary image using this module (e.g. using
-% the ellipse option) and saved it using the SaveImages module (see
-% SAVING IMAGES below).  In any case, the image must be the exact same
-% starting size as your image and should contain a contiguous block of
-% white pixels, because keep in mind that the cropping module will
-% remove rows and columns that are completely blank.
 %
 % PlateFix: When attempting to crop based on a previously identified object
 % (such as a yeast plate), sometimes the identified plate does not
@@ -73,26 +79,20 @@ function handles = Crop(handles)
 % square edge of the image, and not the round contour, so partial
 % objects will be included.
 %
-% SAVING IMAGES: The cropped images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module. You can save the cropping shape that you have used (e.g. an
-% ellipse you drew), so that in future analyses you can use the File
-% option.  To do this, you need to add the prefix "Cropping" to the
-% name you called the cropped image (e.g. CroppingCropBlue) and this
-% is the name of the image you will want to save using the SaveImages
-% module.  I think you will want to save it in mat format. You can
-% also save the cropping shape, trimmed for any unused rows and
-% columns at the edges.  This image has the prefix "CropMask" plus the
-% name you called the cropped image (e.g. CropMaskCropBlue).  This
-% image is used for downstream modules that use the CPthreshold
-% function.  The Cropping and CropMask images are similar (both are
-% binary and contain the cropping shape you used), but the Cropping
-% image is the same size as the original images to be processed
-% whereas the CropMask image is the same size as the final, cropped
-% image.
+% SAVING IMAGES: See the help for SaveImages. Also, you can save the
+% cropping shape that you have used (e.g. an ellipse you drew), so that in
+% future analyses you can use the File option.  To do this, you need to add
+% the prefix "Cropping" to the name you called the cropped image (e.g.
+% CroppingCropBlue) and this is the name of the image you will want to save
+% using the SaveImages module.  I think you will want to save it in mat
+% format. You can also save the cropping shape, trimmed for any unused rows
+% and columns at the edges.  This image has the prefix "CropMask" plus the
+% name you called the cropped image (e.g. CropMaskCropBlue).  This image is
+% used for downstream modules that use the CPgraythresh function.  The
+% Cropping and CropMask images are similar (both are binary and contain the
+% cropping shape you used), but the Cropping image is the same size as the
+% original images to be processed whereas the CropMask image is the same
+% size as the final, cropped image.
 %
 % See also <nothing relevant>.
 

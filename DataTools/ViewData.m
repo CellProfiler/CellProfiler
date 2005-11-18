@@ -9,7 +9,7 @@ function ViewData(handles)
 % the correct image sets.
 %
 % See also CLEARDATA ADDDATA.
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

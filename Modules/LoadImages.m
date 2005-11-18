@@ -268,7 +268,7 @@ TextToFind = tmp1;
 ImageName = tmp2;
 
 if strcmp(LoadChoice,'Order')
-    TextToFind = str2double(char(TextToFind));
+    TextToFind = str2num(char(TextToFind)); %#ok Ignore MLint
     %%% Checks whether the position in set exceeds the number per set.
     if ImagesPerSet < max(TextToFind)
         error(['Image processing was canceled in the ', ModuleName, ' module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])

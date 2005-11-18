@@ -50,12 +50,12 @@ else
     for i=1:length(NotYetTextMatchedFileNames)
         if ~isempty(TextToFind)
             if strncmpi(ExactOrRegExp,'E',1)
-                if ~isempty(findstr(char(NotYetTextMatchedFileNames(i)), TextToFind))||isempty(TextToFind)
+                if ~isempty(findstr(lower(char(NotYetTextMatchedFileNames(i))), lower(TextToFind)))||isempty(TextToFind)
                     FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                     Count = Count + 1;
                 end
             elseif strncmpi(ExactOrRegExp,'R',1)
-                if ~isempty(regexp(char(NotYetTextMatchedFileNames(i)), TextToFind))||isempty(TextToFind)
+                if ~isempty(regexp(lower(char(NotYetTextMatchedFileNames(i))), lower(TextToFind)))||isempty(TextToFind)
                     FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                     Count = Count + 1;
                 end

@@ -34,9 +34,7 @@ function handles = RescaleIntensity(handles)
 % range, so this conversion may cause downstream modules to behave
 % unexpectedly.
 %
-% SAVING IMAGES: The rescaled images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign.
+% See also: <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -60,9 +58,9 @@ function handles = RescaleIntensity(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -114,9 +112,9 @@ OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
@@ -136,7 +134,7 @@ end
 OrigImage = handles.Pipeline.(fieldname);
 
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -177,9 +175,9 @@ end
 %%% Uses a CellProfiler subfunction.
 [handles,RescaledImage] = CPrescale(handles,OrigImage,RescaleOption,MethodSpecificArguments);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -199,15 +197,15 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Rescaled
     %%% Image.
     subplot(2,1,2); imagesc(RescaledImage); title('Rescaled Image');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The Rescaled image is saved to the handles structure so it can be

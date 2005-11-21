@@ -3,6 +3,8 @@ function handles = RelateObjects(handles)
 % Help for the Flip module:
 % Category: Object Processing
 %
+% Sorry, help does not exist yet.
+%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -60,7 +62,7 @@ drawnow
 fieldname = ['Segmented', SubObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Create Subobjects module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Create Subobjects module that the primary objects were named ', SubObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified that the primary objects were named ', SubObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The module cannot locate this image.']);
 end
 SubObjectLabelMatrix = handles.Pipeline.(fieldname);
 
@@ -69,7 +71,7 @@ SubObjectLabelMatrix = handles.Pipeline.(fieldname);
 fieldname = ['Segmented', ParentName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing has been canceled. Prior to running the Create Subobjects module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Create Subobjects module that the primary objects were named ', ParentName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified that the primary objects were named ', ParentName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The module cannot locate this image.']);
 end
 ParentObjectLabelMatrix = handles.Pipeline.(fieldname);
 
@@ -96,7 +98,7 @@ end
 
 if exist('FinalParentList')
     if max(SubObjectLabelMatrix(:)) ~= size(FinalParentList,1)
-        error('A subobject cannot have two parents, something is wrong.');
+        error(['Image processing was canceled in the ', ModuleName, ' module because secondary objects cannot have two parents, something is wrong.']);
     end
 
     if isfield(handles.Measurements.(SubObjectName),'ParentFeatures')
@@ -107,7 +109,7 @@ if exist('FinalParentList')
         else
             OldColumn = strmatch(ParentName,handles.Measurements.(SubObjectName).ParentFeatures);
             if length(OldColumn) ~= 1
-                error('You are attempting to create the same children, please remove redundant module.');
+                        error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
             end
             handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
         end
@@ -133,7 +135,7 @@ if isfield(handles.Measurements.(ParentName),'ChildrenFeatures')
     else
         OldColumn = strmatch([SubObjectName,' Count'],handles.Measurements.(ParentName).ChildrenFeatures);
         if length(OldColumn) ~= 1
-            error('You are attempting to create the same children, please remove redundant module.');
+                        error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
         end
         handles.Measurements.(ParentName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
     end
@@ -165,7 +167,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,1);
     ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
     imagesc(ColoredParentLabelMatrixImage);
-    title(['Parent Objects, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2);
     ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
     imagesc(ColoredSubObjectLabelMatrixImage);

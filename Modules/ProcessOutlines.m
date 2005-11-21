@@ -16,16 +16,6 @@ function handles = ProcessOutlines(handles)
 % a black and white image (Dark background with white outlines). ??? IS
 % THIS CORRECT?
 %
-% SAVING IMAGES: The images of the objects produced by this module can
-% be easily saved using the Save Images module using the name:
-% ????  I THINK THIS IS OUTDATED>>>>
-% Segmented + whatever you called the objects (e.g. SegmentedCells).
-% This will be a grayscale image where each object is a different
-% intensity. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
-%
 % See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -50,9 +40,9 @@ function handles = ProcessOutlines(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -78,16 +68,15 @@ Threshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3})
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImage".
+%%% Reads (opens) the image you want to analyze and assigns it to a variable.
 %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, ImageName) == 0
-    error(['Image was canceled in the ', ModuleName, ' module. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Identify Primary Intensity module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to load an image. You specified that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The module cannot find this image.']);
     end
 OrigImage = handles.Pipeline.(ImageName);
 
@@ -97,18 +86,18 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 BinaryImage = im2bw(imcomplement(OrigImage),Threshold);
 FilledImage = imfill(BinaryImage,'holes');
 ObjectsIdentifiedImage = imsubtract(FilledImage,BinaryImage);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -125,15 +114,15 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); imagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,1,2); imagesc(ObjectsIdentifiedImage); title(['Processed ',ObjectName]);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the processed image to the handles structure.

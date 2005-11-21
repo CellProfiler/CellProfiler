@@ -100,9 +100,9 @@ DeletePipeline = DeletePipeline(1);
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 tmp1 = {};
@@ -137,9 +137,9 @@ for i=1:length(ImageName)
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Check that the images are the same height or width and place them
@@ -193,9 +193,9 @@ else
     error(['Image processing was canceled in the ', ModuleName, ' module because you must enter H or V to specify whether to place the images adjacent to each other horizontally or vertically.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -205,14 +205,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     imagesc(AdjacentImage);
-    title(['Adjacent Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Adjacent Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the Adjacent Image to the
+%%% Saves the procesed imge to the
 %%% handles structure so it can be used by subsequent modules.
 handles.Pipeline.(AdjacentImageName) = AdjacentImage;

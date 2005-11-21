@@ -47,9 +47,9 @@ function handles = RenameOrRenumberFile(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -81,9 +81,9 @@ NumberDigits = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 Pathname = handles.Current.DefaultImageDirectory;
@@ -93,7 +93,7 @@ fieldname=['FileList',ImageName];
 FileNames = handles.Pipeline.(fieldname);
 if strcmp(class(TextToAdd), 'char') ~= 1
     try TextToAdd = num2str(TextToAdd);
-    catch error('The text you tried to add could not be converted into text for some reason.')
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because the text you tried to add could not be converted into text for some reason.')
     end
 end
 
@@ -129,7 +129,7 @@ for n = 1:length(FileNames)
         DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.  The remaining files will be converted without asking for confirmation.'];
         Answer = CPquestdlg(DialogText, 'Confirm file name change','OK','Cancel','Cancel');
         if strcmp(Answer, 'Cancel') == 1
-            error('File renaming was canceled at your request.')
+            error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
         end
     end
     if strcmp(OldFilename,NewFilename) ~= 1
@@ -144,9 +144,9 @@ end
 %%% number of files in the current directory.
 set(handles.timertexthandle,'string','Cancel')
 
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure

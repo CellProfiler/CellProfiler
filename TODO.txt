@@ -64,8 +64,6 @@ PlotMeasurements: DONE!
 
 - Check through each module (~2 per day):
 EVERYONE:
-	- Go through the code looking for instances of the term "image set" and
-		replace with "cycle" where appropriate.
 	- (Requested by Anne) - Test each module on color vs grayscale and make
 		sure they all work or have some type of error catching.
 	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions
@@ -81,6 +79,10 @@ MIKE:
 	- Smart Indent
 	- M Lint error checking
 	- CPimagesc
+ANNE HAS DONE THIS FOR ALL>>>	
+- Go through the code looking for instances of the term "image set" and
+		replace with "cycle" where appropriate.
+- check format of error messages.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Submit code to Sourceforge for distribution/easy updating? EVeryone seems to recommend this for open-source software.

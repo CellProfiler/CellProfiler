@@ -4,7 +4,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Calculates an illuminatoiin function, used to correct errors in lighting
+% Calculates an illumination function, used to correct errors in lighting
 % on images. Can also be used to reduce uneven background in images.
 % *************************************************************************
 %
@@ -46,7 +46,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % every image of the type specified in the Load Images module. It is
 % then acceptable to use the resulting image later in the pipeline. If
 % you choose P, the module will allow the pipeline to cycle through
-% all of the image sets.  With this option, the module does not need
+% all of the cycles.  With this option, the module does not need
 % to follow a Load Images module; it is acceptable to make the single,
 % averaged image from images resulting from other image
 % processing steps in the pipeline. However, the resulting average
@@ -244,14 +244,14 @@ if strcmp(EachOrAll,'All')
         if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1
             %%% The first time the module is run, the averaged image is
             %%% calculated.
-            %%% Notifies the user that the first image set will take much longer than
+            %%% Notifies the user that the first cycle will take much longer than
             %%% subsequent sets.
             %%% Obtains the screen size.
             ScreenSize = get(0,'ScreenSize');
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination_Calculate Using Background Intensities module.  Subsequent image sets will be processed more quickly than the first image set.');
+            h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination_Calculate Using Background Intensities module.  Subsequent cycles will be processed more quickly than the first cycle.');
             OldPos = get(h,'position');
             set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
             drawnow
@@ -263,7 +263,7 @@ if strcmp(EachOrAll,'All')
                 %%% structure.
                 fieldname = ['Pathname', ImageName];
                 try Pathname = handles.Pipeline.(fieldname);
-                catch error('Image processing was canceled because the Correct Illumination_Calculate Using Background Intensities module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first image set through the pipeline. In other words, the Correct Illumination_Calculate Using Background Intensities module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination_Calculate Using Background Intensities module onward.')
+                catch error('Image processing was canceled because the Correct Illumination_Calculate Using Background Intensities module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the Correct Illumination_Calculate Using Background Intensities module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination_Calculate Using Background Intensities module onward.')
                 end
                 %%% Retrieves the list of filenames where the images are stored from the
                 %%% handles structure.
@@ -298,7 +298,7 @@ if strcmp(EachOrAll,'All')
                 [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
                 if handles.Current.SetBeingAnalyzed == 1
                     %%% Creates the empty variable so it can be retrieved later
-                    %%% without causing an error on the first image set.
+                    %%% without causing an error on the first cycle.
                     handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))')));
                 end
                 %%% Retrieves the existing illumination image, as accumulated so
@@ -306,7 +306,7 @@ if strcmp(EachOrAll,'All')
                 SumMiniIlluminationImage = handles.Pipeline.(IlluminationImageName);
                 %%% Adds the current image to it.
                 SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
-                %%% If the last image set has just been processed, indicate that
+                %%% If the last cycle has just been processed, indicate that
                 %%% the projection image is ready.
                 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                     %%% Divides by the total number of images in order to average.
@@ -455,7 +455,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,2,1);
         CPimagesc(OrigImage);
-        title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         if exist('FinalIlluminationFunction','var') == 1
             subplot(2,2,4);
             CPimagesc(FinalIlluminationFunction);
@@ -467,7 +467,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         end
         %%% Whether these images exist depends on whether the images have
         %%% been calculated yet (if running in pipeline mode, this won't occur
-        %%% until the last image set is processed).  It also depends on
+        %%% until the last cycle is processed).  It also depends on
         %%% whether the user has chosen to smooth the average minimums
         %%% image.
         if exist('AverageMinimumsImage','var') == 1

@@ -63,7 +63,7 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 %inputtypeVAR01 = popupmenu
 DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = In order to run this module, you must use LoadText to load a grouping value for each image set. This is either a marking of whether each image set is a positive or negative control (for Z factor) or it is concentrations for each curve (required for meaningful V factors). Both Z and V factors will be calculated for all measured values (Intensity, AreaShape, Texture, etc.). These measurements can be exported as the "Experiment" set of data.
+%textVAR02 = In order to run this module, you must use LoadText to load a grouping value for each cycle. This is either a marking of whether each cycle is a positive or negative control (for Z factor) or it is concentrations (doses) for each curve (required for meaningful V factors). Both Z and V factors will be calculated for all measured values (Intensity, AreaShape, Texture, etc.). These measurements can be exported as the "Experiment" set of data.
 
 %%%VariableRevisionNumber = 2
 
@@ -116,7 +116,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             MeasureName = MeasureFeatureName(1:end-8);
                             %%% Check for measurements
                             if ~isfield(handles.Measurements.(ObjectName),MeasureName)
-                                error(['The ',ModuleName,' module could not find the measurements you specified.']);
+                                error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the measurements you specified.']);
                             end
 
                             Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));

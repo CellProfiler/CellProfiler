@@ -79,7 +79,7 @@ elseif strcmp(ImageMode,'Color')
         try
             cmap = eval([ColorMap '(max(64,max(LabelMatrixImage(:))))']);
         catch
-            error(['The ColorMap, ' ColorMap ', that you entered, is not valid']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because the ColorMap, ' ColorMap ', that you entered, is not valid.']);
         end
         Image = label2rgb(LabelMatrixImage,cmap,'k');
     end

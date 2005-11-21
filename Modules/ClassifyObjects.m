@@ -140,7 +140,7 @@ end
 if ~strcmp(FeatureType,'Ratio')
     %%% Checks whether the feature type exists in the handles structure.
     if ~isfield(handles.Measurements.(ObjectName),FeatureType)
-        error(['The feature type entered in the ', ModuleName, ' module does not exist.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because the feature type entered does not exist.']);
     end
 end
 

@@ -6,6 +6,25 @@ November 21, 2005
 2. Export Data button didn't work for me. No errors, it just doesn't do anything. Perhaps it is because I have a plot plus several control plots on the same chart?
 3. I would like to be able to choose the color for the initial plot, preferably right after specifying the starting and ending set.
 4. When choosing the color, please list what color names can be typed in, and also how to specify numerical colors, e.g.  [.7 .7 .9].
+Here is something perhaps helpful from the CreateWebPage module:
+%textVAR07 = Choose the background color, or provide the html color code (e.g. #00FF00)
+%choiceVAR07 = Black
+%choiceVAR07 = White
+%choiceVAR07 = Aqua
+%choiceVAR07 = Blue
+%choiceVAR07 = Fuchsia
+%choiceVAR07 = Green
+%choiceVAR07 = Gray
+%choiceVAR07 = Lime
+%choiceVAR07 = Maroon
+%choiceVAR07 = Navy
+%choiceVAR07 = Olive
+%choiceVAR07 = Purple
+%choiceVAR07 = Red
+%choiceVAR07 = Silver
+%choiceVAR07 = Teal
+%choiceVAR07 = Yellow
+
 
 (Requested by Anne 11-21-05):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
 

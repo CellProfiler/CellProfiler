@@ -17,12 +17,12 @@ function handles = CreateBatchScripts(handles)
 % filenames, and several pathnames.  For jobs that you do not want to
 % split into batches but simply want to run on a separate computer,
 % set the batch size to a very large number (more than the number of
-% image sets), which will create one large job.
+% cycles), which will create one large job.
 %
-% After the first image set is processed, batch files are created and
+% After the first cycle is processed, batch files are created and
 % saved at the pathname you specify.  Each batch file is of the form
 % Batch_X_to_Y.m (The prefix can be changed from Batch_ by the
-% user), where X is the first image set to be processed in the particular
+% user), where X is the first cycle to be processed in the particular
 % batch file, and Y is the last.  There is also a Batch_data.mat file
 % that each script needs access to in order to initialize the processing.
 %
@@ -261,7 +261,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = How many image sets should be in each batch?
+%textVAR01 = How many cycles (image sets) should be in each batch?
 %defaultVAR01 = 100
 BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,1}));
 
@@ -350,7 +350,7 @@ if (CurrentModuleNum ~= handles.Current.NumberOfModules),
     error([ModuleName, ' must be the last module in the pipeline.']);
 end;
 
-%%% If this isn't the first image set, we are running on the
+%%% If this isn't the first cycle, we are running on the
 %%% cluster, and should just continue.
 if (handles.Current.SetBeingAnalyzed > 1),
     return;
@@ -451,7 +451,7 @@ end
 
 CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the invidual .m scripts for processing on your cluster.', 'BatchFilesDialog');
 
-%%% This is the first image set, so this is the first time seeing this
+%%% This is the first cycle, so this is the first time seeing this
 %%% module.  It should cause a cancel so no further processing is done
 %%% on this machine.
 set(handles.timertexthandle,'string','Cancel')

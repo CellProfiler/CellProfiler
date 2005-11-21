@@ -164,13 +164,13 @@ ZipFileName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which image set is being analyzed.
+%%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST cycle FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed == NumberOfImageSets) && strcmp(CreateBA,'After'))
@@ -178,8 +178,7 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
     if ~strcmp(ThumbImage,'Do not use')
         NumThumbImage = numel(handles.Pipeline.(['FileList' ThumbImage]));
         if NumOrigImage ~= NumThumbImage
-            msgbox('Number of original images and thumbnail images do not match');
-            return;
+            error(['Image processing was canceled in the ', ModuleName, ' module because the number of original images and thumbnail images do not match']);
         end
         ThumbImageFileNames = handles.Pipeline.(['FileList' ThumbImage]);
         ThumbImagePathName = handles.Pipeline.(['Pathname' ThumbImage]);
@@ -189,7 +188,7 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
         OrigImageFileNames = handles.Pipeline.(['FileList' OrigImage]);
         OrigImagePathName = handles.Pipeline.(['Pathname' OrigImage]);
         ZipImagePathName = OrigImagePathName;
-    catch error('There was an error finding your images. You must specify images directly loaded by CellProfiler (no modifications).');
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because there was an error finding your images. You must specify images directly loaded by the LoadImages module.']);
     end
 
     CurrentImage = 1;
@@ -205,7 +204,7 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
         try
             ThumbImagePathName = ThumbImagePathName(LastDirPos:end);
         catch
-            error(['Something went wrong, search for ThumbImagePathName in ',ModuleName,' m-file.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because the folder ', ThumbImagePathName,' could not be found in the module ',ModuleName,'.']);
         end
     else
         HTMLSavePath = OrigImagePathName;
@@ -272,7 +271,7 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
     dlmwrite(HTMLFullfile,Lines,'delimiter','');
     CPmsgbox(['Your webpage has been saved as ', HTMLFullfile, '.']);
     if SetBeingAnalyzed == 1
-        %%% This is the first image set, so this is the first time seeing this
+        %%% This is the first cycle, so this is the first time seeing this
         %%% module.  It should cause a cancel so no further processing is done
         %%% on this machine.
         set(handles.timertexthandle,'string','Cancel');

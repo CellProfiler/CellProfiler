@@ -466,7 +466,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
     CPimagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
     subplot(2,1,2);
@@ -518,7 +518,7 @@ CroppedImage = PrelimCroppedImage;
 CroppedImage(:,ColumnsToDelete,:) = [];
 CroppedImage(RowsToDelete,:,:) = [];
 %%% The Binary Crop Mask image is saved to the handles
-%%% structure so it can be used in subsequent image sets to
+%%% structure so it can be used in subsequent cycles to
 %%% show which parts of the image were cropped (this will be used
 %%% by CPthreshold).
 BinaryCropMaskImage = BinaryCropImage;

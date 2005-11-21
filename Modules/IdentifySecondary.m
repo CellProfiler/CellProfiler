@@ -833,7 +833,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
-            subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+            subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
             subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
@@ -870,7 +870,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             % Search the ThresholdFeatures to find the column for this object type
             column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));
             % If column is empty it means that this particular object has not been segmented before. This will
-            % typically happen for the first image set. Append the feature name in the
+            % typically happen for the first cycle. Append the feature name in the
             % handles.Measurements.Image.ThresholdFeatures matrix
             if isempty(column)
                 handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' SecondaryObjectName]};

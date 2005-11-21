@@ -847,9 +847,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     CPfigure(handles,ThisModuleFigureNumber);
                     subplot(2,2,1)
                     ImageHandle = CPimagesc(OrigImage);
-                    set(ImageHandle,'Tag',['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)])
+                    set(ImageHandle,'Tag',['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)])
                     axis image
-                    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
+                    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
                     set(gca,'fontsize',handles.Preferences.FontSize)
                     hx = subplot(2,2,2);
                     if sum(sum(Objects(:)))>0
@@ -923,7 +923,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+                    subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
                     subplot(2,2,2);
@@ -978,7 +978,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             % Search the ThresholdFeatures to find the column for this object type
             column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
             % If column is empty it means that this particular object has not been segmented before. This will
-            % typically happen for the first image set. Append the feature name in the
+            % typically happen for the first cycle. Append the feature name in the
             % handles.Measurements.Image.ThresholdFeatures matrix
             if isempty(column)
                 handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};

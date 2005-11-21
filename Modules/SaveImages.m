@@ -34,23 +34,23 @@ function handles = SaveImages(handles)
 % handles.Pipeline.(fieldname) = CroppedImage;
 %
 % Special notes for saving in movie format (avi):
-% The movie will be saved after the last image set is processed. You
+% The movie will be saved after the last cycle is processed. You
 % have the option to also save the movie periodically during image
 % processing, so that the partial movie will be available in case
 % image processing is canceled partway through. Saving movies in avi
 % format is quite slow, so you can enter a number to save the movie
-% after every Nth image set. For example, entering a 1 will save the
-% movie after every image set, so that if image analysis is aborted,
+% after every Nth cycle. For example, entering a 1 will save the
+% movie after every cycle, so that if image analysis is aborted,
 % the movie up to that point will be saved. Saving large movie files
 % is time-consuming, so it may be better to save after every 10th
-% image set, for example. If you are processing multiple movies,
+% cycle, for example. If you are processing multiple movies,
 % especially movies in subdirectories, you should save after every
-% image set (and also, be aware that this module has not been
+% cycle (and also, be aware that this module has not been
 % thoroughly tested under those conditions). Note also that the movie
 % data is stored in the handles.Pipeline.Movie structure of the output
 % file, so you can retrieve the movie data there in case image
 % processing is aborted. When working with very large movies, you may
-% also want to save the CellProfiler output file every Nth image set
+% also want to save the CellProfiler output file every Nth cycle
 % to save time, because the entire movie is stored in the output file.
 % See the SpeedUpCellProfiler module. This module has not been
 % extensively tested, particularly for how it handles color images and
@@ -163,7 +163,7 @@ CheckOverwrite = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = If you are saving in avi (movie) format, do you want to save the movie only after the last image set is processed (enter 'L'), or after every Nth image set (1,2,3...)? Saving movies is time-consuming. See the help for this module for more details.
+%textVAR09 = If you are saving in avi (movie) format, do you want to save the movie only after the last cycle is processed (enter 'L'), or after every Nth cycle (1,2,3...)? Saving movies is time-consuming. See the help for this module for more details.
 %defaultVAR09 = L
 SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
@@ -337,7 +337,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     elseif strcmpi(FileFormat,'avi')
         if handles.Current.SetBeingAnalyzed == 1 &&  strcmp(CheckOverwrite,'Y')
             %%% Checks whether the new image name is going to overwrite
-            %%% the original file, but only on the first image set,
+            %%% the original file, but only on the first cycle,
             %%% because otherwise the check would be done on each frame
             %%% of the movie.
             if exist(FileAndPathName) == 2
@@ -379,7 +379,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         handles.Pipeline.(fieldname) = Movie;
 
         %%% Saves the Movie under the appropriate file name after the
-        %%% appropriate image set.
+        %%% appropriate cycle.
         try MovieSavingIncrement = str2double(SaveMovieWhen);
             MovieIsNumber = 1;
         catch MovieIsNumber = 0;

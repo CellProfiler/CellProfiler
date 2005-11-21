@@ -11,9 +11,9 @@ function AddData(handles)
 %
 % IDENTIFIER <identfier>
 % DESCRIPTION <description>
-% <Text info for image set #1>
-% <Text info for image set #2>
-% <Text info for image set #3>
+% <Text info for image cycle #1>
+% <Text info for image cycle #2>
+% <Text info for image cycle #3>
 %              .
 %              .
 %

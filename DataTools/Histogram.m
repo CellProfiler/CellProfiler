@@ -120,7 +120,7 @@ if isempty(ObjectTypename),return,end
 MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
 %%% Put the measurements for this feature in a cell array, one
-%%% cell for each image set.
+%%% cell for each cycle.
 tmp = handles.Measurements.(ObjectTypename).(FeatureType);
 ImageSets = length(tmp);
 Measurements = cell(length(tmp),1);
@@ -156,7 +156,7 @@ TotalNumberImageSets = ImageSets;
 TextTotalNumberImageSets = num2str(TotalNumberImageSets);
 %%% Ask the user to specify histogram settings.
 Prompts{1} = 'Enter the first image number to show or export';
-Prompts{2} = ['Enter the last sample number to show or export (the total number of image sets with data in the file is ', TextTotalNumberImageSets, ').'];
+Prompts{2} = ['Enter the last sample number to show or export (the total number of cycles with data in the file is ', TextTotalNumberImageSets, ').'];
 Prompts{3} = 'Enter the number of bins you want for the histogram(s). This number should not include the first and last bins, which will contain anything outside the specified range.';
 Prompts{4} = 'Any measurements less than this value will be combined in the leftmost bin. Enter automatic to determine this value automatically.';
 Prompts{5} = 'Any measurements greater than or equal to this value will be combined in the rightmost bin. Enter automatic to determine this value automatically.';
@@ -245,7 +245,7 @@ while AcceptableAnswers == 0
     if NumberOfImages == 0
         NumberOfImages = TotalNumberImageSets;
     elseif NumberOfImages > TotalNumberImageSets
-        uiwait(CPerrordlg(['There are only ', TextTotalNumberImageSets, ' image sets total, but you specified that you wanted to view image set number ', num2str(LastImage),'.']))
+        uiwait(CPerrordlg(['There are only ', TextTotalNumberImageSets, ' cycles total, but you specified that you wanted to view cycle number ', num2str(LastImage),'.']))
         continue
     end
     try NumberOfBins = str2double(Answers{3});

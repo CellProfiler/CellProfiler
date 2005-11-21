@@ -22,7 +22,7 @@ function handles = MergeBatchOutput(handles)
 % The combined output is written to the output filename as specified
 % in the lower right box of CellProfiler's main window.  (The output
 % file's handles.Pipeline is a snapshot of the pipeline after the
-% first image set completes), and handles.Measurements will contain
+% first cycle completes), and handles.Measurements will contain
 % all of the merged measurement data.
 %
 % Sometimes output files can be quite large, so before attempting
@@ -92,7 +92,7 @@ if strncmp(BatchPath,'.',1)
     end
 end
 
-%%% If this isn't the first image set, we're probably running on the
+%%% If this isn't the first cycle, we're probably running on the
 %%% cluster, and should just continue.
 if (handles.Current.SetBeingAnalyzed > 1),
     return;
@@ -104,7 +104,7 @@ BatchData = load(fullfile(BatchPath,BatchFilePrefix,'data.mat'));
 %%% Merge into the measurements
 handles.Measurements = BatchData.handles.Measurements;
 
-%%% Also merge the pipeline after the first image set
+%%% Also merge the pipeline after the first cycle
 handles.Pipeline = BatchData.handles.Pipeline;
 
 Fieldnames = fieldnames(handles.Measurements);

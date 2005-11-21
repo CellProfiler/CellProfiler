@@ -6,7 +6,7 @@ function handles = LoadSingleImage(handles)
 % Tells CellProfiler where to retrieve a single image and gives the
 % image a meaningful name for the other modules to access.  The module
 % only functions the first time through the pipeline, and thereafter
-% the image is accessible to all subsequent image sets being
+% the image is accessible to all subsequent cycles being
 % processed. This is particularly useful for loading an image like the
 % Illumination correction image to be used by the CorrectIllumDivide
 % module.
@@ -111,7 +111,7 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which image set is being analyzed.
+%%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 %%% Remove slashes '/' from the input
@@ -139,9 +139,9 @@ if ~exist(SpecifiedPathname,'dir')
     error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST CYCLE FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 for n = 1:length(ImageName)
@@ -149,7 +149,7 @@ for n = 1:length(ImageName)
     try
         CurrentFileName = TextToFind{n};
         %%% The following runs every time through this module (i.e. for
-        %%% every image set).
+        %%% every cycle).
         %%% Saves the original image file name to the handles
         %%% structure.  The field is named appropriately based on
         %%% the user's input, in the Pipeline substructure so that

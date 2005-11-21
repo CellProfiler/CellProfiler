@@ -21,7 +21,7 @@ function handles = RenameOrRenumberFile(handles)
 %
 % Be very careful since you will be renaming (=
 % overwriting) your files!! You will have the opportunity to
-% confirm the name change for the first image set only.  The folder
+% confirm the name change for the first cycle only.  The folder
 % containing the files must not contain subfolders or the subfolders
 % and their contents will also be renamed.
 

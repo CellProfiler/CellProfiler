@@ -77,7 +77,7 @@ while FinalOK == 0
             info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}{FeatureNbr};
         end
         
-        TextToDisplay{ImageSet} = sprintf('Image set #%d, %s:     %s',...
+        TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
             ImageSet,...
             handles.Measurements.Image.FileNames{ImageSet}{1},...
             info);
@@ -85,11 +85,11 @@ while FinalOK == 0
     
     %%% Produce an infostring that explains what is displayed
     if strcmp(Suffix{SuffixNbr},'Text')
-        InfoString = 'Image set #,  <filename>:     <text>';
+        InfoString = 'Cycle #,  <filename>:     <text>';
     elseif strcmp(ObjectTypename,'Image')
-        InfoString = 'Image set #,  <filename>:     <value>';
+        InfoString = 'Cycle #,  <filename>:     <value>';
     else
-        InfoString = 'Image set #,  <filename>:     <mean value>';
+        InfoString = 'Cycle #,  <filename>:     <mean value>';
     end
     TextToDisplay = cat(1,{InfoString},{''},TextToDisplay);
  
@@ -100,7 +100,3 @@ while FinalOK == 0
         'CancelString','Back',...
         'SelectionMode','single');
 end
-
-
-
-

@@ -3,9 +3,12 @@ function handles = LoadText(handles)
 % Help for the Load Text module:
 % Category: File Processing
 %
-% Use this tool if you would like text information.  The information could
-% be referring to each image set, each object, or anything else the user
-% would like.
+% Use this tool to load in text information. This is useful for certain
+% modules that place text information onto images. It is also useful to
+% place text information in the output files alongside the measurements
+% that are made so that the information can be exported with the
+% measurements.
+%
 % The text information must be specified in a separate text file
 % with the following syntax:
 %
@@ -28,7 +31,7 @@ function handles = LoadText(handles)
 %
 %
 % See also ADDDATA.
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -51,9 +54,9 @@ function handles = LoadText(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -85,7 +88,7 @@ if handles.Current.SetBeingAnalyzed == 1
         if fid == -1
             fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,TextFileName),'r');
             if fid == -1
-                error('Could not open file.  It might not exist or you might not have given its valid path.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid locaation.']);
             end
         end
     end
@@ -93,7 +96,7 @@ if handles.Current.SetBeingAnalyzed == 1
     % Get description
     s = fgets(fid,11);
     if ~strcmp(s,'DESCRIPTION')
-        error('The first line in the text information file must start with DESCRIPTION')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the first line in the text information file must start with DESCRIPTION.'])
     end
     Description = fgetl(fid);
     Description = Description(2:end);       % Remove space
@@ -120,9 +123,9 @@ if handles.Current.SetBeingAnalyzed == 1
         handles.Measurements.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
-    %%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
     fieldname = ['FigureNumberForModule',CurrentModule];

@@ -249,7 +249,7 @@ if strcmp(LoadChoice,'Order')
     TextToFind = str2num(char(TextToFind)); %#ok Ignore MLint
     %%% Checks whether the position in set exceeds the number per set.
     if ImagesPerSet < max(TextToFind)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the position of one of the image types within each image set exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the position of one of the image types within each cycle exceeds the number of images per set that you entered (', num2str(ImagesPerSet), ').'])
     end
 end
 
@@ -390,13 +390,13 @@ if SetBeingAnalyzed == 1
             NumberOfImageSets = str2double(UniqueNumbers{1});
 
             %%% Checks whether another load images module has already recorded a
-            %%% number of image sets.  If it has, it will not be set at the default
+            %%% number of cycles.  If it has, it will not be set at the default
             %%% of 1.  Then, it checks whether the number already stored as the
-            %%% number of image sets is equal to the number of image sets that this
+            %%% number of cycles is equal to the number of cycles that this
             %%% module has found.  If not, an error message is generated. Note:
-            %%% this will not catch the case where the number of image sets
+            %%% this will not catch the case where the number of cycles
             %%% detected by this module is more than 1 and another module has
-            %%% detected only one image set, since there is no way to tell whether
+            %%% detected only one cycle, since there is no way to tell whether
             %%% the 1 stored in handles.Current.NumberOfImageSets is the default value or a
             %%% value determined by another image-loading module.
             if handles.Current.NumberOfImageSets ~= 1;
@@ -422,7 +422,7 @@ if SetBeingAnalyzed == 1
                 handles.Pipeline.(fieldname) = SpecifiedPathname;
 
                 NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
-                clear FileList % Prevents confusion when loading this value later, for each image set.
+                clear FileList % Prevents confusion when loading this value later, for each cycle.
             end
 
         else
@@ -484,7 +484,7 @@ if SetBeingAnalyzed == 1
         ImageName2 = ImageName(~LogicalSlotsToBeDeleted);
         %%% Determines how many unique numbers of files there are.  If all the image
         %%% types have loaded the same number of images, there should only be one
-        %%% unique number, which is the number of image sets.
+        %%% unique number, which is the number of cycles.
         UniqueNumbers = unique(NumberOfFiles);
         %%% If NumberOfFiles is not all the same number at each position, generate an error.
         if length(UniqueNumbers) ~= 1
@@ -501,18 +501,18 @@ if SetBeingAnalyzed == 1
         end
         NumberOfImageSets = str2double(UniqueNumbers{1});
         %%% Checks whether another load images module has already recorded a
-        %%% number of image sets.  If it has, it will not be set at the default
+        %%% number of cycles.  If it has, it will not be set at the default
         %%% of 1.  Then, it checks whether the number already stored as the
-        %%% number of image sets is equal to the number of image sets that this
+        %%% number of cycles is equal to the number of cycles that this
         %%% module has found.  If not, an error message is generated. Note:
-        %%% this will not catch the case where the number of image sets
+        %%% this will not catch the case where the number of cycles
         %%% detected by this module is more than 1 and another module has
-        %%% detected only one image set, since there is no way to tell whether
+        %%% detected only one cycle, since there is no way to tell whether
         %%% the 1 stored in handles.Current.NumberOfImageSets is the default value or a
         %%% value determined by another image-loading module.
         if handles.Current.NumberOfImageSets ~= 1;
             if handles.Current.NumberOfImageSets ~= NumberOfImageSets
-                error(['Image processing was canceled in the ', ModuleName, ' module because the number of image sets loaded (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles loaded (', num2str(NumberOfImageSets),') does not equal the number of cycles loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
             end
         end
         handles.Current.NumberOfImageSets = NumberOfImageSets;
@@ -526,7 +526,7 @@ for n = 1:length(ImageName)
     if strcmp(ImageOrMovie,'Image')
         %%% This try/catch will catch any problems in the load images module.
         try
-            %%% The following runs every time through this module (i.e. for every image set).
+            %%% The following runs every time through this module (i.e. for every cycle).
             %%% Determines which image to analyze.
             fieldname = ['FileList', ImageName{n}];
             FileList = handles.Pipeline.(fieldname);

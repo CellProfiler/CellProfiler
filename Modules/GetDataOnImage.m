@@ -129,7 +129,7 @@ DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which image set is being analyzed.
+%%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')

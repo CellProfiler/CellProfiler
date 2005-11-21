@@ -8,7 +8,7 @@ function handles = Average(handles)
 %
 % This module averages a set of images by averaging the pixel intensities
 % at each pixel position. When this module is used to average a Z-stack
-% (3-D image set), this process is known as making a projection.
+% (3-D image stack), this process is known as making a projection.
 %
 % Settings:
 %

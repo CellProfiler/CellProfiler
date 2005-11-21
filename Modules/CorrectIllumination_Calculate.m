@@ -23,29 +23,28 @@ function handles = CorrectIllumination_Calculate(handles)
 % produces an image that represents the variation in illumination
 % across the field of view, as long as the cells are spatially
 % distributed uniformly across each image. Note that if you are using
-% a small image set, there will be spaces in the average image that
+% a small set of images, there will be spaces in the average image that
 % contain no objects and smoothing by median filtering is unlikely to
 % work well.
 %
 % Settings:
 %
-% Enter E or A:
-% Enter E to calculate an illumination function for Each image
-% individually, or enter A to average together All images at each
+% Each or All:
+% Enter Each to calculate an illumination function for Each image
+% individually, or enter All to average together All images at each
 % pixel location (this processing is done at the time you specify by
-% choosing L or P in the next box - see 'Enter L or P' for more
-% details). Note that applying illumination correction on each image
+% choosing LoadImages or Pipeline in the next box). Note that applying illumination correction on each image
 % individually may make intensity measures not directly comparable
 % across different images. Using illumination correction based on all
 % images makes the assumption that the illumination anomalies are
 % consistent across all the images in the set.
 %
-% Enter L or P:
-% If you choose L, the module will calculate the illumination
+% Pipeline or Load Images:
+% If you choose Load Images, the module will calculate the illumination
 % correction function the first time through the pipeline by loading
 % every image of the type specified in the Load Images module. It is
 % then acceptable to use the resulting image later in the pipeline. If
-% you choose P, the module will allow the pipeline to cycle through
+% you choose Pipeline, the module will allow the pipeline to cycle through
 % all of the cycles.  With this option, the module does not need
 % to follow a Load Images module; it is acceptable to make the single,
 % averaged image from images resulting from other image
@@ -130,7 +129,7 @@ IntensityChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)? See the help for details.
+%textVAR05 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module, or are they being produced by the pipeline? See the help for details.
 %choiceVAR05 = Pipeline
 %choiceVAR05 = Load Images module
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -251,7 +250,7 @@ if strcmp(EachOrAll,'All')
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            h = CPmsgbox('Preliminary calculations are under way for the Correct Illumination_Calculate Using Background Intensities module.  Subsequent cycles will be processed more quickly than the first cycle.');
+            h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.');
             OldPos = get(h,'position');
             set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
             drawnow
@@ -263,7 +262,7 @@ if strcmp(EachOrAll,'All')
                 %%% structure.
                 fieldname = ['Pathname', ImageName];
                 try Pathname = handles.Pipeline.(fieldname);
-                catch error('Image processing was canceled because the Correct Illumination_Calculate Using Background Intensities module uses all the images in a set to calculate the illumination correction. Therefore, the entire image set to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the Correct Illumination_Calculate Using Background Intensities module must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Correct Illumination_Calculate Using Background Intensities module onward.')
+                catch error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.')
                 end
                 %%% Retrieves the list of filenames where the images are stored from the
                 %%% handles structure.
@@ -319,10 +318,10 @@ if strcmp(EachOrAll,'All')
                 end
             end
         else
-            error('Image processing was canceled because you must choose either "L" or "P" in answer to the question "Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module (L), or are they being produced by the pipeline (P)" in the Correct Illumination_Calculate Using Intensities module.');
+            error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either Load Images or Pipeline in answer to the question "Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module, or are they being produced by the pipeline".']);
         end
     catch [ErrorMessage, ErrorMessage2] = lasterr;
-        error(['An error occurred in the Correct Illumination_Calculate Using Intensities module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+error(['Image processing was canceled in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
 elseif strcmp(EachOrAll,'Each')
     if strcmp(IntensityChoice,'Regular')
@@ -345,7 +344,7 @@ elseif strcmp(EachOrAll,'Each')
         IlluminationImage = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
     end
     ReadyFlag = 'Ready';
-else error('Image processing was canceled because you must choose either "E" or "A" in answer to the question "Enter E to calculate an illumination function for each image individually (in which case, choose P in the next box) or A to calculate an illumination function based on all the specified images to be corrected" in the Correct Illumination_Calculate Using Intensities module.');
+else error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either Each or All.']);
 end
 
 %%% Dilates the objects, and/or smooths the RawImage if the user requested.
@@ -366,7 +365,7 @@ if strcmp(ReadyFlag, 'Ready')
                 SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
             elseif exist('RawImage','var')
                 SmoothedImage = CPsmooth(RawImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
-            else error('something is wrong; this should never happen.')
+            else error(['Image processing was canceled in the ', ModuleName, ' due to some sort of programming error.']);
             end
         end
 
@@ -432,7 +431,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
                 title('Averaged image calculated so far');
             end
         else subplot(2,2,1); imagesc(OrigImage);
-            title(['Input Image, Cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+            title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
             CPFixAspectRatio(OrigImage);
         end
         if strcmp(ReadyFlag, 'Ready')
@@ -500,10 +499,10 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
         %%% to dilate or smooth the average image.
         if AverageImageSaveFlag == 1
             if strcmp(EachOrAll,'Each')
-                error('Image processing was canceled because in the Correct Illumination module you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.'])
             end
             try handles.Pipeline.(AverageImageName) = RawImage;
-            catch error('There was a problem passing along the average image in the Correct Illumination module. This image can only be passed along if you choose to dilate.')
+            catch error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the averaged image. This image can only be passed along if you choose to dilate.'])
             end
             %%% Saves the ready flag to the handles structure so it can be used by
             %%% subsequent modules.
@@ -512,7 +511,7 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
         end
         if ~strcmpi(DilatedImageName,'Do not save')
             try handles.Pipeline.(DilatedImageName) = DilatedImage;
-            catch error('There was a problem passing along the dilated image in the Correct Illumination module. This image can only be passed along if you choose to dilate.')
+            catch error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the dilated image. This image can only be passed along if you choose to dilate.'])
             end
         end
     elseif strcmp(IntensityChoice,'Background')

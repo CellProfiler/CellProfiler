@@ -12,7 +12,7 @@ function handles = CalculateStatistics(handles)
 % allows you to choose which measures are most powerful for distinguishing
 % positive and negative control samples. You must tell the module which
 % samples are positive and negative controls, or the concentrations of
-% drugs, in a simple text file with one entry per image set, loaded using
+% drugs, in a simple text file with one entry per cycle, loaded using
 % the LoadText module.
 %
 % The reference for Z' factor is: JH Zhang, TD Chung, et al. (1999) "A

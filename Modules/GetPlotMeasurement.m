@@ -141,7 +141,7 @@ FeatureType2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 FeatureNo2 = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 if isempty(FeatureNo2)
-    error('You entered an incorrect Feature Number.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because you entered an incorrect Feature Number.']);
 end
 
 %textVAR11 = If using INTENSITY or TEXTURE measures, which image would you like to process?
@@ -156,7 +156,7 @@ Image2 = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which image set is being analyzed.
+%%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 

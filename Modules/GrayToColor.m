@@ -113,7 +113,7 @@ if ~strcmp(BlueImageName, 'Leave this black')
     BlueImage = handles.Pipeline.(fieldname);
     BlueImageExists = 1;
     if max(BlueImage(:)) > 1 || min(BlueImage(:)) < 0
-        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
     end
 else
     BlueImageExists = 0;
@@ -128,7 +128,7 @@ if ~strcmp(GreenImageName, 'Leave this black')
     GreenImage = handles.Pipeline.(GreenImageName);
     GreenImageExists = 1;
     if max(GreenImage(:)) > 1 || min(GreenImage(:)) < 0
-        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
     end
 else GreenImageExists = 0;
 end
@@ -140,7 +140,7 @@ if ~strcmp(RedImageName, 'Leave this black')
     RedImage = handles.Pipeline.(RedImageName);
     RedImageExists = 1;
     if max(RedImage(:)) > 1 || min(RedImage(:)) < 0
-        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
     end
 else RedImageExists = 0;
 end
@@ -176,12 +176,12 @@ end
 %%% Checks whether the three images are the same size.
 try
     if size(BlueImage) ~= size(GreenImage)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected for the RGB Merge module are not the same size.  The pixel dimensions must be identical.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
     end
     if size(RedImage) ~= size(GreenImage)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected for the RGB Merge module are not the same size.  The pixel dimensions must be identical.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
     end
-catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected for the RGB Merge module. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in RGB format.'])
+catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in RGB format.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -211,7 +211,7 @@ if any(findobj == ThisModuleFigureNumber);
     %%% image.  Using imagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
     subplot(2,2,1); CPimagesc(RGBImage);
-    title(['Merged RGB Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Merged Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the blue image.
     subplot(2,2,2); CPimagesc(BlueImage); title('Blue Image');
     %%% A subplot of the figure window is set to display the green image.

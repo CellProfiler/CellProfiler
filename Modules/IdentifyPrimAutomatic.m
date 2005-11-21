@@ -412,12 +412,12 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
         %%% Checks whether the image exists in the handles structure.
         if isfield(handles.Pipeline, fieldname)==0,
-            error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the IdentifyPrimAutomatic Intensity module, you must have previously run a module to load an image. You specified in the IdentifyPrimAutomatic module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to load an image. You specified in this module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The module cannot find this image.']);
         end
         OrigImage = handles.Pipeline.(fieldname);
 
         if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-            CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+            CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
         end
         %%% Checks that the original image is two-dimensional (i.e. not a color
         %%% image), which would disrupt several of the image functions.
@@ -429,7 +429,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         if ~strcmp(LaplaceValues,'/')
             index = strfind(LaplaceValues,',');
             if isempty(index) || (length(index) ~= 6)
-                error(['The LaplaceValues in the ', ModuleName, ' module is invalid.']);
+                error(['Image processing was canceled in the ', ModuleName, ' module because the Laplace Values are invalid.']);
             end
             NeighborhoodSize(1) = str2num(LaplaceValues(1:index(1)-1)); %#ok Ignore MLint
             NeighborhoodSize(2) = str2num(LaplaceValues(index(1)+1:index(2)-1)); %#ok Ignore MLint
@@ -443,31 +443,31 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         %%% Checks that the Min and Max diameter parameters have valid values
         index = strfind(SizeRange,',');
         if isempty(index),
-            error(['The Min and Max size entry in the ', ModuleName, ' module is invalid.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max size entry is invalid.'])
         end
         MinDiameter = SizeRange(1:index-1);
         MaxDiameter = SizeRange(index+1:end);
 
         MinDiameter = str2double(MinDiameter);
         if isnan(MinDiameter) | MinDiameter < 0 %#ok Ignore MLint
-            error(['The Min diameter entry in the ', ModuleName, ' module is invalid.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because the Min diameter entry is invalid.'])
         end
         if strcmp(MaxDiameter,'Inf')
             MaxDiameter = Inf;
         else
             MaxDiameter = str2double(MaxDiameter);
             if isnan(MaxDiameter) | MaxDiameter < 0 %#ok Ignore MLint
-                error(['The Max diameter entry in the ', ModuleName, ' module is invalid.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the Max diameter entry is invalid.'])
             end
         end
         if MinDiameter > MaxDiameter
-            error(['Min Diameter larger the Max Diameter in the ', ModuleName, ' module.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because the Min Diameter is larger than the Max Diameter.'])
         end
 
         %%% Checks that the Min and Max threshold bounds have valid values
         index = strfind(ThresholdRange,',');
         if isempty(index)
-            error(['The Min and Max threshold bounds in the ', ModuleName, ' module are invalid.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
         end
         MinimumThreshold = ThresholdRange(1:index-1);
         MaximumThreshold = ThresholdRange(index+1:end);
@@ -476,7 +476,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         if ~strcmp(SizeOfSmoothingFilter,'Automatic')
             SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
             if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
-                error(['The specified size of the smoothing filter in the ', ModuleName, ' module is not valid or unreasonable.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])
             end
         end
 
@@ -484,7 +484,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         if ~strcmp(MaximaSuppressionSize,'Automatic')
             MaximaSuppressionSize = str2double(MaximaSuppressionSize);
             if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0 %#ok Ignore MLint
-                error(['The specified maxima suppression size in the ', ModuleName, ' module is not valid or unreasonable.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the specified maxima suppression size is not valid or unreasonable.'])
             end
         end
         
@@ -750,7 +750,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             % rgArOpen=bwareaopen(rgNegCurve,MinArea,8); %use 8-connectivity like rest of CP
             % rgLabelled=uint16(bwlabel(rgArOpen,8));
             if max(rgLabelled(:))==1
-                error('Error: No DAPI regions generated');
+                error(['Image processing was canceled in the ', ModuleName, ' module because no DAPI regions were generated.']);
             end
 
             %Get rid of region around outsides (upper-left region gets value 1)
@@ -927,7 +927,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
                     subplot(2,2,2);
-                    CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
+                    CPimagesc(ColoredLabelMatrixImage); title(['Identified ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); imagesc(Overlaid);  title([ObjectName, ' markers']);
@@ -960,10 +960,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             %%% Saves images to the handles structure so they can be saved to the hard
             %%% drive, if the user requested.
             if ~strcmp(SaveOutlines,'Do not save')
-                try    handles.Pipeline.(SaveOutlines) = FinalOutline;
-                catch
-                    error('The object outlines were not calculated by the IdentifyPrimAutomatic module (possibly because the window is closed) so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
-                end
+               try    handles.Pipeline.(SaveOutlines) = FinalOutline;
+                   catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+               end
             end
 
             %%% Saves the Threshold value to the handles structure.

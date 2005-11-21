@@ -98,7 +98,7 @@ drawnow
 try
     Grid = handles.Pipeline.(['Grid_' GridName]);
 catch
-    error('IdentifyObjectsInGrid is unable to open the grid.  Make sure you properly defined it using the DefineGrid module earlier.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because it is unable to find the grid you specified, ', GridName, '.  Make sure you properly defined it using the DefineGrid module earlier.']);
 end
 
 TotalHeight = Grid.TotalHeight;
@@ -136,7 +136,7 @@ if strmatch('Circle',Shape)
         end
         if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
             if handles.Current.SetBeingAnalyzed == 1
-                error('The grid you have designed is not working, please check the pipeline.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);
             else
                 FailCheck = 1;
                 SetNum = 1;
@@ -191,7 +191,7 @@ if strmatch('Circle',Shape)
         end
     else
         if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-            error('Your grid failed. Please check the DefineGrid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.');
+            error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the DefineGrid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
         end
     end
 end
@@ -244,7 +244,7 @@ for i=1:Cols
         elseif strcmp(Shape,'Rectangle')
             subregion(:,:) = SpotTable(j,i);
         else
-            error('The value of Shape is not recognized');
+            error(['Image processing was canceled in the ', ModuleName, ' module because the value of Shape is not recognized.']);
         end
         FinalLabelMatrixImage(max(1,Topmost - floor(YDiv/2) + (j-1)*YDiv+1):min(Topmost - floor(YDiv/2) + j*YDiv,end),max(1,Leftmost - floor(XDiv/2) + (i-1)*XDiv+1):min(Leftmost - floor(XDiv/2) + i*XDiv,end))=subregion;
     end
@@ -273,11 +273,11 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,1,1); CPimagesc(ColoredLabelMatrixImage);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title(sprintf('Segmented %s',NewObjectName),'fontsize',8);
+    title(sprintf('Identified %s',NewObjectName),'fontsize',handles.Preferences.FontSize);
     subplot(2,1,2); CPimagesc(FinalOutline);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title('Outlined objects','fontsize',8);
+    title('Outlined objects','fontsize',handles.Preferences.FontSize);
     set(findobj('type','line'), 'color',[.15 .15 .15])
 end
 

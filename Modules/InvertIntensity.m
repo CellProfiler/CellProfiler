@@ -77,7 +77,7 @@ end
 OrigImage = handles.Pipeline.(fieldname);
 
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
@@ -114,7 +114,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,1,1); CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Inverted
     %%% Image.
     subplot(2,1,2); CPimagesc(InvertedImage); title('Inverted Image');

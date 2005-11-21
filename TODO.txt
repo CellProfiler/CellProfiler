@@ -26,6 +26,24 @@ Here is something perhaps helpful from the CreateWebPage module:
 %choiceVAR07 = Yellow
 And, while we are at it, there is a list of colors in DefineGrid that could probably be expanded too?
 
+(Requested by Anne 11-21-05):  Code like the following is found in several identify modules. I think the error will cause the module to abort, though it's not supposed to. Can we make sure it just pops open a window, and that this window is not popped open repeatedly? I think there is an option for one of the warndlg or errordlg boxes that prevents more than one of the same error message from opening each time.
+try
+    if ~strcmp(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = FinalOutline;
+    end
+catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+end
+
+
+(Requested by Anne 11-21-05):  It seems like this code in GetDataOnImage module will fail if that image cycle does not have any objects. The catch should allow processing to continue but display something in the figure window like 'no measurements found for this cycle'.
+try
+    tmp = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed};
+catch
+    error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
+end
+
+
+
 (Requested by Anne 11-21-05):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
 
 - Combine code for:

@@ -72,6 +72,11 @@ function handles = GetDataOnImage(handles)
 %
 % $Revision: 2614 $
 
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
+drawnow
+
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.
 
@@ -144,7 +149,7 @@ end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(DisplayImage);
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
 %%%%%%%%%%%%%%%%%%%%%

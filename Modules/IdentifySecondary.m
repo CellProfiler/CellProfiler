@@ -274,7 +274,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     OrigImage = handles.Pipeline.(fieldname);
 
     if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-        CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
     end
 
     %%% Checks that the original image is two-dimensional (i.e. not a color
@@ -291,7 +291,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     fieldname = ['SmallRemovedSegmented', PrimaryObjectName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in this module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  This module cannot locate this image.']);
     end
     PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -302,7 +302,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     fieldname = ['Segmented', PrimaryObjectName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Secondary Propagate module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in the Identify Secondary Propagate module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Identify Secondary Propagate module cannot locate this image.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in this module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  This module cannot locate this image.']);
     end
     EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -314,7 +314,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     %%% Checks that the Min and Max threshold bounds have valid values
     index = strfind(ThresholdRange,',');
     if isempty(index)
-        error(['The Min and Max threshold bounds in the ', ModuleName, ' module are invalid.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
     end
 
     MinimumThreshold = ThresholdRange(1:index-1);
@@ -770,7 +770,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         if exist('FinalParentList','var')
             if max(FinalLabelMatrixImage(:)) ~= size(FinalParentList,1)
-                error('Secondary Objects cannot have two parents, something is wrong.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because secondary objects cannot have two parents, something is wrong.']);
             end
 
             if isfield(handles.Measurements.(SecondaryObjectName),'ParentFeatures')
@@ -781,7 +781,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
                 else
                     OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SecondaryObjectName).ParentFeatures);
                     if length(OldColumn) ~= 1
-                        error('You are attempting to create the same children, please remove redundant module.');
+                        error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
                     end
                     handles.Measurements.(SecondaryObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
                 end
@@ -808,7 +808,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
                 else
                     OldColumn = strmatch([SecondaryObjectName,' Count'],handles.Measurements.(PrimaryObjectName).ChildrenFeatures);
                     if length(OldColumn) ~= 1
-                        error('You are attempting to create the same children, please remove redundant module.');
+                        error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
                     end
                     handles.Measurements.(PrimaryObjectName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
                 end
@@ -903,7 +903,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             if ~strcmp(SaveOutlined,'Do not save')
                 handles.Pipeline.(SaveOutlined) = LogicalOutlines;
             end
-        catch error('The object outlines or colored objects were not calculated by an identify module so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+        catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
         end
     end
 end

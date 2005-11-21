@@ -224,7 +224,7 @@ end
 OrigImage = handles.Pipeline.(fieldname);
 
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
@@ -363,7 +363,7 @@ if any(findobj == ThisModuleFigureNumber)
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1); 
-    CPimagesc(OrigImage); title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
     subplot(2,2,3); CPimagesc(EnhancedInvertedImage); title('Inverted enhanced contrast image');
@@ -402,7 +402,7 @@ end
 % Search the ThresholdFeatures to find the column for this object type
 column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
 % If column is empty it means that this particular object has not been segmented before. This will
-% typically happen for the first image set. Append the feature name in the
+% typically happen for the first cycle. Append the feature name in the
 % handles.Measurements.Image.ThresholdFeatures matrix
 if isempty(column)
     handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};
@@ -437,5 +437,5 @@ try
     if ~strcmp(SaveOutlined,'Do not save')
         handles.Pipeline.(SaveOutlined) = FinalOutline;
     end
-catch error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+catch error(['The object outlines or colored objects were not calculated by the ', ModuleName, ' module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
 end

@@ -86,7 +86,7 @@ MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3}
 %infotypeVAR04 = outlinegroup indep
 SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 02
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -102,11 +102,11 @@ end
 OrigImage = handles.Pipeline.(ImageName);
 
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
 if isempty(MaxResolution)
-    error('Invalid specification of the image size in the Identify Primary Manually module.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for "Resize the image to this size before manual identification (pixels)" was invalid.'])
 end
 
 % Use a low resolution image for outlining the primary region
@@ -132,10 +132,9 @@ axis image
 
 AxisHandle = gca;
 set(gca,'fontsize',handles.Preferences.FontSize)
-title([{['Image Set #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
+title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
     {'Press enter when finished, the first and last points will be connected automatically.'},...
     {'The backspace key or right mouse button will erase the last clicked point.'}]);
-
 
 %%% Manual outline of the object, see local function 'getpoints' below.
 %%% Continue until user has drawn a valid shape
@@ -159,12 +158,12 @@ if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); CPimagesc(LowResOrigImage); title(['Original Image, Image Set # ', num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,1); CPimagesc(LowResOrigImage); title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); CPimagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
     FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
     subplot(2,2,3); CPimagesc(FinalOutlineOnOrigImage); title([ObjectName, ' Outline']);
-    subplot(2,2,4); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ' ObjectName]);
+    subplot(2,2,4); CPimagesc(ColoredLabelMatrixImage); title(['Identified ' ObjectName]);
     CPFixAspectRatio(LowResOrigImage);
 end
 
@@ -201,8 +200,7 @@ try
     if ~strcmp(SaveOutlined,'Do not save')
         handles.Pipeline.(SaveOutlined) = FinalOutline;
     end
-catch
-    error('The object outlines or colored objects were not calculated by an identify module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.')
+catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
 end
 
 %%%%%%%%%%%%%%%%%%%

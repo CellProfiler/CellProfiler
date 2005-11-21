@@ -175,7 +175,7 @@ end
 
 if exist('FinalParentList','var')
     if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
-        error('A subobject cannot have two parents, something is wrong.');
+        error(['Image processing was canceled in the ', ModuleName, ' module because a subobject cannot have two parents, something is wrong.']);
     end
     if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
         if handles.Current.SetBeingAnalyzed == 1
@@ -185,7 +185,7 @@ if exist('FinalParentList','var')
         else
             OldColumn = strmatch(SecondaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
             if length(OldColumn) ~= 1
-                error('You are attempting to create the same children, please remove redundant module.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
             end
             handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
         end
@@ -213,7 +213,7 @@ end
 
 if exist('FinalParentList','var')
     if max(SubregionObjectImage(:)) ~= size(FinalParentList,1)
-        error('A subobject cannot have two parents, something is wrong.');
+        error(['Image processing was canceled in the ', ModuleName, ' module because a subobject cannot have two parents, something is wrong.']);
     end
     if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
         if handles.Current.SetBeingAnalyzed == 1
@@ -223,7 +223,7 @@ if exist('FinalParentList','var')
         else
             OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
             if length(OldColumn) ~= 1
-                error('You are attempting to create the same children, please remove redundant module.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
             end
             handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
         end
@@ -246,7 +246,7 @@ if any(findobj == ThisModuleFigureNumber);
     PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); CPimagesc(PrimaryObjectImage); title([PrimaryObjectName, ' Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,1); CPimagesc(PrimaryObjectImage); title([PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); CPimagesc(SecondaryObjectImage); title([SecondaryObjectName, ' Image']);
     subplot(2,2,3); CPimagesc(ColoredLabelMatrixImage); title([SubregionObjectName, ' Image']);
     subplot(2,2,4); CPimagesc(FinalOutline); title([SubregionObjectName, ' Outlines']);

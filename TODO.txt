@@ -1,5 +1,13 @@
 CellProfiler cell image analysis software development 
-November 8, 2005
+November 21, 2005
+
+(Requested by Anne 11-21-05)  Histograms: 
+1.  If you choose a starting and ending image set when running this tool, it ignores your inputs and plots the entire image set!!!!!
+2. Export Data button didn't work for me. No errors, it just doesn't do anything. Perhaps it is because I have a plot plus several control plots on the same chart?
+3. I would like to be able to choose the color for the initial plot, preferably right after specifying the starting and ending set.
+4. When choosing the color, please list what color names can be typed in, and also how to specify numerical colors, e.g.  [.7 .7 .9].
+
+(Requested by Anne 11-21-05):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
 
 - Combine code for:
 Histograms
@@ -28,6 +36,7 @@ MIKE:
 	- CPimagesc
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
+- Submit code to Sourceforge for distribution/easy updating? EVeryone seems to recommend this for open-source software.
 - Prepare updated manual
 - Make reference sheet with short descriptions of the modules (see manuscript table).
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.

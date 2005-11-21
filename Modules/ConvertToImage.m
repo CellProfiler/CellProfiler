@@ -1,6 +1,6 @@
 function handles = ConvertToImage(handles)
 
-% Help for the Quick Fix Convert Objects To Image module:
+% Help for the Convert To Image module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
@@ -33,9 +33,9 @@ function handles = ConvertToImage(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -87,9 +87,9 @@ end
 
 handles.Pipeline.(ImageName) = Image;
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -100,8 +100,8 @@ if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
     subplot(2,1,1);
     CPimagesc(ColoredLabelMatrixImage);
-    title('Original Identified Objects','fontsize',8);
+    title('Original Identified Objects','fontsize',handles.Preferences.FontSize);
     subplot(2,1,2);
     CPimagesc(Image);
-    title('New Image','fontsize',8);
+    title('New Image','fontsize',handles.Preferences.FontSize);
 end

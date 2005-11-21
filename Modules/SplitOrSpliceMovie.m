@@ -1,6 +1,6 @@
 function handles = SplitOrSpliceMovie(handles)
 
-% Help for the SplitOrSplicMovie module:
+% Help for the SplitOrSpliceMovie module:
 % Category: File Processing
 %
 % See also <nothing relevant>.
@@ -90,7 +90,7 @@ if handles.Current.SetBeingAnalyzed == 1
             LastFrameToReadForThisFile = min(i*FramesPerSplitMovie,AviMovieInfo.NumFrames);
             LoadedRawImages = aviread(fullfile(ExistingPath,TargetMovieFileName),LastFrameRead+1:LastFrameToReadForThisFile);
             try movie2avi(LoadedRawImages,NewFileAndPathName)
-            catch error('problem encountered during save')
+            catch error(['Image processing was canceled in the ', ModuleName, ' module because a problem was encountered during save of ',NewFileAndPathName,'.'])
                 return
             end
             LastFrameRead = i*FramesPerSplitMovie;
@@ -99,7 +99,7 @@ if handles.Current.SetBeingAnalyzed == 1
         Filenames = CPretrieveMediaFileNames(ExistingPath,TargetMovieFileName,'N','E','Movie');
         %%% Checks whether any files are left.
         if isempty(Filenames)
-            error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TargetMovieFileName, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TargetMovieFileName, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
         end
 
         NewFileAndPathName = fullfile(FinalPath,FinalSpliceName);
@@ -109,13 +109,13 @@ if handles.Current.SetBeingAnalyzed == 1
         for i = 1:NumMovies
             LoadedRawImages = aviread(fullfile(ExistingPath,char(Filenames(i))));
             try NewAviMovie = addframe(NewAviMovie,LoadedRawImages);
-            catch error(['Problem encountered during save of ',NewFileAndPathName])
+            catch error(['Image processing was canceled in the ', ModuleName, ' module because a problem was encountered during save of ',NewFileAndPathName,'.'])
                 return
             end
         end
 
         try NewAviMovie = close(NewAviMovie)
-        catch error(['Problem encountered during save of ',NewFileAndPathName])
+        catch error(['Image processing was canceled in the ', ModuleName, ' module because a problem was encountered during save of ',NewFileAndPathName,'.'])
         end
     end
 end

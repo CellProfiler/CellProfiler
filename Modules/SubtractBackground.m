@@ -142,7 +142,7 @@ if handles.Current.SetBeingAnalyzed == 1
         fieldname = ['FileList', ImageName];
         FileList = handles.Pipeline.(fieldname);
         if size(FileList,1) == 2
-            error(['The ', ModuleName, ' module cannot function on movies.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because it cannot function on movies.']);
         end
         %%% Calculates the pixel intensity of the pixel that is 10th dimmest in
         %%% each image, then finds the Minimum of that value across all
@@ -169,7 +169,7 @@ if handles.Current.SetBeingAnalyzed == 1
             SortedColumnImage = sort(reshape(Image, [],1));
             TenthMinimumPixelValue = SortedColumnImage(10);
             if TenthMinimumPixelValue == 0
-                CPmsgbox([ImageName , ' image number ', num2str(i), ', and possibly others in the set, has the 10th dimmest pixel equal to zero, which means there is no camera background to subtract, either because the exposure time was very short, or the camera has 10 or more pixels stuck at zero, or that images have been rescaled such that at least 10 pixels are zero, or that for some other reason you have more than 10 pixels of value zero in the image.  This means that the Subtract Background module will not alter the images in any way, although image processing has not been aborted.'], 'Warning', 'warn','replace')
+                CPmsgbox([ImageName , ' image number ', num2str(i), ', and possibly others in the set, has the 10th dimmest pixel equal to zero, which means there is no camera background to subtract, either because the exposure time was very short, or the camera has 10 or more pixels stuck at zero, or that images have been rescaled such that at least 10 pixels are zero, or that for some other reason you have more than 10 pixels of value zero in the image.  This means that the ', ModuleName, ' module will not alter the images in any way, although image processing has not been aborted.'], 'Warning', 'warn','replace')
                 %%% Stores the minimum tenth minimum pixel value in the handles structure for
                 %%% later use.
                 fieldname = ['IntensityToShift', ImageName];
@@ -196,7 +196,7 @@ if handles.Current.SetBeingAnalyzed == 1
         end
         close(WaitbarHandle)
     catch [ErrorMessage, ErrorMessage2] = lasterr;
-        error(['An error occurred in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+        error(['Image processing was canceled in the ', ModuleName, '. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
     %%% Stores the minimum tenth minimum pixel value in the handles structure for
     %%% later use.
@@ -212,7 +212,7 @@ if handles.Current.SetBeingAnalyzed == 1
     handles.Pipeline.(fieldname) = MinimumTenthMinimumPixelValue;
 end
 
-%%% The following is run for every image set. Retrieves the minimum tenth
+%%% The following is run for every cycle. Retrieves the minimum tenth
 %%% minimum pixel value from the handles structure.
 fieldname = ['IntensityToShift', ImageName];
 MinimumTenthMinimumPixelValue = handles.Pipeline.(fieldname);
@@ -249,7 +249,7 @@ if MinimumTenthMinimumPixelValue ~= 0
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,1,1); imagesc(OrigImage);
-        title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% The mean image does not absolutely have to be present in order to
         %%% carry out the calculations if the illumination image is provided,
         %%% so the following subplot is only shown if MeanImage exists in the

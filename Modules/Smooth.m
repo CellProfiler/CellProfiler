@@ -48,9 +48,9 @@ function handles = Smooth(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -69,7 +69,7 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are you using this module to smooth an image that results from processing multiple image sets?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
+%textVAR03 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
 %choiceVAR03 = Yes
 %choiceVAR03 = No
 WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -77,18 +77,18 @@ WaitForFlag = WaitForFlag(1);
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = Smoothing method: Enter the width of the artifacts (an even number) that are to be smoothed out by median filtering, or use a low order polynomial fit.
-%choiceVAR04 = Polynomial fit
+%choiceVAR04 = Fit Polynomial
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-if strcmp(SmoothingMethod,'Polynomial fit')
+if strcmp(SmoothingMethod,'Fit Polynomial')
     SmoothingMethod='P';
 end
 %inputtypeVAR04 = popupmenu custom
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The following checks to see whether it is appropriate to calculate the
@@ -110,13 +110,13 @@ if strncmpi(WaitForFlag,'Y',1) == 1
         end
         %%% If we make it to this point, it is OK to proceed to calculating the smooth
         %%% image, etc.
-    else error(['There is a programming error of some kind. The Smooth Image module was expecting to find the text Ready or NotReady in the field called ', fieldname, ' but that text was not matched for some reason.'])
+    else error(['Image processing was canceled in the ', ModuleName, ' module because there is a programming error of some kind. The module was expecting to find the text Ready or NotReady in the field called ', fieldname, ' but that text was not matched for some reason.'])
     end
 elseif strncmpi(WaitForFlag,'N',1) == 1
     %%% If we make it to this point, it is OK to proceed to calculating the smooth
     %%% image, etc.
 else
-    error(['Your response to the question "Are you using this module to smooth a projection image?" was not recognized. Please enter Y or N.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because your response to the question "Are you using this module to smooth a projection image?" was not recognized. Please enter Y or N.'])
 end
 
 %%% If we make it to this point, it is OK to proceed to calculating the smooth
@@ -138,7 +138,7 @@ end
 OrigImage = handles.Pipeline.(OrigImageName);
 
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg('The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
 end
 
 %%% Checks that the original image is two-dimensional (i.e. not a color
@@ -147,17 +147,17 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Smooths the OrigImage according to the user's specifications.
 SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -181,17 +181,17 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% image and the smoothed image.
     subplot(2,1,1); imagesc(OrigImage);
     
-    title('Input Image');
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     subplot(2,1,2); imagesc(SmoothedImage);
     
     title('Smoothed Image');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the corrected image to the
-%%% handles structure so it can be used by subsequent modules.
+%%% Saves the processed image to the handles structure so it can be used by
+%%% subsequent modules.
 handles.Pipeline.(SmoothedImageName) = SmoothedImage;

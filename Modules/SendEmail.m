@@ -6,12 +6,14 @@ function handles = SendEmail(handles)
 % This module e-mails the user-specified recipients about the current
 % progress of the image processing modules as well as the expected time
 % remaining until completion.  The user can specify how often e-mails are
-% sent out (for example, after the first image set, after the last image
-% set, after every X number of images, after Y images).  Note:  This
-% module should be the last module loaded.  If it isn't the last module
-% loaded, then the notifications are sent out after all the modules that
-% are processed before this module is completed, but not before all the
-% modules that comes after this module.
+% sent out (for example, after the first cycle, after the last cycle, after
+% every X number of images, after Y images).  Note:  This module should be
+% the last module loaded.  If it isn't the last module loaded, then the
+% notifications are sent out after all the modules that are processed
+% before this module is completed, but not before all the modules that
+% comes after this module.
+%
+% See also: <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -35,9 +37,9 @@ function handles = SendEmail(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -58,47 +60,47 @@ AddressFrom = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = mail
 SMTPServer = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Send an e-mail after the first image set is completed?
+%textVAR04 = Send an e-mail after the first cycle is completed?
 %choiceVAR04 = Yes
 %choiceVAR04 = No
 FirstImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Send an e-mail after the last image set is completed?
+%textVAR05 = Send an e-mail after the last cycle is completed?
 %choiceVAR05 = Yes
 %choiceVAR05 = No
 LastImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Send an e-mail after every X number of image sets?
+%textVAR06 = Send an e-mail after every X number of cycles?
 %defaultVAR06 = 0
 EveryXImageEmail = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Send an e-mail after _ number of image sets?
+%textVAR07 = Send an e-mail after _ number of cycles?
 %defaultVAR07 = 0
 Specified1Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Send an e-mail after _ number of image sets?
+%textVAR08 = Send an e-mail after _ number of cycles?
 %defaultVAR08 = 0
 Specified2Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Send an e-mail after _ number of image sets?
+%textVAR09 = Send an e-mail after _ number of cycles?
 %defaultVAR09 = 0
 Specified3Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Send an e-mail after _ number of image sets?
+%textVAR10 = Send an e-mail after _ number of cycles?
 %defaultVAR10 = 0
 Specified4Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = Send an e-mail after _ number of image sets?
+%textVAR11 = Send an e-mail after _ number of cycles?
 %defaultVAR11 = 0
 Specified5Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% SENDING EMAILS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 setpref('Internet','SMTP_Server',SMTPServer);
@@ -113,25 +115,25 @@ while isempty(AddressEmail) == 0
 end
 
 if strcmp(FirstImageEmail, 'Yes') == 1 & SetBeingAnalyzed == handles.Current.StartingImageSet
-    subject = 'CellProfiler:  First image set has been completed';
+    subject = 'CellProfiler:  First cycle has been completed';
     if (SetBeingAnalyzed > 1)
-        subject = [subject,' after Restart, image number ',num2str(SetBeingAnalyzed)];
+        subject = [subject,' after Restart, image # ',num2str(SetBeingAnalyzed)];
     end
     sendmail(AddressTo,subject,subject);
 elseif strcmp(LastImageEmail, 'Yes') == 1 & SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    subject = 'CellProfiler:  Last image set has been completed';
+    subject = 'CellProfiler:  Last cycle has been completed';
     sendmail(AddressTo,'CellProfiler Progress',subject);
 elseif EveryXImageEmail > 0 & mod(SetBeingAnalyzed,EveryXImageEmail) == 0
-    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' image sets have been completed'];
+    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
     sendmail(AddressTo,subject,subject);
 elseif Specified1Email == SetBeingAnalyzed | Specified2Email == SetBeingAnalyzed | Specified3Email == SetBeingAnalyzed | Specified4Email == SetBeingAnalyzed | Specified5Email == SetBeingAnalyzed
-    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' image sets have been completed'];
+    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
     sendmail(AddressTo,subject,subject);
 end
 
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE WINDOW %%%
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -145,7 +147,3 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
         close(ThisModuleFigureNumber)
     end
 end
-
-drawnow
-
-%%% STANDARD HELP STATEMENTS THAT ARE UNNECESSARY FOR THIS MODULE:

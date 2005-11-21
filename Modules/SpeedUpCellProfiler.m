@@ -4,12 +4,12 @@ function handles = SpeedUpCellProfiler(handles)
 % Category: Other
 %
 % Allows faster image processing by refraining from saving the output
-% file after every image set is processed. Instead, the output file is
-% saved after every Nth image set (and always after the first and last
-% image sets). For large output files, this can result in substantial
+% file after every cycle is processed. Instead, the output file is
+% saved after every Nth cycle (and always after the first and last
+% cycles). For large output files, this can result in substantial
 % time savings. The only disadvantage is that if processing is
 % canceled prematurely, the output file will contain only data up to
-% the last multiple of N, even if several image sets have been
+% the last multiple of N, even if several cycles have been
 % processed since then.
 %
 % See also <nothing relevant>.
@@ -36,9 +36,9 @@ function handles = SpeedUpCellProfiler(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -47,7 +47,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = Output files should be saved every Nth image set (1,2,3,...  Default = 1). Note: the output file is always saved after the first or last image set is processed, no matter what is entered here.
+%textVAR01 = Output files should be saved every Nth cycle (1,2,3,...  Default = 1). Note: the output file is always saved after the first or last cycle is processed, no matter what is entered here.
 %defaultVAR01 = 1
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
@@ -80,19 +80,19 @@ for i = 1:length(ListOfFields)
 end
 handles.Pipeline = tempPipe;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 try SaveWhen = str2num(SaveWhen);
-catch error(['The number of image sets must be entered as a number in the ', ModuleName, ' module.'])
+catch error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles must be entered as a number.'])
 end
 handles.Current.SaveOutputHowOften = SaveWhen;
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet

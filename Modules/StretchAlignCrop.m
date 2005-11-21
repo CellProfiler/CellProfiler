@@ -189,10 +189,10 @@ end
 drawnow
 
 if RealResolution ~= RealResolution2
-    error('Oops.  Due to some fundamental problem in coding of the AlignAndCrop module or in you, the resolution is different depending upon which axis you calculate it.  Re-measure your printed image: you may be trying to be too accurate.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because of some fundamental problem in coding or possibly the resolution is different depending upon which axis you calculate it.  Re-measure your printed image: you may be trying to be too accurate.'])
 end
 if TracedResolution ~= TracedResolution2
-    error('Oops.  Due to some fundamental problem in coding of the AlignAndCrop or in you, the resolution is different depending upon which axis you calculate it.  Most likely, you scanned the image not perfectly at 8.5 by 11 and caused major problems.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because of some fundamental problem in coding or possibly the resolution is different depending upon which axis you calculate it.  Most likely, you scanned the image not perfectly at 8.5 by 11 and caused major problems.'])
 end
 drawnow
 %%% Resizes the real image to be at the same resolution as the traced image
@@ -215,9 +215,9 @@ RealImageBlankSlate = zeros(TracedY,TracedX);
 NewImageSizeX = TracedX - 2*(XMargin);
 NewImageSizeY = TracedY - 2*(YMargin);
 if isequal(NewImageSizeX,RRealX) == 0
-    error('The value (TracedX - 2(XMargin)) is not the same as the value (RRealX) in the AlignAndCrop module')
+    error(['Image processing was canceled in the ', ModuleName, ' module because the value (TracedX - 2(XMargin)) is not the same as the value (RRealX).'])
 elseif isequal(NewImageSizeY,RRealY) == 0
-    error('The value (TracedY - 2(YMargin)) is not the same as the value (RRealY) in the AlignAndCrop module')
+    error(['Image processing was canceled in the ', ModuleName, ' module because the value (TracedY - 2(YMargin)) is not the same as the value (RRealY).'])
 end
 drawnow
 %%% rounds each number up, then subtracts the original from that and tests
@@ -230,15 +230,15 @@ XMD = RXM - XMargin;
 YMD = RYM - YMargin;
 if isequal(XMD,0) == 0
     if isequal(YMD,0) == 0
-        CPwarndlg(['Warning: neither margin value is an integer, and therefore problems may appear in the very near future. XM = ',num2str(XMargin),', YM = ',num2str(YMargin)],'Feeling Unwhole')
+        CPwarndlg(['Warning in the ', ModuleName, ' module: neither margin value is an integer, and therefore problems may appear in the very near future. XM = ',num2str(XMargin),', YM = ',num2str(YMargin)],'Feeling Unwhole')
         YMargin1 = ceil(YMargin);
         YMargin2 = floor(YMargin);
-    else CPwarndlg('Warning: the XMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the YMargin value is an integer','Feeling Unwhole')
+    else CPwarndlg(['Warning in the ', ModuleName, ' module: the XMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the YMargin value is an integer'],'Feeling Unwhole')
     end
     XMargin1 = ceil(XMargin);
     XMargin2 = floor(XMargin);
 elseif isequal(YMD,0) == 0
-    CPwarndlg('Warning: the YMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the XMargin value is an integer','Feeling Unwhole')
+    CPwarndlg(['Warning in the ', ModuleName, ' module: the YMargin number is not an integer, and therefore may cause problems in the very near future. Fortunately, the XMargin value is an integer'],'Feeling Unwhole')
     YMargin1 = ceil(YMargin);
     YMargin2 = floor(YMargin);
 else XMargin1 = XMargin;
@@ -268,7 +268,7 @@ AlignedRealImage = subim(ExpandedRealImage, -sx, -sy);
     %CPwarndlg(['All image processing has completed. Results are ',Results],'Notice:')
 %%% Checks that the size of aligned images is the same
 if isequal(size(AlignedTracedImage),size(AlignedRealImage)) == 0
-    error('After the alignment step was completed in the AlignAndCrop module, the two images were different sizes for some reason.  This is not good.')
+    error(['Image processing was canceled in the ', ModuleName, ' module because after the alignment step was completed, the two images were different sizes for some reason.'])
 end
 %%% finds the end and begin points for all dimensions of the new images and
 %%% creates the cropping rectangle matrix
@@ -292,7 +292,7 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1); imagesc(TracedImage);
-    title(['Traced Input, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Traced Input, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); imagesc(RealImage); title('Real Input Image');
     subplot(2,2,3); imagesc(CroppedAlignedTracedImage);
 end

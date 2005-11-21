@@ -35,9 +35,9 @@ function handles = Resize(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -78,11 +78,11 @@ else
 end
 %inputtypeVAR05 = popupmenu
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
@@ -117,7 +117,7 @@ elseif strncmpi(InterpolationMethod,'L',1) == 1
     InterpolationMethod = 'bilinear';
 elseif strncmpi(InterpolationMethod,'C',1) == 1
     InterpolationMethod = 'bicubic';
-else error(['Image processing was canceled in the ', ModuleName, ' module because you must enter "N", "L", or "C" for the interpolation method in the Resize Images module.'])
+else error(['Image processing was canceled in the ', ModuleName, ' module because you must enter "N", "L", or "C" for the interpolation method.'])
 end
 
 ResizedImage = imresize(OrigImage,ResizeData,InterpolationMethod);
@@ -126,7 +126,7 @@ ResizedImage = imresize(OrigImage,ResizeData,InterpolationMethod);
 %%% rescaled here.
 if strncmpi(InterpolationMethod,'bicubic',1) == 1
     if min(OrigImage(:)) < 0 | max(OrigImage(:)) > 1
-        error(['Image processing was canceled in the ', ModuleName, ' module because the intensity of the image coming into the Resize module is outside the range 0 to 1'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the intensity of the input image is outside the range 0 to 1.'])
     else
         %%% As long as the incoming image was within 0 to 1, it's ok to
         %%% truncate the resized image at 0 and 1 without losing much image
@@ -165,11 +165,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,1,2); imagesc(ResizedImage); title('Resized Image');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The Resized image is saved to the handles structure so it can be
+%%% The processed image is saved to the handles structure so it can be
 %%% used by subsequent modules.
 handles.Pipeline.(ResizedImageName) = ResizedImage;

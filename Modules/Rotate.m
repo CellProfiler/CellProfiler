@@ -27,9 +27,9 @@ function handles = Rotate(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -87,24 +87,23 @@ Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if ~isfield(handles.Pipeline, ImageName)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Spot Identifier module, you must have previously run a module to load an image. You specified in the Spot Identifier module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The Spot Identifier module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to load an image. You specified that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The module cannot find this image.']);
 end
-
 OrigImage = handles.Pipeline.(ImageName);
 
-    %%% Determines the figure number to display in.
+%%% Determines the figure number to display in.
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
-ImageHandle = imagesc(OrigImage); 
- axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
+ImageHandle = imagesc(OrigImage);
+axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
 
 drawnow
 
@@ -113,11 +112,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         Answer2 = CPquestdlg('After closing this window by clicking OK, click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points.','Rotate image using the mouse','OK','Cancel','OK');
         waitfor(Answer2)
         if strcmp(Answer2, 'Cancel')
-            error('Image processing was canceled during the Spot Identifier module.')
+            error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
         end
         [x,y] = getpts(FigureHandle);
         if length(x) < 2
-            error('The Spot Identifier was canceled because you must click on at least two points then press enter.')
+            error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])
         end
         [m b] = polyfit(x,y,1);
         if strcmp(HorizOrVert,'horizontally')
@@ -125,7 +124,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         elseif strcmp(HorizOrVert,'vertically')
             AngleToRotateRadians = pi/2-atan(m);
         else
-            error('The value of HorizOrVert is not recognized');
+            error(['Image processing was canceled in the ', ModuleName, ' module because the value of HorizOrVert is not recognized.']);
         end
         AngleToRotateDegrees = AngleToRotateRadians*180/pi;
     elseif strcmp(RotateMethod, 'Coordinates')
@@ -133,7 +132,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         if strcmp(IndividualOrOnce,'Individually')
             Answers = inputdlg({'What is the first pixel?' 'What is the second pixel?'}, 'Enter coordinates', 1, {'1,1' '100,5'});
             if isempty(Answers) == 1
-                error(['Image processing was canceled in the ', ModuleName, ' module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
             Pixel1 = str2num(Answers{1});
             Pixel2 = str2num(Answers{2});
@@ -149,7 +148,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
             LowerRightX = Pixel2(1);
             LowerRightY = Pixel2(2);
         else
-            error('The value of IndividualOrOnce was not recognized');
+            error(['Image processing was canceled in the ', ModuleName, ' module because the value of IndividualOrOnce is not recognized.']);
         end
         HorizLeg = LowerRightX - LowerLeftX;
         VertLeg = LowerLeftY - LowerRightY;
@@ -159,23 +158,23 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         elseif strcmp(HorizOrVert,'vertically')
             AngleToRotateRadians = pi/2-asin(VertLeg/Hypotenuse);
         else
-            error('The value of HorizOrVert is not recognized');
+            error(['Image processing was canceled in the ', ModuleName, ' module because the value of HorizOrVert is not recognized.']);
         end
         AngleToRotateDegrees = AngleToRotateRadians*180/pi;
     elseif strcmp(RotateMethod, 'Angle')
         if strcmp(IndividualOrOnce,'Individually')
             Answers = inputdlg({'Enter the angle by which you want to rotate the image'});
             if isempty(Answers) == 1
-                error(['Image processing was canceled in the ', ModuleName, ' module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
             AngleToRotateDegrees = str2num(Answers{1});
         elseif strcmp(RotateMethod,'Only Once')
             AngleToRotateDegrees = str2num(Angle);
         else
-            error('The value of RotateMethod was not recognized');
-        end 
+            error(['Image processing was canceled in the ', ModuleName, ' module because the value of RotateMethod is not recognized.']);
+        end
     else
-        error('The RotateMethod was not recognized.');
+        error(['Image processing was canceled in the ', ModuleName, ' module because the value of RotateMethod is not recognized.']);
     end
 else
     column = find(strcmp(handles.Measurements.Image.RotationFeatures,['Rotation ' ImageName]));
@@ -208,16 +207,27 @@ elseif strcmp(CropEdges,'Yes')
     [lengthX lengthY] = size(BeforeCropRotatedImage);
     RotatedImage = BeforeCropRotatedImage(Ycrop:lengthY-Ycrop,Xcrop:lengthX-Xcrop);
 else
-    error('The value of CropEdges is not recognized');
+    error(['Image processing was canceled in the ', ModuleName, ' module because the value of CropEdges is not recognized.']);
 end
-CPfigure(FigureHandle); 
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+CPfigure(FigureHandle);
 subplot(2,3,[1 2 4 5]);
-ImageHandle = imagesc(RotatedImage); 
+ImageHandle = imagesc(RotatedImage);
 axis image;
 title('Rotated Image');
 pixval off;
 try %#ok We want to ignore MLint error checking for this line.
-   delete(PatienceHandle)
+    delete(PatienceHandle)
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 handles.Pipeline.(RotatedImageName) = RotatedImage;

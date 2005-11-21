@@ -9,12 +9,7 @@ function handles = Restart(handles)
 % appears, select the output file of the incomplete run. Click ok and
 % analysis will continue.
 %
-% SAVING IMAGES: The thresholded images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
+% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -38,9 +33,9 @@ function handles = Restart(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -53,6 +48,11 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 %that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
 
 %%%VariableRevisionNumber = 1
+
+%%%%%%%%%%%%%%%%%%
+%%% PROCESSING %%%
+%%%%%%%%%%%%%%%%%%
+drawnow 
 
 if (handles.Current.SetBeingAnalyzed ~= 1)
     return
@@ -109,9 +109,9 @@ for i=1:handles.Current.NumberOfModules;
 end
 guidata(gcbo,handles);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 return;
@@ -127,4 +127,3 @@ end
 twodigit = sprintf('%02d', val);
 return;
 end
-

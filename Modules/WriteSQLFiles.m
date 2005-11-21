@@ -7,8 +7,8 @@ function handles = WriteSQLFiles(handles)
 % It creates a MySQL script and associated data files. It calls
 % the ExportSQL data tool.
 %
-% This module I think is designed to be run at the end of a pipeline
-% (but before the CreateBatchScripts module).
+% This module must be run at the end of a pipeline, or second to last if
+% you are using the CreateBatchScripts module.
 %
 % See also: CREATEBATCHSCRIPTS.
 
@@ -40,7 +40,7 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%pathnametextVAR01 = Enter the directory where the SQL files are to be saved?  Type period (.) for default output directory.
+%pathnametextVAR01 = Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What is the name of the database to use?
@@ -63,10 +63,10 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 drawnow
 
 if handles.Current.NumberOfModules == 1
-    error('There is no pipeline to write an SQL file.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because there are no other modules in the pipeline. Probably you should use the ExportSQL data tool.']);
 elseif handles.Current.NumberOfModules == 2
     if ~isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames)))
-        error('There is no pipeline to write an SQL file.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than CreateBatchScripts. Probably you should use the ExportSQL data tool.']);
     end
 end
 
@@ -96,7 +96,7 @@ else
 end
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
 
-% Special case: We're writing batch files, and this is the first image set.
+% Special case: We're writing batch files, and this is the first cycle.
 if (strcmp(handles.Settings.ModuleNames{end},'CreateBatchScripts') && (handles.Current.SetBeingAnalyzed == 1)),
     DoWriteSQL = 1;
     FirstSet = 1;
@@ -106,19 +106,17 @@ end
 if DoWriteSQL,
     % Initial checking of variables
     if isempty(DataPath)
-        error(['No path specified in the ', ModuleName, ' module.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because no folder was specified.']);
     elseif ~exist(DataPath,'dir')
-        error(['Cannot locate the specified directory in the ', ModuleName, ' module.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because the specified folder could not be found.']);
     end
     if isempty(DatabaseName)
-        error(['No database specified in the ', ModuleName, ' module.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
-    
     %%% This is necessary to make sure the export works with the last
     %%% set.  Otherwise, the TimeElapsed array is missing the last
     %%% element.  The corresponding 'tic' is in CellProfiler.m.
     handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
-
     CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'');
 end
 

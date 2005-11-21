@@ -41,6 +41,10 @@ if sum(sum(IncomingLabelMatrixImage)) >= 1
 else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
 end
 
+(Requested by Anne 11-21-05)  There is a bug when using MoG adaptive (see identifyPrimAutomatic).
+
+(Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
+
 (Requested by Anne 11-21-05): Make sure all the Measure modules are using the same font. Actually, make sure all the code is using the same font! We have Times, fixedwidth, helvetica throughout the code.
 
 (Requested by Anne 11-21-05):  It seems like this code in GetDataOnImage module will fail if that image cycle does not have any objects. The catch should allow processing to continue but display something in the figure window like 'no measurements found for this cycle'.

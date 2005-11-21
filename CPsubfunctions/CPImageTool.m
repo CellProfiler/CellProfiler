@@ -1,4 +1,4 @@
-function CPImageTool(handles,varargin)
+function CPImageTool(varargin)
 
 % This function opens or updates the Image Tool window.
 % It should be invoked when the user clicks on an image produced
@@ -6,9 +6,10 @@ function CPImageTool(handles,varargin)
 %
 % Example of usage:
 % ImageHandle = imagesc(SegmentedObjects);
-% set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)')
+% set(ImageHandle,'ButtonDownFcn','CPImageTool')
 
 % Check that the input argument is an action in the form of a string
+
 if ~isempty(varargin)
     action = varargin{1};
     [foo, ITh] = gcbo;
@@ -16,7 +17,7 @@ if ~isempty(varargin)
         switch action
             case {'NewWindow'}        % Show image in a new window
                 drawnow
-                CPfigure
+                CPfigure;
                 data = get(get(ITh,'UserData'),'Cdata');
                 if ndims(data) == 2
                     imagesc(data),axis image,colormap gray    % Scalar image
@@ -63,7 +64,7 @@ else
         set(ITh,'units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off','Tag','Image Tool','Name','Image Tool');
         set(ITh,'UserData',handle);
         pos = get(ITh,'position');
-        set(ITh,'position',[pos(1) pos(2) 1.5 2.5]);
+        set(ITh,'position',[pos(1) pos(2) 1.5 3]);
 
         % Get title of image
         Title = get(get(get(handle,'Parent'),'Title'),'String');

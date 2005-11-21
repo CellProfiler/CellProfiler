@@ -1,4 +1,4 @@
 function h = CPimagesc(Image)
 
 h = imagesc(Image);
-set(h,'ButtonDownFcn','CPImageTool(gco)');
+set(h,'ButtonDownFcn','CPImageTool');

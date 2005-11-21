@@ -858,14 +858,14 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                         im = Objects;
                     end
                     ImageHandle = image(im);
-                    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag',sprintf('Segmented %s',ObjectName))
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool','Tag',sprintf('Segmented %s',ObjectName))
                     title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Preferences.FontSize);
                     axis image,set(gca,'fontsize',handles.Preferences.FontSize)
 
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     ImageHandle = image(OutlinedObjects);
-                    set(ImageHandle,'ButtonDownFcn','ImageTool(gco)','Tag','Outlined objects')
+                    set(ImageHandle,'ButtonDownFcn','CPImageTool','Tag','Outlined objects')
                     title('Outlined objects','fontsize',handles.Preferences.FontSize);
                     axis image,set(gca,'fontsize',handles.Preferences.FontSize)
 

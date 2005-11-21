@@ -178,7 +178,7 @@ DenominatorMeasurements = handles.Measurements.(DenomObjectName).(DenomMeasure){
 DenominatorMeasurements = DenominatorMeasurements(:,DenomFeatureNumber);
 
 if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
-    error(['The specified object names ',NumObjectName,' and ',DenomObjectName,' in the ', ModuleName, ' do not have the same object count.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',NumObjectName,' and ',DenomObjectName,' do not have the same object count.']);
 end
 
 try
@@ -208,7 +208,7 @@ try
         end
     end
 catch
-    error(['Storing the measurements in the ',ModuleName,' module has failed.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because storing the measurements failed for some reason.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

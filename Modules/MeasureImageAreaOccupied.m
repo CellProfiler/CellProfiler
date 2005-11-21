@@ -150,7 +150,7 @@ OrigImage = handles.Pipeline.(ImageName);
 %%% Checks that the Min and Max threshold bounds have valid values
 index = strfind(ThresholdRange,',');
 if isempty(index)
-    error(['The Min and Max threshold bounds in the ', ModuleName, ' module are invalid.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
 end
 MinimumThreshold = ThresholdRange(1:index-1);
 MaximumThreshold = ThresholdRange(index+1:end);
@@ -191,7 +191,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); CPimagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,1,2); CPimagesc(ThresholdedOrigImage); title('Thresholded Image');
@@ -200,7 +200,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     else
         displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
     end
-    displaytext = {['  Image Set # ',num2str(handles.Current.SetBeingAnalyzed)];...
+    displaytext = {['  Cycle # ',num2str(handles.Current.SetBeingAnalyzed)];...
         ['  Area occupied by ',ObjectName,':      ',num2str(AreaOccupied,'%2.1E')]};
     set(displaytexthandle,'string',displaytext)
 end

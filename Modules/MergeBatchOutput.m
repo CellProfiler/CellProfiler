@@ -118,7 +118,7 @@ for i = 1:length(FileList),
     FileList(i).name
 
     if (isfield(SubsetData.handles, 'BatchError')),
-        error(['Error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because there was an error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);
     end
 
     SubSetMeasurements = SubsetData.handles.Measurements;

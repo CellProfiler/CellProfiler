@@ -181,7 +181,7 @@ for i = 1:6
     fieldname = ['', ImageName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing has been canceled. Prior to running the Measure Texture module, you must have previously run a module that loads a greyscale image.  You specified in the MeasureObjectTexture module that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that loads a greyscale image.  You specified that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The module cannot locate this image.']);
     end
     OrigImage = handles.Pipeline.(fieldname);
 
@@ -189,7 +189,7 @@ for i = 1:6
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
     if ndims(OrigImage) ~= 2
-        error('Image processing was canceled because the Measure Texture module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+        error(['Image processing was canceled in the ', ModuleName, ' module because this module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
     end
 
     if ~strcmp(ObjectName,'Image')
@@ -198,7 +198,7 @@ for i = 1:6
         fieldname = ['Segmented', ObjectName];
         %%% Checks whether the image exists in the handles structure.
         if isfield(handles.Pipeline, fieldname) == 0,
-            error(['Image processing has been canceled. Prior to running the Measure Texture module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Texture module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Texture module cannot locate this image.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the objects identified.  You specified that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The module cannot locate this image.']);
         end
         LabelMatrixImage = handles.Pipeline.(fieldname);
     end
@@ -381,7 +381,7 @@ for i = 1:6
 
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average texture features for ',ImageName,', image set #%d'],handles.Current.SetBeingAnalyzed));
+            'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average texture features for ',ImageName,', cycle #%d'],handles.Current.SetBeingAnalyzed));
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...

@@ -136,7 +136,6 @@ for ImageNbr = 1:4
     if ~strcmp(ImageName{ImageNbr},'Do not use')
         ImageCount = ImageCount + 1;
         try
-
             %%% Checks whether image has been loaded.
             if ~isfield(handles.Pipeline,ImageName{ImageNbr})
                 %%% If the image is not there, an error message is produced.  The error
@@ -159,7 +158,7 @@ for ImageNbr = 1:4
         end
     end
 end
-ImageName = tmpImageName;           % Get rid of '/' in the ImageName cell array so we don't have to care about them later.
+ImageName = tmpImageName;   % Get rid of '/' in the ImageName cell array so we don't have to care about them later.
 
 % Check so that at least two images have been entered
 if ImageCount < 2
@@ -179,7 +178,7 @@ for ObjectNameNbr = 1:6
             fieldname = ['Segmented', ObjectName{ObjectNameNbr}];
             %%% Checks whether the image exists in the handles structure.
             if isfield(handles.Pipeline, fieldname)==0,
-                error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Correlation module, you must have previously run a module that generates an image with the primary objects identified.  You specified in the Measure Correlation module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The Measure Correlation module cannot locate this image.']);
+                error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the primary objects identified.  You specified in this module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  This module cannot locate this image.']);
             end
             LabelMatrixImage{ObjectNameCount} = handles.Pipeline.(fieldname); %#ok Ignore MLint
         else
@@ -226,7 +225,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                     end
                     Correlation(ObjectNbr,FeatureNbr) = CorrelationForCurrentObject; % Store the correlation
                     FeatureNbr = FeatureNbr + 1;
-                catch error(['There was a problem calculating the correlation in the ', ModuleName, ' module.'])
+                catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem calculating the correlation.'])
                 end
 
             end
@@ -266,7 +265,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Displays the results.
     Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 Height-40 Width 20],...
         'fontname','times','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center','fontweight','bold');
-    TextToDisplay = ['Average correlations in Image Set # ',num2str(handles.Current.SetBeingAnalyzed)];
+    TextToDisplay = ['Average correlations in cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     set(Displaytexthandle,'string',TextToDisplay)
 
     for ObjectNameNbr = 0:ObjectNameCount

@@ -136,7 +136,7 @@ if strncmp(Pathname,'.',1)
 end
 SpecifiedPathname = Pathname;
 if ~exist(SpecifiedPathname,'dir')
-    error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,7 +164,7 @@ for n = 1:length(ImageName)
         if strcmpi(FileFormat,'mat')
             try
                 StructureLoadedImage = load(FileAndPathname);
-            catch error(['CellProfiler was unable to load ',FileAndPathname,'. The file may be corrupt.']);
+            catch error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load this image: ',FileAndPathname,'. The file may be corrupt.']);
             end
             LoadedImage = StructureLoadedImage.Image;
         else [LoadedImage, handles] = CPimread(FileAndPathname,handles);
@@ -174,7 +174,7 @@ for n = 1:length(ImageName)
 
     catch ErrorMessage = lasterr;
         ErrorNumber = {'first','second','third','fourth'};
-        error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Single Image module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
+        error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of images. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
     end % Goes with: catch
 
     % Create a cell array with the filenames

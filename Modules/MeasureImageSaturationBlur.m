@@ -158,7 +158,7 @@ for ImageNumber = 1:length(NameImageToCheck);
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
     if ndims(ImageToCheck{ImageNumber}) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image. You can run an RGB Split module or RGB to Grayscale module to convert your image to grayscale. Also, you can modify the code to handle each channel of a color image; we just have not done it yet.  This requires making the proper headings in the measurements file and displaying the results properly.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image. You can run a Color To Gray module to convert your image to grayscale. Also, you can modify the code to handle each channel of a color image; we just have not done it yet.  This requires making the proper headings in the measurements file and displaying the results properly.'])
     end
     NumberPixelsSaturated = sum(sum(ImageToCheck{ImageNumber} == 1));
     [m,n] = size(ImageToCheck{ImageNumber});
@@ -221,7 +221,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position',[0.1 0.1 0.8 0.8],...
         'fontname','times','fontsize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left');
-    DisplayText = strvcat(['    Image Set # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
+    DisplayText = strvcat(['    Cycle # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
         '      ',...
         'Percent of pixels that are Saturated:');
     for ImageNumber = 1:length(PercentSaturation)

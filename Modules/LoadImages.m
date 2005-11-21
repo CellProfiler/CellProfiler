@@ -9,66 +9,50 @@ function handles = LoadImages(handles)
 % *************************************************************************
 %
 % Tells CellProfiler where to retrieve images and gives each image a
-% meaningful name for the other modules to access.
+% meaningful name for the other modules to access. When used in combination
+% with a SaveImages module, you can load images in one file format and save
+% in another file format, making CellProfiler work as a file format
+% converter.
 %
-% If more than four images per set must be loaded, more than one Load
+% If more than four images per cycle must be loaded, more than one Load
 % Images module can be run sequentially. Running more than one of
 % these modules also allows images to be retrieved from different
 % folders. If you want to load all images in a directory, you can
 % enter the file extension as the text for which to search.
 %
-% LOADING IMAGES:
-%
 % ORDER:
-% Load Images Order is useful when images are present in a repeating
+% Order is used when images (or movies) are present in a repeating
 % order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where
-% images are selected based on how many images are in each set and
-% what position within each set a particular color is located (e.g.
-% three images per set, DAPI is always first).  By contrast, Load
-% Images Text is used to load images that have a particular piece of
-% text in the name.
+% images are selected based on how many images are in each group and
+% what position within each group a particular color is located (e.g.
+% three images per group, DAPI is always first).
 %
 % TEXT:
-% This method is different from the Load Images Order method because
-% Load Images Text can be used to load images that are not in a
-% defined order.  That is, Load Images Order is useful when images are
-% present in a repeating order, like DAPI, FITC, Red, DAPI, FITC, Red,
-% and so on, where images are selected based on how many images are in
-% each set and what position within each set a particular color is
-% located (e.g. three images per set, DAPI is always first).  Load
-% Images Text is used instead to load images that have a particular
-% piece of text in the name.
-%
-% You have the option of matching text exactly, or using regular
+% Text is used to load images (or movies) that have a particular piece of
+% text in the name. You have the option of matching text exactly, or using regular
 % expressions to match text. For example, typing image[12]dapi in the box
 % asking for text in common and typing R in the Exact/Regular expression
 % box will select any file containing the digit 1 or 2 immediately in
 % between the text 'image' and 'dapi'.
 %
+% ANALYZE ALL SUBDIRECTORIES: 
+% You may have subfolders within the folder that is being searched, but if you are in TEXT mode, the
+% names of the folders themselves must not contain the text you are
+% searching for or an error will result.
+%
 % LOADING MOVIES:
-% Tells CellProfiler where to retrieve avi-formatted movies (avi
-% movies must be in uncompressed avi format on UNIX and Mac
+% Movies can be avi-formatted movies (in uncompressed avi format on UNIX and Mac
 % platforms) or stk-format movies (stacks of tif images produced by
-% MetaMorph or NIH ImageJ). Once the files are identified, this module
+% MetaMorph or NIHImage/ImageJ; The ability to read stk files is due to code by:
+% Francois Nedelec, EMBL, Copyright 1999-2003). Once the files are identified, this module
 % extracts each frame of each movie as a separate image,
 % and gives these images a meaningful name for the other modules to
 % access.
 %
-% The ability to load by order or by text are the same for both loading
-% movies and loading images. Please refer to the Loading Images section for
-% more information.
-%
-% You may have subfolders within the folder that is being searched, but the
-% names of the folders themselves must not contain the text you are
-% searching for or an error will result.
-%
-% The ability to read stk files is due to code by:
-% Francois Nedelec, EMBL, Copyright 1999-2003.
-%
-% ------------------------------------------------------------------
 % NOTE:  MATLAB only reads AVI files, and only UNCOMPRESSED AVI files
 % on UNIX and MAC platforms.  As a result, you may need to use 3rd party
-% software to uncompress AVI files and convert MOV files.
+% software to uncompress AVI files and convert MOV files. Here are some
+% suggestions:
 %
 % WINDOWS...
 % To convert movies to uncompressed avi format, you can use a free
@@ -124,12 +108,6 @@ function handles = LoadImages(handles)
 % ??? Error using ==> aviread
 % Bitmap data must be 8-bit Index images or 24-bit TrueColor images
 % ------------------------------------------------------------------
-%
-% SAVING IMAGES: The images loaded by this module can be easily saved
-% using the Save Images module, using the name you assign (e.g.
-% OrigBlue).  In the Save Images module, the images can be saved in a
-% different format, allowing this module to function as a file format
-% converter.
 %
 % See also <nothing relevant>.
 
@@ -251,7 +229,7 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which image set is being analyzed.
+%%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 %%% Remove slashes entries with N/A or no filename from the input,
@@ -275,9 +253,9 @@ if strcmp(LoadChoice,'Order')
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST CYCLE FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Extracting the list of files to be analyzed occurs only the first time
@@ -306,13 +284,13 @@ if SetBeingAnalyzed == 1
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
-                error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the Load Images Order module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
             end
 
-            %%% Determines the number of image sets to be analyzed.
+            %%% Determines the number of cycles to be analyzed.
             NumberOfImageSets = length(FileNames)/ImagesPerSet;
             if rem(NumberOfImageSets,1) ~= 0
-                error(['Image processing was canceled in the ', ModuleName,' module becauses the number of image files (',length(FileNames),') found in the specified directory is not a multiple of the number of images per set (',ImagesPerSet,'), according to the Load Images Order module.'])
+                error(['Image processing was canceled in the ', ModuleName,' module becauses the number of image files (',length(FileNames),') found in the specified directory is not a multiple of the number of images per set (',ImagesPerSet,').'])
             end
             handles.Current.NumberOfImageSets = NumberOfImageSets;
 
@@ -336,13 +314,13 @@ if SetBeingAnalyzed == 1
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
-                error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesOrder module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
             end
 
             %%% Determines the number of movie sets to be analyzed.
             NumberOfMovieSets = fix(length(FileNames)/ImagesPerSet);
             if rem(NumberOfMovieSets,1) ~= 0
-                error(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (',length(FileNames),') found in the specified directory is not a multiple of the number of movies per set (',MoviesPerSet,'), according to the LoadMoviesOrder module.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (',length(FileNames),') found in the specified directory is not a multiple of the number of movies per set (',MoviesPerSet,').'])
             end
             handles.Current.NumberOfMovieSets = NumberOfMovieSets;
 
@@ -407,7 +385,7 @@ if SetBeingAnalyzed == 1
                 PreErrorText = cat(2, CharMovieName, SpacesArray);
                 ErrorText = cat(2, PreErrorText, CharNumberOfFiles);
                 msgbox(ErrorText)
-                error('In the Load Movies Order module, the number of movies identified for each movie type is not equal.  In the window under this box you will see how many movie have been found for each movie type.')
+                error(['Image processing was canceled in the ', ModuleName, ' module because the number of movies identified for each movie type is not equal.  In the window under this box you will see how many movie have been found for each movie type.'])
             end
             NumberOfImageSets = str2double(UniqueNumbers{1});
 
@@ -423,7 +401,7 @@ if SetBeingAnalyzed == 1
             %%% value determined by another image-loading module.
             if handles.Current.NumberOfImageSets ~= 1;
                 if handles.Current.NumberOfImageSets ~= NumberOfImageSets
-                    error(['The number of image sets loaded by the Load Movies Order module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
+                    error(['Image processing was canceled in the ', ModuleName, ' module because the number of image cycles loaded (', num2str(NumberOfImageSets),') does not equal the number of image cycles loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
                 end
             end
             handles.Current.NumberOfImageSets = NumberOfImageSets;
@@ -435,7 +413,7 @@ if SetBeingAnalyzed == 1
                 FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
-                    error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadImagesText module.'])
+                    error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
                 end
                 %%% Saves the File Lists and Path Names to the handles structure.
                 fieldname = ['FileList', ImageName{n}];
@@ -453,7 +431,7 @@ if SetBeingAnalyzed == 1
                 FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
-                    error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well), according to the LoadMoviesText module.'])
+                    error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
                 end
                 StartingPositionForThisMovie = 0;
                 for MovieFileNumber = 1:length(FileList)
@@ -479,7 +457,7 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                         end
                     else
-                        error('CellProfiler can currently read only avi or stk movie files.')
+                        error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler can currently read only avi or stk movie files.'])
                     end
                     StartingPositionForThisMovie = StartingPositionForThisMovie + NumFrames;
 
@@ -519,7 +497,7 @@ if SetBeingAnalyzed == 1
             PreErrorText = cat(2, CharImageName, SpacesArray);
             ErrorText = cat(2, PreErrorText, CharNumberOfFiles);
             CPmsgbox(ErrorText)
-            error('In the Load Images Text module, the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.')
+            error(['Image processing was canceled in the ', ModuleName, ' module because the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.'])
         end
         NumberOfImageSets = str2double(UniqueNumbers{1});
         %%% Checks whether another load images module has already recorded a
@@ -534,7 +512,7 @@ if SetBeingAnalyzed == 1
         %%% value determined by another image-loading module.
         if handles.Current.NumberOfImageSets ~= 1;
             if handles.Current.NumberOfImageSets ~= NumberOfImageSets
-                error(['The number of image sets loaded by the Load Images Text module (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the number of image sets loaded (', num2str(NumberOfImageSets),') does not equal the number of image sets loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
             end
         end
         handles.Current.NumberOfImageSets = NumberOfImageSets;
@@ -560,7 +538,7 @@ for n = 1:length(ImageName)
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
 
             if (max(LoadedImage(:)) <= .0625) && (handles.Current.SetBeingAnalyzed == 1)
-                CPwarndlg('Warning: your images are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. You might consider using the RescaleIntensity module to rescale the images using a factor of 0.0625.');
+                CPwarndlg(['Warning: the images loaded by ', ModuleName, ' are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. You might consider using the RescaleIntensity module to rescale the images using a factor of 0.0625.']);
             end
             %%% Saves the original image file name to the handles
             %%% structure.  The field is named appropriately based on
@@ -572,7 +550,7 @@ for n = 1:length(ImageName)
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         catch ErrorMessage = lasterr;
             ErrorNumber = {'first','second','third','fourth'};
-            error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Load Images Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
+            error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of images. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
         end % Goes with: catch
 
         % Create a cell array with the filenames
@@ -611,7 +589,7 @@ for n = 1:length(ImageName)
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         catch ErrorMessage = lasterr;
             ErrorNumber = {'first','second','third','fourth'};
-            error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of movies using the Load Movies Text module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in uncompressed avi format. Matlab says the problem is: ', ErrorMessage])
+            error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of movies. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in uncompressed avi format. Matlab says the problem is: ', ErrorMessage])
         end % Goes with: catch
         FileNames(n) = {CurrentFileNameWithFrame};
     end
@@ -659,6 +637,7 @@ handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Determines the figure number.
 fieldname = ['FigureNumberForModule',CurrentModule];
@@ -674,12 +653,10 @@ if any(findobj == ThisModuleFigureNumber);
             newsize(3) = 250;
             set(ThisModuleFigureNumber, 'position', newsize);
         end
-
         TextString = [ImageName{n},': ',FileNames{n}];
-        uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
 end
-drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%
@@ -842,7 +819,7 @@ while (ifd_pos ~= 0)
                 TIFIM.artist         = entry.val;
             case 317        %predictor for compression
                 if (entry.val ~= 1)
-                    error('unsuported predictor value');
+                    error('unsupported predictor value');
                 end
             case 320         % color map
                 TIFIM.cmap          = entry.val;
@@ -850,7 +827,7 @@ while (ifd_pos ~= 0)
             case 339
                 TIF.sample_format   = entry.val;
                 if ( TIF.sample_format > 2 )
-                    error('unsuported sample format = %i',TIF.sample_format);
+                    error('unsupported sample format = %i',TIF.sample_format);
                 end
             case 33628       %metamorph specific data
                 TIFIM.MM_private1   = entry.val;

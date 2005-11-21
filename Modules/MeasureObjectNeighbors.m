@@ -125,7 +125,6 @@ if NeighborDistance == 0
     NeighborDistance = 4;
 end
 
-
 %%% Determines the neighbors for each object.
 d = max(2,NeighborDistance+1);
 [sr,sc] = size(IncomingLabelMatrixImage);
@@ -150,7 +149,7 @@ for k = 1:max(IncomingLabelMatrixImage(:))
     ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
 end
 
-%%% Calculates the ColoredLabelMatrixImage for displaying in the figure
+%%% Calculates the ColoredIncomingObjectsImage for displaying in the figure
 %%% window and saving to the handles structure.
 %%% Note that the label2rgb function doesn't work when there are no objects
 %%% in the label matrix image, so there is an "if".
@@ -159,8 +158,8 @@ end
 
 if sum(sum(IncomingLabelMatrixImage)) >= 1
     cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
-    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
-else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+    ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
+else  ColoredIncomingObjectsImage = IncomingLabelMatrixImage;
 end
 
 %%% Does the same for the ImageOfNeighbors.  For some reason, this
@@ -184,7 +183,6 @@ handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbor
 % add a IdentityOfNeighborsFeatures field. It will then be "invisible" to
 % export modules, which look for fields with 'Features' in the name.
 handles.Measurements.Neighbors.IdentityOfNeighbors(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
-
 
 %%% Example: To extract the number of neighbor for objects called Cells, use code like this:
 %%% handles.Measurements.Neighbors.IdentityOfNeighborsCells{1}{3}
@@ -210,11 +208,11 @@ if any(findobj == ThisModuleFigureNumber) == 1
     drawnow
 
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,1,1); CPimagesc(ColoredLabelMatrixImage); title('Cells colored according to their original colors','FontSize',FontSize)
+    subplot(2,1,1); CPimagesc(ColoredIncomingObjectsImage); title(ObjectName,'FontSize',FontSize)
     set(gca,'FontSize',FontSize)
     subplot(2,1,2); CPimagesc(ImageOfNeighbors);
     colorbar('SouthOutside','FontSize',FontSize)
-    title('Cells colored according to the number of neighbors','FontSize',FontSize)
+    title(ColoredNeighborsName,'FontSize',FontSize)
     set(gca,'FontSize',FontSize)
 end
 
@@ -245,7 +243,5 @@ handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
 
 %%% Saves the colored version of images to the handles structure so
 %%% they can be saved to the hard drive, if the user requests.
-fieldname = ['Colored',ExpandedObjectName];
-handles.Pipeline.(fieldname) = ColoredLabelMatrixImage;
-fieldname = ['Colored',ColoredNeighborsName];
+fieldname = [ColoredNeighborsName];
 handles.Pipeline.(fieldname) = ColoredImageOfNeighbors;

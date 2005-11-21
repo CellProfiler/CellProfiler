@@ -155,7 +155,7 @@ for i = 1:length(ObjectNameList)
     fieldname = ['Segmented', ObjectName];
     %%% Checks whether the image exists in the handles structure.
     if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Measure Shape module, you must have previously run a module that generates an image with the objects identified.  You specified in the Measure Shape module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The Measure Shape module cannot locate this image.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the objects identified.  You specified in this module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. This module cannot locate this image.']);
     end
     LabelMatrixImage = handles.Pipeline.(fieldname);
 
@@ -281,7 +281,7 @@ for i = 1:length(ObjectNameList)
 
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','Backgroundcolor',[1 1 1],'fontname','times',...
-            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average shape features for image set #%d',handles.Current.SetBeingAnalyzed),'UserData',handles.Current.SetBeingAnalyzed);
+            'fontsize',FontSize,'fontweight','bold','string',sprintf('Average shape features for cycle #%d',handles.Current.SetBeingAnalyzed),'UserData',handles.Current.SetBeingAnalyzed);
 
         % Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.25 0.03],...

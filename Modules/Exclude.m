@@ -205,7 +205,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
     CPimagesc(ColoredSegmentedObjectImage);
-    title(['Previously identified ', ObjectName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
     subplot(2,2,2);
@@ -215,7 +215,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% matrix image.
     subplot(2,2,3);
     CPimagesc(ColoredMaskRegionObjectImage);
-    title(['Previously identified ', MaskRegionName,', Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Previously identified ', MaskRegionName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     CPFixAspectRatio(ColoredSegmentedObjectImage);
 end
 

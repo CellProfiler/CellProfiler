@@ -5,7 +5,7 @@ function handles = DefineGrid(handles)
 %
 % SHORT DESCRIPTION:
 % Produces a grid of desired specifications either manually or
-% automatically based on previosly identified objects (i.e. yeast spots)
+% automatically based on previously identified objects (i.e. yeast spots)
 % *************************************************************************
 %
 % This module defines a grid that can be used by modules downstream.  If
@@ -63,7 +63,7 @@ try
     Rows = RowsCols(1);
     Columns = RowsCols(2);
 catch
-    error('There is an invalid input for the number of rows and columns.  You need two integers seperated by a comma, such as "5,5".');
+    error(['Image processing was canceled in the ', ModuleName, ' module because there is an invalid input for the number of rows and columns.  You need two integers separated by a comma, such as "5,5".']);
 end
 
 %textVAR03 = For numbering purposes, is the first spot at the left or right?
@@ -120,7 +120,7 @@ try
     XOffsetFromControlToTopLeft = HorizVertOffset(1);
     YOffsetFromControlToTopLeft = HorizVertOffset(2);
 catch
-    error('There was an invalid value for the distance from the control spot to the top left spot.  The value needs to be two integers seperated by a comma.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the distance from the control spot to the top left spot.  The value needs to be two integers seperated by a comma.']);
 end
 
 %textVAR12 = For MANUAL + MOUSE, did you specify the distance to the control spot (above) in units or pixels?
@@ -147,7 +147,7 @@ try
     XControlSpot = ControlSpot(1);
     YControlSpot = ControlSpot(2);
 catch
-    error('There was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.')];
 end
 
 %%%VariableRevisionNumber = 2
@@ -229,14 +229,14 @@ else
                     XLocationOfLowestXSpot = ControlSpot(1);
                     YLocationOfLowestYSpot = ControlSpot(2);
                 catch
-                    error('The values entered for the the X,Y location of the center of the bottom, left spot in the grid do not make sense.  Note that you need two values separated by a comma.');
+                    error(['Image processing was canceled in the ', ModuleName, ' module because the values entered for the the X,Y location of the center of the bottom, left spot in the grid do not make sense.  Note that you need two values separated by a comma.']);
                 end
                 Spacing = str2num(answers{2});
                 try
                     YSpacing = Spacing(1);
                     XSpacing = Spacing(2);
                 catch
-                    error('The values entered for the spacing do not make sense.  Note that you need two values separated by a comma.');
+                    error(['Image processing was canceled in the ', ModuleName, ' module because the values entered for the spacing do not make sense.  Note that you need two values separated by a comma.']);
                 end
             end
         elseif strcmp(ControlSpotMode,'Mouse')

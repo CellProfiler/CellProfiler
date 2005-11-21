@@ -89,9 +89,9 @@ ImageName{1} = FirstImageName;
 ImageName{3} = ThirdImageName;
 ImageName{5} = FifthImageName;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST IMAGE SET FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST cycle FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Extracting the list of files to be analyzed occurs only the first time
@@ -107,9 +107,9 @@ if SetBeingAnalyzed == 1
             end
             FileNames = handles.Current.FilenamesInImageDir;
             if SetBeingAnalyzed == 1
-                %%% Determines the number of image sets to be analyzed.
+                %%% Determines the number of cycles to be analyzed.
                 NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
-                %%% The number of image sets is stored in the
+                %%% The number of cycles is stored in the
                 %%% handles structure.
                 handles.Current.NumberOfImageSets = NumberOfImageSets;
             else NumberOfImageSets = handles.Current.NumberOfImageSets;
@@ -133,7 +133,7 @@ if SetBeingAnalyzed == 1
                 error(['Image processing was canceled in the ', ModuleName, ' module because the directory typed into the Extract Header Info module does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
             else [handles, FileNames] = RetrieveImageFileNames(handles, SpecifiedPathName);
                 if SetBeingAnalyzed == 1
-                    %%% Determines the number of image sets to be analyzed.
+                    %%% Determines the number of cycles to be analyzed.
                     NumberOfImageSets = fix(length(FileNames)/ImagesPerSet);
                     handles.Current.NumberOfImageSets = NumberOfImageSets;
                 else NumberOfImageSets = handles.Current.NumberOfImageSets;

@@ -24,7 +24,7 @@ Here is something perhaps helpful from the CreateWebPage module:
 %choiceVAR07 = Silver
 %choiceVAR07 = Teal
 %choiceVAR07 = Yellow
-
+And, while we are at it, there is a list of colors in DefineGrid that could probably be expanded too?
 
 (Requested by Anne 11-21-05):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
 

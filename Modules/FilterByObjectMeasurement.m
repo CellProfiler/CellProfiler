@@ -89,6 +89,13 @@ function handles = FilterByObjectMeasurement(handles)
 %
 % $Revision: 2221 $
 
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Reads the current module number, because this is needed to find
+%%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
@@ -139,6 +146,11 @@ SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%VariableRevisionNumber = 2
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
 OrigImage = handles.Pipeline.(ImageName);
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 
@@ -163,6 +175,11 @@ if strcmp(MaxValue1, 'Do not use')
 else
     MaxValue1 = str2double(MaxValue1);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow 
 
 Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
@@ -196,7 +213,7 @@ if any(findobj == ThisModuleFigureNumber) == 1
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
     CPimagesc(OrigImage);
-    title(['Input Image, Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,3);

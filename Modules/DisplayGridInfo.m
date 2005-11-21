@@ -114,12 +114,12 @@ ThisModuleFigureNumber = handles.Current.(fieldname);
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 CPimagesc(handles.Pipeline.(ImageName));
 colormap(handles.Preferences.IntensityColorMap);
-title(['Image #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
+title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
 line(VertLinesX,VertLinesY);
 line(HorizLinesX,HorizLinesY);
 %%% Puts the standard Matlab tool bar back on.
 set(FigHandle,'Toolbar','figure');
-title(['Image set #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',8);
+title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',handles.Preferences.FontSize);
 set(findobj(FigHandle,'type','line'),'color',[.15 1 .15])
 
 %%% Sets the location of Tick marks.

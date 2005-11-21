@@ -289,7 +289,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
     CPimagesc(OriginalColoredLabelMatrixImage);
-    title([ObjectName, ' Image Set # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2);
     CPimagesc(ShrunkenColoredLabelMatrixImage);
     title(ShrunkenObjectName);

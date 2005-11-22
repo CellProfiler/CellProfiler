@@ -3,6 +3,10 @@ function handles = Restart(handles)
 % Help for the Restart module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Restart image analysis which has been cancelled using output file.
+% *************************************************************************
+%
 % Restarts an analysis run where it left off.
 % To use: Start CellProfiler and insert Restart as the only module.
 % Click Analyze images. When the dialog "Choose a settings or output file"
@@ -44,15 +48,14 @@ CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
-%textVAR01 = Use this module if you have canceled processing of a pipeline
-%that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
+%textVAR01 = Use this module if you have canceled processing of a pipeline that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
 
 %%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%
 %%% PROCESSING %%%
 %%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 if (handles.Current.SetBeingAnalyzed ~= 1)
     return
@@ -122,7 +125,7 @@ function twodigit = TwoDigitString(val)
 %TwoDigitString is a function like num2str(int) but it returns a two digit
 %representation of a string for our purposes.
 if ((val > 99) || (val < 0)),
-  error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
+    error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
 end
 twodigit = sprintf('%02d', val);
 return;

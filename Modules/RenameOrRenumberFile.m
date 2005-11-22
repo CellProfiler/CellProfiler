@@ -3,6 +3,10 @@ function handles = RenameOrRenumberFile(handles)
 % Help for the RenameOrRenumberFile module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Renames or renumbers any files.
+% *************************************************************************
+%
 % File renaming utility that deletes or adds text anywhere
 % within image file names.
 % It can also serve as a File renumbering utility that converts numbers
@@ -91,9 +95,9 @@ Pathname = handles.Current.DefaultImageDirectory;
 %%% images per set so they can be used by the module.
 fieldname=['FileList',ImageName];
 FileNames = handles.Pipeline.(fieldname);
-if strcmp(class(TextToAdd), 'char') ~= 1
+if ~ischar(TextToAdd)
     try TextToAdd = num2str(TextToAdd);
-    catch error(['Image processing was canceled in the ', ModuleName, ' module because the text you tried to add could not be converted into text for some reason.')
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because the text you tried to add could not be converted into text for some reason.'])
     end
 end
 
@@ -128,11 +132,11 @@ for n = 1:length(FileNames)
     if n == 1
         DialogText = ['Confirm the file name change. For example, the first file''s name will change from ', OldFilename, ' to ', NewFilename, '.  The remaining files will be converted without asking for confirmation.'];
         Answer = CPquestdlg(DialogText, 'Confirm file name change','OK','Cancel','Cancel');
-        if strcmp(Answer, 'Cancel') == 1
+        if strcmp(Answer, 'Cancel')
             error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
         end
     end
-    if strcmp(OldFilename,NewFilename) ~= 1
+    if ~strcmp(OldFilename,NewFilename)
         movefile(fullfile(Pathname,OldFilename),fullfile(Pathname,NewFilename))
     end
     drawnow
@@ -155,6 +159,6 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% If the window is open, it is closed.
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     delete(ThisModuleFigureNumber)
 end

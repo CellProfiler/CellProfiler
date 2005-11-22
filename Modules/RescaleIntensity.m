@@ -3,6 +3,11 @@ function handles = RescaleIntensity(handles)
 % Help for the Rescale Intensity module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Changes intensity range of an image to desired specifications. Helpful
+% for converting 12-bit images saved in 16-bit format to the correct range.
+% *************************************************************************
+%
 % The intensity of the incoming images are rescaled by one of several
 % methods.
 %
@@ -99,11 +104,11 @@ HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = (Method E only): What should the lowest intensity of the rescaled image be?
 %defaultVAR06 = 0
-LowestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+LowestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %textVAR07 = (Method E only): What should the highest intensity of the rescaled image be?
 %defaultVAR07 = 1
-HighestPixelRescale = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
 %textVAR08 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
 %infotypeVAR08 = imagegroup
@@ -119,9 +124,8 @@ drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['', ImageName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
+if ~isfield(handles.Pipeline, ImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -131,25 +135,24 @@ if isfield(handles.Pipeline, fieldname)==0,
     error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-OrigImage = handles.Pipeline.(fieldname);
+OrigImage = handles.Pipeline.(ImageName);
 
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
     CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
-%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS%%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strncmpi(RescaleOption,'S',1) == 1
+if strncmpi(RescaleOption,'S',1)
     MethodSpecificArguments = [];
-elseif strncmpi(RescaleOption,'M',1) == 1
+elseif strncmpi(RescaleOption,'M',1)
     %%% Reads (opens) the image to be analyzed and assigns it to a variable,
     %%% "OrigImage".
-    fieldname = ['', OtherImageName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
+    if ~isfield(handles.Pipeline, OtherImageName)
         %%% If the image is not there, an error message is produced.  The error
         %%% is not displayed: The error function halts the current function and
         %%% returns control to the calling function (the analyze all images
@@ -159,16 +162,16 @@ elseif strncmpi(RescaleOption,'M',1) == 1
         error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
     end
     %%% Reads the image.
-    MethodSpecificArguments = handles.Pipeline.(fieldname);
-elseif strncmpi(RescaleOption,'G',1) == 1
+    MethodSpecificArguments = handles.Pipeline.(OtherImageName);
+elseif strncmpi(RescaleOption,'G',1)
     MethodSpecificArguments = [];
-elseif strncmpi(RescaleOption,'E',1) == 1
+elseif strncmpi(RescaleOption,'E',1)
     MethodSpecificArguments{1} = LowestPixelOrig;
     MethodSpecificArguments{2} = HighestPixelOrig;
     MethodSpecificArguments{3} = LowestPixelRescale;
     MethodSpecificArguments{4} = HighestPixelRescale;
     MethodSpecificArguments{5} = ImageName;
-elseif strncmpi(RescaleOption,'C',1) == 1
+elseif strncmpi(RescaleOption,'C',1)
     MethodSpecificArguments = [];
 end
 
@@ -184,7 +187,7 @@ fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this module.
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     drawnow
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -196,11 +199,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);
+    subplot(2,1,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Rescaled
     %%% Image.
-    subplot(2,1,2); imagesc(RescaledImage); title('Rescaled Image');
+    subplot(2,1,2); CPimagesc(RescaledImage); title('Rescaled Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

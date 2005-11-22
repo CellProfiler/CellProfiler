@@ -3,6 +3,10 @@ function handles = OverlayOutlines(handles)
 % Help for the Overlay Outlines module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Places outlines produced by an identify module over a desired image.
+% *************************************************************************
+%
 % Sorry, this module has not yet been documented.
 %
 % See also n/a.
@@ -122,7 +126,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 
-    imagesc(NewImage);
+    CPimagesc(NewImage);
     title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
         'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...

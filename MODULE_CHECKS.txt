@@ -81,25 +81,25 @@ MeasureRatios			Mike
 
 MergeBatchOutput		Mike (Should have Susan check)
 
-OverlayOutlines
+OverlayOutlines			Mike
 
-PlaceAdjacent
+PlaceAdjacent			Mike
 
 ProcessOutlines
 
-RelateObjects
+RelateObjects			Mike
 
-RenameOrRenumberFile
+RenameOrRenumberFile		Mike
 
-RescaleIntensity
+RescaleIntensity		Mike
 
-Resize
+Resize				Mike
 
-Restart
+Restart				(Need to verify)
 
-Rotate
+Rotate				(Need to verify)
 
-SaveImages
+SaveImages			Mike
 
 SendEmail
 

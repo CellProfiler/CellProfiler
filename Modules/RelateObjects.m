@@ -1,7 +1,13 @@
 function handles = RelateObjects(handles)
 
-% Help for the Flip module:
+% Help for the RelateObjects module:
 % Category: Object Processing
+%
+% SHORT DESCRIPTION:
+% Assigns relationships: All objects (e.g. speckles) within parent object
+% (e.g. nucleus) become its children. Also produces a child count for each
+% parent object.
+% *************************************************************************
 %
 % Sorry, help does not exist yet.
 %
@@ -61,7 +67,7 @@ drawnow
 %%% segmented objects.
 fieldname = ['Segmented', SubObjectName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
+if ~isfield(handles.Pipeline, fieldname)
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified that the primary objects were named ', SubObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The module cannot locate this image.']);
 end
 SubObjectLabelMatrix = handles.Pipeline.(fieldname);
@@ -70,7 +76,7 @@ SubObjectLabelMatrix = handles.Pipeline.(fieldname);
 %%% segmented objects.
 fieldname = ['Segmented', ParentName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
+if ~isfield(handles.Pipeline, fieldname)
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified that the primary objects were named ', ParentName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The module cannot locate this image.']);
 end
 ParentObjectLabelMatrix = handles.Pipeline.(fieldname);
@@ -109,7 +115,7 @@ if exist('FinalParentList')
         else
             OldColumn = strmatch(ParentName,handles.Measurements.(SubObjectName).ParentFeatures);
             if length(OldColumn) ~= 1
-                        error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
+                error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
             end
             handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
         end
@@ -135,7 +141,7 @@ if isfield(handles.Measurements.(ParentName),'ChildrenFeatures')
     else
         OldColumn = strmatch([SubObjectName,' Count'],handles.Measurements.(ParentName).ChildrenFeatures);
         if length(OldColumn) ~= 1
-                        error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
         end
         handles.Measurements.(ParentName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
     end
@@ -166,14 +172,14 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1);
     ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
-    imagesc(ColoredParentLabelMatrixImage);
+    CPimagesc(ColoredParentLabelMatrixImage);
     title(['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2);
     ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
-    imagesc(ColoredSubObjectLabelMatrixImage);
+    CPimagesc(ColoredSubObjectLabelMatrixImage);
     title('Original Sub Objects');
     subplot(2,2,3);
     ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
-    imagesc(ColoredNewObjectParentLabelMatrix);
+    CPimagesc(ColoredNewObjectParentLabelMatrix);
     title('New Sub Objects');
 end

@@ -3,6 +3,10 @@ function handles = PlaceAdjacent(handles)
 % Help for the Place Adjacent module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Place up to six images next to each other to produce a single image.
+% *************************************************************************
+%
 % This module places two images next to each other, either
 % horizontally or vertically.
 %
@@ -119,7 +123,7 @@ for i=1:length(ImageName)
     %%% variable.
     fieldname = ['', ImageName{i}];
     %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
+    if ~isfield(handles.Pipeline, fieldname)
         %%% If the image is not there, an error message is produced.  The error
         %%% is not displayed: The error function halts the current function and
         %%% returns control to the calling function (the analyze all images
@@ -200,11 +204,10 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-    drawnow
+if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    imagesc(AdjacentImage);
+    CPimagesc(AdjacentImage);
     title(['Adjacent Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
 

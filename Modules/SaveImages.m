@@ -195,7 +195,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
     %%% The figure window is closed since there is nothing to display.
-    try close(ThisModuleFigureNumber)
+    try close(ThisModuleFigureNumber) %#ok Ignore MLint
     end
 end
 drawnow
@@ -207,7 +207,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         else
             FileName = handles.Pipeline.(['Filename', ImageFileName]);
         end
-        [temp FileName] = fileparts(FileName);
+        [temp FileName] = fileparts(FileName); %#ok Ignore MLint
     catch
         if strcmp(ImageFileName,'N')
             FileName = TwoDigitString(handles.Current.SetBeingAnalyzed);
@@ -233,7 +233,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 
     FileName = [FileName '.' FileFormat];
-    
+
     if strncmp(FileDirectory,'.',1)
         if strcmp(FileDirectory,'.')
             PathName = handles.Current.DefaultOutputDirectory;
@@ -266,7 +266,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
 
         %%% Checks whether the file format the user entered is readable by Matlab.
         if ~any(strcmp(FileFormat,CPimread)) && ~strcmp(FileFormat,'avi')
-            error(['Image processing was canceled in the ', ModuleName, ' module because the image file type entered is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab, or see the help for this module.')
+            error(['Image processing was canceled in the ', ModuleName, ' module because the image file type entered is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab, or see the help for this module.'])
         end
     end
 
@@ -277,7 +277,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         %%% original file. This check is not done here if this is an avi
         %%% (movie) file, because otherwise the check would be done on each
         %%% frame of the movie.
-        if exist(FileAndPathName) == 2
+        if exist(FileAndPathName) == 2 %#ok Ignore MLint
             try
                 Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
             catch
@@ -308,10 +308,16 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 
     if ~strcmp(OptionalParameters,'/')
-        FileSavingParameters = [',',OptionalParameters,FileSavingParameters]
+        FileSavingParameters = [',',OptionalParameters,FileSavingParameters];
     end
 
-    if strcmp(FileFormat,'fig')
+    if strcmp(FileFormat,'mat')
+        try
+            eval(['save(''',FileAndPathName,''',''Image'')']);
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+        end
+    elseif strcmp(FileFormat,'fig')
         if length(ImageName) == 1
             fieldname = ['FigureNumberForModule0',ImageName];
         elseif length(ImageName) == 2
@@ -319,18 +325,9 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         else
             error(['Image processing was canceled in the ', ModuleName, ' module because the figure number was not in XX format.']);
         end
-        FigureHandle = handles.Current.(fieldname);
-    end
-
-    if strcmp(FileFormat,'mat')
+        FigureHandle = handles.Current.(fieldname); %#ok Ignore MLint
         try
-            eval(['save(''',FileAndPathName, ''',''Image'')']);
-        catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
-        end
-    elseif strcmp(FileFormat,'fig')
-        try
-            eval(['saveas(FigureHandle,FileAndPathName,''fig'')']);
+            saveas(FigureHandle,FileAndPathName,'fig');
         catch
             error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
@@ -340,11 +337,11 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             %%% the original file, but only on the first cycle,
             %%% because otherwise the check would be done on each frame
             %%% of the movie.
-            if exist(FileAndPathName) == 2
+            if exist(FileAndPathName) == 2 %#ok Ignore MLint
                 try
                     Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Cancel','Cancel');
                 catch
-                error(['Image processing was canceled in the ', ModuleName, ' module because the settings will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
+                    error(['Image processing was canceled in the ', ModuleName, ' module because the settings will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
                 end
                 if strcmp(Answer,'Cancel')
                     error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
@@ -388,7 +385,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         %%% time to save the movie file.
         TimeToSave = 0;
         if MovieIsNumber == 1
-            if rem(handles.Current.SetBeingAnalyzed,MovieSavingIncrement) == 0 | handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+            if rem(handles.Current.SetBeingAnalyzed,MovieSavingIncrement) == 0 || handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                 TimeToSave = 1;
             end
         else
@@ -417,76 +414,6 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
                 end
             end
         end
-        
-        %%%%%%% THIS IS FUNCTIONAL, BUT SLOW >>>>>>>>>>>
-        %%% It opens the entire file from the hard drive and re-saves the whole
-        %%% thing.
-        %         %%% If this movie file already exists, open it.
-        %         try
-        %
-        %             Movie = aviread(FileAndPathName);
-        %             NumberExistingFrames = size(Movie,2);
-        %          %%% If the movie does not yet exist, create the colormap
-        %          %%% field as empty to prevent errors when trying to save as a
-        %          %%% movie.
-        %
-        %
-        %         catch   Movie.colormap = [];
-        %             NumberExistingFrames = 0;
-        %         end
-        %         %%% Adds the image as the last frame in the movie.
-        %         Movie(1,NumberExistingFrames+1).cdata = Image*256;
-        %         % Movie(1,NumberExistingFrames+1).colormap = colormap(gray(256));
-        %         %%% Saves the Movie under the appropriate file name.
-        %         movie2avi(Movie,FileAndPathName,'colormap',colormap(gray(256)))
-
-        %%% TRYING TO FIGURE OUT HOW TO ADD COLORMAP INFO TO RGB IMAGES>>>
-        %%% If the image is an RGB image (3-d), convert it to an
-        %%% indexed image plus a colormap to allow saving as a
-        %%% movie.
-        %%% I THINK ONLY ONE COLORMAP IS ALLOWED FOR THE WHOLE
-        %%% MOVIE.>>>>>>>>>>>>> MAYBE NEED TO SPECIFY A SINGLE COLORMAP
-        %%% HERE RATHER THAN HAVING IT AUTO CALCULATED.
-        %             [Image,map] = rgb2ind(Image,256,'nodither');
-        %             Movie(NumberExistingFrames+1).colormap = map;
-        %             %%% Adds the image as the last frame in the movie.
-        %             %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
-        %             %%%
-        %             Movie(NumberExistingFrames+1).cdata = Image;
-        %   [Image,map] = rgb2ind(Image,256,'nodither');
-        %%% Adds the image as the last frame in the movie.
-        %%% MAYBE I SHOULD BE USING im2frame??>>>>>>>>>>>
-        %%%
-        % Movie(NumberExistingFrames+1).cdata = Image;
-
-
-        %%% FAILED ATTEMPT TO USE ADDFRAME.
-        % %%% See if this movie file already exists. If so, just
-        %         %%% retrieve the AviHandle from handles
-        %         SUCCESSFULHANDLERETIREVAL = 0;
-        %         if exist(FileAndPathName) ~= 0
-        %             try
-        %                 fieldname = ['AviHandle', ImageName];
-        %                 AviHandle = handles.Pipeline.(fieldname)
-        %                 AviHandle = addframe(AviHandle,Image);
-        %                 AviHandle = close(AviHandle);
-        %                 SUCCESSFULHANDLERETIREVAL = 1;
-        %             end
-        %         end
-        %
-        %         if SUCCESSFULHANDLERETIREVAL == 0
-        %             %%% If the movie does not exist already, create it using
-        %             %%% the avifile function and put the AviHandle into the handles.
-        %
-        %             AviHandle = avifile(FileAndPathName);
-        %             AviHandle = addframe(AviHandle,Image);
-        %             AviHandle = close(AviHandle);
-        %
-        %             fieldname = ['AviHandle', ImageName];
-        %             handles.Pipeline.(fieldname) =  AviHandle;
-        %         end
-        %
-
     else
         try eval(['imwrite(Image, FileAndPathName, FileFormat', FileSavingParameters,')']);
         catch
@@ -495,7 +422,6 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 end
 
-%%% SUBFUNCTION %%%
 function twodigit = TwoDigitString(val)
 %TwoDigitString is a function like num2str(int) but it returns a two digit
 %representation of a string for our purposes.

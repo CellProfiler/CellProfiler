@@ -3,6 +3,10 @@ function handles = Rotate(handles)
 % Help for the Rotate module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Rotates images.
+% *************************************************************************
+%
 % Sorry, there is no help right now.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -102,7 +106,7 @@ fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
-ImageHandle = imagesc(OrigImage);
+ImageHandle = CPimagesc(OrigImage);
 axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
 
 drawnow
@@ -217,7 +221,7 @@ drawnow
 
 CPfigure(FigureHandle);
 subplot(2,3,[1 2 4 5]);
-ImageHandle = imagesc(RotatedImage);
+ImageHandle = CPimagesc(RotatedImage);
 axis image;
 title('Rotated Image');
 pixval off;

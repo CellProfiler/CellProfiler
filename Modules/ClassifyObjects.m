@@ -3,18 +3,20 @@ function handles = ClassifyObjects(handles)
 % Help for the Classify Objects module:
 % Category: Other
 %
+% SHORT DESCRIPTION: Classifies objects into a number of different classes
+% according to the value of a measurement you choose.
+% *************************************************************************
+%
 % This module classifies objects into a number of different classes
-% according to the size of a measurement specified by the user.  It does
-% this by specifying a range for the value and dividing each object into a
-% bin based on equal divisions of that range.  It requires that the user
-% run a measurement module before so it has measurement values with which
-% to classify the objects.
+% according to the value of a measurement (e.g. by size, intensity, shape,
+% etc.). Choose the measurement feature to be used to classify your objects
+% and specify what bins to use. This module requires that you run a
+% measurement module previous to this module in the pipeline so that the
+% measurement values can be used to classify the objects. If you are
+% classifying by the ratio of two measurements, you must put a MeasureRatio
+% module previous to this module in the pipeline.
 %
-% This modules also has the option to classify objects based on the ratio
-% of two measurements.  For this option, the user must run the
-% MeasureRatios modules, which creates the ratio of two already existing
-% measurements (thus two measure modules must be run before that).
-%
+% Settings:
 % Feature Number:
 % If you are not selecting Ratio, then this is the number of the
 % submeasurement that you want to take.  For instance, MeasureAreaShape
@@ -27,7 +29,7 @@ function handles = ClassifyObjects(handles)
 % MinorAxisLength for cells, and MeanIntensity to MaxIntensity for nuclei,
 % the value for the Area to Perimeter for nuclei would be 1, the value for
 % MajorAxisLength to MinorAxisLength for cells would be 1, and the value
-% for MeanIntensity to MaxiIntensity for nuclei would be 2.
+% for MeanIntensity to MaxIntensity for nuclei would be 2.
 %
 % See also <nothing relevant>.
 
@@ -58,8 +60,6 @@ function handles = ClassifyObjects(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the identified objects (for Ratio, enter the numerator object)?
@@ -67,7 +67,7 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Enter the feature type (e.g. AreaShape, Texture, Intensity) or Ratio:
+%textVAR02 = Enter the feature type:
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Correlation
 %choiceVAR02 = Texture
@@ -77,21 +77,28 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter feature number (see help for Ratio):
+%textVAR03 = Enter feature number (see help):
 %defaultVAR03 = 1
 FeatureNbr = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Enter the lower limit of the lower bin
-%defaultVAR04 = 0
-LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+%textVAR04 = To create evenly spaced bins, enter number of bins, or type "C:1 2 3 4" to custom define the bin edges, or type P:XXX, where XXX is the numerical threshold to measure the percent of objects that are above a threshold.
+%defaultVAR04 = 3
+NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the upper limit for the upper bin
-%defaultVAR05 = 100
-UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = To create evenly spaced bins, enter the lower limit for the lower bin
+%defaultVAR05 = 0
+LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter number of bins or type "C:1 2 3 4" to custom define the bins (to measure the percent of objects that are above a threshold, type P:XXX, where XXX is the threshold).
-%defaultVAR06 = 3
-NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = To create evenly spaced bins, enter the upper limit for the upper bin
+%defaultVAR06 = 100
+UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+%%%VariableRevisionNumber = 3
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 PercentFlag = 0;
 CustomFlag = 0;
@@ -114,16 +121,8 @@ catch
     error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number, or the letter P for the number of bins.'])
 end
 
-%%%VariableRevisionNumber = 2
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
 %%% Retrieves the label matrix image that contains the segmented objects
 fieldname = ['Segmented', ObjectName];
-
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)
     LabelMatrixImage = handles.Pipeline.(fieldname);
@@ -169,7 +168,7 @@ else
     edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1);
 end
 
-edges(1) = edges(1) - sqrt(eps);                               % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
+edges(1) = edges(1) - sqrt(eps);   % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));
 bins = zeros(1,NbrOfBins);
 for k = 1:NbrOfBins
@@ -199,13 +198,13 @@ if ~strcmpi(FeatureType,'Ratio')
 else
     FeatureName = ObjectName;
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
@@ -238,7 +237,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
     if ~strcmpi(FeatureType,'Ratio')
-
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
         ImageHandle = CPimagesc(QuantizedRGBimage);axis image

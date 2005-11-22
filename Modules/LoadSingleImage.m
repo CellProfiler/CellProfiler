@@ -45,8 +45,7 @@ function handles = LoadSingleImage(handles)
 %%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %filenametextVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
@@ -221,8 +220,7 @@ drawnow
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed the first time through the module.
 %%% Determines the figure number.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber) == 1;
     close(ThisModuleFigureNumber)

@@ -40,8 +40,6 @@ function handles = RelateObjects(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What objects are to become subobjects?

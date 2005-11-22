@@ -54,8 +54,7 @@ function handles = MeasureObjectNeighbors(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the objects whose neighbors you want to measure?
@@ -150,8 +149,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber)
 
     %%% Calculates the ColoredIncomingObjectsImage for displaying in the figure

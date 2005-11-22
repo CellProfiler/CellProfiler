@@ -34,8 +34,7 @@ function handles = CreateWebPage(handles)
 %
 % $Revision$
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %%%%%%%%%%%%%%%%%
@@ -284,8 +283,7 @@ drawnow
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed.
 %%% Determines the figure number.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber)
     close(ThisModuleFigureNumber)

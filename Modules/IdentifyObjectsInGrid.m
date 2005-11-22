@@ -58,8 +58,7 @@ function handles = IdentifyObjectsInGrid(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What is the already defined grid?
@@ -273,8 +272,7 @@ FinalOutline = logical(FinalOutline>0);
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 
 if any(findobj == ThisModuleFigureNumber)
     drawnow

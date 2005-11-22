@@ -56,8 +56,6 @@ function handles = ColorToGray(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be converted to Gray?
@@ -73,7 +71,7 @@ GrayOrSplit = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = COMBINE options:
 
-%textVAR04 = What do you want to call the grayscale image?
+%textVAR04 = What do you want to call the resulting grayscale image?
 %defaultVAR04 = OrigGray
 %infotypeVAR04 = imagegroup indep
 GrayscaleImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});

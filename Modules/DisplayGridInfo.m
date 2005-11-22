@@ -43,8 +43,7 @@ function handles = DisplayGridInfo(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What is the already defined grid?
@@ -104,8 +103,7 @@ TopOrBottom = GridInfo.TopOrBottom;
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 %%% Opens a new window. Because the whole purpose of this module is to
 %%% display info, the user probably doesn't want to overwrite the
 %%% figure after each cycle.

@@ -1,1 +1,1 @@
-[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);

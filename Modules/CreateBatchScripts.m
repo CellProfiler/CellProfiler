@@ -255,8 +255,7 @@ function handles = CreateBatchScripts(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find the
-%%% variable values that the user entered.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = How many cycles should be in each batch?
@@ -465,8 +464,7 @@ drawnow
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed if it was previously open.
 %%% Determines the figure number.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 %%% If the window is open, it is closed.
 if any(findobj == ThisModuleFigureNumber) == 1;
     delete(ThisModuleFigureNumber)

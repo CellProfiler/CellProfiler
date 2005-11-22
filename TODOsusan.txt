@@ -1,4 +1,5 @@
 Susan's TODO list
+- Please add a new column - the year of the publication - to the wiki publications page and fill it in for everything that is posted currently.
 
 1 -- change ExportData(Excel) to use CPconvert sub function.
  swap column/row and final interface for both ExportExcel and ExportSQL 

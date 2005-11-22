@@ -1005,7 +1005,8 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 end
 
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-                cmap = jet(max(64,max(Objects(:))));
+                handlescmap = handles.Preferences.LabelColorMap;
+                cmap = feval(handlescmap,max(64,max(Objects(:))));
                 im = label2rgb(Objects, cmap, 'k', 'shuffle');
                 CPimagesc(im);
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);

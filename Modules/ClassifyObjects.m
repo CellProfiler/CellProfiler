@@ -100,7 +100,7 @@ try
         MidPointToUse = str2double(NbrOfBins(3:end));
         PercentFlag = 1;
     elseif strncmpi(NbrOfBins,'C',1)
-        NbrOfBins = str2num(NbrOfBins(3:end));
+        NbrOfBins = str2num(NbrOfBins(3:end)); %#ok Ignore MLint
         if length(NbrOfBins) >= 2
             CustomFlag = 1;
         end
@@ -192,7 +192,8 @@ if ~strcmpi(FeatureType,'Ratio')
     end
     QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
     QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
-    cmap = [0 0 0;jet(length(bins))];
+    handlescmap = handles.Preferences.LabelColorMap;
+    cmap = [0 0 0;feval(handlescmap,max(64,length(bins)))];
     QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
     FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 else
@@ -256,7 +257,8 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
     xlimits(2) = max(UpperBinMax,edges(end));                          % so they can be used for the second histogram
     axis([xlimits ylim])
-    set(get(h,'Children'),'FaceVertexCData',jet(NbrOfBins));
+    handlescmap = handles.Preferences.LabelColorMap;
+    set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(64,NbrOfBins)));
 
     %%% If we are using a user defined field, there is no corresponding
     %%% image.

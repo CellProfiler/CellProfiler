@@ -62,11 +62,9 @@ function handles = StretchAlignCrop(handles)
 %%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find
-%%% the variable values that the user entered.
-CurrentModule = handles.Current.CurrentModuleNumber;
-CurrentModuleNum = str2double(CurrentModule);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
+%%% Reads the current module number, because this is needed to find the
+%%% variable values that the user entered.
+[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the traced images?
 %infotypeVAR01 = imagegroup

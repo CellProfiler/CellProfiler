@@ -46,11 +46,9 @@ function handles = SpeedUpCellProfiler(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find
-%%% the variable values that the user entered.
-CurrentModule = handles.Current.CurrentModuleNumber;
-CurrentModuleNum = str2double(CurrentModule);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
+%%% Reads the current module number, because this is needed to find the
+%%% variable values that the user entered.
+[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Output files should be saved every Nth cycle (1,2,3,...  Default = 1). Note: the output file is always saved after the first or last cycle is processed, no matter what is entered here.
 %defaultVAR01 = 1

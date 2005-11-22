@@ -45,11 +45,9 @@ function handles = LoadSingleImage(handles)
 %%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the current module number, because this is needed to find
-%%% the variable values that the user entered.
-CurrentModule = handles.Current.CurrentModuleNumber;
-CurrentModuleNum = str2double(CurrentModule);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
+%%% Reads the current module number, because this is needed to find the
+%%% variable values that the user entered.
+[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %filenametextVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
 TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});

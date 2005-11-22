@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-Mike (11/22)
+Replace this repetitive code:
+%%% Reads the current module number, because this is needed to find
+%%% the variable values that the user entered.
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
+
+With a subfunction:
+function [CurrentModuleNum, ModuleName] = CPwhichmodule(handles)
+CurrentModuleNum = str2double(handles.Current.CurrentModuleNumber);
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
+
 -(Mike 11/22) (Requested by Anne 11-22-05)- make sure all the identify primary and object-processing modules (the ones that produce a new object like ExpandOrShrink) create UneditedSegmented and SmallRemovedSegmented and record the object count and locations. I noticed one module did not create these (Id in grid, I think).
 
 -(Mike 11/22) (Requested by Anne 11-21-05)  Histograms: 

@@ -103,10 +103,9 @@ function handles = MeasureObjectTexture(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%
 
-%%% Reads the current module number, because this is needed to find
-%%% the variable values that the user entered.
-CurrentModule = handles.Current.CurrentModuleNumber;
-CurrentModuleNum = str2double(CurrentModule);
+%%% Reads the current module number, because this is needed to find the
+%%% variable values that the user entered.
+[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the greyscale images you want to measure?
 %infotypeVAR01 = imagegroup

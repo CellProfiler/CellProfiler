@@ -1,19 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-------------
-Replace this repetitive code:
-%%% Reads the current module number, because this is needed to find
-%%% the variable values that the user entered.
-CurrentModule = handles.Current.CurrentModuleNumber;
-CurrentModuleNum = str2double(CurrentModule);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
-
-With a subfunction:
-function [CurrentModuleNum, ModuleName] = CPwhichmodule(handles)
-CurrentModuleNum = str2double(handles.Current.CurrentModuleNumber);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
-------------
 -(Requested by Anne 11-22-05) In ShowDataOnImage, often you want to choose a different image to display on, so one of the choices in the listbox should be to override the automatic looking-up of the image so that you are allowed to browse for the image.
 
 -(Requested by Anne 11-22-05) I think that the overlay outlines module is producing images outside the 0 to 1 range.

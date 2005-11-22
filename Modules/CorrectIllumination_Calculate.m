@@ -190,7 +190,7 @@ if strcmp(EachOrAll,'All') && handles.Current.SetBeingAnalyzed ~= 1 && strcmp(So
     return
 end
 
-try NumericalObjectDilationRadius = str2num(ObjectDilationRadius);
+try NumericalObjectDilationRadius = str2double(ObjectDilationRadius);
 catch
     error(['Image processingwas canceled in the ', ModuleName, ' module because you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).'])
 end
@@ -250,7 +250,7 @@ if strcmp(EachOrAll,'All')
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.');
+            h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.']);
             OldPos = get(h,'position');
             set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
             drawnow
@@ -262,7 +262,7 @@ if strcmp(EachOrAll,'All')
                 %%% structure.
                 fieldname = ['Pathname', ImageName];
                 try Pathname = handles.Pipeline.(fieldname);
-                catch error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.')
+                catch error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.'])
                 end
                 %%% Retrieves the list of filenames where the images are stored from the
                 %%% handles structure.

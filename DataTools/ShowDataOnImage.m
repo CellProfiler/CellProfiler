@@ -79,17 +79,22 @@ if isempty(Answer)
 end
 SampleNumber = str2double(Answer{1});
 
-%TotalNumberImageSets = length(handles.Measurements.(MeasurementToExtract));
-%if SampleNumber > TotalNumberImageSets
-%    error(['The number you entered exceeds the number of samples in the file.  You entered ', num2str(SampleNumber), ' but there are only ', num2str(TotalNumberImageSets), ' in the file.'])
-%end
-
 %%% Looks up the corresponding image file name.
 PotentialImageNames = handles.Measurements.Image.FileNamesText;
 %%% Error detection.
 if isempty(PotentialImageNames)
     PromptMessage = 'CellProfiler was not able to look up the image file names used to create these measurements to help you choose the correct image on which to display the results. You may continue, but you are on your own to choose the correct image file.';
+    %%% Prompts the user with the image file name.
+    h = CPmsgbox(PromptMessage);
+    %%% Opens a user interface window which retrieves a file name and path
+    %%% name for the image to be displayed.
+    [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+    %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
+    if FileName == 0,return,end
+    try delete(h), end
+    ImageFileName = {FileName};
 else
+    PotentialImageNames{end+1} = 'Choose Image Manually';
     %%% Allows the user to select a filename from the list.
     [Selection, ok] = listdlg('ListString',PotentialImageNames, 'ListSize', [300 300],...
         'Name','Choose the image whose filename you want to display',...
@@ -98,24 +103,36 @@ else
     if ok == 0
         return
     end
-    ImageFileName = handles.Measurements.Image.FileNames{SampleNumber}(Selection);
-    PromptMessage = ['Browse to find the image called ', ImageFileName,'.'];
+    if Selection == length(PotentialImageNames)
+        PromptMessage = 'You have chosen to choose the image to display manually.';
+        %%% Prompts the user with the image file name.
+        h = CPmsgbox(PromptMessage);
+
+        %%% Opens a user interface window which retrieves a file name and path
+        %%% name for the image to be displayed.
+        [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+        %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
+        if FileName == 0,return,end
+        try delete(h), end
+        ImageFileName = {FileName};
+    else
+        ImageFileName = handles.Measurements.Image.FileNames{SampleNumber}(Selection);
+        PromptMessage = ['Browse to find the image called ', ImageFileName,'.'];
+        Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
+        FileName=char(ImageFileName);
+        if  ~exist(fullfile(Pathname,char(ImageFileName)),'file') %path and file does not exist there.
+            %%% Prompts the user with the image file name.
+            h = CPmsgbox(PromptMessage);
+
+            %%% Opens a user interface window which retrieves a file name and path
+            %%% name for the image to be displayed.
+            [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+            %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
+            if FileName == 0,return,end
+            try delete(h), end
+        end
+    end
 end
-
-Pathname=char(handles.Measurements.Image.PathNames{SampleNumber}(Selection));
-FileName=char(ImageFileName);
-if  ~ exist( fullfile (Pathname, char(ImageFileName)),'file') %path and file does not exist there.
-    %%% Prompts the user with the image file name.
-    h = CPmsgbox(PromptMessage);
-
-    %%% Opens a user interface window which retrieves a file name and path
-    %%% name for the image to be displayed.
-    [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
-    %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
-    if FileName == 0,return,end
-    try delete(h), end
-end
-
 
 %%% Opens and displays the image, with pixval shown.
 try

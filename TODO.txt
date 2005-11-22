@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
--(Requested by Anne 11-22-05) In ShowDataOnImage, often you want to choose a different image to display on, so one of the choices in the listbox should be to override the automatic looking-up of the image so that you are allowed to browse for the image.
-
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
 - look for jet

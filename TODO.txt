@@ -5,6 +5,8 @@ COMMENTS:
 
 -(Requested by Anne 11-21-05) (could not get to reproduce, please show):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
 
+-(Mike 11/22 isdeployed but we need 2 seperate versions for compile) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
+
 TODO:
 
 (Requested by Anne 11-21-05)  Histograms: 
@@ -46,10 +48,6 @@ if sum(sum(IncomingLabelMatrixImage)) >= 1
     ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
 else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
 end
-
-(Requested by Anne 11-21-05)  There is a bug when using MoG adaptive (see identifyPrimAutomatic).
-
-(Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
 - Combine code for:
 Histograms

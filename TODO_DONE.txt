@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/22) (Requested by Anne 11-21-05)  There is a bug when using MoG adaptive (see identifyPrimAutomatic).
+
 -(Mike 11/22 replaced all 'times' with 'Helvetica', then moved check font to module checking) (Requested by Anne 11-21-05): Make sure all the Measure modules are using the same font. Actually, make sure all the code is using the same font! We have Times, fixedwidth, helvetica throughout the code.
 
 -(Mike 11/22) (Requested by Anne 11-21-05):  It seems like this code in GetDataOnImage module will fail if that image cycle does not have any objects. The catch should allow processing to continue but display something in the figure window like 'no measurements found for this cycle'.

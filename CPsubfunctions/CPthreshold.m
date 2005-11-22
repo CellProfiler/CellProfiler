@@ -33,7 +33,7 @@ if strfind(Threshold,'Global')
     if strfind(Threshold,'Otsu')
         Threshold = CPgraythresh(OrigImage,handles,ImageName);
     elseif strfind(Threshold,'MoG')
-        Threshold = MixtureOfGaussians(handles,OrigImage,pObject,ImageName);
+        Threshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
     end
 elseif strfind(Threshold,'Adaptive')
 
@@ -71,7 +71,7 @@ elseif strfind(Threshold,'Adaptive')
         GlobalThreshold = CPgraythresh(OrigImage);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@CPgraythresh);
     elseif strfind(Threshold,'MoG')
-        GlobalThreshold = MixtureOfGaussians(handles,OrigImage,pObject,ImageName);
+        GlobalThreshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,handles,pObject,ImageName);
     end
     %%% Resizes the block-produced image to be the size of the padded image.
@@ -173,7 +173,7 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
 
-function Threshold = MixtureOfGaussians(handles,OrigImage,pObject,ImageName)
+function Threshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName)
 %%% This function finds a suitable threshold for the input image
 %%% OrigImage. It assumes that the pixels in the image belong to either
 %%% a background class or an object class. 'pObject' is an initial guess
@@ -199,9 +199,11 @@ if isfield(handles.Pipeline,fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
     BinaryCropImage = handles.Pipeline.(fieldname);
-    %%% Masks the image and I think turns it into a linear
-    %%% matrix.
-    OrigImage = OrigImage(logical(BinaryCropImage));
+    if numel(OrigImage) == numel(BinaryCropImage)
+        %%% Masks the image and I think turns it into a linear
+        %%% matrix.
+        OrigImage = OrigImage(logical(BinaryCropImage));
+    end
 end
 
 %%% The number of classes is set to 3
@@ -310,13 +312,15 @@ else
     %%% image.  So, we check to see whether there is a field in the
     %%% handles structure that goes along with the image of interest.
     fieldname = ['CropMask', ImageName];
-    if isfield(handles.Pipeline,fieldname) == 1
+    if isfield(handles.Pipeline,fieldname)
         %%% Retrieves previously selected cropping mask from handles
         %%% structure.
         BinaryCropImage = handles.Pipeline.(fieldname);
-        %%% Masks the image and I think turns it into a linear
-        %%% matrix.
-        im = im(logical(BinaryCropImage));
+        if numel(im) == numel(BinaryCropImage)
+            %%% Masks the image and I think turns it into a linear
+            %%% matrix.
+            im = im(logical(BinaryCropImage));
+        end
     end
 end
 

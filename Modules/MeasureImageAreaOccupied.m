@@ -40,11 +40,6 @@ function handles = MeasureImageAreaOccupied(handles)
 % adjusted by a user-specified factor. It might be desirable to write
 % a new module where the threshold can be set to a constant value.
 %
-% SAVING IMAGES: If you want to save images produced by this module,
-% alter the code for this module to save those images to the handles
-% structure (see the SaveImages module help) and then use the Save
-% Images module.
-%
 % See also MEASUREAREASHAPECOUNTLOCATION,
 % MEASURECORRELATION,
 % MEASUREINTENSITYTEXTURE,

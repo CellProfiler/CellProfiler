@@ -10,12 +10,6 @@ function handles = Subtract(handles)
 % SPEED OPTIMIZATION: Note that increasing the blur radius increases
 % the processing time exponentially.
 %
-% SAVING IMAGES: The resulting image produced by this module can be easily
-% saved using the Save Images module, using the name you assign. If
-% you want to save other intermediate images, alter the code for this
-% module to save those images to the handles structure (see the
-% SaveImages module help) and then use the Save Images module.
-%
 % See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.

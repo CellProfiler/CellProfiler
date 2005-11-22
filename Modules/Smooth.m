@@ -16,15 +16,12 @@ function handles = Smooth(handles)
 % for filtering. Values over ~50 take substantial amounts of time to
 % process.
 %
-% SAVING IMAGES: The smoothed images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save the smoothed image to use it for later
-% analysis, you should save the smoothed image in '.mat' format to
-% prevent degradation of the data.
+% Special note on saving images: If you want to save the smoothed image to
+% use it for later analysis, you should save the smoothed image in '.mat'
+% format to prevent degradation of the data.
 %
-% See also MAKEPROJECTION_AVERAGEIMAGES, CORRECTILLUMINATION_APPLY,
-% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES,
-% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES, CPSMOOTH.
+% See also AVERAGE, CORRECTILLUMINATION_APPLY,
+% CORRECTILLUMINATION_CALCULATE, CPSMOOTH.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -181,7 +178,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% image and the smoothed image.
     subplot(2,1,1); imagesc(OrigImage);
     
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2); imagesc(SmoothedImage);
     
     title('Smoothed Image');

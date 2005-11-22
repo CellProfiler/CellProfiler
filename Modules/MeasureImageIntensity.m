@@ -17,11 +17,6 @@ function handles = MeasureImageIntensity(handles)
 % appropriate range of 0 to 1). Leaving these values at 0 and 1 means
 % that every pixel intensity will be included in the measurement.
 %
-% SAVING IMAGES: If you want to save images produced by this module,
-% alter the code for this module to save those images to the handles
-% structure (see the SaveImages module help) and then use the Save
-% Images module.
-%
 % See also MEASUREAREAOCCUPIED, MEASUREOBJECTINTENSITY, MEASURECORRELATION.
 
 % CellProfiler is distributed under the GNU General Public License.

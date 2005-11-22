@@ -10,10 +10,6 @@ function handles = PlaceAdjacent(handles)
 % This module places two images next to each other, either
 % horizontally or vertically.
 %
-% SAVING IMAGES: The images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign.
-%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.

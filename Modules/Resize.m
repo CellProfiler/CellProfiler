@@ -10,12 +10,6 @@ function handles = Resize(handles)
 % Images are resized (smaller or larger) based on the user's inputs.
 % This module uses the Matlab built-in function imresize.
 %
-% SAVING IMAGES: The thresholded images produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -67,6 +67,11 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 if strcmp(ImageMode,'Binary')
     Image = logical(LabelMatrixImage ~= 0);
@@ -84,8 +89,6 @@ elseif strcmp(ImageMode,'Color')
         Image = label2rgb(LabelMatrixImage,cmap,'k');
     end
 end
-
-handles.Pipeline.(ImageName) = Image;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -105,3 +108,10 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(Image);
     title('New Image','fontsize',handles.Preferences.FontSize);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+handles.Pipeline.(ImageName) = Image;

@@ -16,13 +16,7 @@ function handles = LoadSingleImage(handles)
 % directory set to the default image directory in order to load the
 % image from the directory one above the default image directory.
 %
-% SAVING IMAGES: The images loaded by this module can be easily saved
-% using the Save Images module, using the name you assign (e.g.
-% OrigBlue).  In the Save Images module, the images can be saved in a
-% different format, allowing this module to function as a file format
-% converter.
-%
-% See also LOADIMAGESORDER and LOADIMAGESORDERTEXT.
+% See also LOADIMAGES.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

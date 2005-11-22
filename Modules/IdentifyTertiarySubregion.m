@@ -23,19 +23,6 @@ function handles = IdentifyTertiarySubregion(handles)
 % of the perimeter, aspect ratio, solidity, etc. cannot be made for
 % noncontiguous objects.
 %
-% SAVING IMAGES: In addition to the object outlines and the
-% pseudo-colored object images that can be saved using the
-% instructions in the main CellProfiler window for this module, this
-% module produces a grayscale image where each object is a different
-% intensity, which you can save using the Save Images module using the
-% name: Segmented + whatever you called the objects (e.g.
-% Cytoplasm).
-%
-% Additional image(s) are normally calculated for display only,
-% including the object outlines alone. These images can be saved by
-% altering the code for this module to save those images to the
-% handles structure (see the SaveImages module help) and then using
-% the Save Images module.
 % See also identify Primary and Identify Secondary modules.
 
 % CellProfiler is distributed under the GNU General Public License.

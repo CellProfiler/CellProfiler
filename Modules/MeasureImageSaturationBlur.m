@@ -40,11 +40,6 @@ function handles = MeasureImageSaturationBlur(handles)
 % OrigGreen:  0.03440
 % OrigRed:    0.04652
 %
-% SAVING IMAGES: If you want to save images produced by this module,
-% alter the code for this module to save those images to the handles
-% structure (see the SaveImages module help) and then use the Save
-% Images module.
-%
 % See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.

@@ -41,13 +41,6 @@ function handles = SubtractBackground(handles)
 % value for each pixel position in the image because in a small image
 % set, that position may always be occupied by real staining.
 %
-% SAVING IMAGES: The corrected image produced by this module can be
-% easily saved using the Save Images module, using the name you
-% assign. If you want to save other intermediate images, alter the
-% code for this module to save those images to the handles structure
-% (see the SaveImages module help) and then use the Save Images
-% module.
-%
 % See also APPLYTHRESHOLDANDSHIFT.
 
 % CellProfiler is distributed under the GNU General Public License.

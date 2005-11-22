@@ -157,40 +157,42 @@ TextTotalNumberImageSets = num2str(TotalNumberImageSets);
 %%% Ask the user to specify histogram settings.
 Prompts{1} = 'Enter the first image number to show or export';
 Prompts{2} = ['Enter the last sample number to show or export (the total number of cycles with data in the file is ', TextTotalNumberImageSets, ').'];
-Prompts{3} = 'Enter the number of bins you want for the histogram(s). This number should not include the first and last bins, which will contain anything outside the specified range.';
-Prompts{4} = 'Any measurements less than this value will be combined in the leftmost bin. Enter automatic to determine this value automatically.';
-Prompts{5} = 'Any measurements greater than or equal to this value will be combined in the rightmost bin. Enter automatic to determine this value automatically.';
-Prompts{6} = 'Do you want to calculate one histogram for all the images you selected? (The alternative is to calculate a separate histogram for each image?';
-Prompts{7} = 'If you want to calculate histogram data only for objects meeting a threshold in a measurement, enter >, >=, =, <=, <, and enter the threshold in the box below, or leave the letter A to include all objects';
-Prompts{8} = 'Threshold value, if applicable';
-Prompts{9} = 'Do you want the Y-axis (number of objects) to be absolute or relative?';
-Prompts{10} = 'Display as a compressed histogram (heatmap)?';
-Prompts{11} = 'Do you want the histogram data to be exported? To export the histogram data, enter a filename (with ".xls" to open easily in Excel), or type "no" if you do not want to export the data.';
-Prompts{12} = 'If exporting histograms or displaying as a compressed histogram (heatmap), is each row to be one image or one histogram bin? Enter "image" or "bin".';
-Prompts{13} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
-Prompts{14} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
-Prompts{15} = 'Do you want a line, area, or bar graph?';
-Prompts{16} = 'Do you want the axis to be log scale?';
+Prompts{3} = 'What color should the initial plot be (r, g, b, y, m, c, k, or w)?';
+Prompts{4} = 'Enter the number of bins you want for the histogram(s). This number should not include the first and last bins, which will contain anything outside the specified range.';
+Prompts{5} = 'Any measurements less than this value will be combined in the leftmost bin. Enter automatic to determine this value automatically.';
+Prompts{6} = 'Any measurements greater than or equal to this value will be combined in the rightmost bin. Enter automatic to determine this value automatically.';
+Prompts{7} = 'Do you want to calculate one histogram for all the images you selected? (The alternative is to calculate a separate histogram for each image?';
+Prompts{8} = 'If you want to calculate histogram data only for objects meeting a threshold in a measurement, enter >, >=, =, <=, <, and enter the threshold in the box below, or leave the letter A to include all objects';
+Prompts{9} = 'Threshold value, if applicable';
+Prompts{10} = 'Do you want the Y-axis (number of objects) to be absolute or relative?';
+Prompts{11} = 'Display as a compressed histogram (heatmap)?';
+Prompts{12} = 'Do you want the histogram data to be exported? To export the histogram data, enter a filename (with ".xls" to open easily in Excel), or type "no" if you do not want to export the data.';
+Prompts{13} = 'If exporting histograms or displaying as a compressed histogram (heatmap), is each row to be one image or one histogram bin? Enter "image" or "bin".';
+Prompts{14} = 'Do you want the histograms to be displayed? (Impractical when exporting large amounts of data)';
+Prompts{15} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
+Prompts{16} = 'Do you want a line, area, or bar graph?';
+Prompts{17} = 'Do you want the axis to be log scale?';
 
 AcceptableAnswers = 0;
 global Answers
 while AcceptableAnswers == 0
     Defaults{1} = '1';
     Defaults{2} = TextTotalNumberImageSets;
-    Defaults{3} = '20';
-    Defaults{4} = 'automatic';
+    Defaults{3} = 'b';
+    Defaults{4} = '20';
     Defaults{5} = 'automatic';
-    Defaults{6} = 'no';
-    Defaults{7} = 'A';
-    Defaults{8} = '1';
-    Defaults{9} = 'relative';
-    Defaults{10} = 'no';
+    Defaults{6} = 'automatic';
+    Defaults{7} = 'no';
+    Defaults{8} = 'A';
+    Defaults{9} = '1';
+    Defaults{10} = 'relative';
     Defaults{11} = 'no';
-    Defaults{12} = 'image';
-    Defaults{13} = 'yes';
-    Defaults{14} = 'N';
-    Defaults{15} = 'bar';
-    Defaults{16} = 'no';
+    Defaults{12} = 'no';
+    Defaults{13} = 'image';
+    Defaults{14} = 'yes';
+    Defaults{15} = 'N';
+    Defaults{16} = 'bar';
+    Defaults{17} = 'no';
     %%% Loads the Defaults from the global workspace (i.e. from the
     %%% previous time the user ran this tool) if possible.
     for i = 1: length(Prompts)
@@ -203,13 +205,13 @@ while AcceptableAnswers == 0
     % Workaround because input dialog box is too tall. Break questions up
     % into two sets. We could create a custom version of inputdlg with a
     % vertical slider, but that would be more complicated.
-    Answers1 = inputdlg(Prompts(1:7),'Choose histogram settings - page 1',1,Defaults(1:7),'on');
+    Answers1 = inputdlg(Prompts(1:8),'Choose histogram settings - page 1',1,Defaults(1:8),'on');
 
     %%% If user clicks cancel button Answers1 will be empty.
     if isempty(Answers1)
         return
     end
-    Answers2 = inputdlg(Prompts(8:16),'Choose histogram settings - page 2',1,Defaults(8:16),'on');
+    Answers2 = inputdlg(Prompts(9:17),'Choose histogram settings - page 2',1,Defaults(9:17),'on');
 
     %%% If user clicks cancel button Answers2 will be empty.
     if isempty(Answers2)
@@ -241,6 +243,13 @@ while AcceptableAnswers == 0
     catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{2}, '.']));
         continue
     end
+
+    %%% Error checking for the Y Axis Scale question.
+    try GraphColor = Answers{3};
+    catch uiwait(CPerrordlg(['You must enter r, g, b, y, m, c, k, or w in answer to the question: ', Prompts{3}, '.']));
+        continue
+    end
+
     NumberOfImages = LastImage - FirstImage + 1;
     if NumberOfImages == 0
         NumberOfImages = TotalNumberImageSets;
@@ -248,46 +257,46 @@ while AcceptableAnswers == 0
         uiwait(CPerrordlg(['There are only ', TextTotalNumberImageSets, ' cycles total, but you specified that you wanted to view cycle number ', num2str(LastImage),'.']))
         continue
     end
-    try NumberOfBins = str2double(Answers{3});
-    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{3}, '.']));
-        continue
-    end
-    MinHistogramValue = Answers{4};
-    try str2double(MinHistogramValue);
+    try NumberOfBins = str2double(Answers{4});
     catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{4}, '.']));
         continue
     end
-
-    MaxHistogramValue = Answers{5};
-    try str2double(MaxHistogramValue);
+    MinHistogramValue = Answers{5};
+    try str2double(MinHistogramValue);
     catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{5}, '.']));
         continue
     end
-    CumulativeHistogram = Answers{6};
-    GreaterOrLessThan = Answers{7};
-    try ThresholdValue = str2double(Answers{8});
-    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{8}, '.']));
+
+    MaxHistogramValue = Answers{6};
+    try str2double(MaxHistogramValue);
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{6}, '.']));
+        continue
+    end
+    CumulativeHistogram = Answers{7};
+    GreaterOrLessThan = Answers{8};
+    try ThresholdValue = str2double(Answers{9});
+    catch uiwait(CPerrordlg(['You must enter a number in answer to the question: ', Prompts{9}, '.']));
         continue
     end
 
     %%% Error checking for the Y Axis Scale question.
-    try YAxisScale = lower(Answers{9});
-    catch uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']));
+    try YAxisScale = lower(Answers{10});
+    catch uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{10}, '.']));
         continue
     end
     if strcmpi(YAxisScale, 'relative') ~= 1 && strcmpi(YAxisScale, 'absolute') ~= 1
-        uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{9}, '.']));
+        uiwait(CPerrordlg(['You must enter "absolute" or "relative" in answer to the question: ', Prompts{10}, '.']));
         continue
     end
 
-    CompressedHistogram = Answers{10};
+    CompressedHistogram = Answers{11};
     if strncmpi(CompressedHistogram,'Y',1) ~= 1 && strncmpi(CompressedHistogram,'N',1) ~= 1
-        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{10}, '.']));
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{11}, '.']));
         continue
     end
-    SaveData = Answers{11};
+    SaveData = Answers{12};
     if isempty(SaveData)
-        uiwait(CPerrordlg(['You must enter "no", or a filename, in answer to the question: ', Prompts{11}, '.']));
+        uiwait(CPerrordlg(['You must enter "no", or a filename, in answer to the question: ', Prompts{12}, '.']));
         continue
     end
     %%% Adds the full pathname to the filename.
@@ -301,42 +310,42 @@ while AcceptableAnswers == 0
             end
         end
     end
-    RowImageOrBin = Answers{12};
+    RowImageOrBin = Answers{13};
     if ~strncmpi(RowImageOrBin,'I',1) && ~strncmpi(RowImageOrBin,'B',1)
-        uiwait(CPerrordlg(['You must enter "image" or "bin" in answer to the question: ', Prompts{12}, '.']));
+        uiwait(CPerrordlg(['You must enter "image" or "bin" in answer to the question: ', Prompts{13}, '.']));
         continue
     end
 
-    ShowDisplay = Answers{13};
+    ShowDisplay = Answers{14};
     if ~strncmpi(ShowDisplay,'N',1) && ~strncmpi(ShowDisplay,'Y',1)
-        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{13}, '.']));
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{14}, '.']));
         continue
     end
 
-    NumberOrPercent = Answers{14};
+    NumberOrPercent = Answers{15};
     if ~strncmpi(NumberOrPercent,'N',1) && ~strncmpi(NumberOrPercent,'P',1)
-        uiwait(CPerrordlg(['You must enter "N" or "P" in answer to the question: ', Prompts{14}, '.']));
+        uiwait(CPerrordlg(['You must enter "N" or "P" in answer to the question: ', Prompts{15}, '.']));
         continue
     end
 
     %%% Error checking for the line or bar question.
-    try LineOrBar = lower(Answers{15});
-    catch uiwait(CPerrordlg(['You must enter "line", "area", or "bar" in answer to the question: ', Prompts{15}, '.']));
+    try LineOrBar = lower(Answers{16});
+    catch uiwait(CPerrordlg(['You must enter "line", "area", or "bar" in answer to the question: ', Prompts{16}, '.']));
         continue
     end
     if ~strcmpi(LineOrBar, 'line') && ~strcmpi(LineOrBar,'bar') && ~strcmpi(LineOrBar,'area')
-        uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{15}, '.']));
+        uiwait(CPerrordlg(['You must enter "line" or "bar" in answer to the question: ', Prompts{16}, '.']));
         continue
     end
 
 
     %%% Error checking for the log or linear question.
-    try LogOrLinear = lower(Answers{16});
-    catch uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{16}, '.']));
+    try LogOrLinear = lower(Answers{17});
+    catch uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{17}, '.']));
         continue
     end
     if ~strcmp(LogOrLinear, 'yes') && ~strcmpi(LogOrLinear,'no')
-        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{16}, '.']));
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{17}, '.']));
         continue
     end
 
@@ -523,11 +532,13 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         Increment = Increment + 1;
         h = subplot(NumberDisplayRows,NumberDisplayColumns,Increment);
         if strcmpi(LineOrBar,'bar')
-            bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+            k=bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            set(k,'FaceColor',GraphColor);
         elseif strcmpi(LineOrBar,'area')
-            area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber))
+            k=area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            set(k,'FaceColor',GraphColor);
         else
-            plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2)
+            plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2,'color',GraphColor)
         end
         set(get(h,'XLabel'),'String',{MeasurementToExtract;AdditionalInfoForTitle})
         set(h,'XTickLabel',XTickLabels)
@@ -635,7 +646,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         Button2Callback = 'propedit(gca,''v6''); drawnow';
         uicontrol('Parent',FigureHandle, ...
             'Unit',StdUnit, ...
-            'BackgroundColor',[0.65 0.65 0.85], ...
+            'BackgroundColor',[.7 .7 .9], ...
             'CallBack',Button2Callback, ...
             'Position',PointsPerPixel*[185 NewHeight-30 70 22], ...
             'Units','Normalized',...
@@ -650,7 +661,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack', Button3Callback, ...
         'Position',PointsPerPixel*[260 NewHeight-30 85 22], ...
         'Units','Normalized',...
@@ -664,7 +675,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack', Button4Callback, ...
         'Position',PointsPerPixel*[95 NewHeight-60 85 22], ...
         'Units','Normalized',...
@@ -678,7 +689,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack', Button5Callback, ...
         'Position',PointsPerPixel*[185 NewHeight-60 70 22], ...
         'Units','Normalized',...
@@ -692,7 +703,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack', Button6Callback, ...
         'Position',PointsPerPixel*[260 NewHeight-60 85 22], ...
         'Units','Normalized',...
@@ -702,7 +713,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     Button7Callback = 'CPmsgbox(''Histogram display info: (1) Data outside the range you specified to calculate histogram bins are added together and displayed in the first and last bars of the histogram.  (2) Only the display can be changed in this window, including axis limits.  The histogram bins themselves cannot be changed here because the data must be recalculated. (3) If a change you make using the "Change display" buttons does not seem to take effect in all of the desired windows, try pressing enter several times within that box, or look in the bottom of the Property Editor window that opens when you first press one of those buttons.  There may be a message describing why.  For example, you may need to deselect "Auto" before changing the limits of the axes. (4) The labels for each bar specify the low bound for that bin.  In other words, each bar includes data equal to or greater than the label, but less than the label on the bar to its right. (5) If the tick mark labels are overlapping each other on the X axis, click a "Change display" button and either change the font size on the "Style" tab, or check the boxes marked "Auto" for "Ticks" and "Labels" on the "X axis" tab. Be sure to check both boxes, or the labels will not be accurate.  Changing the labels to "Auto" cannot be undone, and you will lose the detailed info about what values were actually used for the histogram bins.'')';
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack', Button7Callback, ...
         'Position',PointsPerPixel*[.5 NewHeight-25 11 22], ...
         'Units','Normalized',...
@@ -713,7 +724,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     Button8Callback = 'tempData = get(gcbo,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
     Button8 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack',Button8Callback, ...
         'Position',PointsPerPixel*[395 NewHeight-60 50 22], ...
         'Units','Normalized',...
@@ -725,7 +736,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     Button9Callback = 'tempData = get(gcbo,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow';
     Button9 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit,...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack',Button9Callback, ...
         'Position',PointsPerPixel*[450 NewHeight-60 50 22], ...
         'Units','Normalized',...
@@ -737,7 +748,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     Button10Callback = 'tempData = get(gcbo,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
     Button10 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack',Button10Callback, ...
         'Position',PointsPerPixel*[505 NewHeight-60 50 22], ...
         'Units','Normalized',...
@@ -748,7 +759,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     Button11Callback = 'CPcontrolhistogram(get(gcbo,''parent''),get(gcbo,''UserData''));';
     Button11 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack',Button11Callback, ...
         'Position',PointsPerPixel*[225 NewHeight-85 150 22], ...
         'Units','Normalized',...
@@ -756,14 +767,14 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Style','pushbutton', ...
         'FontSize',FontSize);
     %%% Button for exporting data to MatLab
-    if strcmpi(LineOrBar,'bar')
+    if strcmpi(LineOrBar,'bar') || strcmpi(LineOrBar,'area')
         Button12Callback = 'Bins = get(findobj(gcf,''type'',''patch''),''XData'');Data = get(findobj(gcf,''type'',''patch''),''YData'');';
     else
         Button12Callback = 'Bins = get(findobj(gcf,''type'',''line''),''XData'');Data = get(findobj(gcf,''type'',''line''),''YData'');';
     end
     Button12 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
-        'BackgroundColor',[0.65 0.65 0.85], ...
+        'BackgroundColor',[.7 .7 .9], ...
         'CallBack',Button12Callback, ...
         'Position',PointsPerPixel*[400 NewHeight-85 100 22], ...
         'Units','Normalized',...

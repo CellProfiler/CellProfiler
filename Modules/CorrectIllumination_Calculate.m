@@ -8,12 +8,12 @@ function handles = CorrectIllumination_Calculate(handles)
 % on images. Can also be used to reduce uneven background in images.
 % *************************************************************************
 %
-% This module calculates an illumination function based on the
-% intensities of images. The illumination function can then be saved
-% to the hard drive for later use (see SAVING IMAGES), or it can be
-% immediately applied to images later in the pipeline (using the
-% CorrectIllumination_Apply module). This will correct for uneven
-% illumination of each image.
+% This module calculates an illumination function based on the intensities
+% of images. The illumination function can then be saved to the hard drive
+% for later use (you should save in .mat format using the SaveImages
+% module), or it can be immediately applied to images later in the pipeline
+% (using the CorrectIllumination_Apply module). This will correct for
+% uneven illumination of each image.
 %
 % How it works:
 % This module is most often used to calculate an illumination function

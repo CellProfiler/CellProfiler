@@ -15,6 +15,20 @@ function handles = IdentifyObjectsInGrid(handles)
 % defined.  Note that if an object does not exist, it will create an object
 % with a single pixel in the middle of the grid square.
 %
+% Special note on saving images: Using the settings in this module, object
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with SaveImages. Objects themselves can be passed along to the object
+% processing module ConvertToImage and then saved with SaveImages. This
+% module produces several additional types of objects with names that are
+% automatically passed along with the following naming structure: (1) The
+% unedited segmented image, which includes objects on the edge of the image
+% and objects that are outside the size range, can be saved using the name:
+% UneditedSegmented + whatever you called the objects (e.g.
+% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
+% smaller than your selected size range can be saved using the name:
+% SmallRemovedSegmented + whatever you called the objects (e.g.
+% SmallRemovedSegmented Nuclei).
+%
 % See also DefineGrid.
 
 % CellProfiler is distributed under the GNU General Public License.

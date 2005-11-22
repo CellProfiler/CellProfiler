@@ -17,16 +17,13 @@ function handles = IdentifyPrimManual(handles)
 % processing module ConvertToImage and then saved with SaveImages. This
 % module produces several additional types of objects with names that are
 % automatically passed along with the following naming structure: (1) The
-% preliminary segmented image, which includes objects on the edge of the
-% image and objects that are outside the size range can be saved using the
-% name: UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The preliminary segmented image which
-% excludes objects smaller than your selected size range can be saved using
-% the name: SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei) (3) The final segmented image which
-% excludes objects on the edge of the image and excludes objects outside
-% the size range can be saved using the name: Segmented + whatever you
-% called the objects (e.g. SegmentedNuclei). 
+% unedited segmented image, which includes objects on the edge of the image
+% and objects that are outside the size range, can be saved using the name:
+% UneditedSegmented + whatever you called the objects (e.g.
+% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
+% smaller than your selected size range can be saved using the name:
+% SmallRemovedSegmented + whatever you called the objects (e.g.
+% SmallRemovedSegmented Nuclei).
 %
 % See also IDENTIFYPRIMAUTOMATIC
 

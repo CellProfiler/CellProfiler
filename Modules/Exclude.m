@@ -23,28 +23,19 @@ function handles = Exclude(handles)
 % the objects no longer exist) so they may not run properly if the
 % objects are not renumbered.
 %
-% SAVING IMAGES: In addition to the object outlines and the
-% pseudo-colored object images that can be saved using the
-% instructions in the main CellProfiler window for this module,
-% this module produces several additional images which can be
-% easily saved using the Save Images module. These will be grayscale
-% images where each object is a different intensity. (1) The
-% preliminary segmented image, which includes objects on the edge of
-% the image and objects that are outside the size range can be saved
-% using the name: UneditedSegmented + whatever you called the objects
-% (e.g. UneditedSegmentedNuclei). (2) The preliminary segmented image
-% which excludes objects smaller than your selected size range can be
-% saved using the name: SmallRemovedSegmented + whatever you called the
-% objects (e.g. SmallRemovedSegmented Nuclei) (3) The final segmented
-% image which excludes objects on the edge of the image and excludes
-% objects outside the size range can be saved using the name:
-% Segmented + whatever you called the objects (e.g. SegmentedNuclei)
-%
-% Additional image(s) are normally calculated for display only,
-% including the object outlines alone. These images can be saved by
-% altering the code for this module to save those images to the
-% handles structure (see the SaveImages module help) and then using
-% the Save Images module.
+% Special note on saving images: Using the settings in this module, object
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with SaveImages. Objects themselves can be passed along to the object
+% processing module ConvertToImage and then saved with SaveImages. This
+% module produces several additional types of objects with names that are
+% automatically passed along with the following naming structure: (1) The
+% unedited segmented image, which includes objects on the edge of the image
+% and objects that are outside the size range, can be saved using the name:
+% UneditedSegmented + whatever you called the objects (e.g.
+% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
+% smaller than your selected size range can be saved using the name:
+% SmallRemovedSegmented + whatever you called the objects (e.g.
+% SmallRemovedSegmented Nuclei).
 %
 % See also <nothing relevant>.
 

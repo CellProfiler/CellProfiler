@@ -35,11 +35,11 @@ function handles = Crop(handles)
 % and 255, with zeros (black) for the parts you want to remove and 255
 % (white) for the parts you want to retain.  Or, you may have previously
 % generated a binary image using this module (e.g. using the ellipse
-% option) and saved it using the SaveImages module (see SAVING IMAGES
-% below).  In any case, the image must be the exact same starting size as
-% your image and should contain a contiguous block of white pixels, because
-% keep in mind that the cropping module will remove rows and columns that
-% are completely blank.
+% option) and saved it using the SaveImages module (see Special note on
+% saving images below).  In any case, the image must be the exact same
+% starting size as your image and should contain a contiguous block of
+% white pixels, because keep in mind that the cropping module will remove
+% rows and columns that are completely blank.
 %
 % To crop into the same shape as was used previously in the pipeline to
 % crop another image, type in CroppingPreviousCroppedImageName, where
@@ -79,20 +79,20 @@ function handles = Crop(handles)
 % square edge of the image, and not the round contour, so partial
 % objects will be included.
 %
-% SAVING IMAGES: See the help for SaveImages. Also, you can save the
-% cropping shape that you have used (e.g. an ellipse you drew), so that in
-% future analyses you can use the File option.  To do this, you need to add
-% the prefix "Cropping" to the name you called the cropped image (e.g.
-% CroppingCropBlue) and this is the name of the image you will want to save
-% using the SaveImages module.  I think you will want to save it in mat
-% format. You can also save the cropping shape, trimmed for any unused rows
-% and columns at the edges.  This image has the prefix "CropMask" plus the
-% name you called the cropped image (e.g. CropMaskCropBlue).  This image is
-% used for downstream modules that use the CPgraythresh function.  The
-% Cropping and CropMask images are similar (both are binary and contain the
-% cropping shape you used), but the Cropping image is the same size as the
-% original images to be processed whereas the CropMask image is the same
-% size as the final, cropped image.
+% Special note on saving images: See the help for SaveImages. Also, you can
+% save the cropping shape that you have used (e.g. an ellipse you drew), so
+% that in future analyses you can use the File option.  To do this, you
+% need to add the prefix "Cropping" to the name you called the cropped
+% image (e.g. CroppingCropBlue) and this is the name of the image you will
+% want to save using the SaveImages module.  I think you will want to save
+% it in mat format. You can also save the cropping shape, trimmed for any
+% unused rows and columns at the edges.  This image has the prefix
+% "CropMask" plus the name you called the cropped image (e.g.
+% CropMaskCropBlue).  This image is used for downstream modules that use
+% the CPgraythresh function.  The Cropping and CropMask images are similar
+% (both are binary and contain the cropping shape you used), but the
+% Cropping image is the same size as the original images to be processed
+% whereas the CropMask image is the same size as the final, cropped image.
 %
 % See also <nothing relevant>.
 

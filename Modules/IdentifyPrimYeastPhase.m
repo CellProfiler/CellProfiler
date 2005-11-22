@@ -83,7 +83,21 @@ function handles = IdentifyPrimYeastPhase(handles)
 % ignored, and the user can select a size range, outside which objects
 % will be ignored.
 %
-% See also IDENTIFYPRIMAUTOMATIC
+% Special note on saving images: Using the settings in this module, object
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with SaveImages. Objects themselves can be passed along to the object
+% processing module ConvertToImage and then saved with SaveImages. This
+% module produces several additional types of objects with names that are
+% automatically passed along with the following naming structure: (1) The
+% unedited segmented image, which includes objects on the edge of the image
+% and objects that are outside the size range, can be saved using the name:
+% UneditedSegmented + whatever you called the objects (e.g.
+% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
+% smaller than your selected size range can be saved using the name:
+% SmallRemovedSegmented + whatever you called the objects (e.g.
+% SmallRemovedSegmented Nuclei).
+%
+% See also IDENTIFYPRIMAUTOMATIC.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

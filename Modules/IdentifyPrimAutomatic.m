@@ -207,35 +207,25 @@ function handles = IdentifyPrimAutomatic(handles)
 % If you have entered a minimum object diameter of 10 or less, setting this
 % option to Yes will have no effect.
 %
-% SAVING IMAGES (What do you want to call the image... ?):
-%    The object outlines, the object outlines overlaid on the original
-% image, and the label matrix image [in RGB(color) or grayscale
-% format] can be easily saved to the hard drive by giving them a name
-% here and then selecting this name in the SaveImages module.
-%    This module produces several additional images which can also be
-% saved using the Save Images module as follows: (1) The unedited
-% segmented image, which includes objects on the edge of the image and
-% objects that are outside the size range, can be saved in the
-% SaveImages module by entering the name 'UneditedSegmented' +
-% whatever you called the objects (e.g. UneditedSegmentedNuclei). This
-% is a grayscale image where each object is a different intensity. (2)
-% The segmented image which excludes objects smaller than your
-% selected size range can be saved in the SaveImages module by
-% entering the name 'SmallRemovedSegmented' + whatever you called the
-% objects (e.g. SmallRemovedSegmented Nuclei). This is a grayscale
-% image where each object is a different intensity. (3) A black and
-% white (binary) image of the objects identified can be saved in the
-% SaveImages module simply by entering the object name (e.g. 'Nuclei')
-% in the SaveImages module.
-%    Additional image(s) are calculated by this module and can be
-% saved by altering the code for the module (see the SaveImages module
-% help for instructions).
-%
 % Technical notes: The initial step of identifying local maxima is
 % performed on the user-controlled heavily smoothed image, the
 % foreground/background is done on a hard-coded slightly smoothed
 % image, and the dividing lines between clumped objects (watershed) is
 % done on the non-smoothed image.
+%
+% Special note on saving images: Using the settings in this module, object
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with SaveImages. Objects themselves can be passed along to the object
+% processing module ConvertToImage and then saved with SaveImages. This
+% module produces several additional types of objects with names that are
+% automatically passed along with the following naming structure: (1) The
+% unedited segmented image, which includes objects on the edge of the image
+% and objects that are outside the size range, can be saved using the name:
+% UneditedSegmented + whatever you called the objects (e.g.
+% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
+% smaller than your selected size range can be saved using the name:
+% SmallRemovedSegmented + whatever you called the objects (e.g.
+% SmallRemovedSegmented Nuclei).
 %
 % See also <nothing relevant>
 

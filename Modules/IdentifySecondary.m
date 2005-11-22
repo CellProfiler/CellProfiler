@@ -161,7 +161,7 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
-[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %%% Sets up loop for test mode.
 if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,12}),'Yes')

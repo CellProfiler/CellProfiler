@@ -48,7 +48,7 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
-[CurrentModuleNum, ModuleName] = CPwhichmodule(handles); %#ok Ignore MLint
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles); %#ok Ignore MLint
 
 %textVAR01 = Send e-mails to these e-mail addresses
 %defaultVAR01 = default@default.com

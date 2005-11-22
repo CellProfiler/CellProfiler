@@ -257,7 +257,7 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
-[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = How many cycles should be in each batch?
 %defaultVAR01 = 100

@@ -94,7 +94,7 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
-[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the images you want to save (If you would like to save a figure, enter the module number here)?
 %infotypeVAR01 = imagegroup

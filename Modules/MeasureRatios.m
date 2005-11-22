@@ -96,7 +96,7 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
-[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Which object would you like to use for the numerator (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR01 = Image

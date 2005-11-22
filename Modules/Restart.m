@@ -44,7 +44,7 @@ drawnow
 
 %%% Reads the current module number, because this is needed to find the
 %%% variable values that the user entered.
-[CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Use this module if you have canceled processing of a pipeline that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
 

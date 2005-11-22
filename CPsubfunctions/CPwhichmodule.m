@@ -1,4 +1,5 @@
-function [CurrentModuleNum, ModuleName] = CPwhichmodule(handles)
+function [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles)
 
-CurrentModuleNum = str2double(handles.Current.CurrentModuleNumber);
+CurrentModule = handles.Current.CurrentModuleNumber;
+CurrentModuleNum = str2double(CurrentModule);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));

@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
--Mike (11/22)
+-(Mike 11/22) (Requested by Anne 11-22-05) I think that the overlay outlines module is producing images outside the 0 to 1 range.
+
+-(Mike 11/22)
 Replace this repetitive code:
 %%% Reads the current module number, because this is needed to find
 %%% the variable values that the user entered.

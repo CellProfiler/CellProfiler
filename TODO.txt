@@ -1,6 +1,12 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+COMMENTS:
+
+-(Requested by Anne 11-21-05) (could not get to reproduce, please show):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
+
+TODO:
+
 (Requested by Anne 11-21-05)  Histograms: 
 1.  If you choose a starting and ending image set when running this tool, it ignores your inputs and plots the entire image set!!!!!
 2. Export Data button didn't work for me. No errors, it just doesn't do anything. Perhaps it is because I have a plot plus several control plots on the same chart?
@@ -53,10 +59,6 @@ try
 catch
     error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
 end
-
-(Requested by Anne 11-21-05):  I think that we should remove the Expand option from MeasureObjectNeighbors. Essentially, this module currently has this one weird option where you can expand objects until they touch, but I think this can be accomplished using the Expandorshrink objects module. If this is true, we should remove the expand option and instead state in the help that you could precede this module with Expand infinitely if desired. As it is, the MeasureObjectNeighbors module needs to have all the same code as an identify module. If we leave it as is, we have to make sure we put in everything expected of an identify module (e.g. storing locations, etc.) which will be a pain.
-
-(Requested by Anne 11-21-05):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
 
 - Combine code for:
 Histograms

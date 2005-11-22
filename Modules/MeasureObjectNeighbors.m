@@ -65,21 +65,16 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Objects are considered neighbors if they are within this distance (pixels), or type 0 to find neighbors if each object were expanded until it touches others:
+%textVAR02 = Objects are considered neighbors if they are within this distance (pixels):
 %defaultVAR02 = 0
 NeighborDistance = str2double(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = If you are expanding objects until touching, what do you want to call these new objects?
-%defaultVAR03 = ExpandedCells
+%textVAR03 = What do you want to call the image of the objects, colored by the number of neighbors?
+%defaultVAR03 = ColoredNeighbors
 %infotypeVAR03 = objectgroup indep
-ExpandedObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call the image of the objects, colored by the number of neighbors?
-%defaultVAR04 = ColoredNeighbors
-%infotypeVAR04 = objectgroup indep
-ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -99,31 +94,6 @@ IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-%%% Expands each object until almost 8-connected to its neighbors, if
-%%% requested by the user.
-if NeighborDistance == 0
-    %%% The objects are thickened until they are one pixel shy of
-    %%% being 8-connected.  This also turns the image binary rather
-    %%% than a label matrix.
-    ThickenedBinaryImage = bwmorph(IncomingLabelMatrixImage,'thicken',Inf);
-    %%% The objects must be reconverted to a label matrix in a way
-    %%% that preserves their prior labeling, so that any measurements
-    %%% made on these objects correspond to measurements made by other
-    %%% modules.
-    ThickenedLabelMatrixImage = bwlabel(ThickenedBinaryImage);
-    %%% For each object, one label and one label location is acquired and
-    %%% stored.
-    [LabelsUsed,LabelLocations] = unique(IncomingLabelMatrixImage);
-    %%% The +1 increment accounts for the fact that there are zeros in the
-    %%% image, while the LabelsUsed starts at 1.
-    LabelsUsed(ThickenedLabelMatrixImage(LabelLocations(2:end))+1) = IncomingLabelMatrixImage(LabelLocations(2:end));
-    FinalLabelMatrixImage = LabelsUsed(ThickenedLabelMatrixImage+1);
-    IncomingLabelMatrixImage = FinalLabelMatrixImage;
-    %%% The NeighborDistance is then set so that neighbors almost
-    %%% 8-connected by the previous step are counted as neighbors.
-    NeighborDistance = 4;
-end
 
 %%% Determines the neighbors for each object.
 d = max(2,NeighborDistance+1);
@@ -149,27 +119,6 @@ for k = 1:max(IncomingLabelMatrixImage(:))
     ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
 end
 
-%%% Calculates the ColoredIncomingObjectsImage for displaying in the figure
-%%% window and saving to the handles structure.
-%%% Note that the label2rgb function doesn't work when there are no objects
-%%% in the label matrix image, so there is an "if".
-%%% Note: this is the expanded version of the objects, if the user
-%%% requested expansion.
-
-if sum(sum(IncomingLabelMatrixImage)) >= 1
-    cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
-    ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
-else  ColoredIncomingObjectsImage = IncomingLabelMatrixImage;
-end
-
-%%% Does the same for the ImageOfNeighbors.  For some reason, this
-%%% does not exactly match the results of the display window. Not sure
-%%% why.
-if sum(sum(ImageOfNeighbors)) >= 1
-    ColoredImageOfNeighbors = ind2rgb(ImageOfNeighbors,[0 0 0;jet(max(ImageOfNeighbors(:)))]);
-else  ColoredImageOfNeighbors = ImageOfNeighbors;
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,6 +138,13 @@ handles.Measurements.Neighbors.IdentityOfNeighbors(handles.Current.SetBeingAnaly
 %%% where 1 is the image number and 3 is the object number. This
 %%% yields a list of the objects who are neighbors with Cell object 3.
 
+%%% For some reason, this does not exactly match the results of the display
+%%% window. Not sure why.
+if sum(sum(ImageOfNeighbors)) >= 1
+    ColoredImageOfNeighbors = ind2rgb(ImageOfNeighbors,[0 0 0;jet(max(ImageOfNeighbors(:)))]);
+else  ColoredImageOfNeighbors = ImageOfNeighbors;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -196,7 +152,20 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1
+if any(findobj == ThisModuleFigureNumber)
+    %%% Calculates the ColoredIncomingObjectsImage for displaying in the figure
+    %%% window and saving to the handles structure.
+    %%% Note that the label2rgb function doesn't work when there are no objects
+    %%% in the label matrix image, so there is an "if".
+    %%% Note: this is the expanded version of the objects, if the user
+    %%% requested expansion.
+
+    if sum(sum(IncomingLabelMatrixImage)) >= 1
+        cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
+        ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
+    else  ColoredIncomingObjectsImage = IncomingLabelMatrixImage;
+    end
+    
     FontSize = handles.Preferences.FontSize;
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -221,27 +190,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% To make this module produce results similar to an IdentifyPrim
-%%% module, we will save the image IncomingLabelMatrixImage (which may
-%%% have been expanded until objects touch) to the handles
-%%% structure, even though the editing for size and for edge-touching
-%%% has not been performed in this module's case.
-
-%%% Saves the segmented image, not edited for objects along the edges or
-%%% for size, to the handles structure.
-fieldname = ['UneditedSegmented',ExpandedObjectName];
-handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
-
-%%% Saves the segmented image, only edited for small objects, to the
-%%% handles structure.
-fieldname = ['SmallRemovedSegmented',ExpandedObjectName];
-handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
-
-%%% Saves the final segmented label matrix image to the handles structure.
-fieldname = ['Segmented',ExpandedObjectName];
-handles.Pipeline.(fieldname) = IncomingLabelMatrixImage;
-
 %%% Saves the colored version of images to the handles structure so
 %%% they can be saved to the hard drive, if the user requests.
-fieldname = [ColoredNeighborsName];
-handles.Pipeline.(fieldname) = ColoredImageOfNeighbors;
+handles.Pipeline.(ColoredNeighborsName) = ColoredImageOfNeighbors;

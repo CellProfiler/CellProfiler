@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/22) (Requested by Anne 11-21-05):  It seems like this code in GetDataOnImage module will fail if that image cycle does not have any objects. The catch should allow processing to continue but display something in the figure window like 'no measurements found for this cycle'.
+try
+    tmp = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed};
+catch
+    error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
+end
+
 -(Mike 11/22) (Requested by Anne 11-21-05):  I think that we should remove the Expand option from MeasureObjectNeighbors. Essentially, this module currently has this one weird option where you can expand objects until they touch, but I think this can be accomplished using the Expandorshrink objects module. If this is true, we should remove the expand option and instead state in the help that you could precede this module with Expand infinitely if desired. As it is, the MeasureObjectNeighbors module needs to have all the same code as an identify module. If we leave it as is, we have to make sure we put in everything expected of an identify module (e.g. storing locations, etc.) which will be a pain.
 
 -(Mike 11/18) Fix removing last module for BrowseButton

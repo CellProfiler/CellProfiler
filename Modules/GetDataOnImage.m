@@ -157,41 +157,52 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+ErrorFlag = 0;
 try
     tmp = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed};
 catch
-    error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
+    ErrorFlag = 1;
 end
-ListOfMeasurements = tmp(:,FeatureNo);
-StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 
-%%% Extracts the XY locations. This is temporarily hard-coded
-Xlocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,1);
-Ylocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,2);
+if ErrorFlag
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    %%% Creates the display window.
+    DataHandle = CPfigure(handles,ThisModuleFigureNumber);
+    title('No objects identified.');
+    CPwarndlg(['No objects were identified. This could mean that the measurements you have specified in the ',ModuleName,' are not being processed. Please verify that the Measure module precedes this module.']); 
+else
+    ListOfMeasurements = tmp(:,FeatureNo);
+    StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 
-%%%%%%%%%%%%%%%
-%%% DISPLAY %%%
-%%%%%%%%%%%%%%%
-drawnow
+    %%% Extracts the XY locations. This is temporarily hard-coded
+    Xlocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,1);
+    Ylocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,2);
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-%%% Creates the display window.
-DataHandle = CPfigure(handles,ThisModuleFigureNumber);
-CPimagesc(OrigImage);
-colormap(gray);
-FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};
-title([ObjectName,', ',FeatureDisp,' on ',Image])
+    %%%%%%%%%%%%%%%
+    %%% DISPLAY %%%
+    %%%%%%%%%%%%%%%
+    drawnow
 
-%%% Overlays the values in the proper location in the image.
-TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...
-    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
+    fieldname = ['FigureNumberForModule',CurrentModule];
+    ThisModuleFigureNumber = handles.Current.(fieldname);
+    %%% Creates the display window.
+    DataHandle = CPfigure(handles,ThisModuleFigureNumber);
+    CPimagesc(OrigImage);
+    colormap(gray);
+    FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};
+    title([ObjectName,', ',FeatureDisp,' on ',Image])
 
-%%% Create structure and save it to the UserData property of the window
-Info = get(DataHandle,'UserData');
-Info.ListOfMeasurements = ListOfMeasurements;
-Info.TextHandles = TextHandles;
-set(DataHandle,'UserData',Info);
+    %%% Overlays the values in the proper location in the image.
+    TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...
+        'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
+
+    %%% Create structure and save it to the UserData property of the window
+    Info = get(DataHandle,'UserData');
+    Info.ListOfMeasurements = ListOfMeasurements;
+    Info.TextHandles = TextHandles;
+    set(DataHandle,'UserData',Info);
+end
 
 OneFrame = getframe(DataHandle);
 handles.Pipeline.(DataImage)=OneFrame.cdata;

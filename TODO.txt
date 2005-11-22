@@ -53,13 +53,6 @@ end
 
 (Requested by Anne 11-21-05): Make sure all the Measure modules are using the same font. Actually, make sure all the code is using the same font! We have Times, fixedwidth, helvetica throughout the code.
 
-(Requested by Anne 11-21-05):  It seems like this code in GetDataOnImage module will fail if that image cycle does not have any objects. The catch should allow processing to continue but display something in the figure window like 'no measurements found for this cycle'.
-try
-    tmp = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed};
-catch
-    error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
-end
-
 - Combine code for:
 Histograms
 PlotMeasurements: DONE!

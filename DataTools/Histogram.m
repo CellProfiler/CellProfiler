@@ -157,7 +157,7 @@ TextTotalNumberImageSets = num2str(TotalNumberImageSets);
 %%% Ask the user to specify histogram settings.
 Prompts{1} = 'Enter the first image number to show or export';
 Prompts{2} = ['Enter the last sample number to show or export (the total number of cycles with data in the file is ', TextTotalNumberImageSets, ').'];
-Prompts{3} = 'What color should the initial plot be (r, g, b, y, m, c, k, or w)?';
+Prompts{3} = 'What color should the initial plot be (r, g, b, y, m, c, k, w or in format of [.7 .7 .9])?';
 Prompts{4} = 'Enter the number of bins you want for the histogram(s). This number should not include the first and last bins, which will contain anything outside the specified range.';
 Prompts{5} = 'Any measurements less than this value will be combined in the leftmost bin. Enter automatic to determine this value automatically.';
 Prompts{6} = 'Any measurements greater than or equal to this value will be combined in the rightmost bin. Enter automatic to determine this value automatically.';
@@ -245,8 +245,24 @@ while AcceptableAnswers == 0
     end
 
     %%% Error checking for the Y Axis Scale question.
-    try GraphColor = Answers{3};
-    catch uiwait(CPerrordlg(['You must enter r, g, b, y, m, c, k, or w in answer to the question: ', Prompts{3}, '.']));
+    InitialGraphColor = Answers{3};
+    try
+        GraphColor = str2num(InitialGraphColor);
+        if isempty(GraphColor)
+            if ~strcmpi(GraphColor,'r') && ~strcmpi(GraphColor,'g') && ~strcmpi(GraphColor,'b') && ~strcmpi(GraphColor,'y') && ~strcmpi(GraphColor,'m') && ~strcmpi(GraphColor,'c') && ~strcmpi(GraphColor,'k') && ~strcmpi(GraphColor,'w')
+                uiwait(CPerrordlg(['You must enter r, g, b, y, m, c, k, or w in answer to the question: ', Prompts{3}, '.']));
+                continue
+            else
+                GraphColor = InitialGraphColor;
+            end
+        else
+            if length(GraphColor) ~= 3
+                uiwait(CPerrordlg(['You must enter r, g, b, y, m, c, k, or w in answer to the question: ', Prompts{3}, '.']));
+                continue
+            end
+        end
+    catch
+        uiwait(CPerrordlg(['You must enter r, g, b, y, m, c, k, or w in answer to the question: ', Prompts{3}, '.']));
         continue
     end
 

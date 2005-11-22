@@ -22,31 +22,6 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 - look for jet
 
-(Requested by Anne 11-21-05)  Histograms: 
-1. (DONE) If you choose a starting and ending image set when running this tool, it ignores your inputs and plots the entire image set!!!!!
-2. Export Data button didn't work for me. No errors, it just doesn't do anything. Perhaps it is because I have a plot plus several control plots on the same chart?
-3. (DONE) I would like to be able to choose the color for the initial plot, preferably right after specifying the starting and ending set.
-4. (DONE) When choosing the color, please list what color names can be typed in, and also how to specify numerical colors, e.g.  [.7 .7 .9].
-Here is something perhaps helpful from the CreateWebPage module:
-%textVAR07 = Choose the background color, or provide the html color code (e.g. #00FF00)
-%choiceVAR07 = Black
-%choiceVAR07 = White
-%choiceVAR07 = Aqua
-%choiceVAR07 = Blue
-%choiceVAR07 = Fuchsia
-%choiceVAR07 = Green
-%choiceVAR07 = Gray
-%choiceVAR07 = Lime
-%choiceVAR07 = Maroon
-%choiceVAR07 = Navy
-%choiceVAR07 = Olive
-%choiceVAR07 = Purple
-%choiceVAR07 = Red
-%choiceVAR07 = Silver
-%choiceVAR07 = Teal
-%choiceVAR07 = Yellow
-And, while we are at it, there is a list of colors in DefineGrid that could probably be expanded too?
-
 - Combine code for:
 Histograms
 PlotMeasurements: DONE!

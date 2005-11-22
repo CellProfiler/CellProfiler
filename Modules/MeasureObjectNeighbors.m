@@ -153,19 +153,19 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 if any(findobj == ThisModuleFigureNumber)
+
     %%% Calculates the ColoredIncomingObjectsImage for displaying in the figure
     %%% window and saving to the handles structure.
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
-    %%% Note: this is the expanded version of the objects, if the user
-    %%% requested expansion.
 
     if sum(sum(IncomingLabelMatrixImage)) >= 1
-        cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
+        handlescmap = handles.Preferences.LabelColorMap;
+        cmap = feval(handlescmap,max(64,max(IncomingLabelMatrixImage(:))));
         ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
     else  ColoredIncomingObjectsImage = IncomingLabelMatrixImage;
     end
-    
+
     FontSize = handles.Preferences.FontSize;
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet

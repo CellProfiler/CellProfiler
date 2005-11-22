@@ -7,7 +7,7 @@ COMMENTS:
 
 -(Mike 11/22 isdeployed but we need 2 seperate versions for compile) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
--(Mike 11/22) (Requested by Anne 11-21-05): I think this code in MeasureObjectNeighbors should look up the user's preference for the colormap. Or perhaps there is a CP subfunction relating to colormaps?
+-(Mike 11/22 two versions of color, what is going on?) (Requested by Anne 11-21-05): I think this code in MeasureObjectNeighbors should look up the user's preference for the colormap. Or perhaps there is a CP subfunction relating to colormaps?
 if sum(sum(IncomingLabelMatrixImage)) >= 1
     cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
     ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');

@@ -81,10 +81,10 @@ for l = 1:length(MeasurementMean)
 
     set(gca,'xtick',[0:100:length(MeasurementsMean)])
     FontSize = 10;
-    set(gca,'fontname','times','fontsize',FontSize)
-    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
-    ylabel(gca,'Mean +/- standard deviation','fontname','times','fontsize',FontSize+2)
-    title(titlestr,'Fontname','times','fontsize',FontSize+2)
+    set(gca,'fontname','Helvetica','fontsize',FontSize)
+    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
+    ylabel(gca,'Mean +/- standard deviation','fontname','Helvetica','fontsize',FontSize+2)
+    title(titlestr,'Fontname','Helvetica','fontsize',FontSize+2)
     %axis([0 length(MeasurementsMean)+1 0 600])
 
     set(gcf,'Color','w')

@@ -834,11 +834,11 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
     end
     set(FigureHandle,'UserData',FigureSettings)
     FontSize = FontSize;
-    set(gca,'fontname','times','fontsize',FontSize)
-    set(get(ColorbarHandle,'title'),'fontname','times','fontsize',FontSize+2)
-    xlabel(gca,'Image number','Fontname','times','fontsize',FontSize+2)
-    ylabel(gca,'Histogram bins','fontname','times','fontsize',FontSize+2)
-    title(MeasurementToExtract,'Fontname','times','fontsize',FontSize+2)
+    set(gca,'fontname','Helvetica','fontsize',FontSize)
+    set(get(ColorbarHandle,'title'),'fontname','Helvetica','fontsize',FontSize+2)
+    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
+    ylabel(gca,'Histogram bins','fontname','Helvetica','fontsize',FontSize+2)
+    title(MeasurementToExtract,'Fontname','Helvetica','fontsize',FontSize+2)
 end
 
 function WriteHistToExcel(FileName, FirstImage, LastImage, XTickLabels,...

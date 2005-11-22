@@ -1,1 +1,1 @@
-Preferences.FontSize
+'Helvetica'

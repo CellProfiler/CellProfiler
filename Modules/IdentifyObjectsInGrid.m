@@ -139,7 +139,7 @@ if strmatch('Circle',Shape)
         Area = cat(1,tmp.Area);
         radius = floor(sqrt(median(Area)/pi));
     else
-        radius = floor(str2num(Diameter)/2);
+        radius = floor(str2double(Diameter)/2);
     end
 
     if strcmp(FailedGridChoice,'Yes')
@@ -191,8 +191,6 @@ if strmatch('Circle',Shape)
                 YDiv = PreviousGrid(1,4);
                 Rows = PreviousGrid(1,5);
                 Cols = PreviousGrid(1,6);
-                TotalWidth = TotalWidth;
-                TotalHeight = TotalHeight;
                 VertLinesX = Grid.VertLinesX;
                 VertLinesY = Grid.VertLinesY;
                 HorizLinesX = Grid.HorizLinesX;
@@ -220,7 +218,7 @@ for i=1:Cols
             subregion=bwlabel(subregion>0);
             props = regionprops(subregion,'Centroid');
             loc = cat(1,props.Centroid);
-            for k = [1:size(loc,1)]
+            for k = 1:size(loc,1)
                 if loc(k,1) < size(subregion,2)*.1 || loc(k,1) > size(subregion,2)*.9 || loc(k,2) < size(subregion,1)*.1 || loc(k,2) > size(subregion,1)*.9
                     subregion(subregion == subregion(floor(loc(k,2)),floor(loc(k,1)))) = 0;
                 end
@@ -237,7 +235,7 @@ for i=1:Cols
             subregion=bwlabel(subregion>0);
             props = regionprops(subregion,'Centroid');
             loc = cat(1,props.Centroid);
-            for k = [1:size(loc,1)]
+            for k = 1:size(loc,1)
                 if loc(k,1) < size(subregion,2)*.1 || loc(k,1) > size(subregion,2)*.9 || loc(k,2) < size(subregion,1)*.1 || loc(k,2) > size(subregion,1)*.9
                     subregion(subregion == subregion(floor(loc(k,2)),floor(loc(k,1)))) = 0;
                 end
@@ -300,7 +298,22 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(['Segmented' NewObjectName]) = FinalLabelMatrixImage;
+handles.Pipeline.(['Segmented',NewObjectName]) = FinalLabelMatrixImage;
+handles.Pipeline.(['UneditedSegmented',NewObjectName]) = FinalLabelMatrixImage;
+handles.Pipeline.(['SmallRemovedSegmented',NewObjectName]) = FinalLabelMatrixImage;
+
+%%% Saves the ObjectCount, i.e. the number of segmented objects.
+%%% See comments for the Threshold saving above
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,NewObjectName)));
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ', NewObjectName]};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
 
 %%% Saves the location of each segmented object
 handles.Measurements.(NewObjectName).LocationFeatures = {'CenterX','CenterY'};

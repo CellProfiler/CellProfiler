@@ -166,8 +166,9 @@ end
 drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
-fieldname = ['Segmented',ObjectName];
-handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+handles.Pipeline.(['Segmented',ObjectName]) = FinalLabelMatrixImage;
+handles.Pipeline.(['UneditedSegmented',ObjectName]) = FinalLabelMatrixImage;
+handles.Pipeline.(['SmallRemovedSegmented',ObjectName]) = FinalLabelMatrixImage;
 
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')

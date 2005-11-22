@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
--(Requested by Anne 11-22-05)- make sure all the identify primary and object-processing modules (the ones that produce a new object like ExpandOrShrink) create UneditedSegmented and SmallRemovedSegmented and record the object count and locations. I noticed one module did not create these (Id in grid, I think).
-
 ------------
 Replace this repetitive code:
 %%% Reads the current module number, because this is needed to find
@@ -31,6 +29,7 @@ PlotMeasurements: DONE!
 - Make compiled CellProfiler work on cluster
 
 (Requested by Anne 11-21-05) : Not necessary pre-release, but would be nice: In LoadImages, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
+
 - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
 - Check through each module (~2 per day):

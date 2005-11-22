@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/22) (Requested by Anne 11-22-05)- make sure all the identify primary and object-processing modules (the ones that produce a new object like ExpandOrShrink) create UneditedSegmented and SmallRemovedSegmented and record the object count and locations. I noticed one module did not create these (Id in grid, I think).
+
 -(Mike 11/22) (Requested by Anne 11-21-05)  Histograms: 
 1. (DONE) If you choose a starting and ending image set when running this tool, it ignores your inputs and plots the entire image set!!!!!
 2. (DONE) Export Data button didn't work for me. No errors, it just doesn't do anything. Perhaps it is because I have a plot plus several control plots on the same chart?

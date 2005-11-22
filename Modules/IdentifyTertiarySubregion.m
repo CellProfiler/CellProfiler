@@ -257,7 +257,7 @@ if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
 end
 column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SubregionObjectName)));
 if isempty(column)
-    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' SubregionObjectName]};
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ', SubregionObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);
 end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(SubregionObjectImage(:));

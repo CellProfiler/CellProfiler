@@ -14,23 +14,15 @@ function [CurrentModuleNum, ModuleName] = CPwhichmodule(handles)
 CurrentModuleNum = str2double(handles.Current.CurrentModuleNumber);
 ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 ------------
--(Requested by Anne 11-22-05) In ShowDataOnImage, often you want to choose a different image to display on, so one of the choices in the listbox should be to override the automatic looking-up of the image so that you are allowed to browse for the image. 
+-(Requested by Anne 11-22-05) In ShowDataOnImage, often you want to choose a different image to display on, so one of the choices in the listbox should be to override the automatic looking-up of the image so that you are allowed to browse for the image.
 
 -(Requested by Anne 11-22-05) I think that the overlay outlines module is producing images outside the 0 to 1 range.
 
 COMMENTS:
 
--(Mike 11/22 isdeployed but we need 2 seperate versions for compile) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
+-(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
 - look for jet
-
--(Mike 11/22) (Requested by Anne 11-21-05):  Code like the following is found in several identify modules. I think the error will cause the module to abort, though it's not supposed to. Can we make sure it just pops open a window, and that this window is not popped open repeatedly? I think there is an option for one of the warndlg or errordlg boxes that prevents more than one of the same error message from opening each time.
-try
-    if ~strcmp(SaveOutlined,'Do not save')
-        handles.Pipeline.(SaveOutlined) = FinalOutline;
-    end
-catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
-end
 
 TODO:
 

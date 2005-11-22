@@ -7,6 +7,21 @@ COMMENTS:
 
 -(Mike 11/22 isdeployed but we need 2 seperate versions for compile) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
+-(Mike 11/22) (Requested by Anne 11-21-05): I think this code in MeasureObjectNeighbors should look up the user's preference for the colormap. Or perhaps there is a CP subfunction relating to colormaps?
+if sum(sum(IncomingLabelMatrixImage)) >= 1
+    cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
+    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
+else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+end
+
+-(Mike 11/22) (Requested by Anne 11-21-05):  Code like the following is found in several identify modules. I think the error will cause the module to abort, though it's not supposed to. Can we make sure it just pops open a window, and that this window is not popped open repeatedly? I think there is an option for one of the warndlg or errordlg boxes that prevents more than one of the same error message from opening each time.
+try
+    if ~strcmp(SaveOutlined,'Do not save')
+        handles.Pipeline.(SaveOutlined) = FinalOutline;
+    end
+catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+end
+
 TODO:
 
 (Requested by Anne 11-21-05)  Histograms: 
@@ -33,21 +48,6 @@ Here is something perhaps helpful from the CreateWebPage module:
 %choiceVAR07 = Teal
 %choiceVAR07 = Yellow
 And, while we are at it, there is a list of colors in DefineGrid that could probably be expanded too?
-
-(Requested by Anne 11-21-05):  Code like the following is found in several identify modules. I think the error will cause the module to abort, though it's not supposed to. Can we make sure it just pops open a window, and that this window is not popped open repeatedly? I think there is an option for one of the warndlg or errordlg boxes that prevents more than one of the same error message from opening each time.
-try
-    if ~strcmp(SaveOutlined,'Do not save')
-        handles.Pipeline.(SaveOutlined) = FinalOutline;
-    end
-catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
-end
-
-(Requested by Anne 11-21-05): I think this code in MeasureObjectNeighbors should look up the user's preference for the colormap. Or perhaps there is a CP subfunction relating to colormaps?
-if sum(sum(IncomingLabelMatrixImage)) >= 1
-    cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
-    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
-else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
-end
 
 - Combine code for:
 Histograms

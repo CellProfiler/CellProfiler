@@ -249,7 +249,7 @@ while AcceptableAnswers == 0
     try
         GraphColor = str2num(InitialGraphColor);
         if isempty(GraphColor)
-            if ~strcmpi(GraphColor,'r') && ~strcmpi(GraphColor,'g') && ~strcmpi(GraphColor,'b') && ~strcmpi(GraphColor,'y') && ~strcmpi(GraphColor,'m') && ~strcmpi(GraphColor,'c') && ~strcmpi(GraphColor,'k') && ~strcmpi(GraphColor,'w')
+            if ~strcmpi(InitialGraphColor,'r') && ~strcmpi(InitialGraphColor,'g') && ~strcmpi(InitialGraphColor,'b') && ~strcmpi(InitialGraphColor,'y') && ~strcmpi(InitialGraphColor,'m') && ~strcmpi(InitialGraphColor,'c') && ~strcmpi(InitialGraphColor,'k') && ~strcmpi(InitialGraphColor,'w')
                 uiwait(CPerrordlg(['You must enter r, g, b, y, m, c, k, or w in answer to the question: ', Prompts{3}, '.']));
                 continue
             else
@@ -378,7 +378,7 @@ while AcceptableAnswers == 0
 
     %%% Calculates the default bin size and range based on all the data.
     SelectedMeasurementsCellArray = Measurements(FirstImage:LastImage);
-    SelectedMeasurementsMatrix = cell2mat(Measurements(:));
+    SelectedMeasurementsMatrix = cell2mat(SelectedMeasurementsCellArray(:));
 
     [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbins(SelectedMeasurementsMatrix,NumberOfBins,MinHistogramValue,MaxHistogramValue,LogOrLinear,'Count');
     if ErrorFlag == 1

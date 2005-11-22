@@ -18,16 +18,12 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 -(Requested by Anne 11-22-05) I think that the overlay outlines module is producing images outside the 0 to 1 range.
 
-COMMENTS:
-
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
 - look for jet
 
-TODO:
-
 (Requested by Anne 11-21-05)  Histograms: 
-1.  If you choose a starting and ending image set when running this tool, it ignores your inputs and plots the entire image set!!!!!
+1. (DONE) If you choose a starting and ending image set when running this tool, it ignores your inputs and plots the entire image set!!!!!
 2. Export Data button didn't work for me. No errors, it just doesn't do anything. Perhaps it is because I have a plot plus several control plots on the same chart?
 3. (DONE) I would like to be able to choose the color for the initial plot, preferably right after specifying the starting and ending set.
 4. (DONE) When choosing the color, please list what color names can be typed in, and also how to specify numerical colors, e.g.  [.7 .7 .9].

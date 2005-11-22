@@ -3,6 +3,10 @@ function handles = Subtract(handles)
 % Help for the Subtract Images module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Subtracts the intensities of one image from another.
+% *************************************************************************
+%
 % Sorry, this module has not yet been documented. It was written for a
 % very specific purpose and it allows blurring and then subtracting
 % images.
@@ -34,9 +38,9 @@ function handles = Subtract(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -60,15 +64,15 @@ BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Enter the factor to multiply the subtracted image by:
+%textVAR04 = Enter the factor to multiply the subtracted image by before subtracting:
 %defaultVAR04 = 1
 MultiplyFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the images you want to analyze and assigns them to
@@ -93,46 +97,36 @@ if ndims(SubtractImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 AdjustedSubtractImage = MultiplyFactor*SubtractImage;
 ResultingImage = imsubtract(BasicImage,AdjustedSubtractImage);
 ResultingImage(ResultingImage < 0) = 0;
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-    drawnow
+if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);
-    ImageHandle = imagesc(BasicImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title([BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,1); CPimagesc(BasicImage); title([BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2);
-    ImageHandle = imagesc(SubtractImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title([SubtractImageName, ' image']);
-    subplot(2,2,3);
-    ImageHandle = imagesc(ResultingImage);
-    set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
-    title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
+    subplot(2,2,2); CPimagesc(SubtractImage); title([SubtractImageName, ' image']);
+    subplot(2,2,3); CPimagesc(ResultingImage); title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
     CPFixAspectRatio(BasicImage);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the processed image to the handles structure.

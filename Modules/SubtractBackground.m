@@ -3,6 +3,11 @@ function handles = SubtractBackground(handles)
 % Help for the Subtract Background module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Calculates the minimum pixel value for the entire set of images and
+% subtracts this value from every pixel in every image.
+% *************************************************************************
+%
 % Note that this is not an illumination correction module.  It
 % subtracts a single value from every pixel across the image.
 %
@@ -65,9 +70,9 @@ function handles = SubtractBackground(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads the current module number, because this is needed to find
@@ -88,9 +93,9 @@ CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
@@ -114,9 +119,9 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The first time the module is run, the threshold shifting value must be
@@ -217,9 +222,9 @@ if MinimumTenthMinimumPixelValue ~= 0
     %%% Values below zero are set to zero.
     CorrectedImage(CorrectedImage < 0) = 0;
 
-    %%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
-    %%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
     fieldname = ['FigureNumberForModule',CurrentModule];
@@ -241,13 +246,13 @@ if MinimumTenthMinimumPixelValue ~= 0
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', newsize,'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9], 'FontSize',handles.Preferences.FontSize);
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
-        subplot(2,1,1); imagesc(OrigImage);
+        subplot(2,1,1); CPimagesc(OrigImage);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% The mean image does not absolutely have to be present in order to
         %%% carry out the calculations if the illumination image is provided,
         %%% so the following subplot is only shown if MeanImage exists in the
         %%% workspace.
-        subplot(2,1,2); imagesc(CorrectedImage);
+        subplot(2,1,2); CPimagesc(CorrectedImage);
         title('Corrected Image');
         %%% Displays the text.
         displaytext = ['Background threshold used: ', num2str(MinimumTenthMinimumPixelValue)];
@@ -257,9 +262,9 @@ if MinimumTenthMinimumPixelValue ~= 0
 else CorrectedImage = OrigImage;
 end % This end goes with the if MinimumTenthMinimumPixelValue ~= 0 line above.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the corrected image to the handles structure so it can be used by

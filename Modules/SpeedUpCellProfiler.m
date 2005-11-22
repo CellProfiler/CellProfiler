@@ -4,7 +4,8 @@ function handles = SpeedUpCellProfiler(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Removes images
+% Removes images from memory and/or overrides saving partial output files
+% after every image cycle.
 % *************************************************************************
 %
 % Allows faster image processing by refraining from saving the output
@@ -89,7 +90,7 @@ handles.Pipeline = tempPipe;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-try SaveWhen = str2num(SaveWhen);
+try SaveWhen = str2double(SaveWhen);
 catch error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles must be entered as a number.'])
 end
 handles.Current.SaveOutputHowOften = SaveWhen;
@@ -106,7 +107,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
     %%% Closes the window if it is open.
-    if any(findobj == ThisModuleFigureNumber) == 1;
+    if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)
     end
     drawnow

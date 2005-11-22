@@ -46,15 +46,14 @@ EVERYONE:
 	- Check that fontsize is never hard-coded and instead uses the user's preference.
 	- Remove 'saving images' text
 	- Check Font
-MIKE:
+THIS HAS ALREADY BEEN DONE FOR ALL:
+	- Go through the code looking for instances of the term "image set" and
+		replace with "cycle" where appropriate.
+	- check format of error messages.
 	- CPfigure rather than figure. DataLayout tool in particular is using figure.
 	- Smart Indent
 	- M Lint error checking
 	- CPimagesc
-ANNE HAS DONE THIS FOR ALL>>>	
-- Go through the code looking for instances of the term "image set" and
-		replace with "cycle" where appropriate.
-- check format of error messages.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Submit code to Sourceforge for distribution/easy updating? EVeryone seems to recommend this for open-source software.

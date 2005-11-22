@@ -105,13 +105,13 @@ SendEmail			(Need to verify)
 
 Smooth				Mike
 
-SpeedUpCellProfiler
+SpeedUpCellProfiler		Mike
 
-SplitOrSpliceMovie
+SplitOrSpliceMovie		Mike
 
 StretchAlignCrop
 
-Subtract
+Subtract			Mike
 
 SubtractBackground
 

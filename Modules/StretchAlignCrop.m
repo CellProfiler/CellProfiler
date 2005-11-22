@@ -3,6 +3,11 @@ function handles = StretchAlignCrop(handles)
 % Help for the Stretch, Align, and Crop module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Stretches, aligns, and crops one image relative to another. Useful for
+% valdiation of hand outlined images.
+% *************************************************************************
+%
 % This module was written for a specific purpose: to take a larger
 % image of the outlines of cells, with some space around the outside,
 % and align it with a real image of cells (or of nuclei).
@@ -97,9 +102,9 @@ Orientation = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Separates the entered dimensions into two variables
@@ -126,7 +131,6 @@ if isfield(handles.Pipeline, TracedImageName) == 0
 end
 %%% Reads the image.
 TracedImage = handles.Pipeline.(TracedImageName);
-% figure, imshow(TracedImage), title('TracedImage')
 
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles, RealImageName) == 0
@@ -140,11 +144,10 @@ if isfield(handles, RealImageName) == 0
 end
 %%% Reads the image.
 RealImage = handles.Pipeline.(RealImageName);
-% figure, imshow(RealImage), title('RealImage')
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% creates a two-dimensional, b&w Traced Image to work with during this section
@@ -156,7 +159,7 @@ PreRealImage = im2bw(ExRealImage,.5);
 %%% finds the size of each of the images
 [TracedY,TracedX] = size(PreTracedImage);
 [RealY,RealX] = size(PreRealImage);
-    %CPwarndlg(['The dimensions are as follows: TY=',num2str(TracedY),' TX=',num2str(TracedX),' RY=',num2str(RealY),' RX=',num2str(RealX)],'Alert!')
+%CPwarndlg(['The dimensions are as follows: TY=',num2str(TracedY),' TX=',num2str(TracedX),' RY=',num2str(RealY),' RX=',num2str(RealX)],'Alert!')
 %%% checks that for both dimensions, the traced image is bigger than the
 %%% real one
 drawnow
@@ -172,13 +175,13 @@ RealResolution2 = RealY / PrintedHeight;
 if strcmp(upper(Orientation),'PORTRAIT') == 1
     TracedResolution = TracedX /8.5;
     TracedResolution2 = TracedY /11;
-        %CPwarndlg('I think that you wrote portrait')
+    %CPwarndlg('I think that you wrote portrait')
 else TracedResolution = TracedX / (11);
     TracedResolution2 = TracedY / (8.5);
-        %CPwarndlg('I think that you wrote landscape')
+    %CPwarndlg('I think that you wrote landscape')
 end
 %%% activate this line to pop up a dialog box with the resolution values in it
-    %CPwarndlg(['RR is ',num2str(RealResolution),',RR2 is ',num2str(RealResolution2),', TR is ',num2str(TracedResolution),', TR2 is ',num2str(TracedResolution2)],'Alert!')
+%CPwarndlg(['RR is ',num2str(RealResolution),',RR2 is ',num2str(RealResolution2),', TR is ',num2str(TracedResolution),', TR2 is ',num2str(TracedResolution2)],'Alert!')
 drawnow
 
 if RealResolution ~= RealResolution2
@@ -190,11 +193,11 @@ end
 drawnow
 %%% Resizes the real image to be at the same resolution as the traced image
 ResizingCoefficient = TracedResolution / RealResolution;
-    %CPwarndlg(['Resizing Coefficient = ',num2str(ResizingCoefficient)],'NFO 4 U')
+%CPwarndlg(['Resizing Coefficient = ',num2str(ResizingCoefficient)],'NFO 4 U')
 ResizedRealImage = imresize(RealImage,ResizingCoefficient,'bicubic');
 %%% finds the dimensions of the resized real image
 [RRealX,RRealY] = size(ResizedRealImage);
-    %CPwarndlg(['RRealX = ',num2str(RRealX),', RRealY = ',num2str(RRealY)],'Yeahhhhh, About That...')
+%CPwarndlg(['RRealX = ',num2str(RRealX),', RRealY = ',num2str(RRealY)],'Yeahhhhh, About That...')
 %%% finds the difference in dimensions to create a margin value
 XDifference = TracedX - RRealX;
 YDifference = TracedY - RRealY;
@@ -253,12 +256,12 @@ TwoDTracedImage = rgb2gray(TracedImage);
 %%% one layer but applying movements to the whole image
 InvertedTraced = imcomplement(TwoDTracedImage);
 [sx,sy] = autoalign(InvertedTraced,ExpandedRealImage);
-    %CPwarndlg('The autoalign step has completed','Notice:')
+%CPwarndlg('The autoalign step has completed','Notice:')
 AlignedTracedImage = subim(TwoDTracedImage, sx, sy);
 AlignedRealImage = subim(ExpandedRealImage, -sx, -sy);
-    %CPwarndlg('The subim steps have completed','Notice')
+%CPwarndlg('The subim steps have completed','Notice')
 % Results = ['(Traced vs. Real: X ',num2str(sx),', Y ',num2str(sy),')'];
-    %CPwarndlg(['All image processing has completed. Results are ',Results],'Notice:')
+%CPwarndlg(['All image processing has completed. Results are ',Results],'Notice:')
 %%% Checks that the size of aligned images is the same
 if isequal(size(AlignedTracedImage),size(AlignedRealImage)) == 0
     error(['Image processing was canceled in the ', ModuleName, ' module because after the alignment step was completed, the two images were different sizes for some reason.'])
@@ -300,9 +303,9 @@ drawnow
 handles.Pipeline.(FinishedTracedImageName) = CroppedAlignedTracedImage;
 handles.Pipeline.(FinishedRealImageName) = CroppedAlignedRealImage;
 
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Written by Thouis R. Jones in the Align module

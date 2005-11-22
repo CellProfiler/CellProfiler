@@ -3,6 +3,11 @@ function handles = SplitOrSpliceMovie(handles)
 % Help for the SplitOrSpliceMovie module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Creates one large movie from several small movies, or creates several
+% small movies from one large movie.
+% *************************************************************************
+%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -56,7 +61,7 @@ TargetMovieFileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For SPLIT, how many frames per movie do you want?
 %defaultVAR05 = 100
-FramesPerSplitMovie = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+FramesPerSplitMovie = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
 %textVAR06 = For SPLICE, what do you want to call the final movie?
 %defaultVAR06 = GFPstainSPLICED.avi
@@ -85,7 +90,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
         LastFrameRead = 0;
         for i = 1:NumSplitMovies
-            [Pathname,FilenameWithoutExtension,Extension,ignore3] = fileparts(fullfile(ExistingPath,TargetMovieFileName));
+            [Pathname,FilenameWithoutExtension,Extension] = fileparts(fullfile(ExistingPath,TargetMovieFileName)); %#ok Ignore MLint
             NewFileAndPathName = fullfile(FinalPath, [FilenameWithoutExtension, '_', num2str(i),Extension]);
             LastFrameToReadForThisFile = min(i*FramesPerSplitMovie,AviMovieInfo.NumFrames);
             LoadedRawImages = aviread(fullfile(ExistingPath,TargetMovieFileName),LastFrameRead+1:LastFrameToReadForThisFile);
@@ -113,9 +118,6 @@ if handles.Current.SetBeingAnalyzed == 1
                 return
             end
         end
-
-        try NewAviMovie = close(NewAviMovie)
-        catch error(['Image processing was canceled in the ', ModuleName, ' module because a problem was encountered during save of ',NewFileAndPathName,'.'])
-        end
+        close(NewAviMovie)
     end
 end

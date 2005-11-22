@@ -3,6 +3,10 @@ function handles = Tile(handles)
 % Help for the Tile module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Creates one large, tiled image from all images within an image set.
+% *************************************************************************
+%
 % Allows many images to be viewed simultaneously, in a grid layout you
 % specify (e.g. in the actual layout in which the images were
 % collected).
@@ -113,7 +117,7 @@ LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %textVAR09 = What fraction should the images be sized (the resolution will be changed)?
 %defaultVAR09 = .1
 SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-SizeChange = str2num(SizeChange);
+SizeChange = str2double(SizeChange);
 
 %%%VariableRevisionNumber = 1
 
@@ -145,7 +149,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% Retrieves the path where the images are stored from the handles
     %%% structure.
     fieldname = ['Pathname', OrigImageName];
-    try Pathname = handles.Pipeline.(fieldname);
+    try Pathname = handles.Pipeline.(fieldname); %#ok Ignore MLint
     catch error(['Image processing was canceled in the ', ModuleName, ' module because it must be run using images straight from a Load Images module (i.e. the images cannot have been altered by other image processing modules). This is because this module needs all of the images before tiling them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this module onward.'])
     end
     %%% Retrieves the list of filenames where the images are stored from the
@@ -153,7 +157,7 @@ if handles.Current.SetBeingAnalyzed == 1
     fieldname = ['FileList', OrigImageName];
     FileList = handles.Pipeline.(fieldname);
     NumberOfImages = length(FileList);
-    if strcmp(NumberRows,'Automatic') == 1 && strcmp(NumberColumns,'Automatic')== 1
+    if strcmp(NumberRows,'Automatic') && strcmp(NumberColumns,'Automatic')
         %%% Calculates the square root in order to determine the dimensions
         %%% of the display grid.
         SquareRoot = sqrt(NumberOfImages);
@@ -196,8 +200,6 @@ if handles.Current.SetBeingAnalyzed == 1
         NewFileList = flipud(NewFileList);
     end
 
-    NumberOfImages = NumberColumns*NumberRows;
-
     LoadedImage = handles.Pipeline.(ImageName);
     ImageSize = size(imresize(LoadedImage,SizeChange));
     ImageHeight = ImageSize(1);
@@ -227,7 +229,6 @@ end
 RetrievedTileData = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]);
 
 TiledImage = RetrievedTileData.TiledImage;
-NumberColumns = RetrievedTileData.NumberColumns;
 ImageHeight = RetrievedTileData.ImageHeight;
 ImageWidth = RetrievedTileData.ImageWidth;
 NumberColumns = RetrievedTileData.NumberColumns;
@@ -266,7 +267,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     %gets data from handles
     RetrievedTileData = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]);
     TiledImage = RetrievedTileData.TiledImage;
-    NumberColumns = RetrievedTileData.NumberColumns;
     ImageHeight = RetrievedTileData.ImageHeight;
     ImageWidth = RetrievedTileData.ImageWidth;
     NumberColumns = RetrievedTileData.NumberColumns;
@@ -277,13 +277,13 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
-    if any(findobj == ThisModuleFigureNumber) == 1;
+    if any(findobj == ThisModuleFigureNumber)
 
         drawnow
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         %%% Displays the image.
-        imagesc(TiledImage)
+        CPimagesc(TiledImage)
         %%% Sets the figure to take up most of the screen.
         ScreenSize = get(0,'ScreenSize');
         FontSize = handles.Preferences.FontSize;
@@ -381,7 +381,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             '    pixelvalue = Xcord(end) - PreXImageNumber*ImageWidth;'...
             '    PreXImageNumber = PreXImageNumber + 1;'...
             'end,'...
-                        'pixelvalue = 1;'...
+            'pixelvalue = 1;'...
             'PreYImageNumber = 1;'...
             'while pixelvalue > 0,'...
             '    YImageNumber = PreYImageNumber;'...

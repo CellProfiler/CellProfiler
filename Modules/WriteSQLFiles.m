@@ -3,6 +3,11 @@ function handles = WriteSQLFiles(handles)
 % Help for the Write SQL Files module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Exports data in database readable format, including an importing file
+% with column names.
+% *************************************************************************
+%
 % This module exports measurements to a SQL compatible format.
 % It creates a MySQL script and associated data files. It calls
 % the ExportSQL data tool.
@@ -57,16 +62,16 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if handles.Current.NumberOfModules == 1
     error(['Image processing was canceled in the ', ModuleName, ' module because there are no other modules in the pipeline. Probably you should use the ExportSQL data tool.']);
 elseif handles.Current.NumberOfModules == 2
     if ~isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames)))
-    error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than CreateBatchScripts. Probably you should use the ExportSQL data tool.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than CreateBatchScripts. Probably you should use the ExportSQL data tool.']);
     end
 end
 
@@ -120,9 +125,9 @@ if DoWriteSQL,
     CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
@@ -131,6 +136,6 @@ drawnow
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
 %%% If the window is open, it is closed.
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     delete(ThisModuleFigureNumber)
 end

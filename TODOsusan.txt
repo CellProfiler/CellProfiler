@@ -1,6 +1,5 @@
 Susan's TODO list
 
-
 1 -- change ExportData(Excel) to use CPconvert sub function.
  swap column/row and final interface for both ExportExcel and ExportSQL 
 
@@ -12,7 +11,6 @@ Susan's TODO list
  
 - NEW FROM ANNE - I am giving you a DVD with some pipelines that need to be salvaged!--Started
 1. [NEW FROM ANNE: I have written a DVD with the movie and 3 pipelines (contained within OUT files) that need to be converted to the current version of the software. These are very old pipelines so there are likely to be a *lot* of changes necessary!  I have included a .zip archive of the CellProfiler code at the time these pipelines were made, so it might help you to install this old version of CellProfiler, remove your CellProfilerPreferences.mat file from the Matlab applications folder, set the path of MATLAB to look at this old version (rather than your new trunk version), start this old version of CellProfiler, and load the old pipelines and see what they look like.  I think you should be able to convert the old pipelines while i am gone, and then i can check them when I return.] Dros movie - reprocess the movie using new CPgraythresh and make movie of pixel intensity histogram. Call Victoria to get input. Maybe analyze a second movie: try bioresearch.ucsc.edu? Started to work on
-
 
 - NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
@@ -27,6 +25,3 @@ Susan's TODO list
 - (Long-term): Set up 5x imaging on the Cellomics ArrayScan using their Slideport slide holder - is the 'window' of the slideport big enough to image the entire slide.  Wait for the HCi2005 ArrayScan software upgrade, though.
 
 - (Long-term): Play with the genome-wide data!! Use clustering/bioinformatics tools to look for interesting patterns.
-
-
- 

@@ -3,6 +3,10 @@ function handles = SpeedUpCellProfiler(handles)
 % Help for the Speed Up CellProfiler module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Removes images
+% *************************************************************************
+%
 % Allows faster image processing by refraining from saving the output
 % file after every cycle is processed. Instead, the output file is
 % saved after every Nth cycle (and always after the first and last

@@ -3,6 +3,10 @@ function handles = Smooth(handles)
 % Help for the Smooth Image module:
 % Category: Image Processing
 %
+% SHORT DESCRIPTION:
+% Smooths (blurs) images.
+% *************************************************************************
+%
 % This module smooths (blurs) the incoming image.
 %
 % Settings:
@@ -122,7 +126,7 @@ end
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, OrigImageName)==0,
+if ~isfield(handles.Pipeline, OrigImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -159,12 +163,10 @@ drawnow
 
 fieldname = ['FigureNumberForModule',CurrentModule];
 ThisModuleFigureNumber = handles.Current.(fieldname);
-if any(findobj == ThisModuleFigureNumber) == 1;
-
+if any(findobj == ThisModuleFigureNumber)
     %%% Sets the width of the figure window to be appropriate (half width),
     %%% the first time through the set.
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet...
-            | strncmpi(WaitForFlag,'Y',1) == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet || strncmpi(WaitForFlag,'Y',1)
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
         newsize(3) = originalsize(3)/2;
@@ -176,12 +178,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
-    subplot(2,1,1); imagesc(OrigImage);
-    
+    subplot(2,1,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); imagesc(SmoothedImage);
-    
-    title('Smoothed Image');
+    subplot(2,1,2); CPimagesc(SmoothedImage); title('Smoothed Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

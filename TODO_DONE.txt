@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/22) (Mike 11/22 two versions of color, what is going on?) (Requested by Anne 11-21-05): I think this code in MeasureObjectNeighbors should look up the user's preference for the colormap. Or perhaps there is a CP subfunction relating to colormaps?
+if sum(sum(IncomingLabelMatrixImage)) >= 1
+    cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
+    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
+else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
+end
+
 -(Mike 11/22) (Requested by Anne 11-21-05)  There is a bug when using MoG adaptive (see identifyPrimAutomatic).
 
 -(Mike 11/22 replaced all 'times' with 'Helvetica', then moved check font to module checking) (Requested by Anne 11-21-05): Make sure all the Measure modules are using the same font. Actually, make sure all the code is using the same font! We have Times, fixedwidth, helvetica throughout the code.

@@ -101,9 +101,9 @@ Rotate				(Need to verify)
 
 SaveImages			Mike
 
-SendEmail
+SendEmail			(Need to verify)
 
-Smooth
+Smooth				Mike
 
 SpeedUpCellProfiler
 

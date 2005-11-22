@@ -3,6 +3,10 @@ function handles = SendEmail(handles)
 % Help for the Send E-Mail module:
 % Category: Other
 %
+% SHORT DESCRIPTION:
+% Sends emails to a specified address at desired stages of the processing.
+% *************************************************************************
+%
 % This module e-mails the user-specified recipients about the current
 % progress of the image processing modules as well as the expected time
 % remaining until completion.  The user can specify how often e-mails are
@@ -46,7 +50,7 @@ drawnow
 %%% the variable values that the user entered.
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);
-ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
+ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum)); %#ok Ignore MLint
 
 %textVAR01 = Send e-mails to these e-mail addresses
 %defaultVAR01 = default@default.com
@@ -111,22 +115,22 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 numAddresses = 0;
 while isempty(AddressEmail) == 0
     numAddresses = numAddresses + 1;
-    [AddressTo{numAddresses} AddressEmail] = strtok(AddressEmail, ',');
+    [AddressTo{numAddresses} AddressEmail] = strtok(AddressEmail, ','); %#ok Ignore MLint
 end
 
-if strcmp(FirstImageEmail, 'Yes') == 1 & SetBeingAnalyzed == handles.Current.StartingImageSet
+if strcmp(FirstImageEmail, 'Yes') && SetBeingAnalyzed == handles.Current.StartingImageSet
     subject = 'CellProfiler:  First cycle has been completed';
     if (SetBeingAnalyzed > 1)
         subject = [subject,' after Restart, image # ',num2str(SetBeingAnalyzed)];
     end
     sendmail(AddressTo,subject,subject);
-elseif strcmp(LastImageEmail, 'Yes') == 1 & SetBeingAnalyzed == handles.Current.NumberOfImageSets
+elseif strcmp(LastImageEmail, 'Yes') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
     subject = 'CellProfiler:  Last cycle has been completed';
     sendmail(AddressTo,'CellProfiler Progress',subject);
-elseif EveryXImageEmail > 0 & mod(SetBeingAnalyzed,EveryXImageEmail) == 0
+elseif EveryXImageEmail > 0 && mod(SetBeingAnalyzed,EveryXImageEmail) == 0
     subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
     sendmail(AddressTo,subject,subject);
-elseif Specified1Email == SetBeingAnalyzed | Specified2Email == SetBeingAnalyzed | Specified3Email == SetBeingAnalyzed | Specified4Email == SetBeingAnalyzed | Specified5Email == SetBeingAnalyzed
+elseif Specified1Email == SetBeingAnalyzed || Specified2Email == SetBeingAnalyzed || Specified3Email == SetBeingAnalyzed || Specified4Email == SetBeingAnalyzed || Specified5Email == SetBeingAnalyzed
     subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
     sendmail(AddressTo,subject,subject);
 end
@@ -143,7 +147,7 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
     fieldname = ['FigureNumberForModule',CurrentModule];
     ThisModuleFigureNumber = handles.Current.(fieldname);
     %%% If the window is open, it is closed.
-    if any(findobj == ThisModuleFigureNumber) == 1;
+    if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)
     end
 end

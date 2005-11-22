@@ -18,19 +18,11 @@ ModuleName = char(handles.Settings.ModuleNames(CurrentModuleNum));
 
 -(Requested by Anne 11-22-05) I think that the overlay outlines module is producing images outside the 0 to 1 range.
 
-
 COMMENTS:
 
--(Requested by Anne 11-21-05) (could not get to reproduce, please show):  When I put GetDataOnImage in the pipeline, it looked fine but when I moved it 4 spaces down in the pipeline, the intervening four modules (all four = OverlayOutlines) now have the GetDataOnImage dropdown menus and variable boxes overlaid on their variables.
+-(Mike 11/22 isdeployed but we need 2 seperate versions for compile) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
--(Mike 11/22 isdeployed but we need 2 seperate versions for compile) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
-
--(Mike 11/22 two versions of color, what is going on?) (Requested by Anne 11-21-05): I think this code in MeasureObjectNeighbors should look up the user's preference for the colormap. Or perhaps there is a CP subfunction relating to colormaps?
-if sum(sum(IncomingLabelMatrixImage)) >= 1
-    cmap = jet(max(64,max(IncomingLabelMatrixImage(:))));
-    ColoredLabelMatrixImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
-else  ColoredLabelMatrixImage = IncomingLabelMatrixImage;
-end
+- look for jet
 
 -(Mike 11/22) (Requested by Anne 11-21-05):  Code like the following is found in several identify modules. I think the error will cause the module to abort, though it's not supposed to. Can we make sure it just pops open a window, and that this window is not popped open repeatedly? I think there is an option for one of the warndlg or errordlg boxes that prevents more than one of the same error message from opening each time.
 try
@@ -74,6 +66,7 @@ PlotMeasurements: DONE!
 - Make compiled CellProfiler work on cluster
 
 (Requested by Anne 11-21-05) : Not necessary pre-release, but would be nice: In LoadImages, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
+- Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
 - Check through each module (~2 per day):
 EVERYONE:

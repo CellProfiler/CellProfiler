@@ -141,7 +141,9 @@ handles.Measurements.Neighbors.IdentityOfNeighbors(handles.Current.SetBeingAnaly
 %%% For some reason, this does not exactly match the results of the display
 %%% window. Not sure why.
 if sum(sum(ImageOfNeighbors)) >= 1
-    ColoredImageOfNeighbors = ind2rgb(ImageOfNeighbors,[0 0 0;jet(max(ImageOfNeighbors(:)))]);
+    handlescmap = handles.Preferences.LabelColorMap;
+    cmap = feval(handlescmap,max(64,max(ImageOfNeighbors(:))));
+    ColoredImageOfNeighbors = ind2rgb(ImageOfNeighbors,[0 0 0;cmap]);
 else  ColoredImageOfNeighbors = ImageOfNeighbors;
 end
 
@@ -162,7 +164,7 @@ if any(findobj == ThisModuleFigureNumber)
     if sum(sum(IncomingLabelMatrixImage)) >= 1
         handlescmap = handles.Preferences.LabelColorMap;
         cmap = feval(handlescmap,max(64,max(IncomingLabelMatrixImage(:))));
-        ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap, 'k', 'shuffle');
+        ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap,'k','shuffle');
     else  ColoredIncomingObjectsImage = IncomingLabelMatrixImage;
     end
 

@@ -1,43 +1,61 @@
 function handles = CorrectIllumination_Calculate(handles)
 
-% Help for the Correct Illumination_Calculate Using Intensities module:
+% Help for the Correct Illumination_Calculate module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Calculates an illumination function, used to correct errors in lighting
-% on images. Can also be used to reduce uneven background in images.
+% Calculates an illumination function, used to correct uneven
+% illumination/lighting/shading or to reduce uneven background in images.
 % *************************************************************************
 %
-% This module calculates an illumination function based on the intensities
-% of images. The illumination function can then be saved to the hard drive
-% for later use (you should save in .mat format using the SaveImages
-% module), or it can be immediately applied to images later in the pipeline
-% (using the CorrectIllumination_Apply module). This will correct for
-% uneven illumination of each image.
+% This module calculates an illumination function which can be saved to the
+% hard drive for later use (you should save in .mat format using the
+% SaveImages module), or it can be immediately applied to images later in
+% the pipeline (using the CorrectIllumination_Apply module). This will
+% correct for uneven illumination of each image.
 %
-% How it works:
-% This module is most often used to calculate an illumination function
-% based on information from a set of images collected at the same
-% time. This module works by averaging together all of the images
-% (making a projection).  This image is then smoothed (optional). This
-% produces an image that represents the variation in illumination
-% across the field of view, as long as the cells are spatially
-% distributed uniformly across each image. Note that if you are using
-% a small set of images, there will be spaces in the average image that
-% contain no objects and smoothing by median filtering is unlikely to
-% work well.
+% Illumination correction is challenging and we are writing a paper on it
+% which should help clarify (TR Jones, AE Carpenter, P Golland, in
+% preparation). In the meantime, be patient in trying to understand this
+% module... 
 %
 % Settings:
 %
+% Regular or Background intensities:
+%
+% Regular intensities:
+% If you have objects that are evenly dispersed across your image(s) and
+% cover most of the image, then you can choose Regular intensities. Regular
+% intensities makes the illumination function based on the intensity at
+% each pixel of the image (or group of images if you are in All mode) and
+% is most often rescaled (see below) and applied by division using
+% CorrecIllumination_Apply. Note that if you are in Each mode or using a
+% small set of images with few objects, there will be regions in the
+% average image that contain no objects and smoothing by median filtering
+% is unlikely to work well. Note: it does not make sense to choose (Regular
+% + no smoothing + Each) because the illumination function would be
+% identical to the original image and applying it will yield a blank image.
+% You either need to smooth each image or you need to use All images.
+%
+% Background intensities:
+% If you think that the background (dim points) between objects show the
+% same pattern of illumination as your objects of interest, you can choose
+% Background intensities. Background intensities finds the minimum pixel
+% intensities in blocks across the image (or group of images if you are in
+% All mode) and is most often applied by subtraction using the 
+% CorrecIllumination_Apply module. Note: if you will be using the Subtract
+% option in the CorrecIllumination_Apply module, you almost certainly do
+% NOT want to Rescale! See below!!
+% 
 % Each or All:
-% Enter Each to calculate an illumination function for Each image
-% individually, or enter All to average together All images at each
-% pixel location (this processing is done at the time you specify by
-% choosing LoadImages or Pipeline in the next box). Note that applying illumination correction on each image
-% individually may make intensity measures not directly comparable
-% across different images. Using illumination correction based on all
-% images makes the assumption that the illumination anomalies are
-% consistent across all the images in the set.
+% Enter Each to calculate an illumination function for each image
+% individually, or enter All to calculate the illumination function from
+% all images at each pixel location. All is more robust, but depends on the
+% assumption that the illumination patterns are consistent across all the
+% images in the set and that the objects of interest are randomly
+% positioned within each image. Applying illumination correction on each
+% image individually may make intensity measures not directly comparable
+% across different images.
 %
 % Pipeline or Load Images:
 % If you choose Load Images, the module will calculate the illumination
@@ -56,21 +74,31 @@ function handles = CorrectIllumination_Calculate(handles)
 % Dilation:
 % For some applications, the incoming images are binary and each
 % object should be dilated with a gaussian filter in the final
-% averaged (projection) image.
+% averaged (projection) image. This is for a sophisticated method of
+% illumination correction where model objects are produced.
 %
 % Smoothing Method:
 % If requested, the resulting image is smoothed. See the help for the
-% Smooth module for more details.
+% Smooth module for more details. If you are using Each mode, this is
+% almost certainly necessary. If you have few objects in each image or a
+% small image set, you may want to smooth. The goal is to smooth to the
+% point where the illumination function resembles a believable pattern.
+% That is, if it is a lamp illumination problem you are trying to correct,
+% you would apply smoothing until you obtain a fairly smooth pattern
+% without sharp bright or dim regions.  Note that smoothing is a
+% time-consuming process, and fitting a polynomial is fastest but does not
+% allow a very tight fit as compared to the slower median filtering method.
 %
 % Rescaling:
-% The illumination function can be rescaled so that the pixel
-% intensities are all equal to or greater than one. This is
-% recommended if you plan to use the division option in
-% CorrectIllumination_Apply so that the corrected images are in the
-% range 0 to 1. Note that as a result of the illumination function
-% being rescaled from 1 to infinity, if there is substantial variation
-% across the field of view, the rescaling of each image might be
-% dramatic, causing the corrected images to be very dark.
+% The illumination function can be rescaled so that the pixel intensities
+% are all equal to or greater than one. This is recommended if you plan to
+% use the division option in CorrectIllumination_Apply so that the
+% corrected images are in the range 0 to 1. It is NOT recommended if you
+% plan to use the Subtract option in CorrectIllumination_Apply! Note that
+% as a result of the illumination function being rescaled from 1 to
+% infinity, if there is substantial variation across the field of view, the
+% rescaling of each image might be dramatic, causing the corrected images
+% to be very dark.
 %
 % See also CORRECTILLUMINATION_APPLY, SMOOTH
 
@@ -131,7 +159,7 @@ EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or type P to fit a low order polynomial instead. For no smoothing, enter N. Note that smoothing is a time-consuming process.
+%textVAR06 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial or choose no smoothing at all.
 %choiceVAR06 = No smoothing
 %choiceVAR06 = Fit polynomial
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -163,7 +191,7 @@ ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,11}
 
 %textVAR12 = BACKGROUND INTENSITY OPTIONS
 
-%textVAR13 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no cells are located.
+%textVAR13 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.
 %defaultVAR13 = 60
 BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
 
@@ -188,7 +216,7 @@ end
 
 try NumericalObjectDilationRadius = str2double(ObjectDilationRadius);
 catch
-    error(['Image processingwas canceled in the ', ModuleName, ' module because you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).'])
 end
 
 %%% Reads (opens) the image you want to analyze and assigns it to a

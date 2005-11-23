@@ -11,9 +11,9 @@ ClassifyObjects			Mike, Colin, Anne
 
 ColorToGray			Mike, Colin, Anne
 
-ConvertToImage
+ConvertToImage                               Anne
 
-CorrectIllumination_Apply	Mike
+CorrectIllumination_Apply	Mike,        Anne
 
 CorrectIllumination_Calculate	Mike
 

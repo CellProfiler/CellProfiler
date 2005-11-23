@@ -121,11 +121,10 @@ function handles = IdentifyPrimYeastPhase(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -198,9 +197,9 @@ MaxSize = SizeRangeNumerical(2);
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
@@ -223,9 +222,9 @@ if ndims(OrigImage) ~= 2
     error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Diameter entry is converted to radius and made into an integer.
@@ -347,7 +346,6 @@ FinalOutline = bwperim(FinalLabelMatrixImage > 0);
 drawnow
 
 ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
-
 if any(findobj == ThisModuleFigureNumber)
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
@@ -399,7 +397,6 @@ if isempty(column)
 end
 handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
 
-
 %%% Saves the ObjectCount, i.e. the number of segmented objects.
 %%% See comments for the Threshold saving above
 if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
@@ -412,7 +409,6 @@ if isempty(column)
     column = length(handles.Measurements.Image.ObjectCountFeatures);
 end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
 
 %%% Saves the location of each segmented object
 handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};

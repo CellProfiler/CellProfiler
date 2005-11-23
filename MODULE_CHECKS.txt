@@ -7,9 +7,9 @@ Average				Mike, Colin, Anne
 
 CalculateStatistics		Mike,        Anne (didn't check code until we are ready to play around with it for real)
 
-ClassifyObjects			Mike, Colin
+ClassifyObjects			Mike, Colin, Anne
 
-ColorToGray			Mike, Colin
+ColorToGray			Mike, Colin, Anne
 
 ConvertToImage
 
@@ -21,15 +21,15 @@ CreateBatchScripts		Mike
 
 CreateWebPage			Mike
 
-Crop				Mike (Saving Images help?)
+Crop				Mike 
 
 DefineGrid			Mike
 
 DisplayGridInfo			Mike
 
-Exclude				Mike (Saving Images help?)
+Exclude				Mike 
 
-ExpandOrShrink			Mike (Saving Images help?)
+ExpandOrShrink			Mike 
 
 ExtractHeaderInfo
 
@@ -43,11 +43,11 @@ GrayToColor			Mike
 
 IdentifyObjectsInGrid		Mike
 
-IdentifyPrimAutomatic		 (Saving Images help?)
+IdentifyPrimAutomatic		 
 
 IdentifyPrimManual		Mike
 
-IdentifyPrimYeastPhase		??  (Saving Images help?)
+IdentifyPrimYeastPhase		??  
 
 IdentifySecondary		Mike
 

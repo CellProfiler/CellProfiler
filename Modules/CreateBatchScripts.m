@@ -54,30 +54,36 @@ function handles = CreateBatchScripts(handles)
 % terminal shell that will submit all jobs within a given folder to a
 % cluster for processing. The script is started by typing this at the
 % command line within a directory that contains a copy of the
-% runallbatchjobs.sh file (all typed on one line):
-% ./runallbatchjobs.sh
-% /PATHTOFOLDERCONTAININGBATCHMFILESANDBATCH_DATA
+% batchrun.sh file (all typed on one line):
+% ./batchrun.sh /PATHTOFOLDERCONTAININGBATCHMFILESANDBATCH_DATA
 % /PATHTOFOLDERWHERETEXTLOGSSHOULDGO BATCHPREFIX
 %
-% Here is the actual code for runallbatchjobs.sh:
+% Here is the actual code for batchrun.sh:
 % ------------------
 % #!/bin/sh
-% if test $# -ne 3; then
-%     echo "usage: $0 BatchDir BatchOutputDir BatchFilePrefix" 1>&2
-%     exit 1
+% if test $# -ne 5; then
+%    echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2
+%    exit 1
 % fi
 %
 % BATCHDIR=$1
-% BATCHOUTPUTDIR=$2
-% BATCHFILEPREFIX=$3
+% BATCHTXTOUTPUTDIR=$2
+% BATCHMATOUTPUTDIR=$3
+% BATCHFILEPREFIX=$4
+% QueueType=$5
 % MATLAB=/nfs/apps/matlab701
+% LICENSE_SERVER="1700@castlellan.wi.mit.edu"
 %
 % export DISPLAY=""
-%
+% 
 % for i in $BATCHDIR/$BATCHFILEPREFIX*.m; do
-%     BATCHFILENAME=`basename $i`
-%     bsub -o $BATCHOUTPUTDIR/$BATCHFILENAME.txt -u carpenter@wi.mit.edu -R 'rusage[img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm < $BATCHDIR/$BATCHFILENAME"
+%    BATCHFILENAME=`basename $i .m`
+%    if [ ! -e $BATCHMATOUTPUTDIR/${BATCHFILENAME}_OUT.mat ]; then
+%        echo Re-running $BATCHDIR/$BATCHFILENAME
+%        bsub -q $5 -o $BATCHTXTOUTPUTDIR/$BATCHFILENAME.txt -u xuefang_ma@wi.mit.edu -R 'rusage[img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm -c $LICENSE_SERVER < $BATCHDIR/$BATCHFILENAME.m"
+%    fi
 % done
+%
 % ------------------
 %
 % Here are instructions for running jobs on the cluster at the
@@ -161,20 +167,21 @@ function handles = CreateBatchScripts(handles)
 % (PC, Mac, Unix, 64-bit, etc).
 %
 % 10. From the command line, logged into barra, submit the jobs using
-% the script runallbatchjobs.sh as follows: ./runallbatchjobs.sh
-% /BATCHFILESFOLDER /FOLDERWHERETEXTLOGSSHOULDGO BATCHPREFIXNAME For
-% example: ./runallbatchjobs.sh /nfs/sabatini2_ata/PROJECTFOLDER
-% /nfs/sabatini2_ata/PROJECTFOLDER Batch_ (currently, there is a copy
+% the script batchrun.sh.sh as follows:
+% ./batchrun.sh.sh /BATCHFILESFOLDER /FOLDERWHERETEXTLOGSSHOULDGO 
+% BATCHPREFIXNAME QueType
+% For example: ./batchrun.sh.sh /nfs/sabatini2_ata/PROJECTFOLDER
+% /nfs/sabatini2_ata/PROJECTFOLDER Batch_ normal(currently, there is a copy
 % of this script at /home/carpente so that is the directory from which
 % the script should be run. The first time I ran it, I had to change
-% the permissions by doing this: chmod a+w runallbatchjobs.sh)
+% the permissions by doing this: chmod a+w batchrun.sh.sh)
 %
 % 11. Certain jobs fail for transient reasons and simply need to be
 % resubmitted. The following code will look through all the text log
 % files in a directory, look for the text "exit code" within those log
 % files to find the batches that did not successfully complete, and
 % move the corresponding .m-file to a subdirectory. You can then run
-% runallbatchjobs.sh on the subdirectory (don't forget to copy or move
+% batchrun.sh.sh on the subdirectory (don't forget to copy or move
 % Batch_data.mat into the subdirectory as well, or point to the parent
 % directory which contains the file.)
 %  a. Make the subdirectory BatchesToRerun and change permissions so
@@ -185,7 +192,7 @@ function handles = CreateBatchScripts(handles)
 %  c. Run the same line with | sh appended to actually move the files:
 % grep -l "exit code" *.txt | sed "s/^/mv /" | sed 's/$/
 % BatchesToRerun/' | sed "s/.txt//" | sh
-%  d. Start the jobs in that subdirectory using runallbatchjobs.
+%  d. Start the jobs in that subdirectory using batchrun.sh.
 % --------------------------------------------------------------------
 %
 % Bsub Functions:

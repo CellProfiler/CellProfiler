@@ -1,7 +1,9 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
--(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
+-(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
+TechDiagnosis 	- DONE
+SaveCPcode	- DONE
 
 - Combine code for:
 Histograms

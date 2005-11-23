@@ -395,10 +395,12 @@ uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callba
 uimenu(FileMenu,'Label','New Pipeline','Callback','CellProfiler(''NewPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','Save current CellProfiler code','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Preferences','Callback','CellProfiler(''LoadPreferences_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
+if ~isdeployed
+    uimenu(FileMenu,'Label','Save current CellProfiler code','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
+    uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
+end
 uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
 
 ListOfDataTools=handles.Current.DataToolsFilenames;

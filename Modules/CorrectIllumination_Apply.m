@@ -189,7 +189,7 @@ elseif strcmp(DivideOrSubtract,'Subtract') == 1
     %%% values should be fairly rare (and minor), since the minimum is used to
     %%% calculate the IlluminationImage.
     CorrectedImage(CorrectedImage < 0) = 0;
-else error(['In the ', ModuleName, ' module, you must enter D or S for the method by which to apply the illumination correction.'])
+else error(['Image processing was canceled in the ', ModuleName, ' module because you must choose Divide or Subtract for the method by which to apply the illumination correction.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

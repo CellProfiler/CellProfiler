@@ -24,7 +24,6 @@ EVERYONE:
 		descriptions for uses of computer-ific words like 'segmentation'.
 	- Write help if DNE
 	- Check that fontsize is never hard-coded and instead uses the user's preference.
-	- Remove 'saving images' text
 	- Check Font
 THIS HAS ALREADY BEEN DONE FOR ALL:
 	- Go through the code looking for instances of the term "image set" and
@@ -34,6 +33,9 @@ THIS HAS ALREADY BEEN DONE FOR ALL:
 	- Smart Indent
 	- M Lint error checking
 	- CPimagesc
+	- Remove 'saving images' text
+	- CPwhichmodule
+	- CPwhichmodulefigurenumber
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Submit code to Sourceforge for distribution/easy updating? EVeryone seems to recommend this for open-source software.

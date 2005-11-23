@@ -1,10 +1,13 @@
 function CPConvertSQL(handles, OutDir, OutfilePrefix, DBname, TablePrefix, FirstSet, LastSet,ExportInfo)
 ExportType='';
-FileExtension='.csv'
-if ~isempty(ExportInfo),
+FileExtension='.csv'%default 
+
+if ~isempty(ExportInfo),%exporting to excel
 ExportType=ExportInfo.ExportType;
 FileExtension=ExportInfo.MeasurementExtension ;
+Swap=ExportInfo.SwapRowsColumnInfo;
 end
+
 per_image_names = {};
 per_object_names = {};
 
@@ -17,22 +20,28 @@ Measurements = handles.Measurements;
 basename = [OutfilePrefix int2str(FirstSet) '_' int2str(LastSet)];
 
 %%% SubMeasurementFieldnames usually includes 'Image' and objects like 'Nuclei',
-%%% 'Cells', etc.
+ 
 
 SubMeasurementFieldnames = fieldnames(Measurements)';
      
     
-    %start to for excle object data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% start to for excle object data %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  if strcmp(ExportType,'Excel')
-       %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      
+
+   global waitbarhandle
+   CPwaitbar(0,waitbarhandle,'Export Status');
+   objectCount=0;
     for excelRemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
-          
-        excelSubFieldname = excelRemainingSubMeasurementFieldnames{1};
-       
         
+        excelSubFieldname = excelRemainingSubMeasurementFieldnames{1};
+            
         excelsubstruct = handles.Measurements.(excelSubFieldname);
         excelsubstructfields = fieldnames(excelsubstruct)';
         ExportObject=0;
+       
          %check which objects have been choosen
          for a=1:size(ExportInfo.ObjectNames,1),
              if strcmp(ExportInfo.ObjectNames{a},excelSubFieldname);
@@ -40,15 +49,25 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
                  continue;
              end
          end % end for
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if ExportObject ,
-        %fexcelobject=fopen(fullfile(OutDir,[basename '_' excelSubFieldname '.xls']), 'W');
+   
+  if ExportObject , %first decide whether the object is choosen by user
+        objectCount=objectCount+1;
+          %%% Update waitbar
+        CPwaitbar(objectCount/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',excelSubFieldname));
+        
+        
         fexcelobject=fopen(fullfile(OutDir,[basename '_' excelSubFieldname FileExtension]), 'W');
         
         excel_object_names={};
        
-        fprintf(fexcelobject, '%s','ImageNumber');% for image table only
+        if strcmp (excelSubFieldname,'Image') & strcmp(Swap, 'Yes') %for swapped img file only
+           %fexcelimg_swapped=fopen(fullfile(OutDir,[basename '_swapped_'  excelSubFieldname FileExtension]), 'W');
+           fprintf(fexcelobject, '%s', 'ImageNumber');
+                 for I=FirstSet:LastSet,
+                     fprintf(fexcelobject, '\t%g', I);
+                 end
+                 fprintf(fexcelobject,'\n');
+        end   
        
         %first print out column names
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,7 +104,7 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
         else
             names = {ssf};
         end
-
+        dim_names=size(names,2);
 
         vals = handles.Measurements.(excelSubFieldname).(ssf);
               
@@ -98,50 +117,129 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
             end
         end
         
-              
+            
          %get columnames for excel
         for n=1:length(names),
         excel_object_names{end+1} = cleanup([excelSubFieldname '_' ssf '_' names{n}]);
+         
         end
+        
+       %%%%%%%%%%%%%%%%%%%%% swap col/row for image file only %%%%%%%%%%%%%%%%%%%%%%%%%%%
+       if strcmp (excelSubFieldname,'Image') & strcmp(Swap, 'Yes')
+           if dim_names >1,
+               for i=1:dim_names
+                   fprintf(fexcelobject,'%s',excel_object_names{end-dim_names+i});
+
+                   for img_no=FirstSet:LastSet
+                       imgvals = handles.Measurements.(excelSubFieldname).(ssf){img_no};
+
+                       if ischar(imgvals),
+                           fprintf(fexcelobject, '\t%s', imgvals);
+
+                           %vals{} is cellarray, need loop through to get all elements value
+                       elseif iscell(imgvals)
+                           if (ischar(imgvals{1})), %is char
+                               %for cellindex = 1:size(imgvals,2),
+                                   %fprintf(fexcelobject, '\t%s', imgvals{cellindex});
+                                   fprintf(fexcelobject, '\t%s', imgvals{i});
+                                   %image_val(end+1,:)=char(excelvals{cellindex});
+                               %end
+
+                           else, %vals{cellindex} is not char
+                               fprintf(fexcelobject, '\t%g', cell2mat(imgvals{i}));
+                           end
+
+                       else %vals is number
+
+                           fprintf(fexcelobject, '\t%g', imgvals(i));
+                       end
+
+                   end
+                   fprintf(fexcelobject, '\n');
+               end  %end for dim_names
+
+           else
+           fprintf(fexcelobject,'%s',excel_object_names{end});
+           for img_no=FirstSet:LastSet
+               imgvals = handles.Measurements.(excelSubFieldname).(ssf){img_no};
+               
+                %if (size(vals,1) == 1),
+                if ischar(imgvals),
+                    fprintf(fexcelobject, '\t%s', imgvals);
+                      
+                    %vals{} is cellarray, need loop through to get all elements value
+                elseif iscell(imgvals)
+                    if (ischar(imgvals{1})), %is char
+                        for cellindex = 1:size(imgvals,2),
+                            fprintf(fexcelobject, '\t%s', imgvals{cellindex});
+                            %image_val(end+1,:)=char(excelvals{cellindex});
+                        end
+                                           
+                    else, %vals{cellindex} is not char
+                        fprintf(fexcelobject, '\t%g', cell2mat(imgvals));
+                    end
+
+                else %vals is number
+
+                    fprintf(fexcelobject, '\t%g', imgvals);
+                end
+                
+           end
+           fprintf(fexcelobject, '\n');
+           
+           
+           end %end of if dim_names>1
+           
+           
+           
+       end % end of if image and swap
+            
+             
+        
      end %end of ssfc
+     
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%start to write column name
         if ~strcmp (excelSubFieldname,'Image');
-             
-        fexcelmean=fopen(fullfile(OutDir,[basename '_' excelSubFieldname '_mean'  FileExtension]), 'W');
-        fexcelstd =fopen(fullfile(OutDir,[basename '_' excelSubFieldname '_stdev' FileExtension]), 'W');
-       
-        fprintf(fexcelmean,  '%s','ImageNumber');
-        fprintf(fexcelstd,  '%s','ImageNumber');
+            if strcmp(Swap, 'Yes'),
+
+                fexcelmean_swap=fopen(fullfile(OutDir,[basename '_' excelSubFieldname '_mean_'  FileExtension]), 'W');
+                fexcelstd_swap=fopen(fullfile(OutDir,[basename '_' excelSubFieldname '_std_'  FileExtension]), 'W');
+            else
+                fexcelmean=fopen(fullfile(OutDir,[basename '_' excelSubFieldname '_mean_'  FileExtension]), 'W');
+                fexcelstd =fopen(fullfile(OutDir,[basename '_' excelSubFieldname '_std_' FileExtension]), 'W');
+            end
+
+        else % for all object files
+            if ~strcmp(Swap, 'Yes'),
+                fprintf(fexcelobject,'%s','ImageNumber');
+                for e=excel_object_names,
+                    fprintf(fexcelobject,'\t%s', e{1});
+                end
+                fprintf(fexcelobject,'\n');
+            else
+                if ~strcmp (excelSubFieldname,'Image');
+                fprintf(fexcelobject, '%s', 'ImageNumber');
+                for I=FirstSet:LastSet,
+                    fprintf(fexcelobject, '\t%g', I);
+                end
+                fprintf(fexcelobject,'\n');
+                end
+            end
+        end
+                  
         
-        for e=excel_object_names,
-             fprintf(fexcelmean,'\t%s', ['mean_' e{1}]);
-        end
-        for e=excel_object_names,
-             fprintf(fexcelstd,'\t%s', ['std_' e{1}]);
-        end
-        fprintf(fexcelmean,'\n');
-        fprintf(fexcelstd,'\n');
-        fprintf(fexcelobject,'\t%s','ObjectNumber');
-        end
-        
-           for e=excel_object_names,
-             fprintf(fexcelobject,'\t%s', e{1});
-           end
-             
-         fprintf(fexcelobject,'\n');
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% writing data
        perobjectvals=[];
-        
+       excel_means=[];
+       excel_stdevs=[];
        for img_idx = FirstSet:LastSet,
        
         %write img number for image file
-        if strcmp (excelSubFieldname,'Image');
+        if strcmp (excelSubFieldname,'Image') & ~strcmp(Swap, 'Yes');
+             
         fprintf(fexcelobject,'%d',img_idx);
-        
-        else
-          fprintf(fexcelmean,'%d',img_idx);  
-          fprintf(fexcelstd,'%d',img_idx);
+                
         end    
         perobjectvals_mean=[];
         %fprintf(fexcelobject, '%d', img_idx); %img number first
@@ -154,6 +252,7 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
         
         
         for excelssfc = excelsubstructfields,
+            %img_colcount=img_colcount+1;
             excelssf = excelssfc{1};
             %fprintf (ssf);
             if strfind(excelssf, 'Features'),
@@ -163,107 +262,209 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
             if strfind(excelssf, 'PathnameOrig'),
                 continue;
             end
-           if strfind(excelssf, 'ModuleError'),
+            if strfind(excelssf, 'ModuleError'),
                 continue;
             end
-           if strfind(excelssf, 'TimeElapsed'),
+            if strfind(excelssf, 'TimeElapsed'),
                 continue;
-            end 
-            
+            end
+
             if strfind(excelssf, 'Text'),
                 if (strfind(excelssf, 'Text') + 3) == length(excelssf),
                     continue;
                 end
             end
-    
+
             excelvals = handles.Measurements.(excelSubFieldname).(excelssf){img_idx};
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-      
-      if strcmp(excelSubFieldname, 'Image'),
-          
-         %if (size(vals,1) == 1),
-         if ischar(excelvals),
-             fprintf(fexcelobject, '\t%s', excelvals);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-             %vals{} is cellarray, need loop through to get all elements value
-         elseif iscell(excelvals)
-             if (ischar(excelvals{1})), %is char
-                 for cellindex = 1:size(excelvals,2),
-                     fprintf(fexcelobject, '\t%s', excelvals{cellindex});
-                 end
-             else, %vals{cellindex} is not char
-                 fprintf(fexcelobject, '\t%g', cell2mat(excelvals));
-             end
+            if strcmp(excelSubFieldname, 'Image') 
+                if ~strcmp(Swap, 'Yes'),
+
+                    %if (size(vals,1) == 1),
+                    if ischar(excelvals),
+                        fprintf(fexcelobject, '\t%s', excelvals);
+
+                        %vals{} is cellarray, need loop through to get all elements value
+                    elseif iscell(excelvals)
+                        if (ischar(excelvals{1})), %is char
+                            for cellindex = 1:size(excelvals,2),
+                                fprintf(fexcelobject, '\t%s', excelvals{cellindex});
+
+                            end
+
+
+                        else, %vals{cellindex} is not char
+                            fprintf(fexcelobject, '\t%g', cell2mat(excelvals));
+                        end
+
+                    else %vals is number
+
+                        fprintf(fexcelobject, '\t%g', excelvals);
+                    end
+                end
+             
+            else % perobject data
+                if (~ isa(excelvals, 'numeric')),
+                    error('Non-numeric data not currently supported in per-object SQL data');
+                end
+
+                numcols = size(excelvals,2);
+                numobj = size(excelvals,1);
+                if maxnumobj <numobj,  % different measurement have different object count
+                    maxnumobj=numobj;
+                end
+
+                perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1):(objectbasecol+numcols)) = excelvals;
+
+                perobjectvals_mean((objectbaserow_mean+1):(objectbaserow_mean+numobj), (objectbasecol):(objectbasecol-1+numcols)) = excelvals;
+
+                objectbasecol = objectbasecol + numcols;
+            end
+
             
-         else %vals is number
-
-             fprintf(fexcelobject, '\t%g', excelvals);
-         end
-         %fprintf(fexcelobject, '\n');
-     else
-         if (~ isa(excelvals, 'numeric')),
-             error('Non-numeric data not currently supported in per-object SQL data');
-         end
-
-         numcols = size(excelvals,2);
-         numobj = size(excelvals,1);
-         if maxnumobj <numobj,  % different measurement have different object count
-             maxnumobj=numobj;
-         end
-         perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1):(objectbasecol+numcols)) = excelvals;
-         perobjectvals_mean((objectbaserow_mean+1):(objectbaserow_mean+numobj), (objectbasecol-2+1):(objectbasecol-2+numcols)) = excelvals;
-
-         objectbasecol = objectbasecol + numcols;
-     end
-      
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end % end of for ssfc
         
+          
        if numobj > 0,
 
         perobjectvals((objectbaserow+1):end, 1) = img_idx;
         perobjectvals((objectbaserow+1):end, 2) = 1:maxnumobj;
+        perobjectvals_mean((objectbaserow_mean+1):end, 1) = img_idx;     
+         
        end
-       if strcmp(excelSubFieldname, 'Image'),
+
+       if strcmp(excelSubFieldname, 'Image') & ~strcmp(Swap, 'Yes'),
            fprintf(fexcelobject, '\n');
        else
 
            %%%%%%%%%%%%%%%%%%%%%%%%%%%%% write mean and stdev data
-           fprintf(fexcelmean,'\t');
-           fprintf(fexcelstd,'\t');
+           premeans=[];
+           prestdev=[];
            formatstr = ['%g' repmat('\t%g',1,size(perobjectvals_mean, 2)-1)];
-           if size(perobjectvals_mean,1)==1, %if only one object, mean is same , std is empty
-               fprintf(fexcelmean,formatstr,perobjectvals_mean); % ignore NaN
-               fprintf(fexcelmean, '\n');
+           if  size(perobjectvals_mean,1)==1, %if only one object, mean is same , std is empty
+                              
+               premeans=perobjectvals_mean;
+               premeans(:,1)=img_idx;
+                
            else
-               fprintf(fexcelmean,formatstr,(nanmean(perobjectvals_mean))); % ignore NaN
-               fprintf(fexcelmean,'\n');
-               fprintf(fexcelstd,formatstr,(nanstd(perobjectvals_mean)));%ignore NaN
-               fprintf(fexcelstd, '\n');
-
+               
+               premeans=nanmean(perobjectvals_mean);
+               premeans(:,1)=img_idx;
+               prestdev=nanstd(perobjectvals_mean);
            end
-
-           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-       end
+         
+           
+          excel_means( end+1, 1:size(premeans,2))=premeans; % add one more row
+          if isempty(prestdev),
+          excel_stdevs(end+1, :)=0;
+          else
+          excel_stdevs( end+1, 1:size(prestdev,2))=prestdev ; 
+          end
+          excel_stdevs(end,1)=img_idx;
+       end % end of if= image
 
        end % end of image index
    
    %%%%%%%%%%%%%%%%%%%%%%%%%
-   if ~strcmp(excelSubFieldname, 'Image') 
-     formatstr = ['%g' repmat('\t%g',1,size(perobjectvals, 2)-1) '\n'];
-     %if vals{1} is empty skip writting into object file
-     if ~iscell(vals) ||( iscell(vals) && (~isempty(vals{1}))  )
-     %fprintf(fexcelobject, '\n');
-     fprintf(fexcelobject, formatstr, perobjectvals');
-     end
-     
-      fclose (fexcelstd);             
-      fclose (fexcelmean);
+   if ~strcmp(excelSubFieldname, 'Image')
+       
+   
+       if strcmp(Swap, 'Yes') ,
+           %swapped mean
+           swapmean=excel_means';
+           formatstr_swap = ['\t%g' repmat('\t%g',1,size(swapmean, 2)-1) '\n'];
+           fprintf(fexcelmean_swap,'%s','ImageNumber');
+           fprintf(fexcelmean_swap,formatstr_swap,swapmean(1,:));
+           for i=1:length(excel_object_names)
+               fprintf(fexcelmean_swap,'%s', 'mean_',excel_object_names{i});
+               fprintf(fexcelmean_swap,formatstr_swap,swapmean(i+1,:));
+           end
+           %swapped stdev
+           swapstd=excel_stdevs';
+           formatstr_swap = ['\t%g' repmat('\t%g',1,size(swapstd, 2)-1) '\n'];
+           fprintf(fexcelstd_swap,'%s','ImageNumber');
+           fprintf(fexcelstd_swap,formatstr_swap,swapstd(1,:));
+           for w=1:length(excel_object_names)
+               fprintf(fexcelstd_swap,'%s', 'std_',excel_object_names{w});
+               %fprintf(fexcelstd_swap, '%g', size(swapstd,1), '\n');
+               if w<size(swapstd,1),
+                   fprintf(fexcelstd_swap,formatstr_swap,swapstd(w+1,:));
+               else
+                   fprintf(fexcelstd_swap, '\n');
+               end
+           end
+
+            %%%per object
+           a= perobjectvals';
+           formatstr = ['\t%g' repmat('\t%g',1,size(perobjectvals', 2)-1) '\n'];
+           fprintf(fexcelobject,'%s','ImageNumber');
+          
+           fprintf(fexcelobject, formatstr, a(1,:));
+            
+           fprintf(fexcelobject,'%s','ObjectNumber');
+           fprintf(fexcelobject, formatstr, a(2,:));
+           
+           
+           for e=1:length(excel_object_names),
+               fprintf(fexcelobject,'%s', excel_object_names{e});
+               if e <size(perobjectvals,2)
+                  
+               fprintf(fexcelobject, formatstr, a(e+2,:));
+               end
+           end
+                   
+           
+       else 
+           %normal,features as row
+           fprintf(fexcelmean,'%s','ImageNumber');
+           for e=excel_object_names,
+               fprintf(fexcelmean,'\t%s', e{1});
+           end
+           fprintf(fexcelmean, '\n');
+           for j=1:size(excel_means,1)
+               formatstr2 = ['%g' repmat('\t%g',1,size(excel_means, 2)-1) '\n'];
+               fprintf(fexcelmean,formatstr2,excel_means(j,:));
+           end
+           %%%stdev
+           fprintf(fexcelstd,'%s','ImageNumber');
+           for e=excel_object_names,
+               fprintf(fexcelstd,'\t%s', e{1});
+           end
+           fprintf(fexcelstd, '\n');
+           for j=1:size(excel_stdevs,1)
+               formatstr2 = ['%g' repmat('\t%g',1,size(excel_stdevs, 2)-1) '\n'];
+
+               fprintf(fexcelstd,formatstr2,excel_stdevs(j,:));
+
+           end
+           %%%per object not include image file
+            
+           fprintf(fexcelobject,'%s','ImageNumber');
+           fprintf(fexcelobject,'\t%s','ObjectNumber');
+           for e=excel_object_names,
+               fprintf(fexcelobject,'\t%s', e{1});
+           end
+           fprintf(fexcelobject, '\n');
+           formatstr = ['%g' repmat('\t%g',1,size(perobjectvals, 2)-1) '\n'];
+           %if vals{1} is empty skip writting into object file
+           if ~iscell(vals) ||( iscell(vals) && (~isempty(vals{1}))  )
+                
+               fprintf(fexcelobject, formatstr, perobjectvals');
+           end
+       
+           
+       end
+      if strcmp(Swap, 'Yes')
+       fclose(fexcelstd_swap);
+       fclose(fexcelmean_swap);
+      else
+       fclose (fexcelstd);
+       fclose (fexcelmean);
+      end
    end
    fclose (fexcelobject);
-   
-   
+     
   end % end of if ExportObject=1
 end % end of subfield, object type
     
@@ -272,7 +473,7 @@ end  % end of if excel
  
  
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %%%%%%%%%%%%%%%%%rest for SQL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%rest for SQL %%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
  for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
@@ -587,7 +788,8 @@ for img_idx = FirstSet:LastSet,
     fprintf(fimage, '\n');
     
     end
-    
+   
+        
 end
  
    

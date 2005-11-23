@@ -82,43 +82,12 @@ ParentObjectLabelMatrix = handles.Pipeline.(fieldname);
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% This line creates two rows containing all values for both label matrix
-%%% images. It then takes the unique rows (no repeats), and sorts them
-%%% according to the first column which is the sub object values.
-ChildParentList = sortrows(unique([SubObjectLabelMatrix(:) ParentObjectLabelMatrix(:)],'rows'),1);
-%%% We want to get rid of the children values and keep the parent values.
-ParentList = ChildParentList(:,2);
-%%% This gets rid of all parent values which have no corresponding children
-%%% values (where children = 0 but parent = 1).
-for i = 1:max(ChildParentList(:,1))
-    ParentValue = max(ParentList(ChildParentList(:,1) == i));
-    if isempty(ParentValue)
-        ParentValue = 0;
-    end
-    FinalParentList(i,1) = ParentValue;
-end
-
-if exist('FinalParentList')
-    if max(SubObjectLabelMatrix(:)) ~= size(FinalParentList,1)
-        error(['Image processing was canceled in the ', ModuleName, ' module because secondary objects cannot have two parents, something is wrong.']);
-    end
-    handles = CPaddmeasurements(handles,SubObjectName,'Parent',{ParentName},FinalParentList);
-end
-
-for i = 1:max(ParentList)
-    if exist('FinalParentList')
-        ChildList(i,1) = length(FinalParentList(FinalParentList == i));
-    else
-        ChildList(i,1) = 0;
-    end
-end
-
-handles = CPaddmeasurements(handles,ParentName,'Children',{[SubObjectName,' Count']},ChildList);
+[handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix);
 
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to
 %%% their parents values. This does not get saved and is only for display.
-if exist('FinalParentList')
+if ~isempty(FinalParentList)
     FinalParentListLM = [0;FinalParentList];
     NewObjectParentLabelMatrix = FinalParentListLM(SubObjectLabelMatrix+1);
 else
@@ -131,7 +100,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1);

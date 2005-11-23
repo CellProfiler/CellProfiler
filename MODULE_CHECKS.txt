@@ -17,7 +17,7 @@ CorrectIllumination_Apply	Mike,        Anne
 
 CorrectIllumination_Calculate	Mike,        Anne
 
-CreateBatchScripts		Mike,        Anne
+CreateBatchScripts		Mike,        Anne (Doublecheck after Susan updates the help)
 
 CreateWebPage			Mike
 

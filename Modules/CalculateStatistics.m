@@ -164,8 +164,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber) == 1;
     close(ThisModuleFigureNumber)

@@ -256,9 +256,9 @@ handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).Tiled
 
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
-    %%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
-    %%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
     %gets data from handles
@@ -272,8 +272,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     TotalHeight = RetrievedTileData.TotalHeight;
     NewFileList = RetrievedTileData.NewFileList;
 
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
     if any(findobj == ThisModuleFigureNumber)
 
         drawnow
@@ -471,7 +470,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             'Style','text', ...
             'FontSize',FontSize);
 
-
         %%% Draws the grid on the image.  The 0.5 accounts for the fact that
         %%% pixels are labeled where the middle of the pixel is a whole number,
         %%% and the left hand side of each pixel is 0.5.
@@ -532,9 +530,9 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         userData.SizeChange = SizeChange;
         set(ThisModuleFigureNumber,'UserData',userData);
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% SAVE DATA TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
     %%% Saves the tiled image to the handles structure so it can be used by

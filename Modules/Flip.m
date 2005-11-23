@@ -113,8 +113,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber);
 
     %%% Sets the window to be half as wide as usual.

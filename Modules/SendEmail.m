@@ -46,7 +46,6 @@ function handles = SendEmail(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles); %#ok Ignore MLint
 
 %textVAR01 = Send e-mails to these e-mail addresses
@@ -140,9 +139,7 @@ drawnow
 if SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure
     %%% window is closed the first time through the module.
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
     %%% If the window is open, it is closed.
     if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)

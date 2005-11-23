@@ -116,8 +116,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber) == 1;
 
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);

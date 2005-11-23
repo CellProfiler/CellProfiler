@@ -46,7 +46,6 @@ function handles = SpeedUpCellProfiler(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Output files should be saved every Nth cycle (1,2,3,...  Default = 1). Note: the output file is always saved after the first or last cycle is processed, no matter what is entered here.
@@ -100,9 +99,7 @@ drawnow
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% The figure window display is unnecessary for this module, so the figure
     %%% window is closed the first time through the module.
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
     %%% Closes the window if it is open.
     if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)

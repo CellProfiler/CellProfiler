@@ -75,7 +75,6 @@ function handles = SubtractBackground(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be corrected?
@@ -172,8 +171,7 @@ if handles.Current.SetBeingAnalyzed == 1
                 handles.Pipeline.(fieldname) = 0;
                 %%% Determines the figure number to close, because no
                 %%% processing will be performed.
-                fieldname = ['FigureNumberForModule',CurrentModule];
-                ThisModuleFigureNumber = handles.Current.(fieldname);
+                ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
                 close(ThisModuleFigureNumber)
                 break
             end
@@ -224,8 +222,7 @@ if MinimumTenthMinimumPixelValue ~= 0
     %%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
         %%% Activates the appropriate figure window.

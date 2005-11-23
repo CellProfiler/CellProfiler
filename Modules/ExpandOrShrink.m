@@ -245,8 +245,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Calculates the OriginalColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,1,1).

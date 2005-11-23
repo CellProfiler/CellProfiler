@@ -166,14 +166,12 @@ elseif strcmp(GrayOrSplit,'Split')
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
-
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if strcmp(GrayOrSplit,'Combine')
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow

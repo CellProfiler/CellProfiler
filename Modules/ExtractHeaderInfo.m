@@ -221,11 +221,9 @@ guidata(gcbo, handles);
 drawnow
 
 if SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% The figure window display is unnecessary for this module, so the figure
-    %%% window is closed the first time through the module.
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
+    %%% The figure window display is unnecessary for this module, so the
+    %%% figure window is closed the first time through the module.
+    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
     %%% If the window is open, it is closed.
     if any(findobj == ThisModuleFigureNumber) == 1;
         close(ThisModuleFigureNumber)

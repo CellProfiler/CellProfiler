@@ -32,9 +32,9 @@ function handles = SplitOrSpliceMovie(handles)
 %
 % $Revision: 1725 $
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
@@ -72,8 +72,7 @@ FinalSpliceName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber)
     close(ThisModuleFigureNumber)
 end

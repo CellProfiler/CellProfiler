@@ -188,9 +188,7 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 drawnow
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% Determines the figure number.
-    fieldname = ['FigureNumberForModule',CurrentModule];
-    ThisModuleFigureNumber = handles.Current.(fieldname);
+    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
     %%% The figure window is closed since there is nothing to display.
     try close(ThisModuleFigureNumber) %#ok Ignore MLint
     end
@@ -289,9 +287,9 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         end
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% SAVE IMAGE TO HARD DRIVE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
     FileSavingParameters = [];

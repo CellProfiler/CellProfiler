@@ -1,5 +1,5 @@
-function handles = GetHistogram(handles)
-% Help for the Get Histogram module:
+function handles = GetImageHistogram(handles)
+% Help for the Get Image Histogram module:
 % Category: Other
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -85,8 +85,7 @@ if strcmp(LogOption,'Yes')
     OrigImage = (OrigImage - lo)/(hi - lo);
 end
 
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 drawnow
 
 HistHandle = CPfigure(handles,ThisModuleFigureNumber);

@@ -819,8 +819,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%%%%%%%%%%%%%%%%%%%%%%
         drawnow
 
-        fieldname = ['FigureNumberForModule',CurrentModule];
-        ThisModuleFigureNumber = handles.Current.(fieldname);
+        ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
         if any(findobj == ThisModuleFigureNumber)
             drawnow
             %%% Activates the appropriate figure window.

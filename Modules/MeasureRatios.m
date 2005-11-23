@@ -169,8 +169,7 @@ drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed the first time through the module.
-fieldname = ['FigureNumberForModule',CurrentModule];
-ThisModuleFigureNumber = handles.Current.(fieldname);
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
 if any(findobj == ThisModuleFigureNumber)
     close(ThisModuleFigureNumber);
 end

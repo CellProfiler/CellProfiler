@@ -239,8 +239,7 @@ else
         elseif strcmp(ControlSpotMode,'Mouse')
             %%% Opens the figure and displays the image so user can
             %%% click on it to mark the control spot.
-            fieldname = ['FigureNumberForModule',CurrentModule];
-            ThisModuleFigureNumber = handles.Current.(fieldname);
+            ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
             CPfigure(handles,ThisModuleFigureNumber);
             imagesc(ImageToDisplay);
             %%% Sets the top, left of the grid based on mouse clicks.

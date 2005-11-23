@@ -1691,9 +1691,14 @@ if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
 
         if isfield(handles,'BrowseButton')
             if length(handles.BrowseButton) >= ModuleNow
-                CopyBrowseButton = handles.BrowseButton(ModuleNow)
-                handles.BrowseButton(ModuleNow) = handles.VariableBox(ModuleUp);
+                CopyBrowseButton = handles.BrowseButton(ModuleNow);
+                handles.BrowseButton(ModuleNow) = handles.BrowseButton(ModuleUp);
                 handles.BrowseButton(ModuleUp) = CopyBrowseButton;
+            else
+                if length(handles.BrowseButton) >= ModuleUp
+                    handles.BrowseButton(ModuleNow) = handles.BrowseButton(ModuleUp);
+                    handles.BrowseButton(ModuleUp) = {[]};
+                end
             end
         end
 
@@ -1758,8 +1763,12 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
 
         if isfield(handles,'BrowseButton')
             if length(handles.BrowseButton) >= ModuleNow
-                CopyBrowseButton = handles.BrowseButton(ModuleNow)
-                handles.BrowseButton(ModuleNow) = handles.VariableBox(ModuleDown);
+                CopyBrowseButton = handles.BrowseButton(ModuleNow);
+                if length(handles.BrowseButton) >= ModuleDown
+                    handles.BrowseButton(ModuleNow) = handles.BrowseButton(ModuleDown);
+                else
+                    handles.BrowseButton(ModuleNow) = [];
+                end
                 handles.BrowseButton(ModuleDown) = CopyBrowseButton;
             end
         end

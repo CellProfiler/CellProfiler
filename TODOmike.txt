@@ -1,5 +1,5 @@
 Mike's TODO list
-
+ - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 - SBS Data for Anne
 
 - New images for Scott Floyd

@@ -4,10 +4,41 @@ function handles = ConvertToImage(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% n/a
+% Converts objects you have identified into an image so that it can be
+% saved with the SaveImages module.
 % *************************************************************************
+% Settings:
 %
-% This module hasn't really been written yet, much less documented.
+% Binary (black & white), grayscale, or color: Choose how you would like
+% the objects to appear. Color allows you to choose a colormap which will
+% produce jumbled colors for your objects. Grayscale will give each object
+% a graylevel pixel intensity value corresponding to its number (also
+% called label), so it usually results in objects on the left side of the
+% image being very dark, and progressing towards white on the right side of
+% the image. You can choose "Color" with a "Gray" colormap to produce jumbled
+% gray objects.
+%
+% Colormap:
+% Affect how the objects are colored. You can look up your default colormap
+% under File > Set Preferences.  Look in matlab help online (try Google) to
+% see what the following available colormaps look like:
+% Jet
+% HSV
+% Hot
+% Cool
+% Spring
+% Summer
+% Autumn
+% Winter
+% Gray
+% Bone
+% Copper
+% Pink
+% Lines
+% Colorcube
+% Flag
+% Prism
+% White
 %
 % See also <nothing relevant>
 
@@ -38,10 +69,9 @@ function handles = ConvertToImage(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the objects you want to process?
+%textVAR01 = What did you call the objects you want to convert to an image?
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -51,10 +81,10 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Do you want the image to be?
-%choiceVAR03 = Binary
-%choiceVAR03 = Grayscale
+%textVAR03 = What colors should the resulting image use?
 %choiceVAR03 = Color
+%choiceVAR03 = Binary (black & white)
+%choiceVAR03 = Grayscale
 %inputtypeVAR03 = popupmenu
 ImageMode = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -70,7 +100,7 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 drawnow
 
 LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
-if strcmp(ImageMode,'Binary')
+if strcmp(ImageMode,'Binary (black & white)')
     Image = logical(LabelMatrixImage ~= 0);
 elseif strcmp(ImageMode,'Grayscale')
     Image = double(LabelMatrixImage / max(max(LabelMatrixImage)));

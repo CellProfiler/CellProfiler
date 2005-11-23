@@ -1,11 +1,12 @@
 function handles = CorrectIllumination_Apply(handles)
 
-% Help for the CorrectIllumination_Apply module:
+% Help for the Correct Illumination Apply module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Applies illumination function created by CorrectIllumination_Calculate to
-% an image.
+% Applies an illumination function, created by
+% CorrectIllumination_Calculate, to an image in order to correct for uneven
+% illumination (uneven shading).
 % *************************************************************************
 %
 % This module corrects for uneven illumination of each image. An
@@ -24,7 +25,7 @@ function handles = CorrectIllumination_Apply(handles)
 % on your physical model of how illumination variation affects the
 % background of images relative to the objects in images. If the
 % background is significant relative to the real signal coming from
-% cells (a somewhat empirical decision), then the Subtract may be
+% cells (a somewhat empirical decision), then the Subtract option may be
 % preferable. If, in contrast, the signal to background ratio is quite
 % high (the cells are stained strongly), then the Divide option is
 % probably preferable. Typically, Subtract is used if the illumination
@@ -41,8 +42,8 @@ function handles = CorrectIllumination_Apply(handles)
 % rescaling, you should confirm that the illumination function is in a
 % reasonable range (e.g. 1 to some number), so that the resulting
 % image is in a reasonable range (0 to 1). Otherwise, you have two
-% options to rescale the resulting image: either (S) stretch the image
-% so that the minimum is zero and the maximum is one, or (M) match the
+% options to rescale the resulting image: either stretch the image
+% so that the minimum is zero and the maximum is one, or match the
 % maximum of the corrected image to the the maximum of the original.
 % Either of these options has the potential to disturb the brightness
 % of images relative to other images in the set, so caution should be
@@ -78,7 +79,6 @@ function handles = CorrectIllumination_Apply(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be corrected?
@@ -91,12 +91,12 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using a LoadImages module with the 'Single Image' option)?
+%textVAR03 = What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using LoadSingleImage)?
 %infotypeVAR03 = imagegroup
 IllumCorrectFunctionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = How do you want to apply the illumination correction function?  Enter D for Divide or S for subtract.
+%textVAR04 = How do you want to apply the illumination correction function?
 %choiceVAR04 = Divide
 %choiceVAR04 = Subtract
 DivideOrSubtract = char(handles.Settings.VariableValues{CurrentModuleNum,4});

@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
--(Mike 11/22 I THINK THIS IS ISOLATED CASE FOR CLASSIFY OBJECTS BUT WILL CHANGE IF YOU WANT)(Requested by Anne 11-22-05) - I noticed in the ClassifyObjects module that we are using 'hot' as a colormap sometimes, so you might want to check the code for instances of that during your colormap overhaul.
-
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
 - Combine code for:

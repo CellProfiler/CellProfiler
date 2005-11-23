@@ -280,7 +280,7 @@ CroppedAlignedRealImage = imcrop(AlignedRealImage,CropRectARI);
 drawnow
 
 %%% Determines the figure number to display in.
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
     subplot(2,2,1); imagesc(TracedImage);

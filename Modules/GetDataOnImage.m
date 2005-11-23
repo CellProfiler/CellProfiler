@@ -126,7 +126,7 @@ catch
 end
 
 if ErrorFlag
-    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     %%% Creates the display window.
     DataHandle = CPfigure(handles,ThisModuleFigureNumber);
     title('No objects identified.');
@@ -144,7 +144,7 @@ else
     %%%%%%%%%%%%%%%
     drawnow
 
-    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     %%% Creates the display window.
     DataHandle = CPfigure(handles,ThisModuleFigureNumber);
     CPimagesc(OrigImage);

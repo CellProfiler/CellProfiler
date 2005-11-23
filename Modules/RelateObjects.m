@@ -102,23 +102,7 @@ if exist('FinalParentList')
     if max(SubObjectLabelMatrix(:)) ~= size(FinalParentList,1)
         error(['Image processing was canceled in the ', ModuleName, ' module because secondary objects cannot have two parents, something is wrong.']);
     end
-
-    if isfield(handles.Measurements.(SubObjectName),'ParentFeatures')
-        if handles.Current.SetBeingAnalyzed == 1
-            NewColumn = length(handles.Measurements.(SubObjectName).ParentFeatures) + 1;
-            handles.Measurements.(SubObjectName).ParentFeatures(NewColumn) = {ParentName};
-            handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
-        else
-            OldColumn = strmatch(ParentName,handles.Measurements.(SubObjectName).ParentFeatures);
-            if length(OldColumn) ~= 1
-                error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
-            end
-            handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,OldColumn) = FinalParentList;
-        end
-    else
-        handles.Measurements.(SubObjectName).ParentFeatures = {ParentName};
-        handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed} = FinalParentList;
-    end
+    handles = CPaddmeasurements(handles,SubObjectName,'Parent',{ParentName},FinalParentList);
 end
 
 for i = 1:max(ParentList)
@@ -129,22 +113,7 @@ for i = 1:max(ParentList)
     end
 end
 
-if isfield(handles.Measurements.(ParentName),'ChildrenFeatures')
-    if handles.Current.SetBeingAnalyzed == 1
-        NewColumn = length(handles.Measurements.(ParentName).ChildrenFeatures) + 1;
-        handles.Measurements.(ParentName).ChildrenFeatures(NewColumn) = {[SubObjectName,' Count']};
-        handles.Measurements.(ParentName).Children{handles.Current.SetBeingAnalyzed}(:,NewColumn) = ChildList;
-    else
-        OldColumn = strmatch([SubObjectName,' Count'],handles.Measurements.(ParentName).ChildrenFeatures);
-        if length(OldColumn) ~= 1
-            error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
-        end
-        handles.Measurements.(ParentName).Children{handles.Current.SetBeingAnalyzed}(:,OldColumn) = ChildList;
-    end
-else
-    handles.Measurements.(ParentName).ChildrenFeatures = {[SubObjectName,' Count']};
-    handles.Measurements.(ParentName).Children{handles.Current.SetBeingAnalyzed} = ChildList;
-end
+handles = CPaddmeasurements(handles,ParentName,'Children',{[SubObjectName,' Count']},ChildList);
 
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to
@@ -161,7 +130,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);

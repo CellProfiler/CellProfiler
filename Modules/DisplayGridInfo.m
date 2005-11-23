@@ -103,7 +103,7 @@ TopOrBottom = GridInfo.TopOrBottom;
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Opens a new window. Because the whole purpose of this module is to
 %%% display info, the user probably doesn't want to overwrite the
 %%% figure after each cycle.

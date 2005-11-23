@@ -272,7 +272,7 @@ FinalOutline = logical(FinalOutline>0);
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 if any(findobj == ThisModuleFigureNumber)
     drawnow

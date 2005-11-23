@@ -141,7 +141,7 @@ FinalOutline = bwperim(FinalLabelMatrixImage > 0);
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);

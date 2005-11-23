@@ -166,7 +166,7 @@ AreaOccupied = AreaOccupiedPixels*PixelSize*PixelSize;
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Sets the width of the figure window to be appropriate (half width).

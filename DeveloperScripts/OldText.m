@@ -1,1 +1,1 @@
-hot
+ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);

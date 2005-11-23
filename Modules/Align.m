@@ -179,7 +179,7 @@ end
 drawnow
 
 %%% Determines the figure number to display in.
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     if strcmp(AdjustImage,'Yes')
         %%% For three input images.

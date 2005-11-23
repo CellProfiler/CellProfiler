@@ -171,7 +171,7 @@ if handles.Current.SetBeingAnalyzed == 1
                 handles.Pipeline.(fieldname) = 0;
                 %%% Determines the figure number to close, because no
                 %%% processing will be performed.
-                ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+                ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 close(ThisModuleFigureNumber)
                 break
             end
@@ -222,7 +222,7 @@ if MinimumTenthMinimumPixelValue ~= 0
     %%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
         %%% Activates the appropriate figure window.

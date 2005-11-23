@@ -158,7 +158,7 @@ SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,handles.Current.SetBeingAnaly
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Sets the width of the figure window to be appropriate (half width),
     %%% the first time through the set.

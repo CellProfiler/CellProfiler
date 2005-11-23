@@ -446,7 +446,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Sets the window to be half as wide as usual.

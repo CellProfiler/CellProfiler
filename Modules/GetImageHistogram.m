@@ -85,7 +85,7 @@ if strcmp(LogOption,'Yes')
     OrigImage = (OrigImage - lo)/(hi - lo);
 end
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 drawnow
 
 HistHandle = CPfigure(handles,ThisModuleFigureNumber);

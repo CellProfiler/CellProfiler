@@ -231,7 +231,7 @@ end
 %%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 StdUnit = 'point';
 StdColor = get(0,'DefaultUIcontrolBackgroundColor');

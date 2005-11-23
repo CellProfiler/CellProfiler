@@ -180,7 +180,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this module.
 if any(findobj == ThisModuleFigureNumber)

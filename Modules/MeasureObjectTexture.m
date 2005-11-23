@@ -176,7 +176,7 @@ ScaleOfTexture = str2double(char(handles.Settings.VariableValues{CurrentModuleNu
 %%%VariableRevisionNumber = 2
 
 %%% Set up the window for displaying the results
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,ThisModuleFigureNumber);
     set(ThisModuleFigureNumber,'color',[1 1 1])
@@ -207,7 +207,7 @@ for i = 1:6
     %%% Checks that the original image is two-dimensional (i.e. not a color
     %%% image), which would disrupt several of the image functions.
     if ndims(OrigImage) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because this module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
+        error(['Image processing was canceled in the ', ModuleName, ' module because this module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
     end
 
     if ~strcmp(ObjectName,'Image')

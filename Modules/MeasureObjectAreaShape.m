@@ -135,7 +135,7 @@ ObjectNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%%VariableRevisionNumber = 2
 
 %%% Set up the window for displaying the results
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
     CPfigure(handles,ThisModuleFigureNumber);
     set(ThisModuleFigureNumber,'color',[1 1 1])

@@ -826,7 +826,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 FinalOutline(PerimDiameter) = 0;
                 FinalOutline(PerimBorder) = 0;
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 if any(findobj == ThisModuleFigureNumber)
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);
@@ -882,7 +882,7 @@ ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
                     end
                 end
             else
-            ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+            ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 if any(findobj == ThisModuleFigureNumber) | strncmpi(SaveOutlined,'Y',1) %#ok Ignore MLint
                     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
                     %%% window in subplot(2,2,2).

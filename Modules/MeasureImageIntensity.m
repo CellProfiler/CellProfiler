@@ -131,7 +131,7 @@ MeanIntensity = TotalIntensity/TotalArea;
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Sets the width of the figure window to be appropriate (half width).

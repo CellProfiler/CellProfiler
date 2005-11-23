@@ -170,7 +170,7 @@ ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = 1;
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow 
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);

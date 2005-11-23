@@ -126,7 +126,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');

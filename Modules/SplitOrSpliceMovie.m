@@ -72,7 +72,7 @@ FinalSpliceName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     close(ThisModuleFigureNumber)
 end

@@ -171,7 +171,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if strcmp(GrayOrSplit,'Combine')
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow

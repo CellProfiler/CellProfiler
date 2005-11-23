@@ -188,7 +188,7 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 drawnow
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     %%% The figure window is closed since there is nothing to display.
     try close(ThisModuleFigureNumber) %#ok Ignore MLint
     end

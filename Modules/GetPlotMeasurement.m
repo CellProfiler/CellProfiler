@@ -147,7 +147,7 @@ elseif strcmp(PlotType,'Scatter 2')
     PlotType = 4;
 end
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 
 if PlotType == 4

@@ -220,7 +220,7 @@ drawnow
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed the first time through the module.
 %%% Determines the figure number.
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber) == 1;
     close(ThisModuleFigureNumber)

@@ -197,7 +197,7 @@ RGBImage(:,:,3) = immultiply(double(BlueImage),str2double(BlueAdjustmentFactor))
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
 
     drawnow

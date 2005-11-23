@@ -96,7 +96,7 @@ InvertedImage = imcomplement(OrigImage);
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet

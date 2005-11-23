@@ -272,7 +272,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     TotalHeight = RetrievedTileData.TotalHeight;
     NewFileList = RetrievedTileData.NewFileList;
 
-    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
 
         drawnow

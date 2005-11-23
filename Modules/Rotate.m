@@ -99,7 +99,7 @@ end
 OrigImage = handles.Pipeline.(ImageName);
 
 %%% Determines the figure number to display in.
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(OrigImage);

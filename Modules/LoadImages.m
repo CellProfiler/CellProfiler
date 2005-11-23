@@ -635,7 +635,7 @@ handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber);
     for n = 1:length(ImageName)

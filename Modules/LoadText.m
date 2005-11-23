@@ -125,7 +125,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-    ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber) == 1
         CPfigure(handles,ThisModuleFigureNumber);
         uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Description: ',Description],'position',[.05 .55 .8 .4],'BackgroundColor',[.7 .7 .9])

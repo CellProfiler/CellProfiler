@@ -1,7 +1,5 @@
 Mike's TODO list
 
-- SBS figure for David
-
 - SBS Data for Anne
 
 - New images for Scott Floyd

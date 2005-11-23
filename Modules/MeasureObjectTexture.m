@@ -12,6 +12,27 @@ function handles = MeasureObjectTexture(handles)
 % object based on a corresponding grayscale image. Measurements are
 % recorded for each object.
 %
+% Measurement:             Feature Number:
+% AngularSecondMoment     |       1
+% Contrast                |       2
+% Correlation             |       3
+% Variance                |       4
+% InverseDifferenceMoment |       5
+% SumAverage              |       6
+% SumVariance             |       7
+% SumEntropy              |       8
+% Entropy                 |       9
+% DifferenceVariance      |      10
+% DifferenceEntropy       |      11
+% InformationMeasure      |      12
+% InformationMeasure2     |      13
+% Gabor1x                 |      14
+% Gabor1y                 |      15
+% Gabor2x                 |      16
+% Gabor2y                 |      17
+% Gabor3x                 |      18
+% Gabor3y                 |      19
+%
 % How it works:
 % Retrieves a segmented image, in label matrix format, and a
 % corresponding original grayscale image and makes measurements of the

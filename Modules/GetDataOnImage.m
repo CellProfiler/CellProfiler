@@ -1,54 +1,20 @@
 function handles = GetDataOnImage(handles)
 
-% Help for the Get Histogram module:
+% Help for the Get Data on Image module:
 % Category: Other
+%
+% SHORT DESCRIPTION:
+% Produce image with measured data on top of measured objects.
+% *************************************************************************
 %
 % Feature Number:
 % The feature number is the parameter from the chosen module (AreaShape,
-% Intensity, Texture) which will be used for displaying the data. The
-% following tables provide the feature numbers for each measurement made by
-% the three modules:
+% Intensity, Texture) which will be used for the ratio. Please see
+% individual measurement module help for list of measurements and their
+% feature numbers.
 %
-% Area Shape:               Feature Number:
-% Area                    |       1
-% Eccentricity            |       2
-% Solidity                |       3
-% Extent                  |       4
-% Euler Number            |       5
-% Perimeter               |       6
-% Form factor             |       7
-% MajorAxisLength         |       8
-% MinorAxisLength         |       9
-%
-% Intensity:                Feature Number:
-% IntegratedIntensity     |       1
-% MeanIntensity           |       2
-% StdIntensity            |       3
-% MinIntensity            |       4
-% MaxIntensity            |       5
-% IntegratedIntensityEdge |       6
-% MeanIntensityEdge       |       7
-% StdIntensityEdge        |       8
-% MinIntensityEdge        |       9
-% MaxIntensityEdge        |      10
-% MassDisplacement        |      11
-%
-% Texture:                  Feature Number:
-% AngularSecondMoment     |       1
-% Contrast                |       2
-% Correlation             |       3
-% Variance                |       4
-% InverseDifferenceMoment |       5
-% SumAverage              |       6
-% SumVariance             |       7
-% SumEntropy              |       8
-% Entropy                 |       9
-% DifferenceVariance      |      10
-% DifferenceEntropy       |      11
-% InformationMeasure      |      12
-% InformationMeasure2     |      13
-% Gabor1x                 |      14
-% Gabor1y                 |      15
+% See also MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
+% MEASUREOBJECTTEXTURE, MEASURECORRELATION
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

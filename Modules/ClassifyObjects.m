@@ -17,19 +17,20 @@ function handles = ClassifyObjects(handles)
 % module previous to this module in the pipeline.
 %
 % Settings:
+%
 % Feature Number:
-% If you are not selecting Ratio, then this is the number of the
-% submeasurement that you want to take.  For instance, MeasureAreaShape
-% calculates measurements for Area, Eccentricity, Solidity, Extent, Euler
-% number, Perimeter, Form factor,... so if you wanted the values for the
-% Perimeter for each object, this would be 6. 
+% The feature number is the parameter from the chosen module (AreaShape,
+% Intensity, Texture) which will be used for the ratio. Please see
+% individual measurement module help for list of measurements and their
+% feature numbers.
+%
 % If you are selecting Ratio, this is the order of ratio measurements that
 % you calculated for the numerator.  For instance, if you previously
 % calculated the ratio of Area to Perimeter for nuclei, MajorAxisLength to
 % MinorAxisLength for cells, and MeanIntensity to MaxIntensity for nuclei,
 % the value for the Area to Perimeter for nuclei would be 1, the value for
-% MajorAxisLength to MinorAxisLength for cells would be 1, and the value
-% for MeanIntensity to MaxIntensity for nuclei would be 2.
+% MajorAxisLength to MinorAxisLength for cells would be 2, and the value
+% for MeanIntensity to MaxIntensity for nuclei would be 3.
 %
 % See also <nothing relevant>.
 

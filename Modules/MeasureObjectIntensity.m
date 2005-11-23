@@ -12,6 +12,19 @@ function handles = MeasureObjectIntensity(handles)
 % object based on a corresponding grayscale image. Measurements are
 % recorded for each object.
 %
+% Measurement:             Feature Number:
+% IntegratedIntensity     |       1
+% MeanIntensity           |       2
+% StdIntensity            |       3
+% MinIntensity            |       4
+% MaxIntensity            |       5
+% IntegratedIntensityEdge |       6
+% MeanIntensityEdge       |       7
+% StdIntensityEdge        |       8
+% MinIntensityEdge        |       9
+% MaxIntensityEdge        |      10
+% MassDisplacement        |      11
+%
 % How it works:
 % Retrieves a segmented image, in label matrix format, and a
 % corresponding original grayscale image and makes measurements of the

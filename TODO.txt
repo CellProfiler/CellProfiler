@@ -3,17 +3,6 @@ November 21, 2005
 
 (Requested by Anne 11-22-05) - I noticed in the ClassifyObjects module that we are using 'hot' as a colormap sometimes, so you might want to check the code for instances of that during your colormap overhaul.
 
-(Requested by Anne 11-22-05) - would it make sense to only list the feature numbers within the Measure modules that actually make the measurements? I am nervous having listings elsewhere because they might go out of date. I'd suggest that the following modules' help say "see the individual Measure modules for the feature number of interest":
-ClassifyObject
-FilterObject
-GetDataonImage
-GetPlotMeas
-GetHistogram
-MeasureRatios
-I think these are all the relevant modules that require feature numbers (but i guess you could do a search for "feature number").  Then, each Measure module should have a listing of its own features (probably already done).
-
-(Requested by Anne 11-22-05) - just want to doublecheck whether the problem with cumulative histogram not paying attention to which subset of images you chose is fixed, since this would be a pretty huge problem.
-
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, Tech Diagnosis, Save current CP code, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 
 - Combine code for:

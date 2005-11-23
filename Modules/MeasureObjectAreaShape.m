@@ -11,6 +11,17 @@ function handles = MeasureObjectAreaShape(handles)
 % module extracts area and shape features of each object. Note that shape
 % features are only reliable for objects that are inside the image borders.
 %
+% Measurement:             Feature Number:
+% Area                    |       1
+% Eccentricity            |       2
+% Solidity                |       3
+% Extent                  |       4
+% Euler Number            |       5
+% Perimeter               |       6
+% Form factor             |       7
+% MajorAxisLength         |       8
+% MinorAxisLength         |       9
+%
 % How it works:
 % Retrieves a segmented image, in label matrix format and makes measurements
 % of the objects that are segmented in the image. The label matrix image

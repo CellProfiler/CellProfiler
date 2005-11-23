@@ -5,10 +5,6 @@ November 21, 2005
 TechDiagnosis 	- DONE
 SaveCPcode	- DONE
 
-- Combine code for:
-Histograms
-PlotMeasurements: DONE!
-
 - Make compiled CellProfiler work on cluster
 
 (Requested by Anne 11-21-05) : Not necessary pre-release, but would be nice: In LoadImages, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!

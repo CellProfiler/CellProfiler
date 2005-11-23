@@ -1,3 +1,6 @@
+- Combine code for:
+Histograms
+
 - (Requested by Anne 11-08-05) - Long-term, maybe UROP: Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
 
 -(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.

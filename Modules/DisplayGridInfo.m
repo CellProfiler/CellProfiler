@@ -172,8 +172,8 @@ uicontrol(FigHandle,...
     'Callback',GridLineColorCallback);
 
 if ~strcmp(DataName1,'/')
-    Text1 = handles.Measurements.(DataName1);
-    Description1 = handles.Measurements.([DataName1 'Text']);
+    Text1 = handles.Measurements.Image.(DataName1);
+    Description1 = handles.Measurements.Image.([DataName1 'Text']);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text1;
@@ -220,8 +220,8 @@ if ~strcmp(DataName1,'/')
 end
 
 if ~strcmp(DataName2,'/')
-    Text2 = handles.Measurements.(DataName2);
-    Description2 = handles.Measurements.([DataName2 'Text']);
+    Text2 = handles.Measurements.Image.(DataName2);
+    Description2 = handles.Measurements.Image.([DataName2 'Text']);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text2;
@@ -269,8 +269,8 @@ if ~strcmp(DataName2,'/')
 end
 
 if ~strcmp(DataName3,'/')
-    Text3 = handles.Measurements.(DataName3);
-    Description3 = handles.Measurements.([DataName3 'Text']);
+    Text3 = handles.Measurements.Image.(DataName3);
+    Description3 = handles.Measurements.Image.([DataName3 'Text']);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text3;

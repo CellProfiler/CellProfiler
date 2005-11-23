@@ -73,7 +73,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     %%% Get all fieldnames in Measurements
     ObjectFields = fieldnames(handles.Measurements);
 
-    GroupingStrings = handles.Measurements.(DataName);
+    GroupingStrings = handles.Measurements.Image.(DataName);
     %%% Need column vector
     GroupingValues = str2num(char(GroupingStrings'));
 

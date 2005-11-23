@@ -112,12 +112,12 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% Add the data
     %%% If the entered field doesn't exist  (This is the convenient way of doing it. Takes time for large ouput files??)
     if ~isfield(handles.Measurements,FieldName)
-        handles.Measurements.([FieldName,'Text']) = {Description};
-        handles.Measurements.(FieldName) = Text;
+        handles.Measurements.Image.([FieldName,'Text']) = {Description};
+        handles.Measurements.Image.(FieldName) = Text;
         %%% If the entered field already exists we have to append to this field
     else
-        handles.Measurements.([FieldName,'Text']) = cat(2,handles.Measurements.([FieldName,'Text']),{Description});
-        handles.Measurements.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
+        handles.Measurements.Image.([FieldName,'Text']) = cat(2,handles.Measurements.([FieldName,'Text']),{Description});
+        handles.Measurements.Image.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%

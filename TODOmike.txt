@@ -1,4 +1,7 @@
 Mike's TODO list
+- I keep finding separately spelled wrong in the code as "seperately", FYI.
+:)
+
  - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 - SBS Data for Anne
 

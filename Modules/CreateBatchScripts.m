@@ -4,27 +4,30 @@ function handles = CreateBatchScripts(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Produces text script files which allow individual batches of images to be
-% processed seperately on a cluster computer.
+% Produces script files (these are files of plain text) which allow
+% individual batches of images to be processed separately on a cluster
+% computer.
 % *************************************************************************
 %
-% This module writes a batch (set) of Matlab scripts (m-files) that
-% can be submitted in parallel to a cluster for faster processing.
+% This module creates a set of Matlab scripts (m-files) that can be
+% submitted in parallel to a cluster for faster processing. This module
+% should be placed at the end of an image processing pipeline.
+% 
+% Settings:
+% Options include the size of each batch that the full set of images should
+% be split into, a prefix to prepend to the batch filenames, and several
+% pathnames describing where the batches will be processed.  For jobs that
+% you do not want to split into batches but simply want to run on a
+% separate computer, set the batch size to a very large number (more than
+% the total number of cycles), which will create one large job.
 %
-% This module should be placed at the end of an image processing
-% pipeline.  Settings include: the size of each batch that the full set
-% of images should be split into, a prefix to prepend to the batch
-% filenames, and several pathnames.  For jobs that you do not want to
-% split into batches but simply want to run on a separate computer,
-% set the batch size to a very large number (more than the number of
-% cycles), which will create one large job.
-%
-% After the first cycle is processed, batch files are created and
-% saved at the pathname you specify.  Each batch file is of the form
-% Batch_X_to_Y.m (The prefix can be changed from Batch_ by the
-% user), where X is the first cycle to be processed in the particular
-% batch file, and Y is the last.  There is also a Batch_data.mat file
-% that each script needs access to in order to initialize the processing.
+% How it works: 
+% After the first cycle is processed on your local computer, batch files
+% are created and saved at the pathname you specify.  Each batch file is of
+% the form Batch_X_to_Y.m (The prefix can be changed from Batch_ by the
+% user), where X is the first cycle to be processed in the particular batch
+% file, and Y is the last.  There is also a Batch_data.mat file that each
+% script needs access to in order to initialize the processing.
 %
 % After the batch files are created, they can be submitted
 % individually to the remote machines. Note that the batch files and
@@ -35,10 +38,11 @@ function handles = CreateBatchScripts(handles)
 % Details of how remote jobs will be started vary from location to
 % location. Please consult your local cluster experts.
 %
-% After batch processing is complete, the output files can be merged
-% by the MergeBatchOutput module.  For the simplest behavior in
-% merging, it is best to save output files to a unique and initially
-% empty directory.
+% After batch processing is complete, the output files can be merged by the
+% MergeBatchOutput module.  This is not recommended of course if your
+% output files are huge and will result in a file that is too large to be
+% opened on your computer. For the simplest behavior in merging, it is best
+% to save output files to a unique and initially empty directory.
 %
 % If the batch processing fails for some reason, the handles structure
 % in the output file will have a field BatchError, and the error will
@@ -52,7 +56,7 @@ function handles = CreateBatchScripts(handles)
 % command line within a directory that contains a copy of the
 % runallbatchjobs.sh file (all typed on one line):
 % ./runallbatchjobs.sh
-% /PATHTOFOLDERCONTAININGBATCHM-FILESANDBATCH_DATA
+% /PATHTOFOLDERCONTAININGBATCHMFILESANDBATCH_DATA
 % /PATHTOFOLDERWHERETEXTLOGSSHOULDGO BATCHPREFIX
 %
 % Here is the actual code for runallbatchjobs.sh:
@@ -255,7 +259,6 @@ function handles = CreateBatchScripts(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = How many cycles should be in each batch?
@@ -344,7 +347,7 @@ handles_in = handles;
 
 %%% Checks that this is the last module in the analysis path.
 if (CurrentModuleNum ~= handles.Current.NumberOfModules),
-    error([ModuleName, ' must be the last module in the pipeline.']);
+    error(['Image processing was canceled because ', ModuleName, ' must be the last module in the pipeline.']);
 end;
 
 %%% If this isn't the first cycle, we are running on the

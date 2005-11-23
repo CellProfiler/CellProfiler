@@ -15,9 +15,9 @@ ConvertToImage                               Anne
 
 CorrectIllumination_Apply	Mike,        Anne
 
-CorrectIllumination_Calculate	Mike
+CorrectIllumination_Calculate	Mike,        Anne
 
-CreateBatchScripts		Mike
+CreateBatchScripts		Mike,        Anne
 
 CreateWebPage			Mike
 

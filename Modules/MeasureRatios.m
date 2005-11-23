@@ -132,35 +132,12 @@ if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
     error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',NumObjectName,' and ',DenomObjectName,' do not have the same object count.']);
 end
 
-try
-    NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber)];
-    if isfield(handles.Measurements.(NumObjectName),'Ratios')
-        OldPos = strmatch(NewFieldName,handles.Measurements.(NumObjectName).RatiosFeatures,'exact');
-        if isempty(OldPos)
-            handles.Measurements.(NumObjectName).RatiosFeatures(end+1) = {NewFieldName};
-            if strcmp(LogChoice,'No')
-                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,end+1) = NumeratorMeasurements./DenominatorMeasurements;
-            else
-                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,end+1) = log10(NumeratorMeasurements./DenominatorMeasurements);
-            end
-        else
-            if strcmp(LogChoice,'No')
-                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,OldPos) = NumeratorMeasurements./DenominatorMeasurements;
-            else
-                handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,OldPos) = log10(NumeratorMeasurements./DenominatorMeasurements);
-            end
-        end
-    else
-        handles.Measurements.(NumObjectName).RatiosFeatures = {NewFieldName};
-        if strcmp(LogChoice,'No')
-            handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = NumeratorMeasurements./DenominatorMeasurements;
-        else
-            handles.Measurements.(NumObjectName).Ratios{SetBeingAnalyzed}(:,1) = log10(NumeratorMeasurements./DenominatorMeasurements);
-        end
-    end
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because storing the measurements failed for some reason.']);
+NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber)];
+FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
+if strcmp(LogChoice,'Yes')
+    FinalMeasurements = log10(FinalMeasurements);
 end
+handles = CPaddmeasurements(handles,NumObjectName,'Ratio',NewFieldName,FinalMeasurements);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

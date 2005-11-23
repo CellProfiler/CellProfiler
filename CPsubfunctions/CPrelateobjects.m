@@ -20,7 +20,7 @@ if exist('FinalParentList','var')
     if max(ChildLabelMatrix(:)) ~= size(FinalParentList,1)
         error('Image processing was canceled in CPrelateobjects because secondary objects cannot have two parents, something is wrong.');
     end
-    handles = CPaddmeasurements(handles,ChildName,'Parent',{ParentName},FinalParentList);
+    handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,FinalParentList);
 end
 
 for i = 1:max(ParentList)
@@ -32,7 +32,7 @@ for i = 1:max(ParentList)
 end
 
 if exist('ChildList','var')
-    handles = CPaddmeasurements(handles,ParentName,'Children',{[ChildName,' Count']},ChildList);
+    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,' Count'],ChildList);
 else
     ChildList = [];
 end

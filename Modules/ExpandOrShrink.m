@@ -1,23 +1,22 @@
 function handles = ExpandOrShrink(handles)
 
-% Help for the Expand Or Shrink Primary Objects module:
+% Help for the Expand Or Shrink Objects module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
 % Expands or shrinks identified objects by a defined distance.
 % *************************************************************************
 %
-% The module expands or shrinks primary objects by adding or removing
-% border pixels. The user can specify a certain number of times the
-% border pixels are added or removed, or type 'Inf' to expand objects
-% until they are almost touching or to shrink objects down to a point.
-% Objects are never lost using this module (shrinking stops when an
-% object becomes a single pixel). Sometimes when identifying secondary
-% objects (e.g. cell edges), it is useful to shrink the primary
-% objects (e.g. nuclei) a bit in case the nuclei overlap the cell
-% edges slightly, since the secondary object identifiers demand that
-% the secondary objects completely enclose primary objects. This is
-% handy when the two images are not aligned perfectly, for example.
+% The module expands or shrinks objects by adding or removing border
+% pixels. The user can specify a certain number of border pixels to be
+% added or removed, or use 'Inf' to expand objects until they are almost
+% touching or to shrink objects down to a point. Objects are never lost
+% using this module (shrinking stops when an object becomes a single
+% pixel). An experimental feature is able to allow shrinking with secondary
+% objects - it adds partial dividing lines between objects which are
+% touching before the shrinking step so it is not perfect. It would be nice
+% to improve this code to draw complete dividing lines, but we have only
+% implemented a partial fix.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved
@@ -33,7 +32,7 @@ function handles = ExpandOrShrink(handles)
 % SmallRemovedSegmented + whatever you called the objects (e.g.
 % SmallRemovedSegmented Nuclei).
 %
-% See also any identify primary module.
+% See also any identify module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -74,7 +73,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Were the objects identified using an IdentifyPrimary or IdentifySecondary module?
+%textVAR03 = Were the objects identified using an Identify Primary or Identify Secondary module (note: shrinking results are not perfect with Secondary objects)?
 %choiceVAR03 = Primary
 %choiceVAR03 = Secondary
 %inputtypeVAR03 = popupmenu
@@ -86,11 +85,12 @@ ObjectChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Enter the number of pixels by which to expand or shrink the objects (or "Inf" to either shrink to a point or expand until almost touching). Or type 0 (the number zero) to simply add partial dividing lines between objects that are touching (experimental feature).
+%textVAR05 = Enter the number of pixels by which to expand or shrink the objects, or "Inf" to either shrink to a point or expand until almost touching, or 0 (the number zero) to simply add partial dividing lines between objects that are touching (experimental feature).
 %choiceVAR05 = 1
 %choiceVAR05 = 2
 %choiceVAR05 = 3
 %choiceVAR05 = Inf
+%choiceVAR05 = 0
 ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 

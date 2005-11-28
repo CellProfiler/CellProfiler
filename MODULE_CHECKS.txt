@@ -29,9 +29,9 @@ DisplayGridInfo			Mike,        Anne
 
 Exclude				Mike,        Anne
 
-ExpandOrShrink			Mike 
+ExpandOrShrink			Mike,        Anne
 
-ExtractHeaderInfo
+ExtractHeaderInfo (I think Mike is moving to Developer scripts)
 
 FilterByObjectMeasurement	Mike
 
@@ -85,7 +85,7 @@ OverlayOutlines			Mike
 
 PlaceAdjacent			Mike
 
-ProcessOutlines
+ProcessOutlines (I think Mike is moving to Developer scripts)
 
 RelateObjects			Mike
 
@@ -109,7 +109,7 @@ SpeedUpCellProfiler		Mike
 
 SplitOrSpliceMovie		Mike
 
-StretchAlignCrop
+StretchAlignCrop (I think Mike is moving to Developer scripts)
 
 Subtract			Mike
 

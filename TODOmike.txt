@@ -1,12 +1,14 @@
 Mike's TODO list
+
+- Look through ExportDataToFiles
+
 - I keep finding separately spelled wrong in the code as "seperately", FYI.
 :)
 
- - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
+- Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
+
 - SBS Data for Anne
 
 - New images for Scott Floyd
-
-- Check Ray's clearborder and compare with imclearborder
 
 - (Requested by Anne 10-31-05) - It'd be fun to see how long an image processing run takes on Matlab developer's version vs. the compiled version (which ought to be faster).  Eventually, we probably should do some real test runs (on the final version) so we can state in the paper the expected difference in speed between the two versions.

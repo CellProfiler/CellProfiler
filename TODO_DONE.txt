@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/28) Check Ray's clearborder and compare with imclearborder
+
 -(Mike 11/22 I THINK THIS IS ISOLATED CASE FOR CLASSIFY OBJECTS BUT WILL CHANGE IF YOU WANT)(Requested by Anne 11-22-05) - I noticed in the ClassifyObjects module that we are using 'hot' as a colormap sometimes, so you might want to check the code for instances of that during your colormap overhaul.
 
 -(Mike 11/22) (Requested by Anne 11-22-05) - would it make sense to only list the feature numbers within the Measure modules that actually make the measurements? I am nervous having listings elsewhere because they might go out of date. I'd suggest that the following modules' help say "see the individual Measure modules for the feature number of interest":

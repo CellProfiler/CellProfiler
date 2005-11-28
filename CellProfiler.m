@@ -85,17 +85,26 @@ handles.FunctionHandles.LoadPipelineCallback = @LoadPipeline_Callback;
 %%% CellProfiler to function; it just allows defaults to be
 %%% pre-loaded.
 LoadedPreferencesExist = 0;
-try
-    load(fullfile(matlabroot,'CellProfilerPreferences.mat'))
-    LoadedPreferences = SavedPreferences;
-    LoadedPreferencesExist = 1;
-    clear SavedPreferences
-catch
+if isdeployed
     try
         load(fullfile(handles.Current.StartupDirectory, 'CellProfilerPreferences.mat'))
         LoadedPreferences = SavedPreferences;
         LoadedPreferencesExist = 1;
         clear SavedPreferences
+    end
+else
+    try
+        load(fullfile(matlabroot,'CellProfilerPreferences.mat'))
+        LoadedPreferences = SavedPreferences;
+        LoadedPreferencesExist = 1;
+        clear SavedPreferences
+    catch
+        try
+            load(fullfile(handles.Current.StartupDirectory, 'CellProfilerPreferences.mat'))
+            LoadedPreferences = SavedPreferences;
+            LoadedPreferencesExist = 1;
+            clear SavedPreferences
+        end
     end
 end
 
@@ -278,7 +287,6 @@ GUIheight = GUIsize(4);
 Left = 0.5*(ScreenWidth - GUIwidth);
 Bottom = 0.5*(ScreenHeight - GUIheight);
 set(handles.figure1,'Position',[Left Bottom GUIwidth GUIheight]);
-
 
 %%% Finds all available tools, which are .m files residing in the
 %%% ImageTools folder.
@@ -2292,8 +2300,13 @@ if strcmp(Answer, 'No')
         DefaultVal = 0;
     end
 else
-    FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');
-    DefaultVal = 1;
+    if isdeployed
+        FullFileName = fullfile(pwd,'CellProfilerPreferences.mat');
+        DefaultVal = 1;
+    else
+        FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');
+        DefaultVal = 1;
+    end
 end
 
 SetPreferencesWindowHandle = findobj('name','SetPreferences');

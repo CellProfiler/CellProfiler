@@ -26,12 +26,14 @@ function varargout = CellProfiler(varargin)
 
 % Begin initialization code - DO NOT EDIT
 if ~nargin
-    SplashHandle = SplashScreen;
+    SplashScreen;
     tic
-    try
-        addpath(genpath(fileparts(which('CellProfiler.m'))))
-        savepath
-    catch errordlg('You changed the name of CellProfiler.m file!!');
+    if ~isdeployed
+        try
+            addpath(genpath(fileparts(which('CellProfiler.m'))))
+            savepath
+        catch errordlg('You changed the name of CellProfiler.m file!!');
+        end
     end
 end
 gui_Singleton = 1;
@@ -120,7 +122,7 @@ end
 %%% that directory, called "Modules".  If so, use that subdirectory as
 %%% the default module directory. If not, use the current directory.
 if isfield(handles.Preferences,'DefaultModuleDirectory') == 0
-    [CellProfilerPathname,FileName,ext,versn] = fileparts(which('CellProfiler'));
+    CellProfilerPathname = fileparts(which('CellProfiler'));
     %%% Checks whether the Modules subdirectory exists.
     if exist(fullfile(CellProfilerPathname,'Modules'), 'dir')
         CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
@@ -1055,7 +1057,7 @@ if ModuleNamedotm ~= 0,
     %%% The folder containing the desired .m file is added to Matlab's search path.
     addpath(Pathname);
     if(exist(ModuleNamedotm(1:end-2),'builtin') ~= 0)
-        warningString = ['Your module has the same name as a builtin Matlab function.  Perhaps you should consider renaming your module.'];
+        warningString = 'Your module has the same name as a builtin Matlab function.  Perhaps you should consider renaming your module.';
         warndlg(warningString);
     end
     differentPaths = which(ModuleNamedotm, '-all');
@@ -1772,7 +1774,7 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
                 handles.BrowseButton(ModuleDown) = CopyBrowseButton;
             end
         end
-            
+
         CopyMaxInfo = MaxInfo(ModuleNow);
         MaxInfo(ModuleNow) = MaxInfo(ModuleDown);
         MaxInfo(ModuleDown) = CopyMaxInfo;
@@ -1803,7 +1805,9 @@ if (length(ModuleHighlighted) > 0)
         set(handles.VariableDescription{ModuleNumber},'Visible','On');
 
         set(handles.VariableBox{ModuleNumber}(~strcmp(get(handles.VariableBox{ModuleNumber},'string'),'n/a')),'Visible','On'); %only makes the boxes without n/a as the string visible
-        try,set(handles.BrowseButton{ModuleNumber},'Visible','On');end;
+        try
+            set(handles.BrowseButton{ModuleNumber},'Visible','On')
+        end
         %%% 2.25 Removes slider and moves panel back to original
         %%% position.
         %%% If panel location gets changed in GUIDE, must change the
@@ -2091,7 +2095,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             if numel(CurrentString) == 0
                 CurrentString = {UserEntry};
             elseif ~iscell(CurrentString)
-                CurrentString = {CurrentString}
+                CurrentString = {CurrentString};
             else
                 if ischar(UserEntry)
                     if ~strcmp(StrSet,'n/a') && ~strcmp(StrSet,'/')
@@ -2279,15 +2283,22 @@ function SaveButton_Callback (hObject, eventdata, handles)
 Answer = CPquestdlg('Do you want to save these as the default preferences? If not, you will be asked to name your preferences file, which can be loaded by File -> Load Preferences.','Save as default?','Yes','No','Yes');
 if strcmp(Answer, 'No')
     [FileName,Pathname] = uiputfile(fullfile(matlabroot,'*.mat'), 'Save Preferences As...');
-    FullFileName = fullfile(Pathname,FileName);
-    DefaultVal = 0;
+    if isequal(FileName,0) || isequal(Pathname,0)
+        Pathname = matlabroot;
+        FileName = 'CellProfilerPreferences.mat';
+        CPwarndlg('Since you did not specify a file name, the file was saved as CellProfilerPreferences.mat in the matlab root folder.');
+    else
+        FullFileName = fullfile(Pathname,FileName);
+        DefaultVal = 0;
+    end
 else
     FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');
     DefaultVal = 1;
 end
 
 SetPreferencesWindowHandle = findobj('name','SetPreferences');
-global EnteredPreferences, PixelSizeEditBoxHandle = findobj('Tag','PixelSizeEditBox');
+global EnteredPreferences
+PixelSizeEditBoxHandle = findobj('Tag','PixelSizeEditBox');
 FontSizeEditBoxHandle = findobj('Tag','FontSizeEditBox');
 ImageDirEditBoxHandle = findobj('Tag','ImageDirEditBox');
 OutputDirEditBoxHandle = findobj('Tag','OutputDirEditBox');
@@ -2708,11 +2719,11 @@ CancelButton = uicontrol(...
 uiwait(SetPreferencesWindowHandle)
 %%% Allows canceling by checking whether EnteredPreferences exists.
 if exist('EnteredPreferences','var') == 1
-    if isempty(EnteredPreferences) ~= 1
+    if ~isempty(EnteredPreferences)
         %%% Retrieves the data that the user entered and saves it to the
         %%% handles structure.
         handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
-        handles.Preferences.FontSize  = EnteredPreferences.FontSize;
+        handles.Preferences.FontSize  = str2double(EnteredPreferences.FontSize);
         handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
         handles.Preferences.DefaultOutputDirectory = EnteredPreferences.DefaultOutputDirectory;
         handles.Preferences.DefaultModuleDirectory = EnteredPreferences.DefaultModuleDirectory;
@@ -2727,7 +2738,6 @@ if exist('EnteredPreferences','var') == 1
         handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
         handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
         handles.Current.PixelSize = handles.Preferences.PixelSize;
-        % handles.Current.FontSize  = str2num(handles.Preferences.FontSize);
         handles.Settings.PixelSize = handles.Preferences.PixelSize;
 
         %%% (No need to set a current module directory or display it in an
@@ -3968,7 +3978,7 @@ if strcmp(Answer,'Yes')
     try
         urlwrite('http://jura.wi.mit.edu/cellprofiler/updates/CellProfiler.m',fullfile(CPPath,'CellProfiler.m'));
     catch
-        CPwarndlg(['CellProfiler.m could not be downloaded.']);
+        CPwarndlg('CellProfiler.m could not be downloaded.');
     end
 
     CPhelpdlg('Update Complete!');
@@ -5308,10 +5318,14 @@ catch
 end
 rmappdata(0,'OpenGuiWhenRunning');
 
-function SplashScreenHandle = SplashScreen;
+function SplashScreenHandle = SplashScreen
 SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
 axis off;
-ImageFile = fullfile(fileparts(which('CellProfiler.m')),'CPsubfunctions','CPsplash.jpg');
-logo = imread(ImageFile,'jpg');
+if isdeployed
+    logo = imread('CPsplash.jpg','jpg');
+else
+    ImageFile = fullfile(fileparts(which('CellProfiler.m')),'CPsubfunctions','CPsplash.jpg');
+    logo = imread(ImageFile,'jpg');
+end
 iptsetpref('ImshowBorder','tight')
-test = imshow(logo);
+imshow(logo);

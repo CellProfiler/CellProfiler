@@ -5,16 +5,29 @@ function handles = IdentifyObjectsInGrid(handles)
 %
 % SHORT DESCRIPTION:
 % After a grid has been established by DefineGrid, this module will
-% dientify objects within each section of the grid.
+% identify objects within each section of the grid.
 % *************************************************************************
 %
-% This module identifies objects what are in a grid.  It requires that you
-% create a grid in an earlier module using the DefineGrid module.  If you
-% are using natural shape, the module need to use objects that are already
-% identified.  It will merge objects if they were accidentally seperated,
-% and properly numbers the objects according to how the grid was originally
-% defined.  Note that if an object does not exist, it will create an object
-% with a single pixel in the middle of the grid square.
+% This module identifies objects that are in a grid pattern which allows
+% you to measure them using measure modules. It requires that you
+% create a grid in an earlier module using the DefineGrid module.
+%
+% Settings:
+% For several of the automatic options, you will need to tell the module
+% what you called previously identified objects. Typically, you roughly
+% identify objects of interest in a previous Identify module, and the
+% locations of these rough objects are refined in this module. Objects are
+% also numbered according to the grid definitions. For the Natural Shape
+% option, if an object does not exist within a grid compartment, an object
+% consisting of one single pixel in the middle of the grid square will be
+% created. Also, if a grid compartment contains two partial objects, they
+% will be combined together as a single object.
+%
+% If the grid fails...
+% If placing the objects within the grid is impossible for some reason (the
+% grid compartments are too close together to fit the proper sized circles,
+% for example) the grid will fail and processing will be canceled unless
+% you choose to re-use the grid from the previous image cycle instead.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved
@@ -59,37 +72,36 @@ function handles = IdentifyObjectsInGrid(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What is the already defined grid?
+%textVAR01 = What did you call the grid you defined?
 %infotypeVAR01 = gridgroup
 GridName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What would you like to call the newly identified objects?
+%textVAR02 = What do you want to call the newly identified objects?
 %defaultVAR02 = Spots
 %infotypeVAR02 = objectgroup indep
 NewObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Would you like the object to retain their natural shape, be circles with a particular diameter, or rectangles that fill the entire grid?
-%choiceVAR03 = Natural Shape
-%choiceVAR03 = Circle Natural Location
-%choiceVAR03 = Circle Forced Location
+%textVAR03 = Would you like the objects to be rectangles that fill the entire grid, circles within the grid at forced locations, circles within the grid at their natural locations, or objects that retain their natural shape (these last two options are based on objects you have already identified in a previous module)?
 %choiceVAR03 = Rectangle
+%choiceVAR03 = Circle Forced Location
+%choiceVAR03 = Circle Natural Location
+%choiceVAR03 = Natural Shape
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If you are using natural shape, a Circle with a Natural Location, or using a circle with an automatically calculated diameter, what did you call the objects that were already identified?
+%textVAR04 = For NATURAL SHAPE, CIRCLE NATURAL LOCATION, or any CIRCLE option with an automatically calculated diameter (see next question), what did you call the objects that you previously identified?
 %infotypeVAR04 = objectgroup
 OldObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = If you selected the object to be circles, what is the diameter of each object (in pixels)?
+%textVAR05 = For CIRCLE options, enter the diameter of each object in pixels or type Automatic to automatically calculate the diameter based on the average diameter of objects that you previously identified
 %defaultVAR05 = Automatic
 Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Would you like to save the image of the outlines of the objects? and if so, what would you like to call them?
+%textVAR06 = What do you want to call the outlines of the identified objects (optional)?
 %defaultVAR06 = Do not save
 %infotypeVAR06 = outlinegroup indep
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,6});

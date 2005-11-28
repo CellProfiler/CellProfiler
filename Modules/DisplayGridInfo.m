@@ -7,12 +7,11 @@ function handles = DisplayGridInfo(handles)
 % Displays text info on grid (i.e. gene names)
 % *************************************************************************
 %
-% This module will display text information in a grid pattern.  It requires
-% that you define a grid in an earlier module using the DefineGrid module
-% and also load text data using the AddTextData module.  The data need to
-% have the same number of entries as there are grid locations (grid
-% squares).
-%
+% This module will display text information in a grid pattern. It requires
+% that you define a grid earlier in the pipeline using the Define Grid
+% module and also load text information using the Load Text module. The
+% text information must have the same number of entries as there are grid
+% locations (grid squares).
 %
 % See also DefineGrid.
 
@@ -43,31 +42,30 @@ function handles = DisplayGridInfo(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What is the already defined grid?
+%textVAR01 = What did you call the grid you defined?
 %infotypeVAR01 = gridgroup
 GridName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What is the first image you would like to display?
+%textVAR02 = On what image would you like to display text information?
 %infotypeVAR02 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What is the first data set that you would like to display?
+%textVAR03 = What is the first set of text information that you would like to display in the grid pattern (will be red)?
 %infotypeVAR03 = datagroup
 DataName1 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What is the second data set that you would like to display?
+%textVAR04 = What is the second set of text information that you would like to display in the grid pattern (will be green)?
 %choiceVAR04 = /
 %infotypeVAR04 = datagroup
 DataName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = What is the third data set that you would like to display?
+%textVAR05 = What is the third set of text information that you would like to display in the grid pattern (will be blue)?
 %choiceVAR05 = /
 %infotypeVAR05 = datagroup
 DataName3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -110,12 +108,12 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 CPimagesc(handles.Pipeline.(ImageName));
 colormap(handles.Preferences.IntensityColorMap);
-title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with grid info displayed'])
+title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with text info displayed'])
 line(VertLinesX,VertLinesY);
 line(HorizLinesX,HorizLinesY);
 %%% Puts the standard Matlab tool bar back on.
 set(FigHandle,'Toolbar','figure');
-title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed), ' with grid info displayed'],'fontsize',handles.Preferences.FontSize);
+title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed), ' with text info displayed'],'fontsize',handles.Preferences.FontSize);
 set(findobj(FigHandle,'type','line'),'color',[.15 1 .15])
 
 %%% Sets the location of Tick marks.

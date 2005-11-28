@@ -21,11 +21,11 @@ CreateBatchScripts		Mike,        Anne (Doublecheck after Susan updates the help)
 
 CreateWebPage			Mike,        Anne (need to explain what image border and table border is)
 
-Crop				Mike,        Anne (mike needs to make the end-80 part work).
+Crop				Mike,        Anne (mike will make the end-80 part work).
 
 DefineGrid			Mike,        Anne
 
-DisplayGridInfo			Mike
+DisplayGridInfo			Mike,        Anne
 
 Exclude				Mike 
 
@@ -41,7 +41,7 @@ GetHistogram
 
 GrayToColor			Mike
 
-IdentifyObjectsInGrid		Mike
+IdentifyObjectsInGrid		Mike,        Anne
 
 IdentifyPrimAutomatic		 
 

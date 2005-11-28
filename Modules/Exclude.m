@@ -4,8 +4,7 @@ function handles = Exclude(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Remove objects outside of specified region (nuclei outside tissue
-% region).
+% Removes objects outside of specified region.
 % *************************************************************************
 %
 % This image analysis module allows you to delete the objects and
@@ -66,15 +65,14 @@ function handles = Exclude(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What are the objects you want to ignore?
+%textVAR01 = What did you call the objects you want to filter?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What is the region you want your objects to be in?
+%textVAR02 = What did you call the region in which objects should be included?
 %infotypeVAR02 = objectgroup
 MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
@@ -90,7 +88,7 @@ RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%%%VariableRevisionNumber = 01
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

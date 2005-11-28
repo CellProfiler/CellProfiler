@@ -9,29 +9,23 @@ function handles = Crop(handles)
 % shape used at a previous step in the pipeline on another image.
 % *************************************************************************
 %
-% Shape: 
+% Note: the cropping module will remove rows and columns that are
+% completely blank.
+% 
+% Settings:
 %
-% Rectangle: enter the pixel coordinates for the left to right and
-% top to bottom pixels, and every image will be cropped at these
-% locations.  For the right and bottom pixels, you can type "end" instead
-% of a numerical pixel position if you want the right-most or
-% bottom-most pixel position to be calculated automatically.
-%
-% Ellipse: You will be asked to click five or more points to define an
-% ellipse around the part of the image you want to analyze.  Keep in
-% mind that the more points you click, the longer it will take to
-% calculate the ellipse shape.
-%
+% Shape:
+% Rectangle - self-explanatory.
+% Ellipse - self-explanatory.
 % Other...
 % To crop based on an object identified in a previous module, type in the
 % name of that identified object instead of Rectangle or Ellipse. Please
 % see PlateFix for information on cropping based on previously identified
 % plates.
-%
 % To crop into an arbitrary shape you define, use the LoadSingleImage
 % module to load a black and white image (that you have already prepared)
 % from a file. If you have created this image in an image program such as
-% Photoshop, this binary image should actually contain only the values 0
+% Photoshop, this binary image should contain only the values 0
 % and 255, with zeros (black) for the parts you want to remove and 255
 % (white) for the parts you want to retain.  Or, you may have previously
 % generated a binary image using this module (e.g. using the ellipse
@@ -40,17 +34,21 @@ function handles = Crop(handles)
 % starting size as your image and should contain a contiguous block of
 % white pixels, because keep in mind that the cropping module will remove
 % rows and columns that are completely blank.
-%
 % To crop into the same shape as was used previously in the pipeline to
 % crop another image, type in CroppingPreviousCroppedImageName, where
 % PreviousCroppedImageName is the image you produced with the previous Crop
 % module.
 %
-% Individually or Once: This option will allow you to apply the same
-% cropping to all images or define each image separately.
+% Coordinate or mouse: For ellipse, you will be asked to click five or more
+% points to define an ellipse around the part of the image you want to
+% analyze.  Keep in mind that the more points you click, the longer it will
+% take to calculate the ellipse shape. For rectangle, you can click as many
+% points as you like that are in the interior of the region you wish to
+% retain.
 %
-% PlateFix: When attempting to crop based on a previously identified object
-% (such as a yeast plate), sometimes the identified plate does not
+% PlateFix: To be used only when cropping based on previously identified
+% objects. When attempting to crop based on a previously identified object
+% (such as a yeast plate), sometimes the identified plate does not have
 % precisely straight edges - there might be a tiny, almost unnoticeable
 % 'appendage' sticking out of the plate.  Without plate fix, the crop
 % module would not crop the image tightly enough - it would include enough
@@ -62,11 +60,14 @@ function handles = Crop(handles)
 % the image). It also sets pixels around the edge of the object (for
 % regions > 50% but less than 100%) that otherwise would be zero to the
 % background pixel value of your image thus avoiding the problems with
-% other modules. PlateFix also uses the coordinates for rectangle cropping
-% to tighten the edges around your identified plate. This is done because
-% in the majority of plate identifications you do not want to include the
-% sides of the plate. If you would like the entire plate to be shown, you
-% can enter 1:end for both coordinates.
+% other modules. Important note >> PlateFix uses the coordinates
+% entered in the boxes normally used for rectangle cropping (Top, Left) and
+% (Bottom, Right) to tighten the edges around your identified plate. This
+% is done because in the majority of plate identifications you do not want
+% to include the sides of the plate. If you would like the entire plate to
+% be shown, you should enter 1:end for both coordinates. If you would like
+% to crop 80 pixels from each edge of the plate, you could enter 80:end-80
+% for (Top, Left) and (Bottom, Right).
 %
 % Warning: Keep in mind that cropping changes the size of your images,
 % which may have unexpected consequences.  For example, identifying
@@ -123,7 +124,6 @@ function handles = Crop(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be cropped?
@@ -136,45 +136,45 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Into which shape would you like to crop? To crop to a shape based on another image you have loaded, type its name here (see help for details).
+%textVAR03 = Into which shape would you like to crop? See the help for several other options.
 %choiceVAR03 = Rectangle
 %choiceVAR03 = Ellipse
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Would you like to crop by coordinates or mouse?
+%textVAR04 = Would you like to crop by typing in pixel coordinates or clicking with the mouse?
 %choiceVAR04 = Coordinates
 %choiceVAR04 = Mouse
 CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Would you like to crop each image individually?
+%textVAR05 = Would you like to perform the step above (typing or clicking) for each image individually or just once then apply the settings to subsequent image cycles?
 %choiceVAR05 = Just Once
 %choiceVAR05 = Individually
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Specify the (Left, Right) pixel positions. (only if you are using rectangle, coordinates, and Just Once)(end can be substituted for right pixel if you do not want to crop the right edge)
+%textVAR06 = For COORDINATES + JUST ONCE + RECTANGLE, specify the (Left, Right) pixel positions (the word "end" can be substituted for right pixel if you do not want to crop the right edge)
 %defaultVAR06 = 1,100
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Specify the (Top, Bottom) pixel positions. (only if you are using rectangle, coordinates, and Just Once)(end can be substituted for bottom pixel if you do not want to crop the bottom edge)
+%textVAR07 = For COORDINATES + JUST ONCE + RECTANGLE, specify the (Top, Bottom) pixel positions (the word "end" can be substituted for bottom pixel if you do not want to crop the bottom edge)
 %defaultVAR07 = 1,100
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What is the center of the ellipse in form X,Y? (only if you are using ellipse, coordinates, and Just Once)
+%textVAR08 = For COORDINATES + JUST ONCE + ELLIPSE, what is the center pixel position of the ellipse in form X,Y?
 %defaultVAR08 = 500,500
 Center = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What is the radius of the X axis? (only if you are using ellipse, coordinates, and Just Once)
+%textVAR09 = For COORDINATES + JUST ONCE + ELLIPSE, what is the radius of the ellipse in the X direction?
 %defaultVAR09 = 400
 X_axis = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = What is the radius of the Y axis? (only if you are using ellipse, coordinates, and Just Once)
+%textVAR10 = For COORDINATES + JUST ONCE + ELLIPSE, what is the radius of the ellipse in the Y direction?
 %defaultVAR10 = 200
 Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = Do you want to use Plate Fix? (see Help)
+%textVAR11 = Do you want to use Plate Fix? (see Help, only works for cropping based on previously identified objects)
 %choiceVAR11 = No
 %choiceVAR11 = Yes
 %inputtypeVAR11 = popupmenu

@@ -4248,7 +4248,11 @@ if strcmp(get(gcf,'SelectionType'),'open')
     end
 
     handles=guidata(AddModuleWindowHandles.figure1);
-    filename = [file_list{index_selected} '.m'];
+    if isdeployed
+        filename = [file_list{index_selected} '.txt'];
+    else
+        filename = [file_list{index_selected} '.m'];
+    end
     PutModuleInListBox(filename,handles.Preferences.DefaultModuleDirectory,guidata(AddModuleWindowHandles.figure1),0);
 end
 

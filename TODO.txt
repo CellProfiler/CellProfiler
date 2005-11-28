@@ -13,8 +13,6 @@ SaveCPcode	- DONE
 
 - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
-- ClassifyObjects should allow the user to save the resulting color-coded image. Are the resulting objects color coded in the display?
-
 - Check through each module (~2 per day):
 EVERYONE:
 	- (Requested by Anne) - Test each module on color vs grayscale and make

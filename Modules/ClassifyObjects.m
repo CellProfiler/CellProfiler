@@ -95,6 +95,13 @@ LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5
 %defaultVAR06 = 100
 UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
+%textVAR07 = What do you want to call the resulting color-coded image?
+%choiceVAR07 = Do not save
+%choiceVAR07 = ColorClassifiedNuclei
+%inputtypeVAR07 = popupmenu custom
+%infotypeVAR07 = imagegroup indep
+SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+
 %%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,11 +281,10 @@ drawnow
 
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-if ~strcmpi(FeatureType,'Ratio')
+if ~strcmpi(FeatureType,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
     %%% Saves images to the handles structure so they can be saved to the hard
     %%% drive, if the user requests.
-    fieldname = ['ColorClassified',ObjectName];
-    handles.Pipeline.(fieldname) = QuantizedRGBimage;
+    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
 ClassifyFeatureNames = cell(1,NbrOfBins);

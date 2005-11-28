@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/28) ClassifyObjects should allow the user to save the resulting color-coded image. Are the resulting objects color coded in the display?
+
 -(Mike 11/28) Make platefix able to take in end-XX as a size. The help already describes how to use that option (as soon as i finish in a few minutes), but it doesn't actually work yet (we think).
 
 -(Mike 11/28) Check Ray's clearborder and compare with imclearborder

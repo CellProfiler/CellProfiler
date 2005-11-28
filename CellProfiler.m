@@ -92,6 +92,7 @@ if isdeployed
         LoadedPreferencesExist = 1;
         clear SavedPreferences
     end
+    handles.Current.DefaultModuleDirectory = fullfile(pwd,'Modules');
 else
     try
         load(fullfile(matlabroot,'CellProfilerPreferences.mat'))
@@ -235,12 +236,13 @@ if Answer ~= 1
     CPwarndlg('It appears that you do not have a license for the Image Processing Toolbox of Matlab.  Many of the image analysis modules of CellProfiler may not function properly. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
-
-%%% Adds the Help folder to Matlab's search path.
-try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
-    addpath(Pathname)
-catch
-    CPerrordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
+if ~isdeployed
+    %%% Adds the Help folder to Matlab's search path.
+    try Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
+        addpath(Pathname)
+    catch
+        CPerrordlg('CellProfiler could not find its help files, which should be located in a folder called Help within the folder containing CellProfiler.m. The help buttons will not be functional.');
+    end
 end
 
 %%% Checks figure handles for current open windows.
@@ -668,10 +670,14 @@ else
     %%% Update handles structure.
 
     guidata(hObject,handles);
-
+    
     WaitBarHandle = CPwaitbar(0,'Loading Pipeline...');
     for i=1:length(handles.Settings.ModuleNames)
-        PutModuleInListBox([contents{i} '.m'], Pathname, handles, 1);
+        if isdeployed
+            PutModuleInListBox([contents{i} '.txt'], Pathname, handles, 1);
+        else
+            PutModuleInListBox([contents{i} '.m'], Pathname, handles, 1);
+        end
         handles=guidata(handles.figure1);
         handles.Current.NumberOfModules = i;
         CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
@@ -1098,7 +1104,7 @@ if ModuleNamedotm ~= 0,
     %%% 3. The last two characters (=.m) are removed from the
     %%% ModuleName.m and called ModuleName.
     if isdeployed
-        ModuleName = ModuleNamedotm(1:end-3);
+        ModuleName = ModuleNamedotm(1:end-4);
     else
         ModuleName = ModuleNamedotm(1:end-2);
     end

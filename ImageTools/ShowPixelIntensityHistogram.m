@@ -3,6 +3,9 @@ function ShowPixelIntensityHistogram(handles)
 % Help for the Show Pixel Intensity Histogram tool:
 % Category: Image Tools
 %
+% This tool will create a histogram of the pixel intensities of the image
+% selected.
+%
 % See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -34,7 +37,7 @@ while isempty(ClickedImage)
     set(OKhandle,'visible','off');
     %%% TODO: Should allow canceling.
     try
-    waitforbuttonpress
+        waitforbuttonpress
     end
     ClickedImage = getimage(gca);
     if isempty(ClickedImage)
@@ -58,7 +61,7 @@ try ClickedImageTitle = get(get(gca,'title'),'string');
 catch ClickedImageTitle = [];
 end
 
-if isempty(ClickedFigureTitle) ~= 1 | isempty(ClickedImageTitle) ~= 1
+if ~isempty(ClickedFigureTitle) || ~isempty(ClickedImageTitle)
     Title = [ClickedFigureTitle,' ',ClickedImageTitle];
 else Title =[];
 end

@@ -9,7 +9,7 @@ function OpenNewImageFile(handles)
 %
 % The Open New Image File button shows pixel values in the range 0 to 1.
 % Images are loaded into CellProfiler in this range so that modules behave
-% consistently. The display is set to the same range so that, for example, 
+% consistently. The display is set to the same range so that, for example,
 % if a user wants to look at an image in order to determine which threshold
 % to use within a module, the pixel values are directly applicable.
 %
@@ -37,9 +37,9 @@ function OpenNewImageFile(handles)
 %
 % $Revision$
 
-%%% Opens a user interface window which retrieves a file name and path 
+%%% Opens a user interface window which retrieves a file name and path
 %%% name for the image to be shown.
-%%% Current directory temporarily changed to default image directory 
+%%% Current directory temporarily changed to default image directory
 %%% for image selection and then immediately restored
 
 ListOfExtensions = CPimread;
@@ -55,10 +55,10 @@ CPcd(TempCD);
 %%% If the user presses "Cancel", the FileName will = 0 and nothing will
 %%% happen.
 if FileName == 0
-else 
+else
     %%% Reads the image.
     Image = CPimread(fullfile(Pathname, FileName));
-    FigureHandle = CPfigure(handles);
+    CPfigure(handles);
     imagesc(Image);
     colormap(gray);
     FileName = strrep(FileName,'_','\_');

@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/28 checked and works fine) (Susan 11/28)In IdentifyPrimAutomatic can't set the "Suppress local maxima within this distinace.." to an integer. Only automatic works. Error message "function STREL expected its second input, R, to be integer-valued. in the IdentifyPrimAutomatic module"
+
+-(Mike 11/28) (This is using CPquestdlg which uses handles font size and helvetica. Check again) When clearing a module in the pipeline, the confirm dialog is using times and a pretty small font. I think it should be using a CP version of a dialog box that lets us change the font & size.
+
 -(Mike 11/28) ClassifyObjects should allow the user to save the resulting color-coded image. Are the resulting objects color coded in the display?
 
 -(Mike 11/28) Make platefix able to take in end-XX as a size. The help already describes how to use that option (as soon as i finish in a few minutes), but it doesn't actually work yet (we think).

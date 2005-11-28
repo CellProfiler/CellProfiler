@@ -30,7 +30,7 @@ end
 MeasFieldnames = fieldnames(handles.Measurements);
 if ImageCheck == 1
     for i=1:length(handles.Measurements)
-        if MeasFieldnames{i}=='Image'
+        if strcmp(MeasFieldnames{i},'Image')
             MeasFieldnames(i) = [];
         end
     end

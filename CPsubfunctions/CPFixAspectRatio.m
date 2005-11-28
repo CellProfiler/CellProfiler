@@ -20,7 +20,7 @@ if(HorRatio > .8) || (VerRatio > .8)
         FigPos(4) = ScSize(4) * 0.8;
         FigPos(3) = FigPos(3) / FigPos(4) * ScSize(4) * 0.8;
     end
-end        
+end
 
 if FigPos(4) > FigPosOrig(4)
     FigPos(2) = ScSize(4) - (FigPos(4)+80);

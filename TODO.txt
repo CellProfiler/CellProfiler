@@ -1,8 +1,5 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
--(Susan 11/28)In IdentifyPrimAutomatic can't set the "Suppress local maxima within this distinace.." to an integer. Only automatic works. Error message "function STREL expected its second input, R, to be integer-valued. in the IdentifyPrimAutomatic module"
-
-- (This is using CPquestdlg which uses handles font size and helvetica. Check again) When clearing a module in the pipeline, the confirm dialog is using times and a pretty small font. I think it should be using a CP version of a dialog box that lets us change the font & size.
 
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 TechDiagnosis 	- DONE

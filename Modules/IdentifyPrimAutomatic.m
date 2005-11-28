@@ -468,7 +468,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         end
 
         %%% Check the maxima suppression size parameter
-        if ~strcmp(MaximaSuppressionSize,'Automatic')
+        if ~strcmpi(MaximaSuppressionSize,'Automatic')
             MaximaSuppressionSize = str2double(MaximaSuppressionSize);
             if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0 %#ok Ignore MLint
                 error(['Image processing was canceled in the ', ModuleName, ' module because the specified maxima suppression size is not valid or unreasonable.'])
@@ -827,7 +827,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 FinalOutline(PerimDiameter) = 0;
                 FinalOutline(PerimBorder) = 0;
 
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+                ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 if any(findobj == ThisModuleFigureNumber)
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);

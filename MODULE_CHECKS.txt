@@ -19,7 +19,7 @@ CorrectIllumination_Calculate	Mike,        Anne
 
 CreateBatchScripts		Mike,        Anne (Doublecheck after Susan updates the help)
 
-CreateWebPage			Mike
+CreateWebPage			Mike,        Anne (need to explain what image border and table border is)
 
 Crop				Mike 
 

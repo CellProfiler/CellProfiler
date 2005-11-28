@@ -453,17 +453,17 @@ if any(findobj == ThisModuleFigureNumber) == 1;
             else
                 title('Averaged image calculated so far');
             end
-        else subplot(2,2,1); imagesc(OrigImage);
+        else subplot(2,2,1); CPimagesc(OrigImage);
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
             CPFixAspectRatio(OrigImage);
         end
         if strcmp(ReadyFlag, 'Ready')
             if exist('DilatedImage','var')
-                subplot(2,2,3); imagesc(DilatedImage);
+                subplot(2,2,3); CPimagesc(DilatedImage);
                 title('Dilated image');
             end
             if exist('SmoothedImage','var')
-                subplot(2,2,4); imagesc(SmoothedImage);
+                subplot(2,2,4); CPimagesc(SmoothedImage);
                 title('Smoothed image');
             end
             subplot(2,2,2);

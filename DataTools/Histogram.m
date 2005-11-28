@@ -823,14 +823,14 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
     FigureHandle = CPfigure;
     set(FigureHandle,'Color',[1 1 1])
     if strcmpi(RowImageOrBin,'image') == 1
-        imagesc(FinalHistogramData),
+        CPimagesc(FinalHistogramData),
         AxisHandle = gca;
         set(get(AxisHandle,'XLabel'),'String',MeasurementToExtract)
         set(AxisHandle,'XTickLabel',XTickLabels)
         NewPlotBinLocations = 1:2:length(FinalHistogramData');
         set(AxisHandle,'XTick',NewPlotBinLocations)
     elseif strcmpi(RowImageOrBin,'bin') == 1
-        imagesc(flipud(FinalHistogramData')),
+        CPimagesc(flipud(FinalHistogramData')),
         AxisHandle = gca;
         EveryNthLabel = 3;
         XTickLabels = flipud(XTickLabels');

@@ -5,7 +5,7 @@ function CPImageTool(varargin)
 % by a module. 
 %
 % Example of usage:
-% ImageHandle = imagesc(SegmentedObjects);
+% ImageHandle = CPimagesc(SegmentedObjects);
 % set(ImageHandle,'ButtonDownFcn','CPImageTool')
 
 % Check that the input argument is an action in the form of a string
@@ -20,7 +20,7 @@ if ~isempty(varargin)
                 CPfigure;
                 data = get(get(ITh,'UserData'),'Cdata');
                 if ndims(data) == 2
-                    imagesc(data),axis image,colormap gray    % Scalar image
+                    CPimagesc(data),axis image,colormap gray    % Scalar image
                 else
                     image(data),axis image                    % RGB image
                 end

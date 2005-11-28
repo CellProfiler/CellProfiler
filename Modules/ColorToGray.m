@@ -186,14 +186,14 @@ if strcmp(GrayOrSplit,'Combine')
         CPfigure(handles,ThisModuleFigureNumber);
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
-        ImageHandle = imagesc(OrigImage);
+        ImageHandle = CPimagesc(OrigImage);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         colormap(handles.Preferences.IntensityColorMap);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
         subplot(2,1,2);
-        ImageHandle = imagesc(GrayscaleImage);
+        ImageHandle = CPimagesc(GrayscaleImage);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Grayscale Image');
     end
@@ -203,7 +203,7 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         %%% A subplot of the figure window is set to display the Splitd RGB
-        %%% image.  Using imagesc or image instead of imshow doesn't work when
+        %%% image.  Using CPimagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
         subplot(2,2,1);
         CPimagesc(OrigImage);

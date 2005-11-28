@@ -125,7 +125,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
         'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...
-        'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),imagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
+        'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),CPimagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

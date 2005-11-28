@@ -317,7 +317,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% Displays the image and asks the user to choose points for the
             %%% ellipse.
             CroppingFigureHandle = CPfigure(handles);
-            CroppingImageHandle = imagesc(ImageToBeCropped);
+            CroppingImageHandle = CPimagesc(ImageToBeCropped);
             pixval
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
@@ -395,7 +395,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 %%% pixel positions you want to use to crop. But wait,
                 %%% you would probably just use the Mouse option
                 %%% instead, so I've commented it out.
-                %                 TempFigHandle = figure, imagesc(ImageToBeCropped), title('Close this window when you have identified the pixel positions to be used for cropping.'), pixval
+                %                 TempFigHandle = figure, CPimagesc(ImageToBeCropped), title('Close this window when you have identified the pixel positions to be used for cropping.'), pixval
                 %                 waitfor(TempFigHandle)
                 Answers = inputdlg({'Specify the (Left, Right) pixel positions:' 'Specify the (Top, Bottom) pixel positions:'});
                 Pixel1=Answers{1};
@@ -423,7 +423,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         elseif strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points.
             CroppingFigureHandle = CPfigure(handles,'name','Manual Rectangle Cropping');
-            CroppingImageHandle = imagesc(ImageToBeCropped);
+            CroppingImageHandle = CPimagesc(ImageToBeCropped);
             colormap('gray');
             title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [x,y] = getpts(CroppingFigureHandle);

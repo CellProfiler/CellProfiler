@@ -53,7 +53,7 @@ helpdlg(help('ProgrammingNotes'))
 % outside this if statement.
 %
 % Display your image like this:
-% ImageHandle = imagesc(Image);
+% ImageHandle = CPimagesc(Image);
 % set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
 %
 % This CPImageTool is important so that any images that are displayed

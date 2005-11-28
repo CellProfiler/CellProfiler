@@ -109,11 +109,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); imagesc(OrigImage);
+    subplot(2,1,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,1,2); imagesc(ObjectsIdentifiedImage); title(['Processed ',ObjectName]);
+    subplot(2,1,2); CPimagesc(ObjectsIdentifiedImage); title(['Processed ',ObjectName]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -205,7 +205,7 @@ if any(findobj == ThisModuleFigureNumber);
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the Merged RGB
-    %%% image.  Using imagesc or image instead of imshow doesn't work when
+    %%% image.  Using CPimagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
     subplot(2,2,1); CPimagesc(RGBImage);
     title(['Merged Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);

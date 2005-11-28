@@ -915,7 +915,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     CPimagesc(ColoredLabelMatrixImage); title(['Identified ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
-                    % subplot(2,2,3); imagesc(Overlaid);  title([ObjectName, ' markers']);
+                    % subplot(2,2,3); CPimagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
                     subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage); title([ObjectName, ' Outlines on Input Image']);

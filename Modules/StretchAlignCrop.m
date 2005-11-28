@@ -283,10 +283,10 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); imagesc(TracedImage);
+    subplot(2,2,1); CPimagesc(TracedImage);
     title(['Traced Input, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); imagesc(RealImage); title('Real Input Image');
-    subplot(2,2,3); imagesc(CroppedAlignedTracedImage);
+    subplot(2,2,2); CPimagesc(RealImage); title('Real Input Image');
+    subplot(2,2,3); CPimagesc(CroppedAlignedTracedImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

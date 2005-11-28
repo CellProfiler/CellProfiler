@@ -3003,7 +3003,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
             %%% Reads the image.
             Image = CPimread(fullfile(PathName, FileName));
             FigureHandle = CPfigure(handles);
-            imagesc(Image);
+            CPimagesc(Image);
             colormap(gray);
             FileName = strrep(FileName,'_','\_');
             title(FileName);

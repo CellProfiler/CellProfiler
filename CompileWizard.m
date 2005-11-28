@@ -110,6 +110,35 @@ for i=1:length(Modulefilelist)
     else
         OtherFiles(length(OtherFiles)+1)=cellstr(name);
     end
+
+    %%% CODE TO WRITE TEXT FILES OF MODULES
+    fid2=fopen(fullfile(pwd,'Modules',Modulefilelist(i).name));
+    fid3=fopen(fullfile(pwd,'Modules',[name,'.txt']),'w');
+    while 1;
+        output = fgetl(fid2); if ~ischar(output); break; end;
+        if strncmp(output,'%Start VariableSet',18)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%End VariableSet',16)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%defaultVAR',11)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%choiceVAR',10)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%textVAR',8)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%pathnametextVAR',16)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%filenametextVAR',16)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%infotypeVAR',12)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%%%VariableRevisionNumber',25)
+            fprintf(fid3,[fixthistext2(output),'\n']);
+        end
+    end
+    fclose(fid2);
+    fclose(fid3);
+    %%% END CODE TO WRITE TEXT FILES OF MODULES
 end
 fprintf(fid,'\n\nCategoryList = {''File Processing'' ''Image Processing'' ''Object Processing'' ''Measurement'' ''Other''};\n');
 
@@ -167,3 +196,9 @@ fixedtext = strrep(fixedtext,'%','%%%%');
 function c = file_in_category(filename, category)
 h = help(filename);
 c = strfind(h, ['Category: ' category]);
+
+function fixedtext = fixthistext2(text)
+
+fixedtext = strrep(text,'''','''''');
+fixedtext = strrep(fixedtext,'\','\\');
+fixedtext = strrep(fixedtext,'%','%%');

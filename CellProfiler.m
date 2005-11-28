@@ -202,12 +202,14 @@ handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
 %%% Adds the default module directory to Matlab's search path. Also
 %%% adds the Modules subfolder of the folder that contains CellProfiler.m to
 %%% Matlab's search path, if possible.
-addpath(handles.Preferences.DefaultModuleDirectory)
-[CellProfilerPathname,FileName,ext,versn] = fileparts(which('CellProfiler'));
-CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
-handles.Current.CellProfilerPathname = CellProfilerPathname;
-try
-    addpath(CellProfilerModulePathname)
+if ~isdeployed
+    addpath(handles.Preferences.DefaultModuleDirectory)
+    [CellProfilerPathname,FileName,ext,versn] = fileparts(which('CellProfiler'));
+    CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
+    handles.Current.CellProfilerPathname = CellProfilerPathname;
+    try
+        addpath(CellProfilerModulePathname)
+    end
 end
 
 %%% Sets a suitable fontsize. An automatic font size is calculated,
@@ -243,7 +245,6 @@ end
 
 %%% Checks figure handles for current open windows.
 handles.Current.CurrentHandles = findobj;
-
 
 %%% Note on the use of "8192" when retrieving handles...
 %%% Apparently, referring to a handle in a callback by converting the numerical
@@ -392,7 +393,6 @@ end
 handles.Current.HelpFilenames = ListOfTools;
 handles.Current.Help = ToolHelp;
 
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -424,7 +424,9 @@ uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Call
 uimenu(HelpMenu,'Label','Image Tools Help','Callback','CellProfiler(''ImageToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 %uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
+if ~isdeployed
+    uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
+end
 
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
@@ -465,9 +467,9 @@ if strcmp(Answer,'Yes')
     ModulePipelineListBox_Callback(hObject, eventdata, handles);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOAD PIPELINE BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
     LoadPipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
@@ -548,17 +550,21 @@ delete(get(handles.variablepanel,'children'));
 handles.VariableBox = {};
 handles.VariableDescription = {};
 
-ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
-%%% Checks to make sure that the modules have not changed
-if exist(ModuleNamedotm,'file')
-    FullPathname = which(ModuleNamedotm);
-    [Pathname, filename, ext, versn] = fileparts(FullPathname);
+if isdeployed
+    Pathname = handles.Current.DefaultModuleDirectory;
 else
-    %%% If the module.m file is not on the path, it won't be
-    %%% found, so ask the user where the modules are.
-    Pathname = uigetdir('','Please select directory where modules are located');
-    pause(.1);
-    figure(handles.figure1);
+    ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
+    %%% Checks to make sure that the modules have not changed
+    if exist(ModuleNamedotm,'file')
+        FullPathname = which(ModuleNamedotm);
+        [Pathname, filename, ext, versn] = fileparts(FullPathname);
+    else
+        %%% If the module.m file is not on the path, it won't be
+        %%% found, so ask the user where the modules are.
+        Pathname = uigetdir('','Please select directory where modules are located');
+        pause(.1);
+        figure(handles.figure1);
+    end
 end
 
 %%defaultVariableRevisionNumbers and revisionConfirm are both variables
@@ -717,7 +723,11 @@ NumbersOfVariables = 0;
 OptionInCode = 0;
 Failed = 0;
 try
-    ModuleNamedotm = [ModuleName '.m'];
+    if isdeployed
+        ModuleNamedotm = [ModuleName '.txt'];
+    else
+        ModuleNamedotm = [ModuleName '.m'];
+    end
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     while 1;
         output = fgetl(fid); if ~ischar(output); break; end;
@@ -725,12 +735,12 @@ try
             OptionInCode = str2num(output(19:end));
         elseif strncmp(output,'%End VariableSet',16)
             OptionInCode = 0;
-        elseif (strncmp(output,'%defaultVAR',11) == 1) && (OptionInCode == SelectedOption),
+        elseif strncmp(output,'%defaultVAR',11) && (OptionInCode == SelectedOption)
             displayval = output(17:end);
             istr = output(12:13);
             i = str2num(istr);
             VariableValues(i) = {displayval};
-        elseif (strncmp(output,'%choiceVAR',10) == 1) && (OptionInCode == SelectedOption),
+        elseif strncmp(output,'%choiceVAR',10) && (OptionInCode == SelectedOption),
             if ~iscellstr(VariableValues(i))
                 displayval = output(16:end);
                 istr = output(11:12);
@@ -758,7 +768,7 @@ try
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
-        elseif (strncmp(output,'%infotypeVAR',12)==1) && (OptionInCode == SelectedOption)
+        elseif strncmp(output,'%infotypeVAR',12) && (OptionInCode == SelectedOption)
             displayval = output(18:end);
             istr = output(13:14);
             i = str2num(istr);
@@ -914,7 +924,7 @@ descriptiontext = uicontrol(...
 varChoice = 0;
 
 uiwait(LoadSavedWindowHandle);
-if exist('variableChoice','var') == 1
+if exist('variableChoice','var')
     if ~isempty(variableChoice)
         varChoice = variableChoice;
         clear global variableChoice;
@@ -1053,8 +1063,13 @@ if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
         set(obj2,'value',1);
     end
 else
-    [ModuleNamedotm,Pathname] = uigetfile(fullfile(cd,'.', '*.m'),...
-        'Choose an image analysis module');
+    if isdeployed
+        [ModuleNamedotm,Pathname] = uigetfile(fullfile(cd,'.', '*.txt'),...
+            'Choose an image analysis module');
+    else
+        [ModuleNamedotm,Pathname] = uigetfile(fullfile(cd,'.', '*.m'),...
+            'Choose an image analysis module');
+    end
     pause(.1);
     figure(handles.figure1);
     PutModuleInListBox(ModuleNameDotm,Pathname,handles,0);
@@ -1063,24 +1078,30 @@ end
 function PutModuleInListBox(ModuleNamedotm, Pathname, handles, RunInBG)
 if ModuleNamedotm ~= 0,
     %%% The folder containing the desired .m file is added to Matlab's search path.
-    addpath(Pathname);
+    if ~isdeployed
+        addpath(Pathname);
+        differentPaths = which(ModuleNamedotm, '-all');
+        if length(differentPaths) == 0,
+            %%% If the module's .m file is not found on the search path, the result
+            %%% of exist is zero, and the user is warned.
+            CPerrordlg(['Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.'],'Error');
+            return
+        elseif length(differentPaths) > 1,
+            warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' char(differentPaths{1}) ' will likely be used, but this is unpredictable.  Modules should have unique names that are not the same as already existing Matlab functions to avoid confusion.']);
+        end
+    end
     if(exist(ModuleNamedotm(1:end-2),'builtin') ~= 0)
         warningString = 'Your module has the same name as a builtin Matlab function.  Perhaps you should consider renaming your module.';
         warndlg(warningString);
     end
-    differentPaths = which(ModuleNamedotm, '-all');
-    if length(differentPaths) == 0,
-        %%% If the module's .m file is not found on the search path, the result
-        %%% of exist is zero, and the user is warned.
-        CPerrordlg(['Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.'],'Error');
-        return
-    elseif length(differentPaths) > 1,
-        warndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' char(differentPaths{1}) ' will likely be used, but this is unpredictable.  Modules should have unique names that are not the same as already existing Matlab functions to avoid confusion.']);
-    end
 
     %%% 3. The last two characters (=.m) are removed from the
     %%% ModuleName.m and called ModuleName.
-    ModuleName = ModuleNamedotm(1:end-2);
+    if isdeployed
+        ModuleName = ModuleNamedotm(1:end-3);
+    else
+        ModuleName = ModuleNamedotm(1:end-2);
+    end
     %%% The name of the module is shown in a text box in the GUI (the text
     %%% box is called ModuleName1.) and in a text box in the GUI which
     %%% displays the current module (whose settings are shown).
@@ -1575,8 +1596,7 @@ end
 if isempty(handles.Settings.ModuleNames);
     return
 end
-%%% 1. Sets all 11 VariableBox edit boxes and all 11
-%%% VariableDescriptions to be invisible.
+%%% 1. Sets all VariableBox edit boxes and all VariableDescriptions to be invisible.
 
 MaxInfo = get(handles.slider1,'UserData');
 
@@ -1858,6 +1878,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function handles = RemoveVariables(handles,ModuleNumber)
 %%% This function removes all variables of a specified Module from the
 %%% handles structure.
@@ -2839,7 +2860,6 @@ end
 %%% DEFAULT IMAGE DIRECTORY EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 function handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 %%% Retrieves the text that was typed in.
 pathname = get(handles.DefaultImageDirectoryEditBox,'string');
@@ -2894,7 +2914,6 @@ else
 end
 %%% Updates the handles structure.
 guidata(hObject,handles)
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% BROWSE DEFAULT OUTPUT DIRECTORY BUTTON %%%
@@ -3326,12 +3345,16 @@ else
                         catch
                             handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2num(ModuleNumberAsString)) = 1;
                             if strcmp(handles.Preferences.SkipErrors,'No')
-                                if exist([ModuleName,'.m'],'file') ~= 2,
-                                    CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
-                                else
-                                    %%% Runs the errorfunction function that catches errors and
-                                    %%% describes to the user what to do.
+                                if isdeployed
                                     errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
+                                else
+                                    if exist([ModuleName,'.m'],'file') ~= 2,
+                                        CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
+                                    else
+                                        %%% Runs the errorfunction function that catches errors and
+                                        %%% describes to the user what to do.
+                                        errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
+                                    end
                                 end
                                 %%% Causes break out of the image analysis loop (see below)
                                 break_outer_loop = 1;
@@ -3788,7 +3811,6 @@ else
     end
 end
 
-
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ListOfTools = handles.Current.ImageToolsFilenames;
 ToolsHelpSubfunction(handles, 'Image Tools', ListOfTools)
@@ -3912,17 +3934,7 @@ clear toolsChoice;
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%
 
-
 function DownloadModules_Callback(hObject, eventdata, handles)
-%%% TEMPORARY
-% CPwarndlg('Sorry, the ftp site has not yet been established to allow downloading modules.');
-% return
-% try
-%     CPServer = ftp('cellprofiler.org');
-% catch
-%     CPwarndlg('Error while establishing connection with server!');
-%     return;
-% end
 
 Answer = CPquestdlg('Are you sure you want to over-write all your existing CellProfiler files?','Overwrite Files?','Yes','No','No');
 if strcmp(Answer,'Yes')
@@ -3937,7 +3949,6 @@ if strcmp(Answer,'Yes')
     ImagePathName = fullfile(CPPath, 'ImageTools');
 
     try
-        %     mget(CPServer,'ModuleList.txt',CPPath);
         Modules = urlread('http://jura.wi.mit.edu/cellprofiler/updates/Modules/ModuleList.txt');
         DataTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/DataTools/DataList.txt');
         ImageTools = urlread('http://jura.wi.mit.edu/cellprofiler/updates/ImageTools/ImageList.txt');
@@ -3996,22 +4007,6 @@ if strcmp(Answer,'Yes')
 
     CPhelpdlg('Update Complete!');
 end
-
-% fid = fopen(fullfile(CPPath,'ModuleList.txt'),'r');
-% while ~feof(fid)
-%     module = fgetl(fid);
-%     if isempty(module)
-%         break
-%     end;
-%     if strcmpi(module(end-1:end),'.m')
-%         try
-%             urlwrite(fullfile('http://jura.wi.mit.edu/cellprofiler/updates/',module),fullfile(ModulePathName,module));
-%         catch
-%             CPwarndlg([module,' could not be downloaded.']);
-%         end
-%     end
-% end
-% CPmsgbox('Update Complete!');
 
 function ReportBugs_Callback(hObject, eventdata, handles)
 

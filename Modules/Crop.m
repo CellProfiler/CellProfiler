@@ -9,8 +9,12 @@ function handles = Crop(handles)
 % shape used at a previous step in the pipeline on another image.
 % *************************************************************************
 %
-% Note: the cropping module will remove rows and columns that are
-% completely blank.
+% Warnings about this module: The cropping module will remove rows and
+% columns that are completely blank. Also, keep in mind that cropping
+% changes the size of your images, which may have unexpected consequences.
+% For example, identifying objects in a cropped image and then trying to
+% measure their intensity in the *original* image will not work because the
+% two images are not the same size.
 % 
 % Settings:
 %
@@ -68,17 +72,6 @@ function handles = Crop(handles)
 % be shown, you should enter 1:end for both coordinates. If you would like
 % to crop 80 pixels from each edge of the plate, you could enter 80:end-80
 % for (Top, Left) and (Bottom, Right).
-%
-% Warning: Keep in mind that cropping changes the size of your images,
-% which may have unexpected consequences.  For example, identifying
-% objects in a cropped image and then trying to measure their
-% intensity in the original image will not work because the two images
-% are not the same size. As another example, identify primary modules
-% ignore objects that touch the outside edge of the image because they
-% would be partial objects and therefore not measured properly.
-% However, if you crop a round shape, the edge is still officially the
-% square edge of the image, and not the round contour, so partial
-% objects will be included.
 %
 % Special note on saving images: See the help for SaveImages. Also, you can
 % save the cropping shape that you have used (e.g. an ellipse you drew), so
@@ -174,7 +167,7 @@ X_axis = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 200
 Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = Do you want to use Plate Fix? (see Help, only works for cropping based on previously identified objects)
+%textVAR11 = Do you want to use Plate Fix? (see Help, only used when cropping based on previously identified objects)
 %choiceVAR11 = No
 %choiceVAR11 = Yes
 %inputtypeVAR11 = popupmenu
@@ -202,7 +195,7 @@ end
 %%% Reads the image.
 OrigImage = handles.Pipeline.(ImageName);
 if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg('The images you have loaded are outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
+    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module  are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -225,7 +218,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 catch
                     fieldname = ['Cropping',Shape];
                     try BinaryCropImage = handles.Pipeline.(fieldname);
-                    catch error('Image cannot be found!');
+                    catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
                 end
             end
@@ -256,7 +249,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% identified object
             index = strfind(Pixel1,',');
             if isempty(index)
-                error('The format of the Left, Right pixel positions is invalid. Please include a comma.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Left, Right pixel positions is invalid. Please include a comma.']);
             end
             x1 = str2num(Pixel1(1:index-1));
             x2 = Pixel1(index+1:end);
@@ -268,7 +261,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
 
             index = strfind(Pixel2,',');
             if isempty(index)
-                error('The format of the Top, Bottom pixel positions is invalid. Please include a comma.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Top, Bottom pixel positions is invalid. Please include a comma.']);
             end
             y1 = str2num(Pixel2(1:index-1));
             y2 = Pixel2(index+1:end);
@@ -284,7 +277,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 Pixel1 = [num2str(FirstX+x1),',',num2str(FirstX+x2)];
                 Pixel2 = [num2str(FirstY+y1),',',num2str(FirstY+y2)];
             catch
-                error('There was a problem finding the X and Y pixels from the object. PlateFix is currently hard-coded to crop based on objects which occupy at least 50% of the field of vue. If your object is smaller than this, it will fail.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem finding the cropping boundaries from the previously identified object. PlateFix is currently hard-coded to crop based on objects which occupy at least 50% of the field of view. If your object is smaller than this, it will fail.']);
             end
             Shape = 'Rectangle';
             CropFromObjectFlag = 1;
@@ -295,7 +288,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], ModuleName);
                 catch
                     try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], ModuleName);
-                    catch error('Image cannot be found!');
+                    catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
                 end
             end
@@ -354,7 +347,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
 
             index = strfind(Center,',');
             if isempty(index)
-                error('The format of the center is invalid. Please include a comma.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the format of the center of the ellipse is invalid. Please include a comma.']);
             end
             X_center = Center(1:index-1);
             Y_center = Center(index+1:end);
@@ -375,7 +368,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 eval(['BinaryCropImage = sqrt((X-foci_1_x).^2+(Y-foci_1_y).^2)+sqrt((X-foci_2_x).^2+(Y-foci_2_y).^2) < 2*' Y_axis ';']);
             end
         else
-            error('The value of CropMethod is not recognized');
+            error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
         [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
@@ -395,14 +388,14 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
 
             index = strfind(Pixel1,',');
             if isempty(index)
-                error('The format of the Left, Right pixel positions is invalid. Please include a comma.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Left, Right pixel positions is invalid. Please include a comma.']);
             end
             x1 = Pixel1(1:index-1);
             x2 = Pixel1(index+1:end);
 
             index = strfind(Pixel2,',');
             if isempty(index)
-                error('The format of the Top, Bottom pixel positions is invalid. Please include a comma.');
+                error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Top, Bottom pixel positions is invalid. Please include a comma.']);
             end
             y1 = Pixel2(1:index-1);
             y2 = Pixel2(index+1:end);
@@ -431,7 +424,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             BinaryCropImage = zeros(a,b);
             BinaryCropImage(round(min(y)):round(max(y)),round(min(x)):round(max(x))) = 1;
         else
-            error('The value of CropMethod is not recognized');
+            error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
         [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName);
@@ -455,7 +448,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         newsize(3) = 250;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
-
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
@@ -487,7 +479,7 @@ catch
     try
         BinaryCropImage = handles.Pipeline.(CroppedImageName);
     catch
-        error(['You must choose rectangular cropping, ellipse or the name of something from a previous module.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because you must choose rectangle, ellipse or the name of something from a previous module.']);
     end
 end
 

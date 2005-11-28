@@ -251,24 +251,40 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             if isempty(index)
                 error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Left, Right pixel positions is invalid. Please include a comma.']);
             end
-            x1 = str2num(Pixel1(1:index-1));
+            x1 = str2double(Pixel1(1:index-1));
             x2 = Pixel1(index+1:end);
-            if strcmp(x2,'end')
-                x2 = LastX-FirstX;
+            if strncmp(x2,'end',3)
+                if length(x2) == 3
+                    x2 = LastX-FirstX;
+                else
+                    if length(x2) >= 5
+                        x2 = max(1,LastX-FirstX-str2double(x2(5:end)));
+                    else
+                        x2 = LastX-FirstX;
+                    end
+                end
             else
-                x2 = min(LastX-FirstX,str2num(x2));
+                x2 = min(LastX-FirstX,str2double(x2));
             end
 
             index = strfind(Pixel2,',');
             if isempty(index)
                 error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Top, Bottom pixel positions is invalid. Please include a comma.']);
             end
-            y1 = str2num(Pixel2(1:index-1));
+            y1 = str2double(Pixel2(1:index-1));
             y2 = Pixel2(index+1:end);
-            if strcmp(y2,'end')
-                y2 = LastY-FirstY;
+            if strncmp(y2,'end',3)
+                if length(y2) == 3
+                    y2 = LastY-FirstY;
+                else
+                    if length(y2) >= 5
+                        y2 = max(1,LastY-FirstY-str2double(y2(5:end)));
+                    else
+                        x2 = LastY-FirstY;
+                    end
+                end
             else
-                y2 = min(LastY-FirstY,str2num(y2));
+                y2 = min(LastY-FirstY,str2double(y2));
             end
 
             %%% Combining identified object boundaries with user-specified

@@ -25,19 +25,7 @@ FINISH BEFORE LEAVING:
 
 -------------------------
 LEAVE FOR LATER:
-4. Kc 40x data (Fly217-220) - genome-wide screens! 
+- Kc 40x data (Fly217-220) - genome-wide screens! 
 [Give PIPE to Anne. She will check it and run it later, after CPValid1 project is done and we are sure the exporting to SQL works well.]
- 
-- NEW FROM ANNE (long term) - Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
-- Learn 5x imaging on the microscope.
-
-- Learn 40x imaging on the microscope.
-
-- Play with data for Fly200 experiments (phospho chips) using CellVisualizer. [CV not quite ready]
-
-- (Long-term): improve the automation of the image acquisition so that choosing and verifying control spots is easier. 
-
-- (Long-term): Set up 5x imaging on the Cellomics ArrayScan using their Slideport slide holder - is the 'window' of the slideport big enough to image the entire slide.  Wait for the HCi2005 ArrayScan software upgrade, though.
-
-- (Long-term): Play with the genome-wide data!! Use clustering/bioinformatics tools to look for interesting patterns.
+- Work with Ray to decide on what normalization is appropriate and build a module in CellProfiler to do the normalization so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.

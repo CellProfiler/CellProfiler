@@ -4546,14 +4546,6 @@ AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;
 AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;
 
 guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);
-% set(AddModuleWindowHandles.ObjectProcessingListBox,'String',ObjectProcessingFiles,...
-%     'Value',[])
-% set(AddModuleWindowHandles.MeasurementListBox,'String',MeasurementFiles,...
-%     'Value',[])
-% set(AddModuleWindowHandles.OtherListBox,'String',OtherFiles,...
-%     'Value',[])
-% set(AddModuleWindowHandles.DirectoryText,'String',...
-%     ['You are currently looking in ' dir_path]);
 
 function c = file_in_category(filename, category)
 h = help(filename);

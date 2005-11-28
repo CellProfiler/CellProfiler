@@ -22,14 +22,17 @@ for i=1:length(ImageToolfilelist)
     fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\n\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
+        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
     else
         ToolList = ['''',ToolName(1:end-2),''''];
+        ToolListNoQuotes = ToolName(1:end-2);
     end
 end
 fprintf(fid,['handles.Current.ImageToolsFilenames = {',ToolList,'};\n']);
-fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\n\n');
+fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\n');
+fprintf(fid,['%%#function ',ToolListNoQuotes,'\n\n']);
 
-clear ToolList
+clear ToolList ToolListNoQuotes
 
 DataToolfilelist = dir('DataTools/*.m');
 fprintf(fid,'%%%%%% DATA TOOL HELP\n');
@@ -47,14 +50,17 @@ for i=1:length(DataToolfilelist)
     fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\n\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
+        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
     else
         ToolList = ['''',ToolName(1:end-2),''''];
+        ToolListNoQuotes = ToolName(1:end-2);
     end
 end
 fprintf(fid,['handles.Current.DataToolsFilenames = {',ToolList,'};\n']);
-fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\n\n');
+fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\n');
+fprintf(fid,['%%#function ',ToolListNoQuotes,'\n\n']);
 
-clear ToolList
+clear ToolList ToolListNoQuotes
 
 Helpfilelist = dir('Help/*.m');
 fprintf(fid,'%%%%%% HELP\n');
@@ -77,7 +83,74 @@ for i=1:length(Helpfilelist)
     end
 end
 fprintf(fid,['handles.Current.HelpFilenames = {',ToolList,'};\n']);
-fprintf(fid,'handles.Current.Help = ToolHelp;\n');
+fprintf(fid,'handles.Current.Help = ToolHelp;\n\n');
+
+clear ToolList
+
+Modulefilelist = dir('Modules/*.m');
+fprintf(fid,'%%%%%% Module List\n');
+fprintf(fid,'%%#function');
+FileProcessingFiles ={};
+PreProcessingFiles={};
+ObjectProcessingFiles={};
+MeasurementFiles={};
+OtherFiles={};
+for i=1:length(Modulefilelist)
+    name=Modulefilelist(i).name;
+    name=name(1:end-2);
+    fprintf(fid,[' ',name]);
+    if file_in_category(Modulefilelist(i).name, 'File Processing')
+        FileProcessingFiles(length(FileProcessingFiles)+1)=cellstr(name);
+    elseif file_in_category(Modulefilelist(i).name, 'Image Processing')
+        PreProcessingFiles(length(PreProcessingFiles)+1)=cellstr(name);
+    elseif file_in_category(Modulefilelist(i).name, 'Object Processing')
+        ObjectProcessingFiles(length(ObjectProcessingFiles)+1)=cellstr(name);
+    elseif file_in_category(Modulefilelist(i).name, 'Measurement')
+        MeasurementFiles(length(MeasurementFiles)+1)=cellstr(name);
+    else
+        OtherFiles(length(OtherFiles)+1)=cellstr(name);
+    end
+end
+fprintf(fid,'\n\nCategoryList = {''File Processing'' ''Image Processing'' ''Object Processing'' ''Measurement'' ''Other''};\n');
+
+fprintf(fid,'FileProcessingFiles = {');
+for i=1:length(FileProcessingFiles)
+    fprintf(fid,['''',FileProcessingFiles{i},''' ']);
+end
+fprintf(fid,'};\n');
+
+fprintf(fid,'PreProcessingFiles = {');
+for i=1:length(PreProcessingFiles)
+    fprintf(fid,['''',PreProcessingFiles{i},''' ']);
+end
+fprintf(fid,'};\n');
+
+fprintf(fid,'ObjectProcessingFiles = {');
+for i=1:length(ObjectProcessingFiles)
+    fprintf(fid,['''',ObjectProcessingFiles{i},''' ']);
+end
+fprintf(fid,'};\n');
+
+fprintf(fid,'MeasurementFiles = {');
+for i=1:length(MeasurementFiles)
+    fprintf(fid,['''',MeasurementFiles{i},''' ']);
+end
+fprintf(fid,'};\n');
+
+fprintf(fid,'OtherFiles = {');
+for i=1:length(OtherFiles)
+    fprintf(fid,['''',OtherFiles{i},''' ']);
+end
+fprintf(fid,'};\n');
+
+fprintf(fid,'set(AddModuleWindowHandles.ModuleCategoryListBox,''String'',CategoryList,''Value'',[])\n');
+fprintf(fid,'set(AddModuleWindowHandles.ModulesListBox,''String'',FileProcessingFiles,''Value'',[])\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{1} = FileProcessingFiles;\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{2} = PreProcessingFiles;\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{3} = ObjectProcessingFiles;\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;\n');
+fprintf(fid,'guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);\n');
 
 fclose(fid);
 
@@ -90,3 +163,7 @@ function fixedtext = fixthistext(text)
 fixedtext = strrep(text,'''','''''');
 fixedtext = strrep(fixedtext,'\','\\\\');
 fixedtext = strrep(fixedtext,'%','%%%%');
+
+function c = file_in_category(filename, category)
+h = help(filename);
+c = strfind(h, ['Category: ' category]);

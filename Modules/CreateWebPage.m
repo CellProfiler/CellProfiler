@@ -1,16 +1,46 @@
 function handles = CreateWebPage(handles)
 
-% Help for the CreateWebPage module:
+% Help for the Create Web Page module:
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Creates the html for a webpage to display images, including a link
-% to a zipped file with all of the included images.
+% Creates the html for a webpage to display images (or their thumbnails, if
+% desired), including a link to a zipped file with all of the included
+% images.
 % *************************************************************************
 %
 % This module will create an html file that will display the specified
 % images and also produce a zip-file of these images with a link. The
 % thumbnail images must be in the same directory as the original images.
+%
+% Settings:
+% Thumbnails: By default, the full-size images will be displayed on the webpage
+% itself. If you have made thumbnail (small versions) of the images, you
+% can have these displayed on the webpage itself, and the full-size images
+% will be displayed when the user clicks on the thumbnails.
+%
+% Create webpage (HTML file) before or after processing all images?
+% If the full-size images and thumbnails (optional) already exist on the
+% hard drive and you are loading them with the Load Images module, you can
+% answer "Before" to this question. If, however, you are producing either
+% of these images during the pipeline and you therefore need to complete
+% all of the cycles before generating the webpage, choose "After".
+%
+% What do you want to call the resulting webpage file (include .htm or
+% .html as the extenstion)?
+% This file will be created in your default output directory. It can then
+% be copied to your web server.
+% 
+% Will you have the webpage HTML file in the same folder or one level above
+% the images?
+% If the images are going to be in a subfolder, then the HTML file will be
+% one level above the images. If the HTML file and the images will all be
+% in the same folder, answer Same as the images.
+%
+% Table border
+% Image border
+%
+
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -34,45 +64,45 @@ function handles = CreateWebPage(handles)
 %
 % $Revision$
 
-
-[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
-
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+drawnow
 
-%textVAR01 = What did you call the full-size images you want to include?
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+
+%textVAR01 = What did you call the full-size images you want to include on the webpage?
 %infotypeVAR01 = imagegroup
 OrigImage = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the thumbnail images you want to use to link to full images?
+%textVAR02 = What did you call the thumbnail images you want to use to link to the full-size images (optional)?
 %choiceVAR02 = Do not use
 %infotypeVAR02 = imagegroup
 ThumbImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Create HTML file before processing all images or after processing all images?
+%textVAR03 = Do you want to create the webpage (HTML file) before or after processing all images?
 %choiceVAR03 = Before
 %choiceVAR03 = After
 CreateBA = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What do you want to call the HTML file with the images above?
+%textVAR04 = What do you want to call the resulting webpage file (include .htm or .html as the extenstion)?
 FileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR04 = images1.html
 
-%textVAR05 = HTML file save directory
+%textVAR05 = Will you have the webpage HTML file in the same folder or one level above the images?
 %choiceVAR05 = One level over the images
 %choiceVAR05 = Same as the images
 DirectoryOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Webpage title
+%textVAR06 = Webpage title, which will be displayed at the top of the browser window
 PageTitle = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR06 = CellProfiler Images
 
-%textVAR07 = Choose the background color, or provide the html color code (e.g. #00FF00)
+%textVAR07 = Webpage background color. For custom colors, provide the html color code (e.g. #00FF00)
 %choiceVAR07 = Black
 %choiceVAR07 = White
 %choiceVAR07 = Aqua
@@ -92,7 +122,7 @@ PageTitle = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 BGColor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
-%textVAR08 = Number of columns for images
+%textVAR08 = Number of columns of images
 %choiceVAR08 = 1
 %choiceVAR08 = 2
 %choiceVAR08 = 3
@@ -108,7 +138,7 @@ ThumbCols = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8})
 TableBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu custom
 
-%textVAR10 = Choose the table border color, or provide the html color code (e.g. #00FF00)
+%textVAR10 = Table border color. For custom colors, provide the html color code (e.g. #00FF00)
 %choiceVAR10 = Black
 %choiceVAR10 = White
 %choiceVAR10 = Aqua
@@ -142,14 +172,14 @@ ThumbSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 ThumbBorderWidth = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu custom
 
-%textVAR13 = Create new window for each click on thumbnail
+%textVAR13 = Open a new browser window when clicking on a thumbnail?
 %choiceVAR13 = Once only
 %choiceVAR13 = For each image
 %choiceVAR13 = No
 CreateNewWindow = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Specify a filename to create a ZIP file containing all full size images and link at the end of webpage for download. The '.zip' file extension will be added automatically.
+%textVAR14 = If you want the webpage to have a link to a zipped file which contains all of the full-size images, specify a filename. The '.zip' file extension will be added automatically.
 %choiceVAR14 = Do not use
 ZipFileName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu custom
@@ -166,7 +196,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST cycle FILE HANDLING %%%
+%%% FIRST CYCLE FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 

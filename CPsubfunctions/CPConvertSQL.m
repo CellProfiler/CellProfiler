@@ -94,7 +94,11 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
         
         if strfind(ssf, 'TimeElapsed'),
                 continue;
-            end
+        end
+            
+        if strfind(ssf, 'namesDescription'),
+                continue;
+        end
         
                        
         if isfield(excelsubstruct, [ssf 'Features']),
@@ -266,6 +270,9 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
                 continue;
             end
             if strfind(excelssf, 'TimeElapsed'),
+                continue;
+            end
+            if strfind(ssf, 'namesDescription'),
                 continue;
             end
 
@@ -506,7 +513,9 @@ end  % end of if excel
         if strfind(ssf, 'TimeElapsed'),
                 continue;
             end
-        
+        if strfind(ssf, 'namesDescription'),
+                continue;
+        end
                        
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
@@ -713,6 +722,10 @@ for img_idx = FirstSet:LastSet,
                 if (strfind(ssf, 'Text') + 3) == length(ssf),
                     continue;
                 end
+            end
+            
+            if strfind(ssf, 'namesDescription'),
+                continue;
             end
 
             % img_idx

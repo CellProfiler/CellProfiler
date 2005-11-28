@@ -3,9 +3,9 @@ function handles = MeasureCorrelation(handles)
 % Help for the Measure Correlation module:
 % Category: Measurement
 %
-% SHORT DESCRIPTION: Measures the correlation between intensities of
-% different wavelengths on a pixel by pixel basis within identified
-% objects or an entire image.
+% SHORT DESCRIPTION:
+% Measures the correlation between intensities of different wavelengths on
+% a pixel by pixel basis within identified objects or an entire image.
 % *************************************************************************
 %
 % Given two or more images, calculates the correlation between the

@@ -3,8 +3,9 @@ function handles = RGBMerge(handles)
 % Help for the RGB Merge module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION: Takes 1 to 3 images and assigns them to colors in a
-% final, RGBimage.  Each color's brightness can be adjusted independently.
+% SHORT DESCRIPTION:
+% Takes 1 to 3 images and assigns them to colors in a final, RGBimage.
+% Each color's brightness can be adjusted independently.
 % *************************************************************************
 %
 % Settings:

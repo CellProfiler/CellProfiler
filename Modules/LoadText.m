@@ -3,6 +3,12 @@ function handles = LoadText(handles)
 % Help for the Load Text module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Loads text information corresponding to images. This data (e.g. Gene
+% Names) can be displayed on a grid or exported with the measurements to
+% help track samples.
+% *************************************************************************
+%
 % Use this tool to load in text information. This is useful for certain
 % modules that place text information onto images. It is also useful to
 % place text information in the output files alongside the measurements

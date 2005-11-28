@@ -3,9 +3,10 @@ function handles = IdentifyTertiarySubregion(handles)
 % Help for the Identify Tertiary Subregion module:
 % Category: Object Processing
 %
-% SHORT DESCRIPTION: Identifies 3rd order obects (e.g. cytoplasm) by
-% removing the 1st order objects (e.g. nuclei) from 2nd order objects (e.g.
-% cells) leaving a doughnut shape.
+% SHORT DESCRIPTION:
+% Identifies 3rd order obects (e.g. cytoplasm) by removing the 1st order
+% objects (e.g. nuclei) from 2nd order objects (e.g. cells) leaving a
+% doughnut shape.
 % *************************************************************************
 %
 % This module will take the identified objects specified in the first

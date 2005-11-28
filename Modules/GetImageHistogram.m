@@ -1,6 +1,10 @@
 function handles = GetImageHistogram(handles)
 % Help for the Get Image Histogram module:
 % Category: Other
+%
+% SHORT DESCRIPTION:
+% Produces a histogram of the intensity of pixels within the chosen image.
+% *************************************************************************
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -3,10 +3,11 @@ function handles = ApplyThreshold(handles)
 % Help for the Apply Threshold module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION: Pixels below (or above) a certain threshold are set to
-% zero. The remaining pixels retain their original value or (if settings
-% pixels below a boundary to zero and the user chooses to do so), are
-% shifted to match the threshold used.
+% SHORT DESCRIPTION:
+% Pixels below (or above) a certain threshold are set to zero. The
+% remaining pixels retain their original value or (if settings pixels below
+% a boundary to zero and the user chooses to do so), are shifted to match
+% the threshold used.
 % *************************************************************************
 %
 % SETTINGS: 'If your answer was not 1, you can expand the thresholding

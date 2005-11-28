@@ -3,7 +3,8 @@ function handles = IdentifyPrimYeastPhase(handles)
 % Help for the Identify Primary Yeast Phase module:
 % Category: Object Processing
 %
-% SHORT DESCRIPTION: Identifies yeast in phase contrast images.
+% SHORT DESCRIPTION:
+% Identifies yeast in phase contrast images.
 % *************************************************************************
 %
 % This module contains code contributed by Ben Kaufmann of MIT.

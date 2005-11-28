@@ -3,8 +3,8 @@ function handles = Flip(handles)
 % Help for the Flip module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION: Flips an image from top to bottom, left to right, or
-% both.
+% SHORT DESCRIPTION:
+% Flips an image from top to bottom, left to right, or both.
 % *************************************************************************
 %
 % See also <nothing relevant>.

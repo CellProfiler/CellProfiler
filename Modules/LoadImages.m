@@ -3,9 +3,10 @@ function handles = LoadImages(handles)
 % Help for the Load Images module:
 % Category: File Processing
 %
-% SHORT DESCRIPTION: Allows the user to specify which images or movies are
-% to be loaded and in which order. Groups of images will be loaded per
-% cycle of CellProfiler processing.
+% SHORT DESCRIPTION:
+% Allows the user to specify which images or movies are to be loaded and in
+% which order. Groups of images will be loaded per cycle of CellProfiler
+% processing.
 % *************************************************************************
 %
 % Tells CellProfiler where to retrieve images and gives each image a

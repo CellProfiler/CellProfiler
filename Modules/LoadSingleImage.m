@@ -3,6 +3,10 @@ function handles = LoadSingleImage(handles)
 % Help for the Load Single Image module:
 % Category: File Processing
 %
+% SHORT DESCRIPTION:
+% Loads a single image, which will be used for all image cycles.
+% *************************************************************************
+%
 % Tells CellProfiler where to retrieve a single image and gives the
 % image a meaningful name for the other modules to access.  The module
 % only functions the first time through the pipeline, and thereafter

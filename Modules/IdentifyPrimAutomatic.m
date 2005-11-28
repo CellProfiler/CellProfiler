@@ -3,9 +3,10 @@ function handles = IdentifyPrimAutomatic(handles)
 % Help for the Identify Primary Automatic module:
 % Category: Object Processing
 %
-% SHORT DESCRIPTION: Identifies objects (e.g. nuclei) given only an image
-% as input. These objects provide the "seeds" for secondary identificaiton
-% of objects such as cells and/or proteins of interest.
+% SHORT DESCRIPTION:
+% Identifies objects (e.g. nuclei) given only an image as input. These
+% objects provide the "seeds" for secondary identificaiton of objects such
+% as cells and/or proteins of interest.
 % *************************************************************************
 %
 % General module for identifying (segmenting) primary objects in

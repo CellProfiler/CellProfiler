@@ -3,8 +3,9 @@ function handles = ClassifyObjects(handles)
 % Help for the Classify Objects module:
 % Category: Other
 %
-% SHORT DESCRIPTION: Classifies objects into a number of different classes
-% according to the value of a measurement you choose.
+% SHORT DESCRIPTION:
+% Classifies objects into a number of different classes according to the
+% value of a measurement you choose.
 % *************************************************************************
 %
 % This module classifies objects into a number of different classes

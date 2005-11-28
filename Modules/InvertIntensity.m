@@ -3,8 +3,8 @@ function handles = InvertIntensity(handles)
 % Help for the Invert Intensity module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION: Converts the intensities of an image so that black
-% becomes white.
+% SHORT DESCRIPTION:
+% Converts the intensities of an image so that black becomes white.
 % *************************************************************************
 %
 % See also <nothing relevant>.

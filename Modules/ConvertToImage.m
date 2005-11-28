@@ -7,6 +7,7 @@ function handles = ConvertToImage(handles)
 % Converts objects you have identified into an image so that it can be
 % saved with the SaveImages module.
 % *************************************************************************
+%
 % Settings:
 %
 % Binary (black & white), grayscale, or color: Choose how you would like

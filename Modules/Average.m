@@ -3,7 +3,8 @@ function handles = Average(handles)
 % Help for the Average module:
 % Category: Image Processing
 %
-% SHORT DESCRIPTION: Images are averaged together (a projection is made).
+% SHORT DESCRIPTION:
+% Images are averaged together (a projection is made).
 % *************************************************************************
 %
 % This module averages a set of images by averaging the pixel intensities

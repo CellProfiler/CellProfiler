@@ -3,8 +3,9 @@ function handles = IdentifySecondary(handles)
 % Help for the Identify Secondary module:
 % Category: Object Processing
 %
-% SHORT DESCRIPTION: Identifies objects (e.g. cell edges) using "seed"
-% objects identified by a 1st order module (e.g. nuclei)
+% SHORT DESCRIPTION:
+% Identifies objects (e.g. cell edges) using "seed" objects identified by a
+% 1st order module (e.g. nuclei).
 % *************************************************************************
 %
 % METHODS OF IDENTIFICATION

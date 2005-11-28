@@ -3,8 +3,8 @@ function handles = IdentifyPrimManual(handles)
 % Help for the Identify Primary Manually module:
 % Category: Object Processing
 %
-% SHORT DESCRIPTION: Identifies an object based on manual intervention
-% (clicking) by the user.
+% SHORT DESCRIPTION:
+% Identifies an object based on manual intervention (clicking) by the user.
 % *************************************************************************
 %
 % This module allows the user to identify an single object by manually

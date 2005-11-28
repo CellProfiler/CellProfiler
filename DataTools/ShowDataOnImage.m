@@ -145,7 +145,7 @@ end
 
 tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
 if isempty(tmp) ,
-    errordlg(['Error: there is no object measurement in your file '])
+    errordlg('Error: there is no object measurement in your file ')
     return
 end
 ListOfMeasurements = tmp(:,FeatureNo);
@@ -179,7 +179,7 @@ StdUnit = 'point';
 StdColor = get(0,'DefaultUIcontrolBackgroundColor');
 PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 VersionCheck = version;
-if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
+if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1 %#ok Ignore MLint
     DisplayButtonCallback1 = 'CPmsgbox(''A bug in Matlab is preventing this function from working on the Mac platform. Service Request #1-RR6M1''), drawnow';
 else
     DisplayButtonCallback1 = 'CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); try, propedit(CurrentTextHandles,''v6''); catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';

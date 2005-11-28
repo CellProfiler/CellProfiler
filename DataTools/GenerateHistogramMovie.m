@@ -1,11 +1,10 @@
 function GenerateHistogramMovie(handles)
 
-% Help for the Plot Measurement tool:
+% Help for the Generate Histogram Movie tool:
 % Category: Data Tools
 %
-% This tool makes a bar plot of the mean and standard deviation of a measurement.
-% As prompted, select a CellProfiler output file containing the measurements,
-% then choose the measurement parameter to be displayed.
+% This tool will create a movie of the histogram of any measurement
+% selected.
 %
 % See also HISTOGRAM.
 
@@ -48,8 +47,8 @@ if isempty(ObjectTypename),return,end
 
 %%% Extract the measurement and calculate mean and standard deviation
 tmp = handles.Measurements.(ObjectTypename).(FeatureType);
-MeasurementMean = zeros(length(tmp),1);
-MeasurementStd = zeros(length(tmp),1);
+MeasurementsMean = zeros(length(tmp),1);
+MeasurementsStd = zeros(length(tmp),1);
 for k = 1:length(tmp)
     if ~isempty(tmp{k})
         MeasurementsMean(k) = mean(tmp{k}(:,FeatureNo));
@@ -67,7 +66,7 @@ titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){Fea
 
 for l = 1:length(MeasurementMean)
 
-    h = figure('Position',[1 500 792 813],'visible','off');
+    h = CPfigure('Position',[1 500 792 813],'visible','off');
 
     %subplot('position',[0.1 0.55 .8 0.18])
     hold on
@@ -79,7 +78,7 @@ for l = 1:length(MeasurementMean)
     hold off
 
 
-    set(gca,'xtick',[0:100:length(MeasurementsMean)])
+    set(gca,'XTick',0:100:length(MeasurementsMean))
     FontSize = 10;
     set(gca,'fontname','Helvetica','fontsize',FontSize)
     xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
@@ -94,8 +93,8 @@ for l = 1:length(MeasurementMean)
         Xmo=avifile(fullfile(pathname,filename));
     end
     Xmo=addframe(Xmo,h);
-    l
+    l %#ok Ignore MLint We want to see which frame we are at.
     close
 end
 
-Xmo=close(Xmo);
+close(Xmo);

@@ -72,7 +72,7 @@ function Histogram(handles)
 % to select a text file that contains one name for every sample, even
 % if you only plan to view a subset of the image data as histograms.
 %
-% See also PLOTSINGLEMEASUREMENTS.
+% See also PLOTMEASUREMENTS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -537,7 +537,6 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     %%% Acquires basic screen info for making buttons in the
     %%% display window.
     StdUnit = 'point';
-    StdColor = get(0,'DefaultUIcontrolBackgroundColor');
     PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
     %%% Creates the display window.
     FigureHandle = CPfigure;
@@ -788,7 +787,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     else
         Button12Callback = 'Bins = get(findobj(gcf,''type'',''line''),''XData'');Data = get(findobj(gcf,''type'',''line''),''YData'');';
     end
-    Button12 = uicontrol('Parent',FigureHandle, ...
+    uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...
         'CallBack',Button12Callback, ...
@@ -853,14 +852,13 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
     end
     NewColormap = 1 - colormap(gray);
     colormap(NewColormap),
-    ColorbarHandle = colorbar,
+    ColorbarHandle = colorbar;
     %%% Labels the colorbar's units.
     if strncmpi(NumberOrPercent,'P',1) == 1
         ylabel(ColorbarHandle, ['Percentage of ', ObjectTypename, ' in each image'])
     else ylabel(ColorbarHandle, ['Number of ', ObjectTypename])
     end
     set(FigureHandle,'UserData',FigureSettings)
-    FontSize = FontSize;
     set(gca,'fontname','Helvetica','fontsize',FontSize)
     set(get(ColorbarHandle,'title'),'fontname','Helvetica','fontsize',FontSize+2)
     xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)

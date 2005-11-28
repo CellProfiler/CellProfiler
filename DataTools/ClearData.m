@@ -6,7 +6,6 @@ function handles = ClearData(handles)
 % This tool lets the user remove a measurement or
 % data field from a CellProfiler output file. The same
 % measurement can be removed from several files.
-% 
 %
 % See also ADDDATA VIEWDATA.
 
@@ -35,10 +34,8 @@ function handles = ClearData(handles)
 %%% Ask the user to choose the file from which directory to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Select directory where CellProfiler output files are located');
-    PathToSave = handles.Current.DefaultOutputDirectory;
 else
     Pathname = uigetdir(pwd,'Select directory where CellProfiler output files are located');
-    PathToSave = RawPathname;
 end
 %%% Check if cancel button pressed
 if Pathname == 0
@@ -63,8 +60,8 @@ try
 catch
     errordlg('Selected file is not a Matlab file')
     return
-end  
-    
+end
+
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~exist('handles','var')
     errordlg([SelectedFiles{1} ,' is not a CellProfiler output file.'])
@@ -105,44 +102,39 @@ for FileNbr = 1:length(SelectedFiles)
 
     %%% Get the cell array of data
     data = handles.Measurements.(ObjectTypename).(FeatureType);
-   
+
     %%% If there is only one feature for this feature type, we should remove the entire field
     %%% from the handles structure
     if size(data{1},2) == 1
-        
+
         % Remove the data field and the associated field with suffix 'Text'/'Features'
         handles.Measurements.(ObjectTypename) = rmfield(handles.Measurements.(ObjectTypename),FeatureType);
         handles.Measurements.(ObjectTypename) = rmfield(handles.Measurements.(ObjectTypename),[FeatureType,Suffix{SuffixNbr}]);
-        
+
         %%% If this was the last measurement in the ObjectTypename (e.g., Nuclei, Cells, Cytoplasm)
         %%% remove the ObjectTypename too
         if isempty(fieldnames(handles.Measurements.(ObjectTypename)))
             handles.Measurements = rmfield(handles.Measurements,ObjectTypename);
         end
-        
-    %%% Otherwise we need to loop over the image sets and remove the column indicated by
-    %%% 'FeatureNbr'
+
+        %%% Otherwise we need to loop over the image sets and remove the column indicated by
+        %%% 'FeatureNbr'
     else
         %%% Loop over the image sets and remove the specified feature
         for ImageSetNbr = 1:length(data)
             data{ImageSetNbr} = cat(2,data{ImageSetNbr}(:,1:FeatureNbr-1),data{ImageSetNbr}(:,FeatureNbr+1:end));
         end
         handles.Measurements.(ObjectTypename).(FeatureType) = data;
-        
+
         %%% Remove the feature from the associated description field with suffix 'Features' or 'Text'
         text = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]);
         text = cat(2,text(1:FeatureNbr-1),text(FeatureNbr+1:end));
         handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]) = text;
     end
-    
+
     %%% Save the updated CellProfiler output file
     try
-        [ignore,Attributes] = fileattrib(fullfile(Pathname, SelectedFiles{FileNbr}));
-        if Attributes.UserWrite == 0
-            error(['You do not have permission to write ',fullfile(Pathname, SelectedFiles{FileNbr}),'!']);
-        else
-            save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
-        end
+        save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
     catch
         errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
         continue
@@ -155,6 +147,6 @@ if isempty(error_index)
 else
     %%% Show a warning dialog box for each error
     for k = 1:length(error_index)
-       CPwarndlg(errors{error_index(k)},'Clear Data failure')
+        CPwarndlg(errors{error_index(k)},'Clear Data failure')
     end
 end

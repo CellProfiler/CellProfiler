@@ -5,8 +5,7 @@ function MeasurementCalculator(handles)
 %
 % This tool allows the user to perform multiplications and
 % divisions of already extracted measurements.
-%
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -32,10 +31,8 @@ function MeasurementCalculator(handles)
 %%% Ask the user to choose the file from which to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
-    PathToSave = handles.Current.DefaultOutputDirectory;
 else
     [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
-    PathToSave = RawPathname;
 end
 
 if RawFileName == 0
@@ -66,11 +63,11 @@ Measurements2 = handles.Measurements.(UserInput.ObjectTypename2).(UserInput.Feat
 % Do the calculation for all image sets
 NewMeasurement = cell(1,length(Measurements1));
 for ImageSetNbr = 1:length(Measurements1)
-    
+
     % Get the measurement for this image set in two temporary variables
     tmp1 = Measurements1{ImageSetNbr}(:,UserInput.FeatureNo1);
     tmp2 = Measurements2{ImageSetNbr}(:,UserInput.FeatureNo2);
-    
+
     % If Operation2 indicates mean, replace all entries in tmp2 with
     % the image average, and proceed by doing "objectwise" multiplication/division
     if strcmp(UserInput.Operation2,'mean')
@@ -78,13 +75,13 @@ for ImageSetNbr = 1:length(Measurements1)
     elseif strcmp(UserInput.Operation2,'median')
         tmp2 = median(tmp2)*ones(size(tmp1));    % Important to give the new vector the size of tmp1
     end
-    
+
     % Check so tmp1 and tmp2 have the same size
     if length(tmp1) ~= length(tmp2)
         errordlg('The selected measurements do not have the same number of objects.')
         return
     end
-    
+
     % Do the calculation
     if strcmp(UserInput.Operation1,'multiplication')
         NewMeasurement{ImageSetNbr} = tmp1.*tmp2;
@@ -106,14 +103,8 @@ else
     end
     handles.Measurements.(UserInput.SaveLocation).UserDefinedFeatures(end+1) = {UserInput.FeatureDescription};
 end
-
-[ignore,Attributes] = fileattrib(fullfile(RawPathname, RawFileName));
-if Attributes.UserWrite == 0
-    error(['You do not have permission to write ',fullfile(RawPathname, RawFileName),'!']);
-else
-    save(fullfile(RawPathname, RawFileName),'handles');
-end
-CPmsgbox('Calculation complete!')
+save(fullfile(RawPathname, RawFileName),'handles');
+CPmsgbox('Calculation complete!');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function UserInput = UserInputWindow(handles)
@@ -126,7 +117,7 @@ function UserInput = UserInputWindow(handles)
 
 
 % Create window
-Window = figure;
+Window = CPfigure;
 Width = 4.5;  % inches
 Height = 3.5; % inches
 uiheight = 0.2;
@@ -194,7 +185,7 @@ uicontrol(Window,'style','text','String','Feature:','FontName','Times','Fontweig
 Feature2 = uicontrol(Window,'style','text','String','','FontName','Times',...
     'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.9 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
 
-%%% MEASUREMENT DESCRIPTION AND WHERE TO SAVE 
+%%% MEASUREMENT DESCRIPTION AND WHERE TO SAVE
 BaseY = 0.9;
 uicontrol(Window,'style','text','String','Enter description and where to save:','FontName','Times','Fontweight','bold','horizontalalignment','left',...
     'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.1 BaseY+uiheight 3.5 uiheight],'backgroundcolor',[.7 .7 .9]);
@@ -224,39 +215,39 @@ clear UserData;
 
 % Repeat until valid input has been entered or the window is destroyed
 while 1
-    
+
     % Wait until window is destroyed or uiresume() is called
     uiwait(Window)
 
     % Action depending on the user input
     if get(calculatebutton,'UserData') == 1                  % The Calculate button pressed
         UserInput = get(Window,'UserData');
-        if ~isfield(UserInput,'FeatureNo1') | ~isfield(UserInput,'FeatureNo2')
+        if ~isfield(UserInput,'FeatureNo1') || ~isfield(UserInput,'FeatureNo2')
             errordlg('Please choose two features!')          % Check that both feature fields are filled out...
-            set(calculatebutton,'UserData',0);               % Reset button press 
+            set(calculatebutton,'UserData',0);               % Reset button press
         else
-             % If both features are selected we can continue
-            UserInput = rmfield(UserInput,{'handles','Feature1','Feature2'});    % Remove some unnecessary fields and       
+            % If both features are selected we can continue
+            UserInput = rmfield(UserInput,{'handles','Feature1','Feature2'});    % Remove some unnecessary fields and
             str = get(SaveLocation,'String');
             UserInput.SaveLocation = str{get(SaveLocation,'Value')};             % Where should the new measurement be stored?
             UserInput.FeatureDescription = get(FeatureDescription,'String');     % The description of the new measurement
-            
+
             % Operation1 indicates multiplication or division
-            if  get(Operation1,'Value') == 1                                     
+            if  get(Operation1,'Value') == 1
                 UserInput.Operation1 = 'multiplication';
             else
                 UserInput.Operation1 = 'division';
             end
-            
+
             % Operation2 indicates if operation should be perform objectwise, or based on the image mean
-            if  get(Operation2,'Value') == 1                                     
+            if  get(Operation2,'Value') == 1
                 UserInput.Operation2 = 'objectwise';
             elseif get(Operation2,'Value') == 2
                 UserInput.Operation2 = 'mean';
             elseif get(Operation2,'Value') == 3
                 UserInput.Operation2 = 'median';
             end
-                
+
             close(Window);
             return
         end

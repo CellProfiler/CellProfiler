@@ -121,12 +121,7 @@ for FileNbr = 1:length(SelectedFiles)
 
     %%% Save the updated CellProfiler output file
     try
-        [ignore,Attributes] = fileattrib(fullfile(Pathname, SelectedFiles{FileNbr}));
-        if Attributes.UserWrite == 0
-            error(['You do not have permission to write ',fullfile(Pathname, SelectedFiles{FileNbr}),'!']);
-        else
-            save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
-        end
+        save(fullfile(Pathname, SelectedFiles{FileNbr}),'handles')
     catch
         errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
         continue

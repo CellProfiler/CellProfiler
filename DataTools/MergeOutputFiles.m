@@ -6,7 +6,7 @@ function MergeOutputFiles(handles)
 % This tool merges CellProfiler output files. The focus is on
 % the measurement structure, no image data will be stored
 % in the final output file.
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -71,7 +71,7 @@ valid = 0;
 while valid == 0
     answer = inputdlg({'Name for merged output file:'},'Merge output files',1,{'MergedOUT.mat'});
     if isempty(answer),return;end
-    if length(answer{1})< 4 | ~strcmp(answer{1}(end-3:end),'.mat')
+    if length(answer{1}) < 4 | ~strcmp(answer{1}(end-3:end),'.mat') %#ok Ignore MLint
         msg = CPmsgbox('The filename must have a .mat extension.');
         uiwait(msg);
     elseif isempty(strfind(answer{1},'OUT'))
@@ -80,7 +80,7 @@ while valid == 0
     else
         valid = 1;
     end
-end    
+end
 OutputFileName = answer{1};
 
 
@@ -118,11 +118,11 @@ for fileno = 2:length(files)
     firstfields = fieldnames(handles.Measurements);                                         % The first level contains for example Image, Cells, Nuclei,...
     for i = 1:length(firstfields)
         secondfields = fieldnames(handles.Measurements.(firstfields{i}));
-        
+
         % Some fields should not be merged, remove these from the list of fields
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Pathname')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')));   % Don't merge cell arrays with feature names
-        
+
         % Merge!
         for j = 1:length(secondfields)
             superhandles.Measurements.(firstfields{i}).(secondfields{j}) = ...
@@ -130,7 +130,7 @@ for fileno = 2:length(files)
                 handles.Measurements.(firstfields{i}).(secondfields{j}));
         end
     end
-    
+
     %%% Update waitbar
     waitbar(fileno/length(files),waitbarhandle);drawnow
 end
@@ -139,9 +139,4 @@ end
 close(waitbarhandle)
 CPmsgbox('Merging is completed.')
 handles = superhandles;
-[ignore,Attributes] = fileattrib(fullfile(Pathname,OutputFileName));
-if Attributes.UserWrite == 0
-    error(['You do not have permission to write ',fullfile(Pathname,OutputFileName),'!']);
-else
-    save(fullfile(Pathname,OutputFileName),'handles');
-end
+save(fullfile(Pathname,OutputFileName),'handles');

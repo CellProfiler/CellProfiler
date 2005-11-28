@@ -1,4 +1,7 @@
 function ConvertBatchFiles(handles)
+
+% Help for the ConvertBatchFiles tool:
+% Category: Data Tools
 %
 % ConvertBatchFiles is a temporary tool that converts
 % batch files to regular CellProfiler output files.
@@ -68,14 +71,7 @@ for fileno = 1:length(files)
             end
         end
     end
-    [ignore,Attributes] = fileattrib(fullfile(Pathname,['Converted',files{fileno}]));
-    if Attributes.UserWrite == 0
-        error(['You do not have permission to write ',fullfile(Pathname,['Converted',files{fileno}]),'!']);
-    else
-        save(fullfile(Pathname,['Converted',files{fileno}]),'handles');
-    end
+    save(fullfile(Pathname,['Converted',files{fileno}]),'handles');
 end
 close(waitbarhandle)
-CPmsgbox('Converting is completed.')                   
-        
-    
+CPmsgbox('Converting is completed.');

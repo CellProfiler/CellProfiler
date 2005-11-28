@@ -56,33 +56,33 @@ end
 
 FinalOK = 0;
 while FinalOK == 0
-   
+
     %%% Let the user select which feature to view
     Suffix = {'Features','Text'};
     [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
     if isempty(ObjectTypename),return,end
-    
+
     %%% Get the description
     Description = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]){FeatureNbr};
-    
+
     %%% Generate a cell array with strings to display
     NbrOfImageSets = length(handles.Measurements.(ObjectTypename).(FeatureType));
     TextToDisplay = cell(NbrOfImageSets,1);
     for ImageSet = 1:NbrOfImageSets
-        
+
         % Numeric or text?
         if strcmp(Suffix{SuffixNbr},'Features')
             info = num2str(mean(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}(:,FeatureNbr)));
         elseif strcmp(Suffix{SuffixNbr},'Text')
             info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}{FeatureNbr};
         end
-        
+
         TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
             ImageSet,...
             handles.Measurements.Image.FileNames{ImageSet}{1},...
             info);
     end
-    
+
     %%% Produce an infostring that explains what is displayed
     if strcmp(Suffix{SuffixNbr},'Text')
         InfoString = 'Cycle #,  <filename>:     <text>';
@@ -92,7 +92,7 @@ while FinalOK == 0
         InfoString = 'Cycle #,  <filename>:     <mean value>';
     end
     TextToDisplay = cat(1,{InfoString},{''},TextToDisplay);
- 
+
     % Display data in a list dialog box
     [Selection, FinalOK] = listdlg('ListString',TextToDisplay, 'ListSize', [600 200],...
         'Name',['Information for ',Description],...

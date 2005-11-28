@@ -103,11 +103,10 @@ MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR07 = popupmenu custom
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call the image of the outlines of the objects?
-%choiceVAR08 = Do not save
+%textVAR08 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR08 = Do not save
 %infotypeVAR08 = outlinegroup indep
-%inputtypeVAR08 = popupmenu custom
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%VariableRevisionNumber = 2
 
@@ -238,8 +237,8 @@ tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(TargetName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-if ~strcmp(SaveOutlined,'Do not save')
-    try handles.Pipeline.(SaveOutlined) = PrimaryObjectOutlines;
+if ~strcmp(SaveOutlines,'Do not save')
+    try handles.Pipeline.(SaveOutlines) = PrimaryObjectOutlines;
     catch
         error(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end

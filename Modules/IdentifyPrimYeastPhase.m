@@ -169,7 +169,7 @@ IncludeEdge = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %textVAR09 = What do you want to call the image of the outlines of the objects?
 %defaultVAR09 = Do not save
 %infotypeVAR09 = outlinegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Enter the SmallValue1 (even number, in pixels)
 %defaultVAR10 = 8
@@ -338,7 +338,6 @@ FinalBinary = imfill(FinalBinaryPre, 'holes');
 %%% to "compact" the label matrix: this way, each number corresponds to an
 %%% object, with no numbers skipped.
 FinalLabelMatrixImage = bwlabel(FinalBinary);
-
 FinalOutline = bwperim(FinalLabelMatrixImage > 0);
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -420,8 +419,8 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if ~strcmp(SaveOutlined,'Do not save')
-        handles.Pipeline.(SaveOutlined) = FinalOutline;
+    if ~strcmpi(SaveOutlines,'Do not save')
+        handles.Pipeline.(SaveOutlines) = FinalOutline;
     end
 catch error(['The object outlines or colored objects were not calculated by the ', ModuleName, ' module (possibly because the window is closed) so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
 end

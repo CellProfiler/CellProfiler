@@ -369,16 +369,14 @@ MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14
 UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%textVAR16 = Enter the following information, seperated by commas, if you would like to use Laplacian of Gaussian method: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Weiner Filter(height,width),Threshold
+%textVAR16 = Enter the following information, separated by commas, if you would like to use Laplacian of Gaussian method: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Weiner Filter(height,width),Threshold
 %defaultVAR16 = /
 LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
-%textVAR17 = What do you want to call the image of the outlines of the objects?
-%choiceVAR17 = Do not save
-%choiceVAR17 = OutlinedNuclei
+%textVAR17 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR17 = Do not save
 %infotypeVAR17 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
-%inputtypeVAR17 = popupmenu custom
 
 %textVAR18 = Test Mode?
 %choiceVAR18 = No
@@ -884,7 +882,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 end
             else
             ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-                if any(findobj == ThisModuleFigureNumber) | strncmpi(SaveOutlined,'Y',1) %#ok Ignore MLint
+                if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save') %#ok Ignore MLint
                     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
                     %%% window in subplot(2,2,2).
                     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
@@ -944,7 +942,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
             %%% Saves images to the handles structure so they can be saved to the hard
             %%% drive, if the user requested.
-            if ~strcmp(SaveOutlines,'Do not save')
+            if ~strcmpi(SaveOutlines,'Do not save')
                try    handles.Pipeline.(SaveOutlines) = FinalOutline;
                    catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
                end

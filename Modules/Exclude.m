@@ -10,17 +10,19 @@ function handles = Exclude(handles)
 % This image analysis module allows you to delete the objects and
 % portions of objects that are outside of a region you specify (e.g.
 % nuclei outside of a tissue region).  The objects and the region
-% should both result from any Identify module (Primary, Secondary, and
-% Tertiary modules will all work). Once the remaining objects are
-% identified, the user has the option to retain their original number
-% or renumber them consecutively. Retaining their original number
-% might be important if you intend to correlate measurements made on
-% the remaining objects with measurements made on the original
-% objects. Renumbering, on the other hand, makes the output file more
-% compact and the processing quicker. In addition, some subsequent
-% modules may not expect to have gaps in the list of objects (since
-% the objects no longer exist) so they may not run properly if the
-% objects are not renumbered.
+% should both result from any Identify module (Primary, Secondary, or
+% Tertiary).
+%
+% Retain or renumber:
+% Retaining objects' original numbers might be important if you intend to
+% correlate measurements made on the remaining objects with measurements
+% made on the original objects. Note that retaining original numbers will
+% produce gaps in the numbered list of objects (since some objects no
+% longer exist). This may cause errors with certain exporting tools or with
+% downstream modules that expect object numbers to not have gaps.
+% Renumbering, on the other hand, makes the output file more compact, the
+% processing quicker, and is also guaranteed to work with exporting and
+% data analysis tools.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved
@@ -72,21 +74,26 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the region in which objects should be included?
+%textVAR02 = What did you call the region outside of which objects should be excluded?
 %infotypeVAR02 = objectgroup
 MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What do you want to call the remaining objects?
-%defaultVAR03 = EditedStaining
+%defaultVAR03 = FilteredObjects
 %infotypeVAR03 = objectgroup indep
 RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = For the remaining objects, do you want to retain their original number or renumber them consecutively (Retain or Renumber)? Retaining their original number might be important if you intend to correlate measurements made on the remaining objects with measurements made on the original objects.  Renumbering, on the other hand, makes the output file more compact and the processing quicker.
-%choiceVAR04 = Renumber
+%textVAR04 = For the remaining objects, do you want to retain their original number or renumber them consecutively?
 %choiceVAR04 = Retain
+%choiceVAR04 = Renumber
 Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
+
+%textVAR05 = What do you want to call the outlines of the remaining objects (optional)?
+%defaultVAR05 = Do not save
+%infotypeVAR05 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %%%VariableRevisionNumber = 1
 
@@ -167,7 +174,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save') %#ok Ignore MLint
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window.
     %%% Note that the label2rgb function doesn't work when there are no objects
@@ -184,6 +191,23 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         ColoredSegmentedObjectImage = CPlabel2rgb(handles,SegmentedObjectImage);
     else  ColoredSegmentedObjectImage = SegmentedObjectImage;
     end
+    
+    %%% Calculates the object outlines, which are overlaid on the original
+    %%% image and displayed in figure subplot (2,2,4).
+    %%% Creates the structuring element that will be used for dilation.
+    StructuringElement = strel('square',3);
+    %%% Converts the FinalLabelMatrixImage to binary.
+    FinalBinaryImage = im2bw(NewSegmentedObjectImage,.5);
+    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
+    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
+    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
+    %%% which leaves the PrimaryObjectOutlines.
+    PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
+    %%% Overlays the object outlines on the mask region image.
+    ObjectOutlinesOnOrigImage = ColoredMaskRegionObjectImage;
+    %%% Determines the grayscale intensity to use for the cell outlines.
+    LineIntensity = max(ColoredMaskRegionObjectImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
     drawnow
     CPfigure(handles,ThisModuleFigureNumber);
@@ -201,6 +225,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     subplot(2,2,3);
     CPimagesc(ColoredMaskRegionObjectImage);
     title(['Previously identified ', MaskRegionName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,4); 
+    CPimagesc(ObjectOutlinesOnOrigImage); 
+    title([ObjectName, ' Outlines on Input Image']);
     CPFixAspectRatio(ColoredSegmentedObjectImage);
 end
 
@@ -212,6 +239,14 @@ drawnow
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',RemainingObjectName];
 handles.Pipeline.(fieldname) = NewSegmentedObjectImage;
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+if ~strcmp(SaveOutlines,'Do not save')
+    try    handles.Pipeline.(SaveOutlines) = FinalOutline;
+    catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+    end
+end
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.

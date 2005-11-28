@@ -27,7 +27,7 @@ DefineGrid			Mike,        Anne
 
 DisplayGridInfo			Mike,        Anne
 
-Exclude				Mike 
+Exclude				Mike,        Anne
 
 ExpandOrShrink			Mike 
 

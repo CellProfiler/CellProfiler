@@ -71,10 +71,10 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 512
 MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3})); %#ok
 
-%textVAR04 = What do you want to call the image of the outlines of the objects?
-%defaultVAR04 = OutlinedNuclei
-%infotypeVAR04 = outlinegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR06 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR06 = Do not save
+%infotypeVAR06 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 2
 
@@ -187,8 +187,8 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 try
-    if ~strcmp(SaveOutlined,'Do not save')
-        handles.Pipeline.(SaveOutlined) = FinalOutline;
+    if ~strcmpi(SaveOutlines,'Do not save')
+        handles.Pipeline.(SaveOutlines) = FinalOutline;
     end
 catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
 end

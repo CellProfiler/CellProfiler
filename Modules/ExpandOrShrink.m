@@ -80,7 +80,7 @@ ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu
 ObjectChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Choose expand or shrink:
+%textVAR04 = Do you want to expand or shrink the objects?
 %choiceVAR04 = Shrink
 %choiceVAR04 = Expand
 ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -94,12 +94,10 @@ ShrinkOrExpand = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
-%textVAR06 = What do you want to call the image of the outlines of the objects?
-%choiceVAR06 = Do not save
-%choiceVAR06 = OutlinedObjects
+%textVAR06 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR06 = Do not save
 %infotypeVAR06 = outlinegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu custom
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %%%VariableRevisionNumber = 2
 
@@ -304,7 +302,7 @@ end
 fieldname = ['Segmented',ShrunkenObjectName];
 handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;
 
-if ~strcmpi(SaveOutlined,'Do not save')
+if ~strcmpi(SaveOutlines,'Do not save')
     %%% Calculates object outlines
     MaxFilteredImage = ordfilt2(FinalShrunkenSegmentedImage,9,ones(3,3),'symmetric');
     %%% Determines the outlines.
@@ -313,7 +311,7 @@ if ~strcmpi(SaveOutlined,'Do not save')
     warning off MATLAB:conversionToLogical
     LogicalOutlines = logical(IntensityOutlines);
     warning on MATLAB:conversionToLogical
-    handles.Pipeline.(SaveOutlined) = LogicalOutlines;
+    handles.Pipeline.(SaveOutlines) = LogicalOutlines;
 end
 
 %%% Saves the ObjectCount, i.e., the number of segmented objects.

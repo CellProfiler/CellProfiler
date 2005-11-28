@@ -104,7 +104,7 @@ Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %textVAR06 = What do you want to call the outlines of the identified objects (optional)?
 %defaultVAR06 = Do not save
 %infotypeVAR06 = outlinegroup indep
-OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = If the grid fails, would you like to use the previous grid which worked?
 %choiceVAR07 = No
@@ -330,6 +330,6 @@ tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(NewObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
-if ~strcmp(OutlineName,'Do not save')
-    handles.Pipeline.(OutlineName) = FinalOutline;
+if ~strcmpi(SaveOutlines,'Do not save')
+    handles.Pipeline.(SaveOutlines) = FinalOutline;
 end

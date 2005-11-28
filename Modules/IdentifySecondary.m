@@ -231,12 +231,10 @@ DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModule
 %defaultVAR10 = 0.05
 RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = What do you want to call the image of the outlines of the objects?
-%choiceVAR11 = Do not save
-%choiceVAR11 = OutlinedCells
+%textVAR11 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR11 = Do not save
 %infotypeVAR11 = outlinegroup indep
-SaveOutlined = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu custom
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = Do you want to run in test mode?
 %choiceVAR12 = No
@@ -896,8 +894,8 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% Saves images to the handles structure so they can be saved to the hard
         %%% drive, if the user requested.
         try
-            if ~strcmp(SaveOutlined,'Do not save')
-                handles.Pipeline.(SaveOutlined) = LogicalOutlines;
+            if ~strcmpi(SaveOutlines,'Do not save')
+                handles.Pipeline.(SaveOutlines) = LogicalOutlines;
             end
         catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
         end

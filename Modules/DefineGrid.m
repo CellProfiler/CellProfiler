@@ -56,7 +56,7 @@ GridName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = 8,12
 RowsCols = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 try
-    RowsCols = str2num(RowsCols);
+    RowsCols = str2num(RowsCols); %#ok Ignore MLint
     Rows = RowsCols(1);
     Columns = RowsCols(2);
 catch
@@ -144,7 +144,7 @@ try
     XControlSpot = ControlSpot(1);
     YControlSpot = ControlSpot(2);
 catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.')];
+    error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.']);
 end
 
 %%%VariableRevisionNumber = 2

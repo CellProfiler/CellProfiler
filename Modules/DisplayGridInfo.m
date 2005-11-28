@@ -173,7 +173,7 @@ uicontrol(FigHandle,...
 
 if ~strcmp(DataName1,'/')
     Text1 = handles.Measurements.Image.(DataName1);
-    Description1 = handles.Measurements.Image.([DataName1 'Text']);
+    Description1 = handles.Measurements.Image.([DataName1 'Description']);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text1;
@@ -221,7 +221,7 @@ end
 
 if ~strcmp(DataName2,'/')
     Text2 = handles.Measurements.Image.(DataName2);
-    Description2 = handles.Measurements.Image.([DataName2 'Text']);
+    Description2 = handles.Measurements.Image.([DataName2 'Description']);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text2;
@@ -270,7 +270,7 @@ end
 
 if ~strcmp(DataName3,'/')
     Text3 = handles.Measurements.Image.(DataName3);
-    Description3 = handles.Measurements.Image.([DataName3 'Text']);
+    Description3 = handles.Measurements.Image.([DataName3 'Description']);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text3;

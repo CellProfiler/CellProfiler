@@ -324,7 +324,7 @@ end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly.
 if strncmpi(IncludeEdge,'N',1)
-    PrelimLabelMatrixImage4 = imclearborder(PrelimLabelMatrixImage3,8);
+    PrelimLabelMatrixImage4 = CPclearborder(PrelimLabelMatrixImage3,8);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
 end
 %%% The PrelimLabelMatrixImage4 is converted to binary.

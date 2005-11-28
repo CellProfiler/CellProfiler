@@ -690,7 +690,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             tmp = Objects;
             if strcmp(ExcludeBorderObjects,'Yes')
                 PrevObjects = Objects;
-                Objects = imclearborder(Objects);
+                Objects = CPclearborder(Objects);
                 
                 %%% TESTING CODE TO REMOVE BORDERS FROM ELLIPSE CROPPED
                 %%% OBJECTS
@@ -786,7 +786,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             %%% Removes objects that are touching the edge of the image, since they
             %%% won't be measured properly.
             if strncmpi(ExcludeBorderObjects,'Y',1) == 1
-                Objects = imclearborder(PrelimLabelMatrixImage3,8);
+                Objects = CPclearborder(PrelimLabelMatrixImage3,8);
             else Objects = PrelimLabelMatrixImage3;
             end
             %%% The PrelimLabelMatrixImage4 is converted to binary.

@@ -1,1 +1,1 @@
-ThisModuleFigureNumber = CPwhichmodulefigurenumber(CurrentModule);
+imclearborder

@@ -93,6 +93,16 @@ function handles = SaveImages(handles)
 drawnow
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%If you change anything here, make sure the image tool SaveImageAs is
+%consistent.
+
+%%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the images you want to save (If you would like to save a figure, enter the module number here)?

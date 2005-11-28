@@ -5,15 +5,32 @@ function handles = DefineGrid(handles)
 %
 % SHORT DESCRIPTION:
 % Produces a grid of desired specifications either manually or
-% automatically based on previously identified objects (i.e. yeast spots)
+% automatically, based on previously identified objects. The grid can then
+% be used to make measurements (using Identify Objects in Grid) or to
+% display text information (using Display Grid Info) within each
+% compartment of the grid.
 % *************************************************************************
 %
 % This module defines a grid that can be used by modules downstream.  If
-% you would like the grid to be identified automatically, then you need to
-% identify objects in a module before this one.  If you are using manual,
-% you still need some type of picture to get height and width of the image.
-% Note that automatic mode will create a skewed grid if there is an object
-% on the far left or far right that is not supposed to be there. 
+% you would like the grid to be defined automatically, an identify module
+% must be run prior to this module to identify the objects which will be
+% used to define the grid. The left-most, right-most, top-most, and
+% bottom-most object will be used to define the edges of the grid and the
+% rows and columns will be evenly spaced between these edges. Note that
+% automatic mode requires that the incoming objects are nicely defined -
+% for example, if there is an object at the edge of the images that is not
+% really an object that ought to be in the grid, a skewed grid will result.
+%
+% Settings:
+% Most are self-explanatory.
+% For MANUAL mode, several questions relate to the control spot. For some
+% projects, you might have a control spot which is always present in every
+% image (e.g. the top left spot of the grid is always present). For
+% example, if the marker spot is within the grid itself at the top left
+% position, you could specify 0,0. As another example, if the control spot
+% is in the same row as the grid and is one spot to the left of the grid,
+% you could specify that the spot is -1,0 spot units away from the top left
+% spot.
 %
 % See also IdentifyObjectsInGrid, DisplayGridInfo.
 
@@ -43,7 +60,6 @@ function handles = DefineGrid(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -109,7 +125,7 @@ ControlSpotMode = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify units or pixels below)
+%textVAR11 = For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify spot units or pixels below)
 %defaultVAR11 = 0,0
 HorizVertOffset = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 try
@@ -120,13 +136,13 @@ catch
     error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the distance from the control spot to the top left spot.  The value needs to be two integers seperated by a comma.']);
 end
 
-%textVAR12 = For MANUAL + MOUSE, did you specify the distance to the control spot (above) in units or pixels?
-%choiceVAR12 = Spots
+%textVAR12 = For MANUAL + MOUSE, did you specify the distance to the control spot (above) in spot units or pixels?
+%choiceVAR12 = Spot Units
 %choiceVAR12 = Pixels
 DistanceUnits = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = For MANUAL + ONCE or MANUAL + MOUSE, what is the spacing between columns (=horizontal = X) and rows (=vertical = Y)?
+%textVAR13 = For MANUAL + ONCE or MANUAL + MOUSE, what is the spacing, in pixels, between columns (horizontal = X) and rows (vertical = Y)?
 %defaultVAR13 = 57,57
 HorizVertSpacing = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 try
@@ -255,7 +271,7 @@ else
             YControlSpot = y(end);
             %%% Converts units to pixels if they were given in spot
             %%% units.
-            if strcmp(DistanceUnits,'Spots') == 1
+            if strcmp(DistanceUnits,'Spot Units') == 1
                 XOffsetFromControlToTopLeft = XOffsetFromControlToTopLeft * XSpacing;
                 YOffsetFromControlToTopLeft = YOffsetFromControlToTopLeft * YSpacing;
             end

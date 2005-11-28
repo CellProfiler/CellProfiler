@@ -1,5 +1,5 @@
-function ProgrammingNotes
-helpdlg(help('ProgrammingNotes'))
+function HelpProgrammingNotes
+helpdlg(help('HelpProgrammingNotes'))
 
 % PROGRAMMING NOTE
 % HELP:
@@ -54,9 +54,8 @@ helpdlg(help('ProgrammingNotes'))
 %
 % Display your image like this:
 % ImageHandle = CPimagesc(Image);
-% set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
 %
-% This CPImageTool is important so that any images that are displayed
+% This CPimagesc is important so that any images that are displayed
 % in your figure windows can be clicked on, revealing several handy
 % image tools, like saving that image, opening it in a new window, etc.
 %

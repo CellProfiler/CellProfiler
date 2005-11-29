@@ -38,12 +38,12 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What is the input image?
+%textVAR01 = What did you call the image you want to flip?
 %infotypeVAR01 = imagegroup
 %inputtypeVAR01 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the output image?
+%textVAR02 = What do you want to call the flipped image?
 %defaultVAR02 = FlippedOrigBlue
 %infotypeVAR02 = imagegroup indep
 OutputName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -72,12 +72,12 @@ drawnow
 fieldname = ['',  ImageName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Flip module, you must have previously run a module to load an image. You specified in the Flip module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The IdentifyPrimAutomatic module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to this module, you must have previously run a module to load an image. You specified in the ', ModuleName, ' module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The ',ModuleName,' module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(fieldname);
 
 if strcmp(LeftToRight,'No') && strcmp(TopToBottom,'No')
-    error('You are not flipping the image!');
+    error(['Image processing was canceled in the ', ModuleName, ' module because with the current settings you have not chosen to flip the image.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

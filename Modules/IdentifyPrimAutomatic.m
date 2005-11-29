@@ -4,19 +4,18 @@ function handles = IdentifyPrimAutomatic(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Identifies objects (e.g. nuclei) given only an image as input. 
+% Identifies objects given only an image as input. 
 % *************************************************************************
 %
-% This module identified (segments) primary objects in
-% grayscale images that show bright objects on a dark background. The
-% module has many options which vary in terms of speed and
-% sophistication.
+% This module identifies primary objects in grayscale images that show
+% bright objects on a dark background. The module has many options which
+% vary in terms of speed and sophistication.
 %
 % Requirements for the images to be fed into this module:
-% * If the objects are dark on a light background, use the
-% InvertIntensity module prior to running this module.
-% * If you are working with color images, they must first be converted
-% to grayscale using the Color To Gray module.
+% * If the objects are dark on a light background, they must first be
+% inverted using the Invert Intensity module.
+% * If you are working with color images, they must first be converted to
+% grayscale using the Color To Gray module.
 %
 % Settings:
 %

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/29) (Requested by Susan 11-29-05) - In ColorToGray modules, Type N to ignore red(or others)  doesn't work well, got error "Error in ==> CellProfiler at 53   gui_mainfcn(gui_State, varargin{:})"
+
 -(Anne) (Requested by Anne 11-29-05) - Why don't the data tools that have been converted to modules have nice headings (like %%%VARIABLES%%%)?
 
 -(Mike 11/29) (Requested by Anne 11-29-05) - We need to add the boilerplate to CPsubfunctions. I updated the boilerplate recently, so be sure to use a copy from any of the modules/data tools/image tools.

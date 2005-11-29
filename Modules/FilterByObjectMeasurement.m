@@ -1,6 +1,6 @@
 function handles = FilterByObjectMeasurement(handles)
 
-% Help for the Filter by Object Measurement module: 
+% Help for the Filter by Object Measurement module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
@@ -76,37 +76,44 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements do you want to filter by?  This module must be run after a Measure module.
 %choiceVAR03 = AreaShape
+%choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
+%choiceVAR03 = Ratio
 %choiceVAR03 = Texture
 %inputtypeVAR03 = popupmenu
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements do you want to use?
+%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Which feature number do you want to use as a filter? See help for details.
-%defaultVAR05 = 1
-FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = For RATIO, which object was used to calculate the numerator?
+%infotypeVAR05 = objectgroup
+%inputtypeVAR05 = popupmenu
+RatioNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%textVAR06 = Which feature number do you want to use as a filter? See help for details.
+%defaultVAR06 = 1
+FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 FeatureNum = str2num(FeatureNum);
 
-%textVAR06 = Minimum value required:
-%choiceVAR06 = No minimum
-%inputtypeVAR06 = popupmenu custom
-MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-
-%textVAR07 = Maximum value allowed:
-%choiceVAR07 = No maximum
+%textVAR07 = Minimum value required:
+%choiceVAR07 = No minimum
 %inputtypeVAR07 = popupmenu custom
-MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR08 = Do not save
-%infotypeVAR08 = outlinegroup indep
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = Maximum value allowed:
+%choiceVAR08 = No maximum
+%inputtypeVAR08 = popupmenu custom
+MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 2
+%textVAR09 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR09 = Do not save
+%infotypeVAR09 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -119,11 +126,13 @@ LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 if strcmp(MeasureChoice,'Intensity')
     fieldname = ['Intensity_',ImageName];
     MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
-elseif strcmp(MeasureChoice,'AreaShape')
-    MeasureInfo = handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed}(:,FeatureNum);
 elseif strcmp(MeasureChoice,'Texture')
     fieldname = ['Texture_',ImageName];
     MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+elseif strcmp(MeasureChoice,'Ratio')
+    MeasureInfo = handles.Measurements.(RatioNum).(MeasureChoice){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+else
+    MeasureInfo = handles.Measurements.(ObjectName).(MeasureChoice){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
 end
 
 if strcmpi(MinValue1, 'No minimum')
@@ -141,7 +150,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
@@ -149,36 +158,43 @@ for i=1:numel(Filter)
     FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
 end
 
-FinalLabelMatrixImage = bwlabel(FinalLabelMatrixImage);
+x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
+x(x(:,2)>0,2)=1:sum(x(:,2)>0);
+LookUpColumn = x(:,2);
 
-%%% Finds the perimeter of the objects
-PerimObjects = bwperim(FinalLabelMatrixImage > 0);
-%%% Pre-allocates space
-PrimaryObjectOutlines = logical(zeros(size(FinalLabelMatrixImage,1),size(FinalLabelMatrixImage,2)));
-%%% Places outlines on image
-PrimaryObjectOutlines(PerimObjects) = 1;
+FinalLabelMatrixImage = LookUpColumn(FinalLabelMatrixImage+1);
 
-%%% Overlays the object outlines on the original image.
+%%% Note: these outlines are not perfectly accurate; for some reason it
+%%% produces more objects than in the original image.  But it is OK for
+%%% display purposes.
+%%% Maximum filters the image with a 3x3 neighborhood.
+MaxFilteredImage = ordfilt2(FinalLabelMatrixImage,9,ones(3,3),'symmetric');
+%%% Determines the outlines.
+IntensityOutlines = FinalLabelMatrixImage - MaxFilteredImage;
+%%% Converts to logical.
+warning off MATLAB:conversionToLogical
+LogicalOutlines = logical(IntensityOutlines);
+warning on MATLAB:conversionToLogical
+%%% Determines the grayscale intensity to use for the cell outlines.
+LineIntensity = max(OrigImage(:));
+%%% Overlays the outlines on the original image.
 ObjectOutlinesOnOrigImage = OrigImage;
-ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = 1;
+ObjectOutlinesOnOrigImage(LogicalOutlines) = LineIntensity;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
-drawnow 
+drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1
-    drawnow
+if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);
-    CPimagesc(OrigImage);
+    subplot(2,2,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,3);
-    CPimagesc(LabelMatrixImage);
+    subplot(2,2,3); CPimagesc(LabelMatrixImage);
     title(['Segmented ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
@@ -187,13 +203,11 @@ if any(findobj == ThisModuleFigureNumber) == 1
     catch
         ColoredLabelMatrixImage = FinalLabelMatrixImage;
     end
-    subplot(2,2,2);
-    CPimagesc(ColoredLabelMatrixImage);
+    subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage);
     title(['Filtered ' ObjectName]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4);
-    CPimagesc(ObjectOutlinesOnOrigImage);
+    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage);
     title([TargetName, ' Outlines on Input Image']);
 end
 

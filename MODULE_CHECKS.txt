@@ -31,8 +31,6 @@ Exclude				Mike,        Anne
 
 ExpandOrShrink			Mike,        Anne
 
-ExtractHeaderInfo (I think Mike is moving to Developer scripts)
-
 FilterByObjectMeasurement	Mike,        Anne
 
 Flip				Mike,        Anne
@@ -85,8 +83,6 @@ OverlayOutlines			Mike
 
 PlaceAdjacent			Mike
 
-ProcessOutlines (I think Mike is moving to Developer scripts)
-
 RelateObjects			Mike
 
 RenameOrRenumberFile		Mike
@@ -108,8 +104,6 @@ Smooth				Mike
 SpeedUpCellProfiler		Mike
 
 SplitOrSpliceMovie		Mike
-
-StretchAlignCrop (I think Mike is moving to Developer scripts)
 
 Subtract			Mike
 

@@ -47,9 +47,9 @@ IdentifyPrimManual		Mike,        Anne
 
 IdentifyPrimYeastPhase		??  
 
-IdentifySecondary		Mike
+IdentifySecondary		Mike,        Anne
 
-IdentifyTertiarySubregion	Mike
+IdentifyTertiarySubregion	Mike,        Anne
 
 InvertIntensity			Mike
 

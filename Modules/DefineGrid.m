@@ -180,7 +180,6 @@ if strcmp(AutoOrManual,'Automatic')
     end
 elseif strcmp(AutoOrManual,'Manual')
     ImageToDisplay = CPretrieveimage(handles,ImageName,ModuleName);
-else error('This should never happen. Check the code in Define Grid module.')
 end
 
 %%% If we are in 'Once' mode and this is not the first image cycle,

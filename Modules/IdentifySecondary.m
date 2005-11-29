@@ -4,89 +4,130 @@ function handles = IdentifySecondary(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Identifies objects (e.g. cell edges) using "seed" objects identified by a
-% 1st order module (e.g. nuclei).
+% Identifies objects (e.g. cell edges) using "seed" objects identified by
+% an Identify Primary module (e.g. nuclei).
 % *************************************************************************
 %
-% METHODS OF IDENTIFICATION
+% This module identifies secondary objects (e.g. cell edges) based on two
+% inputs: (1) a previous module's identification of primary objects (e.g.
+% nuclei) and (2) an image stained for the secondary objects (not required
+% for the Distance - N option). Each primary object is assumed to be completely
+% within a secondary object (e.g. nuclei are completely within cells
+% stained for actin).
 %
-% Distance:
-% Based on another module's identification of primary objects, this
-% mode identifies secondary objects when no specific staining is
-% available.  The edges of the primary objects are simply expanded a
-% particular distance to create the secondary objects. For example, if
-% nuclei are labeled but there is no stain to help locate cell edges,
-% the nuclei can simply be expanded in order to estimate the cell's
-% location.  This is a standard module used in commercial software and
-% is known as the 'donut' or 'annulus' approach for identifying the
-% cytoplasmic compartment.
-%
-% Propagation:
-% This option identifies secondary objects based on a previous module's
-% identification of primary objects.  Each primary object is assumed to be
-% completely within a secondary object (e.g. nuclei within cells stained
-% for actin).  The module is especially good at determining the dividing
-% lines between clustered secondary objects. The dividing lines between
-% objects are determined by a combination of the distance to the nearest
-% primary object and intensity gradients (dividing lines can be either dim
-% or bright). Reference: TR Jones, AE Carpenter, P Golland (2005)
-% Voronoi-Based Segmentation of Cells on Image Manifolds, ICCV Workshop on
-% Computer Vision for Biomedical Image Applications, pp. 535-543.
-%
-% Watershed:
-% This option identifies secondary objects based on a previous
-% module's identification of primary objects.  Each primary object is
-% assumed to be completely within a secondary object (e.g. nuclei
-% within cells stained for actin). The dividing lines between objects
-% are determined by looking for dim lines between objects. It would
-% not be difficult to write a module that looks for bright lines
-% between objects, based on this one.
-%
+% It accomplishes two tasks: 
+% (a) finding the dividing lines between secondary objects which touch each
+% other. Three methods are available: Propagation, Watershed (an older
+% version of Propagation), and Distance.
+% (b) finding the dividing lines between the secondary objects and the
+% background of the image. This is done by thresholding the image stained
+% for secondary objects, except when using Distance - N.
+% 
 % Settings:
 %
-% Threshold: The threshold affects the stringency of the lines between
-% the objects and the background. You may enter an absolute number
-% between 0 and 1 for the threshold (use 'Show pixel data' to see the
-% pixel intensities for your images in the appropriate range of 0 to
-% 1), or you may have it calculated for each image individually by
-% typing 0.  There are advantages either way.  An absolute number
-% treats every image identically, but an automatically calculated
-% threshold is more realistic/accurate, though occasionally subject to
-% artifacts.  The threshold which is used for each image is recorded
-% as a measurement in the output file, so if you find unusual
-% measurements from one of your images, you might check whether the
-% automatically calculated threshold was unusually high or low
-% compared to the remaining images.  When an automatic threshold is
-% selected, it may consistently be too stringent or too lenient, so an
-% adjustment factor can be entered as well. The number 1 means no
-% adjustment, 0 to 1 makes the threshold more lenient and greater than
-% 1 (e.g. 1.3) makes the threshold more stringent.
+% Methods to identify secondary objects:
+% * Propagation - For task (a), this method will find dividing lines between
+% clumped objects where the image stained for secondary objects shows a
+% change in staining (i.e. either a dimmer or a brighter line). Smoother
+% lines work better, but unlike the watershed method, small gaps are
+% tolerated. This method is considered an improvement on the traditional
+% watershed method. The dividing lines between objects are determined by a
+% combination of the distance to the nearest primary object and intensity
+% gradients. Reference: TR Jones, AE Carpenter, P Golland (2005)
+% Voronoi-Based Segmentation of Cells on Image Manifolds, ICCV Workshop on
+% Computer Vision for Biomedical Image Applications, pp. 535-543. For task
+% (b), thresholding is used. 
 %
-% Perhaps outdated note about the threshold adjustment factor: A
-% higher number will result in smaller objects (more stringent). A
-% lower number will result in large objects (less stringent), but at a
-% certain point, depending on the particular image, the objects will
-% become huge and the processing will take a really long time.  To
-% determine whether the number is too low, you can just test it (of
-% course), but a shortcut would be to alter the code (m-file) for this
-% module to display the image called InvertedThresholdedOrigImage. The
-% resulting image that pops up during processing should not have lots
-% of speckles - this adds to the processing time. Rather, there should
-% be rather large regions of black where the cells are located.
+% * Watershed - For task (a), this method will find dividing lines between
+% objects by looking for dim lines between objects. For task (b),
+% thresholding is used. 
 %
-% Regularization factor: This module takes two factors into account
-% when deciding where to draw the dividing line between two touching
-% secondary objects: the distance to the nearest primary object, and
-% the intensity of the secondary object image.  The regularization
-% factor controls the balance between these two considerations: A
-% value of zero means that the distance to the nearest primary object
-% is ignored and the decision is made entirely on the intensity
-% gradient between the two competing primary objects. Larger values
-% weight the distance between the two values more and more heavily.
-% The regularization factor can be infinitely large, but around 10 or
-% so, the intensity image is almost completely ignored and the
-% dividing line will simply be halfway between the two competing
-% primary objects.
+% * Distance - This method is bit unusual because the edges of the primary
+% objects are expanded a specified distance to create the secondary
+% objects. For example, if nuclei are labeled but there is no stain to help
+% locate cell edges, the nuclei can simply be expanded in order to estimate
+% the cell's location. This is often called the 'doughnut' or 'annulus' or
+% 'ring' approach for identifying the cytoplasmic compartment. Using the
+% Distance - N method, the image of the secondary staining is not used at
+% all, and these expanded objects are the final secondary objects. Using
+% the Distance - B method, thresholding is used to eliminate background
+% regions from the secondary objects. This allows the extent of the
+% secondary objects to be limited to a certain distance away from the edge
+% of the primary objects.
+% 
+% Select automatic thresholding method or enter an absolute threshold:
+%    The threshold affects the stringency of the lines between the
+% objects and the background. You can have the threshold automatically
+% calculated using several methods, or you can enter an absolute number
+% between 0 and 1 for the threshold (to see the pixel intensities for your
+% images in the appropriate range of 0 to 1, use the CellProfiler Image
+% Tool, 'Show Or Hide Pixel Data', in a window showing your image).
+% There are advantages either way.  An absolute number treats every
+% image identically, but is not robust to slight changes in
+% lighting/staining conditions between images. An automatically
+% calculated threshold adapts to changes in lighting/staining
+% conditions between images and is usually more robust/accurate, but
+% it can occasionally produce a poor threshold for unusual/artifactual
+% images. It also takes a small amount of time to calculate.
+%    The threshold which is used for each image is recorded as a
+% measurement in the output file, so if you find unusual measurements
+% from one of your images, you might check whether the automatically
+% calculated threshold was unusually high or low compared to the
+% other images.
+%    There are two methods for finding thresholds automatically,
+% Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu method
+% uses our version of the Matlab function graythresh (the code is in the
+% CellProfiler subfunction CPthreshold). Our modifications include taking
+% into account the max and min values in the image and log-transforming the
+% image prior to calculating the threshold. Otsu's method is probably
+% better if you don't know anything about the image, or if the percent of
+% the image covered by objects varies substantially from image to image.
+% But if you know the object coverage percentage and it does not vary much
+% from image to image, the MoG can be better, especially if the coverage
+% percentage is not near 50%. Note however that the MoG function is
+% experimental and has not been thoroughly validated.
+%    You can also choose between global and adaptive thresholding,
+% where global means that one threshold is used for the entire image and
+% adaptive means that the threshold varies across the image. Adaptive is
+% slower to calculate but provides more accurate edge determination which
+% may help to separate clumps, especially if you are not using a
+% clump-separation method (see below).
+%
+% Threshold correction factor:
+% When the threshold is calculated automatically, it may consistently be
+% too stringent or too lenient. You may need to enter an adjustment factor
+% which you empirically determine is suitable for your images. The number 1
+% means no adjustment, 0 to 1 makes the threshold more lenient and greater
+% than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
+% Otsu automatic thresholding inherently assumes that 50% of the image is
+% covered by objects. If a larger percentage of the image is covered, the
+% Otsu method will give a slightly biased threshold that may have to be
+% corrected using a threshold correction factor.
+%
+% Lower and upper bounds on threshold:
+% Can be used as a safety precaution when the threshold is calculated
+% automatically. For example, if there are no objects in the field of view,
+% the automatic threshold will be unreasonably low. In such cases, the
+% lower bound you enter here will override the automatic threshold.
+%
+% Approximate percentage of image covered by objects:
+% An estimate of how much of the image is covered with objects. This
+% information is currently only used in the MoG (Mixture of Gaussian)
+% thresholding but may be used for other thresholding methods in the future
+% (see below).
+%
+% Regularization factor (for propagation method only): This method takes
+% two factors into account when deciding where to draw the dividing line
+% between two touching secondary objects: the distance to the nearest
+% primary object, and the intensity of the secondary object image.  The
+% regularization factor controls the balance between these two
+% considerations: A value of zero means that the distance to the nearest
+% primary object is ignored and the decision is made entirely on the
+% intensity gradient between the two competing primary objects. Larger
+% values weight the distance between the two values more and more heavily.
+% The regularization factor can be infinitely large, but around 10 or so,
+% the intensity image is almost completely ignored and the dividing line
+% will simply be halfway between the two competing primary objects.
 %
 % Note: Primary identify modules produce two (hidden) output images that
 % are used by this module.  The Segmented image contains the final, edited
@@ -102,34 +143,15 @@ function handles = IdentifySecondary(handles)
 % TECHNICAL DESCRIPTION OF THE PROPAGATION OPTION:
 % Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
 % limited to MASK.  MASK should be a logical array.  LAMBDA is a
-% regularization parameter, larger being closer to Euclidean distance
-% in the image plane, and zero being entirely controlled by IMAGE.
-% Propagation of labels is by shortest path to a nonzero label in
-% LABELS_IN.  Distance is the sum of absolute differences in the image
-% in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
-% LAMBDA^2).  Note that there is no separation between adjacent areas
-% with different labels (as there would be using, e.g., watershed).
-% Such boundaries must be added in a postprocess.
-%
-% Information on IdentifySecPropagateSubfunction:
-%
-% This is a subfunction implemented in C and MEX to perform the
-% propagate algorithm (somewhat similar to watershed).  This help
-% documents the arguments and behavior of the propagate algorithm.
-%
-% Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
-% limited to MASK.  MASK should be a logical array.  LAMBDA is a
-% regularization paramter, larger being closer to Euclidean distance
-% in the image plane, and zero being entirely controlled by IMAGE.
-%
-% Propagation of labels is by shortest path to a nonzero label in
-% LABELS_IN.  Distance is the sum of absolute differences in the image
-% in a 3x3 neighborhood, combined with LAMBDA via sqrt(differences^2 +
-% LAMBDA^2).
-%
-% Note that there is no separation between adjacent areas with
-% different labels (as there would be using, e.g., watershed).  Such
-% boundaries must be added in a postprocess.
+% regularization parameter, larger being closer to Euclidean distance in
+% the image plane, and zero being entirely controlled by IMAGE. Propagation
+% of labels is by shortest path to a nonzero label in LABELS_IN.  Distance
+% is the sum of absolute differences in the image in a 3x3 neighborhood,
+% combined with LAMBDA via sqrt(differences^2 + LAMBDA^2).  Note that there
+% is no separation between adjacent areas with different labels (as there
+% would be using, e.g., watershed). Such boundaries must be added in a
+% postprocess. IdentifySecPropagateSubfunction is the subfunction
+% implemented in C and MEX to perform the propagate algorithm.
 %
 % See also IDENTIFYSECPROPAGATESUBFUNCTION, IDENTIFYSECDISTANCE,
 % IDENTIFYSECWATERSHED.

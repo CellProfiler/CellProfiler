@@ -64,7 +64,7 @@ Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 FeatureNo = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 if isempty(FeatureNo)
-    error('You entered an incorrect Feature Number.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
 %textVAR04 = If using INTENSITY or TEXTURE measures, which image was used to make the measurements?

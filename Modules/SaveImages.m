@@ -288,7 +288,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
                 return;
             end
             if strcmp(Answer,'Cancel')
-                error('Image processing was canceled')
+                error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
         end
     end

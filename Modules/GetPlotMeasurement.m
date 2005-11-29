@@ -72,7 +72,7 @@ FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 FeatureNo = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 if isempty(FeatureNo)
-    error('You entered an incorrect Feature Number.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
 %textVAR05 = If using INTENSITY or TEXTURE measures, which image would you like to process?

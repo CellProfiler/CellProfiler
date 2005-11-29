@@ -21,8 +21,8 @@ function handles = GetHistogram(handles)
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%   Anne Carpenter
-%   Thouis Jones
+%   Anne E. Carpenter
+%   Thouis Ray Jones
 %   In Han Kang
 %   Ola Friman
 %   Steve Lowe
@@ -63,7 +63,7 @@ Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 FeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 if isempty(FeatureNumber)
-    error('You entered an incorrect Feature Number.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 
 %textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements do you want to use?
@@ -84,7 +84,7 @@ NumberOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 %inputtypeVAR06 = popupmenu custom
 
 if isempty(NumberOfBins)
-    error('You entered an incorrect number of bins.');
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for number of histogram bins is not valid.']);
 end
 
 %textVAR07 = Do you want to use a logarithmic scale for the histogram?
@@ -93,7 +93,7 @@ end
 LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = Minimum and Maximum values for the histogram (Min,Max) or automatic:
+%textVAR08 = Enter the minimum and maximum values for the histogram (Min,Max) or automatic:
 %defaultVAR08 = automatic
 MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -132,20 +132,19 @@ if isempty(index)
         MinHistogramValue = 'automatic';
         MaxHistogramValue = 'automatic';
     else
-        error(['The Min and Max size entry in the ', ModuleName, ' module is invalid.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max size entry is invalid.'])
     end
 else
     MinHistogramValue = str2double(MinAndMax(1:index-1));
     MaxHistogramValue = str2double(MinAndMax(index+1:end));
     if isempty(MinHistogramValue) || isempty(MaxHistogramValue)
-        error('You did not enter numbers for the min and max histogram values');
+        error(['Image processing was canceled in the ', ModuleName, ' module because you did not enter numbers for the min and max histogram values.']);
     end
 end
 
-try
-        Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
+try  Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
 catch
-    error(['The measurements for ',ModuleName,' could not be found. This module must be after a measure module or no objects were identified.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because the measurements could not be found. This module must be after a measure module or no objects were identified.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -173,7 +172,7 @@ if strcmpi(LogOrLinear,'Yes')
     MinLog = log10(MinHistogramValue);
     HistogramRange = MaxLog - MinLog;
     if HistogramRange <= 0
-        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
+        error(['Image processing was canceled in the ', ModuleName, ' module because the numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.']);
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);
@@ -183,7 +182,7 @@ else
     %%% Determine plot bin locations.
     HistogramRange = MaxHistogramValue - MinHistogramValue;
     if HistogramRange <= 0
-        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
+        error(['Image processing was canceled in the ', ModuleName, ' module because the numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.']);
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);

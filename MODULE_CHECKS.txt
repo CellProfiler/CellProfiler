@@ -35,7 +35,7 @@ FilterByObjectMeasurement	Mike,        Anne
 
 Flip				Mike,        Anne
 
-GetHistogram
+GetHistogram                                 Anne
 
 GrayToColor			Mike
 

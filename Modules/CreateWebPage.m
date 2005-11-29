@@ -49,8 +49,8 @@ function handles = CreateWebPage(handles)
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%   Anne Carpenter
-%   Thouis Jones
+%   Anne E. Carpenter
+%   Thouis Ray Jones
 %   In Han Kang
 %   Ola Friman
 %   Steve Lowe

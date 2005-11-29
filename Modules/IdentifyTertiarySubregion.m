@@ -4,25 +4,25 @@ function handles = IdentifyTertiarySubregion(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Identifies 3rd order obects (e.g. cytoplasm) by removing the 1st order
-% objects (e.g. nuclei) from 2nd order objects (e.g. cells) leaving a
-% doughnut shape.
+% Identifies tertiary obects (e.g. cytoplasm) by removing the primary
+% objects (e.g. nuclei) from secondary objects (e.g. cells) leaving a
+% ring shape.
 % *************************************************************************
 %
-% This module will take the identified objects specified in the first
-% box and remove from them the identified objects specified in the
-% second box. For example, "subtracting" the nuclei from the cells
-% will leave just the cytoplasm, the properties of which can then be
-% measured by Measure modules. The first objects should therefore be
-% equal in size or larger than the second objects and must completely
+% This module will take the smaller identified objects and remove from them
+% the larger identified objects. For example, "subtracting" the nuclei from
+% the cells will leave just the cytoplasm, the properties of which can then
+% be measured by Measure modules. The larger objects should therefore be
+% equal in size or larger than the smaller objects and must completely
 % contain the second objects.  Both inputs should be objects produced by
-% identify modules, not images. Note that creating
-% subregions using this module can result in objects that are not
-% contiguous, which does not cause problems when running the Measure
-% Intensity and Texture module, but does cause problems when running
-% the Measure Area Shape Intensity Texture module because calculations
-% of the perimeter, aspect ratio, solidity, etc. cannot be made for
-% noncontiguous objects.
+% identify modules, not images.
+%
+% Note: creating subregions using this module can result in objects that
+% are not contiguous, which does not cause problems when running the
+% Measure Intensity and Texture module, but does cause problems when
+% running the Measure Area Shape module because calculations of the
+% perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
+% objects.
 %
 % See also identify Primary and Identify Secondary modules.
 
@@ -52,7 +52,6 @@ function handles = IdentifyTertiarySubregion(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -234,6 +233,7 @@ if any(findobj == ThisModuleFigureNumber);
     subplot(2,2,4); CPimagesc(FinalOutline); title([SubregionObjectName, ' Outlines']);
     CPFixAspectRatio(PrimaryObjectImage);
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -542,7 +542,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     if strcmp(MaximaSuppressionSize,'Automatic')
                         MaximaSuppressionSize = 7;             % ~ 10/1.5
                     else
-                        MaximaSuppressionSize = MaximaSuppressionSize*ImageResizeFactor;
+                        MaximaSuppressionSize = round(MaximaSuppressionSize*ImageResizeFactor);
                     end
                 else
                     ImageResizeFactor = 1;

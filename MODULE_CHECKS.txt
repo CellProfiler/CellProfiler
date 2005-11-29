@@ -51,7 +51,7 @@ IdentifySecondary		Mike,        Anne
 
 IdentifyTertiarySubregion	Mike,        Anne
 
-InvertIntensity			Mike
+InvertIntensity			Mike,        Anne
 
 LoadImages			Mike (Should try all options)
 

@@ -4,8 +4,11 @@ function handles = InvertIntensity(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Converts the intensities of an image so that black becomes white.
+% Converts the intensities of a grayscale image so that black becomes white.
 % *************************************************************************
+%
+% The module does not work on color images. It takes a grayscale image and
+% inverts it (makes a negative) so that black is white and vice versa.
 %
 % See also <nothing relevant>.
 
@@ -35,7 +38,6 @@ function handles = InvertIntensity(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

@@ -9,19 +9,20 @@ function handles = IdentifyObjectsInGrid(handles)
 % *************************************************************************
 %
 % This module identifies objects that are in a grid pattern which allows
-% you to measure them using measure modules. It requires that you
+% you to measure the objects using measure modules. It requires that you
 % create a grid in an earlier module using the Define Grid module.
 %
 % Settings:
 % For several of the automatic options, you will need to tell the module
 % what you called previously identified objects. Typically, you roughly
 % identify objects of interest in a previous Identify module, and the
-% locations of these rough objects are refined in this module. Objects are
-% also numbered according to the grid definitions. For the Natural Shape
-% option, if an object does not exist within a grid compartment, an object
-% consisting of one single pixel in the middle of the grid square will be
-% created. Also, if a grid compartment contains two partial objects, they
-% will be combined together as a single object.
+% locations and/or shapes of these rough objects are refined in this
+% module. Objects are also numbered according to the grid definitions. For
+% the Natural Shape option, if an object does not exist within a grid
+% compartment, an object consisting of one single pixel in the middle of
+% the grid square will be created. Also, for the Natural Shape option, if a
+% grid compartment contains two partial objects, they will be combined
+% together as a single object.
 %
 % If the grid fails...
 % If placing the objects within the grid is impossible for some reason (the
@@ -79,7 +80,7 @@ drawnow
 GridName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the newly identified objects?
+%textVAR02 = What do you want to call the objects identified by this module?
 %defaultVAR02 = Spots
 %infotypeVAR02 = objectgroup indep
 NewObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});

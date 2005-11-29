@@ -37,6 +37,11 @@ function handles = GetPlotMeasurement(handles)
 %
 % $Revision: 2606 $
 
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
+drawnow
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What type of plot do you want?

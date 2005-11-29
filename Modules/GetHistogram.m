@@ -1,4 +1,5 @@
 function handles = GetHistogram(handles)
+
 % Help for the Get Histogram module:
 % Category: Other
 %

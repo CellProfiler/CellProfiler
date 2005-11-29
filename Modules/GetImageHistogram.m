@@ -1,4 +1,5 @@
 function handles = GetImageHistogram(handles)
+
 % Help for the Get Image Histogram module:
 % Category: Other
 %
@@ -27,6 +28,11 @@ function handles = GetImageHistogram(handles)
 % Website: http://www.cellprofiler.org
 %
 % $Revision: 2535 $
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
+drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -74,9 +80,9 @@ drawnow
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST CYCLE FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
+%%% DATA ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 OrigImage=handles.Pipeline.(ImageName);

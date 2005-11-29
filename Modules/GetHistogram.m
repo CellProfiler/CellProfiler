@@ -3,7 +3,7 @@ function handles = GetHistogram(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Produce histogram of measured data in several formats.
+% Produces a histogram of measurements.
 % *************************************************************************
 %
 % Feature Number:
@@ -41,10 +41,9 @@ function handles = GetHistogram(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to use for the histogram (The option IMAGE currently only works with Correlation measurements)?
+%textVAR01 = Which objects' measurements do you want to use for the histogram? The option IMAGE currently only works with Correlation measurements).
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -59,7 +58,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu custom
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%textVAR03 = Which feature number do you want to use to make histograms? See help for details.
 %defaultVAR03 = 1
 FeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -67,17 +66,17 @@ if isempty(FeatureNumber)
     error('You entered an incorrect Feature Number.');
 end
 
-%textVAR04 = If using INTENSITY or TEXTURE measures, which image would you like to process?
+%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements do you want to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What do you want to call the generated histograms?
+%textVAR05 = What do you want to call the resulting histogram image?
 %defaultVAR05 = OrigHist
 %infotypeVAR05 = imagegroup indep
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = How many bins do you want?
+%textVAR06 = How many histogram bins would you like to use?
 %choiceVAR06 = 2
 %choiceVAR06 = 16
 %choiceVAR06 = 256
@@ -88,17 +87,17 @@ if isempty(NumberOfBins)
     error('You entered an incorrect number of bins.');
 end
 
-%textVAR07 = Log transform the histogram?
+%textVAR07 = Do you want to use a logarithmic scale for the histogram?
 %choiceVAR07 = No
 %choiceVAR07 = Yes
 LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = Min and Max values for histogram (Min,Max) or automatic:
+%textVAR08 = Minimum and Maximum values for the histogram (Min,Max) or automatic:
 %defaultVAR08 = automatic
 MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = Do you want to use numbers of percents?
+%textVAR09 = Do you want to use absolute numbers of objects or percentage of total objects?
 %choiceVAR09 = Numbers
 %choiceVAR09 = Percents
 NumberOrPercent = char(handles.Settings.VariableValues{CurrentModuleNum,9});

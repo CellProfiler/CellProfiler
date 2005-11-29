@@ -37,7 +37,7 @@ Flip				Mike,        Anne
 
 GetHistogram                                 Anne
 
-GrayToColor			Mike
+GrayToColor			Mike,        Anne
 
 IdentifyObjectsInGrid		Mike,        Anne
 

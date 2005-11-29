@@ -49,10 +49,10 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the image to be colored blue?
+%textVAR01 = What did you call the image to be colored red?
 %choiceVAR01 = Leave this black
 %infotypeVAR01 = imagegroup
-BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the image to be colored green?
@@ -61,30 +61,30 @@ BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What did you call the image to be colored red?
+%textVAR03 = What did you call the image to be colored blue?
 %choiceVAR03 = Leave this black
 %infotypeVAR03 = imagegroup
-RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the resulting image?
-%defaultVAR04 = RGBImage
+%defaultVAR04 = ColorImage
 %infotypeVAR04 = imagegroup indep
 RGBImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the adjustment factor for the blue image
+%textVAR05 = Enter the adjustment factor for the red image
 %defaultVAR05 = 1
-BlueAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the adjustment factor for the green image
 %defaultVAR06 = 1
 GreenAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Enter the adjustment factor for the red image
+%textVAR07 = Enter the adjustment factor for the blue image
 %defaultVAR07 = 1
-RedAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+BlueAdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -199,7 +199,6 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
-
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);

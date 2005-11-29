@@ -179,7 +179,7 @@ if strcmp(AutoOrManual,'Automatic')
     catch error(['Image processing was canceled in the ', ModuleName, ' module because you specified automatic mode using the objects you called ', ObjectName, ' and these objects were not found by CellProfiler. Perhaps there is a typo.'])
     end
 elseif strcmp(AutoOrManual,'Manual')
-    ImageToDisplay = handles.Pipeline.(ImageName);
+    ImageToDisplay = CPretrieveimage(handles,ImageName,ModuleName);
 else error('This should never happen. Check the code in Define Grid module.')
 end
 

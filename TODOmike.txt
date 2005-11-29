@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- CPretrieveimage: check Exclude
+
 - SpeedUpCellProfiler removed FileList for AVI files which does not work
 
 - Test SaveImageAs

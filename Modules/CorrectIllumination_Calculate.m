@@ -221,19 +221,7 @@ end
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-fieldname = ['', ImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-%%% Reads the image.
-OrigImage = handles.Pipeline.(fieldname);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
 
 if strcmp(IntensityChoice,'Background')
     %%% Checks whether the chosen block size is larger than the image itself.
@@ -242,12 +230,6 @@ if strcmp(IntensityChoice,'Background')
     if BlockSize >= MinLengthWidth
         error(['Image processing was canceled in the ', ModuleName, ' module because the selected block size is greater than or equal to the image size itself.'])
     end
-end
-
-%%% Checks that the original image is two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(OrigImage) ~= 2
-    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

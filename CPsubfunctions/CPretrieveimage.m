@@ -22,7 +22,7 @@ function image = CPretrieveimage(handles,ImageName,ModuleName,ColorFlag,ScaleFla
 %
 % $Revision: 2802 $
 
-if nargin == 6
+if nargin == 5
     SizeFlag = 0;
 elseif nargin == 3
     ColorFlag = 0;

@@ -94,51 +94,14 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Checks whether the image to be analyzed exists in the handles
-%%% structure.
-if ~isfield(handles.Pipeline, Image1Name)
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image1Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-%%% Reads the image.
-Image1 = handles.Pipeline.(Image1Name);
+%%% Reads the images.
+Image1 = CPretrieveimage(handles,Image1Name,ModuleName,2,1);
 
-if max(Image1(:)) > 1 || min(Image1(:)) < 0
-    CPwarndlg(['The first image that you loaded in the ', ModuleName, ' module is outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-end
-
-%%% Same for Image 2.
-if ~isfield(handles.Pipeline, Image2Name)
-    error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image2Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-Image2 = handles.Pipeline.(Image2Name);
-
-if max(Image2(:)) > 1 || min(Image2(:)) < 0
-    CPwarndlg('The second image that you loaded is outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
-end
+Image2 = CPretrieveimage(handles,Image2Name,ModuleName,2,1);
 
 %%% Same for Image 3.
 if ~strcmp(Image3Name,'Do not use')
-    if ~isfield(handles.Pipeline, Image3Name)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', Image3Name, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    Image3 = handles.Pipeline.(Image3Name);
-    if max(Image3(:)) > 1 || min(Image3(:)) < 0
-        CPwarndlg('The third image that you loaded is outside the 0-1 range, and you may be losing data.','Outside 0-1 Range','replace');
-    end
-
-    if ndims(Image3) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.']);
-    end
-end
-
-if ndims(Image1) ~= 2 || ndims(Image2) ~= 2
-    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.']);
+    Image3 = CPretrieveimage(handles,Image3Name,ModuleName,2,1);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

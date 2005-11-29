@@ -133,7 +133,7 @@ end
 fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)
-    LabelMatrixImage = handles.Pipeline.(fieldname);
+    LabelMatrixImage = CPretrieveimage(handles,fieldname,ModuleName);
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
 elseif strcmpi(FeatureType,'Ratio')

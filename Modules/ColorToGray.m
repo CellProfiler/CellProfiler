@@ -114,29 +114,7 @@ drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['', ImageName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-%%% Reads the image.
-OrigImage = handles.Pipeline.(fieldname);
-
-if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-end
-
-%%% Checks that the original image is three-dimensional (i.e. a color
-%%% image)
-if ndims(OrigImage) ~= 3
-    error(['Image processing was canceled because the ', ModuleName, ' module requires a color image (an input image that is three-dimensional), but the image loaded does not fit this requirement.  This may be because the image is a grayscale image already.'])
-end
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,3,1);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS%%%

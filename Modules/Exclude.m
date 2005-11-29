@@ -113,19 +113,19 @@ SegmentedObjectImage = handles.Pipeline.(fieldname);
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
 fieldname = ['UneditedSegmented',ObjectName];
-if isfield(handles.Pipeline, fieldname) == 1
+if isfield(handles.Pipeline, fieldname)
     UneditedSegmentedObjectImage = handles.Pipeline.(fieldname);
 end
 
 fieldname = ['SmallRemovedSegmented',ObjectName];
-if isfield(handles.Pipeline, fieldname) == 1
+if isfield(handles.Pipeline, fieldname)
     SmallRemovedSegmentedObjectImage = handles.Pipeline.(fieldname);
 end
 
 %%% The final, edited version of the Masked objects is the only one
 %%% which must be loaded here.
 fieldname = ['Segmented',MaskRegionName];
-if isfield(handles.Pipeline, fieldname) == 0
+if ~isfield(handles.Pipeline, fieldname)
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to identify primary objects. You specified that these objects were called ', MaskRegionName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
 end
 MaskRegionObjectImage = handles.Pipeline.(fieldname);

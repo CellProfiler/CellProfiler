@@ -1,4 +1,5 @@
 Colin's TODO list
+- Colin, I made a ton of changes to identify modules so they all produce outlines consistently. Could you please check that they all still work with overlay outlines?
 
 - Put CP logo in main GUI ??
 

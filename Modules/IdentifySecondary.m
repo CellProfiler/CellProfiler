@@ -175,20 +175,20 @@ end
 PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the objects identified by this module? (Note: Data will be produced based on this name, e.g. ObjectTotalAreaCells)
+%textVAR02 = What do you want to call the objects identified by this module?
 %defaultVAR02 = Cells
 %infotypeVAR02 = objectgroup indep
 SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = How do you want to identify the secondary objects (Distance - B uses a background image for identification, Distance - N identifies objects by distance alone)?
-%choiceVAR03 = Distance - N
-%choiceVAR03 = Distance - B
+%textVAR03 = Select the method to identify the secondary objects (Distance - B uses background; Distance - N does not):
 %choiceVAR03 = Propagation
 %choiceVAR03 = Watershed
+%choiceVAR03 = Distance - N
+%choiceVAR03 = Distance - B
 %inputtypeVAR03 = popupmenu
 OriginalIdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What did you call the images of the secondary objects? If identifying objects by DISTANCE - N, this will not affect object identification, only the final display.
+%textVAR04 = What did you call the images to be used to find the edges of the secondary objects? For DISTANCE - N, this will not affect object identification, only the final display.
 %infotypeVAR04 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu

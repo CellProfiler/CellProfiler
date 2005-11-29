@@ -13,10 +13,9 @@ function handles = MeasureRatios(handles)
 % be used in ClassifyObjects.
 %
 % Feature Number:
-% The feature number is the parameter from the chosen module (AreaShape,
-% Intensity, Texture) which will be used for the ratio. Please see
-% individual measurement module help for list of measurements and their
-% feature numbers.
+% The feature number specifies which features from the Measure module(s)
+% will be used for the ratio. See each Measure module's help for the
+% numbered list of the features measured by that module.
 %
 % See also MEASUREIMAGEAREAOCCUPIED, MEASUREIMAGEINTENSITY,
 % MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,

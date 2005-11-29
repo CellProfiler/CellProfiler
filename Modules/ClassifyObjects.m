@@ -20,10 +20,9 @@ function handles = ClassifyObjects(handles)
 % Settings:
 %
 % Feature Number:
-% The feature number is the parameter from the chosen module (AreaShape,
-% Intensity, Texture) which will be used for the ratio. Please see
-% individual measurement module help for list of measurements and their
-% feature numbers.
+% The feature number specifies which feature from the Measure module will
+% be used for classifying. See each Measure module's help for the numbered
+% list of the features measured by that module.
 %
 % If you are selecting Ratio, this is the order of ratio measurements that
 % you calculated for the numerator.  For instance, if you previously

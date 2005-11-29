@@ -8,10 +8,9 @@ function handles = GetDataOnImage(handles)
 % *************************************************************************
 %
 % Feature Number:
-% The feature number is the parameter from the chosen module (AreaShape,
-% Intensity, Texture) which will be used for the ratio. Please see
-% individual measurement module help for list of measurements and their
-% feature numbers.
+% The feature number specifies which feature from the Measure module will
+% be used for display. See each Measure module's help for the numbered
+% list of the features measured by that module.
 %
 % See also MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
 % MEASUREOBJECTTEXTURE, MEASURECORRELATION

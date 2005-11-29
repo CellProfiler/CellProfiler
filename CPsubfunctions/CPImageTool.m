@@ -42,7 +42,7 @@ if ~isempty(varargin)
                     axis image;
                     colormap gray;    % Scalar image
                 else
-                    image(data);
+                    CPimagesc(data);
                     axis image;                    % RGB image
                 end
                 title(get(get(get(get(ITh,'UserData'),'parent'),'title'),'string'));

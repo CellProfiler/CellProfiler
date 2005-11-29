@@ -35,6 +35,28 @@ function fout = CPwaitbar(x,whichbar,varargin)
 %   Copyright 1984-2004 The MathWorks, Inc.
 %   $Revision$  $Date$
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision$
+
 if nargin>=2
     if ischar(whichbar)
         type=2; %we are initializing

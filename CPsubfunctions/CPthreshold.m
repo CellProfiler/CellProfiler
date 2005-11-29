@@ -1,5 +1,27 @@
 function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName)
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 2802 $
+
 %%% Convert user-specified percentage of image covered by objects to a prior probability
 %%% of a pixel being part of an object.
 pObject = str2double(pObject(1:2))/100;

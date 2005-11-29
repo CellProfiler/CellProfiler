@@ -1,7 +1,30 @@
 function [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbins(Measurements,NumberOfBins,MinVal,MaxVal,PlotLog,CountOption)
-%%% This function will calculate a histogram based on measurements, bin
-%%% numbers, minimum value, and maximum value. The x-axis can be in log
-%%% scale. The histogram can either be a count or normal values.
+
+% This function will calculate a histogram based on measurements, bin
+% numbers, minimum value, and maximum value. The x-axis can be in log
+% scale. The histogram can either be a count or normal values.
+%
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 2802 $
 
 if nargin <= 5
     CountOption = 'Normal'

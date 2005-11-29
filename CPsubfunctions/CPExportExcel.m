@@ -1,16 +1,5 @@
 function CPExportData(handles)
 
-% Help for the Export Data tool:
-% Category: Data Tools
-%
-% Once image analysis is complete, use this tool to select the
-% output file to extract the measurements and other information about
-% the analysis.  The data will be converted to a tab-delimited text file
-% which can be read by for example Excel or in a text editor.
-
-% CellProfiler is distributed under the GNU General Public License.
-% See the accompanying file LICENSE for details.
-%
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %

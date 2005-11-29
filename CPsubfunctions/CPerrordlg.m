@@ -1,4 +1,4 @@
-function varargout = errordlg(ErrorString,DlgName,Replace)
+function varargout = CPerrordlg(ErrorString,DlgName,Replace)
 %ERRORDLG Error dialog box.
 %  HANDLE = ERRORDLG(ErrorString,DlgName,CREATEMODE) creates an 
 %  error dialog box which displays ErrorString in a window 
@@ -16,6 +16,28 @@ function varargout = errordlg(ErrorString,DlgName,Replace)
 %  Author: L. Dean
 %  Copyright 1984-2002 The MathWorks, Inc.
 %  $Revision: 5.24 $  $Date: 2002/04/15 03:25:03 $
+
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 2802 $
 
 NumArgIn = nargin;
 if NumArgIn==0,

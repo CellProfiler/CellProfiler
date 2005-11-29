@@ -1,12 +1,8 @@
 function CPExportSQL(handles)
 
-% Help for the ExportSQl tool:
-% Category: Data Tools
-%
-% This tool exports measurements from one or several CellProfiler
-% output files to delimited text files. It also creates an SQL
-% script that puts the measurements into an SQL database. This tool calls CPConvertSQL
-% function to do the actuall exporting, which is same as WriteSQL module.
+% This subfunction exports measurements from one or several CellProfiler
+% output files to delimited text files. It also creates an SQL script that
+% puts the measurements into an SQL database.
 %
 % Current known limitations and things to consider:
 %

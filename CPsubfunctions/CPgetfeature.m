@@ -1,15 +1,37 @@
 function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,ImageCheck,Suffix)
 
-%   This function takes the user through three list dialogs where a
-%   specific feature is chosen. It is possible to go back and forth
-%   between the list dialogs. The chosen feature can be identified
-%   via the output variables as
-%   handles.Measurements.(ObjectTypename).(FeatureType){FeatureNbr}
-%   Empty variables will be returned if the cancel button is pressed.
+% This function takes the user through three list dialogs where a specific
+% feature is chosen. It is possible to go back and forth between the list
+% dialogs. The chosen feature can be identified via the output variables as
+% handles.Measurements.(ObjectTypename).(FeatureType){FeatureNbr} Empty
+% variables will be returned if the cancel button is pressed.
 %
-%   The input variable 'suffix' is a cell array containing strings of
-%   suffixes to look for. The currently used suffixes are 'Features' and
-%   'Text'. If ommitted, the default is to look for suffix 'Features'.
+% The input variable 'suffix' is a cell array containing strings of
+% suffixes to look for. The currently used suffixes are 'Features' and
+% 'Text'. If ommitted, the default is to look for suffix 'Features'.
+%
+% CellProfiler is distributed under the GNU General Public License. See the
+% accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision$
+
 
 if nargin < 2
     ImageCheck = 0;

@@ -1,5 +1,5 @@
 function CPInteractiveZoom
-%
+
 % zoom2cursor, without arguments, will activate the current axis, create a text box showing the
 % current position of the mouse pointer (similar to pixval), and automatically zoom the image to the
 % location of the cursor  as it is moved. The zoomed display dynamically scrolls with the motion of the cursor.
@@ -24,6 +24,28 @@ function CPInteractiveZoom
 % 6/27/05; Rev 3 (Colin Clarke): Fixed clash with normal zoom function, allows zoom for
 %                 multiple images in one figure, and made it go better with
 %                 CellProfiler.
+%
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision$
 
 currfig = findobj('type','figure');
 if isempty(currfig)

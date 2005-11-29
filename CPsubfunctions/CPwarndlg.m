@@ -17,6 +17,28 @@ function varargout = warndlg(WarnString,DlgName,Replace)
 %  Copyright 1984-2002 The MathWorks, Inc.
 %  $Revision$  $Date$
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision$
+
 if nargin==0,
    WarnString = 'This is the default warning string.';
 end

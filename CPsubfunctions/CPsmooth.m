@@ -1,10 +1,30 @@
 function SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SetBeingAnalyzed)
 
-%%% This subfunction is used for several modules, including
-%%% SMOOTH, AVERAGE,
-%%% CORRECTILLUMINATION_APPLY,
-%%% CORRECTILLUMINATION_CALCULATEUSINGINTENSITIES,
-%%% CORRECTILLUMINATION_CALCULATEUSINGBACKGROUNDINTENSITIES.
+% This subfunction is used for several modules, including SMOOTH, AVERAGE,
+% CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE
+%
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision$
+
 
 if strcmpi(SmoothingMethod,'N') == 1
 elseif strcmpi(SmoothingMethod,'P') == 1

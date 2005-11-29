@@ -1,6 +1,28 @@
 function rgOut = RgSmartDilate(rgIn,n)
-%Accepts labelled regions and dilates them with radius 1 diamond, disallowing region overlap. 
-%rgIn is a labelled region image, n is number of iterations.
+% Accepts labelled regions and dilates them with radius 1 diamond, disallowing region overlap. 
+% rgIn is a labelled region image, n is number of iterations.
+%
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 2802 $
 
 global rg4trans
 

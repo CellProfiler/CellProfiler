@@ -13,6 +13,28 @@ function m = CPnanmean(x,dim)
 %   Copyright 1993-2004 The MathWorks, Inc.
 %   $Revision: 2.13.4.3 $  $Date: 2004/07/28 04:38:41 $
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 2802 $
+
 % Find NaNs and set them to zero
 nans = isnan(x);
 x(nans) = 0;

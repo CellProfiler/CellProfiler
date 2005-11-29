@@ -436,5 +436,9 @@ else
         if ndims(get(handle,'Cdata')) ~= 2
             set(Histogram,'Enable','off')
         end
+        
+        if isdeployed
+            set(MatlabWS,'Enable','off')
+        end
     end
 end

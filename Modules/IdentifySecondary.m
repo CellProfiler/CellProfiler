@@ -22,17 +22,19 @@ function handles = IdentifySecondary(handles)
 % cytoplasmic compartment.
 %
 % Propagation:
-% This mode identifies secondary objects based on a previous
-% module's identification of primary objects.  Each primary object is
-% assumed to be completely within a secondary object (e.g. nuclei
-% within cells stained for actin).  The module is especially good at
-% determining the dividing lines between clustered secondary objects.
-% The dividing lines between objects are determined by a combination
-% of the distance to the nearest primary object and intensity
-% gradients (dividing lines can be either dim or bright).
+% This option identifies secondary objects based on a previous module's
+% identification of primary objects.  Each primary object is assumed to be
+% completely within a secondary object (e.g. nuclei within cells stained
+% for actin).  The module is especially good at determining the dividing
+% lines between clustered secondary objects. The dividing lines between
+% objects are determined by a combination of the distance to the nearest
+% primary object and intensity gradients (dividing lines can be either dim
+% or bright). Reference: TR Jones, AE Carpenter, P Golland (2005)
+% Voronoi-Based Segmentation of Cells on Image Manifolds, ICCV Workshop on
+% Computer Vision for Biomedical Image Applications, pp. 535-543.
 %
 % Watershed:
-% This mode identifies secondary objects based on a previous
+% This option identifies secondary objects based on a previous
 % module's identification of primary objects.  Each primary object is
 % assumed to be completely within a secondary object (e.g. nuclei
 % within cells stained for actin). The dividing lines between objects
@@ -86,19 +88,18 @@ function handles = IdentifySecondary(handles)
 % dividing line will simply be halfway between the two competing
 % primary objects.
 %
-% Note: Primary segmenters produce two output images that are used by
-% this module.  The Segmented image contains the final, edited
-% primary objects (i.e. objects at the border and those that are too
-% small or large have been excluded).  The SmallRemovedSegmented
-% image is the same except that the objects at the border and the
-% large objects have been included.  These extra objects are used to
-% perform the identification of secondary object outlines, since they
-% are probably real objects (even if we don't want to measure them).
-% Small objects are not used at this stage because they are more
-% likely to be artifactual, and so they therefore should not "claim"
-% any secondary object pixels.
+% Note: Primary identify modules produce two (hidden) output images that
+% are used by this module.  The Segmented image contains the final, edited
+% primary objects (i.e. objects at the border and those that are too small
+% or large have been excluded).  The SmallRemovedSegmented image is the
+% same except that the objects at the border and the large objects have
+% been included.  These extra objects are used to perform the
+% identification of secondary object outlines, since they are probably real
+% objects (even if we don't want to measure them). Small objects are not
+% used at this stage because they are more likely to be artifactual, and so
+% they therefore should not "claim" any secondary object pixels.
 %
-% TECHNICAL DESCRIPTION OF THE PROPAGATION MODE:
+% TECHNICAL DESCRIPTION OF THE PROPAGATION OPTION:
 % Propagate labels from LABELS_IN to LABELS_OUT, steered by IMAGE and
 % limited to MASK.  MASK should be a logical array.  LAMBDA is a
 % regularization parameter, larger being closer to Euclidean distance
@@ -861,11 +862,11 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
                 handles.Measurements.Image.ThresholdFeatures = {};
                 handles.Measurements.Image.Threshold = {};
             end
-            % Search the ThresholdFeatures to find the column for this object type
+            %%% Search the ThresholdFeatures to find the column for this object type
             column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));
-            % If column is empty it means that this particular object has not been segmented before. This will
-            % typically happen for the first cycle. Append the feature name in the
-            % handles.Measurements.Image.ThresholdFeatures matrix
+            %%% If column is empty it means that this particular object has not been segmented before. This will
+            %%% typically happen for the first cycle. Append the feature name in the
+            %%% handles.Measurements.Image.ThresholdFeatures matrix
             if isempty(column)
                 handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' SecondaryObjectName]};
                 column = length(handles.Measurements.Image.ThresholdFeatures);

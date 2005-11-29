@@ -34,9 +34,9 @@ function handles = MeasureObjectTexture(handles)
 % Gabor3y                 |      19
 %
 % How it works:
-% Retrieves a segmented image, in label matrix format, and a
+% Retrieves objects in label matrix format and a
 % corresponding original grayscale image and makes measurements of the
-% objects that are segmented in the image. The label matrix image should
+% objects. The label matrix image should
 % be "compacted": that is, each number should correspond to an object,
 % with no numbers skipped.
 % So, if some objects were discarded from the label matrix image, the

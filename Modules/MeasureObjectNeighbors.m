@@ -13,7 +13,7 @@ function handles = MeasureObjectNeighbors(handles)
 % neighbors.
 %
 % How it works:
-% Retrieves a segmented image of the objects, in label matrix format. The
+% Retrieves objects in label matrix format. The
 % objects are expanded by the number of pixels the user specifies, and then
 % the module counts up how many other objects the object is overlapping.
 % Alternately, the module can measure the number of neighbors each object

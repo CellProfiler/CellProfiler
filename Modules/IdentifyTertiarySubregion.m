@@ -15,8 +15,8 @@ function handles = IdentifyTertiarySubregion(handles)
 % will leave just the cytoplasm, the properties of which can then be
 % measured by Measure modules. The first objects should therefore be
 % equal in size or larger than the second objects and must completely
-% contain the second objects.  Both images should be the result of a
-% segmentation process, not grayscale images. Note that creating
+% contain the second objects.  Both inputs should be objects produced by
+% identify modules, not images. Note that creating
 % subregions using this module can result in objects that are not
 % contiguous, which does not cause problems when running the Measure
 % Intensity and Texture module, but does cause problems when running

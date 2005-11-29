@@ -46,11 +46,10 @@ function handles = MeasureCorrelation(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -122,9 +121,9 @@ ObjectName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Get the images
@@ -155,9 +154,10 @@ for ImageNbr = 1:4
         end
     end
 end
-ImageName = tmpImageName;   % Get rid of '/' in the ImageName cell array so we don't have to care about them later.
+%%% Get rid of '/' in the ImageName cell array so we don't have to care about them later.
+ImageName = tmpImageName;   
 
-% Check so that at least two images have been entered
+%%% Check so that at least two images have been entered
 if ImageCount < 2
     error(['At least two image names must be entered in the ', ModuleName, ' module.'])
 end
@@ -183,19 +183,20 @@ for ObjectNameNbr = 1:6
         end
     end
 end
-ObjectName = tmpObjectName; % Get rid of '/' in the ObjectName cell array so we don't have to care about them later.
+%%% Get rid of '/' in the ObjectName cell array so we don't have to care about them later.
+ObjectName = tmpObjectName; 
 
-% Check so that at least one object type have been entered
+%%% Check so that at least one object type have been entered
 if ObjectNameCount < 1
     error(['At least one object type must be entered in the ',ModuleName,' module.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% Produce feature names for all pairwise image combinations
+%%% Produce feature names for all pairwise image combinations
 CorrelationFeatures = {};
 for i = 1:ImageCount-1
     for j = i+1:ImageCount
@@ -203,9 +204,9 @@ for i = 1:ImageCount-1
     end
 end
 
-% For each object type and for each segmented object, calculate the correlation between all combinations of images
+%%% For each object type and for each segmented object, calculate the correlation between all combinations of images
 for ObjectNameNbr = 1:ObjectNameCount
-    % Calculate the correlation in all objects for all pairwise image combinations
+    %%% Calculate the correlation in all objects for all pairwise image combinations
     NbrOfObjects = max(LabelMatrixImage{ObjectNameNbr}(:));          % Get number of segmented objects
     Correlation = zeros(NbrOfObjects,length(CorrelationFeatures));   % Pre-allocate memory
     for ObjectNbr = 1:NbrOfObjects                                   % Loop over objects
@@ -228,14 +229,14 @@ for ObjectNameNbr = 1:ObjectNameCount
             end
         end
     end
-    % Store the correlation measurements
+    %%% Store the correlation measurements
     handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
     handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -244,10 +245,10 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
 
-    % Set white background color
+    %%% Set white background color
     set(ThisModuleFigureNumber,'Color',[1 1 1])
 
-    % Get size of window
+    %%% Get size of window
     Position = get(ThisModuleFigureNumber,'Position');
     Height = Position(4);
     Width  = Position(3);
@@ -266,25 +267,27 @@ if any(findobj == ThisModuleFigureNumber)
 
     for ObjectNameNbr = 0:ObjectNameCount
         row = 1;
-        % Write object names
-        if ObjectNameNbr > 0         % Don't write any object type name in the first colum
+        %%% Write object names
+        %%% Don't write any object type name in the first colum
+        if ObjectNameNbr > 0         
             h = uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-110 70 25],...
                 'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center',...
                 'fontweight','bold');
             set(h,'string',ObjectName{ObjectNameNbr});
         end
-        % Write image names or correlation measurements
+        %%% Write image names or correlation measurements
         FeatureNbr = 1;
         for i = 1:ImageCount-1
             for j = i+1:ImageCount
-                if ObjectNameNbr == 0               % First column, write image names
+                %%% First column, write image names
+                if ObjectNameNbr == 0               
                     h = uicontrol(ThisModuleFigureNumber,'style','text','position',[20 Height-120-40*row 120 40],...
                         'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','left',...
                         'fontweight','bold');
                     TextToDisplay = sprintf('%s and \n%s',ImageName{i},ImageName{j});
                     set(h,'string',TextToDisplay);
                 else
-                    % Calculate the average correlation over the objects
+                    %%% Calculate the average correlation over the objects
                     c = mean(handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation{handles.Current.SetBeingAnalyzed}(:,FeatureNbr));
                     uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-125-40*row 70 40],...
                         'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center',...

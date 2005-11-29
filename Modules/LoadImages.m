@@ -4,7 +4,7 @@ function handles = LoadImages(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Allows the user to specify which images or movies are to be loaded and in
+% Allows you to specify which images or movies are to be loaded and in
 % which order. Groups of images will be loaded per cycle of CellProfiler
 % processing.
 % *************************************************************************
@@ -16,48 +16,46 @@ function handles = LoadImages(handles)
 % converter.
 %
 % If more than four images per cycle must be loaded, more than one Load
-% Images module can be run sequentially. Running more than one of
-% these modules also allows images to be retrieved from different
-% folders. If you want to load all images in a directory, you can
-% enter the file extension as the text for which to search.
+% Images module can be run sequentially. Running more than one of these
+% modules also allows images to be retrieved from different folders. Hint:
+% if you want to load all images in a directory, you can enter the file
+% extension as the text for which to search.
 %
-% ORDER:
-% Order is used when images (or movies) are present in a repeating
-% order, like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where
-% images are selected based on how many images are in each group and
-% what position within each group a particular color is located (e.g.
-% three images per group, DAPI is always first).
+% Settings:
 %
-% TEXT:
+% How do you want to load these files?
 % Text is used to load images (or movies) that have a particular piece of
-% text in the name. You have the option of matching text exactly, or using regular
-% expressions to match text. For example, typing image[12]dapi in the box
-% asking for text in common and typing R in the Exact/Regular expression
-% box will select any file containing the digit 1 or 2 immediately in
-% between the text 'image' and 'dapi'.
+% text in the name. You have the option of matching text exactly, or using
+% regular expressions to match text. For example, typing image[12]dapi in
+% the box asking for text in common and typing R in the Exact/Regular
+% expression box will select any file containing the digit 1 or 2
+% immediately in between the text 'image' and 'dapi'. 
+% Order is used when images (or movies) are present in a repeating order,
+% like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where images are
+% selected based on how many images are in each group and what position
+% within each group a particular color is located (e.g. three images per
+% group, DAPI is always first). 
 %
-% ANALYZE ALL SUBDIRECTORIES: 
-% You may have subfolders within the folder that is being searched, but if you are in TEXT mode, the
-% names of the folders themselves must not contain the text you are
-% searching for or an error will result.
+% Analyze all subfolders within the selected folder? 
+% You may have subfolders within the folder that is being searched, but if
+% you are in TEXT mode, the names of the folders themselves must not
+% contain the text you are searching for or an error will result.
 %
-% LOADING MOVIES:
-% Movies can be avi-formatted movies (in uncompressed avi format on UNIX and Mac
-% platforms) or stk-format movies (stacks of tif images produced by
-% MetaMorph or NIHImage/ImageJ; The ability to read stk files is due to code by:
-% Francois Nedelec, EMBL, Copyright 1999-2003). Once the files are identified, this module
-% extracts each frame of each movie as a separate image,
-% and gives these images a meaningful name for the other modules to
-% access.
+% Notes about loading movies:
+% Movies can be avi-formatted movies (must be uncompressed avi format on
+% UNIX and Mac platforms) or stk-format movies (stacks of tif images
+% produced by MetaMorph or NIHImage/ImageJ; The ability to read stk files
+% is due to code by: Francois Nedelec, EMBL, Copyright 1999-2003). Once the
+% files are identified, this module extracts each frame of each movie as a
+% separate image, and gives these images a meaningful name for the other
+% modules to access.
 %
-% NOTE:  MATLAB only reads AVI files, and only UNCOMPRESSED AVI files
-% on UNIX and MAC platforms.  As a result, you may need to use 3rd party
-% software to uncompress AVI files and convert MOV files. Here are some
-% suggestions:
+% Suggestions for third party software to uncompress AVI files and convert
+% MOV files:
 %
 % WINDOWS...
-% To convert movies to uncompressed avi format, you can use a free
-% software product called RAD Video Tools, which is available from:
+% To convert movies to uncompressed avi format, you can use a free software
+% product called RAD Video Tools, which is available from:
 %   http://www.radgametools.com/down/Bink/RADTools.exe
 %
 % To convert a compressed AVI file or a MOV file into an uncompressed AVI:
@@ -70,8 +68,8 @@ function handles = LoadImages(handles)
 % use.  Choose "Full Frames (Uncompressed)", and click OK.
 %
 % MAC OSX...
-% The iMovie program which comes with Mac OSX can be used to convert
-% movies to uncompressed avi format as follows:
+% The iMovie program which comes with Mac OSX can be used to convert movies
+% to uncompressed avi format as follows:
 %
 % 1. File > New Project
 % 2. File > Import (select the movie)
@@ -87,7 +85,8 @@ function handles = LoadImages(handles)
 % 		Frames per second = doesn't matter.
 % 	OK, OK, Save
 %
-% 4. To check/troubleshoot the conversion, you can use the following commands in Matlab:
+% 4. To check/troubleshoot the conversion, you can use the following
+% commands in Matlab:
 % >> MovieInfo = aviinfo('My Great Movie3.avi')
 %
 % MovieInfo =
@@ -210,13 +209,13 @@ ImageOrMovie = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = Analyze all subdirectories within the selected directory (Y or N)?
+%textVAR13 = Analyze all subfolders within the selected folder (Y or N)?
 %choiceVAR13 = No
 %choiceVAR13 = Yes
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default directory.
+%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 %%%VariableRevisionNumber = 1
@@ -364,7 +363,6 @@ if SetBeingAnalyzed == 1
                 NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
             end
             clear FileNames
-
 
             %%% Determines how many unique numbers of files there are.  If all
             %%% the movie types have loaded the same number of images, there
@@ -519,6 +517,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOADING IMAGES EACH TIME %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
 for n = 1:length(ImageName)
     if strcmp(ImageOrMovie,'Image')
         %%% This try/catch will catch any problems in the load images module.
@@ -629,7 +629,6 @@ handles.Measurements.Image.FileNamesText                   = FileNamesText;
 handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
 handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
-%%% ------------------------------------------------------------------------------------------------ %%%
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -944,7 +943,6 @@ fseek(TIF.file, strip_offsets(TIF.num_strips) + TIF.strip_bytes(TIF.num_strips),
 return;
 
 %===================sub-functions that reads an IFD entry:===================
-
 
 function [nbbytes, typechar] = matlabtype(tifftypecode)
 switch (tifftypecode)

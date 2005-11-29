@@ -1,6 +1,6 @@
 function handles = FilterByObjectMeasurement(handles)
 
-% Help for the Filter Objects by Measurement module: 
+% Help for the Filter by Object Measurement module: 
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
@@ -8,16 +8,15 @@ function handles = FilterByObjectMeasurement(handles)
 % Texture, Intensity).
 % *************************************************************************
 %
-% This module applies a filter using measurements produced by either
-% MeasureObjectAreaShape, MeasureObjectIntensity, or MeasureObjectTexture
-% modules. All objects outside of the specified parameters will be
-% discarded.
+% This module removes objects based on their measurements produced by
+% another module (e.g. MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureObjectTexture). All objects outside of the specified parameters
+% will be discarded.
 %
 % Feature Number:
-% The feature number is the parameter from the chosen module (AreaShape,
-% Intensity, Texture) which will be used for the ratio. Please see
-% individual measurement module help for list of measurements and their
-% feature numbers.
+% The feature number specifies which feature from the Measure module will
+% be used for filtering. See each Measure module's help for the numbered
+% list of the features measured by that module.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved
@@ -65,7 +64,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the objects you want to process?
+%textVAR01 = What did you call the objects you want to filter?
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -75,31 +74,30 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What measurement do you want to filter by?  This module must be run after a MeasureObject module.
+%textVAR03 = What measurement do you want to filter by?  This module must be run after a Measure module.
 %choiceVAR03 = AreaShape
 %choiceVAR03 = Intensity
 %choiceVAR03 = Texture
 %inputtypeVAR03 = popupmenu
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = If using Intensity or Texture, what image was used to make the measurements? (This will also be used for the final display)
+%textVAR04 = For INTENSITY or TEXTURE, which image's measurements do you want to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What feature number do you want to  use as a filter? See the help for this module.
+%textVAR05 = What feature number do you want to use as a filter? See help for details.
 %defaultVAR05 = 1
 FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 FeatureNum = str2num(FeatureNum);
 
 %textVAR06 = Minimum value required:
-%choiceVAR06 = 0.5
-%choiceVAR06 = Do not use
+%choiceVAR06 = No minimum
 %inputtypeVAR06 = popupmenu custom
 MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Maximum value allowed:
-%choiceVAR07 = Do not use
+%choiceVAR07 = No maximum
 %inputtypeVAR07 = popupmenu custom
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
@@ -128,13 +126,13 @@ elseif strcmp(MeasureChoice,'Texture')
     MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
 end
 
-if strcmp(MinValue1, 'Do not use')
+if strcmpi(MinValue1, 'No minimum')
     MinValue1 = -Inf;
 else
     MinValue1 = str2double(MinValue1);
 end
 
-if strcmp(MaxValue1, 'Do not use')
+if strcmpi(MaxValue1, 'No maximum')
     MaxValue1 = Inf;
 else
     MaxValue1 = str2double(MaxValue1);

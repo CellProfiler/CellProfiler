@@ -33,7 +33,7 @@ ExpandOrShrink			Mike,        Anne
 
 ExtractHeaderInfo (I think Mike is moving to Developer scripts)
 
-FilterByObjectMeasurement	Mike
+FilterByObjectMeasurement	Mike,        Anne
 
 Flip				Mike
 

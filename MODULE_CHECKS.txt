@@ -43,7 +43,7 @@ IdentifyObjectsInGrid		Mike,        Anne
 
 IdentifyPrimAutomatic                        Anne
 
-IdentifyPrimManual		Mike
+IdentifyPrimManual		Mike,        Anne
 
 IdentifyPrimYeastPhase		??  
 

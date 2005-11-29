@@ -54,7 +54,6 @@ function handles = IdentifyPrimManual(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the images you want to use to manually identify an object?
@@ -67,13 +66,13 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Resize the image to this size before manual identification (pixels)
-%defaultVAR03 = 512
+%textVAR03 = Enter the maximum image height or width (in pixels) to display for the manual identification. Very large images will be resized to this maximum dimension for the manual identification step. Enter "Do not resize" to display the unaltered image.
+%defaultVAR03 = Do not resize
 MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3})); %#ok
 
-%textVAR06 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR06 = Do not save
-%infotypeVAR06 = outlinegroup indep
+%textVAR04 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR04 = Do not save
+%infotypeVAR04 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 2
@@ -96,11 +95,18 @@ if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
 end
 
 if isempty(MaxResolution)
-    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for "Resize the image to this size before manual identification (pixels)" was invalid.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for "Enter the maximum image height or width (in pixels) to display for the manual identification" was invalid.'])
 end
 
-% Use a low resolution image for outlining the primary region
+%%% Use a low resolution image for outlining the primary region, if
+%%% requested.
 MaxSize = max(size(OrigImage));
+try 
+    if strcmpi(MaxResolution,'Do not resize')
+        MaxResolution = Inf;
+    end
+end
+
 if MaxSize > MaxResolution
     LowResOrigImage = imresize(OrigImage,MaxResolution/MaxSize,'bicubic');
 else

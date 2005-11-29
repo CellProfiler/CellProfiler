@@ -1,12 +1,6 @@
 Colin's TODO list
 
-- (Requested by Anne 11-05-05) - None of the image tools work that are embedded in IdentifyPrim figure window - i.e. clicking on one of the panels yields the little pop up window of image tools, but none of them works - here is the error:
-??? There is no 'Title' property in the 'figure' class.
 
-Error in ==> CPImageTool at 52
-        Title = get(get(get(handle,'Parent'),'Title'),'String');      % Get title of image
-
-??? Error while evaluating uicontrol Callback.
 
 - Put CP logo in main GUI ??
 

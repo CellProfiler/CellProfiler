@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+-(Colin 11/29) Move ImageTool to CPsubfunctions, save as CPimagetool to be consistent with other CP functions. I think most modules aren't using the CPimagetool yet, so we need to add it.  Perhaps actually we should make CPimagesc so that every time we show an image in a figure it automatically has the image tool embedded?
+
 -(Colin 11/29) - (Requested by Anne 11-05-05) - None of the image tools work that are embedded in IdentifyPrim figure window - i.e. clicking on one of the panels yields the little pop up window of image tools, but none of them works - here is the error:
 ??? There is no 'Title' property in the 'figure' class.
 

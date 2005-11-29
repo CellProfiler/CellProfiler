@@ -18,7 +18,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % * If the objects are dark on a light background, use the
 % InvertIntensity module prior to running this module.
 % * If you are working with color images, they must first be converted
-% to grayscale using the RGBSplit or RGBToGray module.
+% to grayscale using the Color To Gray module.
 %
 % Settings:
 %
@@ -215,18 +215,18 @@ function handles = IdentifyPrimAutomatic(handles)
 % done on the non-smoothed image.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then saved
-% with SaveImages. Objects themselves can be passed along to the object
-% processing module ConvertToImage and then saved with SaveImages. This
-% module produces several additional types of objects with names that are
-% automatically passed along with the following naming structure: (1) The
-% unedited segmented image, which includes objects on the edge of the image
-% and objects that are outside the size range, can be saved using the name:
-% UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
-% smaller than your selected size range can be saved using the name:
-% SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei).
+% outlines can be passed along to the module Overlay Outlines and then
+% saved with the Save Images module. Objects themselves can be passed along
+% to the object processing module Convert To Image and then saved with the
+% Save Images module. This module produces several additional types of
+% objects with names that are automatically passed along with the following
+% naming structure: (1) The unedited segmented image, which includes
+% objects on the edge of the image and objects that are outside the size
+% range, can be saved using the name: UneditedSegmented + whatever you
+% called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+% image which excludes objects smaller than your selected size range can be
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also <nothing relevant>
 

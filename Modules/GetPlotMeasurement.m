@@ -1,5 +1,6 @@
 function handles = GetPlotMeasurement(handles)
-% Help for the Get Histogram module:
+
+% Help for the Get Plot Measurement module:
 % Category: Other
 %
 % SHORT DESCRIPTION:

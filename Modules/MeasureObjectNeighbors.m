@@ -13,17 +13,16 @@ function handles = MeasureObjectNeighbors(handles)
 % neighbors.
 %
 % How it works:
-% Retrieves a segmented image of the objects, in label matrix format.
-% The objects are expanded by the number of pixels the user specifies,
-% and then the module counts up how many other objects the object
-% is overlapping. Alternately, the module can measure the number of
-% neighbors each object has if every object were expanded up until the
-% point where it hits another object.  To use this option, enter 0
-% (the number zero) for the pixel distance.  Please note that
-% currently the image of the objects, colored by how many neighbors
-% each has, cannot be saved using the SaveImages module, because it is
-% actually a black and white image displayed using a particular
-% colormap
+% Retrieves a segmented image of the objects, in label matrix format. The
+% objects are expanded by the number of pixels the user specifies, and then
+% the module counts up how many other objects the object is overlapping.
+% Alternately, the module can measure the number of neighbors each object
+% has if every object were expanded up until the point where it hits
+% another object.  To use this option, enter 0 (the number zero) for the
+% pixel distance.  Please note that currently the image of the objects,
+% colored by how many neighbors each has, cannot be saved using the Save
+% Images module, because it is actually a black and white image displayed
+% using a particular colormap.
 %
 % See also <nothing relevant>.
 

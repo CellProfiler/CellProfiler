@@ -171,10 +171,10 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         elseif strcmp(RotateMethod,'Only Once')
             AngleToRotateDegrees = str2num(Angle);
         else
-            error(['Image processing was canceled in the ', ModuleName, ' module because the value of RotateMethod is not recognized.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
         end
     else
-        error(['Image processing was canceled in the ', ModuleName, ' module because the value of RotateMethod is not recognized.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
     end
 else
     column = find(strcmp(handles.Measurements.Image.RotationFeatures,['Rotation ' ImageName]));

@@ -13,7 +13,8 @@ function handles = Average(handles)
 %
 % Settings:
 %
-% Enter Load Images Module or Pipeline:
+% Are the images you want to use to be loaded straight from a Load Images
+% module, or are they being produced by the pipeline?:
 %
 % If you choose Load Images Module, the module will calculate the single,
 % averaged image the first time through the pipeline (i.e. for
@@ -94,7 +95,7 @@ SourceIsLoadedOrPipeline = SourceIsLoadedOrPipeline(1);
 drawnow
 
 %%% If running in non-cycling mode (straight from the hard drive using a
-%%% LoadImages module), the averaged image and its flag need only be
+%%% Load Images module), the averaged image and its flag need only be
 %%% calculated and saved to the handles structure after the first cycle is
 %%% processed. If running in cycling mode (Pipeline mode), the averaged
 %%% image and its flag are saved to the handles structure after every cycle
@@ -106,7 +107,7 @@ end
 ReadyFlag = 'Not Ready';
 try
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
-        %%% If we are in LoadImages mode, the averaged image is calculated
+        %%% If we are in Load Images mode, the averaged image is calculated
         %%% the first time the module is run.
         if  isfield(handles.Pipeline,['Pathname', ImageName]);
             [handles, AveragedImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');

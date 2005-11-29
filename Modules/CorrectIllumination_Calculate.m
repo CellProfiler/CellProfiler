@@ -1,6 +1,6 @@
 function handles = CorrectIllumination_Calculate(handles)
 
-% Help for the Correct Illumination_Calculate module:
+% Help for the Correct Illumination Calculate module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
@@ -10,7 +10,7 @@ function handles = CorrectIllumination_Calculate(handles)
 %
 % This module calculates an illumination function which can be saved to the
 % hard drive for later use (you should save in .mat format using the
-% SaveImages module), or it can be immediately applied to images later in
+% Save Images module), or it can be immediately applied to images later in
 % the pipeline (using the CorrectIllumination_Apply module). This will
 % correct for uneven illumination of each image.
 %
@@ -207,7 +207,7 @@ if strcmp(EachOrAll,'Each') && strcmp(SourceIsLoadedOrPipeline,'Load Images modu
 end
 
 %%% If the illumination correction function was to be calculated using
-%%% all of the incoming images from a LoadImages module, it will already have been calculated
+%%% all of the incoming images from a Load Images module, it will already have been calculated
 %%% the first time through the cycle. No further calculations are
 %%% necessary.
 if strcmp(EachOrAll,'All') && handles.Current.SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
@@ -286,7 +286,7 @@ if strcmp(EachOrAll,'All')
                 %%% structure.
                 fieldname = ['Pathname', ImageName];
                 try Pathname = handles.Pipeline.(fieldname);
-                catch error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.'])
+                catch error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a Load Images module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.'])
                 end
                 %%% Retrieves the list of filenames where the images are stored from the
                 %%% handles structure.
@@ -508,7 +508,7 @@ drawnow
 
 %%% Saves images to the handles structure.
 %%% If running in non-cycling mode (straight from the hard drive using
-%%% a LoadImages module), the average image and its flag need only
+%%% a Load Images module), the average image and its flag need only
 %%% be saved to the handles structure after the first cycle is
 %%% processed. If running in cycling mode (Pipeline mode), the
 %%% average image and its flag are saved to the handles structure

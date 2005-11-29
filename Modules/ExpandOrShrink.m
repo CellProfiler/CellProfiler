@@ -1,6 +1,6 @@
 function handles = ExpandOrShrink(handles)
 
-% Help for the Expand Or Shrink Objects module:
+% Help for the Expand Or Shrink module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
@@ -19,18 +19,18 @@ function handles = ExpandOrShrink(handles)
 % implemented a partial fix.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then saved
-% with SaveImages. Objects themselves can be passed along to the object
-% processing module ConvertToImage and then saved with SaveImages. This
-% module produces several additional types of objects with names that are
-% automatically passed along with the following naming structure: (1) The
-% unedited segmented image, which includes objects on the edge of the image
-% and objects that are outside the size range, can be saved using the name:
-% UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
-% smaller than your selected size range can be saved using the name:
-% SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei).
+% outlines can be passed along to the module Overlay Outlines and then
+% saved with the Save Images module. Objects themselves can be passed along
+% to the object processing module Convert To Image and then saved with the
+% Save Images module. This module produces several additional types of
+% objects with names that are automatically passed along with the following
+% naming structure: (1) The unedited segmented image, which includes
+% objects on the edge of the image and objects that are outside the size
+% range, can be saved using the name: UneditedSegmented + whatever you
+% called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+% image which excludes objects smaller than your selected size range can be
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also any identify module.
 
@@ -112,7 +112,7 @@ if strcmp(ObjectChoice,'Primary')
     fieldname = ['UneditedSegmented', ObjectName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
     if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be produced by an Identify module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
     end
     UneditedSegmentedImage = handles.Pipeline.(fieldname);
 
@@ -120,7 +120,7 @@ if strcmp(ObjectChoice,'Primary')
     fieldname = ['SmallRemovedSegmented', ObjectName];
     %%% Checks whether the image to be analyzed exists in the handles structure.
     if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be produced by an Identify module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
     end
     SmallRemovedSegmentedImage = handles.Pipeline.(fieldname);
 end
@@ -129,7 +129,7 @@ end
 fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image to be analyzed exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled in the ', ModuleName, ' module because the Expand Or Shrink Primary Objects module could not find the input image.  It was supposed to be produced by an Identify Primary module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be produced by an Identify module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
 end
 SegmentedImage = handles.Pipeline.(fieldname);
 OrigSegmentedImage = SegmentedImage;
@@ -179,7 +179,8 @@ if strcmp(ShrinkOrExpand,'Shrink') == 1
                 ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thin', ShrinkingNumber);
             end
             ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thin', ShrinkingNumber);
-        catch error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).'])
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the value entered for number of pixels to shrink or expand must either be a number or the text "Inf" (no quotes).'])
         end
     end
 elseif strcmp(ShrinkOrExpand,'Expand')
@@ -193,7 +194,7 @@ elseif strcmp(ShrinkOrExpand,'Expand')
         end
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thicken', ShrinkingNumber);
     catch
-        error(['Image processing was canceled in the ', ModuleName, ' module because the value entered in the Expand Or Shrink Primary Objects module must either be a number or the text "Inf" (no quotes).']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because the value entered for number of pixels to shrink or expand must either be a number or the text "Inf" (no quotes).'])
     end
 end
 

@@ -85,18 +85,18 @@ function handles = IdentifyPrimYeastPhase(handles)
 % will be ignored.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then saved
-% with SaveImages. Objects themselves can be passed along to the object
-% processing module ConvertToImage and then saved with SaveImages. This
-% module produces several additional types of objects with names that are
-% automatically passed along with the following naming structure: (1) The
-% unedited segmented image, which includes objects on the edge of the image
-% and objects that are outside the size range, can be saved using the name:
-% UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
-% smaller than your selected size range can be saved using the name:
-% SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei).
+% outlines can be passed along to the module Overlay Outlines and then
+% saved with the Save Images module. Objects themselves can be passed along
+% to the object processing module Convert To Image and then saved with the
+% Save Images module. This module produces several additional types of
+% objects with names that are automatically passed along with the following
+% naming structure: (1) The unedited segmented image, which includes
+% objects on the edge of the image and objects that are outside the size
+% range, can be saved using the name: UneditedSegmented + whatever you
+% called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+% image which excludes objects smaller than your selected size range can be
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also IDENTIFYPRIMAUTOMATIC.
 
@@ -209,7 +209,7 @@ fieldname = ['',  ImageName];
 
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Identify Primary Intensity module, you must have previously run a module to load an image. You specified in the Identify Primary Intensity module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The Identify Primary Intensity module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to load an image. You specified that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The ',ModuleName,' module cannot find this image.']);
 end
 OrigImage = handles.Pipeline.(fieldname);
 

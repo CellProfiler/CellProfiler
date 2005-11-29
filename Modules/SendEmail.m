@@ -1,13 +1,13 @@
 function handles = SendEmail(handles)
 
-% Help for the Send E-Mail module:
+% Help for the Send Email module:
 % Category: Other
 %
 % SHORT DESCRIPTION:
 % Sends emails to a specified address at desired stages of the processing.
 % *************************************************************************
 %
-% This module e-mails the user-specified recipients about the current
+% This module emails the user-specified recipients about the current
 % progress of the image processing modules as well as the expected time
 % remaining until completion.  The user can specify how often e-mails are
 % sent out (for example, after the first cycle, after the last cycle, after

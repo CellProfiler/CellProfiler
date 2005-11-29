@@ -13,7 +13,7 @@ function handles = WriteSQLFiles(handles)
 % the ExportSQL data tool.
 %
 % This module must be run at the end of a pipeline, or second to last if
-% you are using the CreateBatchScripts module.
+% you are using the Create Batch Scripts module.
 %
 % See also: CREATEBATCHSCRIPTS.
 
@@ -68,13 +68,13 @@ if handles.Current.NumberOfModules == 1
     error(['Image processing was canceled in the ', ModuleName, ' module because there are no other modules in the pipeline. Probably you should use the ExportSQL data tool.']);
 elseif handles.Current.NumberOfModules == 2
     if ~isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames)))
-        error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than CreateBatchScripts. Probably you should use the ExportSQL data tool.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than the Create Batch Scripts module. Probably you should use the ExportSQL data tool.']);
     end
 end
 
 if CurrentModuleNum ~= handles.Current.NumberOfModules
     if isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
-        error([ModuleName, ' must be the last module in the pipeline, or second to last if CreateBatchScripts is in the pipeline.']);
+        error([ModuleName, ' must be the last module in the pipeline, or second to last if the Create Batch Scripts module is in the pipeline.']);
     end
 end;
 

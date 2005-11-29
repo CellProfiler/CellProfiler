@@ -4,14 +4,16 @@ function handles = Restart(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Restart image analysis which has been cancelled using output file.
+% Restarts image analysis which has been canceled, using the partially
+% completed output file.
 % *************************************************************************
 %
-% Restarts an analysis run where it left off.
-% To use: Start CellProfiler and insert Restart as the only module.
-% Click Analyze images. When the dialog "Choose a settings or output file"
-% appears, select the output file of the incomplete run. Click ok and
-% analysis will continue.
+% Restarts an analysis run where it left off. Put Restart into a new
+% pipeline with no other modules. Click Analyze images. When the dialog
+% "Choose a settings or output file" appears, select the output file of the
+% incomplete run. Click ok and the pipeline will load from the output file
+% and analysis will continue where it left off during the partially
+% completed run.
 %
 % See also <nothing relevant>.
 
@@ -44,7 +46,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Use this module if you have canceled processing of a pipeline that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the OUTPUT FILE of the pipeline you would like to complete.
+%textVAR01 = Use this module if you have canceled processing of a pipeline that you would like to finish. For Restart to work, it must be the only module in the pipeline. Click "Analyze Images" and when prompted, choose the output file (OUT.mat) of the pipeline you would like to complete.
 
 %%%VariableRevisionNumber = 1
 

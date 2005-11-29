@@ -9,8 +9,8 @@ function handles = FilterByObjectMeasurement(handles)
 % *************************************************************************
 %
 % This module removes objects based on their measurements produced by
-% another module (e.g. MeasureObjectAreaShape, MeasureObjectIntensity,
-% MeasureObjectTexture). All objects outside of the specified parameters
+% another module (e.g. Measure Object Area Shape, Measure Object Intensity,
+% Measure Object Texture). All objects outside of the specified parameters
 % will be discarded.
 %
 % Feature Number:
@@ -19,18 +19,18 @@ function handles = FilterByObjectMeasurement(handles)
 % list of the features measured by that module.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then saved
-% with SaveImages. Objects themselves can be passed along to the object
-% processing module ConvertToImage and then saved with SaveImages. This
-% module produces several additional types of objects with names that are
-% automatically passed along with the following naming structure: (1) The
-% unedited segmented image, which includes objects on the edge of the image
-% and objects that are outside the size range, can be saved using the name:
-% UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
-% smaller than your selected size range can be saved using the name:
-% SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei).
+% outlines can be passed along to the module Overlay Outlines and then
+% saved with the Save Images module. Objects themselves can be passed along
+% to the object processing module Convert To Image and then saved with the
+% Save Images module. This module produces several additional types of
+% objects with names that are automatically passed along with the following
+% naming structure: (1) The unedited segmented image, which includes
+% objects on the edge of the image and objects that are outside the size
+% range, can be saved using the name: UneditedSegmented + whatever you
+% called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+% image which excludes objects smaller than your selected size range can be
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also MEASUREOBJECTAREASHAPE, MEASUREOBJECTINTENSITY,
 % MEASUREOBJECTTEXTURE.

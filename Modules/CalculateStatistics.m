@@ -13,7 +13,7 @@ function handles = CalculateStatistics(handles)
 % positive and negative control samples. You must tell the module which
 % samples are positive and negative controls, or the concentrations of
 % drugs, in a simple text file with one entry per cycle, loaded using
-% the LoadText module.
+% the Load Text module.
 %
 % The reference for Z' factor is: JH Zhang, TD Chung, et al. (1999) "A
 % simple statistical parameter for use in evaluation and validation of high
@@ -59,7 +59,7 @@ drawnow
 %inputtypeVAR01 = popupmenu
 DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = In order to run this module, you must use LoadText to load a grouping value for each cycle. This is either a marking of whether each cycle is a positive or negative control (for Z factor) or it is concentrations (doses) for each curve (required for meaningful V factors). Both Z and V factors will be calculated for all measured values (Intensity, AreaShape, Texture, etc.). These measurements can be exported as the "Experiment" set of data.
+%textVAR02 = In order to run this module, you must use the Load Text module to load a grouping value for each cycle. This is either a marking of whether each cycle is a positive or negative control (for Z factor) or it is concentrations (doses) for each curve (required for meaningful V factors). Both Z and V factors will be calculated for all measured values (Intensity, AreaShape, Texture, etc.). These measurements can be exported as the "Experiment" set of data.
 
 %%%VariableRevisionNumber = 2
 

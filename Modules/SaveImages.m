@@ -11,13 +11,12 @@ function handles = SaveImages(handles)
 %
 % This module allows you to save images to the hard drive.  Any of the
 % processed images created by CellProfiler during the analysis can be
-% saved. SaveImages can also be used as a file format converter by
-% loading files in their original format and then saving them in an
-% alternate format.  Please note that this module works for the few
-% cases we have tried, but you may run into difficulties when dealing
-% with images that are not 8 bit.  For example, you may wish to alter
-% the code to handle 16 bit images.  These features will hopefully be
-% added soon.
+% saved. The Save Images module can also be used as a file format converter
+% by loading files in their original format and then saving them in an
+% alternate format.  Please note that this module works for the few cases
+% we have tried, but you may run into difficulties when dealing with images
+% that are not 8 bit.  For example, you may wish to alter the code to
+% handle 16 bit images.  These features will hopefully be added soon.
 %
 % If you want to save images that are produced by other modules but
 % that are not given an official name in the settings boxes for that
@@ -34,34 +33,31 @@ function handles = SaveImages(handles)
 % handles.Pipeline.(fieldname) = CroppedImage;
 %
 % Special notes for saving in movie format (avi):
-% The movie will be saved after the last cycle is processed. You
-% have the option to also save the movie periodically during image
-% processing, so that the partial movie will be available in case
-% image processing is canceled partway through. Saving movies in avi
-% format is quite slow, so you can enter a number to save the movie
-% after every Nth cycle. For example, entering a 1 will save the
-% movie after every cycle, so that if image analysis is aborted,
-% the movie up to that point will be saved. Saving large movie files
-% is time-consuming, so it may be better to save after every 10th
-% cycle, for example. If you are processing multiple movies,
-% especially movies in subdirectories, you should save after every
-% cycle (and also, be aware that this module has not been
-% thoroughly tested under those conditions). Note also that the movie
-% data is stored in the handles.Pipeline.Movie structure of the output
-% file, so you can retrieve the movie data there in case image
-% processing is aborted. When working with very large movies, you may
-% also want to save the CellProfiler output file every Nth cycle
-% to save time, because the entire movie is stored in the output file.
-% See the SpeedUpCellProfiler module. This module has not been
-% extensively tested, particularly for how it handles color images and
-% how it handles images coming from subdirectories, multiple incoming
-% movie files, or filenames made by numerical increments. At the time
-% this module was written, Matlab was only capable of saving in
-% uncompressed avi format (at least on the UNIX platform), which is
-% time and space-consuming. You should convert the results to a
-% compressed movie format, like .mov using third-party software. For
-% suggested third-party software, see the help for the LoadMovies
-% modules.
+% The movie will be saved after the last cycle is processed. You have the
+% option to also save the movie periodically during image processing, so
+% that the partial movie will be available in case image processing is
+% canceled partway through. Saving movies in avi format is quite slow, so
+% you can enter a number to save the movie after every Nth cycle. For
+% example, entering a 1 will save the movie after every cycle, so that if
+% image analysis is aborted, the movie up to that point will be saved.
+% Saving large movie files is time-consuming, so it may be better to save
+% after every 10th cycle, for example. If you are processing multiple
+% movies, especially movies in subdirectories, you should save after every
+% cycle (and also, be aware that this module has not been thoroughly tested
+% under those conditions). Note also that the movie data is stored in the
+% handles.Pipeline.Movie structure of the output file, so you can retrieve
+% the movie data there in case image processing is aborted. When working
+% with very large movies, you may also want to save the CellProfiler output
+% file every Nth cycle to save time, because the entire movie is stored in
+% the output file. See the Speed Up CellProfiler module. This module has
+% not been extensively tested, particularly for how it handles color images
+% and how it handles images coming from subdirectories, multiple incoming
+% movie files, or filenames made by numerical increments. At the time this
+% module was written, Matlab was only capable of saving in uncompressed avi
+% format (at least on the UNIX platform), which is time and
+% space-consuming. You should convert the results to a compressed movie
+% format, like .mov using third-party software. For suggested third-party
+% software, see the help for the LoadMovies modules.
 %
 % See also <nothing relevant>
 

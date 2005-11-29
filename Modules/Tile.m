@@ -8,33 +8,30 @@ function handles = Tile(handles)
 % *************************************************************************
 %
 % Allows many images to be viewed simultaneously, in a grid layout you
-% specify (e.g. in the actual layout in which the images were
-% collected).
+% specify (e.g. in the actual layout in which the images were collected).
 %
 % If you want to view a large number of images, you will generate an
-% extremely large file (roughly the MB of all the images added
-% together) which, even if it could be created by Matlab, could not be
-% opened by any image software anyway. Matlab has a limit to the
-% amount of data it can open which prevents you from creating such a
-% gigantic, high resolution file.  There are several ways to allow a
-% larger image to be produced, given memory limitations: (1) Decrease
-% the resolution of each image tile by entering a fraction where
-% requested. Then, in the window which pops open after Tile
-% finishes, you can use the 'Get high res image' button to retrieve
-% the original high resolution image. (This button is not yet
-% functional). (2) Use the SpeedUpCellProfiler module to clear out
-% images that are stored in memory. Place this module just prior to
-% the Tile module and ask it to retain only those images which
-% are needed for downstream modules.  (3) Rescale the images to 8 bit
-% format by putting in the RescaleImages module just prior to the
-% Tile module. Normally images are stored in memory as class
-% "double" which takes about 10 times the space of class "uint8" which
-% is 8 bits.  You will lose resolution in terms of the number of
-% different graylevels - this will be limited to 256 - but you will
-% not lose spatial resolution.
+% extremely large file (roughly the MB of all the images added together)
+% which, even if it could be created by Matlab, could not be opened by any
+% image software anyway. Matlab has a limit to the amount of data it can
+% open which prevents you from creating such a gigantic, high resolution
+% file.  There are several ways to allow a larger image to be produced,
+% given memory limitations: (1) Decrease the resolution of each image tile
+% by entering a fraction where requested. Then, in the window which pops
+% open after Tile finishes, you can use the 'Get high res image' button to
+% retrieve the original high resolution image. (This button is not yet
+% functional). (2) Use the Speed Up CellProfiler module to clear out images
+% that are stored in memory. Place this module just prior to the Tile
+% module and ask it to retain only those images which are needed for
+% downstream modules.  (3) Rescale the images to 8 bit format by putting in
+% the Rescale Images module just prior to the Tile module. Normally images
+% are stored in memory as class "double" which takes about 10 times the
+% space of class "uint8" which is 8 bits.  You will lose resolution in
+% terms of the number of different graylevels - this will be limited to 256
+% - but you will not lose spatial resolution.
 %
-% The file name (automatic) and sample info (optional) can be
-% displayed on each image using buttons in the final figure window.
+% The file name (automatic) and sample info (optional) can be displayed on
+% each image using buttons in the final figure window.
 %
 % See also SPOTIDENTIFIER.
 

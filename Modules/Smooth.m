@@ -1,6 +1,6 @@
 function handles = Smooth(handles)
 
-% Help for the Smooth Image module:
+% Help for the Smooth module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:

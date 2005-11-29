@@ -58,7 +58,8 @@ function handles = MeasureObjectAreaShape(handles)
 % There is no limit to the order, but the higher order polynomials don't
 % carry much/any relevant information.
 %
-% See also MeasureObjectTexture, MeasureObjectIntensity, MeasureCorrelation
+% See also MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY,
+% MEASURECORRELATION.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

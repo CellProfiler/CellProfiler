@@ -39,7 +39,7 @@ function handles = CreateBatchScripts(handles)
 % location. Please consult your local cluster experts.
 %
 % After batch processing is complete, the output files can be merged by the
-% MergeBatchOutput module.  This is not recommended of course if your
+% Merge Batch Output module.  This is not recommended of course if your
 % output files are huge and will result in a file that is too large to be
 % opened on your computer. For the simplest behavior in merging, it is best
 % to save output files to a unique and initially empty directory.
@@ -115,10 +115,10 @@ function handles = CreateBatchScripts(handles)
 %
 % 5. (LOCAL ONLY) Make a folder on the local computer.
 %
-% 6. In CellProfiler, add the module CreateBatchScripts to the end of
+% 6. In CellProfiler, add the module Create Batch Scripts to the end of
 % the pipeline, and enter the settings (see Notes below for server
 % naming issues):
-% CreateBatchScripts module:
+% Create Batch Scripts module:
 % What prefix ahould be added to the batch file names?
 % Batch_
 % What is the path to the CellProfiler folder on the cluster machines?
@@ -142,7 +142,7 @@ function handles = CreateBatchScripts(handles)
 % machines, enter that part of the pathname from the cluster machines'
 % perspective
 % nfs/sabatini2_ata
-% SaveImages module:
+% Save Images module:
 % Enter the pathname to the directory where you want to save the
 % images: (note: I am not sure if we can currently save images on each
 % cycle through the pipeline)

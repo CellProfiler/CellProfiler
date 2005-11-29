@@ -10,7 +10,7 @@ function handles = MeasureRatios(handles)
 %
 % This module can take any measurement produced by previous modules and
 % calculate a ratio. Ratios can also be used to calculate other ratios and
-% be used in ClassifyObjects.
+% be used in Classify Objects.
 %
 % Feature Number:
 % The feature number specifies which features from the Measure module(s)

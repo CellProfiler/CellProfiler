@@ -18,7 +18,7 @@ function handles = SubtractBackground(handles)
 % is because we assume that this staining is additive with real
 % staining. This module calculates the camera background and subtracts
 % this background value from each pixel. This module is identical to
-% the Apply Threshold and Shift module, except in the Subtract
+% the Apply Threshold module (in shift mode), except in the Subtract
 % Background module, the threshold is automatically calculated the
 % first time through the module. This will not push any values below
 % zero (therefore, we aren't losing any information).  It moves the
@@ -46,7 +46,7 @@ function handles = SubtractBackground(handles)
 % value for each pixel position in the image because in a small image
 % set, that position may always be occupied by real staining.
 %
-% See also APPLYTHRESHOLDANDSHIFT.
+% See also APPLYTHRESHOLD.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -129,7 +129,7 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% structure.
         fieldname = ['Pathname', ImageName];
         try Pathname = handles.Pipeline.(fieldname);
-        catch error(['Image processing was canceled in the ', ModuleName, ' module because it must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Subtract Background module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this Subtract Background module onward.'])
+        catch error(['Image processing was canceled in the ', ModuleName, ' module because it must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Subtract Background module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from the ', ModuleName,' module onward.'])
         end
         %%% Retrieves the list of filenames where the images are stored from the
         %%% handles structure.

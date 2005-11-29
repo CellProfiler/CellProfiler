@@ -1,6 +1,6 @@
 function handles = SplitOrSpliceMovie(handles)
 
-% Help for the SplitOrSpliceMovie module:
+% Help for the Split Or Splice Movie module:
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
@@ -63,7 +63,7 @@ FramesPerSplitMovie = str2double(char(handles.Settings.VariableValues{CurrentMod
 %defaultVAR06 = GFPstainSPLICED.avi
 FinalSpliceName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Note: This module is run by itself in a pipeline; there is no need to use a LoadImages or SaveImages module.
+%textVAR07 = Note: This module is run by itself in a pipeline; there is no need to use a Load Images or Save Images module.
 
 %%%VariableRevisionNumber = 2
 

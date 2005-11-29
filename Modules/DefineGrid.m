@@ -32,7 +32,7 @@ function handles = DefineGrid(handles)
 % you could specify that the spot is -1,0 spot units away from the top left
 % spot.
 %
-% See also IdentifyObjectsInGrid, DisplayGridInfo.
+% See also IDENTIFYOBJECTSINGRID, DISPLAYGRIDINFO.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

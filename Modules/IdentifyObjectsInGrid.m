@@ -4,13 +4,13 @@ function handles = IdentifyObjectsInGrid(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% After a grid has been established by DefineGrid, this module will
-% identify objects within each section of the grid.
+% After a grid has been established by the Define Grid module, this module
+% will identify objects within each section of the grid.
 % *************************************************************************
 %
 % This module identifies objects that are in a grid pattern which allows
 % you to measure them using measure modules. It requires that you
-% create a grid in an earlier module using the DefineGrid module.
+% create a grid in an earlier module using the Define Grid module.
 %
 % Settings:
 % For several of the automatic options, you will need to tell the module
@@ -30,20 +30,20 @@ function handles = IdentifyObjectsInGrid(handles)
 % you choose to re-use the grid from the previous image cycle instead.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then saved
-% with SaveImages. Objects themselves can be passed along to the object
-% processing module ConvertToImage and then saved with SaveImages. This
-% module produces several additional types of objects with names that are
-% automatically passed along with the following naming structure: (1) The
-% unedited segmented image, which includes objects on the edge of the image
-% and objects that are outside the size range, can be saved using the name:
-% UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
-% smaller than your selected size range can be saved using the name:
-% SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei).
+% outlines can be passed along to the module Overlay Outlines and then
+% saved with the Save Images module. Objects themselves can be passed along
+% to the object processing module Convert To Image and then saved with the
+% Save Images module. This module produces several additional types of
+% objects with names that are automatically passed along with the following
+% naming structure: (1) The unedited segmented image, which includes
+% objects on the edge of the image and objects that are outside the size
+% range, can be saved using the name: UneditedSegmented + whatever you
+% called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+% image which excludes objects smaller than your selected size range can be
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also DefineGrid.
+% See also DEFINEGRID.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -122,7 +122,7 @@ drawnow
 try
     Grid = handles.Pipeline.(['Grid_' GridName]);
 catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because it is unable to find the grid you specified, ', GridName, '.  Make sure you properly defined it using the DefineGrid module earlier.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because it is unable to find the grid you specified, ', GridName, '.  Make sure you properly defined it using the Define Grid module earlier.']);
 end
 
 TotalHeight = Grid.TotalHeight;
@@ -213,7 +213,7 @@ if strmatch('Circle',Shape)
         end
     else
         if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-            error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the DefineGrid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
+            error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the Define Grid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
         end
     end
 end

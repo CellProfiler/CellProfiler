@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+(Requested by Anne 11-29-05) - Why don't the data tools that have been converted to modules have nice headings (like %%%VARIABLES%%%)?
+
 (Requested by Susan 11-29-05) - In ColorToGray modules, Type N to ignore red(or others)  doesn't work well, got error "Error in ==> CellProfiler at 53   gui_mainfcn(gui_State, varargin{:})"
 
 (Requested by Anne 11-29-05) - Seems like it would be relatively painless to expand FilterByObjectMeasurement to work with MeasureCorrelation and MeasureRatios, since each of these can produce per-object measures. Should we give it a try?

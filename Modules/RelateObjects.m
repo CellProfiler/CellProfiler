@@ -1,6 +1,6 @@
 function handles = RelateObjects(handles)
 
-% Help for the RelateObjects module:
+% Help for the Relate Objects module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:

@@ -1,6 +1,6 @@
 function handles = RenameOrRenumberFile(handles)
 
-% Help for the RenameOrRenumberFile module:
+% Help for the Rename Or Renumber File module:
 % Category: File Processing
 %
 % SHORT DESCRIPTION:

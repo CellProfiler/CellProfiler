@@ -5,7 +5,7 @@ function handles = ConvertToImage(handles)
 %
 % SHORT DESCRIPTION:
 % Converts objects you have identified into an image so that it can be
-% saved with the SaveImages module.
+% saved with the Save Images module.
 % *************************************************************************
 %
 % Settings:

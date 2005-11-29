@@ -25,18 +25,18 @@ function handles = Exclude(handles)
 % data analysis tools.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then saved
-% with SaveImages. Objects themselves can be passed along to the object
-% processing module ConvertToImage and then saved with SaveImages. This
-% module produces several additional types of objects with names that are
-% automatically passed along with the following naming structure: (1) The
-% unedited segmented image, which includes objects on the edge of the image
-% and objects that are outside the size range, can be saved using the name:
-% UneditedSegmented + whatever you called the objects (e.g.
-% UneditedSegmentedNuclei). (2) The segmented image which excludes objects
-% smaller than your selected size range can be saved using the name:
-% SmallRemovedSegmented + whatever you called the objects (e.g.
-% SmallRemovedSegmented Nuclei).
+% outlines can be passed along to the module Overlay Outlines and then
+% saved with the Save Images module. Objects themselves can be passed along
+% to the object processing module Convert To Image and then saved with the
+% Save Images module. This module produces several additional types of
+% objects with names that are automatically passed along with the following
+% naming structure: (1) The unedited segmented image, which includes
+% objects on the edge of the image and objects that are outside the size
+% range, can be saved using the name: UneditedSegmented + whatever you
+% called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+% image which excludes objects smaller than your selected size range can be
+% saved using the name: SmallRemovedSegmented + whatever you called the
+% objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also <nothing relevant>.
 
@@ -106,7 +106,7 @@ drawnow
 %%% Checks whether the images exist in the handles structure.
 fieldname = ['Segmented',ObjectName];
 if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Exclude Primary Object module, you must have previously run a module to identify primary objects. You specified in the Exclude Primary Object module that these objects were called ', ObjectName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to identify primary objects. You specified that these objects were called ', ObjectName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
 end
 SegmentedObjectImage = handles.Pipeline.(fieldname);
 
@@ -126,7 +126,7 @@ end
 %%% which must be loaded here.
 fieldname = ['Segmented',MaskRegionName];
 if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Exclude Primary Object module, you must have previously run a module to identify primary objects. You specified in the Exclude Primary Object module that these objects were called ', MaskRegionName, ' which should have produced a field in the handles structure called ', fieldname, '. The Exclude Objects module cannot find this image.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to identify primary objects. You specified that these objects were called ', MaskRegionName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
 end
 MaskRegionObjectImage = handles.Pipeline.(fieldname);
 

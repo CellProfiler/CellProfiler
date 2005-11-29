@@ -1,6 +1,6 @@
 function handles = Subtract(handles)
 
-% Help for the Subtract Images module:
+% Help for the Subtract module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:

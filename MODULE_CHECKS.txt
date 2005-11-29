@@ -35,7 +35,7 @@ ExtractHeaderInfo (I think Mike is moving to Developer scripts)
 
 FilterByObjectMeasurement	Mike,        Anne
 
-Flip				Mike
+Flip				Mike,        Anne
 
 GetHistogram
 

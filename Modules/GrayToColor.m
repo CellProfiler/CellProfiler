@@ -1,11 +1,11 @@
-function handles = RGBMerge(handles)
+function handles = GrayToColor(handles)
 
-% Help for the RGB Merge module:
+% Help for the Gray To Color module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Takes 1 to 3 images and assigns them to colors in a final, RGBimage.
-% Each color's brightness can be adjusted independently.
+% Takes 1 to 3 images and assigns them to colors in a final red, green,
+% blue (RGB) image. Each color's brightness can be adjusted independently.
 % *************************************************************************
 %
 % Settings:
@@ -18,7 +18,7 @@ function handles = RGBMerge(handles)
 % it.  Setting the adjustment factor to zero will cause that color to
 % be entirely blank.
 %
-% See also RGBSPLIT, RGBTOGRAY.
+% See also COLORTOGRAY.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -46,7 +46,6 @@ function handles = RGBMerge(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -147,7 +146,7 @@ drawnow
 %%% If any of the colors are to be left black, creates the appropriate
 %%% image.
 if ~BlueImageExists && ~RedImageExists && ~GreenImageExists
-    error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected any images to be merged in the RGB Merge module.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected any images to be merged.'])
 end
 if ~BlueImageExists && ~RedImageExists && GreenImageExists
     BlueImage = zeros(size(GreenImage));
@@ -179,7 +178,7 @@ try
     if size(RedImage) ~= size(GreenImage)
         error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
     end
-catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in RGB format.'])
+catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in color (RGB) format.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

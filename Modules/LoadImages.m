@@ -11,8 +11,8 @@ function handles = LoadImages(handles)
 %
 % Tells CellProfiler where to retrieve images and gives each image a
 % meaningful name for the other modules to access. When used in combination
-% with a SaveImages module, you can load images in one file format and save
-% in another file format, making CellProfiler work as a file format
+% with a Save Images module, you can load images in one file format and
+% save in another file format, making CellProfiler work as a file format
 % converter.
 %
 % If more than four images per cycle must be loaded, more than one Load
@@ -535,7 +535,7 @@ for n = 1:length(ImageName)
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
 
             if (max(LoadedImage(:)) <= .0625) && (handles.Current.SetBeingAnalyzed == 1)
-                CPwarndlg(['Warning: the images loaded by ', ModuleName, ' are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. You might consider using the RescaleIntensity module to rescale the images using a factor of 0.0625.']);
+                CPwarndlg(['Warning: the images loaded by ', ModuleName, ' are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. You might consider using the Rescale Intensity module to rescale the images using a factor of 0.0625.']);
             end
             %%% Saves the original image file name to the handles
             %%% structure.  The field is named appropriately based on

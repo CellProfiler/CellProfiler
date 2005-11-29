@@ -20,60 +20,56 @@ function handles = IdentifyPrimAutomatic(handles)
 % Settings:
 %
 % Typical diameter of objects, in pixel units (Min,Max):
-% This is a very important parameter which tells the module what you
-% are looking for. Most options within this module use this estimate
-% of the size range of the objects in order to distinguish them from
-% noise in the image. For example, for some of the identification
-% methods, the smoothing applied to the image is based on the minimum
-% size of the objects.  A comma should be placed between the minimum
-% and the maximum diameters. The units here are pixels so that it is
-% easy to zoom in on found objects and determine the size of what you
-% think should be excluded. To measure distances easily, use the
-% CellProfiler Image Tool, 'Show Or Hide Pixel Data', in any open
-% window. Once this tool is activated, you can draw a line across
-% objects in your image and the length of the line will be shown in
-% pixel units. Note that for non-round objects, the diameter here is
-% actually the 'equivalent diameter', meaning the diameter of a circle
-% with the same area as the object.
+% This is a very important parameter which tells the module what you are
+% looking for. Most options within this module use this estimate of the
+% size range of the objects in order to distinguish them from noise in the
+% image. For example, for some of the identification methods, the smoothing
+% applied to the image is based on the minimum size of the objects. A comma
+% should be placed between the minimum and the maximum diameters. The units
+% here are pixels so that it is easy to zoom in on objects and determine
+% typical diameters. To measure distances easily, use the CellProfiler
+% Image Tool, 'Show Or Hide Pixel Data', in any open window. Once this tool
+% is activated, you can draw a line across objects in your image and the
+% length of the line will be shown in pixel units. Note that for non-round
+% objects, the diameter here is actually the 'equivalent diameter', meaning
+% the diameter of a circle with the same area as the object.
 %
 % Discard objects outside the diameter range:
-% Objects outside the specified range of diameters will be discarded.
-% This allows you to exclude small objects like dust, noise, and
-% debris, or large objects like clumps if desired. See also the
-% FilterByAreaShape module to further discard objects based on
-% some other Area or Shape measurement. During processing, the window
-% for this module will show that objects outlined in green were an
-% acceptable size, objects outlined in red were discarded based on
-% their size, and objects outlined in yellow were discarded because
-% they touch the border.
+% You can choose to discard objects outside the specified range of
+% diameters. This allows you to exclude small objects (e.g. dust, noise,
+% and debris) or large objects (e.g. clumps) if desired. See also the
+% Filter By Object Measurement module to further discard objects based on
+% some other measurement. During processing, the window for this module
+% will show that objects outlined in green were acceptable, objects
+% outlined in red were discarded based on their size, and objects outlined
+% in yellow were discarded because they touch the border.
 %
 % Try to merge 'too small' objects with nearby larger objects:
-% Use caution when choosing 'Yes' for this option! 
-% This is an experimental functionality that takes objects that were
-% discarded because they were smaller than the specified Minimum
-% diameter and tries to merge them with other surrounding objects.
-% This is helpful in cases when an object was incorrectly split into
-% two objects, one of which is actually just a tiny piece of the
-% larger object. However, this could be dangerous if you have selected
-% poor settings which produce lots of tiny objects - the module will
-% take a very long time and you won't realize that it's because the
-% tiny objects are being merged. It is therefore a good idea to run
-% the module first without merging objects to make sure the settings
-% are reasonably effective.
+% Use caution when choosing 'Yes' for this option! This is an experimental
+% functionality that takes objects that were discarded because they were
+% smaller than the specified Minimum diameter and tries to merge them with
+% other surrounding objects. This is helpful in cases when an object was
+% incorrectly split into two objects, one of which is actually just a tiny
+% piece of the larger object. However, this could be dangerous if you have
+% selected poor settings which produce lots of tiny objects - the module
+% will take a very long time and you won't realize that it is because the
+% tiny objects are being merged. It is therefore a good idea to run the
+% module first without merging objects to make sure the settings are
+% reasonably effective.
 %
 % Discard objects touching the border of the image:
-% For most applications, you do not want to make measurements of
+% You can choose to discard objects that touch the corder of the image. 
+% This is useful in cases where you do not want to make measurements of
 % objects that are not fully within the field of view (because, for
-% example, the area would not be accurate) so they should be
-% discarded.
+% example, the area would not be accurate).
 %
-% Select thresholding method or enter a threshold:
+% Select automatic thresholding method or enter an absolute threshold:
 %    The threshold affects the stringency of the lines between the
-% objects and the background. You may enter an absolute number between
-% 0 and 1 for the threshold (in any image window use the CellProfiler
-% Image Tool, 'Show Or Hide Pixel Data', to see the pixel intensities
-% for your images in the appropriate range of 0 to 1), or you may
-% choose to have it automatically calculated using several methods.
+% objects and the background. You can have the threshold automatically
+% calculated using several methods, or you can enter an absolute number
+% between 0 and 1 for the threshold (to see the pixel intensities for your
+% images in the appropriate range of 0 to 1, use the CellProfiler Image
+% Tool, 'Show Or Hide Pixel Data', in a window showing your image).
 % There are advantages either way.  An absolute number treats every
 % image identically, but is not robust to slight changes in
 % lighting/staining conditions between images. An automatically
@@ -88,14 +84,16 @@ function handles = IdentifyPrimAutomatic(handles)
 % other images.
 %    There are two methods for finding thresholds automatically,
 % Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu method
-% uses our version of graythresh in CPthreshold, which is a modification of
-% the Matlab function 'graythresh'. Our modifications include taking into
-% account the max and min values in the image and log-transforming the
+% uses our version of the Matlab function graythresh (the code is in the
+% CellProfiler subfunction CPthreshold). Our modifications include taking
+% into account the max and min values in the image and log-transforming the
 % image prior to calculating the threshold. Otsu's method is probably
-% better if you don't know anything about the image. But if you can supply
-% the object coverage percentage the MoG can be better, especially if the
-% coverage percentage differs much from 50%. Note however that the MoG
-% function is experimental and has not been thoroughly validated.
+% better if you don't know anything about the image, or if the percent of
+% the image covered by objects varies substantially from image to image.
+% But if you know the object coverage percentage and it does not vary much
+% from image to image, the MoG can be better, especially if the coverage
+% percentage is not near 50%. Note however that the MoG function is
+% experimental and has not been thoroughly validated.
 %    You can also choose between global and adaptive thresholding,
 % where global means that one threshold is used for the entire image and
 % adaptive means that the threshold varies across the image. Adaptive is
@@ -104,54 +102,56 @@ function handles = IdentifyPrimAutomatic(handles)
 % clump-separation method (see below).
 %
 % Threshold correction factor:
-% When the threshold is calculated automatically, it may consistently
-% be too stringent or too lenient.  For example, the Otsu automatic
-% thresholding inherently assumes that 50% of the image is covered by
-% objects. If a larger percentage of the image is covered, the Otsu
-% method will give a slightly biased threshold that may have to be
-% corrected. You may need to enter an adjustment factor which you
-% empirically determine is suitable for your images. The number 1 means no
-% adjustment, 0 to 1 makes the threshold more lenient and greater than 1
-% (e.g. 1.3) makes the threshold more stringent.
+% When the threshold is calculated automatically, it may consistently be
+% too stringent or too lenient. You may need to enter an adjustment factor
+% which you empirically determine is suitable for your images. The number 1
+% means no adjustment, 0 to 1 makes the threshold more lenient and greater
+% than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
+% Otsu automatic thresholding inherently assumes that 50% of the image is
+% covered by objects. If a larger percentage of the image is covered, the
+% Otsu method will give a slightly biased threshold that may have to be
+% corrected using a threshold correction factor.
 %
-% Lower bound on threshold:
+% Lower and upper bounds on threshold:
 % Can be used as a safety precaution when the threshold is calculated
-% automatically. If there are no objects in the field of view, the
-% automatic threshold will be unreasonably low. In such case the lower
-% bound you enter here will override the automatic threshold.
+% automatically. For example, if there are no objects in the field of view,
+% the automatic threshold will be unreasonably low. In such cases, the
+% lower bound you enter here will override the automatic threshold.
 %
-% Approximate percentage covered by objects:
+% Approximate percentage of image covered by objects:
 % An estimate of how much of the image is covered with objects. This
 % information is currently only used in the MoG (Mixture of Gaussian)
-% thresholding but may be used for other thresholding methods in the
-% future (see below). This is not a very sensitive parameter so your
-% estimate need not be precise.
+% thresholding but may be used for other thresholding methods in the future
+% (see below).
 %
 % Method to distinguish clumped objects:
-% * Intensity - For objects that tend to have only one peak of
-% brightness per object (e.g. objects that are brighter towards their
-% interiors), this option counts each intensity peak as a separate
-% object. The objects can be any shape, so they need not be round and
-% uniform in size as would be required for a distance-based module.
-% The module is more successful when then objects have a smooth
-% texture. By default, the image is automatically blurred to attempt
-% to achieve appropriate smoothness (see blur option), but overriding
-% the default value can improve the outcome on lumpy-textured objects
-% {OLa is currently implementing this option}. Technical description:
-% Object centers are defined as local intensity maxima.
+% Note: to choose between these methods, you can try test mode (see the
+% last setting for this module).
+% * Intensity - For objects that tend to have only one peak of brightness
+% per object (e.g. objects that are brighter towards their interiors), this
+% option counts each intensity peak as a separate object. The objects can
+% be any shape, so they need not be round and uniform in size as would be
+% required for a distance-based module. The module is more successful when
+% then objects have a smooth texture. By default, the image is
+% automatically blurred to attempt to achieve appropriate smoothness (see
+% blur option), but overriding the default value can improve the outcome on
+% lumpy-textured objects. Technical description: Object centers are defined
+% as local intensity maxima.
 % * Shape - For cases when there are definite indentations separating
 % objects. This works best for objects that are round. The intensity
-% patterns in the original image are irrelevant - the image is
-% converted to black and white (binary) and the shape is what
-% determines whether clumped objects will be distinguished. Therefore,
-% the cells need not be brighter towards the interior as is required
-% for the Intensity option. Technical description: The binary
-% thresholded image is distance-transformed and object centers are
-% defined as peaks in this image.
+% patterns in the original image are irrelevant - the image is converted to
+% black and white (binary) and the shape is what determines whether clumped
+% objects will be distinguished. Therefore, the cells need not be brighter
+% towards the interior as is required for the Intensity option. The
+% de-clumping results of this method are affected by the thresholding
+% method you choose. Technical description: The binary thresholded image is
+% distance-transformed and object centers are defined as peaks in this
+% image.
 % * None (fastest option) - If objects are far apart and are very well
-% separated, it may be unnecessary to attempt to separate clumped
-% objects. Using the 'None' option, the thresholded image will be used
-% to identify objects.
+% separated, it may be unnecessary to attempt to separate clumped objects.
+% Using the 'None' option, a simple threshold will be used to identify
+% objects. This will override any declumping method chosen in the next
+% question.
 %
 % Method to draw dividing lines between clumped objects:
 % * Intensity - works best where the dividing lines between clumped
@@ -161,55 +161,58 @@ function handles = IdentifyPrimAutomatic(handles)
 % original image are irrelevant - the cells need not be dimmer along
 % the lines between clumped objects.
 % * None (fastest option) - If objects are far apart and are very well
-% separated, it may be unnecessary to attempt to separate clumped
-% objects. Using the 'None' option, the thresholded image will be used
-% to identify objects.
+% separated, it may be unnecessary to attempt to separate clumped objects.
+% Using the 'None' option, the thresholded image will be used to identify
+% objects. This will override any declumping method chosen in the above
+% question.
 %
 % Size of smoothing filter, in pixel units:
-% If you are distinguishing between clumped objects, the image is
-% smoothed based on the specified minimum object diameter that you
-% have entered, but you may want to override the automatically
-% calculated value here. Reducing the texture of objects by increasing
-% the smoothing increases the chance that each real, distinct object
-% has only one peak of intensity but also increases the chance that
-% two distinct objects will be recognized as only one object. Note
-% that increasing the blur radius increases the processing time
-% exponentially.
-% This variable affects whether objects close by each other are
-% considered a single object or multiple objects. It does not affect
-% the dividing lines between an object and the background.  If you see
-% too many objects merged that ought to be separate, the value should
-% be lower. If you see too many objects split up that ought to be
-% merged, the value should be higher.
+%    (Only used when distinguishing between clumped objects) This setting,
+% along with the suppress local maxima setting, affects whether objects
+% close by each other are considered a single object or multiple objects.
+% It does not affect the dividing lines between an object and the
+% background. If you see too many objects merged that ought to be separate,
+% the value should be lower. If you see too many objects split up that
+% ought to be merged, the value should be higher. 
+%    The image is smoothed based on the specified minimum object diameter    
+% that you have entered, but you may want to override the automatically
+% calculated value here. Reducing the texture of objects by increasing the
+% smoothing increases the chance that each real, distinct object has only
+% one peak of intensity but also increases the chance that two distinct
+% objects will be recognized as only one object. Note that increasing the
+% size of the smoothing filter increases the processing time exponentially.
 %
 % Suppress local maxima within this distance (a positive
 % integer, in pixel units):
-% If you are distinguishing between clumped objects, object markers
-% are suppressed based on the specified minimum object diameter that
-% you have entered, but you may want to override the automatically
-% calculated value here. The maxima suppression distance should be
-% set to be roughly equivalent to the minimum radius of a real object
-% of interest. Basically, any distinct 'objects' which are found but
-% are within two times this distance from each other will be assumed
-% to be actually two lumpy parts of the same object, and they will be
-% merged.
-% This variable affects whether objects close by each other are
-% considered a single object or multiple objects. It does not affect
-% the dividing lines between an object and the background.  If you see
-% too many objects merged that ought to be separate, the value should
-% be lower. If you see too many objects split up that ought to be
-% merged, the value should be higher.
+%    (Only used when distinguishing between clumped objects) This setting,
+% along with the size of the smoothing filter, affects whether objects
+% close by each other are considered a single object or multiple objects.
+% It does not affect the dividing lines between an object and the
+% background. If you see too many objects merged that ought to be separate,
+% the value should be lower. If you see too many objects split up that
+% ought to be merged, the value should be higher. 
+%    Object markers are suppressed based on the specified minimum object
+% diameter that you have entered, but you may want to override the
+% automatically calculated value here. The maxima suppression distance
+% should be set to be roughly equivalent to the minimum radius of a real
+% object of interest. Basically, any distinct 'objects' which are found but
+% are within two times this distance from each other will be assumed to be
+% actually two lumpy parts of the same object, and they will be merged.
 %
 % Speed up by using lower-resolution image to find local maxima?
-% If you are distinguishing between clumped objects
-% If you have entered a minimum object diameter of 10 or less, setting this
-% option to Yes will have no effect.
+% (Only used when distinguishing between clumped objects) If you have
+% entered a minimum object diameter of 10 or less, setting this option to
+% Yes will have no effect.
 %
 % Technical notes: The initial step of identifying local maxima is
 % performed on the user-controlled heavily smoothed image, the
 % foreground/background is done on a hard-coded slightly smoothed
 % image, and the dividing lines between clumped objects (watershed) is
 % done on the non-smoothed image.
+%
+% Laplacian of Gaussian method:
+% This is a specialized method to find objects and will override the above
+% settings in this module.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module Overlay Outlines and then
@@ -303,7 +306,7 @@ MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = Select thresholding method or enter a threshold in the range [0,1] (Choosing 'All' will decide threshold for entire image group).
+%textVAR07 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
 %choiceVAR07 = MoG Global
 %choiceVAR07 = MoG Adaptive
 %choiceVAR07 = Otsu Global
@@ -321,7 +324,7 @@ ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModule
 %defaultVAR09 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Approximate percentage of image covered by objects (for MoG thresholding only):
+%textVAR10 = For MoG thresholding, what is the approximate percentage of image covered by objects?
 %choiceVAR10 = 10%
 %choiceVAR10 = 20%
 %choiceVAR10 = 30%
@@ -366,7 +369,7 @@ MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14
 UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%textVAR16 = Enter the following information, separated by commas, if you would like to use Laplacian of Gaussian method: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Weiner Filter(height,width),Threshold
+%textVAR16 = Enter the following information, separated by commas, if you would like to use the Laplacian of Gaussian method for identifying objects instead of using the above settings: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Weiner Filter(height,width),Threshold
 %defaultVAR16 = /
 LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
@@ -375,7 +378,7 @@ LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 %infotypeVAR17 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
-%textVAR18 = Test Mode?
+%textVAR18 = Do you want to run in test mode where each method for distinguishing clumped objects is compared?
 %choiceVAR18 = No
 %choiceVAR18 = Yes
 TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
@@ -1025,7 +1028,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                 CPimagesc(OutlinedObjects);
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
-
             end
         end
     end

@@ -41,7 +41,7 @@ GrayToColor			Mike,        Anne
 
 IdentifyObjectsInGrid		Mike,        Anne
 
-IdentifyPrimAutomatic		 
+IdentifyPrimAutomatic                        Anne
 
 IdentifyPrimManual		Mike
 

@@ -193,11 +193,11 @@ OriginalIdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Select thresholding method or enter a threshold in the range [0,1] (Choosing 'All' will decide threshold for entire image group).
-%choiceVAR05 = MoG Global
-%choiceVAR05 = MoG Adaptive
+%textVAR05 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
 %choiceVAR05 = Otsu Global
 %choiceVAR05 = Otsu Adaptive
+%choiceVAR05 = MoG Global
+%choiceVAR05 = MoG Adaptive
 %choiceVAR05 = All
 %choiceVAR05 = Test Mode
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -207,11 +207,11 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 1
 ThresholdCorrection = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Lower and upper bounds on threshold (in the range [0,1])
+%textVAR07 = Lower and upper bounds on threshold, in the range [0,1]
 %defaultVAR07 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Approximate percentage of image covered by objects (for MoG thresholding only):
+%textVAR08 = For MoG thresholding, what is the approximate percentage of image covered by objects?
 %choiceVAR08 = 10%
 %choiceVAR08 = 20%
 %choiceVAR08 = 30%
@@ -224,11 +224,11 @@ ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Set the number of pixels by which to expand the primary objects, ONLY if identifying by DISTANCE [Positive number]
+%textVAR09 = For DISTANCE, enter the number of pixels by which to expand the primary objects [Positive integer]
 %defaultVAR09 = 10
 DistanceToDilate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Regularization factor, ONLY if identifying by PROPAGATION (0 to infinity). Larger=distance,0=intensity
+%textVAR10 = For PROPAGATION, enter the regularization factor (0 to infinity). Larger=distance,0=intensity
 %defaultVAR10 = 0.05
 RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
@@ -237,7 +237,7 @@ RegularizationFactor = str2double(char(handles.Settings.VariableValues{CurrentMo
 %infotypeVAR11 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Do you want to run in test mode?
+%textVAR12 = Do you want to run in test mode where each method for identifying secondary objects is compared?
 %choiceVAR12 = No
 %choiceVAR12 = Yes
 TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,12});

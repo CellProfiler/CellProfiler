@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+What are we going to call the compiled version vs. the matlab version? As I am writing help, I'd like to use consistent language. One idea: matlab version = Developer's version?  I don't really know what the standard words are for this sort of thing.
+
 Mike - Why is IdentifyPrimYeastPhase marked with ?? - I thought you had found one bug that suddenly made it work pretty well?
 
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?

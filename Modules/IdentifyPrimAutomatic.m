@@ -307,10 +307,10 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6})
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
-%choiceVAR07 = MoG Global
-%choiceVAR07 = MoG Adaptive
 %choiceVAR07 = Otsu Global
 %choiceVAR07 = Otsu Adaptive
+%choiceVAR07 = MoG Global
+%choiceVAR07 = MoG Adaptive
 %choiceVAR07 = All
 %choiceVAR07 = Test Mode
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
@@ -320,7 +320,7 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = 1
 ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8})); %#ok Ignore MLint
 
-%textVAR09 = Lower and upper bounds on threshold (in the range [0,1])
+%textVAR09 = Lower and upper bounds on threshold, in the range [0,1]
 %defaultVAR09 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 

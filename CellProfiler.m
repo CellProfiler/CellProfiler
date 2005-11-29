@@ -4156,7 +4156,7 @@ if exist('EnteredPreferences','var')
         %%% Retrieves the data that the user entered and saves it to the
         %%% handles structure.
         handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
-        handles.Preferences.FontSize  = EnteredPreferences.FontSize;
+        handles.Preferences.FontSize  = str2double(EnteredPreferences.FontSize);
         handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
         handles.Preferences.DefaultOutputDirectory = EnteredPreferences.DefaultOutputDirectory;
         handles.Preferences.DefaultModuleDirectory = EnteredPreferences.DefaultModuleDirectory;

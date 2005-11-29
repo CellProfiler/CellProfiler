@@ -1,3 +1,5 @@
+- Improve speed of ordfilt2 used by CPsmooth (takes forever). Look into getting new code at mathworks website or anywhere else. Something that does the same thing.
+
 - Combine code for:
 Histograms
 

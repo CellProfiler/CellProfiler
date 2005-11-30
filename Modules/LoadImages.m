@@ -658,7 +658,11 @@ if any(findobj == ThisModuleFigureNumber);
             newsize(3) = 250;
             set(ThisModuleFigureNumber, 'position', newsize);
         end
-        TextString = [ImageName{n},': ',FileNames{n}];
+        if iscell(ImageName)
+            TextString = [ImageName{n},': ',FileNames{n}];
+        else
+            TextString = [ImageName,': ',FileNames];
+        end
         uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
 end

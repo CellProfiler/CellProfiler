@@ -150,7 +150,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if length(ImageName) == 0
+if isempty(ImageName)
     error(['Image processing was canceled in the ', ModuleName, ' module because you have not chosen any images to load.'])
 end
 
@@ -244,6 +244,21 @@ drawnow
 %%% Determines the figure number.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Closes the window if it is open.
-if any(findobj == ThisModuleFigureNumber) == 1;
-    close(ThisModuleFigureNumber)
+if any(findobj == ThisModuleFigureNumber)
+    for n = 1:length(ImageName)
+        CPfigure(handles,ThisModuleFigureNumber);
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            %%% Sets the window to be half as wide as usual.
+            originalsize = get(ThisModuleFigureNumber, 'position');
+            newsize = originalsize;
+            newsize(3) = 250;
+            set(ThisModuleFigureNumber, 'position', newsize);
+        end
+        if iscell(ImageName)
+            TextString = [ImageName{n},': ',FileNames{n}];
+        else
+            TextString = [ImageName,': ',FileNames];
+        end
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+    end
 end

@@ -1,5 +1,6 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/30) Allow LoadText to use a different folder than the default image folder (add a path selection like LoadSingleImages has).
 
 -(Colin 11/29) Move ImageTool to CPsubfunctions, save as CPimagetool to be consistent with other CP functions. I think most modules aren't using the CPimagetool yet, so we need to add it.  Perhaps actually we should make CPimagesc so that every time we show an image in a figure it automatically has the image tool embedded?
 

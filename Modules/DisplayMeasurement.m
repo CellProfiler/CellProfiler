@@ -1,6 +1,6 @@
-function handles = GetPlotMeasurement(handles)
+function handles = DisplayMeasurement(handles)
 
-% Help for the Get Plot Measurement module:
+% Help for the Display Measurement module:
 % Category: Other
 %
 % SHORT DESCRIPTION:

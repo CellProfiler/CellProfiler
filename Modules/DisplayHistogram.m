@@ -1,6 +1,6 @@
-function handles = GetHistogram(handles)
+function handles = DisplayHistogram(handles)
 
-% Help for the Get Histogram module:
+% Help for the Display Histogram module:
 % Category: Other
 %
 % SHORT DESCRIPTION:

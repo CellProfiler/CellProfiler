@@ -1,6 +1,6 @@
-function handles = GetImageHistogram(handles)
+function handles = DisplayImageHistogram(handles)
 
-% Help for the Get Image Histogram module:
+% Help for the Display Image Histogram module:
 % Category: Other
 %
 % SHORT DESCRIPTION:

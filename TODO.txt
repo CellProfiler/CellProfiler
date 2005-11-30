@@ -3,8 +3,6 @@ November 21, 2005
 
 The code at line 153-154 in MeasureCorrelation doesn't make much sense to me. Does it make sense? I don't know what the comment refers to - i wonder if it's old code.
 
-Allow LoadText to use a different folder than the default image folder (add a path selection like LoadSingleImages has).
-
 Make LoadSingleImage show the filenames loaded, like LoadImages does.
 
 Please add all the data tools, image tools, and help files to the module check list so that we are sure to go through them.

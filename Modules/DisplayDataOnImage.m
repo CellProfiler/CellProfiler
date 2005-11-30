@@ -1,6 +1,6 @@
-function handles = GetDataOnImage(handles)
+function handles = DisplayDataOnImage(handles)
 
-% Help for the Get Data on Image module:
+% Help for the Display Data on Image module:
 % Category: Other
 %
 % SHORT DESCRIPTION:

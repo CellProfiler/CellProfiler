@@ -88,16 +88,10 @@ function handles = SaveImages(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %If you change anything here, make sure the image tool SaveImageAs is
 %consistent.
-
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -141,7 +135,8 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR04 = popupmenu
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THAT FORMAT, RIGHT?
+%%%%%%%%%%%%%%%%%%%%%%% NOTE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THOSE FORMATS
 
 %pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory.
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});

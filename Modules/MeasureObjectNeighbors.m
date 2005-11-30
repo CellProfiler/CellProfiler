@@ -8,23 +8,16 @@ function handles = MeasureObjectNeighbors(handles)
 % *************************************************************************
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module determines how many neighbors each object has. The user
-% selects the distance within which objects should be considered
-% neighbors.
+% module determines how many neighbors each object has. The user selects
+% the distance within which objects should be considered neighbors. The
+% module can measure the number of neighbors each object has if every
+% object were expanded up until the point where it hits another object. To
+% use this option, enter 0 (the number zero) for the pixel distance.
 %
 % How it works:
-% Retrieves objects in label matrix format. The
-% objects are expanded by the number of pixels the user specifies, and then
-% the module counts up how many other objects the object is overlapping.
-% Alternately, the module can measure the number of neighbors each object
-% has if every object were expanded up until the point where it hits
-% another object.  To use this option, enter 0 (the number zero) for the
-% pixel distance.  Please note that currently the image of the objects,
-% colored by how many neighbors each has, cannot be saved using the Save
-% Images module, because it is actually a black and white image displayed
-% using a particular colormap.
-%
-% See also <nothing relevant>.
+% Retrieves objects in label matrix format. The objects are expanded by the
+% number of pixels the user specifies, and then the module counts up how
+% many other objects the object is overlapping.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -53,7 +46,6 @@ function handles = MeasureObjectNeighbors(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the objects whose neighbors you want to measure?
@@ -61,16 +53,21 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Objects are considered neighbors if they are within this distance (pixels):
+%textVAR02 = Objects are considered neighbors if they are within this distance, in pixels. Or, enter 0 (zero) to expand objects until touching and then count their neighbors:
 %defaultVAR02 = 0
 NeighborDistance = str2double(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the image of the objects, colored by the number of neighbors?
-%defaultVAR03 = ColoredNeighbors
-%infotypeVAR03 = objectgroup indep
-ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = What do you want to call the image of the objects with grayscale values corresponding to the number of neighbors, which is compatible for saving in .mat format using the Save Images module for further analysis in Matlab?
+%defaultVAR03 = Do not save
+%infotypeVAR03 = imagegroup indep
+GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%%%VariableRevisionNumber = 2
+%textVAR04 = What do you want to call the objects colored by number of neighbors, which are compatible for converting to a color image using the Convert To Image and Save Images modules?
+%defaultVAR04 = Do not save
+%infotypeVAR04 = objectgroup indep
+ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -178,7 +175,7 @@ if any(findobj == ThisModuleFigureNumber)
     set(gca,'FontSize',FontSize)
     subplot(2,1,2); CPimagesc(ImageOfNeighbors);
     colorbar('SouthOutside','FontSize',FontSize)
-    title(ColoredNeighborsName,'FontSize',FontSize)
+    title([ObjectName,' colored by number of neighbors'],'FontSize',FontSize)
     set(gca,'FontSize',FontSize)
 end
 
@@ -187,6 +184,18 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the colored version of images to the handles structure so
-%%% they can be saved to the hard drive, if the user requests.
-handles.Pipeline.(ColoredNeighborsName) = ColoredImageOfNeighbors;
+%%% Saves the grayscale version of objects to the handles structure so
+%%% they can be saved to the hard drive, if the user requests. Here, the
+%%% background is -1, and the objects range from 0 (if it has no neighbors)
+%%% up to the highest number of neighbors. The -1 value makes it
+%%% incompatible with the Convert To Image module which expects a label
+%%% matrix starting at zero.
+handles.Pipeline.(GrayscaleNeighborsName) = ColoredImageOfNeighbors;
+
+%%% Saves the grayscale version of objects to the handles structure so
+%%% they can be saved to the hard drive, if the user requests. Here, the
+%%% scalar value 1 is added to every pixel so that the background is zero
+%%% and the objects are from 1 up to the highest number of neighbors, plus
+%%% one. This makes the objects compatible with the Convert To Image
+%%% module.
+handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ColoredImageOfNeighbors + 1;

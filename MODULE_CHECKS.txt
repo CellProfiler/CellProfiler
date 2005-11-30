@@ -8,7 +8,7 @@ ApplyThreshold			Mike, Colin, Anne
 
 Average				Mike, Colin, Anne
 
-CalculateStatistics		Mike,        Anne (didn't check code until we are ready to play around with it for real)
+CalculateStatistics		Mike,        Anne (didn't check code until we are ready to play around with it for real: we really really have to doublecheck the code and be absolutely sure it's perfect before we brag about our Z' factor!)
 
 ClassifyObjects			Mike, Colin, Anne
 
@@ -75,7 +75,7 @@ MeasureObjectAreaShape		Mike,        Anne
 
 MeasureObjectIntensity		Mike,        Anne
 
-MeasureObjectNeighbors		Mike
+MeasureObjectNeighbors		Mike,        Anne
 
 MeasureObjectTexture		Mike
 

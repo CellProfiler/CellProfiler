@@ -84,17 +84,19 @@ PathName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+if strncmp(PathName,'.',1)
+    if length(PathName) == 1
+        PathName = handles.Current.DefaultImageDirectory;
+    else
+        PathName = fullfile(handles.Current.DefaultImageDirectory,PathName(2:end));
+    end
+end
+
 if handles.Current.SetBeingAnalyzed == 1
     %%% Parse text file %%%
-    fid = fopen(TextFileName,'r');
+    fid = fopen(fullfile(PathName,TextFileName),'r');
     if fid == -1
-        fid = fopen(fullfile(handles.Current.DefaultImageDirectory,TextFileName),'r');
-        if fid == -1
-            fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,TextFileName),'r');
-            if fid == -1
-                error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid locaation.']);
-            end
-        end
+        error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid locaation.']);
     end
 
     % Get description

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/30) Regarding MeasureImageIntensity and its unused Variable 2: Mike, I agree it looks like we initially intended for this to be used. I think it's better to leave it out unless there is a chance that leaving as is will overwrite other modules' measurements - are there any other modules that would write to the same place? I guess the only danger is that if you had another module measuring intensity with different settings on the same image, it would get overwritten by this one, but I think that is not a real concern. Also, can you doublecheck that if we leave as is, is it using a consistent format for storing the measurements (e.g. the underscore after 'Intensity'?) that matches other modules?
+
 -(Mike 11/30) ok, I changed my mind about IdentifyPrimYeastPhase - please move it to developer scripts and add it to TODO_Projects!  It's too rough right now.
 
 -(Mike 11/30) Please add all the data tools, image tools, and help files to the module check list so that we are sure to go through them.

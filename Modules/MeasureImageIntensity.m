@@ -58,21 +58,17 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What do you want to call the staining measured by this module?
-%defaultVAR02 = Fluorescence
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = Ignore pixels below this intensity level (Range = 0-1)
+%defaultVAR02 = 0
+LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
 
-%textVAR03 = Ignore pixels below this intensity level (Range = 0-1)
-%defaultVAR03 = 0
-LowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = Ignore pixels above this intensity level (Range = 0-1)
+%defaultVAR03 = 1
+HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Ignore pixels above this intensity level (Range = 0-1)
-%defaultVAR04 = 1
-HighThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
-
-%textVAR05 = Exclude pixels within this many pixels of an excluded bright object
-%defaultVAR05 = 0
-ExpansionDistance = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR04 = Exclude pixels within this many pixels of an excluded bright object
+%defaultVAR04 = 0
+ExpansionDistance = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
@@ -136,7 +132,7 @@ MeanIntensity = TotalIntensity/TotalArea;
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber);
+if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Sets the width of the figure window to be appropriate (half width).
         originalsize = get(ThisModuleFigureNumber, 'position');

@@ -89,9 +89,7 @@ function handles = IdentifySecondary(handles)
 %    You can also choose between global and adaptive thresholding,
 % where global means that one threshold is used for the entire image and
 % adaptive means that the threshold varies across the image. Adaptive is
-% slower to calculate but provides more accurate edge determination which
-% may help to separate clumps, especially if you are not using a
-% clump-separation method (see below).
+% slower to calculate but provides more accurate edge determination.
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be

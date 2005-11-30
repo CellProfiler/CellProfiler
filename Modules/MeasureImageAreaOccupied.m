@@ -8,42 +8,75 @@ function handles = MeasureImageAreaOccupied(handles)
 % *************************************************************************
 %
 % This module simply measures the total area covered by stain in an
-% image.
+% image, using a threshold to determine stain vs background.
 %
 % Settings:
 %
-% Threshold: The threshold affects the stringency of the lines between
-% the objects and the background. You may enter an absolute number
-% between 0 and 1 for the threshold (use 'Show pixel data' to see the
-% pixel intensities for your images in the appropriate range of 0 to
-% 1), or you may have it calculated for each image individually by
-% typing 0.  There are advantages either way.  An absolute number
-% treats every image identically, but an automatically calculated
-% threshold is more realistic/accurate, though occasionally subject to
-% artifacts.  The threshold which is used for each image is recorded
-% as a measurement in the output file, so if you find unusual
-% measurements from one of your images, you might check whether the
-% automatically calculated threshold was unusually high or low
-% compared to the remaining images.  When an automatic threshold is
-% selected, it may consistently be too stringent or too lenient, so an
-% adjustment factor can be entered as well. The number 1 means no
-% adjustment, 0 to 1 makes the threshold more lenient and greater than
-% 1 (e.g. 1.3) makes the threshold more stringent.
+% Select automatic thresholding method or enter an absolute threshold:
+%    The threshold affects the stringency of the lines between the
+% stain and the background. You can have the threshold automatically
+% calculated using several methods, or you can enter an absolute number
+% between 0 and 1 for the threshold (to see the pixel intensities for your
+% images in the appropriate range of 0 to 1, use the CellProfiler Image
+% Tool, 'Show Or Hide Pixel Data', in a window showing your image).
+% There are advantages either way.  An absolute number treats every
+% image identically, but is not robust to slight changes in
+% lighting/staining conditions between images. An automatically
+% calculated threshold adapts to changes in lighting/staining
+% conditions between images and is usually more robust/accurate, but
+% it can occasionally produce a poor threshold for unusual/artifactual
+% images. It also takes a small amount of time to calculate.
+%    The threshold which is used for each image is recorded as a
+% measurement in the output file, so if you find unusual measurements
+% from one of your images, you might check whether the automatically
+% calculated threshold was unusually high or low compared to the
+% other images.
+%    There are two methods for finding thresholds automatically,
+% Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu method
+% uses our version of the Matlab function graythresh (the code is in the
+% CellProfiler subfunction CPthreshold). Our modifications include taking
+% into account the max and min values in the image and log-transforming the
+% image prior to calculating the threshold. Otsu's method is probably
+% better if you don't know anything about the image, or if the percent of
+% the image covered by objects varies substantially from image to image.
+% But if you know the object coverage percentage and it does not vary much
+% from image to image, the MoG can be better, especially if the coverage
+% percentage is not near 50%. Note however that the MoG function is
+% experimental and has not been thoroughly validated.
+%    You can also choose between global and adaptive thresholding,
+% where global means that one threshold is used for the entire image and
+% adaptive means that the threshold varies across the image. Adaptive is
+% slower to calculate but provides more accurate edge determination.
+%
+% Threshold correction factor:
+% When the threshold is calculated automatically, it may consistently be
+% too stringent or too lenient. You may need to enter an adjustment factor
+% which you empirically determine is suitable for your images. The number 1
+% means no adjustment, 0 to 1 makes the threshold more lenient and greater
+% than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
+% Otsu automatic thresholding inherently assumes that 50% of the image is
+% covered by objects. If a larger percentage of the image is covered, the
+% Otsu method will give a slightly biased threshold that may have to be
+% corrected using a threshold correction factor.
+%
+% Lower and upper bounds on threshold:
+% Can be used as a safety precaution when the threshold is calculated
+% automatically. For example, if there are no objects in the field of view,
+% the automatic threshold will be unreasonably low. In such cases, the
+% lower bound you enter here will override the automatic threshold.
+%
+% Approximate percentage of image covered by objects:
+% An estimate of how much of the image is covered with objects. This
+% information is currently only used in the MoG (Mixture of Gaussian)
+% thresholding but may be used for other thresholding methods in the future
+% (see below).
 %
 % How it works:
-% This module applies a threshold to the incoming image so that any
-% pixels brighter than the specified value are assigned the value 1
-% (white) and the remaining pixels are assigned the value zero
-% (black), producing a binary image.  The number of white pixels are
-% then counted.  This provides a measurement of the area occupied by
-% fluorescence.  The threshold is calculated automatically and then
-% adjusted by a user-specified factor. It might be desirable to write
-% a new module where the threshold can be set to a constant value.
-%
-% See also MEASUREAREASHAPECOUNTLOCATION,
-% MEASURECORRELATION,
-% MEASUREINTENSITYTEXTURE,
-% MEASURETOTALINTENSITY.
+% This module applies a threshold to the incoming image so that any pixels
+% brighter than the specified value are assigned the value 1 (white) and
+% the remaining pixels are assigned the value zero (black), producing a
+% binary image.  The number of white pixels are then counted.  This
+% provides a measurement of the area occupied by the staining.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -72,7 +105,6 @@ function handles = MeasureImageAreaOccupied(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the images you want to process?
@@ -84,11 +116,11 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CellStain
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Select thresholding method or enter a threshold in the range [0,1].
-%choiceVAR03 = MoG Global
-%choiceVAR03 = MoG Adaptive
+%textVAR03 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
 %choiceVAR03 = Otsu Global
 %choiceVAR03 = Otsu Adaptive
+%choiceVAR03 = MoG Global
+%choiceVAR03 = MoG Adaptive
 %choiceVAR03 = All
 %choiceVAR03 = Test Mode
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -98,11 +130,11 @@ Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 1
 ThresholdCorrection = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = Lower and upper bounds on threshold (in the range [0,1])
+%textVAR05 = Lower and upper bounds on threshold, in the range [0,1]
 %defaultVAR05 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Approximate percentage of image covered by objects (for MoG thresholding only):
+%textVAR06 = For MoG thresholding, what is the approximate percentage of image covered by objects?
 %choiceVAR06 = 10%
 %choiceVAR06 = 20%
 %choiceVAR06 = 30%
@@ -153,7 +185,6 @@ MaximumThreshold = ThresholdRange(index+1:end);
 drawnow
 
 %%% STEP 1. Find threshold and apply to image
-
 [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
 
 %%% Thresholds the original image.

@@ -59,9 +59,9 @@ LoadSingleImage	                    ,        Anne
 
 LoadText	                    ,        Anne
 
-MeasureCorrelation		Mike
+MeasureCorrelation		Mike,        Anne
 
-MeasureImageAreaOccupied	Mike
+MeasureImageAreaOccupied	Mike,        Anne
 
 MeasureImageIntensity		Mike (VARIABLE 2 IS UNUSED, SHOULD THIS BE USED FOR HANDLES SAVING?)
 

@@ -85,7 +85,7 @@ MeasureObjectNeighbors		Mike,        Anne
 MeasureObjectTexture		Mike,        Anne
 
 MeasureRatios			Mike
-
+(Does it work for Image measures or just object measures? Adjust the help to reflect that).
 MergeBatchOutput		Mike 
 (Should have Susan check)
 

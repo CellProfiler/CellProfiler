@@ -4,22 +4,25 @@ function handles = MeasureRatios(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures the ratio between any measurements already taken
-% (e.g. Intensity/Area)
+% Measures the ratio between any measurements already measured
+% (e.g. Intensity of green staining in cytoplasm/Area of cells)
 % *************************************************************************
 %
-% This module can take any measurement produced by previous modules and
-% calculate a ratio. Ratios can also be used to calculate other ratios and
-% be used in Classify Objects.
+% This module can take any measurements produced by previous modules and
+% calculate a ratio. Resulting ratios can also be used to calculate other
+% ratios and be used in Classify Objects.
+%
+% This module currently works on an object-by-object basis (it calculates
+% the ratio for each object) but can also calculate ratios for measurements
+% made for entire images (but only for measurements produced by the
+% Correlation module).
 %
 % Feature Number:
 % The feature number specifies which features from the Measure module(s)
 % will be used for the ratio. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
-% See also MEASUREIMAGEAREAOCCUPIED, MEASUREIMAGEINTENSITY,
-% MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
-% MEASUREOBJECTTEXTURE, MEASURECORRELATION
+% See also all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -65,11 +68,11 @@ NumObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu custom
 NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
 NumFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = If using INTENSITY or TEXTURE measures, which image would you like to process?
+%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 NumImage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -89,16 +92,16 @@ DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR06 = popupmenu custom
 DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%textVAR07 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR07 = 1
 DenomFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = If using INTENSITY or TEXTURE measures, which image would you like to process?
+%textVAR08 = For INTENSITY or TEXTURE measures, which image's measurements would you like to use?
 %infotypeVAR08 = imagegroup
 %inputtypeVAR08 = popupmenu
 DenomImage = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = Do you want the log of the ratio?
+%textVAR09 = Do you want the log (base 10) of the ratio?
 %choiceVAR09 = No
 %choiceVAR09 = Yes
 %inputtypeVAR09 = popupmenu

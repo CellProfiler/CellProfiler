@@ -1,4 +1,4 @@
-
+- (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
 
 - (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
 

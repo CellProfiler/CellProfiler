@@ -45,7 +45,7 @@ IdentifyPrimAutomatic                        Anne
 
 IdentifyPrimManual		Mike,        Anne
 
-IdentifyPrimYeastPhase		??  
+IdentifyPrimYeastPhase		Mike,          
 
 IdentifySecondary		Mike,        Anne
 

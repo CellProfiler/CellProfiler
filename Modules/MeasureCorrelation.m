@@ -4,22 +4,19 @@ function handles = MeasureCorrelation(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures the correlation between intensities of different wavelengths on
-% a pixel by pixel basis within identified objects or an entire image.
+% Measures the correlation between intensities in different images (e.g.
+% different color channels) on a pixel by pixel basis, within identified
+% objects or across an entire image.
 % *************************************************************************
 %
 % Given two or more images, calculates the correlation between the
 % pixel intensities. The correlation can be measured for the entire
-% images, or individual correlation measurements can be made for each
-% individual object, as defined by another module. For example:
-%
-% OrigBlue  /OrigGreen      Correlation: 0.49955  -0.07395
-% OrigBlue  /OrigRed        Correlation: 0.59886  -0.02752
-% OrigGreen /OrigRed        Correlation: 0.83605   0.68489
-%
-% OrigGreen /InvertedBlue   Correlation: -0.49955
-% OrigRed   /InvertedBlue   Correlation: -0.59886
-% OrigBlue  /InvertedBlue   Correlation: -1
+% images, or individual correlation measurements can be made within each
+% individual object. For example:
+%                                        Image overall:    In Nuclei:
+% OrigBlue  /OrigGreen      Correlation:    0.49955        -0.07395
+% OrigBlue  /OrigRed        Correlation:    0.59886        -0.02752
+% OrigGreen /OrigRed        Correlation:    0.83605         0.68489
 %
 % See also MEASUREIMAGEAREAOCCUPIED, MEASUREOBJECTAREASHAPE,
 % MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY, MEASUREIMAGEINTENSITY.
@@ -53,13 +50,13 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Enter the names of each image type to be compared.
+%textVAR01 = Choose at least two image types to measure correlations between:
 %choiceVAR01 = Do not use
 %infotypeVAR01 = imagegroup
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = All pairwise comparisons will be performed.
+%textVAR02 = (All pairwise correlations will be measured)
 %choiceVAR02 = Do not use
 %infotypeVAR02 = imagegroup
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -77,7 +74,7 @@ ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = What did you call the objects within which to compare the images (Choosing Image will compare the entire image against all other images)?
+%textVAR05 = Choose objects within which to measure the correlations (Choosing Image will measure correlations across the entire images)
 %choiceVAR05 = Do not use
 %choiceVAR05 = Image
 %infotypeVAR05 = objectgroup
@@ -149,8 +146,7 @@ for ImageNbr = 1:4
             if ndims(Image{ImageCount}) ~= 2
                 error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
             end
-
-        catch error(['There was a problem loading the image you called ', ImageName{ImageNbr}, ' in the ', ModuleName, ' module.'])
+        catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem loading the image you called ', ImageName{ImageNbr}, '.'])
         end
     end
 end
@@ -159,7 +155,7 @@ ImageName = tmpImageName;
 
 %%% Check so that at least two images have been entered
 if ImageCount < 2
-    error(['At least two image names must be entered in the ', ModuleName, ' module.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because at least two image types must be chosen.'])
 end
 
 %%% Get the masks of segmented objects

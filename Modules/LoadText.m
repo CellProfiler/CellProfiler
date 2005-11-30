@@ -74,7 +74,10 @@ TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = datagroup indep
 FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%%%VariableRevisionNumber = 1
+%pathnametextVAR03 = Enter the path name to the folder where the text file to be loaded is located.  Type period (.) for the default image folder.
+PathName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -130,7 +133,7 @@ if handles.Current.SetBeingAnalyzed == 1
     drawnow
 
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    if any(findobj == ThisModuleFigureNumber) == 1
+    if any(findobj == ThisModuleFigureNumber)
         CPfigure(handles,ThisModuleFigureNumber);
         uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Description: ',Description],'position',[.05 .55 .8 .4],'BackgroundColor',[.7 .7 .9])
         uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Text: ',Text],'position',[.05 .1 1 .7],'BackgroundColor',[.7 .7 .9])

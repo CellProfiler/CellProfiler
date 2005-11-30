@@ -8,10 +8,12 @@ function handles = MeasureObjectAreaShape(handles)
 % *************************************************************************
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module extracts area and shape features of each object. Note that shape
-% features are only reliable for objects that are inside the image borders.
+% module extracts area and shape features of each object. Note that these
+% features are only reliable for objects that are completely inside the
+% image borders, so you may wish to exclude objects touching the edge of
+% the image in Identify modules.
 %
-% Measurement:             Feature Number:
+% Basic shape features:     Feature Number:
 % Area                    |       1
 % Eccentricity            |       2
 % Solidity                |       3
@@ -22,41 +24,80 @@ function handles = MeasureObjectAreaShape(handles)
 % MajorAxisLength         |       8
 % MinorAxisLength         |       9
 %
-% How it works:
-% Retrieves objects in label matrix format and measures them. The label matrix image
-% should be "compacted": that is, each number should correspond to an object,
-% with no numbers skipped. So, if some objects were discarded from the label
-% matrix image, the image should be converted to binary and re-made into a
-% label matrix image before feeding into this module.
+% Zernike shape features:
+%     'Zernike0_0'        |      10
+%     'Zernike1_1'        |      11
+%     'Zernike2_0'        |      12
+%     'Zernike2_2'        |      13
+%     'Zernike3_1'        |      14
+%     'Zernike3_3'        |      15
+%     'Zernike4_0'        |      16
+%     'Zernike4_2'        |      17
+%     'Zernike4_4'        |      18
+%     'Zernike5_1'        |      19
+%     'Zernike5_3'        |      20
+%     'Zernike5_5'        |      21
+%     'Zernike6_0'        |      22
+%     'Zernike6_2'        |      23
+%     'Zernike6_4'        |      24
+%     'Zernike6_6'        |      25
+%     'Zernike7_1'        |      26
+%     'Zernike7_3'        |      27
+%     'Zernike7_5'        |      28
+%     'Zernike7_7'        |      29
+%     'Zernike8_0'        |      30
+%     'Zernike8_2'        |      31
+%     'Zernike8_4'        |      32
+%     'Zernike8_6'        |      33
+%     'Zernike8_8'        |      34
+%     'Zernike9_1'        |      35
+%     'Zernike9_3'        |      36
+%     'Zernike9_5'        |      37
+%     'Zernike9_7'        |      38
+%     'Zernike9_9'        |      39
 %
-% The following measurements are extracted using the regionprops.m function
-% (see the help for this function for more information):
-% Area
-% Eccentricity
-% Solidity
-% Extent
-% Euler number
-% MajorAxisLength
-% MinorAxisLength
+% Zernike shape features measure shape by describing a binary object (or
+% more precisely, a patch with background and an object in the center) in a
+% basis of Zernike polynomials, using the coefficients as features (Boland
+% et al., 1998). Currently, Zernike polynomials from order 0 to order 9 are
+% calculated, giving in total 30 measurements. While there is no limit to
+% the order which can be calculated (and indeed users could add more by
+% adjusting the code), the higher order polynomials carry less information.
 %
-% In addition, the following two features are calculated
+% Details about how measurements are calculated:
+% This module retrieves objects in label matrix format and measures them.
+% The label matrix image should be "compacted": that is, each number should
+% correspond to an object, with no numbers skipped. So, if some objects
+% were discarded from the label matrix image, the image should be converted
+% to binary and re-made into a label matrix image before feeding into this
+% module.
+%
+% The following measurements are extracted using the Matlab regionprops.m
+% function:
+% *Area - Computed from the the actual number of pixels in the region.
+% *Eccentricity - Also known as elongation or elongatedness. For an ellipse
+% that has the same second-moments as the object, the eccentricity is the
+% ratio of the between-foci distance and the major axis length. The value
+% is between 0 (a circle) and 1 (a line segment).
+% *Solidity - Also known as convexity. The proportion of the pixels in the
+% convex hull that are also in the object. Computed as Area/ConvexArea.
+% *Extent - The proportion of the pixels in the bounding box that are also
+% in the region. Computed as the Area divided by the area of the bounding box.
+% *Euler number - Equal to the number of ‘objects’ in the object minus the
+% number of holes in those objects. For modules built to date, the number
+% of ‘objects’ in the object is always 1.
+% *MajorAxisLength - The length (in pixels) of the major axis of the
+% ellipse that has the same normalized second central moments as the
+% region.
+% *MinorAxisLength - The length (in pixels) of the minor axis of the
+% ellipse that has the same normalized second central moments as the
+% region.
+%
+% In addition, the following two features are calculated:
 % Perimeter
-% Form factor (= 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
-% object)
-% -------------------------------------------------------------------------
-% Zernike shape features
-%
-% Measures shape by describing a binary object (or more precisely, a patch
-% with background and an object in the center) in a basis of Zernike
-% polynomials, using the coefficients as features. This can also be done
-% for a gray-level object, and would then also measure texture. The Zernike
-% features are/have been used by the Murphy lab, there is probably more
-% information and motivation for these features in their papers. Currently,
-% Zernike polynomials from order 0 to order 9 are calculated, giving in
-% total 30 measurements (in the Murphy papers they use up to order 12).
-% There is no limit to the order, but the higher order polynomials don't
-% carry much/any relevant information.
-%
+% Form factor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
+% object
+% 
 % See also MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY,
 % MEASURECORRELATION.
 
@@ -86,7 +127,6 @@ function handles = MeasureObjectAreaShape(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -308,7 +348,7 @@ for i = 1:length(ObjectNameList)
         % Text for Zernike features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','Helvetica',...
-            'fontsize',FontSize,'fontweight','bold','string','5 first Zernike features:','UserData',handles.Current.SetBeingAnalyzed);
+            'fontsize',FontSize,'fontweight','bold','string','First 5 Zernike features:','UserData',handles.Current.SetBeingAnalyzed);
         for k = 1:5
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','Helvetica',...

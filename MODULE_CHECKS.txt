@@ -68,7 +68,7 @@ MeasureImageIntensity		Mike,        Anne
 
 MeasureImageSaturationBlur	Mike,        Anne
 
-MeasureObjectAreaShape		Mike
+MeasureObjectAreaShape		Mike,        Anne
 
 MeasureObjectIntensity		Mike
 

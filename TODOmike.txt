@@ -1,5 +1,9 @@
 Mike's TODO list
 
+- Jason: Design method for scaling grid and getting locations
+
+- Website: Include Forum on main page, think of layout
+
 - CPretrieveimage: check Exclude
 
 - SpeedUpCellProfiler removed FileList for AVI files which does not work

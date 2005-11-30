@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/30) Please add all the data tools, image tools, and help files to the module check list so that we are sure to go through them.
+
 -(Mike 11/30) Make LoadSingleImage show the filenames loaded, like LoadImages does.
 
 -(Mike 11/30 REMOVES 'DO NOT USE' NOT '/' WHICH WAS OLD) The code at line 153-154 in MeasureCorrelation doesn't make much sense to me. Does it make sense? I don't know what the comment refers to - i wonder if it's old code.

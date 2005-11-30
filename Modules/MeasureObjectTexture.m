@@ -28,10 +28,6 @@ function handles = MeasureObjectTexture(handles)
 % InformationMeasure2     |      13
 % Gabor1x                 |      14
 % Gabor1y                 |      15
-% Gabor2x                 |      16
-% Gabor2y                 |      17
-% Gabor3x                 |      18
-% Gabor3y                 |      19
 %
 % How it works:
 % Retrieves objects in label matrix format and a
@@ -120,10 +116,9 @@ function handles = MeasureObjectTexture(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
-
+%%%%%%%%%%%%%%%%%
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -190,9 +185,9 @@ for i = 1:6
         continue
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImage".

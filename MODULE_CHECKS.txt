@@ -1,4 +1,7 @@
 Name of Module:			Who Checked and Verified:
+
+%%% Modules %%%
+
 Align				Mike, Colin, Anne
 
 ApplyThreshold			Mike, Colin, Anne
@@ -113,3 +116,68 @@ SubtractBackground
 Tile
 
 WriteSQLFiles
+
+
+%%% Data Tools %%%
+
+ViewData
+
+ShowDataOnImage
+
+PlotMeasurement
+
+MergeOutputFiles
+
+MeasurementCalculator
+
+Histogram
+
+GenerateHistogramMovie
+
+ExportSQL
+
+ExportDataToFiles
+
+ExportData
+
+DataLayout
+
+ConvertBatchFiles
+
+ClearData
+
+AddData
+
+%%% Image Tools %%%
+
+OpenNewImageFile
+
+ShowOrHidePixelData
+
+%%% Help Files %%%
+
+HelpTechDiagnosis
+
+HelpProgrammingNotes
+
+HelpPreferences
+
+HelpPixelSize
+
+HelpPipelineOfModules
+
+HelpObjectProcessing
+
+HelpMatLabCrash
+
+HelpIndividualModule
+
+HelpGettingStarted
+
+HelpDefaultOutputDirectory
+
+HelpDefaultImageDirectory
+
+HelpCPInstallGuide
+
+HelpAnalyzeImage

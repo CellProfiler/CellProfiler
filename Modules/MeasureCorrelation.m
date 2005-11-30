@@ -150,7 +150,7 @@ for ImageNbr = 1:4
         end
     end
 end
-%%% Get rid of '/' in the ImageName cell array so we don't have to care about them later.
+%%% Get rid of 'Do not use' in the ImageName cell array so we don't have to care about them later.
 ImageName = tmpImageName;   
 
 %%% Check so that at least two images have been entered
@@ -179,7 +179,7 @@ for ObjectNameNbr = 1:6
         end
     end
 end
-%%% Get rid of '/' in the ObjectName cell array so we don't have to care about them later.
+%%% Get rid of 'Do not use' in the ObjectName cell array so we don't have to care about them later.
 ObjectName = tmpObjectName; 
 
 %%% Check so that at least one object type have been entered

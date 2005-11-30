@@ -1,22 +1,23 @@
 function handles = MeasureImageSaturationBlur(handles)
 
-% Help for the Measure Image Saturation & Blur module:
+% Help for the Measure Image Saturation and Blur module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures the percentage of pixels in the image that are satureated and
-% measures a focus score.
+% Measures the percentage of pixels in the image that are saturated and
+% measures blur using a focus score.
 % *************************************************************************
 %
-% The percentage of pixels that are saturated (their intensity value
-% is equal to the maximum possible intensity value for that image
-% type) is calculated and stored as a measurement in the output file.
+% The percentage of pixels that are saturated is calculated and stored as a
+% measurement in the output file. 'Saturated' means that the pixel's
+% intensity value is equal to the maximum possible intensity value for that
+% image type.
 %
-% The module can also compute and record a focus score (higher =
-% better focus). This calculation takes much longer than the
-% saturation checking, so it is optional. We are calculating the focus
-% using the normalized variance. We used this algorithm because it was
-% ranked 1st in this paper:
+% The module can also measure blur by calculating a focus score (higher =
+% better focus). This calculation takes much longer than the saturation
+% checking, so it is optional. We are calculating the focus using the
+% normalized variance. We used this algorithm because it was ranked best in
+% this paper:
 % Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
 %    Selecting the optimals focus algorithm." Microscopy Research and
 %    Technique 65:139-149 (2004)
@@ -39,8 +40,6 @@ function handles = MeasureImageSaturationBlur(handles)
 % OrigBlue:   0.47135
 % OrigGreen:  0.03440
 % OrigRed:    0.04652
-%
-% See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -68,7 +67,6 @@ function handles = MeasureImageSaturationBlur(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -207,9 +205,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         originalsize(3) = originalsize(3)*.5;
         set(ThisModuleFigureNumber, 'position', originalsize,'color',[.7 .7 .9]);
     end
-
-    %delete(findobj('Parent',ThisModuleFigureNumber));
-
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position',[0.1 0.1 0.8 0.8],...
         'fontname','Helvetica','fontsize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left');
     DisplayText = strvcat(['    Cycle # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.

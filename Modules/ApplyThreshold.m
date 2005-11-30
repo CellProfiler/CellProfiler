@@ -10,15 +10,14 @@ function handles = ApplyThreshold(handles)
 % the threshold used.
 % *************************************************************************
 %
-% SETTINGS: 'If your answer was not 1, you can expand the thresholding
-% around those excluded bright pixels by entering the number of pixels to
-% expand here:' This setting is useful to adjust when you are attempting to
+% Settings: 
+% If your answer was not 1, you can expand the thresholding around those
+% excluded bright pixels by entering the number of pixels to expand here:
+% This setting is useful to adjust when you are attempting to
 % exclude bright artifactual objects: you can first set the threshold to
 % exclude these bright objects, but it may also be desirable to expand the
 % thresholded region around those bright objects by a certain distance so
 % as to avoid a 'halo' effect.
-%
-% See also <nothing>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -46,7 +45,6 @@ function handles = ApplyThreshold(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

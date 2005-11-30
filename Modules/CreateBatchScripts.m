@@ -237,7 +237,7 @@ function handles = CreateBatchScripts(handles)
 % tap2 is then used in CellProfiler.    e.g. gobo/imaging becomes
 % /Volumes/tap2 from the local computer's perspective.
 %
-% See also MERGEBATCHOUTPUT.
+% See also MergeBatchOutput.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

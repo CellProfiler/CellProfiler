@@ -63,7 +63,8 @@ MeasureCorrelation		Mike,        Anne
 
 MeasureImageAreaOccupied	Mike,        Anne
 
-MeasureImageIntensity		Mike (VARIABLE 2 IS UNUSED, SHOULD THIS BE USED FOR HANDLES SAVING?)
+MeasureImageIntensity		Mike,        Anne
+(VARIABLE 2 IS UNUSED, SHOULD THIS BE USED FOR HANDLES SAVING?)
 
 MeasureImageSaturationBlur	Mike
 

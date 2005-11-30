@@ -87,8 +87,6 @@ function handles = Crop(handles)
 % (both are binary and contain the cropping shape you used), but the
 % Cropping image is the same size as the original images to be processed
 % whereas the CropMask image is the same size as the final, cropped image.
-%
-% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

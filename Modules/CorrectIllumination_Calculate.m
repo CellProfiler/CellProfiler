@@ -100,7 +100,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % rescaling of each image might be dramatic, causing the corrected images
 % to be very dark.
 %
-% See also CORRECTILLUMINATION_APPLY, SMOOTH
+% See also CORRECTILLUMINATION_APPLY, Smooth
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

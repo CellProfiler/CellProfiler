@@ -22,8 +22,6 @@ function handles = CalculateStatistics(handles)
 % The reference for V factor is: I Ravkin (2004): Poster #P12024 - Quality
 % Measures for Imaging-based Cellular Assays. Society for Biomolecular
 % Screening Annual Meeting Abstracts.
-%
-% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

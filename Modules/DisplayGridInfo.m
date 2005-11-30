@@ -13,7 +13,7 @@ function handles = DisplayGridInfo(handles)
 % text information must have the same number of entries as there are grid
 % locations (grid squares).
 %
-% See also DEFINEGRID.
+% See also DefineGrid.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

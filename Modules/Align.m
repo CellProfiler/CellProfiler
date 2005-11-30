@@ -17,8 +17,6 @@ function handles = Align(handles)
 % are cropped appropriately according to this alignment, so the final
 % images will be smaller than the originals by a few pixels if alignment is
 % necessary.
-%
-% See also <nothing>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -46,7 +44,6 @@ function handles = Align(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

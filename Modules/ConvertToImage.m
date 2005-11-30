@@ -40,8 +40,6 @@ function handles = ConvertToImage(handles)
 % Flag
 % Prism
 % White
-%
-% See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

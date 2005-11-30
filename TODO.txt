@@ -7,8 +7,6 @@ Make LoadSingleImage show the filenames loaded, like LoadImages does.
 
 Please add all the data tools, image tools, and help files to the module check list so that we are sure to go through them.
 
-Mike - Why is IdentifyPrimYeastPhase marked with ?? - I thought you had found one bug that suddenly made it work pretty well?
-
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 TechDiagnosis 	- DONE
 SaveCPcode	- DONE

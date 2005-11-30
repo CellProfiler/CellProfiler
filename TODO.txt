@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-ok, I changed my mind about IdentifyPrimYeastPhase - please move it to developer scripts and add it to TODO_Projects!  It's too rough right now.
-
 It seems that in several places, like MeasureImageSaturationBlur, we say "Percent" when we actually mean fraction. We should go through all modules/data tools looking for the word percent and make sure that we change it one way or the other so it's accurate & consistent.  Otherwise, if it says 0.08 we don't know whether that is 8% or .08%
 
 Regarding MeasureImageIntensity and its unused Variable 2: Mike, I agree it looks like we initially intended for this to be used. I think it's better to leave it out unless there is a chance that leaving as is will overwrite other modules' measurements - are there any other modules that would write to the same place? I guess the only danger is that if you had another module measuring intensity with different settings on the same image, it would get overwritten by this one, but I think that is not a real concern. Also, can you doublecheck that if we leave as is, is it using a consistent format for storing the measurements (e.g. the underscore after 'Intensity'?) that matches other modules?

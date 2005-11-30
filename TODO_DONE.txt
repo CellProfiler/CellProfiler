@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/30) ok, I changed my mind about IdentifyPrimYeastPhase - please move it to developer scripts and add it to TODO_Projects!  It's too rough right now.
+
 -(Mike 11/30) Please add all the data tools, image tools, and help files to the module check list so that we are sure to go through them.
 
 -(Mike 11/30) Make LoadSingleImage show the filenames loaded, like LoadImages does.

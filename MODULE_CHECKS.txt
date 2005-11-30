@@ -55,8 +55,7 @@ InvertIntensity			Mike,        Anne
 
 LoadImages			Mike,        Anne (Should try all options)
 
-LoadSingleImage				
-Anne left off here, rearranging the variables.
+LoadSingleImage	                    ,        Anne
 
 LoadText
 

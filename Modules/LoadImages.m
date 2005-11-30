@@ -21,6 +21,17 @@ function handles = LoadImages(handles)
 % if you want to load all images in a directory, you can enter the file
 % extension as the text for which to search.
 %
+% Relative pathnames can be used. For example, in regular expressions text
+% mode, on the Mac platform you could leave the folder where images are to
+% be loaded as '.' to choose the default image folder, and then enter
+% ../DAPI[123456789].tif as the name of the files you would like to load in
+% order to load images from the directory one above the default image
+% directory. Or, you could type .../AnotherSubfolder (note the three
+% periods: the first is interpreted as a standin for the default image
+% folder) as the folder from which images are to be loaded and enter the
+% filename as .tif to load an image from a different subfolder of the
+% parent of the default image folder.
+%
 % Settings:
 %
 % How do you want to load these files?

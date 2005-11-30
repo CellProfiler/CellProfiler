@@ -15,10 +15,20 @@ function handles = LoadSingleImage(handles)
 % image to be used by the CorrectIllumination_Apply module. Note: Actually,
 % you can load four 'single' images using this module.
 %
-% Relative pathnames can be used: e.g. enter ../Imagetobeloaded.tif as
-% the name of the file you would like to load and leave the image
-% directory set to the default image directory in order to load the
-% image from the directory one above the default image directory.
+% Relative pathnames can be used. For example, on the Mac platform you
+% could leave the folder where images are to be loaded as '.' to choose the
+% default image folder, and then enter ../Imagetobeloaded.tif as the name
+% of the file you would like to load in order to load the image from the
+% directory one above the default image directory. Or, you could type
+% .../AnotherSubfolder (note the three periods: the first is interpreted as
+% a standin for the default image folder) as the folder from which images
+% are to be loaded and enter the filename as Imagetobeloaded.tif to load an
+% image from a different subfolder of the parent of the default image
+% folder.
+%
+% If more than four images per cycle must be loaded, more than one Load
+% Images module can be run sequentially. Running more than one of these
+% modules also allows images to be retrieved from different folders.
 %
 % See also LOADIMAGES.
 
@@ -68,7 +78,7 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call that image?
-%defaultVAR06 = /
+%defaultVAR06 = Do not load
 %infotypeVAR06 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -76,7 +86,7 @@ ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What do you want to call that image?
-%defaultVAR08 = /
+%defaultVAR08 = Do not load
 %infotypeVAR08 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -84,21 +94,21 @@ ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = What do you want to call that image?
-%defaultVAR10 = /
+%defaultVAR10 = Do not load
 %infotypeVAR10 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = If an image slot is not being used, type a slash  /  in the box.
 
-%textVAR12 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
-%choiceVAR12 = mat
-%choiceVAR12 = bmp
-%choiceVAR12 = gif
-%choiceVAR12 = jpg
-%choiceVAR12 = tif
-%choiceVAR12 = DIB
-FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+%textVAR11 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
+%choiceVAR11 = mat
+%choiceVAR11 = bmp
+%choiceVAR11 = gif
+%choiceVAR11 = jpg
+%choiceVAR11 = tif
+%choiceVAR11 = DIB
+FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
 %%%VariableRevisionNumber = 3
 
@@ -114,7 +124,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 tmp1 = {};
 tmp2 = {};
 for n = 1:4
-    if ~strcmp(TextToFind{n}, '/') && ~strcmp(ImageName{n}, '/')
+    if ~strcmp(TextToFind{n}, 'NO FILE LOADED') && ~strcmp(ImageName{n}, 'Do not load')
         tmp1{end+1} = TextToFind{n};
         tmp2{end+1} = ImageName{n};
     end
@@ -139,6 +149,10 @@ end
 %%% FIRST CYCLE FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+if length(ImageName) == 0
+    error(['Image processing was canceled in the ', ModuleName, ' module because you have not chosen any images to load.'])
+end
 
 for n = 1:length(ImageName)
     %%% This try/catch will catch any problems in the load images module.

@@ -35,8 +35,7 @@ function handles = LoadText(handles)
 % Gene Y
 % Gene Z
 %
-%
-% See also ADDDATA.
+% See also the ADDDATA data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -64,7 +63,6 @@ function handles = LoadText(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

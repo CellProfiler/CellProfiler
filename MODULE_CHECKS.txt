@@ -57,7 +57,7 @@ LoadImages			Mike,        Anne (Should try all options)
 
 LoadSingleImage	                    ,        Anne
 
-LoadText
+LoadText	                    ,        Anne
 
 MeasureCorrelation		Mike
 

@@ -7,14 +7,17 @@ function handles = IdentifyPrimYeastPhase(handles)
 % Identifies yeast in phase contrast images.
 % *************************************************************************
 %
-% This module contains code contributed by Ben Kaufmann of MIT.
+% Please note: this module is experimental and is probably not yet robust
+% for images of varying resolutions/lighting conditions. We have also
+% developed a pipeline using the IdentifyPrimAutomatic module for yeast
+% phase contrast images which may be a better starting point.
 %
-% This module has been designed to identify yeast cells
-% in phase contrast images.
+% This module has been designed to identify yeast cells in phase contrast
+% images. It contains code contributed by Ben Kaufmann of MIT.
 %
 % Settings:
 %
-% Size range: You may exclude objects that are smaller or bigger than
+% Size range: You may exclude objects that are smaller or bigger in area than
 % the size range you specify. A comma should be placed between the
 % lower size limit and the upper size limit. The units here are pixels
 % so that it is easy to zoom in on found objects and determine the

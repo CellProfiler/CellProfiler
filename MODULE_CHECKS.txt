@@ -45,7 +45,7 @@ IdentifyPrimAutomatic                        Anne
 
 IdentifyPrimManual		Mike,        Anne
 
-IdentifyPrimYeastPhase		Mike,          
+IdentifyPrimYeastPhase		Mike,        Anne (plan to move to DeveloperScripts)  
 
 IdentifySecondary		Mike,        Anne
 
@@ -70,7 +70,7 @@ MeasureImageSaturationBlur	Mike,        Anne
 
 MeasureObjectAreaShape		Mike,        Anne
 
-MeasureObjectIntensity		Mike
+MeasureObjectIntensity		Mike,        Anne
 
 MeasureObjectNeighbors		Mike
 

@@ -8,9 +8,8 @@ function handles = MeasureObjectIntensity(handles)
 % *************************************************************************
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module extracts intensity features of each
-% object based on a corresponding grayscale image. Measurements are
-% recorded for each object.
+% module extracts intensity features for each object based on a
+% corresponding grayscale image. Measurements are recorded for each object.
 %
 % Measurement:             Feature Number:
 % IntegratedIntensity     |       1
@@ -26,53 +25,35 @@ function handles = MeasureObjectIntensity(handles)
 % MassDisplacement        |      11
 %
 % How it works:
-% Retrieves objects in label matrix format and a
-% corresponding original grayscale image and makes measurements of the
-% objects. The label matrix image should
-% be "compacted": that is, each number should correspond to an object,
-% with no numbers skipped.
-% So, if some objects were discarded from the label matrix image, the
-% image should be converted to binary and re-made into a label matrix
-% image before feeding into this module.
+% Retrieves objects in label matrix format and a corresponding original
+% grayscale image and makes measurements of the objects. The label matrix
+% image should be "compacted": that is, each number should correspond to an
+% object, with no numbers skipped. So, if some objects were discarded from
+% the label matrix image, the image should be converted to binary and
+% re-made into a label matrix image before feeding into this module.
 %
-% Intensity Measurements:
+% Intensity Measurement descriptions:
 %
-% IntegratedIntensity:
-% The sum of the pixel intensities within an object.
+% * IntegratedIntensity - The sum of the pixel intensities within an
+% object.
+% * MeanIntensity - The average pixel intensity within an object.
+% * StdIntensity - The standard deviation of the pixel intensities within
+% an object.
+% * MaxIntensity - The maximal pixel intensity within an object.
+% * MinIntensity - The minimal pixel intensity within an object.
+% * IntegratedIntensityEdge - The sum of the edge pixel intensities of an
+% object.
+% * MeanIntensityEdge - The average edge pixel intensity of an object.
+% * StdIntensityEdge - The standard deviation of the edge pixel intensities
+% of an object.
+% * MaxIntensityEdge - The maximal edge pixel intensity of an object.
+% * MinIntensityEdge - The minimal edge pixel intensity of an object.
+% * MassDisplacement - The distance between the centers of gravity in the
+% gray-level representation of the object and the binary representation of
+% the object.
 %
-% MeanIntensity:
-% The average pixel intensity within an object.
-%
-% StdIntensity:
-% The standard deviation of the pixel intensities within an object.
-%
-% MaxIntensity:
-% The maximal pixel intensity within an object.
-%
-% MinIntensity:
-% The minimal pixel intensity within an object.
-%
-% IntegratedIntensityEdge:
-% The sum of the edge pixel intensities of an object.
-%
-% MeanIntensityEdge:
-% The average edge pixel intensity of an object.
-%
-% StdIntensityEdge:
-% The standard deviation of the edge pixel intensities of an object.
-%
-% MaxIntensityEdge:
-% The maximal edge pixel intensity of an object.
-%
-% MinIntensityEdge:
-% The minimal edge pixel intensity of an object.
-%
-% MassDisplacement:
-% The distance between the centers of gravity in the gray-level representation of
-% the object and the binary representation of the object.
-%
-% See also MEASUREOBJECTTEXTURE, MEASUREOBJECTAREASHAPE,
-% MEASURECORRELATION
+% See also MeasureObjectTexture, MeasureObjectAreaShape,
+% MeasureCorrelation
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -101,7 +82,6 @@ function handles = MeasureObjectIntensity(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the greyscale images you want to measure?
@@ -115,7 +95,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Type / in unused boxes.
+%textVAR03 = Type "Do not use" in unused boxes.
 %choiceVAR03 = Do not use
 %infotypeVAR03 = objectgroup
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -156,7 +136,7 @@ if any(findobj == ThisModuleFigureNumber);
 end
 
 %%% START LOOP THROUGH ALL THE OBJECTS
-for i = 1:6
+for i = 1:length(ObjectNameList)
     ObjectName = ObjectNameList{i};
     if strcmpi(ObjectName,'Do not use')
         continue
@@ -240,7 +220,7 @@ for i = 1:6
             BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImage(rmin:rmax,cmin:cmax);
 
-            % Get perimeter in order to calculate edge features
+            %%% Get perimeter in order to calculate edge features
             perim = bwperim(BWim);
             perim = Greyim(find(perim)); %#ok Ignore MLint
             Basic(Object,6)  = sum(perim);
@@ -249,9 +229,9 @@ for i = 1:6
             Basic(Object,9)  = min(perim);
             Basic(Object,10) = max(perim);
 
-            % Calculate the Mass displacment (taking the pixelsize into account), which is the distance between
-            % the center of gravity in the gray level image and the binary
-            % image.
+            %%% Calculate the Mass displacment (taking the pixelsize into account), which is the distance between
+            %%% the center of gravity in the gray level image and the binary
+            %%% image.
             PixelSize = str2double(handles.Settings.PixelSize);
             BWx = sum((1:size(BWim,2)).*sum(BWim,1))/sum(1:size(BWim,2));
             BWy = sum((1:size(BWim,1))'.*sum(BWim,2))/sum(1:size(BWim,1));
@@ -266,14 +246,12 @@ for i = 1:6
     handles.Measurements.(ObjectName).(['Intensity_',ImageName,'Features']) = BasicFeatures;
     handles.Measurements.(ObjectName).(['Intensity_',ImageName])(handles.Current.SetBeingAnalyzed) = {Basic};
 
-
     %%% Report measurements
     FontSize = handles.Preferences.FontSize;
 
     if any(findobj == ThisModuleFigureNumber);
-        % This first block writes the same text several times
-        % Header
-
+        %%%% This first block writes the same text several times
+        %%% Header
         if handles.Current.SetBeingAnalyzed == 1
             delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
@@ -284,12 +262,12 @@ for i = 1:6
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average intensity features for ', ImageName,', cycle #%d'],handles.Current.SetBeingAnalyzed));
 
-        % Number of objects
+        %%% Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
-        % Text for Basic features
+        %%% Text for Basic features
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[1 1 1],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Intensity feature:');
@@ -299,27 +277,26 @@ for i = 1:6
                 'fontsize',FontSize,'string',BasicFeatures{k});
         end
 
-        % The name of the object image
+        %%% The name of the object image
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.9 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string',ObjectName);
 
-        % Number of objects
+        %%% Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.85 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','Helvetica',...
             'fontsize',FontSize,'string',num2str(ObjectCount));
 
         if ObjectCount > 0
-            % Basic features
+            %%% Basic features
             for k = 1:11
                 uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','Helvetica',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
             end
         end
-        % This variable is used to write results in the correct column
-        % and to determine the correct window size
+        %%% This variable is used to write results in the correct column
+        %%% and to determine the correct window size
         columns = columns + 1;
     end
 end
-drawnow

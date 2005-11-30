@@ -230,12 +230,20 @@ else
     elseif strcmp(AutoOrManual,'Manual')
         if strcmp(ControlSpotMode,'Coordinates')
             if strncmp(EachOrOnce,'Once',4)
-                %%% In 'Manual' + 'Coordinates' mode + 'Once' mode,
+                %%% In 'Manual' + 'Coordinates' + 'Once' mode,
                 %%% the values from the main GUI are used for
                 %%% XControlSpot and YControlSpot and XSpacing and
                 %%% YSpacing, so they aren't retrieved here.
+                %%% Converts units to pixels if they were given in spot
+                %%% units.
+                if strcmp(DistanceUnits,'Spot Units') == 1
+                    XOffsetFromControlToTopLeft = XOffsetFromControlToTopLeft * XSpacing;
+                    YOffsetFromControlToTopLeft = YOffsetFromControlToTopLeft * YSpacing;
+                end
+                XLocationOfLowestXSpot = XControlSpot + XOffsetFromControlToTopLeft;
+                YLocationOfLowestYSpot = YControlSpot + YOffsetFromControlToTopLeft;
             elseif strncmp(EachOrOnce,'Each',4)
-                answers = inputdlg({'Enter the X,Y location of the center of the bottom, left spot in the grid.''Enter the vertical and horizontal spacing, separated by a comma.'});
+                answers = inputdlg({'Enter the X,Y location of the center of the top, left spot in the grid.' 'Enter the vertical and horizontal spacing, separated by a comma.'});
                 ControlSpot = str2num(answers{1});
                 try
                     XLocationOfLowestXSpot = ControlSpot(1);

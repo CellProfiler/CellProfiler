@@ -394,6 +394,8 @@ if strcmp(ReadyFlag, 'Ready')
                 SmoothingMethod = 'P';
             end
             FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
+        else
+            FinalIlluminationFunction = IlluminationImage;
         end
     end
 

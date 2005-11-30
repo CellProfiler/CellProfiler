@@ -4,7 +4,7 @@ function handles = MeasureObjectIntensity(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures several intensity features of identified objects.
+% Measures several intensity features for identified objects.
 % *************************************************************************
 %
 % Given an image with objects identified (e.g. nuclei or cells), this

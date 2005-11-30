@@ -8,9 +8,16 @@ function handles = MeasureObjectTexture(handles)
 % *************************************************************************
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
-% module extracts texture features of each
-% object based on a corresponding grayscale image. Measurements are
-% recorded for each object.
+% module extracts texture features for each object based on a corresponding
+% grayscale image. Measurements are recorded for each object. The scale of
+% texture measured is chosen by the user, in pixel units. A higher number
+% for the scale of texture measures larger patterns of texture whereas
+% smaller numbers measure more localized patterns of texture. It is best to
+% measure texture on a scale smaller than your objects sizes, so be sure
+% that the value entered for scale of texture is smaller than most of your
+% objects. For very small objects (smaller than the scale of texture you
+% are measuring) the texture cannot be measured and will result in a value
+% of NaN in the output file (Not a Number).
 %
 % Measurement:             Feature Number:
 % AngularSecondMoment     |       1
@@ -29,37 +36,20 @@ function handles = MeasureObjectTexture(handles)
 % Gabor1x                 |      14
 % Gabor1y                 |      15
 %
-% How it works:
-% Retrieves objects in label matrix format and a
-% corresponding original grayscale image and makes measurements of the
-% objects. The label matrix image should
-% be "compacted": that is, each number should correspond to an object,
-% with no numbers skipped.
-% So, if some objects were discarded from the label matrix image, the
-% image should be converted to binary and re-made into a label matrix
-% image before feeding into this module.
-%
-% Texture Measurements:
+% Texture Measurement descriptions:
 %
 % Haralick Features:
-% These features are derived from the co-occurence matrix, which contains
-% information about how image intensities in pixel with a certain position
-% in relation to each other occur together. For example, how often does a
-% pixel with intensity 43 have a neighbor to the right with intensity
-% 48? The current implementation in CellProfiler uses a shift of 1 pixel to
-% the right for calculating the co-occurence matrix. A different set of
-% measurements is obtained for larger shifts, measuring texture on a larger
-% scale.
-%
-% The original reference for the Haralick features is:
-%
-% Haralick et al. (1973)
-% Textural Features for Image Classification.
-% IEEE Transaction on Systems
-% Man, Cybernetics, SMC-3(6):610-621
-%
-% In this paper, 14 features are described:
-%
+% Haralick texture features are derived from the co-occurence matrix, which
+% contains information about how image intensities in pixels with a certain
+% position in relation to each other occur together. For example, how often
+% does a pixel with intensity 0.12 have a neighbor 2 pixels to the right
+% with intensity 0.15? The current implementation in CellProfiler uses a
+% shift of 1 pixel to the right for calculating the co-occurence matrix. A
+% different set of measurements is obtained for larger shifts, measuring
+% texture on a larger scale. The original reference for the Haralick
+% features is Haralick et al. (1973) Textural Features for Image
+% Classification. IEEE Transaction on Systems Man, Cybernetics,
+% SMC-3(6):610-621, where 14 features are described:
 % H1. Angular Second Moment
 % H2. Contrast
 % H3. Correlation
@@ -73,26 +63,30 @@ function handles = MeasureObjectTexture(handles)
 % H11. Difference Entropy
 % H12. Information Measure of Correlation 1
 % H13. Information Measure of Correlation 2
-% H14. Max correlation coefficient
-%
-% All these features are implemented, but H14 is disabled because it's
+% H14. Max correlation coefficient *H14 is disabled because it is
 % computationally demanding.
-% -------------------------------------------------------------------------
-% Gabor "wavelet" features
-%
+% 
+% Gabor "wavelet" features:
 % These features are similar to wavelet features, and they are obtained by
-% applying so-called Gabor filters to the image. The Gabor filters measures
+% applying so-called Gabor filters to the image. The Gabor filters measure
 % the frequency content in different orientations. They are very similar to
 % wavelets, and in the current context they work exactly as wavelets, but
-% they are not wavelets in a strict mathematical definition. As currently
+% they are not wavelets by a strict mathematical definition. As currently
 % implemented, the frequency content of the object is measured along the x-
-% and y-axis (i.e., in two different orientations) and for three different
-% scales, resulting in 2*3 = 6 measurements per object.
+% and y-axis (i.e., in two different orientations). The original reference
+% is Gabor, D. (1946). "Theory of communication" Journal of the Institute
+% of Electrical Engineers, 93:429-441.
 %
-% See also MEASUREAREAOCCUPIED,
-% MEASUREAREASHAPECOUNTLOCATION,
-% MEASURECORRELATION,
-% MEASURETOTALINTENSITY.
+% How it works:
+% Retrieves objects in label matrix format and a corresponding original
+% grayscale image and makes measurements of the objects. The label matrix
+% image should be "compacted": that is, each number should correspond to an
+% object, with no numbers skipped. So, if some objects were discarded from
+% the label matrix image, the image should be converted to binary and
+% re-made into a label matrix image before feeding into this module.
+%
+% See also MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureCorrelation.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -53,9 +53,10 @@ IdentifyTertiarySubregion	Mike,        Anne
 
 InvertIntensity			Mike,        Anne
 
-LoadImages			Mike (Should try all options)
+LoadImages			Mike,        Anne (Should try all options)
 
-LoadSingleImage
+LoadSingleImage				
+Anne left off here, rearranging the variables.
 
 LoadText
 

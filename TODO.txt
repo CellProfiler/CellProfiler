@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+Make LoadSingleImage show the filenames loaded, like LoadImages does.
+
 Please add all the data tools, image tools, and help files to the module check list so that we are sure to go through them.
 
 What are we going to call the compiled version vs. the matlab version? As I am writing help, I'd like to use consistent language. One idea: matlab version = Developer's version?  I don't really know what the standard words are for this sort of thing.
@@ -12,10 +14,6 @@ TechDiagnosis 	- DONE
 SaveCPcode	- DONE
 
 - Make compiled CellProfiler work on cluster
-
-(Requested by Anne 11-21-05) : Not necessary pre-release, but would be nice: In LoadImages, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
-
-- Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
 - Check through each module (~2 per day):
 EVERYONE:

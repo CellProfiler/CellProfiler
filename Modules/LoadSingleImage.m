@@ -7,13 +7,13 @@ function handles = LoadSingleImage(handles)
 % Loads a single image, which will be used for all image cycles.
 % *************************************************************************
 %
-% Tells CellProfiler where to retrieve a single image and gives the
-% image a meaningful name for the other modules to access.  The module
-% only functions the first time through the pipeline, and thereafter
-% the image is accessible to all subsequent cycles being
-% processed. This is particularly useful for loading an image like the
-% Illumination correction image to be used by the CorrectIllumDivide
-% module.
+% Tells CellProfiler where to retrieve a single image and gives the image a
+% meaningful name for the other modules to access.  The module only
+% functions the first time through the pipeline, and thereafter the image
+% is accessible to all subsequent cycles being processed. This is
+% particularly useful for loading an image like an Illumination correction
+% image to be used by the CorrectIllumination_Apply module. Note: Actually,
+% you can load four 'single' images using this module.
 %
 % Relative pathnames can be used: e.g. enter ../Imagetobeloaded.tif as
 % the name of the file you would like to load and leave the image
@@ -44,66 +44,67 @@ function handles = LoadSingleImage(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%filenametextVAR01 = Type the name of the image file you want to load (include the extension, like .tif)
-TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = This module loads one image for *all* cycles that will be processed. Normally, use the Load Images module to load new sets of images during each cycle of processing.
 
-%textVAR02 = What do you want to call that image?
-%defaultVAR02 = OrigBlue
-%infotypeVAR02 = imagegroup indep
-ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%pathnametextVAR02 = Enter the path name to the folder where the images to be loaded are located.  Type period (.) for the default image folder.
+Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%filenametextVAR03 = Type the name of the image file you want to load (include the extension, like .tif)
-TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%filenametextVAR03 = What image file do you want to load? Include the extension, like .tif
+TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call that image?
-%defaultVAR04 = /
+%defaultVAR04 = OrigBlue
 %infotypeVAR04 = imagegroup indep
-ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%filenametextVAR05 = Type the name of the image file you want to load (include the extension, like .tif)
-TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%filenametextVAR05 = What image file do you want to load? Include the extension, like .tif
+TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call that image?
 %defaultVAR06 = /
 %infotypeVAR06 = imagegroup indep
-ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%filenametextVAR07 = Type the name of the image file you want to load (include the extension, like .tif)
-TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%filenametextVAR07 = What image file do you want to load? Include the extension, like .tif
+TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What do you want to call that image?
 %defaultVAR08 = /
 %infotypeVAR08 = imagegroup indep
-ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If an image slot is not being used, type a slash  /  in the box.
+%filenametextVAR09 = What image file do you want to load? Include the extension, like .tif
+TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Type the file format of the images
-%choiceVAR10 = mat
-%choiceVAR10 = bmp
-%choiceVAR10 = gif
-%choiceVAR10 = jpg
-%choiceVAR10 = tif
-%choiceVAR10 = DIB
-FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+%textVAR10 = What do you want to call that image?
+%defaultVAR10 = /
+%infotypeVAR10 = imagegroup indep
+ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%pathnametextVAR11 = Enter the path name to the folder where the images to be loaded are located.  Type period (.) for default image directory.
-Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = If an image slot is not being used, type a slash  /  in the box.
+
+%textVAR12 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
+%choiceVAR12 = mat
+%choiceVAR12 = bmp
+%choiceVAR12 = gif
+%choiceVAR12 = jpg
+%choiceVAR12 = tif
+%choiceVAR12 = DIB
+FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines which cycle is being analyzed.
@@ -157,11 +158,14 @@ for n = 1:length(ImageName)
 
         FileAndPathname = fullfile(Pathname, CurrentFileName);
         if strcmpi(FileFormat,'mat')
-            try
-                StructureLoadedImage = load(FileAndPathname);
-            catch error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load this image: ',FileAndPathname,'. The file may be corrupt.']);
+            try StructureLoadedImage = load(FileAndPathname);
+                LoadedImage = StructureLoadedImage.Image;
+            catch
+                try [LoadedImage, handles] = CPimread(FileAndPathname,handles);
+                catch
+                    error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load this image: ',FileAndPathname,'. The file may be corrupt.']);
+                end
             end
-            LoadedImage = StructureLoadedImage.Image;
         else [LoadedImage, handles] = CPimread(FileAndPathname,handles);
         end
         %%% Saves the image to the handles structure.

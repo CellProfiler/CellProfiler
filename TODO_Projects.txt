@@ -1,3 +1,6 @@
+- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
+
+- (Requested by Anne 11-21-05) - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
 - (Requested by Anne 10-25-05) - ProcessOutlines needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
 

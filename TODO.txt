@@ -5,9 +5,6 @@ I get (undefined function 'nanmean') when using ExportDataToFiles.
 
 Mike - when we start checking all modules to see whether they work, we may as well check them in the compiled version, right? 
 
-
-Mike - what's the status of the weird way that perimeter was measured?  I can't recall what we decided to do about it. Aren't we supposed to use Matlab's built in function for it now? Has this been done? Is Form Factor calculated properly now?
-
 It seems that in several places, like MeasureImageSaturationBlur, we say "Percent" when we actually mean fraction. We should go through all modules/data tools looking for the word percent and make sure that we change it one way or the other so it's accurate & consistent.  Otherwise, if it says 0.08 we don't know whether that is 8% or .08%
 
 We should make *absolutely* certain that all measure modules properly handle pixel size. we have not checked this in a very long time because we always have pixel size = 1, but it would be *so* embarassing to release our software and have it scramble all the measurements!

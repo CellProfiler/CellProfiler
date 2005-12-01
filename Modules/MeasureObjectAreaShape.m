@@ -97,7 +97,7 @@ function handles = MeasureObjectAreaShape(handles)
 % Perimeter
 % Form factor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
 % object
-% 
+%
 % See also MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY,
 % MEASURECORRELATION.
 
@@ -237,51 +237,53 @@ for i = 1:length(ObjectNameList)
     end
 
     NumObjects = max(LabelMatrixImage(:));
-    if  NumObjects> 0
+    if  NumObjects > 0
 
         %%% Get the basic shape features
         props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
-            'MajorAxisLength','MinorAxisLength');
-
-        %%% Calculate Zernike shape features
-        % Use Area to automatically calculate the average equivalent diameter
-        % of the objects, and then use this diameter to determine the grid size
-        % of the Zernike functions
-        diameter = floor(sqrt(4/pi*mean(cat(1,props.Area)))+1);
-        if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
-
-        % Calculate the Zernike basis functions
-        [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
-        r = sqrt(x.^2+y.^2);
-        phi = atan(y./(x+eps));
-        Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
-
-        for k = 1:size(Zernikeindex,1)
-            n = Zernikeindex(k,1);
-            m = Zernikeindex(k,2);
-            s = zeros(size(x));
-            for l = 0:(n-m)/2;
-                s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
-            end
-            s(r>1) = 0;
-            Zf(:,:,k) = s;
-        end
+            'MajorAxisLength','MinorAxisLength','Perimeter');
 
         % Pad the Label image with zeros so that the Zernike
         % features can be calculated also for objects close to
         % the border
         [sr,sc] = size(LabelMatrixImage);
-        PaddedLabelMatrixImage = [zeros(diameter,2*diameter+sc);
-            zeros(sr,diameter) LabelMatrixImage zeros(sr,diameter)
-            zeros(diameter,2*diameter+sc)];
+        DiameterArray = cat(1,props.MajorAxisLength);
+        MaxDiameter = round(max(DiameterArray));
+        PaddedLabelMatrixImage = [zeros(MaxDiameter,2*MaxDiameter+sc);
+            zeros(sr,MaxDiameter) LabelMatrixImage zeros(sr,MaxDiameter)
+            zeros(MaxDiameter,2*MaxDiameter+sc)];
 
-        % Loop over objects to calculate Zernike moments. Center the functions
-        % over the centroids of the objects.
-        tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
-        Centroids = cat(1,tmp.Centroid);
         Zernike = zeros(NumObjects,size(Zernikeindex,1));
-        Perimeter = zeros(NumObjects,1);
+
         for Object = 1:NumObjects
+            %%% Calculate Zernike shape features
+            % Use Area to automatically calculate the average equivalent diameter
+            % of the objects, and then use this diameter to determine the grid size
+            % of the Zernike functions
+            diameter = round(DiameterArray(Object));
+            if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
+
+            % Calculate the Zernike basis functions
+            [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
+            r = sqrt(x.^2+y.^2);
+            phi = atan(y./(x+eps));
+            Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
+
+            for k = 1:size(Zernikeindex,1)
+                n = Zernikeindex(k,1);
+                m = Zernikeindex(k,2);
+                s = zeros(size(x));
+                for l = 0:(n-m)/2;
+                    s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+                end
+                s(r>1) = 0;
+                Zf(:,:,k) = s;
+            end
+
+            % Loop over objects to calculate Zernike moments. Center the functions
+            % over the centroids of the objects.
+            tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
+            Centroids = cat(1,tmp.Centroid);
 
             % Get image patch
             rmax = round(Centroids(Object,2)+(diameter-1)/2);
@@ -292,14 +294,10 @@ for i = 1:length(ObjectNameList)
 
             % Apply Zernike functions
             Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
-
-            % Get perimeter for object
-            perim = bwperim(BWpatch);
-            Perimeter(Object) = sum(perim(:));
         end
 
         % Form factor
-        FormFactor = (4*pi*cat(1,props.Area)) ./ ((Perimeter+1).^2);       % Add 1 to perimeter to avoid divide by zero
+        FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);       % Add 1 to perimeter to avoid divide by zero
 
         % Save basic shape features
         Basic = [cat(1,props.Area)*PixelSize^2,...
@@ -307,7 +305,7 @@ for i = 1:length(ObjectNameList)
             cat(1,props.Solidity),...
             cat(1,props.Extent),...
             cat(1,props.EulerNumber),...
-            Perimeter*PixelSize,...
+            cat(1,props.Perimeter)*PixelSize,...
             FormFactor,...
             cat(1,props.MajorAxisLength)*PixelSize,...
             cat(1,props.MinorAxisLength)*PixelSize];

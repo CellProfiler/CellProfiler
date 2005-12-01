@@ -62,13 +62,6 @@ SpecificSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %choiceVAR05 = Bilinear
 %choiceVAR05 = Bicubic
 InterpolationMethod = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-if strcmp(InterpolationMethod,'Bilinear')
-    InterpolationMethod = 'L';
-elseif strcmp(InterpolationMethod,'Bicubic')
-    InterpolationMethod = 'C';
-else
-    InterpolationMethod = 'N';
-end
 %inputtypeVAR05 = popupmenu
 
 %%%VariableRevisionNumber = 1
@@ -105,11 +98,8 @@ end
 
 if strncmpi(InterpolationMethod,'N',1)
     InterpolationMethod = 'nearest';
-elseif strncmpi(InterpolationMethod,'L',1)
-    InterpolationMethod = 'bilinear';
-elseif strncmpi(InterpolationMethod,'C',1)
-    InterpolationMethod = 'bicubic';
-else error(['Image processing was canceled in the ', ModuleName, ' module because you must enter "N", "L", or "C" for the interpolation method.'])
+elseif ~strcmp(InterpolationMethod,'Bilinear') && ~strcmp(InterpolationMethod,'Bicubic')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter "Nearest Neighbor", "Bilinear", or "Bicubic" for the interpolation method.'])
 end
 
 ResizedImage = imresize(OrigImage,ResizeData,InterpolationMethod);

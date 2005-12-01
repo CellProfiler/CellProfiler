@@ -4,42 +4,41 @@ function handles = RescaleIntensity(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Changes intensity range of an image to desired specifications. Helpful
-% for converting 12-bit images saved in 16-bit format to the correct range.
+% Changes intensity range of an image to desired specifications.
 % *************************************************************************
 %
 % The intensity of the incoming images are rescaled by one of several
-% methods.
+% methods. This is especially helpful for converting 12-bit images saved in
+% 16-bit format to the correct range (see method E).
 %
 % Settings:
 %
 % Rescaling method:
 % (S) Stretch the image so that the minimum is zero and the maximum is
 % one.
-% (E) Enter the minimum and maximum values of the original image
-% and the resulting image. Pixels are scaled from their user-specified
-% original range to a new user-specified range.  If the user enters
-% "AE", then the highest and lowest pixel values will be Automatically
-% computed for Each image by taking the maximum and minimum pixel
-% values in Each image.  If the user enters "AA", then the highest and
-% lowest pixel values will be Automatically computed by taking the
-% maximum and minimum pixel values in All the images in the set.
-% Pixels in the original image that are above or below the original
-% range are pinned to the high/low values of that range before being
-% scaled.
+% (E) Enter the minimum and maximum values of the original image and the
+% desired resulting image. Pixels are scaled from their user-specified original
+% range to a new user-specified range.  If the user enters "AE", then the
+% highest and lowest pixel values will be Automatically computed for Each
+% image by taking the maximum and minimum pixel values in Each image.  If
+% the user enters "AA", then the highest and lowest pixel values will be
+% Automatically computed by taking the maximum and minimum pixel values in
+% All the images in the set. Pixels in the original image that are above or
+% below the original range are pinned to the high/low values of that range
+% before being scaled. To convert 12-bit images saved in 16-bit format to
+% the correct range, use the settings 0, 0.0625, 0, 1.  The value 0.0625 is
+% equivalent to 2^12 divided by 2^16, so it will convert a 16 bit image
+% containing only 12 bits of data to the proper range.
 % (G) rescale the image so that all pixels are equal to or Greater
 % than one.
 % (M) Match the maximum of one image to the maximum of another.
-% (C) Convert to 8 bit: Images in CellProfiler are
-% normally stored as numerical class double in the range of 0 to 1.
-% This option converts these images to class uint8, meaning an 8 bit
-% integer in the range of 0 to 255. This is useful to reduce the amount
-% of memory required to store the image. Warning: Most CellProfiler
-% modules require the incoming image to be in the standard 0 to 1
-% range, so this conversion may cause downstream modules to behave
-% unexpectedly.
-%
-% See also: <nothing relevant>.
+% (C) Convert to 8 bit: Images in CellProfiler are normally stored as
+% numerical class double in the range of 0 to 1. This option converts these
+% images to class uint8, meaning an 8 bit integer in the range of 0 to 255.
+% This is useful to reduce the amount of memory required to store the
+% image. Warning: Most CellProfiler modules require the incoming image to
+% be in the standard 0 to 1 range, so this conversion may cause downstream
+% modules to behave unexpectedly.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -67,7 +66,6 @@ function handles = RescaleIntensity(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -99,11 +97,11 @@ LowestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = AA
 HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = (Method E only): What should the lowest intensity of the rescaled image be?
+%textVAR06 = (Method E only): What should the lowest intensity of the rescaled image be (range [0,1])?
 %defaultVAR06 = 0
 LowestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = (Method E only): What should the highest intensity of the rescaled image be?
+%textVAR07 = (Method E only): What should the highest intensity of the rescaled image be (range [0,1])?
 %defaultVAR07 = 1
 HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 

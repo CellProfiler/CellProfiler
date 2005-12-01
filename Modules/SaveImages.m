@@ -163,7 +163,7 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = L
 SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Do you want to rescale the images to use a full 8 bit (256 graylevel) dynamic range (Y or N)?
+%textVAR10 = Do you want to rescale the images to use a full 8 bit (256 graylevel) dynamic range (Y or N)? Use the RescaleIntensity module for other rescaling options.
 %choiceVAR10 = No
 %choiceVAR10 = Yes
 RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,10});

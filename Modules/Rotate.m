@@ -4,10 +4,24 @@ function handles = Rotate(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Rotates images.
+% Rotates images either automatically or based on the user clicking.
 % *************************************************************************
 %
-% Sorry, there is no help right now.
+% Settings:
+%
+% Rotation method:
+% *Coordinates - you can provide the X,Y pixel locations of two
+% points in the image which should be aligned horizontally or vertically.
+% *Mouse - you can click on two points in the image which should be aligned
+% horizontally or vertically.
+% *Angle - you can provide the numerical angle by which the image should be
+% rotated.
+%
+% Would you like to crop away the rotated edges?
+% When an image is rotated, there will be black space at the corners/edges
+% unless you choose to crop away the incomplete rows and columns of the
+% image. This cropping will produce an image that is not the exact same
+% size as the original, which may affect downstream modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -36,7 +50,6 @@ function handles = Rotate(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be rotated?
@@ -44,49 +57,49 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Choose rotation method.
-%choiceVAR02 = Coordinates
-%choiceVAR02 = Mouse
-%choiceVAR02 = Angle
-RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu
+%textVAR02 = What do you want to call the rotated image?
+%defaultVAR02 = RotatedImage
+%infotypeVAR02 = imagegroup indep
+RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the rotated image?
-%defaultVAR03 = RotatedImage
-%infotypeVAR03 = imagegroup indep
-RotatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Choose rotation method:
+%choiceVAR03 = Coordinates
+%choiceVAR03 = Mouse
+%choiceVAR03 = Angle
+RotateMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
-%textVAR04 = Align the spots horizontally, or vertically?
-%choiceVAR04 = horizontally
-%choiceVAR04 = vertically
-HorizOrVert = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = Would you like to crop away the rotated edges?
+%choiceVAR04 = Yes
+%choiceVAR04 = No
+CropEdges = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Do you want to determine the rotation angle for each image individually as you cycle through, or do you want to define it only once (on the first image) and then apply it to all images?
+%textVAR05 = Do you want to determine the amount of rotation for each image individually as you cycle through, or do you want to define it only once (on the first image) and then apply it to all images?
 %choiceVAR05 = Individually
 %choiceVAR05 = Only Once
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Would you like to crop away the rotated edges?
-%choiceVAR06 = Yes
-%choiceVAR06 = No
-CropEdges = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = For COORDINATES or MOUSE, do you want to click on points that are aligned horizontally or vertically?
+%choiceVAR06 = horizontally
+%choiceVAR06 = vertically
+HorizOrVert = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = For COORDINATES and ONLY ONCE, what are the coordinates of the first pixel?
+%textVAR07 = For COORDINATES and ONLY ONCE, what are the coordinates of one point (X,Y)?
 %defaultVAR07 = 1,1
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = For COORDINATES and ONLY ONCE, what are the coordinates of the second pixel?
+%textVAR08 = For COORDINATES and ONLY ONCE, what are the coordinates of the other point (X,Y)?
 %defaultVAR08 = 100,5
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = For ANGLE and ONLY ONCE, by what angle would you like to rotate the image?
+%textVAR09 = For ANGLE and ONLY ONCE, by what angle would you like to rotate the image (in degrees, positive = clockwise and negative = counterclockwise)?
 %defaultVAR09 = 5
 Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -104,7 +117,6 @@ FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(OrigImage);
 axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
-
 drawnow
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')

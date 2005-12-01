@@ -4,13 +4,14 @@ function handles = PlaceAdjacent(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Place up to six images next to each other to produce a single image.
+% Place up to six images next to each other, either horizontally or
+% vertically, to produce a single image.
 % *************************************************************************
 %
-% This module places two images next to each other, either
-% horizontally or vertically.
+% To place together many images, you can use several of this module in one
+% pipeline.
 %
-% See also <nothing relevant>.
+% See also Tile.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -39,38 +40,37 @@ function handles = PlaceAdjacent(handles)
 %%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the first image to be placed?
+%textVAR01 = Select images to be placed, in order
 %infotypeVAR01 = imagegroup
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the second image to be placed?
+%textVAR02 = 
 %infotypeVAR02 = imagegroup
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What did you call the first image to be placed?
+%textVAR03 = 
 %choiceVAR03 = Do not use
 %infotypeVAR03 = imagegroup
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What did you call the second image to be placed?
+%textVAR04 = 
 %choiceVAR04 = Do not use
 %infotypeVAR04 = imagegroup
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = What did you call the first image to be placed?
+%textVAR05 = 
 %choiceVAR05 = Do not use
 %infotypeVAR05 = imagegroup
 ImageName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = What did you call the second image to be placed?
+%textVAR06 = 
 %choiceVAR06 = Do not use
 %infotypeVAR06 = imagegroup
 ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -81,14 +81,14 @@ ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %infotypeVAR07 = imagegroup indep
 AdjacentImageName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Placement Type.
+%textVAR08 = How do you want to place the images, Horizontal (left to right) or Vertical (top to bottom)?
 %choiceVAR08 = Horizontal
 %choiceVAR08 = Vertical
 HorizontalOrVertical = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 HorizontalOrVertical = HorizontalOrVertical(1);
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Can the incoming images be deleted from the pipeline after they are placed adjacent (this saves memory, but prevents you from using the incoming images later in the pipeline)?
+%textVAR09 = Should the incoming images be deleted from the pipeline after they are placed? (This saves memory, but prevents you from using the incoming images later in the pipeline)
 %choiceVAR09 = No
 %choiceVAR09 = Yes
 DeletePipeline = char(handles.Settings.VariableValues{CurrentModuleNum,9});
@@ -141,7 +141,6 @@ drawnow
 
 %%% Check that the images are the same height or width and place them
 %%% adjacent to each other.
-
 if strcmpi(HorizontalOrVertical,'H')
     for i=1:(length(OrigImage)-1)
         if size(OrigImage{i},1) ~= size(OrigImage{i+1},1)

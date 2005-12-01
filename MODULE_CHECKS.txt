@@ -91,7 +91,7 @@ MergeBatchOutput		Mike,        Anne
 
 OverlayOutlines			Mike,        Anne 
 
-PlaceAdjacent			Mike
+PlaceAdjacent			Mike,        Anne 
 
 RelateObjects			Mike
 

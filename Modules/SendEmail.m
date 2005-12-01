@@ -8,16 +8,11 @@ function handles = SendEmail(handles)
 % *************************************************************************
 %
 % This module emails the user-specified recipients about the current
-% progress of the image processing modules as well as the expected time
-% remaining until completion.  The user can specify how often e-mails are
-% sent out (for example, after the first cycle, after the last cycle, after
-% every X number of images, after Y images).  Note:  This module should be
-% the last module loaded.  If it isn't the last module loaded, then the
-% notifications are sent out after all the modules that are processed
-% before this module is completed, but not before all the modules that
-% comes after this module.
-%
-% See also: <nothing relevant>.
+% progress of the image processing as well as the expected time remaining
+% until completion.  The user can specify how often emails are sent out
+% (for example, after the first cycle, after the last cycle, after every X
+% cycles, after N cycles).  Note:  This module should be placed at the
+% point in the pipeline when you want the emails to be sent.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -76,23 +71,23 @@ LastImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 0
 EveryXImageEmail = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Send an e-mail after _ number of cycles?
+%textVAR07 = Send an e-mail after the Nth cycle
 %defaultVAR07 = 0
 Specified1Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Send an e-mail after _ number of cycles?
+%textVAR08 = Send an e-mail after the Nth cycle
 %defaultVAR08 = 0
 Specified2Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Send an e-mail after _ number of cycles?
+%textVAR09 = Send an e-mail after the Nth cycle
 %defaultVAR09 = 0
 Specified3Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Send an e-mail after _ number of cycles?
+%textVAR10 = Send an e-mail after the Nth cycle
 %defaultVAR10 = 0
 Specified4Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = Send an e-mail after _ number of cycles?
+%textVAR11 = Send an e-mail after the Nth cycle
 %defaultVAR11 = 0
 Specified5Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 

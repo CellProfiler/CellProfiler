@@ -1,7 +1,7 @@
 function handles = CalculateStatistics(handles)
 
 % Help for the Calculate Statistics module:
-% Category: Other
+% Category: Measurement
 %
 % SHORT DESCRIPTION:
 % Calculates the V and Z' factors for measurements made from images.

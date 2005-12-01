@@ -7,8 +7,6 @@ function handles = Smooth(handles)
 % Smooths (blurs) images.
 % *************************************************************************
 %
-% This module smooths (blurs) the incoming image.
-%
 % Settings:
 %
 % Smoothing Method:
@@ -24,8 +22,8 @@ function handles = Smooth(handles)
 % use it for later analysis, you should save the smoothed image in '.mat'
 % format to prevent degradation of the data.
 %
-% See also AVERAGE, CORRECTILLUMINATION_APPLY,
-% CORRECTILLUMINATION_CALCULATE, CPSMOOTH.
+% See also Average, CorrectIllumination_Apply,
+% CorrectIllumination_Calculate, CPsmooth.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -53,7 +51,6 @@ function handles = Smooth(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

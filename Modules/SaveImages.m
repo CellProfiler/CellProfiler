@@ -4,24 +4,52 @@ function handles = SaveImages(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Save's any image produced during the image analysis, in any image format.
-% Can be used as a file format converter to save images in a different
-% format than the original.
+% Saves any image produced during the image analysis, in any image format.
 % *************************************************************************
 %
-% This module allows you to save images to the hard drive.  Any of the
+% Because CellProfiler usually performs many image analysis steps on many
+% groups of images, it does *not* save any of the resulting images to the
+% hard drive unless you use the Save Images module to do so. Any of the
 % processed images created by CellProfiler during the analysis can be
-% saved. The Save Images module can also be used as a file format converter
-% by loading files in their original format and then saving them in an
-% alternate format.  Please note that this module works for the few cases
-% we have tried, but you may run into difficulties when dealing with images
-% that are not 8 bit.  For example, you may wish to alter the code to
-% handle 16 bit images.  These features will hopefully be added soon.
+% saved using Save Images.
 %
-% If you want to save images that are produced by other modules but
-% that are not given an official name in the settings boxes for that
-% module, alter the code for the module to save those images to the
-% handles structure and then use the Save Images module.
+% The Save Images module can also be used as a file format converter
+% by loading files in their original format and then saving them in an
+% alternate format. 
+%
+% Please note that this module works for the cases we have tried, but it
+% has not been extensively tested, particularly for how it handles color
+% images, non-8 bit images, images coming from subdirectories, multiple
+% incoming movie files, or filenames made by numerical increments.
+%
+% Special notes for saving in movie format (avi):
+% The movie will be saved after the last cycle is processed. You have the
+% option to also save the movie periodically during image processing, so
+% that the partial movie will be available in case image processing is
+% canceled partway through. Saving movies in avi format is quite slow, so
+% you can enter a number to save the movie after every Nth cycle. For
+% example, entering a 1 will save the movie after every cycle. When working
+% with very large movies, you may also want to save the CellProfiler output
+% file every Nth cycle to save time, because the entire movie is stored in
+% the output file (this may only be the case if you are working in
+% diagnostic mode, see Set Preferences). See the Speed Up CellProfiler
+% module. If you are processing multiple movies, especially movies in
+% subdirectories, you should save after every cycle (and also, be aware
+% that this module has not been thoroughly tested under those conditions).
+% Note also that the movie data is stored in the handles.Pipeline.Movie
+% structure of the output file, so you can retrieve the movie data there in
+% case image processing is aborted. At the time this module was written,
+% Matlab was only capable of saving in uncompressed avi format (at least on
+% the UNIX platform), which is time and space-consuming. You should convert
+% the results to a compressed movie format, like .mov using third-party
+% software. For suggested third-party software, see the help for the Load
+% Images module.
+%
+% Developer's note:
+% If you want to save images that are produced by other modules but that
+% are not given an official name in the settings boxes for that module,
+% alter the code for the module to save those images to the handles
+% structure and then use the Save Images module.
 % The code should look like this:
 % fieldname = ['SomethingDescriptive(optional)',ImageorObjectNameFromSettingsBox];
 % handles.Pipeline.(fieldname) = ImageProducedBytheModule;
@@ -31,33 +59,6 @@ function handles = SaveImages(handles)
 % Example 2:
 % fieldname = CroppedImageName;
 % handles.Pipeline.(fieldname) = CroppedImage;
-%
-% Special notes for saving in movie format (avi):
-% The movie will be saved after the last cycle is processed. You have the
-% option to also save the movie periodically during image processing, so
-% that the partial movie will be available in case image processing is
-% canceled partway through. Saving movies in avi format is quite slow, so
-% you can enter a number to save the movie after every Nth cycle. For
-% example, entering a 1 will save the movie after every cycle, so that if
-% image analysis is aborted, the movie up to that point will be saved.
-% Saving large movie files is time-consuming, so it may be better to save
-% after every 10th cycle, for example. If you are processing multiple
-% movies, especially movies in subdirectories, you should save after every
-% cycle (and also, be aware that this module has not been thoroughly tested
-% under those conditions). Note also that the movie data is stored in the
-% handles.Pipeline.Movie structure of the output file, so you can retrieve
-% the movie data there in case image processing is aborted. When working
-% with very large movies, you may also want to save the CellProfiler output
-% file every Nth cycle to save time, because the entire movie is stored in
-% the output file. See the Speed Up CellProfiler module. This module has
-% not been extensively tested, particularly for how it handles color images
-% and how it handles images coming from subdirectories, multiple incoming
-% movie files, or filenames made by numerical increments. At the time this
-% module was written, Matlab was only capable of saving in uncompressed avi
-% format (at least on the UNIX platform), which is time and
-% space-consuming. You should convert the results to a compressed movie
-% format, like .mov using third-party software. For suggested third-party
-% software, see the help for the LoadMovies modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -98,9 +98,10 @@ Restart			            ,        Anne
 Rotate				    ,        Anne
 Need to verify - check lots of combinations on an image of a grid of lines or something that is easy to verify that the rotation is really working properly, and that the X,Y (for coordinate) and clockwise/counterclockwise (for ANGLE) is stated correctly.
 
-SaveImages			Mike
+SaveImages			Mike,        Anne
 
-SendEmail			(Need to verify)
+SendEmail                           ,        Anne
+			(Need to verify)
 
 Smooth				Mike
 

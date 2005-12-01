@@ -1,7 +1,7 @@
 function handles = ClassifyObjects(handles)
 
 % Help for the Classify Objects module:
-% Category: Other
+% Category: Object Processing
 %
 % SHORT DESCRIPTION:
 % Classifies objects into a number of different classes according to the

@@ -8,8 +8,7 @@ ApplyThreshold			Mike, Colin, Anne
 
 Average				Mike, Colin, Anne
 
-CalculateStatistics		Mike,        Anne 
-(didn't check code until we are ready to play around with it for real: we really really have to doublecheck the code and be absolutely sure it's perfect before we brag about our Z' and V factors being so good!)
+CalculateStatistics		Mike,        Anne (didn't check code until we are ready to play around with it for real: we really really have to doublecheck the code and be absolutely sure it's perfect before we brag about our Z' and V factors being so good!)
 
 ClassifyObjects			Mike, Colin, Anne
 
@@ -21,11 +20,9 @@ CorrectIllumination_Apply	Mike,        Anne
 
 CorrectIllumination_Calculate	Mike,        Anne
 
-CreateBatchScripts		Mike,        Anne 
-(Doublecheck after Susan updates the help)
+CreateBatchScripts		Mike,        Anne (Doublecheck after Susan updates the help)
 
-CreateWebPage			Mike,        Anne 
-(need to explain what image border and table border is)
+CreateWebPage			Mike,        Anne (need to explain what image border and table border is)
 
 Crop				Mike,        Anne
 
@@ -51,17 +48,13 @@ IdentifyPrimAutomatic                        Anne
 
 IdentifyPrimManual		Mike,        Anne
 
-IdentifyPrimYeastPhase		Mike,        Anne 
-(plan to move to DeveloperScripts)  
-
 IdentifySecondary		Mike,        Anne
 
 IdentifyTertiarySubregion	Mike,        Anne
 
 InvertIntensity			Mike,        Anne
 
-LoadImages			Mike,        Anne 
-(Should try all options)
+LoadImages			Mike,        Anne (Should try all options)
 
 LoadSingleImage	                    ,        Anne
 
@@ -72,7 +65,6 @@ MeasureCorrelation		Mike,        Anne
 MeasureImageAreaOccupied	Mike,        Anne
 
 MeasureImageIntensity		Mike,        Anne
-(VARIABLE 2 IS UNUSED, SHOULD THIS BE USED FOR HANDLES SAVING?)
 
 MeasureImageSaturationBlur	Mike,        Anne
 
@@ -86,8 +78,7 @@ MeasureObjectTexture		Mike,        Anne
 
 MeasureRatios			Mike,        Anne
 
-MergeBatchOutput		Mike,        Anne 
-(We still need to check and see that it works and that the output files produced are exportable)
+MergeBatchOutput		Mike,        Anne (We still need to check and see that it works and that the output files produced are exportable)
 
 OverlayOutlines			Mike,        Anne 
 

@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/30) We should make *absolutely* certain that all measure modules properly handle pixel size. we have not checked this in a very long time because we always have pixel size = 1, but it would be *so* embarassing to release our software and have it scramble all the measurements!
+
+-(Mike 11/30) (Requested by Anne 12-01-05) - Tile produces a figure with a few buttons that use propedit that should be disabled in the standalone version.
+
 -(Mike 11/30) (Requested by Susan) -SpeedUpCellProfiler module doesn't work for movie. It will stop after the first frame of the movie. Note from Anne: if it's not a quick fix, we should just state in the help for speedupcellprofiler that it doesn't work for movie.
 
 -(Mike 11/30) (Requested by Anne 12-01-05) - Final module cleanup... RelateObjects should be renamed Relate. RenameOrRenumberFile should be renamed RenameOrRenumberFiles. MeasureRatios should be renamed CalculateRatios (but kept as a measurement module).  ExtractHeaderInfo and StretchAlignCrop should be removed to DeveloperScripts. 

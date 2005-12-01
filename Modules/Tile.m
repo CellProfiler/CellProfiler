@@ -76,12 +76,12 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 TiledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Number of rows to display.
+%textVAR04 = Number of rows to display
 %choiceVAR04 = Automatic
 NumberRows = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Number of columns to display.
+%textVAR05 = Number of columns to display
 %choiceVAR05 = Automatic
 NumberColumns = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
@@ -328,7 +328,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                 'Callback', ChangeColormapButtonFunction, 'parent',ThisModuleFigureNumber,'FontSize',FontSize);
         end
 
-        HiResFunction = ['[Xcord,Ycord] = getpts;'...
+        HiResFunction = ['title(''HI-RES mode: click on at least two points surrounding the area you would like to view''),'...
+            '[Xcord,Ycord] = getpts;'...
             'if (length(Xcord) < 2) || (length(Ycord) < 2),'...
             '    errordlg(''You must click at least two points in the image and press enter (Tile module).'');'...
             'end,'...

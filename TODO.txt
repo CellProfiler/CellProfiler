@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-I get (undefined function 'nanmean') when using ExportDataToFiles.
-
 Mike - when we start checking all modules to see whether they work, we may as well check them in the compiled version, right? 
 
 It seems that in several places, like MeasureImageSaturationBlur, we say "Percent" when we actually mean fraction. We should go through all modules/data tools looking for the word percent and make sure that we change it one way or the other so it's accurate & consistent.  Otherwise, if it says 0.08 we don't know whether that is 8% or .08%

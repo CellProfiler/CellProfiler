@@ -107,7 +107,7 @@ Smooth				Mike,        Anne
 
 SpeedUpCellProfiler		Mike,        Anne
 
-SplitOrSpliceMovie		Mike
+SplitOrSpliceMovie		Mike,        Anne
 
 Subtract			Mike
 

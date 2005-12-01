@@ -8,7 +8,21 @@ function handles = SplitOrSpliceMovie(handles)
 % small movies from one large movie.
 % *************************************************************************
 %
-% See also <nothing relevant>.
+% This module is only compatible with AVI format movies.
+%
+% Settings:
+%
+% For SPLICE, what is the common text in your movie file names?
+% The files to be spliced should all be located within a single folder. You
+% can choose a subset of movies in the folder to splice by specifying
+% common text in their names. To splice all movies in the folder, you can
+% just enter the file extension, avi.
+%
+% For SPLIT, you can split only one movie at a time, and the full file name
+% should be entered here.
+%
+% Note: This module is run by itself in a pipeline; there is no need to use
+% a Load Images or Save Images module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

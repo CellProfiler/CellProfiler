@@ -111,7 +111,7 @@ SplitOrSpliceMovie		Mike,        Anne
 
 Subtract			Mike,        Anne
 
-SubtractBackground
+SubtractBackground                  ,        Anne
 
 Tile
 

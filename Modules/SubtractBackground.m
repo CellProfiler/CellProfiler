@@ -4,8 +4,8 @@ function handles = SubtractBackground(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Calculates the minimum pixel value for the entire set of images and
-% subtracts this value from every pixel in every image.
+% Calculates the minimum pixel intensity value for the entire set of images
+% and subtracts this value from every pixel in every image.
 % *************************************************************************
 %
 % Note that this is not an illumination correction module.  It
@@ -13,17 +13,17 @@ function handles = SubtractBackground(handles)
 %
 % The intensity due to camera or illumination or antibody background
 % (intensity where no cells are sitting) can in good conscience be
-% subtracted from the images, but it must be subtracted from every
-% pixel, not just the pixels where cells actually are sitting.  This
-% is because we assume that this staining is additive with real
-% staining. This module calculates the camera background and subtracts
-% this background value from each pixel. This module is identical to
-% the Apply Threshold module (in shift mode), except in the Subtract
-% Background module, the threshold is automatically calculated the
-% first time through the module. This will not push any values below
-% zero (therefore, we aren't losing any information).  It moves the
-% baseline up and looks prettier (improves signal to noise) without
-% any 'ethical' concerns.
+% subtracted from the images, but it must be subtracted from every pixel,
+% not just the pixels where cells actually are sitting.  This is because we
+% assume that this staining is additive with real staining. This module
+% calculates the lowest possible pixel intensity across the entire image
+% set and subtracts this background value from every pixel in every image.
+% This module is identical to the Apply Threshold module (in shift mode),
+% except in the Subtract Background module, the threshold is automatically
+% calculated as the 10th lowest pixel value. This will not push any values
+% below zero (therefore, we aren't losing any information). It moves the
+% baseline up and looks prettier (improves signal to noise) without any
+% 'ethical' concerns.
 %
 % If images have already been quantified and you want to apply the
 % concept of this module without reprocessing your images, then
@@ -36,17 +36,17 @@ function handles = SubtractBackground(handles)
 % on the Timer to stop processing after the first image cycle.
 %
 % How it works:
-% Sort each image's pixel values and pick the 10th lowest pixel value
-% as the minimum.  Our typical images have a million pixels. We are
-% not choosing the lowest pixel value, because it might be zero if
-% it's a stuck pixel.  We are pretty sure there won't be 10 stuck
-% pixels so this should be safe.  Then, take the minimum of these
-% values from all the images.  This scalar value should be subtracted
-% from every pixel in the image.  We are not calculating a different
-% value for each pixel position in the image because in a small image
-% set, that position may always be occupied by real staining.
+% Sort each image's pixel values and pick the 10th lowest pixel value as
+% the minimum.  Our typical images have a million pixels. We are not
+% choosing the lowest pixel value, because it might be zero if it is a
+% stuck pixel.  We are pretty sure there won't be 10 stuck pixels so this
+% should be safe.  Then, take the minimum of these values from all the
+% images.  This scalar value should be subtracted from every pixel in the
+% image.  We are not calculating a different value for each pixel position
+% in the image because in a small image set, that position may always be
+% occupied by real staining.
 %
-% See also APPLYTHRESHOLD.
+% See also ApplyThreshold.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

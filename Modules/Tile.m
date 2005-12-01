@@ -4,7 +4,7 @@ function handles = Tile(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Creates one large, tiled image from all images within an image set.
+% Creates one large, tiled image from all images of a certain type.
 % *************************************************************************
 %
 % Allows many images to be viewed simultaneously, in a grid layout you
@@ -12,18 +12,16 @@ function handles = Tile(handles)
 %
 % If you want to view a large number of images, you will generate an
 % extremely large file (roughly the MB of all the images added together)
-% which, even if it could be created by Matlab, could not be opened by any
-% image software anyway. Matlab has a limit to the amount of data it can
-% open which prevents you from creating such a gigantic, high resolution
-% file.  There are several ways to allow a larger image to be produced,
+% which, even if it could be created, could not be opened by any
+% image software anyway. There are several ways to allow a larger image to be produced,
 % given memory limitations: (1) Decrease the resolution of each image tile
 % by entering a fraction where requested. Then, in the window which pops
 % open after Tile finishes, you can use the 'Get high res image' button to
 % retrieve the original high resolution image. (This button is not yet
-% functional). (2) Use the Speed Up CellProfiler module to clear out images
+% functional). (2) Use the Speed Up CellProfiler module just before this module to clear out images
 % that are stored in memory. Place this module just prior to the Tile
-% module and ask it to retain only those images which are needed for
-% downstream modules.  (3) Rescale the images to 8 bit format by putting in
+% module (and maybe just afterwards) and ask it to retain only those images which are needed for
+% downstream modules. (3) Rescale the images to 8 bit format by putting in
 % the Rescale Images module just prior to the Tile module. Normally images
 % are stored in memory as class "double" which takes about 10 times the
 % space of class "uint8" which is 8 bits.  You will lose resolution in
@@ -32,8 +30,6 @@ function handles = Tile(handles)
 %
 % The file name (automatic) and sample info (optional) can be displayed on
 % each image using buttons in the final figure window.
-%
-% See also SPOTIDENTIFIER.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -57,11 +53,10 @@ function handles = Tile(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 drawnow
-
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -115,9 +110,9 @@ SizeChange = str2double(SizeChange);
 
 %%%VariableRevisionNumber = 1
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
@@ -134,9 +129,9 @@ if isfield(handles.Pipeline, ImageName) == 0
     error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if handles.Current.SetBeingAnalyzed == 1

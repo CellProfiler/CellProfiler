@@ -9,7 +9,6 @@ function handles = Resize(handles)
 %
 % Images are resized (smaller or larger) based on the user's inputs.
 % This module uses the Matlab built-in function imresize.
-%
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -38,7 +37,6 @@ function handles = Resize(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be resized?
@@ -51,11 +49,11 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 ResizedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = To shrink the image, enter the resizing factor (0 to 1). To enlarge the image, enter the resizing factor (greater than 1)
+%textVAR03 = To shrink the image, enter the resizing factor (0 to 1). To enlarge the image, enter the resizing factor (greater than 1).
 %defaultVAR03 = .25
 ResizingFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Alternately, leave the shrinking factor set to 1 and enter the desired resulting size in pixels: height,width  (This may change the aspect ratio of the image.)
+%textVAR04 = Alternately, leave the shrinking factor set to 1 and enter the desired resulting size in pixels: height,width. This may change the aspect ratio of the image.
 %defaultVAR04 = 100,100
 SpecificSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4})); %#ok Ignore MLint
 
@@ -120,7 +118,7 @@ ResizedImage = imresize(OrigImage,ResizeData,InterpolationMethod);
 %%% rescaled here.
 if strncmpi(InterpolationMethod,'bicubic',1)
     if min(OrigImage(:)) < 0 || max(OrigImage(:)) > 1
-        error(['Image processing was canceled in the ', ModuleName, ' module because the intensity of the input image is outside the range 0 to 1.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the intensity of the input image is outside the range 0 to 1, which is incompatible with the bicubic interpolation method.'])
     else
         %%% As long as the incoming image was within 0 to 1, it's ok to
         %%% truncate the resized image at 0 and 1 without losing much image

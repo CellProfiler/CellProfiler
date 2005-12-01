@@ -88,9 +88,9 @@ RelateObjects			Mike,        Anne
 (How does it handle partially overlapping objects? adjust the help to state how these are handled)
 RenameOrRenumberFile		Mike,        Anne 
 
-RescaleIntensity		Mike
+RescaleIntensity		Mike,        Anne 
 
-Resize				Mike
+Resize				Mike,        Anne 
 
 Restart				(Need to verify)
 

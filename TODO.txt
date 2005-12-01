@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+(Requested by Anne 12-01-05) - Just want to make sure it's on our list to implement the CPretrieveimage (or whatever we decided to call it) throughout all modules.
+
 (Requested by Anne 12-01-05) - Tile produces a figure with a few buttons that use propedit that should be disabled in the standalone version.
 
 (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
@@ -23,6 +25,7 @@ SaveCPcode	- DONE
 EVERYONE:
 	- (Requested by Anne) - Test each module on color vs grayscale and make
 		sure they all work or have some type of error catching.
+THIS HAS ALREADY BEEN DONE FOR ALL:
 	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions
 		consistent - at the very least we should try to be consistent with
 		stating "Choose" (rather than "select"), and phrasing things as
@@ -31,7 +34,6 @@ EVERYONE:
 	- Write help if DNE
 	- Check that fontsize is never hard-coded and instead uses the user's preference.
 	- Check Font
-THIS HAS ALREADY BEEN DONE FOR ALL:
 	- Go through the code looking for instances of the term "image set" and
 		replace with "cycle" where appropriate.
 	- check format of error messages.

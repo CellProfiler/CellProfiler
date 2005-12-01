@@ -379,9 +379,9 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
                 
            else
                
-               premeans=nanmean(perobjectvals_mean);
+               premeans=CPnanmean(perobjectvals_mean);
                premeans(:,1)=img_idx;
-               prestdev=nanstd(perobjectvals_mean);
+               prestdev=CPnanstd(perobjectvals_mean);
            end
          
            
@@ -818,9 +818,9 @@ for img_idx = FirstSet:LastSet,
    
     else
     
-    fprintf(fimage,formatstr,(nanmean(perobjectvals_mean))); % ignore NaN
+    fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
     fprintf(fimage,'\t');
-    fprintf(fimage,formatstr,(nanstd(perobjectvals_mean)));%ignore NaN
+    fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
     fprintf(fimage, '\n');
     
     end

@@ -89,7 +89,7 @@ MeasureRatios			Mike,        Anne
 MergeBatchOutput		Mike,        Anne 
 (We still need to check and see that it works and that the output files produced are exportable)
 
-OverlayOutlines			Mike
+OverlayOutlines			Mike,        Anne 
 
 PlaceAdjacent			Mike
 

@@ -16,7 +16,8 @@ function handles = OverlayOutlines(handles)
 % the same as the brightest point in the image, or the maximum possible
 % value for this image format?
 % If your image is quite dim, then putting bright white lines onto it may
-% not be useful. It may be preferable to make the outlines
+% not be useful. It may be preferable to make the outlines equal to the
+% maximal brightness already occurring in the image.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -7,8 +7,6 @@ November 21, 2005
 
 (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
 
--(Requested by Susan) -SpeedUpCellProfiler module doesn't work for movie. It will stop after the first frame of the movie. Note from Anne: if it's not a quick fix, we should just state in the help for speedupcellprofiler that it doesn't work for movie.
-
 Mike - when we start checking all modules to see whether they work, we may as well check them in the compiled version, right? 
 
 It seems that in several places, like MeasureImageSaturationBlur, we say "Percent" when we actually mean fraction. We should go through all modules/data tools looking for the word percent and make sure that we change it one way or the other so it's accurate & consistent.  Otherwise, if it says 0.08 we don't know whether that is 8% or .08%

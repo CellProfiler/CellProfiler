@@ -112,7 +112,7 @@ if strcmpi(ClearMemory,'Yes')
     ListOfFields = fieldnames(handles.Pipeline);
     tempPipe = handles.Pipeline;
     for i = 1:length(ListOfFields)
-        if all(size(tempPipe.(ListOfFields{i}))~=1) && ~any(strcmp(ImageNameList,ListOfFields{i}))
+        if all(size(tempPipe.(ListOfFields{i}))~=1) && ~any(strcmp(ImageNameList,ListOfFields{i})) && ~iscell(tempPipe.(ListOfFields{i}))
             tempPipe = rmfield(tempPipe,ListOfFields(i));
         end
     end

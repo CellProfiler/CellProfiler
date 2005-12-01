@@ -103,7 +103,7 @@ SaveImages			Mike,        Anne
 SendEmail                           ,        Anne
 			(Need to verify)
 
-Smooth				Mike
+Smooth				Mike,        Anne
 
 SpeedUpCellProfiler		Mike
 

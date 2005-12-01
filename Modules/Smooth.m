@@ -10,17 +10,18 @@ function handles = Smooth(handles)
 % Settings:
 %
 % Smoothing Method:
-% The smoothing can be done by fitting a low-order polynomial to the
-% image (option = P), or by applying a median filter to the image
-% (option = a number). In filtering mode, the user enters an even
-% number for the artifact width, and this number is divided by two to
-% obtain the radius of a disk shaped structuring element which is used
-% for filtering. Values over ~50 take substantial amounts of time to
-% process.
+% Note that smoothing is a time-consuming process, and fitting a polynomial
+% is fastest but does not allow a very tight fit as compared to the slower
+% median filtering method. Width of artifacts over ~50 take substantial
+% amounts of time to process.
 %
 % Special note on saving images: If you want to save the smoothed image to
 % use it for later analysis, you should save the smoothed image in '.mat'
 % format to prevent degradation of the data.
+%
+% Technical note on the median filtering method: the artifact width is
+% divided by two to obtain the radius of a disk shaped structuring element
+% which is used for filtering. 
 %
 % See also Average, CorrectIllumination_Apply,
 % CorrectIllumination_Calculate, CPsmooth.
@@ -64,22 +65,22 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
-%choiceVAR03 = Yes
-%choiceVAR03 = No
-WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-WaitForFlag = WaitForFlag(1);
-%inputtypeVAR03 = popupmenu
-
-%textVAR04 = Smoothing method: Enter the width of the artifacts (an even number) that are to be smoothed out by median filtering, or use a low order polynomial fit.
-%choiceVAR04 = Fit Polynomial
-SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR03 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial:
+%choiceVAR03 = Fit Polynomial
+SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 if strcmp(SmoothingMethod,'Fit Polynomial')
     SmoothingMethod='P';
 end
-%inputtypeVAR04 = popupmenu custom
+%inputtypeVAR03 = popupmenu custom
 
-%%%VariableRevisionNumber = 1
+%textVAR04 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
+%choiceVAR04 = Yes
+%choiceVAR04 = No
+WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+WaitForFlag = WaitForFlag(1);
+%inputtypeVAR04 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

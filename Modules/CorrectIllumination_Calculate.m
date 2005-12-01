@@ -100,7 +100,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % rescaling of each image might be dramatic, causing the corrected images
 % to be very dark.
 %
-% See also CORRECTILLUMINATION_APPLY, Smooth
+% See also CorrectIllumination_Apply, Smooth
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -159,7 +159,7 @@ EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial or choose no smoothing at all.
+%textVAR06 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial, or choose no smoothing at all.
 %choiceVAR06 = No smoothing
 %choiceVAR06 = Fit polynomial
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});

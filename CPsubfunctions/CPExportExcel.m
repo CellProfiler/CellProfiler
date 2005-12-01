@@ -92,7 +92,7 @@ if ~isempty(ExportInfo.MeasurementFilename)
     index = strfind(RawFileName,'.');
     
     if ~isempty(index),
-     ExportRawFileName = [RawFileName(1:(index-1)) '_']
+     ExportRawFileName = [RawFileName(1:(index-1)) '_'];
      %%%,everything before . will be kept
     end
     try CPConvertSQL(handles,RawPathname,ExportRawFileName,'','',FirstSet, LastSet,ExportInfo);

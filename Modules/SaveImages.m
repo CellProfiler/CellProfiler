@@ -58,8 +58,6 @@ function handles = SaveImages(handles)
 % space-consuming. You should convert the results to a compressed movie
 % format, like .mov using third-party software. For suggested third-party
 % software, see the help for the LoadMovies modules.
-%
-% See also <nothing relevant>
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -109,7 +107,7 @@ ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = \
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = In what file format do you want to save images (figures must be saved as fig)?
+%textVAR04 = In what file format do you want to save images (figures must be saved as fig, which is only openable in Matlab)?
 %choiceVAR04 = bmp
 %choiceVAR04 = cur
 %choiceVAR04 = fts

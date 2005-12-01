@@ -23,8 +23,8 @@ function handles = MergeBatchOutput(handles)
 % be sure that the total size of the merged output file is of a reasonable
 % size to be opened on your computer (based on the amount of memory
 % available on your computer). It may be preferable instead to import data
-% from individual output files directly into a database - see the Export
-% data tool.
+% from individual output files directly into a database - see the
+% ExportData data tool.
 %
 % Technical notes: The handles.Measurements field of the resulting output
 % file will contain all of the merged measurement data, but

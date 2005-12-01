@@ -86,8 +86,8 @@ MeasureObjectTexture		Mike,        Anne
 
 MeasureRatios			Mike,        Anne
 
-MergeBatchOutput		Mike 
-(Should have Susan check)
+MergeBatchOutput		Mike,        Anne 
+(We still need to check and see that it works and that the output files produced are exportable)
 
 OverlayOutlines			Mike
 

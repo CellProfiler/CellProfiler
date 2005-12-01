@@ -7,9 +7,16 @@ function handles = OverlayOutlines(handles)
 % Places outlines produced by an identify module over a desired image.
 % *************************************************************************
 %
-% Sorry, this module has not yet been documented.
+% Outlines (in a special format produced by an identify module) can be
+% placed on any desired image (grayscale or color both work) and then this
+% resulting image can be saved using the Save Images module.
 %
-% See also n/a.
+% Settings:
+% Would you like to set the intensity (brightness) of the outlines to be
+% the same as the brightest point in the image, or the maximum possible
+% value for this image format?
+% If your image is quite dim, then putting bright white lines onto it may
+% not be useful. It may be preferable to make the outlines
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -40,7 +47,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = On what image would you like to display the outlines?
+%textVAR01 = On which image would you like to display the outlines?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -50,7 +57,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Would you like to set the outlines to be the maximum in the image, or the maximum possible value for this image format?
+%textVAR03 = Would you like to set the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format?
 %choiceVAR03 = Max of image
 %choiceVAR03 = Max possible
 MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});

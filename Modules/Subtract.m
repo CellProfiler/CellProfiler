@@ -7,14 +7,18 @@ function handles = Subtract(handles)
 % Subtracts the intensities of one image from another.
 % *************************************************************************
 %
-% Sorry, this module has not yet been documented. It was written for a
-% very specific purpose and it allows blurring and then subtracting
-% images.
+% Settings:
+% Subtracting may substantially change the range of pixel intensities in
+% the resulting image, so each image can be multiplied by a factor prior to
+% subtracting. This factor can be an positive number.
 %
-% SPEED OPTIMIZATION: Note that increasing the blur radius increases
-% the processing time exponentially.
+% Do you want negative values in the image to be set to zero?
+% Values outside the range of zero to 1 might not be handled well by other
+% modules. Here, you have the option of setting negative values to zero.
+% For other options (e.g. setting values over 1 to equal 1), see the
+% Rescale Intensity module.
 %
-% See also <nothing relevant>
+% See also SubtractBackground, RescaleIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -43,7 +47,6 @@ function handles = Subtract(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Subtract this image:
@@ -51,7 +54,7 @@ drawnow
 SubtractImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = From this image (called 'basic image'):
+%textVAR02 = From this image:
 %infotypeVAR02 = imagegroup
 BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
@@ -61,11 +64,21 @@ BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 ResultingImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Enter the factor to multiply the subtracted image by before subtracting:
+%textVAR04 = Enter the factor to multiply the first image by before subtracting:
 %defaultVAR04 = 1
-MultiplyFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
+MultiplyFactor1 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%%%VariableRevisionNumber = 2
+%textVAR05 = Enter the factor to multiply the second image by before subtracting:
+%defaultVAR05 = 1
+MultiplyFactor2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+
+%textVAR06 = Do you want negative values in the image to be set to zero?
+%choiceVAR06 = Yes
+%choiceVAR06 = No
+Truncate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%inputtypeVAR06 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -99,9 +112,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-AdjustedSubtractImage = MultiplyFactor*SubtractImage;
-ResultingImage = imsubtract(BasicImage,AdjustedSubtractImage);
-ResultingImage(ResultingImage < 0) = 0;
+ResultingImage = imsubtract(MultiplyFactor2*BasicImage,MultiplyFactor1*SubtractImage);
+if strcmpi(Truncate,'Yes')
+    ResultingImage(ResultingImage < 0) = 0;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

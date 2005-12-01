@@ -109,7 +109,7 @@ SpeedUpCellProfiler		Mike,        Anne
 
 SplitOrSpliceMovie		Mike,        Anne
 
-Subtract			Mike
+Subtract			Mike,        Anne
 
 SubtractBackground
 

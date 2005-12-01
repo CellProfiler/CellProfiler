@@ -4,8 +4,8 @@ function handles = Restart(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Restarts image analysis which has been canceled, using the partially
-% completed output file.
+% Restarts image analysis which had failed or was canceled, using the
+% partially completed output file.
 % *************************************************************************
 %
 % Restarts an analysis run where it left off. Put Restart into a new
@@ -14,8 +14,6 @@ function handles = Restart(handles)
 % incomplete run. Click ok and the pipeline will load from the output file
 % and analysis will continue where it left off during the partially
 % completed run.
-%
-% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

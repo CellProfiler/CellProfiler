@@ -92,9 +92,11 @@ RescaleIntensity		Mike,        Anne
 
 Resize				Mike,        Anne 
 
-Restart				(Need to verify)
+Restart			            ,        Anne
+				(Need to verify)
 
-Rotate				(Need to verify)
+Rotate				
+(Need to verify)
 
 SaveImages			Mike
 

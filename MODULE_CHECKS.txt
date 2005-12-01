@@ -84,9 +84,9 @@ OverlayOutlines			Mike,        Anne
 
 PlaceAdjacent			Mike,        Anne 
 
-RelateObjects			Mike
-
-RenameOrRenumberFile		Mike
+RelateObjects			Mike,        Anne 
+(How does it handle partially overlapping objects? adjust the help to state how these are handled)
+RenameOrRenumberFile		Mike,        Anne 
 
 RescaleIntensity		Mike
 

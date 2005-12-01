@@ -4,30 +4,36 @@ function handles = RenameOrRenumberFile(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Renames or renumbers any files.
+% Renames or renumbers files on the hard drive.
 % *************************************************************************
 %
-% File renaming utility that deletes or adds text anywhere
-% within image file names.
-% It can also serve as a File renumbering utility that converts numbers
-% within image file names to solve improper ordering of files on
-% Unix/Mac OSX systems.  Examples:
+% File renaming utility that deletes or adds text anywhere within image
+% file names. It is especially useful as a file renumbering utility that
+% converts numbers within image file names to solve improper ordering of
+% files on Unix/Mac OSX systems.  
 %
+% Be very careful since you will be renaming (= overwriting) your files!!
+% You will have the opportunity to confirm the name change for the first
+% cycle only. The folder containing the files must not contain subfolders
+% or the subfolders and their contents will also be renamed. It is worth
+% doing a practice run with copies of images first.
+%
+% Examples:
+% 
 % Renumber:
 % DrosDAPI_1.tif    -> DrosDAPI_001.tif
 % DrosDAPI_10.tif   -> DrosDAPI_010.tif
 % DrosDAPI_100.tif  -> DrosDAPI_100.tif
+% (to accomplish this, retain 4 characters at the end, retain 9 characters
+% at the beginning, and use 3 numerical digits between).
 %
 % Rename:
-% DrosDAPI_1.tif    -> D_1.tif
-% DrosDAPI_10.tif   -> D_10.tif
-% DrosDAPI_100.tif  -> D_100.tif
-%
-% Be very careful since you will be renaming (=
-% overwriting) your files!! You will have the opportunity to
-% confirm the name change for the first cycle only.  The folder
-% containing the files must not contain subfolders or the subfolders
-% and their contents will also be renamed.
+% 1DrosophilaDAPI_1.tif    -> 1DrosDP_1.tif
+% 2DrosophilaDAPI_10.tif   -> 2DrosDP_10.tif
+% 3DrosophilaDAPI_100.tif  -> 3DrosDP_100.tif
+% (to accomplish this, retain 4 characters at the end, retain 5 characters
+% at the beginning, enter "DP" as text to place between, and leave
+% numerical digits as is).
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -76,7 +82,7 @@ NumberCharactersSuffix = str2double(char(handles.Settings.VariableValues{Current
 %defaultVAR04 = /
 TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = How many characters would you like to allow between those two portions of filename, for renumbering purposes? Leave / to leave as is.
+%textVAR05 = How many numerical digits would you like to use between those two portions of filename, for renumbering purposes? Leave "/" to leave as is.
 %defaultVAR05 = /
 NumberDigits = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 

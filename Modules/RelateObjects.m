@@ -4,14 +4,11 @@ function handles = RelateObjects(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Assigns relationships: All objects (e.g. speckles) within parent object
-% (e.g. nucleus) become its children. Also produces a child count for each
-% parent object.
+% Assigns relationships: All objects (e.g. speckles) within a parent object
+% (e.g. nucleus) become its children.
 % *************************************************************************
 %
-% Sorry, help does not exist yet.
-%
-% See also <nothing relevant>.
+%  Allows counting the number of objects within each parent object.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -42,7 +39,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What objects are to become subobjects?
+%textVAR01 = What objects are the children objects (subobjects)?
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
 SubObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});

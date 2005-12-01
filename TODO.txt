@@ -3,8 +3,6 @@ November 21, 2005
 
 (Requested by Anne 12-01-05) - Tile produces a figure with a few buttons that use propedit that should be disabled in the standalone version.
 
-(Requested by Anne 12-01-05) - Final module cleanup... RelateObjects should be renamed Relate. RenameOrRenumberFile should be renamed RenameOrRenumberFiles. MeasureRatios should be renamed CalculateRatios (but kept as a measurement module).  ExtractHeaderInfo and StretchAlignCrop should be removed to DeveloperScripts. 
-
 (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
 
 -(Requested by Susan) -SpeedUpCellProfiler module doesn't work for movie. It will stop after the first frame of the movie. Note from Anne: if it's not a quick fix, we should just state in the help for speedupcellprofiler that it doesn't work for movie.

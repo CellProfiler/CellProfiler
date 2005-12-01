@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/30) (Requested by Anne 12-01-05) - Final module cleanup... RelateObjects should be renamed Relate. RenameOrRenumberFile should be renamed RenameOrRenumberFiles. MeasureRatios should be renamed CalculateRatios (but kept as a measurement module).  ExtractHeaderInfo and StretchAlignCrop should be removed to DeveloperScripts. 
+
 -(Mike 11/30) I get (undefined function 'nanmean') when using ExportDataToFiles.
 
 -(Mike 11/30) - what's the status of the weird way that perimeter was measured?  I can't recall what we decided to do about it. Aren't we supposed to use Matlab's built in function for it now? Has this been done? Is Form Factor calculated properly now?

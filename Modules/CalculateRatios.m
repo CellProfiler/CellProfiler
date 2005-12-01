@@ -1,6 +1,6 @@
-function handles = MeasureRatios(handles)
+function handles = CalculateRatios(handles)
 
-% Help for the Measure Ratios module:
+% Help for the Calculate Ratios module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:

@@ -1,7 +1,5 @@
 - (Requested by Anne 12-01-05) - Tile used to allow us to show text information loaded using LoadText. DisplayGridInfo does something similar, but would it be very hard to add this back to the Tile module? It's nice to have it in the same window because you can show/hide that text info in addition to show/hide the file names, etc.
 
-- (Requested by Anne 12-01-05) - Tile has a button in the final figure that says Hi Res, but it doesn't seem to do anything. It was supposed to look up the filename and try to find the corresponding image.
-
 - (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
 
 - (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!

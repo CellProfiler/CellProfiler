@@ -8,34 +8,30 @@ function handles = MergeBatchOutput(handles)
 % the Create Batch Scripts module.
 % *************************************************************************
 %
-% This module merges the output from several output files, each
-% resulting from scripts created by the Create Batch Scripts module.
-%
-% After a batch run has completed, the individual output files contain
-% results from a subset of images and can be merged into a single
-% output file.  This module takes two arguments, the directory where
-% the output files are located (by default the current default output
-% directory), and the prefix for the batch files.  This module assumes
-% anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat is a
-% batch output file.
-%
-% The combined output is written to the output filename as specified
-% in the lower right box of CellProfiler's main window.  (The output
-% file's handles.Pipeline is a snapshot of the pipeline after the
-% first cycle completes), and handles.Measurements will contain
-% all of the merged measurement data.
-%
-% Sometimes output files can be quite large, so before attempting
-% merging, be sure that the total size of the merged output file is of
-% a reasonable size to be opened on your computer (based on the amount
-% of RAM available). It may be preferable instead to import data from
-% individual output files directly into a database.  Sabatini lab uses
-% mySQL for this purpose.
+% After a batch run has completed (using scripts created by the Create
+% Batch Scripts module), the individual output files contain results from a
+% subset of images and can be merged into a single output file. This module
+% assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat is a
+% batch output file. The combined output is written to the output filename
+% as specified in the lower right box of CellProfiler's main window. Once
+% merged, this output file should be compatible with data tools.
 %
 % It does not make sense to run this module in conjunction with other
 % modules.  It should be the only module in the pipeline.
 %
-% See also: CREATEBATCHSCRIPTS.
+% Sometimes output files can be quite large, so before attempting merging,
+% be sure that the total size of the merged output file is of a reasonable
+% size to be opened on your computer (based on the amount of memory
+% available on your computer). It may be preferable instead to import data
+% from individual output files directly into a database - see the Export
+% data tool.
+%
+% Technical notes: The handles.Measurements field of the resulting output
+% file will contain all of the merged measurement data, but
+% handles.Pipeline is a snapshot of the pipeline after the first cycle
+% completes.
+%
+% See also: CreateBatchScripts.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -64,13 +60,12 @@ function handles = MergeBatchOutput(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%pathnametextVAR01 = What is the path to the directory where the batch files were saved?  Type period (.) for default output directory.
+%pathnametextVAR01 = What is the path to the folder where the batch output files were saved?  Type period (.) for default output folder.
 BatchPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What was the prefix of the batch files?
+%textVAR02 = What was the prefix of the batch output files?
 %defaultVAR02 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -139,9 +134,7 @@ drawnow
 
 %%% The figure window display is unnecessary for this module, so the figure
 %%% window is closed if it was previously open.
-%%% Determines the figure number.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-%%% If the window is open, it is closed.
 if any(findobj == ThisModuleFigureNumber)
     delete(ThisModuleFigureNumber)
 end

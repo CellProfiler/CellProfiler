@@ -243,24 +243,12 @@ for i = 1:length(ObjectNameList)
         props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
             'MajorAxisLength','MinorAxisLength','Perimeter');
 
-        % Pad the Label image with zeros so that the Zernike
-        % features can be calculated also for objects close to
-        % the border
-        [sr,sc] = size(LabelMatrixImage);
-        DiameterArray = cat(1,props.MajorAxisLength);
-        MaxDiameter = round(max(DiameterArray));
-        PaddedLabelMatrixImage = [zeros(MaxDiameter,2*MaxDiameter+sc);
-            zeros(sr,MaxDiameter) LabelMatrixImage zeros(sr,MaxDiameter)
-            zeros(MaxDiameter,2*MaxDiameter+sc)];
-
         Zernike = zeros(NumObjects,size(Zernikeindex,1));
 
         for Object = 1:NumObjects
             %%% Calculate Zernike shape features
-            % Use Area to automatically calculate the average equivalent diameter
-            % of the objects, and then use this diameter to determine the grid size
-            % of the Zernike functions
-            diameter = round(DiameterArray(Object));
+            [xcord,ycord] = find(LabelMatrixImage==Object);
+            diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
             if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 
             % Calculate the Zernike basis functions
@@ -280,17 +268,22 @@ for i = 1:length(ObjectNameList)
                 Zf(:,:,k) = s;
             end
 
-            % Loop over objects to calculate Zernike moments. Center the functions
-            % over the centroids of the objects.
-            tmp = regionprops(PaddedLabelMatrixImage,'Centroid');
-            Centroids = cat(1,tmp.Centroid);
-
             % Get image patch
-            rmax = round(Centroids(Object,2)+(diameter-1)/2);
-            rmin = round(Centroids(Object,2)-(diameter-1)/2);
-            cmax = round(Centroids(Object,1)+(diameter-1)/2);
-            cmin = round(Centroids(Object,1)-(diameter-1)/2);
-            BWpatch   = PaddedLabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+            rmax = max(xcord);
+            rmin = max(xcord)-diameter+1;
+            if rmin < 1
+                rmin = 1;
+                rmax = diameter;
+            end
+
+            cmax = max(ycord);
+            cmin = max(ycord)-diameter+1;
+            if cmin < 1
+                cmin = 1;
+                rmax = diameter;
+            end
+
+            BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
 
             % Apply Zernike functions
             Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';

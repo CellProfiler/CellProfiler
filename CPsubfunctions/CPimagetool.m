@@ -28,13 +28,14 @@ function CPimagetool(varargin)
 % Check that the input argument is an action in the form of a string
 
 if ~isempty(varargin)
+    handles = guidata(findall(0,'tag','figure1'));
     action = varargin{1};
     [foo, ITh] = gcbo;
     if ishandle(get(ITh,'UserData'))  % The user might have closed the figure with the current image handle, check that it exists!
         switch action
             case {'NewWindow'}        % Show image in a new window
                 drawnow
-                CPfigure;
+                CPfigure(handles);
                 data = get(get(ITh,'UserData'),'Cdata');
                 if ndims(data) == 2
                     CPimagesc(data);
@@ -47,10 +48,10 @@ if ~isempty(varargin)
                 title(get(get(get(get(ITh,'UserData'),'parent'),'title'),'string'));
             case {'Histogram'}                                % Produce histogram (only for scalar images)
                 drawnow
-                CPfigure;
+                CPfigure(handles);
                 data = get(get(ITh,'UserData'),'Cdata');
                 hist(data(:),min(200,round(length(data(:))/150)));
-                title(['Histogram for ' get(get(ITh,'UserData'),'Tag')])
+                title(['Histogram for ' get(get(get(get(ITh,'UserData'),'parent'),'title'),'string')])
                 grid on
             case {'MatlabWS'}                                 % Store image in Matlab base work space
                 assignin('base','Image',get(get(ITh,'UserData'),'Cdata'));
@@ -61,8 +62,6 @@ if ~isempty(varargin)
                 Image = get(get(ITh,'UserData'),'Cdata');
                 
                 SaveImageHandle = findobj('tag','SaveImageHandle');
-                handles = guidata(findall(0,'tag','figure1'));
-                
                 if ~isempty(SaveImageHandle)
                     close(SaveImageHandle);
                 end

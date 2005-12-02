@@ -81,7 +81,7 @@ end
 %%% Export measurements
 if ~isempty(ExportInfo.MeasurementFilename)
     %try WriteMeasurements(handles,ExportInfo,RawPathname);
-    if isfield(handles.Measurements, 'BatchInfo'),
+    if isfield(handles.Measurements,'BatchInfo')
         FirstSet = handles.Measurements.BatchInfo.Start;
         LastSet = handles.Measurements.BatchInfo.End;
     else
@@ -104,8 +104,6 @@ end
 %%% Done!
 close(waitbarhandle)
 CPmsgbox('Exporting is completed.')
-
-
 
 function ExportInfo = ObjectsToExport(handles,RawFileName)
 % This function displays a window so that lets the user choose which

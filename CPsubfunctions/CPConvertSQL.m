@@ -27,7 +27,7 @@ FileExtension='.csv';%default
 
 if ~isempty(ExportInfo),%exporting to excel
     ExportType=ExportInfo.ExportType;
-    FileExtension=ExportInfo.MeasurementExtension ;
+    FileExtension=ExportInfo.MeasurementExtension;
     Swap=ExportInfo.SwapRowsColumnInfo;
 end
 
@@ -53,7 +53,7 @@ if strcmp(ExportType,'Excel')
     global waitbarhandle
     CPwaitbar(0,waitbarhandle,'Export Status');
     objectCount=0;
-    for excelRemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
+    for excelRemainingSubMeasurementFieldnames = SubMeasurementFieldnames
 
         excelSubFieldname = excelRemainingSubMeasurementFieldnames{1};
 
@@ -69,7 +69,7 @@ if strcmp(ExportType,'Excel')
             end
         end % end for
 
-        if ExportObject , %first decide whether the object is choosen by user
+        if ExportObject %first decide whether the object is choosen by user
             objectCount=objectCount+1;
             %%% Update waitbar
             CPwaitbar(objectCount/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',excelSubFieldname));
@@ -89,32 +89,32 @@ if strcmp(ExportType,'Excel')
 
             %first print out column names
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            for ssfc = excelsubstructfields,
+            for ssfc = excelsubstructfields
                 ssf = ssfc{1};
 
-                if strfind(ssf, 'Features'),
+                if strfind(ssf, 'Features')
                     continue;
                 end
 
-                if strfind(ssf, 'PathnameOrig'),
+                if strfind(ssf, 'PathnameOrig')
                     continue;
                 end
 
                 if strfind(ssf, 'Text'),
-                    if (strfind(ssf, 'Text') + 3) == length(ssf),
+                    if (strfind(ssf, 'Text') + 3) == length(ssf)
                         continue;
                     end
                 end
 
-                if strfind(ssf, 'ModuleError'),
+                if strfind(ssf, 'ModuleError')
                     continue;
                 end
 
-                if strfind(ssf, 'TimeElapsed'),
+                if strfind(ssf, 'TimeElapsed')
                     continue;
                 end
 
-                if strfind(ssf, 'Description'),
+                if strfind(ssf, 'Description')
                     continue;
                 end
 
@@ -122,6 +122,8 @@ if strcmp(ExportType,'Excel')
                     names = handles.Measurements.(excelSubFieldname).([ssf 'Features']);
                 elseif isfield(excelsubstruct, [ssf 'Text']),
                     names = handles.Measurements.(excelSubFieldname).([ssf 'Text']);
+                elseif isfield(excelsubstruct, [ssf 'Description'])
+                    names = handles.Measurements.(excelSubFieldname).([ssf 'Description']);
                 else
                     names = {ssf};
                 end
@@ -234,7 +236,7 @@ if strcmp(ExportType,'Excel')
             perobjectvals=[];
             excel_means=[];
             excel_stdevs=[];
-            for img_idx = FirstSet:LastSet,
+            for img_idx = FirstSet:LastSet
 
                 %write img number for image file
                 if strcmp (excelSubFieldname,'Image') & ~strcmp(Swap, 'Yes');
@@ -265,7 +267,7 @@ if strcmp(ExportType,'Excel')
                     if strfind(excelssf, 'TimeElapsed'),
                         continue;
                     end
-                    if strfind(ssf, 'namesDescription'),
+                    if strfind(excelssf, 'Description'),
                         continue;
                     end
 

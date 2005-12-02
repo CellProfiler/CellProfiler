@@ -16,7 +16,8 @@ function handles = DisplayDataOnImage(handles)
 % list of the features measured by that module.
 %
 % See also MeasureObjectAreaShape, MeasureObjectIntensity,
-% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors.
+% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors,
+% CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -47,7 +48,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to use for the data (The option IMAGE currently only works with Correlation measurements)?
+%textVAR01 = Which object would you like to use for the data, or if using a Ratio, what is the numerator object (the option IMAGE currently only works with Correlation measurements)?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -55,10 +56,11 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
-%choiceVAR02 = Intensity
-%choiceVAR02 = Texture
 %choiceVAR02 = Correlation
+%choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
+%choiceVAR02 = Ratio
+%choiceVAR02 = Texture
 %inputtypeVAR02 = popupmenu custom
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -99,21 +101,8 @@ if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
     Measure = [Measure, '_',Image];
 end
 
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if ~isfield(handles.Pipeline, DisplayImage)
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
 %%% Reads the image.
-OrigImage = handles.Pipeline.(DisplayImage);
-if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-end
+OrigImage = CPretrieveimage(handles,DisplayImage,ModuleName,0,1);
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% DATA ANALYSIS %%%

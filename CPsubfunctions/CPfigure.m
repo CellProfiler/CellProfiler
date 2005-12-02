@@ -27,7 +27,7 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
     userData.MyHandles=varargin{1};
     FigHandle=figure(varargin{2:end});
     if nargin~=2 %if nargin==2 then only referring to an existing figure
-        ZoomButtonCallback = 'button=findobj(gcf,''tag'',''endzoombutton'');if isempty(button),try, CPinteractivezoom; catch CPmsgbox(''Could not find the file called InteractiveZoomSubfunction.m which should be located in the CellProfiler folder.''); end;else,eval(get(button(1),''Callback''));end;delete button;';
+        ZoomButtonCallback = 'button=findobj(gcf,''tag'',''endzoombutton'');if isempty(button),try, CPinteractivezoom; catch CPmsgbox(''Could not find the file called InteractiveZoomSubfunction.m which should be located in the CellProfiler folder.''); end;else,eval(get(button(1),''Callback''));end;clear button;';
         uimenu('Label','Interactive Zoom','Callback',ZoomButtonCallback);
         TempMenu = uimenu('Label','CellProfiler Image Tools');
         ListOfImageTools=userData.MyHandles.Current.ImageToolsFilenames;

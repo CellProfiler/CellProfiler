@@ -1,4 +1,4 @@
-function CPInteractiveZoom
+function CPinteractivezoom
 
 % zoom2cursor, without arguments, will activate the current axis, create a text box showing the
 % current position of the mouse pointer (similar to pixval), and automatically zoom the image to the

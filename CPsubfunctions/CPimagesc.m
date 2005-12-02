@@ -25,4 +25,4 @@ function h = CPimagesc(Image)
 %%% Displays the image.
 h = imagesc(Image);
 %%% Embeds the Image tool submenu so that it appears when the user clicks on the image. 
-set(h,'ButtonDownFcn','CPImageTool');
+set(h,'ButtonDownFcn','CPimagetool');

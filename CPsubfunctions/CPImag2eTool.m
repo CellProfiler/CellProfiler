@@ -1,4 +1,4 @@
-function CPImageTool(varargin)
+function CPimagetool(varargin)
 
 % This function opens or updates the Image Tool window. It should be
 % invoked when the user clicks on an image produced by a module. 
@@ -428,10 +428,10 @@ else
         Cancel    = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .05 .9 .14],'string','Cancel');
 
         % Assign callback functions
-        set(NewWindow,'Callback','CPImageTool(''NewWindow'');');
-        set(Histogram,'Callback','CPImageTool(''Histogram'');');
-        set(MatlabWS,'Callback','CPImageTool(''MatlabWS'');');
-        set(SaveImageAs,'Callback','CPImageTool(''SaveImageAs'');');
+        set(NewWindow,'Callback','CPimagetool(''NewWindow'');');
+        set(Histogram,'Callback','CPimagetool(''Histogram'');');
+        set(MatlabWS,'Callback','CPimagetool(''MatlabWS'');');
+        set(SaveImageAs,'Callback','CPimagetool(''SaveImageAs'');');
         set(Cancel,'Callback','[foo,ITh] = gcbo;close(ITh); clear foo ITh;');
 
         % Currently, no histogram function for RGB images

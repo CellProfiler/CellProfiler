@@ -2877,7 +2877,7 @@ if exist(pathname,'dir')
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
-    FileNames = CPretrieveMediaFileNames(pathname,'','No','Exact','Both');
+    FileNames = CPretrievemediafilenames(pathname,'','No','Exact','Both');
     %%% Test whether this is during CellProfiler launching or during
     %%% the image analysis run itself (by looking at some of the GUI
     %%% elements). If either is the case, the message is NOT

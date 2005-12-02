@@ -31,6 +31,8 @@ function handles = Tile(handles)
 %
 % The file name (automatic) and sample info (optional) can be displayed on
 % each image using buttons in the final figure window.
+%
+% See also PlaceAdjacent.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -267,18 +269,17 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
-        drawnow
+        %%% Sets the figure to take up most of the screen.
+        ScreenSize = get(0,'ScreenSize');
+        NewFigureSize = [60,250, ScreenSize(3)*.8, ScreenSize(4)*.8];
+        set(ThisModuleFigureNumber, 'Position', NewFigureSize)
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         %%% Displays the image.
         imagesc(TiledImage);
-        %%% Sets the figure to take up most of the screen.
-        ScreenSize = get(0,'ScreenSize');
+        axis image %%% OK to use axis image here?
+        
         FontSize = handles.Preferences.FontSize;
-        NewFigureSize = [60,250, ScreenSize(3)-200, ScreenSize(4)-350];
-        set(ThisModuleFigureNumber, 'Position', NewFigureSize)
-        axis image %%% OK to use axis image here.
-
         ToggleGridButtonFunction = ...
             ['Handles = findobj(''type'',''line'');'...
             'button = findobj(''Tag'',''ToggleGridButton'');'...

@@ -318,14 +318,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 if any(findobj == ThisModuleFigureNumber)
-    %%% Deletes the figure to be sure that the text and such is not
-    %%% retained in memory.
-    %%% delete(ThisModuleFigureNumber)
-    drawnow
     %%% Recreates the figure or Activates the appropriate figure window.
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
     %%% Usually this image should be fairly large, so we are pretending it's a

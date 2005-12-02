@@ -14,8 +14,8 @@ function handles = ClassifyObjects(handles)
 % and specify what bins to use. This module requires that you run a
 % measurement module previous to this module in the pipeline so that the
 % measurement values can be used to classify the objects. If you are
-% classifying by the ratio of two measurements, you must put a Measure
-% Ratios module previous to this module in the pipeline.
+% classifying by the ratio of two measurements, you must put a
+% CalculateRatios module previous to this module in the pipeline.
 %
 % Settings:
 %

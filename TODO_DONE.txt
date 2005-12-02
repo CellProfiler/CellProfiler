@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/02 yes there is no reason to delete, that I can see) (Requested by Anne 12-02-05) This code is commented out of DefineGrid. should it be?
+    %%% Deletes the figure to be sure that the text and such is not
+    %%% retained in memory.
+    %%% delete(ThisModuleFigureNumber)
+
 -(Mike 12/02) IdentifyPrimManual: PROBLEM WITH MAXRESOLUTION
 
 -(Mike 12/02) (Requested by Anne 12-02-05) Does DisplayMeasurement work with Ratios? If so, add it as selectable in variable 3 and 9.. and add it to the see also.

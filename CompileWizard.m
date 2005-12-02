@@ -132,6 +132,8 @@ for i=1:length(Modulefilelist)
             fprintf(fid3,[fixthistext2(output),'\n']);
         elseif strncmp(output,'%infotypeVAR',12)
             fprintf(fid3,[fixthistext2(output),'\n']);
+        elseif strncmp(output,'%inputtypeVAR',13)
+            fprintf(fid3,[fixthistext2(output),'\n']);
         elseif strncmp(output,'%%%VariableRevisionNumber',25)
             fprintf(fid3,[fixthistext2(output),'\n']);
         end

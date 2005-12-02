@@ -89,7 +89,7 @@ drawnow
 %%% variables.
 BasicImage = CPretrieveimage(handles,BasicImageName,ModuleName,2,1);
 
-SubtractImage = BasicImage = CPretrieveimage(handles,SubtractImageName,ModuleName,2,1);
+SubtractImage = CPretrieveimage(handles,SubtractImageName,ModuleName,2,1);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

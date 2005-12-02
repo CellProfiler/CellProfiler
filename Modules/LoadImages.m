@@ -287,7 +287,7 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .tif, .jpg, .DIB).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrieveMediaFileNames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Image');
+            FileNames = CPretrievemediafileNames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Image');
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
@@ -317,7 +317,7 @@ if SetBeingAnalyzed == 1
         else
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .avi or .stk).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrieveMediaFileNames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Movie');
+            FileNames = CPretrievemediafileNames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Movie');
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
@@ -416,7 +416,7 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             %%% Extract the file names
             for n = 1:length(ImageName)
-                FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
+                FileList = CPretrievemediafileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
                     error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
@@ -434,7 +434,7 @@ if SetBeingAnalyzed == 1
         else
             %%% For all non-empty slots, extracts the file names.
             for n = 1:length(ImageName)
-                FileList = CPretrieveMediaFileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
+                FileList = CPretrievemediafileNames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
                     error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])

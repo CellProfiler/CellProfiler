@@ -165,14 +165,14 @@ if strcmp(GrayOrSplit,'Combine')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
         ImageHandle = CPimagesc(OrigImage);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPimagetool(gco)');
         colormap(handles.Preferences.IntensityColorMap);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
         subplot(2,1,2);
         ImageHandle = CPimagesc(GrayscaleImage);
-        set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
+        set(ImageHandle,'ButtonDownFcn','CPimagetool(gco)');
         title('Grayscale Image');
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(OrigImage,'TwoByOne')

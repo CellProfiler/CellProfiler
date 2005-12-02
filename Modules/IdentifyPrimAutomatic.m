@@ -730,7 +730,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
             %(Smart)closing
             % rgDilated=RgSmartDilate(rgLabelled,50); %%% IMPORTANT VARIABLE
-            rgDilated=CPRgSmartDilate(rgLabelled,2); %%% IMPORTANT VARIABLE
+            rgDilated=CPrgsmartdilate(rgLabelled,2); %%% IMPORTANT VARIABLE
 
             % InvertedBinaryImage = RgSmartDilate(rgNegCurve,1);
             InvertedBinaryImage = rgDilated;

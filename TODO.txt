@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-(Requested by Anne 12-01-05) - What's up with MeasureObjectIntensity? It looks like it works for color images, but the error msg nearby says that it only works for 2D images.
-
 (Requested by Anne 12-01-05) - Mike, check out 'dependency report' (like m lint checker) which points out two things: several 'UNKNOWN' functions which are likely errors in code, and also it points out what toolboxes we are using so that we can see if we are using anything other than the image toolbox.
 
 (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
@@ -12,8 +10,6 @@ It seems that in several places, like MeasureImageSaturationBlur, we say "Percen
 -(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
 TechDiagnosis 	- DONE
 SaveCPcode	- DONE
-
-(Requested by Anne 12-02-05) -Correct the capitalization of all CPsubfunctions.
 
 (Requested by Anne 12-02-05) In Classify objects, it looks like display won't work if using Ratios. Does that still make sense, or is it outdated?
 

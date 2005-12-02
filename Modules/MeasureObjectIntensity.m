@@ -158,7 +158,7 @@ for i = 1:length(ObjectNameList)
         if (length(s) == 3 && s(3) == 3)
             OrigImage = OrigImage(:,:,1)+OrigImage(:,:,2)+OrigImage(:,:,3);
         else
-            error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
+            error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem with the dimensions. The image must be grayscale or RGB color.'])
         end
     end
 

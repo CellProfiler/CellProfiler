@@ -49,7 +49,6 @@ SubMeasurementFieldnames = fieldnames(Measurements)';
 %%%%%%%%%%%%%%% start to for excle object data %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(ExportType,'Excel')
-
     global waitbarhandle
     CPwaitbar(0,waitbarhandle,'Export Status');
     objectCount=0;
@@ -437,7 +436,6 @@ if strcmp(ExportType,'Excel')
 
                     end
                     %%%per object not include image file
-
                     fprintf(fexcelobject,'%s','ImageNumber');
                     fprintf(fexcelobject,'\t%s','ObjectNumber');
                     for e=excel_object_names,
@@ -447,10 +445,8 @@ if strcmp(ExportType,'Excel')
                     formatstr = ['%g' repmat('\t%g',1,size(perobjectvals, 2)-1) '\n'];
                     %if vals{1} is empty skip writting into object file
                     if ~iscell(vals) ||( iscell(vals) && (~isempty(vals{1}))  )
-
                         fprintf(fexcelobject, formatstr, perobjectvals');
                     end
-
                 end
                 if strcmp(Swap, 'Yes')
                     fclose(fexcelstd_swap);
@@ -461,10 +457,8 @@ if strcmp(ExportType,'Excel')
                 end
             end
             fclose (fexcelobject);
-
         end % end of if ExportObject=1
     end % end of subfield, object type
-
     return;
 end  % end of if excel
 
@@ -502,7 +496,7 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         if strfind(ssf, 'TimeElapsed'),
             continue;
         end
-        if strfind(ssf, 'namesDescription'),
+        if strfind(ssf, 'Description'),
             continue;
         end
 
@@ -510,6 +504,8 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
         elseif isfield(substruct, [ssf 'Text']),
             names = handles.Measurements.(SubFieldname).([ssf 'Text']);
+        elseif isfield(excelsubstruct, [ssf 'Description'])
+            names = handles.Measurements.(excelSubFieldname).([ssf 'Description']);
         else
             names = {ssf};
         end

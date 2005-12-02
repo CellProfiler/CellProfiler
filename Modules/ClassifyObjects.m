@@ -124,7 +124,7 @@ try
         end
     end
 catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number, or the letter P for the number of bins.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number, the letter P, or the letter C for the number of bins.'])
 end
 
 %%% Retrieves the label matrix image that contains the segmented objects
@@ -211,7 +211,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);

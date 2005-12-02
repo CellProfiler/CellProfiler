@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/02) (Requested by Anne 12-02-05) Does DisplayMeasurement work with Ratios? If so, add it as selectable in variable 3 and 9.. and add it to the see also.
+
 -(Mike 12/02) (Requested by Anne 12-01-05) - What's up with MeasureObjectIntensity? It looks like it works for color images, but the error msg nearby says that it only works for 2D images.
 
 -(Mike 12/02) (Requested by Anne 12-02-05) -Correct the capitalization of all CPsubfunctions.

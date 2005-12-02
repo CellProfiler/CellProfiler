@@ -54,7 +54,7 @@ drawnow
 PlotType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Which object would you like to use for the plots (The option IMAGE currently only works with Correlation measurements)?
+%textVAR02 = Which object would you like to use for the plots, or if using a Ratio, what is the numerator object (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR02 = Image
 %infotypeVAR02 = objectgroup
 %inputtypeVAR02 = popupmenu
@@ -62,10 +62,11 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
 %choiceVAR03 = AreaShape
-%choiceVAR03 = Intensity
-%choiceVAR03 = Texture
 %choiceVAR03 = Correlation
+%choiceVAR03 = Intensity
 %choiceVAR03 = Neighbors
+%choiceVAR03 = Ratio
+%choiceVAR03 = Texture
 %inputtypeVAR03 = popupmenu custom
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -89,7 +90,7 @@ PlotImage = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = ONLY ENTER THE FOLLOWING INFORMATION IF USING SCATTER PLOT WITH TWO MEASUREMENTS!
 
-%textVAR08 = Which object would you like for the second scatter plot measurement (The option IMAGE currently only works with Correlation measurements)?
+%textVAR08 = Which object would you like for the second scatter plot measurement, or if using a Ratio, what is the numerator object (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR08 = Image
 %infotypeVAR08 = objectgroup
 %inputtypeVAR08 = popupmenu
@@ -97,10 +98,11 @@ ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = Which category of measurements would you like to use?
 %choiceVAR09 = AreaShape
-%choiceVAR09 = Intensity
-%choiceVAR09 = Texture
 %choiceVAR09 = Correlation
+%choiceVAR09 = Intensity
 %choiceVAR09 = Neighbors
+%choiceVAR09 = Ratio
+%choiceVAR09 = Texture
 %inputtypeVAR09 = popupmenu custom
 FeatureType2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 

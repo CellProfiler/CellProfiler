@@ -1,4 +1,4 @@
-function CPConvertSQL(handles, OutDir, OutfilePrefix, DBname, TablePrefix, FirstSet, LastSet,ExportInfo)
+function CPconvertsql(handles, OutDir, OutfilePrefix, DBname, TablePrefix, FirstSet, LastSet,ExportInfo)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -778,5 +778,5 @@ function sc=cleanup(s)
 sc = s;
 sc(strfind(s,' ')) = '_';
 if (length(sc) >= 64),
-    warning(['Column name ' sc ' too long in CPConvertSQL'])
+    warning(['Column name ' sc ' too long in CPconvertsql'])
 end

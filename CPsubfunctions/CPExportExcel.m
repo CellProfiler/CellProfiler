@@ -95,7 +95,7 @@ if ~isempty(ExportInfo.MeasurementFilename)
      ExportRawFileName = [RawFileName(1:(index-1)) '_'];
      %%%,everything before . will be kept
     end
-    try CPConvertSQL(handles,RawPathname,ExportRawFileName,'','',FirstSet, LastSet,ExportInfo);
+    try CPconvertsql(handles,RawPathname,ExportRawFileName,'','',FirstSet, LastSet,ExportInfo);
     catch errordlg(lasterr)
         return
     end

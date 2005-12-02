@@ -131,11 +131,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if SetBeingAnalyzed == handles.Current.StartingImageSet
-    %%% The figure window display is unnecessary for this module, so the figure
-    %%% window is closed the first time through the module.
+%%% The figure window display is unnecessary for this module, so it is
+%%% closed during the starting image cycle.
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    %%% If the window is open, it is closed.
     if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)
     end

@@ -266,19 +266,19 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     TotalWidth = RetrievedTileData.TotalWidth;
     TotalHeight = RetrievedTileData.TotalHeight;
     NewFileList = RetrievedTileData.NewFileList;
-
-    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
-        %%% Sets the figure to take up most of the screen.
-        ScreenSize = get(0,'ScreenSize');
-        NewFigureSize = [60,250, ScreenSize(3)*.8, ScreenSize(4)*.8];
-        set(ThisModuleFigureNumber, 'Position', NewFigureSize)
+        ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(TiledImage,'OneByOne')
+        end
         %%% Displays the image.
+        %%% OK to use imagesc here instead of CPimagesc because CPimagesc
+        %%% adds the CPimagetool which disturbs the clicking functions. But
+        %%% not sure - Mike is confirming.
         imagesc(TiledImage);
-        axis image %%% OK to use axis image here?
-        
+
         FontSize = handles.Preferences.FontSize;
         ToggleGridButtonFunction = ...
             ['Handles = findobj(''type'',''line'');'...
@@ -538,4 +538,13 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     %%% Saves the tiled image to the handles structure so it can be used by
     %%% subsequent modules.
     handles.Pipeline.(TiledImageName) = TiledImage;
+else
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    if any(findobj == ThisModuleFigureNumber)
+        TextString = 'Tiled image will be shown after the last image cycle only if this window is left open.'
+        CPfigure(handles,ThisModuleFigureNumber);
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
+            'HorizontalAlignment','left','string',TextString,'position',...
+            [.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+    end
 end

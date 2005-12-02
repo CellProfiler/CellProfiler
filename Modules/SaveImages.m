@@ -183,16 +183,8 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%%VariableRevisionNumber = 11
 
 %%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
+%%% FILE PROCESSING %%%
 %%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    %%% The figure window is closed since there is nothing to display.
-    try close(ThisModuleFigureNumber) %#ok Ignore MLint
-    end
-end
 drawnow
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
@@ -414,6 +406,20 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         catch
             error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
         end
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% The figure window display is unnecessary for this module, so it is
+%%% closed during the starting image cycle.
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    if any(findobj == ThisModuleFigureNumber)
+        close(ThisModuleFigureNumber)
     end
 end
 

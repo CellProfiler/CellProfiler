@@ -109,13 +109,21 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(BasicImage,'TwoByTwo');
+    end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); CPimagesc(BasicImage); title([BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,1); 
+    CPimagesc(BasicImage); 
+    title([BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); CPimagesc(SubtractImage); title([SubtractImageName, ' image']);
-    subplot(2,2,3); CPimagesc(ResultingImage); title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
-    CPFixAspectRatio(BasicImage);
+    subplot(2,2,2); 
+    CPimagesc(SubtractImage); 
+    title([SubtractImageName, ' image']);
+    subplot(2,2,3); 
+    CPimagesc(ResultingImage); 
+    title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

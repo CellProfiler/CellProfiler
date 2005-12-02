@@ -97,6 +97,14 @@ if strncmpi(WaitForFlag,'Y',1) == 1
     if strcmp(ReadyFlag, 'NotReady') == 1
         %%% If the projection image is not ready, the module aborts until
         %%% the next cycle.
+        ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+        if any(findobj == ThisModuleFigureNumber)
+            TextString = 'Results will be shown after the last image cycle only if this window is left open.'
+            CPfigure(handles,ThisModuleFigureNumber);
+            uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
+                'HorizontalAlignment','left','string',TextString,'position',...
+                [.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+        end
         return
     elseif strcmp(ReadyFlag, 'Ready') == 1
         %%% If the smoothed image has already been calculated, the module
@@ -137,23 +145,17 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    %%% Sets the width of the figure window to be appropriate (half width),
-    %%% the first time through the set.
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet || strncmpi(WaitForFlag,'Y',1)
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = originalsize(3)/2;
-        set(ThisModuleFigureNumber, 'position', newsize);
-        drawnow
-    end
-    drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByOne')
+    end
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
     subplot(2,1,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); CPimagesc(SmoothedImage); title('Smoothed Image');
+    subplot(2,1,2); CPimagesc(SmoothedImage); 
+    title('Smoothed Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -186,6 +186,9 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(AdjacentImage,'OneByOne')
+    end
     CPimagesc(AdjacentImage);
     title(['Adjacent Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end

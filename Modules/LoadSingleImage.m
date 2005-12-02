@@ -247,6 +247,13 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber)
+        %%% Set white background color
+    set(ThisModuleFigureNumber,'Color',[1 1 1])
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+        delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+        delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+    end
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure('','NarrowText')
     end
@@ -254,11 +261,12 @@ if any(findobj == ThisModuleFigureNumber)
         drawnow
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
+    set(ThisModuleFigureNumber,'Color',[1 1 1])
         if iscell(ImageName)
             TextString = [ImageName{n},': ',FileNames{n}];
         else
             TextString = [ImageName,': ',FileNames];
         end
-        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[1 1 1])
     end
 end

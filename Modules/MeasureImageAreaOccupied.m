@@ -204,12 +204,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPimagesc(ThresholdedOrigImage); 
     title('Thresholded Image');
     if handles.Current.SetBeingAnalyzed == 1
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [20 0 250 40],'fontname','fixedwidth','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [65 -10 250 45],'fontname','fixedwidth','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
     else
         displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
     end
-    displaytext = {['  Cycle # ',num2str(handles.Current.SetBeingAnalyzed)];...
-        ['  Area occupied by ',ObjectName,':      ',num2str(AreaOccupied,'%2.1E')]};
+    displaytext = {['Area occupied by ',ObjectName,':      ',num2str(AreaOccupied,'%2.1E')]};
     set(displaytexthandle,'string',displaytext)
 end
 

@@ -119,17 +119,19 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText')
+        CPresizefigure(OrigImage,'TwoByOne')
     end
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,1,1); CPimagesc(OrigImage);
+    subplot(2,1,1); 
+    CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the processed
     %%% image.
-    subplot(2,1,2); CPimagesc(ThresholdedOrigImage); title('Thresholded Image');
-
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [65 -10 265 55],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
+    subplot(2,1,2); 
+    CPimagesc(ThresholdedOrigImage); 
+    title('Thresholded Image');
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [65 -10 250 60],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
     displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...
         ['Total area after thresholding:', num2str(TotalArea, '%2.1E')]};

@@ -182,14 +182,13 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure('','NarrowText')
     end
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position',[0.1 0.1 0.8 0.8],...
-        'fontsize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left');
+        'fontsize',handles.Preferences.FontSize,'backgroundcolor',[1 1 1],'horizontalalignment','left');
     DisplayText = strvcat(['    Cycle # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
         '      ',...
         'Percent of pixels that are Saturated:');
@@ -211,4 +210,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         end
     end
     set(displaytexthandle,'string',DisplayText)
+        %%% Set white background color
+    set(ThisModuleFigureNumber,'Color',[1 1 1])
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+        delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+        delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+    end
 end

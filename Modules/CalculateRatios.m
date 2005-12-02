@@ -72,7 +72,7 @@ NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 1
 NumFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements would you like to use?
+%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 NumImage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -96,7 +96,7 @@ DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = 1
 DenomFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = For INTENSITY or TEXTURE measures, which image's measurements would you like to use?
+%textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR08 = imagegroup
 %inputtypeVAR08 = popupmenu
 DenomImage = char(handles.Settings.VariableValues{CurrentModuleNum,8});

@@ -142,12 +142,10 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-
     %%% Calculates the ColoredIncomingObjectsImage for displaying in the figure
     %%% window and saving to the handles structure.
     %%% Note that the label2rgb function doesn't work when there are no objects
     %%% in the label matrix image, so there is an "if".
-
     if sum(sum(IncomingLabelMatrixImage)) >= 1
         handlescmap = handles.Preferences.LabelColorMap;
         cmap = feval(handlescmap,max(64,max(IncomingLabelMatrixImage(:))));
@@ -179,7 +177,9 @@ drawnow
 %%% up to the highest number of neighbors. The -1 value makes it
 %%% incompatible with the Convert To Image module which expects a label
 %%% matrix starting at zero.
-handles.Pipeline.(GrayscaleNeighborsName) = ColoredImageOfNeighbors;
+if ~strcmpi(GrayscaleNeighborsName,'Do not save')
+    handles.Pipeline.(GrayscaleNeighborsName) = ColoredImageOfNeighbors;
+end
 
 %%% Saves the grayscale version of objects to the handles structure so
 %%% they can be saved to the hard drive, if the user requests. Here, the
@@ -187,4 +187,6 @@ handles.Pipeline.(GrayscaleNeighborsName) = ColoredImageOfNeighbors;
 %%% and the objects are from 1 up to the highest number of neighbors, plus
 %%% one. This makes the objects compatible with the Convert To Image
 %%% module.
-handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ColoredImageOfNeighbors + 1;
+if ~strcmpi(ColoredNeighborsName,'Do not save')
+    handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ColoredImageOfNeighbors + 1;
+end

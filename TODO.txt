@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+(Requested by Anne 12-01-05) - We need to change the name of the MeasureObjectTexture module to MeasureTexture, since it works for images now too, not just objects. When doing so be sure to search and replace all instances of MeasureObjectTexture in the code (esp. in See also's) and Measure Object Texture (with spaces). Also, open the Example PIPEs as matlab files and change the name by hand in Settings.ModuleNames because it's pretty easy to do it that way.
+
 (Requested by Anne 12-01-05) - Mike, check out 'dependency report' (like m lint checker) which points out two things: several 'UNKNOWN' functions which are likely errors in code, and also it points out what toolboxes we are using so that we can see if we are using anything other than the image toolbox.
 
 MIKE WILL DO>>>> (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.

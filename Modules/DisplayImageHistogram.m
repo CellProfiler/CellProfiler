@@ -7,7 +7,9 @@ function handles = DisplayImageHistogram(handles)
 % Produces a histogram of the intensity of pixels within an image.
 % *************************************************************************
 %
-% The resulting histograms can se saved using the Save Images module.
+% The resulting histograms can be saved using the Save Images module.
+%
+% See also DisplayHistogram.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

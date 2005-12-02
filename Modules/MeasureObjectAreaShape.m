@@ -97,9 +97,6 @@ function handles = MeasureObjectAreaShape(handles)
 % Perimeter
 % Form factor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
 % object
-%
-% See also MeasureObjectTexture, MeasureObjectIntensity,
-% MeasureCorrelation.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

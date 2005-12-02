@@ -15,7 +15,7 @@ function handles = DisplayMeasurement(handles)
 % list of the features measured by that module.
 %
 % See also MeasureObjectAreaShape, MeasureObjectIntensity,
-% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors,
+% MeasureObjectTexture, MeasureCorrelation, MeasureObjectNeighbors,
 % CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.

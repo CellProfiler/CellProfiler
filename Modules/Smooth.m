@@ -23,8 +23,7 @@ function handles = Smooth(handles)
 % divided by two to obtain the radius of a disk shaped structuring element
 % which is used for filtering. 
 %
-% See also Average, CorrectIllumination_Apply,
-% CorrectIllumination_Calculate, CPsmooth.
+% See also CorrectIllumination_Apply, CorrectIllumination_Calculate.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

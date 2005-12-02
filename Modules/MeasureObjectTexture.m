@@ -4,20 +4,23 @@ function handles = MeasureObjectTexture(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures several texture features for identified objects.
+% Measures several texture features for identified objects or for entire
+% images.
 % *************************************************************************
 %
 % Given an image with objects identified (e.g. nuclei or cells), this
 % module extracts texture features for each object based on a corresponding
-% grayscale image. Measurements are recorded for each object. The scale of
-% texture measured is chosen by the user, in pixel units. A higher number
-% for the scale of texture measures larger patterns of texture whereas
-% smaller numbers measure more localized patterns of texture. It is best to
-% measure texture on a scale smaller than your objects sizes, so be sure
-% that the value entered for scale of texture is smaller than most of your
-% objects. For very small objects (smaller than the scale of texture you
-% are measuring) the texture cannot be measured and will result in a value
-% of NaN in the output file (Not a Number).
+% grayscale image. Measurements are recorded for each object. If "Image" is
+% chosen, the texture of the image overall is measured.
+%
+% The scale of texture measured is chosen by the user, in pixel units. A
+% higher number for the scale of texture measures larger patterns of
+% texture whereas smaller numbers measure more localized patterns of
+% texture. It is best to measure texture on a scale smaller than your
+% objects sizes, so be sure that the value entered for scale of texture is
+% smaller than most of your objects. For very small objects (smaller than
+% the scale of texture you are measuring) the texture cannot be measured
+% and will result in a value of NaN in the output file (Not a Number).
 %
 % Measurement:             Feature Number:
 % AngularSecondMoment     |       1
@@ -84,9 +87,6 @@ function handles = MeasureObjectTexture(handles)
 % object, with no numbers skipped. So, if some objects were discarded from
 % the label matrix image, the image should be converted to binary and
 % re-made into a label matrix image before feeding into this module.
-%
-% See also MeasureObjectAreaShape, MeasureObjectIntensity,
-% MeasureCorrelation.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

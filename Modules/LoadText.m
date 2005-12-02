@@ -13,7 +13,8 @@ function handles = LoadText(handles)
 % modules that place text information onto images. It is also useful to
 % place text information in the output files alongside the measurements
 % that are made so that the information can be exported with the
-% measurements.
+% measurements. While not thoroughly tested, most likely you can load
+% numerical data too.
 %
 % The text information must be specified in a separate text file
 % with the following syntax:
@@ -35,7 +36,7 @@ function handles = LoadText(handles)
 % Gene Y
 % Gene Z
 %
-% See also the ADDDATA data tool.
+% See also AddData data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

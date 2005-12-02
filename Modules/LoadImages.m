@@ -120,7 +120,7 @@ function handles = LoadImages(handles)
 % Bitmap data must be 8-bit Index images or 24-bit TrueColor images
 % ------------------------------------------------------------------
 %
-% See also <nothing relevant>.
+% See also LoadSingleImage.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -39,6 +39,8 @@ function handles = RescaleIntensity(handles)
 % image. Warning: Most CellProfiler modules require the incoming image to
 % be in the standard 0 to 1 range, so this conversion may cause downstream
 % modules to behave unexpectedly.
+%
+% See also SubtractBackground.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

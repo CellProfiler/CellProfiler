@@ -48,9 +48,9 @@ function handles = CorrectIllumination_Apply(handles)
 % Either of these options has the potential to disturb the brightness
 % of images relative to other images in the set, so caution should be
 % used in interpreting intensity measurements from images that have
-% been rescaled. See the help for RESCALEINTENSITY for details.
+% been rescaled. See the help for the Rescale Intensity module for details.
 %
-% See also CORRECTILLUMINATION_CALCULATE, RESCALEINTENSITY.
+% See also CorrectIllumination_Calculate, RescaleIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

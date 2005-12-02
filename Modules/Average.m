@@ -37,6 +37,8 @@ function handles = Average(handles)
 % image will not be available until the last cycle has been processed, so
 % the averaged image it produces cannot be used in subsequent modules
 % unless they are instructed to wait until the last cycle.
+%
+% See also CorrectIllumination_Calculate.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

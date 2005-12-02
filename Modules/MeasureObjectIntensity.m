@@ -52,8 +52,7 @@ function handles = MeasureObjectIntensity(handles)
 % gray-level representation of the object and the binary representation of
 % the object.
 %
-% See also MeasureObjectTexture, MeasureObjectAreaShape,
-% MeasureCorrelation.
+% See also MeasureImageIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

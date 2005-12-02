@@ -32,7 +32,7 @@ function handles = LoadSingleImage(handles)
 % Image module can be run sequentially. Running more than one of these
 % modules also allows images to be retrieved from different folders.
 %
-% See also LOADIMAGES.
+% See also LoadImages.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

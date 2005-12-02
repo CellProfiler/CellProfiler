@@ -300,7 +300,7 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(ColoredLabelMatrixImage);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title(['Identified ',NewObjectName]),'fontsize',handles.Preferences.FontSize);
+    title(['Identified ',NewObjectName],'fontsize',handles.Preferences.FontSize);
     subplot(2,1,2); 
     CPimagesc(FinalOutline);
     line(VertLinesX,VertLinesY);

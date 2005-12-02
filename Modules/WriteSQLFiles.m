@@ -15,7 +15,7 @@ function handles = WriteSQLFiles(handles)
 % This module must be run at the end of a pipeline, or second to last if
 % you are using the Create Batch Scripts module.
 %
-% See also: CREATEBATCHSCRIPTS.
+% See also: CreateBatchScripts.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

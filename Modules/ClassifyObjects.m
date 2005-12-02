@@ -31,6 +31,8 @@ function handles = ClassifyObjects(handles)
 % the value for the Area to Perimeter for nuclei would be 1, the value for
 % MajorAxisLength to MinorAxisLength for cells would be 2, and the value
 % for MeanIntensity to MaxIntensity for nuclei would be 3.
+%
+% See also FilterByObjectMeasurement.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

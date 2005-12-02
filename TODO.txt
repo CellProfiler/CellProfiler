@@ -12,8 +12,6 @@ TechDiagnosis 		- DONE
 SaveCPcode		- DONE
 DownloadNewModules	- DONE
 
-(Requested by Anne 12-02-05) Does Display Histogram work with Ratios,If so, add it as selectable in variable 2. and add it to the see also.
-
 (Requested by Anne 12-02-05) Does Display Data on Image work with Ratios,If so, add it as selectable in variable 2. and add it to the see also.
 
 (Requested by Anne 12-02-05) Does FilterBy object measurement work with Neighbors?  If so, add it as selectable in variable 3. and add it to the see also.

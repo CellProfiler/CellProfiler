@@ -15,7 +15,8 @@ function handles = DisplayHistogram(handles)
 % numbered list of the features measured by that module.
 %
 % See also MeasureObjectAreaShape, MeasureObjectIntensity,
-% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors.
+% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors,
+% CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -46,7 +47,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which objects' measurements do you want to use for the histogram? The option IMAGE currently only works with Correlation measurements).
+%textVAR01 = Which objects' measurements do you want to use for the histogram, or if using a Ratio, what is the numerator object (the option IMAGE currently only works with Correlation measurements)?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -54,10 +55,11 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
-%choiceVAR02 = Intensity
-%choiceVAR02 = Texture
 %choiceVAR02 = Correlation
+%choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
+%choiceVAR02 = Ratio
+%choiceVAR02 = Texture
 %inputtypeVAR02 = popupmenu custom
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

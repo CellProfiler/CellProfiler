@@ -15,14 +15,14 @@ function handles = IdentifySecondary(handles)
 % within a secondary object (e.g. nuclei are completely within cells
 % stained for actin).
 %
-% It accomplishes two tasks: 
+% It accomplishes two tasks:
 % (a) finding the dividing lines between secondary objects which touch each
 % other. Three methods are available: Propagation, Watershed (an older
 % version of Propagation), and Distance.
 % (b) finding the dividing lines between the secondary objects and the
 % background of the image. This is done by thresholding the image stained
 % for secondary objects, except when using Distance - N.
-% 
+%
 % Settings:
 %
 % Methods to identify secondary objects:
@@ -36,11 +36,11 @@ function handles = IdentifySecondary(handles)
 % gradients. Reference: TR Jones, AE Carpenter, P Golland (2005)
 % Voronoi-Based Segmentation of Cells on Image Manifolds, ICCV Workshop on
 % Computer Vision for Biomedical Image Applications, pp. 535-543. For task
-% (b), thresholding is used. 
+% (b), thresholding is used.
 %
 % * Watershed - For task (a), this method will find dividing lines between
 % objects by looking for dim lines between objects. For task (b),
-% thresholding is used. 
+% thresholding is used.
 %
 % * Distance - This method is bit unusual because the edges of the primary
 % objects are expanded a specified distance to create the secondary
@@ -54,7 +54,7 @@ function handles = IdentifySecondary(handles)
 % regions from the secondary objects. This allows the extent of the
 % secondary objects to be limited to a certain distance away from the edge
 % of the primary objects.
-% 
+%
 % Select automatic thresholding method or enter an absolute threshold:
 %    The threshold affects the stringency of the lines between the
 % objects and the background. You can have the threshold automatically
@@ -265,61 +265,56 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 3
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% Reads (opens) the image you want to analyze and assigns it to a
+%%% variable.
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+
+%%% Retrieves the preliminary label matrix image that contains the primary
+%%% segmented objects which have only been edited to discard objects
+%%% that are smaller than a certain size.  This image
+%%% will be used as markers to segment the secondary objects with this
+%%% module.  Checks first to see whether the appropriate image exists.
+PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
+
+%%% Retrieves the label matrix image that contains the edited primary
+%%% segmented objects which will be used to weed out which objects are
+%%% real - not on the edges and not below or above the specified size
+%%% limits. Checks first to see whether the appropriate image exists.
+EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
+
+%%% Checks that the Min and Max threshold bounds have valid values
+index = strfind(ThresholdRange,',');
+if isempty(index)
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
+end
+
+MinimumThreshold = ThresholdRange(1:index-1);
+MaximumThreshold = ThresholdRange(index+1:end);
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% STEP 1: Marks at least some of the background by applying a
+%%% weak threshold to the original image of the secondary objects.
+[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+%%% ANNE REPLACED THIS LINE 11-06-05.
+%%% Thresholds the original image.
+% ThresholdedOrigImage = im2bw(OrigImage, Threshold);
+
+%%% Thresholds the original image.
+ThresholdedOrigImage = OrigImage > Threshold;
+Threshold = mean(Threshold(:));       % Use average threshold downstreams
+
 for IdentChoiceNumber = 1:length(IdentChoiceList)
 
     IdentChoice = IdentChoiceList{IdentChoiceNumber};
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-
-    %%% Reads (opens) the image you want to analyze and assigns it to a
-    %%% variable.
-    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
-
-    %%% Retrieves the preliminary label matrix image that contains the primary
-    %%% segmented objects which have only been edited to discard objects
-    %%% that are smaller than a certain size.  This image
-    %%% will be used as markers to segment the secondary objects with this
-    %%% module.  Checks first to see whether the appropriate image exists.
-    PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
-
-    %%% Retrieves the label matrix image that contains the edited primary
-    %%% segmented objects which will be used to weed out which objects are
-    %%% real - not on the edges and not below or above the specified size
-    %%% limits. Checks first to see whether the appropriate image exists.
-    EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
-
-    %%% Checks that the Min and Max threshold bounds have valid values
-    index = strfind(ThresholdRange,',');
-    if isempty(index)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
-    end
-
-    MinimumThreshold = ThresholdRange(1:index-1);
-    MaximumThreshold = ThresholdRange(index+1:end);
-
-    %%%%%%%%%%%%%%%%%%%%%%
-    %%% IMAGE ANALYSIS %%%
-    %%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-
-    %%% STEP 1: Marks at least some of the background by applying a
-    %%% weak threshold to the original image of the secondary objects.
-    drawnow
-    %%% Determines the threshold to use.
-    if strcmp(TestMode,'Yes')
-        Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-    end
-    [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
-    %%% ANNE REPLACED THIS LINE 11-06-05.
-    %%% Thresholds the original image.
-    %ThresholdedOrigImage = im2bw(OrigImage, Threshold);
-
-    %%% Thresholds the original image.
-    ThresholdedOrigImage = OrigImage > Threshold;
-    Threshold = mean(Threshold(:));       % Use average threshold downstreams
 
     if strncmp(IdentChoice,'Distance',8)
         if strcmp(IdentChoice(12),'N')

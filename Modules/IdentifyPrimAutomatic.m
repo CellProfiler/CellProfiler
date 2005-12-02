@@ -4,7 +4,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Identifies objects given only an image as input. 
+% Identifies objects given only an image as input.
 % *************************************************************************
 %
 % This module identifies primary objects in grayscale images that show
@@ -58,7 +58,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % reasonably effective.
 %
 % Discard objects touching the border of the image:
-% You can choose to discard objects that touch the corder of the image. 
+% You can choose to discard objects that touch the corder of the image.
 % This is useful in cases where you do not want to make measurements of
 % objects that are not fully within the field of view (because, for
 % example, the area would not be accurate).
@@ -173,8 +173,8 @@ function handles = IdentifyPrimAutomatic(handles)
 % It does not affect the dividing lines between an object and the
 % background. If you see too many objects merged that ought to be separate,
 % the value should be lower. If you see too many objects split up that
-% ought to be merged, the value should be higher. 
-%    The image is smoothed based on the specified minimum object diameter    
+% ought to be merged, the value should be higher.
+%    The image is smoothed based on the specified minimum object diameter
 % that you have entered, but you may want to override the automatically
 % calculated value here. Reducing the texture of objects by increasing the
 % smoothing increases the chance that each real, distinct object has only
@@ -190,7 +190,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % It does not affect the dividing lines between an object and the
 % background. If you see too many objects merged that ought to be separate,
 % the value should be lower. If you see too many objects split up that
-% ought to be merged, the value should be higher. 
+% ought to be merged, the value should be higher.
 %    Object markers are suppressed based on the specified minimum object
 % diameter that you have entered, but you may want to override the
 % automatically calculated value here. The maxima suppression distance
@@ -259,21 +259,9 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%%% Sets up loop for test mode.
-if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,18}),'Yes')
-    LocalMaximaTypeList = {'Intensity' 'Shape'};
-    WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
-else
-    LocalMaximaTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,11})};
-    WatershedTransformImageTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,12})};
-end
-
-for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
-    for WatershedTransformImageTypeNumber = 1:length(WatershedTransformImageTypeList)
-        
 %%% NOTE: We cannot indent the variables or they will not be read
 %%% properly.
-        
+
 %textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -344,16 +332,12 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
-
 %textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
 %choiceVAR12 = Intensity
 %choiceVAR12 = Distance
 %choiceVAR12 = None
 OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
-
-WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
 %textVAR13 = Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.
 %defaultVAR13 = Automatic
@@ -386,84 +370,99 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 %%%VariableRevisionNumber = 11
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        drawnow
-        
-        %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-        %%% "OrigImage".
-        OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
-        
-        %%% Checks that the Laplace parameters have valid values
-        if ~strcmp(LaplaceValues,'/')
-            index = strfind(LaplaceValues,',');
-            if isempty(index) || (length(index) ~= 6)
-                error(['Image processing was canceled in the ', ModuleName, ' module because the Laplace Values are invalid.']);
-            end
-            NeighborhoodSize(1) = str2num(LaplaceValues(1:index(1)-1)); %#ok Ignore MLint
-            NeighborhoodSize(2) = str2num(LaplaceValues(index(1)+1:index(2)-1)); %#ok Ignore MLint
-            Sigma = str2num(LaplaceValues(index(2)+1:index(3)-1)); %#ok Ignore MLint
-            MinArea = str2num(LaplaceValues(index(3)+1:index(4)-1)); %#ok Ignore MLint
-            WienerSize(1) = str2num(LaplaceValues(index(4)+1:index(5)-1)); %#ok Ignore MLint
-            WienerSize(2) = str2num(LaplaceValues(index(5)+1:index(6)-1)); %#ok Ignore MLint
-            LaplaceThreshold = str2num(LaplaceValues(index(6)+1:end)); %#ok Ignore MLint
-        end
-        
-        %%% Checks that the Min and Max diameter parameters have valid values
-        index = strfind(SizeRange,',');
-        if isempty(index),
-            error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max size entry is invalid.'])
-        end
-        MinDiameter = SizeRange(1:index-1);
-        MaxDiameter = SizeRange(index+1:end);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
-        MinDiameter = str2double(MinDiameter);
-        if isnan(MinDiameter) | MinDiameter < 0 %#ok Ignore MLint
-            error(['Image processing was canceled in the ', ModuleName, ' module because the Min diameter entry is invalid.'])
-        end
-        if strcmp(MaxDiameter,'Inf')
-            MaxDiameter = Inf;
-        else
-            MaxDiameter = str2double(MaxDiameter);
-            if isnan(MaxDiameter) | MaxDiameter < 0 %#ok Ignore MLint
-                error(['Image processing was canceled in the ', ModuleName, ' module because the Max diameter entry is invalid.'])
-            end
-        end
-        if MinDiameter > MaxDiameter
-            error(['Image processing was canceled in the ', ModuleName, ' module because the Min Diameter is larger than the Max Diameter.'])
-        end
+%%% Reads (opens) the image you want to analyze and assigns it to a variable,
+%%% "OrigImage".
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
 
-        %%% Checks that the Min and Max threshold bounds have valid values
-        index = strfind(ThresholdRange,',');
-        if isempty(index)
-            error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
-        end
-        MinimumThreshold = ThresholdRange(1:index-1);
-        MaximumThreshold = ThresholdRange(index+1:end);
+%%% Checks that the Laplace parameters have valid values
+if ~strcmp(LaplaceValues,'/')
+    index = strfind(LaplaceValues,',');
+    if isempty(index) || (length(index) ~= 6)
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Laplace Values are invalid.']);
+    end
+    NeighborhoodSize(1) = str2num(LaplaceValues(1:index(1)-1)); %#ok Ignore MLint
+    NeighborhoodSize(2) = str2num(LaplaceValues(index(1)+1:index(2)-1)); %#ok Ignore MLint
+    Sigma = str2num(LaplaceValues(index(2)+1:index(3)-1)); %#ok Ignore MLint
+    MinArea = str2num(LaplaceValues(index(3)+1:index(4)-1)); %#ok Ignore MLint
+    WienerSize(1) = str2num(LaplaceValues(index(4)+1:index(5)-1)); %#ok Ignore MLint
+    WienerSize(2) = str2num(LaplaceValues(index(5)+1:index(6)-1)); %#ok Ignore MLint
+    LaplaceThreshold = str2num(LaplaceValues(index(6)+1:end)); %#ok Ignore MLint
+end
 
-        %%% Check the smoothing filter size parameter
-        if ~strcmp(SizeOfSmoothingFilter,'Automatic')
-            SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-            if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
-                error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])
-            end
-        end
+%%% Checks that the Min and Max diameter parameters have valid values
+index = strfind(SizeRange,',');
+if isempty(index),
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max size entry is invalid.'])
+end
+MinDiameter = SizeRange(1:index-1);
+MaxDiameter = SizeRange(index+1:end);
 
-        %%% Check the maxima suppression size parameter
-        if ~strcmpi(MaximaSuppressionSize,'Automatic')
-            MaximaSuppressionSize = str2double(MaximaSuppressionSize);
-            if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0 %#ok Ignore MLint
-                error(['Image processing was canceled in the ', ModuleName, ' module because the specified maxima suppression size is not valid or unreasonable.'])
-            end
-        end
-        
-        %%%%%%%%%%%%%%%%%%%%%%
-        %%% IMAGE ANALYSIS %%%
-        %%%%%%%%%%%%%%%%%%%%%%
-        drawnow
-        
-        [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+MinDiameter = str2double(MinDiameter);
+if isnan(MinDiameter) | MinDiameter < 0 %#ok Ignore MLint
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Min diameter entry is invalid.'])
+end
+if strcmp(MaxDiameter,'Inf')
+    MaxDiameter = Inf;
+else
+    MaxDiameter = str2double(MaxDiameter);
+    if isnan(MaxDiameter) | MaxDiameter < 0 %#ok Ignore MLint
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Max diameter entry is invalid.'])
+    end
+end
+if MinDiameter > MaxDiameter
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Min Diameter is larger than the Max Diameter.'])
+end
+
+%%% Checks that the Min and Max threshold bounds have valid values
+index = strfind(ThresholdRange,',');
+if isempty(index)
+    error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max threshold bounds are invalid.'])
+end
+MinimumThreshold = ThresholdRange(1:index-1);
+MaximumThreshold = ThresholdRange(index+1:end);
+
+%%% Check the smoothing filter size parameter
+if ~strcmp(SizeOfSmoothingFilter,'Automatic')
+    SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
+    if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
+        error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])
+    end
+end
+
+%%% Check the maxima suppression size parameter
+if ~strcmpi(MaximaSuppressionSize,'Automatic')
+    MaximaSuppressionSize = str2double(MaximaSuppressionSize);
+    if isempty(MaximaSuppressionSize) | MaximaSuppressionSize < 0 %#ok Ignore MLint
+        error(['Image processing was canceled in the ', ModuleName, ' module because the specified maxima suppression size is not valid or unreasonable.'])
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+
+%%% Sets up loop for test mode.
+if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,18}),'Yes')
+    LocalMaximaTypeList = {'Intensity' 'Shape'};
+    WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
+else
+    LocalMaximaTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,11})};
+    WatershedTransformImageTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,12})};
+end
+
+for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
+    for WatershedTransformImageTypeNumber = 1:length(WatershedTransformImageTypeList)
+
+        LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
+        WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
         if strcmp(LaplaceValues,'/')
 
@@ -547,18 +546,18 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     else
                         ResizedBlurredImage = BlurredImage;
                     end
-                    
+
                     %%% Initialize MaximaImage
                     MaximaImage = ResizedBlurredImage;
                     %%% Save only local maxima
                     MaximaImage(ResizedBlurredImage < ...
                         ordfilt2(ResizedBlurredImage,sum(MaximaMask(:)),MaximaMask)) = 0;
-                    
+
                     if strcmp(UseLowRes,'Yes')
                         %%% Restore image size
                         MaximaImage = imresize(MaximaImage,size(BlurredImage),'bilinear');
                     end
-                    
+
                     %%% Remove dim maxima
                     MaximaImage = MaximaImage > Threshold;
                     %%% Shrink to points (needed because of the resizing)
@@ -628,7 +627,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
             %%% Label the objects
             Objects = bwlabel(Objects);
-            
+
             %%% Merge small objects
 
             if strcmp(MergeChoice,'Yes')
@@ -675,7 +674,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             if strcmp(ExcludeBorderObjects,'Yes')
                 PrevObjects = Objects;
                 Objects = CPclearborder(Objects);
-                
+
                 %%% TESTING CODE TO REMOVE BORDERS FROM ELLIPSE CROPPED
                 %%% OBJECTS
                 if sum(PrevObjects(:)) == sum(Objects(:))
@@ -789,7 +788,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
         %%% DISPLAY RESULTS %%%
         %%%%%%%%%%%%%%%%%%%%%%%
         drawnow
-        
+
         if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
 
             if strcmp(LaplaceValues,'/')
@@ -804,7 +803,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                 OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
                 OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
                 OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
-                
+
                 FinalOutline = false(size(OrigImage,1),size(OrigImage,2));
                 FinalOutline(PerimObjects) = 1;
                 FinalOutline(PerimDiameter) = 0;
@@ -866,7 +865,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
                     end
                 end
             else
-            ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+                ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save') %#ok Ignore MLint
                     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
                     %%% window in subplot(2,2,2).
@@ -910,7 +909,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             %%% SAVE DATA TO HANDLES STRUCTURE %%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             drawnow
-            
+
             %%% Saves the segmented image, not edited for objects along the edges or
             %%% for size, to the handles structure.
             fieldname = ['UneditedSegmented',ObjectName];
@@ -928,9 +927,9 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
             %%% Saves images to the handles structure so they can be saved to the hard
             %%% drive, if the user requested.
             if ~strcmpi(SaveOutlines,'Do not save')
-               try    handles.Pipeline.(SaveOutlines) = FinalOutline;
-                   catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
-               end
+                try    handles.Pipeline.(SaveOutlines) = FinalOutline;
+                catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+                end
             end
 
             %%% Saves the Threshold value to the handles structure.

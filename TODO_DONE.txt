@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/02) Increase speed of Test Mode for IdentifyPrimAutomatic and Secondary
+
 -(Mike 12/02) (Requested by Anne 12-01-05) - Just want to make sure it's on our list to implement the CPretrieveimage (or whatever we decided to call it) throughout all modules.
 
 -(Mike 11/30) We should make *absolutely* certain that all measure modules properly handle pixel size. we have not checked this in a very long time because we always have pixel size = 1, but it would be *so* embarassing to release our software and have it scramble all the measurements!

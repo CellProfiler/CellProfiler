@@ -68,7 +68,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter the maximum image height or width (in pixels) to display for the manual identification. Very large images will be resized to this maximum dimension for the manual identification step. Enter "Do not resize" to display the unaltered image.
 %defaultVAR03 = Do not resize
-MaxResolution = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,3})); %#ok
+MaxResolution = char(handles.Settings.VariableValues{CurrentModuleNum,3}); %#ok
 
 %textVAR04 = What do you want to call the outlines of the identified objects (optional)?
 %defaultVAR04 = Do not save
@@ -86,18 +86,18 @@ drawnow
 %%% "OrigImage".
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
 
-if isempty(MaxResolution)
-    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for "Enter the maximum image height or width (in pixels) to display for the manual identification" was invalid.'])
+if strcmpi(MaxResolution,'Do not resize')
+    MaxResolution = Inf;
+else
+    MaxResolution = str2double(MaxResolution);
+    if isempty(MaxResolution)
+        error('You have entered an invalid input for Max Resolution. It must be ''Do not resize'' or a number.');
+    end
 end
 
 %%% Use a low resolution image for outlining the primary region, if
 %%% requested.
 MaxSize = max(size(OrigImage));
-try 
-    if strcmpi(MaxResolution,'Do not resize')
-        MaxResolution = Inf;
-    end
-end
 
 if MaxSize > MaxResolution
     LowResOrigImage = imresize(OrigImage,MaxResolution/MaxSize,'bicubic');

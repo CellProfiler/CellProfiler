@@ -113,9 +113,11 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-
+    %%% Activates the appropriate figure window.
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
-
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'OneByOne')
+    end
     CPimagesc(NewImage);
     title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...

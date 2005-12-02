@@ -98,8 +98,8 @@ function handles = MeasureObjectAreaShape(handles)
 % Form factor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
 % object
 %
-% See also MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY,
-% MEASURECORRELATION.
+% See also MeasureObjectTexture, MeasureObjectIntensity,
+% MeasureCorrelation.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -197,8 +197,8 @@ for i = 1:length(ObjectNameList)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
-    %%% Retrieves the label matrix image that contains the segmented objects which
-    %%% will be measured with this module.
+    %%% Retrieves the label matrix image that contains the segmented
+    %%% objects which will be measured with this module.
     LabelMatrixImage =  CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -306,7 +306,7 @@ for i = 1:length(ObjectNameList)
     %%% Report measurements
     FontSize = handles.Preferences.FontSize;
     if any(findobj == ThisModuleFigureNumber)
-        if handles.Current.SetBeingAnalyzed == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','B'));

@@ -156,22 +156,16 @@ if any(findobj == ThisModuleFigureNumber)
     end
 
     FontSize = handles.Preferences.FontSize;
-    %%% Sets the width of the figure window to be appropriate (half width).
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = 0.5*originalsize(3);
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
-    drawnow
-
+    %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,1,1); CPimagesc(ColoredIncomingObjectsImage); title(ObjectName,'FontSize',FontSize)
-    set(gca,'FontSize',FontSize)
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(IncomingLabelMatrixImage,'TwoByOne')
+    end
+    subplot(2,1,1); CPimagesc(ColoredIncomingObjectsImage); 
+    title(ObjectName,'FontSize',FontSize)
     subplot(2,1,2); CPimagesc(ImageOfNeighbors);
     colorbar('SouthOutside','FontSize',FontSize)
     title([ObjectName,' colored by number of neighbors'],'FontSize',FontSize)
-    set(gca,'FontSize',FontSize)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

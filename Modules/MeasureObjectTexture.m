@@ -193,9 +193,9 @@ for i = 1:6
         LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %%% Initilize measurement structure
     Haralick = [];
@@ -320,11 +320,9 @@ for i = 1:6
                         Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
                     end
                 end
-
                 GaborFeatureNo = GaborFeatureNo + 1;
             end
         end
-
 
         if strcmp(ObjectName,'Image')
             [m,n] = size(OrigImage);
@@ -346,7 +344,6 @@ for i = 1:6
                 cmin = max(1,min(c));
                 BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
                 Greyim = OrigImage(rmin:rmax,cmin:cmax);
-
                 %%% Get Haralick features
                 Haralick(Object,:) = CalculateHaralick(Greyim,BWim,0);
             end
@@ -363,7 +360,7 @@ for i = 1:6
         % This first block writes the same text several times
         % Header
 
-        if handles.Current.SetBeingAnalyzed == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','B'));

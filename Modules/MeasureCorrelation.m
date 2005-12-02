@@ -18,8 +18,7 @@ function handles = MeasureCorrelation(handles)
 % OrigBlue  /OrigRed        Correlation:    0.59886        -0.02752
 % OrigGreen /OrigRed        Correlation:    0.83605         0.68489
 %
-% See also MEASUREIMAGEAREAOCCUPIED, MEASUREOBJECTAREASHAPE,
-% MEASUREOBJECTTEXTURE, MEASUREOBJECTINTENSITY, MEASUREIMAGEINTENSITY.
+% See also MeasureObjectIntensity, MeasureImageIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -217,19 +216,15 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-
     %%% Set white background color
     set(ThisModuleFigureNumber,'Color',[1 1 1])
-
     %%% Get size of window
     Position = get(ThisModuleFigureNumber,'Position');
     Height = Position(4);
     Width  = Position(3);
-
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
         delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
         delete(findobj('parent',ThisModuleFigureNumber,'string','B'));

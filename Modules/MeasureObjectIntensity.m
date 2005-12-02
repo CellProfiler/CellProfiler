@@ -53,7 +53,7 @@ function handles = MeasureObjectIntensity(handles)
 % the object.
 %
 % See also MeasureObjectTexture, MeasureObjectAreaShape,
-% MeasureCorrelation
+% MeasureCorrelation.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -236,18 +236,17 @@ for i = 1:length(ObjectNameList)
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Intensity_',ImageName,'Features']) = BasicFeatures;
     handles.Measurements.(ObjectName).(['Intensity_',ImageName])(handles.Current.SetBeingAnalyzed) = {Basic};
-
+    
     %%% Report measurements
-    FontSize = handles.Preferences.FontSize;
-
     if any(findobj == ThisModuleFigureNumber);
-        %%%% This first block writes the same text several times
-        %%% Header
-        if handles.Current.SetBeingAnalyzed == 1
+        FontSize = handles.Preferences.FontSize;
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
         end
+        %%%% This first block writes the same text several times
+        %%% Header
 
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
             'HorizontalAlignment','center','BackgroundColor',[1 1 1],'fontname','Helvetica',...

@@ -189,24 +189,20 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    drawnow
-    %%% Sets the width of the figure window to be appropriate (half width).
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = 0.5*originalsize(3);
-        newsize(4) = 1.2*originalsize(4);
-        newsize(2) = originalsize(2)-0.2*originalsize(4);
-        set(ThisModuleFigureNumber, 'position', newsize);
+        CPresizefigure(OrigImage,'TwoByOne')
     end
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); CPimagesc(OrigImage);
+    subplot(2,1,1); 
+    CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,1,2); CPimagesc(ThresholdedOrigImage); title('Thresholded Image');
+    subplot(2,1,2); 
+    CPimagesc(ThresholdedOrigImage); 
+    title('Thresholded Image');
     if handles.Current.SetBeingAnalyzed == 1
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [20 0 250 40],'fontname','fixedwidth','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
     else

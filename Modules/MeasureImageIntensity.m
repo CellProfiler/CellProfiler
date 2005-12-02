@@ -22,7 +22,7 @@ function handles = MeasureImageIntensity(handles)
 % region around those bright objects by a certain distance so as to avoid a
 % 'halo' effect.
 %
-% See also MEASUREAREAOCCUPIED, MEASUREOBJECTINTENSITY, MEASURECORRELATION.
+% See also MeasureObjectIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -80,8 +80,7 @@ PixelSize = str2double(handles.Settings.PixelSize);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a variable,
-%%% "OrigImage".
+%%% Reads (opens) the incoming image and assigns it to a variable.
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -117,15 +116,11 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        %%% Sets the width of the figure window to be appropriate (half width).
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = 280;
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure('','NarrowText')
+    end
     %%% A subplot of the figure window is set to display the original
     %%% image.
     subplot(2,1,1); CPimagesc(OrigImage);

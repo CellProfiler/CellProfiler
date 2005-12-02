@@ -182,14 +182,14 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
+    drawnow
+    %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    originalsize = get(ThisModuleFigureNumber, 'position');
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize(3) = originalsize(3)*.5;
-        set(ThisModuleFigureNumber, 'position', originalsize,'color',[.7 .7 .9]);
+        CPresizefigure('','NarrowText')
     end
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'units','normalized','position',[0.1 0.1 0.8 0.8],...
-        'fontname','Helvetica','fontsize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left');
+        'fontsize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left');
     DisplayText = strvcat(['    Cycle # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.
         '      ',...
         'Percent of pixels that are Saturated:');

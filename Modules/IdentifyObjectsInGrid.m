@@ -44,7 +44,7 @@ function handles = IdentifyObjectsInGrid(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also DEFINEGRID.
+% See also DefineGrid.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -290,16 +290,22 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 
 if any(findobj == ThisModuleFigureNumber)
     drawnow
+    %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(ColoredLabelMatrixImage,'TwoByOne')
+    end
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    subplot(2,1,1); CPimagesc(ColoredLabelMatrixImage);
+    subplot(2,1,1); 
+    CPimagesc(ColoredLabelMatrixImage);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title(sprintf('Identified %s',NewObjectName),'fontsize',handles.Preferences.FontSize);
-    subplot(2,1,2); CPimagesc(FinalOutline);
+    title(['Identified ',NewObjectName]),'fontsize',handles.Preferences.FontSize);
+    subplot(2,1,2); 
+    CPimagesc(FinalOutline);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title('Outlined objects','fontsize',handles.Preferences.FontSize);
+    title(['Outlined ',NewObjectName],'fontsize',handles.Preferences.FontSize);
     set(findobj('type','line'), 'color',[.15 .15 .15])
 end
 

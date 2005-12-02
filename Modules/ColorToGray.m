@@ -174,12 +174,18 @@ if strcmp(GrayOrSplit,'Combine')
         ImageHandle = CPimagesc(GrayscaleImage);
         set(ImageHandle,'ButtonDownFcn','CPImageTool(gco)');
         title('Grayscale Image');
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(OrigImage,'TwoByOne')
+        end
     end
 elseif strcmp(GrayOrSplit,'Split')
     if any(findobj == ThisModuleFigureNumber) == 1;
         drawnow
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(OrigImage,'TwoByTwo');
+        end
         %%% A subplot of the figure window is set to display the Splitd RGB
         %%% image.  Using CPimagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
@@ -198,13 +204,12 @@ elseif strcmp(GrayOrSplit,'Split')
         subplot(2,2,4);
         CPimagesc(RedImage);
         title('Red Image');
-        CPFixAspectRatio(OrigImage);
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if strcmp(GrayOrSplit,'Combine')

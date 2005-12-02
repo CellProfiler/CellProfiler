@@ -7,11 +7,10 @@ function handles = Exclude(handles)
 % Removes objects outside of specified region.
 % *************************************************************************
 %
-% This image analysis module allows you to delete the objects and
-% portions of objects that are outside of a region you specify (e.g.
-% nuclei outside of a tissue region).  The objects and the region
-% should both result from any Identify module (Primary, Secondary, or
-% Tertiary).
+% This image analysis module allows you to delete the objects and portions
+% of objects that are outside of a region you specify (e.g. nuclei outside
+% of a tissue region).  The objects and the region should both result from
+% any Identify module (Primary, Secondary, or Tertiary).
 %
 % Retain or renumber:
 % Retaining objects' original numbers might be important if you intend to
@@ -38,7 +37,7 @@ function handles = Exclude(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also <nothing relevant>.
+% See also FilterByObjectMeasurement.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -171,6 +170,24 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save') %#ok Ignore MLint
+    %%% Calculates the object outlines, which are overlaid on the original
+    %%% image and displayed in figure.
+    %%% Creates the structuring element that will be used for dilation.
+    StructuringElement = strel('square',3);
+    %%% Converts the FinalLabelMatrixImage to binary.
+    FinalBinaryImage = im2bw(NewSegmentedObjectImage,.5);
+    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
+    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
+    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
+    %%% which leaves the PrimaryObjectOutlines.
+    PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
+    %%% Overlays the object outlines on the mask region image.
+    ObjectOutlinesOnOrigImage = ColoredMaskRegionObjectImage;
+    %%% Determines the grayscale intensity to use for the cell outlines.
+    LineIntensity = max(ColoredMaskRegionObjectImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
+end    
+if any(findobj == ThisModuleFigureNumber) %#ok Ignore MLint
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window.
     %%% Note that the label2rgb function doesn't work when there are no objects
@@ -187,26 +204,13 @@ if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save')
         ColoredSegmentedObjectImage = CPlabel2rgb(handles,SegmentedObjectImage);
     else  ColoredSegmentedObjectImage = SegmentedObjectImage;
     end
-    
-    %%% Calculates the object outlines, which are overlaid on the original
-    %%% image and displayed in figure subplot (2,2,4).
-    %%% Creates the structuring element that will be used for dilation.
-    StructuringElement = strel('square',3);
-    %%% Converts the FinalLabelMatrixImage to binary.
-    FinalBinaryImage = im2bw(NewSegmentedObjectImage,.5);
-    %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
-    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
-    %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
-    %%% which leaves the PrimaryObjectOutlines.
-    PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
-    %%% Overlays the object outlines on the mask region image.
-    ObjectOutlinesOnOrigImage = ColoredMaskRegionObjectImage;
-    %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(ColoredMaskRegionObjectImage(:));
-    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
     drawnow
+    %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(ColoredSegmentedObjectImage,'TwoByTwo');
+    end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
     CPimagesc(ColoredSegmentedObjectImage);
@@ -224,7 +228,6 @@ if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save')
     subplot(2,2,4); 
     CPimagesc(ObjectOutlinesOnOrigImage); 
     title([ObjectName, ' Outlines on Input Image']);
-    CPFixAspectRatio(ColoredSegmentedObjectImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

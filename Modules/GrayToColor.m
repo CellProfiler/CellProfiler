@@ -18,7 +18,7 @@ function handles = GrayToColor(handles)
 % it.  Setting the adjustment factor to zero will cause that color to
 % be entirely blank.
 %
-% See also COLORTOGRAY.
+% See also ColorToGray.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -174,6 +174,9 @@ if any(findobj == ThisModuleFigureNumber);
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(RGBImage,'TwoByTwo');
+    end
     %%% A subplot of the figure window is set to display the Merged RGB
     %%% image.  Using CPimagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
@@ -185,7 +188,6 @@ if any(findobj == ThisModuleFigureNumber);
     subplot(2,2,3); CPimagesc(GreenImage); title('Green Image');
     %%% A subplot of the figure window is set to display the red image.
     subplot(2,2,4); CPimagesc(RedImage); title('Red Image');
-    CPFixAspectRatio(RGBImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

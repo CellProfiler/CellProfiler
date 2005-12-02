@@ -4,8 +4,10 @@ function handles = DisplayImageHistogram(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Produces a histogram of the intensity of pixels within the chosen image.
+% Produces a histogram of the intensity of pixels within an image.
 % *************************************************************************
+%
+% The resulting histograms can se saved using the Save Images module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -36,7 +38,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the images you want to include?
+%textVAR01 = What did you call the images whose pixel intensity histograms you want to display?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -46,7 +48,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = How many bins do you want?
+%textVAR03 = How many histogram bins do you want?
 %choiceVAR03 = Automatic
 %choiceVAR03 = 2
 %choiceVAR03 = 16
@@ -54,12 +56,12 @@ HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 NumBins = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Set the range for frequency counts
+%textVAR04 = Enter the range for frequency counts on the Y axis (Min,Max):
 %choiceVAR04 = Automatic
 FreqRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = Log transform the histogram?
+%textVAR05 = Log transform the X axis of the histogram?
 %choiceVAR05 = No
 %choiceVAR05 = Yes
 LogOption = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -97,8 +99,9 @@ end
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 drawnow
-
+%%% Activates the appropriate figure window.
 HistHandle = CPfigure(handles,ThisModuleFigureNumber);
+
 if strcmp(NumBins,'Automatic')
     imhist(OrigImage);
 else

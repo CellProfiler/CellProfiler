@@ -215,6 +215,13 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    %%% If we are using a user defined field, there is no corresponding
+    %%% image.
+    if ~strcmpi(FeatureType,'Ratio')
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(NonQuantizedImage,'TwoByTwo');
+        end
+    end
     AdjustedObjectName = strrep(ObjectName,'_','\_');
     AdjustedFeatureName = strrep(FeatureName,'_','\_');
     %%% If we are using a user defined field, there is no corresponding
@@ -222,20 +229,16 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
-        ImageHandle = CPimagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
-        set(ImageHandle,'Tag',sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
-        axis image
-        set(gca,'Fontsize',handles.Preferences.FontSize)
-        title(sprintf('%s colored according to %s',AdjustedObjectName,AdjustedFeatureName))
+        CPimagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+        title([AdjustedObjectName,' colored according to ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize)
     end
     %%% Produce and plot histogram of original data
     subplot(2,2,2)
     Nbins = min(round(NbrOfObjects/5),40);
     hist(Measurements,Nbins)
     set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-    set(gca,'Fontsize',handles.Preferences.FontSize);
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName]);
-    title(sprintf('Histogram of %s',AdjustedFeatureName));
+    title(['Histogram of ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize);
     ylimits = ylim;
     axis tight
     xlimits = xlim;
@@ -245,30 +248,21 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
-        ImageHandle = CPimagesc(QuantizedRGBimage);axis image
-        set(ImageHandle,'Tag',['Classified ', AdjustedObjectName])
-        set(gca,'Fontsize',handles.Preferences.FontSize)
+        CPimagesc(QuantizedRGBimage)
         title(['Classified ', AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
     end
     %%% Produce and plot histogram
     subplot(2,2,4)
     x = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(x,bins,1);
-    set(gca,'Fontsize',handles.Preferences.FontSize);
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName])
-    title(sprintf('Histogram of %s',AdjustedFeatureName))
+    title(['Histogram of ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize);
     axis tight
     xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
     xlimits(2) = max(UpperBinMax,edges(end));                          % so they can be used for the second histogram
     axis([xlimits ylim])
     handlescmap = handles.Preferences.LabelColorMap;
     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(64,NbrOfBins)));
-
-    %%% If we are using a user defined field, there is no corresponding
-    %%% image.
-    if ~strcmpi(FeatureType,'Ratio')
-        CPFixAspectRatio(NonQuantizedImage);
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

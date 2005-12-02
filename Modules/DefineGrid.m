@@ -174,12 +174,11 @@ drawnow
 if strcmp(AutoOrManual,'Automatic')
 %%% For automatic mode, the previously identified objects are
 %%% retrieved from the handles structure.
-    try
-        ImageToDisplay = handles.Pipeline.(['Segmented' ObjectName]);
+    try OrigImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
     catch error(['Image processing was canceled in the ', ModuleName, ' module because you specified automatic mode using the objects you called ', ObjectName, ' and these objects were not found by CellProfiler. Perhaps there is a typo.'])
     end
 elseif strcmp(AutoOrManual,'Manual')
-    ImageToDisplay = CPretrieveimage(handles,ImageName,ModuleName);
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
 end
 
 %%% If we are in 'Once' mode and this is not the first image cycle,
@@ -213,7 +212,7 @@ else
     %%% In Automatic mode, the objects' locations are used to define
     %%% the outer edges of the grid and the proper spacing.
     if strcmp(AutoOrManual,'Automatic')
-        tmp = regionprops(ImageToDisplay,'Centroid');
+        tmp = regionprops(OrigImage,'Centroid');
         Location = cat(1,tmp.Centroid);
         %%% Chooses the coordinates of the objects at the farthest edges
         %%% of the incoming image.
@@ -264,7 +263,7 @@ else
             %%% click on it to mark the control spot.
             ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
             CPfigure(handles,ThisModuleFigureNumber);
-            CPimagesc(ImageToDisplay);
+            CPimagesc(OrigImage);
             %%% Sets the top, left of the grid based on mouse clicks.
             title({'Click on the center of the top left control spot, then press Enter.','If you make an error, the Delete or Backspace key will delete the previously selected point.','If multiple points are clicked, the last point clicked will be used. BE PATIENT!'})
             drawnow
@@ -287,8 +286,8 @@ else
         end
     end
 
-    TotalHeight = size(ImageToDisplay,1);
-    TotalWidth = size(ImageToDisplay,2);
+    TotalHeight = size(OrigImage,1);
+    TotalWidth = size(OrigImage,2);
 
     GridInfo.XLocationOfLowestXSpot = XLocationOfLowestXSpot;
     GridInfo.YLocationOfLowestYSpot = YLocationOfLowestYSpot;
@@ -326,9 +325,15 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Deletes the figure to be sure that the text and such is not
     %%% retained in memory.
     %%% delete(ThisModuleFigureNumber)
-    %%% Recreates the figure.
+    drawnow
+    %%% Recreates the figure or Activates the appropriate figure window.
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
-    CPimagesc(ImageToDisplay);
+    %%% Usually this image should be fairly large, so we are pretending it's a
+    %%% 2x2 figure window rather than 1x1.
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByTwo');
+    end
+    CPimagesc(OrigImage);
     colormap(handles.Preferences.IntensityColorMap)
     set(gca,'fontsize',handles.Preferences.FontSize)
     %%% Draws the lines.

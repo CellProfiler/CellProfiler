@@ -136,6 +136,8 @@ if handles.Current.SetBeingAnalyzed == 1
 
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
+        drawnow
+        %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Description: ',Description],'position',[.05 .55 .8 .4],'BackgroundColor',[.7 .7 .9])
         uicontrol('style','text','units','normalized','HorizontalAlignment','left','string',['Text: ',Text],'position',[.05 .1 1 .7],'BackgroundColor',[.7 .7 .9])

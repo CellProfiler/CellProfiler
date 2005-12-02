@@ -32,7 +32,7 @@ function handles = ExpandOrShrink(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also any identify module.
+% See also any identify primary or secondary module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -244,16 +244,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     end
 
     drawnow
-    %%% Sets the width of the figure window to be appropriate (half width).
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = 0.5*originalsize(3);
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne')
+    end%%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
     CPimagesc(OriginalColoredLabelMatrixImage);
     title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);

@@ -6,8 +6,6 @@ function handles = Flip(handles)
 % SHORT DESCRIPTION:
 % Flips an image from top to bottom, left to right, or both.
 % *************************************************************************
-%
-% See also <nothing relevant>.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -110,18 +108,12 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
-
-    %%% Sets the window to be half as wide as usual.
-    originalsize = get(ThisModuleFigureNumber, 'position');
-    newsize = originalsize;
-    if newsize(3) ~= 250
-        newsize(3) = 250;
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
-
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByOne')
+    end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
     CPimagesc(OrigImage);

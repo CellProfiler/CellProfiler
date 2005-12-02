@@ -165,10 +165,12 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
-
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByTwo');
+    end
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
     subplot(2,2,1);
@@ -189,7 +191,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
 
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
     text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');
-    CPFixAspectRatio(OrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -25,7 +25,7 @@ function handles = IdentifyPrimManual(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also IDENTIFYPRIMAUTOMATIC
+% See also IdentifyPrimAutomatic.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -112,17 +112,15 @@ drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
-imagesc(LowResOrigImage);
+CPresizefigure(LowResOrigImage,'OneByOne')
+CPimagesc(LowResOrigImage);
 colormap(handles.Preferences.IntensityColorMap);
-axis off
-axis image
 [nrows,ncols] = size(LowResOrigImage);
 
 AxisHandle = gca;
-set(gca,'fontsize',handles.Preferences.FontSize)
 title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
     {'Press enter when finished, the first and last points will be connected automatically.'},...
-    {'The backspace key or right mouse button will erase the last clicked point.'}]);
+    {'The backspace key or right mouse button will erase the last clicked point.'}],'fontsize',handles.Preferences.FontSize);
 
 %%% Manual outline of the object, see local function 'getpoints' below.
 %%% Continue until user has drawn a valid shape
@@ -144,14 +142,17 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     drawnow
+    %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(LowResOrigImage,'TwoByTwo');
+    end
     subplot(2,2,1); CPimagesc(LowResOrigImage); title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); CPimagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
     FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
     subplot(2,2,3); CPimagesc(FinalOutlineOnOrigImage); title([ObjectName, ' Outline']);
     subplot(2,2,4); CPimagesc(ColoredLabelMatrixImage); title(['Identified ' ObjectName]);
-    CPFixAspectRatio(LowResOrigImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

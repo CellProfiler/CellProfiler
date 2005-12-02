@@ -7,13 +7,16 @@ function handles = DisplayDataOnImage(handles)
 % Produce image with measured data on top of measured objects.
 % *************************************************************************
 %
+% The resulting images with data on top can be saved using the Save Images
+% module.
+%
 % Feature Number:
 % The feature number specifies which feature from the Measure module will
 % be used for display. See each Measure module's help for the numbered
 % list of the features measured by that module.
 %
-% See also MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
-% MEASUREOBJECTTEXTURE, MEASURECORRELATION
+% See also MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -52,10 +55,10 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
-%choiceVAR02 = Correlation
 %choiceVAR02 = Intensity
-%choiceVAR02 = Neighbors
 %choiceVAR02 = Texture
+%choiceVAR02 = Correlation
+%choiceVAR02 = Neighbors
 %inputtypeVAR02 = popupmenu custom
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -67,7 +70,7 @@ if isempty(FeatureNo)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
-%textVAR04 = If using INTENSITY or TEXTURE measures, which image was used to make the measurements?
+%textVAR04 = For INTENSITY or TEXTURE features, which image was used to make the measurements?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -142,10 +145,12 @@ else
     %%% DISPLAY %%%
     %%%%%%%%%%%%%%%
     drawnow
-
+    
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    %%% Creates the display window.
+    drawnow
+    %%% Activates the appropriate figure window.
     DataHandle = CPfigure(handles,ThisModuleFigureNumber);
+    
     CPimagesc(OrigImage);
     colormap(gray);
     FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};

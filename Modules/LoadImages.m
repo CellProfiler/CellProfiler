@@ -649,15 +649,12 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure('','NarrowText')
+    end
     for n = 1:length(ImageName)
+        %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            %%% Sets the window to be half as wide as usual.
-            originalsize = get(ThisModuleFigureNumber, 'position');
-            newsize = originalsize;
-            newsize(3) = 250;
-            set(ThisModuleFigureNumber, 'position', newsize);
-        end
         if iscell(ImageName)
             TextString = [ImageName{n},': ',FileNames{n}];
         else

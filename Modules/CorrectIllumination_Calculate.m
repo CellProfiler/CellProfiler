@@ -418,6 +418,9 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByTwo');
+    end
     if strcmp(IntensityChoice,'Regular')
         %%% Whether these images exist depends on whether the images have
         %%% been calculated yet (if running in pipeline mode, this won't occur
@@ -439,7 +442,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
             end
         else subplot(2,2,1); CPimagesc(OrigImage);
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-            CPFixAspectRatio(OrigImage);
         end
         if strcmp(ReadyFlag, 'Ready')
             if exist('DilatedImage','var')
@@ -481,7 +483,6 @@ if any(findobj == ThisModuleFigureNumber) == 1;
             CPimagesc(AverageMinimumsImage);
             title('Average minimums image');
         end
-        CPFixAspectRatio(OrigImage);
     end
 end
 

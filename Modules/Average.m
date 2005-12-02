@@ -127,28 +127,31 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
+    %     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    %         originalsize = get(ThisModuleFigureNumber, 'position');
+    %         newsize = originalsize;
+    %         newsize(2) = originalsize(2) + originalsize(4)/2;
+    %         newsize(3) = originalsize(3)/2;
+    %         newsize(4) = originalsize(4)/2;
+    %         set(ThisModuleFigureNumber, 'position', newsize);
+    %         drawnow
+    %     end
+    drawnow
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,ThisModuleFigureNumber);
+    CPimagesc(AveragedImage);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(2) = originalsize(2) + originalsize(4)/2;
-        newsize(3) = originalsize(3)/2;
-        newsize(4) = originalsize(4)/2;
-        set(ThisModuleFigureNumber, 'position', newsize);
-        drawnow
+        CPresizefigure(AveragedImage,'OneByOne')
     end
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
         %%% The averaged image is displayed the first time through the set.
         %%% For subsequent cycles, this figure is not updated at all, to
         %%% prevent the need to load the averaged image from the handles
-        %%% structure. Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
-        CPimagesc(AveragedImage);
+        %%% structure.
         title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
         %%% The accumulated averaged image so far is displayed each time
-        %%% through the pipeline. Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
-        CPimagesc(AveragedImage);
+        %%% through the pipeline.
         title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
     end
 end

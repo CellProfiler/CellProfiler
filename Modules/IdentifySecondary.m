@@ -151,8 +151,7 @@ function handles = IdentifySecondary(handles)
 % postprocess. IdentifySecPropagateSubfunction is the subfunction
 % implemented in C and MEX to perform the propagate algorithm.
 %
-% See also IDENTIFYSECPROPAGATESUBFUNCTION, IDENTIFYSECDISTANCE,
-% IDENTIFYSECWATERSHED.
+% See also Identify primary modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -713,6 +712,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         else
             CPfigure(handles,SecondaryTestFig);
         end
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo');
+        end
         subplot(2,2,IdentChoiceNumber);
         CPimagesc(ObjectOutlinesOnOrigImage);
         title(IdentChoiceList(IdentChoiceNumber));
@@ -803,6 +805,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             drawnow
             %%% Activates the appropriate figure window.
             CPfigure(handles,ThisModuleFigureNumber);
+            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+                CPresizefigure(OrigImage,'TwoByTwo');
+            end
             ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/numel(FinalLabelMatrixImage);
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
@@ -818,7 +823,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% image with outlines drawn for both the primary and secondary
             %%% objects.
             subplot(2,2,4); CPimagesc(BothOutlinesOnOrigImage); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
-            CPFixAspectRatio(OrigImage);
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

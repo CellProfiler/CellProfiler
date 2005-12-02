@@ -24,7 +24,7 @@ function handles = IdentifyTertiarySubregion(handles)
 % perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 % objects.
 %
-% See also identify Primary and Identify Secondary modules.
+% See also Identify Primary and Identify Secondary modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -201,13 +201,24 @@ if any(findobj == ThisModuleFigureNumber);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
     SecondaryObjectImage = CPlabel2rgb(handles,SecondaryObjectImage);
     PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
+    drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); CPimagesc(PrimaryObjectImage); title([PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); CPimagesc(SecondaryObjectImage); title([SecondaryObjectName, ' Image']);
-    subplot(2,2,3); CPimagesc(ColoredLabelMatrixImage); title([SubregionObjectName, ' Image']);
-    subplot(2,2,4); CPimagesc(FinalOutline); title([SubregionObjectName, ' Outlines']);
-    CPFixAspectRatio(PrimaryObjectImage);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(PrimaryObjectImage,'TwoByTwo');
+    end
+    subplot(2,2,1); 
+    CPimagesc(PrimaryObjectImage); 
+    title([PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,2); 
+    CPimagesc(SecondaryObjectImage); 
+    title([SecondaryObjectName, ' Image']);
+    subplot(2,2,3); 
+    CPimagesc(ColoredLabelMatrixImage); 
+    title([SubregionObjectName, ' Image']);
+    subplot(2,2,4); 
+    CPimagesc(FinalOutline); 
+    title([SubregionObjectName, ' Outlines']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

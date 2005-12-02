@@ -146,9 +146,11 @@ handles = CPaddmeasurements(handles,NumObjectName,'Ratio',NewFieldName,FinalMeas
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The figure window display is unnecessary for this module, so the figure
-%%% window is closed the first time through the module.
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
-    close(ThisModuleFigureNumber);
+%%% The figure window display is unnecessary for this module, so it is
+%%% closed during the starting image cycle.
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    if any(findobj == ThisModuleFigureNumber)
+        close(ThisModuleFigureNumber)
+    end
 end

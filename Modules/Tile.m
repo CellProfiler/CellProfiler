@@ -277,7 +277,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         FontSize = handles.Preferences.FontSize;
         NewFigureSize = [60,250, ScreenSize(3)-200, ScreenSize(4)-350];
         set(ThisModuleFigureNumber, 'Position', NewFigureSize)
-        axis image
+        axis image %%% OK to use axis image here.
 
         ToggleGridButtonFunction = ...
             ['Handles = findobj(''type'',''line'');'...

@@ -113,7 +113,6 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(OrigImage);
-axis image, pixval off;%#ok We want to ignore MLint error checking for this line.
 drawnow
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')
@@ -228,9 +227,7 @@ drawnow
 CPfigure(FigureHandle);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(RotatedImage);
-axis image;
-title('Rotated Image');
-pixval off;
+title('Rotated Image','fontsize',handles.Preferences.FontSize);
 try %#ok We want to ignore MLint error checking for this line.
     delete(PatienceHandle)
 end

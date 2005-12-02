@@ -7,13 +7,15 @@ function handles = DisplayMeasurement(handles)
 % Plot measured data in several formats.
 % *************************************************************************
 %
+% The resulting plots can be saved using the Save Images module.
+%
 % Feature Number:
 % The feature number specifies which feature from the Measure module will
 % be used for plotting. See each Measure module's help for the numbered
 % list of the features measured by that module.
 %
-% See also MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
-% MEASUREOBJECTTEXTURE, MEASURECORRELATION
+% See also MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -60,10 +62,10 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
 %choiceVAR03 = AreaShape
-%choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
-%choiceVAR03 = Neighbors
 %choiceVAR03 = Texture
+%choiceVAR03 = Correlation
+%choiceVAR03 = Neighbors
 %inputtypeVAR03 = popupmenu custom
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -75,7 +77,7 @@ if isempty(FeatureNo)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
-%textVAR05 = If using INTENSITY or TEXTURE measures, which image would you like to process?
+%textVAR05 = For INTENSITY or TEXTURE features, which image would you like to process?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -95,10 +97,10 @@ ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = Which category of measurements would you like to use?
 %choiceVAR09 = AreaShape
-%choiceVAR09 = Correlation
 %choiceVAR09 = Intensity
-%choiceVAR09 = Neighbors
 %choiceVAR09 = Texture
+%choiceVAR09 = Correlation
+%choiceVAR09 = Neighbors
 %inputtypeVAR09 = popupmenu custom
 FeatureType2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
@@ -110,7 +112,7 @@ if isempty(FeatureNo2)
     error(['Image processing was canceled in the ', ModuleName, ' module because you entered an incorrect Feature Number.']);
 end
 
-%textVAR11 = If using INTENSITY or TEXTURE measures, which image would you like to process?
+%textVAR11 = For INTENSITY or TEXTURE features, which image would you like to process?
 %infotypeVAR11 = imagegroup
 %inputtypeVAR11 = popupmenu
 Image2 = char(handles.Settings.VariableValues{CurrentModuleNum,11});
@@ -153,6 +155,8 @@ elseif strcmp(PlotType,'Scatter 2')
 end
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+drawnow
+%%% Activates the appropriate figure window.
 FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 
 if PlotType == 4

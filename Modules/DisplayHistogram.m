@@ -7,13 +7,15 @@ function handles = DisplayHistogram(handles)
 % Produces a histogram of measurements.
 % *************************************************************************
 %
+% The resulting histograms can be saved using the Save Images module.
+%
 % Feature Number:
 % The feature number specifies which feature from the Measure module will
 % be used for the histogram. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
-% See also MEASUREOBJECTINTENSITY, MEASUREOBJECTAREASHAPE,
-% MEASUREOBJECTTEXTURE, MEASURECORRELATION
+% See also MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureObjectTexture, MeasureCorrelation, MeasureNeighbors.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -52,10 +54,10 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
-%choiceVAR02 = Correlation
 %choiceVAR02 = Intensity
-%choiceVAR02 = Neighbors
 %choiceVAR02 = Texture
+%choiceVAR02 = Correlation
+%choiceVAR02 = Neighbors
 %inputtypeVAR02 = popupmenu custom
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -67,7 +69,7 @@ if isempty(FeatureNumber)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 
-%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements do you want to use?
+%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements do you want to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -229,12 +231,14 @@ end
 %%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-
 StdUnit = 'point';
 StdColor = get(0,'DefaultUIcontrolBackgroundColor');
 PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
-%%% Creates the display window.
+
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+
+drawnow
+%%% Activates the appropriate figure window.
 HistHandle = CPfigure(handles,ThisModuleFigureNumber);
 
 h = subplot(1,1,1);

@@ -32,8 +32,8 @@ function handles = FilterByObjectMeasurement(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also MEASUREOBJECTAREASHAPE, MEASUREOBJECTINTENSITY,
-% MEASUREOBJECTTEXTURE.
+% See also MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureObjectTexture, MeasureCorrelation, CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -76,14 +76,14 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements do you want to filter by?  This module must be run after a Measure module.
 %choiceVAR03 = AreaShape
-%choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
-%choiceVAR03 = Ratio
 %choiceVAR03 = Texture
+%choiceVAR03 = Correlation
+%choiceVAR03 = Ratio
 %inputtypeVAR03 = popupmenu
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = For INTENSITY or TEXTURE measures, which image's measurements do you want to use (for other measurements, this will only affect the display)?
+%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -188,14 +188,20 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
+    drawnow
+    %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
-    %%% A subplot of the figure window is set to display the original image.
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByTwo');
+    end
+    %%% A subplot of the figure window is set to display the original
+    %%% image.
     subplot(2,2,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,3); CPimagesc(LabelMatrixImage);
-    title(['Segmented ',ObjectName]);
+    title(['Original ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     try

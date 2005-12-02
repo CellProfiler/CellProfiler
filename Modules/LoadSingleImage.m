@@ -6,6 +6,8 @@ function handles = LoadSingleImage(handles)
 % SHORT DESCRIPTION:
 % Loads a single image, which will be used for all image cycles.
 % *************************************************************************
+% Note: for most purposes, you will probably want to use the Load Images
+% module, not this one.
 %
 % Tells CellProfiler where to retrieve a single image and gives the image a
 % meaningful name for the other modules to access.  The module only
@@ -26,8 +28,8 @@ function handles = LoadSingleImage(handles)
 % image from a different subfolder of the parent of the default image
 % folder.
 %
-% If more than four images per cycle must be loaded, more than one Load
-% Images module can be run sequentially. Running more than one of these
+% If more than four single images must be loaded, more than one Load Single
+% Image module can be run sequentially. Running more than one of these
 % modules also allows images to be retrieved from different folders.
 %
 % See also LOADIMAGES.
@@ -245,15 +247,13 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber)
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure('','NarrowText')
+    end
     for n = 1:length(ImageName)
+        drawnow
+        %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            %%% Sets the window to be half as wide as usual.
-            originalsize = get(ThisModuleFigureNumber, 'position');
-            newsize = originalsize;
-            newsize(3) = 250;
-            set(ThisModuleFigureNumber, 'position', newsize);
-        end
         if iscell(ImageName)
             TextString = [ImageName{n},': ',FileNames{n}];
         else

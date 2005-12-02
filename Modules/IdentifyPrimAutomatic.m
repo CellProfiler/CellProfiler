@@ -228,7 +228,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also <nothing relevant>
+% See also IdentifyPrimManual, IdentifySecondary.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -812,32 +812,26 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 if any(findobj == ThisModuleFigureNumber)
                     drawnow
+                    %%% Activates the appropriate figure window.
                     CPfigure(handles,ThisModuleFigureNumber);
+                    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+                        CPresizefigure(OrigImage,'TwoByTwo')
+                    end
                     subplot(2,2,1)
-                    ImageHandle = CPimagesc(OrigImage);
-                    set(ImageHandle,'Tag',['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)])
-                    axis image
+                    CPimagesc(OrigImage);
                     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
-                    set(gca,'fontsize',handles.Preferences.FontSize)
                     hx = subplot(2,2,2);
                     if sum(sum(Objects(:)))>0
                         im = CPlabel2rgb(handles,Objects);
                     else
                         im = Objects;
                     end
-                    ImageHandle = image(im);
-                    set(ImageHandle,'ButtonDownFcn','CPImageTool','Tag',sprintf('Segmented %s',ObjectName))
-                    title(sprintf('Segmented %s',ObjectName),'fontsize',handles.Preferences.FontSize);
-                    axis image,set(gca,'fontsize',handles.Preferences.FontSize)
-
+                    CPimagesc(im);
+                    title(['Segmented ',ObjectName],'fontsize',handles.Preferences.FontSize);
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                    ImageHandle = image(OutlinedObjects);
-                    set(ImageHandle,'ButtonDownFcn','CPImageTool','Tag','Outlined objects')
+                    CPimagesc(OutlinedObjects);
                     title('Outlined objects','fontsize',handles.Preferences.FontSize);
-                    axis image,set(gca,'fontsize',handles.Preferences.FontSize)
-
-                    CPFixAspectRatio(OrigImage);
 
                     %%% Report numbers
                     posx = get(hx,'Position');
@@ -889,19 +883,24 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                     drawnow
                     CPfigure(handles,ThisModuleFigureNumber);
+                    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+                        CPresizefigure(OrigImage,'TwoByTwo');
+                    end
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+                    subplot(2,2,1); CPimagesc(OrigImage);
+                    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
                     subplot(2,2,2);
-                    CPimagesc(ColoredLabelMatrixImage); title(['Identified ',ObjectName]);
+                    CPimagesc(ColoredLabelMatrixImage); 
+                    title(['Identified ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); CPimagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
-                    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage); title([ObjectName, ' Outlines on Input Image']);
-                    CPFixAspectRatio(OrigImage);
+                    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage); 
+                    title([ObjectName, ' Outlines on Input Image']);
                 end
             end
 

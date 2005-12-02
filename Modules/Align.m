@@ -166,10 +166,13 @@ if any(findobj == ThisModuleFigureNumber)
         newsize(3) = 250;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
-
+    
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OriginalRGB,'TwoByOne')
+    end
     if strcmp(AdjustImage,'Yes')
         %%% A subplot of the figure window is set to display the original
         %%% image.
@@ -184,7 +187,7 @@ if any(findobj == ThisModuleFigureNumber)
     end
     displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9],'FontSize',handles.Preferences.FontSize);
     set(displaytexthandle,'string',['Offset: ',Results])
-    set(ThisModuleFigureNumber,'toolbar','figure')
+%    set(ThisModuleFigureNumber,'toolbar','figure')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

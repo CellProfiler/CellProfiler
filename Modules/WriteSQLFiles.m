@@ -119,7 +119,7 @@ if DoWriteSQL,
     %%% set.  Otherwise, the TimeElapsed array is missing the last
     %%% element.  The corresponding 'tic' is in CellProfiler.m.
     handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
-    CPConvertSQL(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'');
+    CPconvertsql(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -5,7 +5,7 @@ function ExportSQL2(handles)
 %
 % This tool exports measurements from one or several CellProfiler
 % output files to delimited text files. It also creates an SQL
-% script that puts the measurements into an SQL database. This tool calls CPConvertSQL
+% script that puts the measurements into an SQL database. This tool calls CPconvertsql
 % function to do the actuall exporting, which is same as WriteSQL module.
 %
 % Current known limitations and things to consider:
@@ -141,7 +141,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
     % for calling from data tool, no tableprefix is asked from user, leave
     % it as blank
-    CPConvertSQL(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet,'');
+    CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet,'');
 
 end % End loop over data files
 

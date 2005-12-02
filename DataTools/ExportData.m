@@ -95,7 +95,7 @@ end
 
 
 %%% Export measurements, call CPconvertsql subfunction
-%CPConvertSQL(handles, OutDir, OutfilePrefix, DBname, TablePrefix, FirstSet, LastSet,ExportType)
+%CPconvertsql(handles, OutDir, OutfilePrefix, DBname, TablePrefix, FirstSet, LastSet,ExportType)
 if ~isempty(ExportInfo.MeasurementFilename)
     %figure out the first and last set
     if isfield(handles.Measurements, 'BatchInfo'),
@@ -114,7 +114,7 @@ if ~isempty(ExportInfo.MeasurementFilename)
     end
     %%
     
-    try CPConvertSQL(handles,RawPathname,ExportRawFileName,'','',FirstSet, LastSet,ExportInfo);
+    try CPconvertsql(handles,RawPathname,ExportRawFileName,'','',FirstSet, LastSet,ExportInfo);
     catch errordlg(lasterr)
         return
     end

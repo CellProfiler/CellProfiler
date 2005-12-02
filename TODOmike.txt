@@ -6,8 +6,6 @@ Mike's TODO list
 
 - Website: Include Forum on main page, think of layout
 
-- CPretrieveimage: check Exclude, MeasureObjectIntensity, Tile
-
 - Test SaveImageAs
 
 - Look through ExportDataToFiles

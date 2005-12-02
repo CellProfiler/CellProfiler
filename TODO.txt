@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+
+
 (Requested by Anne 12-01-05) - Mike, check out 'dependency report' (like m lint checker) which points out two things: several 'UNKNOWN' functions which are likely errors in code, and also it points out what toolboxes we are using so that we can see if we are using anything other than the image toolbox.
 
 (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
@@ -11,7 +13,33 @@ It seems that in several places, like MeasureImageSaturationBlur, we say "Percen
 TechDiagnosis 	- DONE
 SaveCPcode	- DONE
 
-(Requested by Anne 12-01-05) - If everyone is happy with CPimagesc containing "axis image" (which keeps the aspect ratio of images proper), then we should remove the lines in the code that say "axis image" - there are about 10 instances in about 6 modules where we use this.
+(Requested by Anne 12-02-05) -Correct the capitalization of all CPsubfunctions.
+
+(Requested by Anne 12-02-05) In Classify objects, it looks like display won't work if using Ratios. Does that still make sense, or is it outdated?
+
+(Requested by Anne 12-02-05) Does DisplayMeasurement work with Ratios? If so, add it as selectable in variable 3 and 9.. and add it to the see also.
+
+(Requested by Anne 12-02-05) Does Display Histogram work with Ratios,If so, add it as selectable in variable 2. and add it to the see also.
+
+(Requested by Anne 12-02-05) Does Display Data on Image work with Ratios,If so, add it as selectable in variable 2. and add it to the see also.
+
+(Requested by Anne 12-02-05) Does FilterBy object measurement work with Neighbors?  If so, add it as selectable in variable 3. and add it to the see also.
+
+(Requested by Anne 12-02-05) This code is commented out of DefineGrid. should it be?
+    %%% Deletes the figure to be sure that the text and such is not
+    %%% retained in memory.
+    %%% delete(ThisModuleFigureNumber)
+
+(Requested by Anne 12-02-05) I feel pretty strongly that CPretrieveimage should use text as arguments rather than numbers.  E.g. the colorflag should be 'mustbecolor' 'mustbegray' instead of 2 or 3. That way, when you are in a module and look at the line you can figure out what checks it is making. I'm happy to go through and modify this if necessary.
+
+(Requested by Anne 12-02-05) Can we prevent CP main window from being resized? If you click on it during CPresizefigure which is supposed to be operating on one of the other figure windows, it will resize the main GUI!!
+
+(Requested by Anne 12-02-05) Are we using CPlabel2rgb everywhere we ought to? just curious.
+
+(Requested by Anne 12-02-05) TWO OPTIONS TO FIX FONT SIZE FOR TITLES IN ALL FIGURE WINDOWS:
+1. For every use of text that's not an image title, be sure to use 'fontsize',handles.Preferences.FontSize.
+2. add an argument to CPimagesc: FontSize, passed in as handles.Preferences.FontSize and then add this line to CPimagesc:
+set(gca,'fontsize',handles.Preferences.FontSize)
 
 - Make compiled CellProfiler work on cluster
 

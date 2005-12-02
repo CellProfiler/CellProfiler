@@ -25,31 +25,6 @@ DownloadNewModules	- DONE
 2. add an argument to CPimagesc: FontSize, passed in as handles.Preferences.FontSize and then add this line to CPimagesc:
 set(gca,'fontsize',handles.Preferences.FontSize)
 
-- Make compiled CellProfiler work on cluster
-
-- Check through each module (~2 per day):
-EVERYONE:
-	- (Requested by Anne) - Test each module on color vs grayscale and make
-		sure they all work or have some type of error catching.
-THIS HAS ALREADY BEEN DONE FOR ALL:
-	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions
-		consistent - at the very least we should try to be consistent with
-		stating "Choose" (rather than "select"), and phrasing things as
-		questions versus "Enter the ..."   Also, look through the variable
-		descriptions for uses of computer-ific words like 'segmentation'.
-	- Write help if DNE
-	- Check that fontsize is never hard-coded and instead uses the user's preference.
-	- Check Font
-	- Go through the code looking for instances of the term "image set" and
-		replace with "cycle" where appropriate.
-	- check format of error messages.
-	- CPfigure rather than figure. DataLayout tool in particular is using figure.
-	- Smart Indent
-	- M Lint error checking
-	- CPimagesc
-	- Remove 'saving images' text
-	- CPwhichmodule
-	- CPwhichmodulefigurenumber
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - Submit code to Sourceforge for distribution/easy updating? EVeryone seems to recommend this for open-source software.
@@ -75,19 +50,3 @@ the analysis of cell micrograph, I saw you and your colleagues' great work on Ce
                                                            yours sincerely
                                                            Xiang Jian
 xiangjianjian0@hotmail.com
----------------------------------------------------
-POST-PUBLIC RELEASE SUPPORT:
-     - Monitor imaging newsgroups and inform people about the software
-     - Provide technical support/help desk
-     - Fix bugs
-     - Maintain for new releases of OS's and Matlab
-     - Check Matlab Central for useful code to incorporate into
-       CellProfiler or its modules (last checked on 9-16-04:
-       Biotech/medical, Graphics (all 3 categories), Image Processing,
-       Utilities - GUI Tools & examples, and Misc.) 
-     - Organize training workshops
-     - Present at conferences, especially microscope facility director-oriented ones.
----------------------------------------------------
-THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
-- update the image file formats that are readable in LoadImages modules. 
-- For many functions we have made our own CP versions - check the new matlab code to see if they've changed anything that would warrant us re-creating the CP subfunctions to use the new code.

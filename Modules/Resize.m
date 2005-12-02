@@ -116,21 +116,18 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 %%% Check whether that figure is open. This checks all the figure handles
 %%% for one whose handle is equal to the figure number for this module.
 if any(findobj == ThisModuleFigureNumber)
-    %%% Sets the width of the figure window to be appropriate (half width).
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = 0.5*originalsize(3);
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
     %%% Activates the appropriate figure window.
     CPfigure(handles,ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByOne')
+    end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); CPimagesc(OrigImage);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Resized
     %%% Image.
-    subplot(2,1,2); CPimagesc(ResizedImage); title('Resized Image');
+    subplot(2,1,2); CPimagesc(ResizedImage); 
+    title('Resized Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

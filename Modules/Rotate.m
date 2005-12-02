@@ -22,6 +22,8 @@ function handles = Rotate(handles)
 % unless you choose to crop away the incomplete rows and columns of the
 % image. This cropping will produce an image that is not the exact same
 % size as the original, which may affect downstream modules.
+%
+% See also Flip.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -221,7 +223,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
 %%% Figure must be displayed for this module.
 CPfigure(FigureHandle);

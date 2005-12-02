@@ -1,4 +1,4 @@
-function CPExportSQL(handles)
+function CPexportsql(handles)
 
 % This subfunction exports measurements from one or several CellProfiler
 % output files to delimited text files. It also creates an SQL script that

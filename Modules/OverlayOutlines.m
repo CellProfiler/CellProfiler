@@ -76,21 +76,8 @@ SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-try
-    OrigImage = handles.Pipeline.(ImageName);
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because the image ' ImageName ' could not be found. Perhaps there is a typo?']);
-end
-
-try
-    OutlineImage = handles.Pipeline.(OutlineName);
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because the image ' OutlineName ' could not be found. Perhaps there is a typo?  Make sure you saved the outlines in an earlier module.']);
-end
-
-if any(size(OrigImage,1) ~= size(OutlineImage,1)) ||  any(size(OrigImage,2) ~= size(OutlineImage,2))
-    error(['Image processing was canceled in the ', ModuleName, ' module because the size of the image, ' num2str(size(OrigImage)) ' is not the same as the size of the outlines, ' num2str(size(OutlineImage))]);
-end
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
+OutlineImage = CPretrieveimage(handles,OutlineName,ModuleName,2,0,size(OrigImage));
 
 if size(OrigImage,3) ~= 3
     if strcmp(MaxType,'Max of image')
@@ -125,7 +112,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
 
     FigHandle = CPfigure(handles,ThisModuleFigureNumber);
 

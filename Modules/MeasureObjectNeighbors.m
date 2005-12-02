@@ -76,12 +76,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['Segmented',ObjectName];
-%%% Checks whether the image exists in the handles structure.
-if ~isfield(handles.Pipeline,fieldname)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a segmentation module.  You specified that the desired objects were named ', ObjectName, '. These objects were not found.']);
-end
-IncomingLabelMatrixImage = handles.Pipeline.(fieldname);
+IncomingLabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

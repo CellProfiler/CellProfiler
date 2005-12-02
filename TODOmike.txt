@@ -1,10 +1,12 @@
 Mike's TODO list
 
+- Increase Test Mode for IdentifyPrimAutomatic and Secondary
+
 - Jason: Design method for scaling grid and getting locations
 
 - Website: Include Forum on main page, think of layout
 
-- CPretrieveimage: check Exclude
+- CPretrieveimage: check Exclude, MeasureObjectIntensity, Tile
 
 - SpeedUpCellProfiler removed FileList for AVI files which does not work
 

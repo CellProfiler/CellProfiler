@@ -95,50 +95,22 @@ drawnow
 %%% blue.
 if ~strcmp(BlueImageName, 'Leave this black')
     %%% Read (open) the images and assign them to variables.
-    fieldname = BlueImageName;
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if ~isfield(handles.Pipeline, fieldname)
-        %%% If the image is not there, an error message is produced.  The error
-        %%% is not displayed: The error function halts the current function and
-        %%% returns control to the calling function (the analyze all images
-        %%% button callback.)  That callback recognizes that an error was
-        %%% produced because of its try/catch loop and breaks out of the image
-        %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ',BlueImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    %%% Reads the image.
-    BlueImage = handles.Pipeline.(fieldname);
+    BlueImage = CPretrieveimage(handles,BlueImageName,ModuleName,2,1)
     BlueImageExists = 1;
-    if max(BlueImage(:)) > 1 || min(BlueImage(:)) < 0
-        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-    end
 else
     BlueImageExists = 0;
 end
 
-drawnow
 %%% Repeat for Green and Red.
 if ~strcmp(GreenImageName, 'Leave this black')
-    if ~isfield(handles.Pipeline, GreenImageName)
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', GreenImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    GreenImage = handles.Pipeline.(GreenImageName);
+    GreenImage = CPretrieveimage(handles,GreenImageName,ModuleName,2,1)
     GreenImageExists = 1;
-    if max(GreenImage(:)) > 1 || min(GreenImage(:)) < 0
-        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-    end
 else GreenImageExists = 0;
 end
 
 if ~strcmp(RedImageName, 'Leave this black')
-    if ~isfield(handles.Pipeline, RedImageName)
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', RedImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    RedImage = handles.Pipeline.(RedImageName);
+    RedImage = CPretrieveimage(handles,RedImageName,ModuleName,2,1)
     RedImageExists = 1;
-    if max(RedImage(:)) > 1 || min(RedImage(:)) < 0
-        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-    end
 else RedImageExists = 0;
 end
 drawnow

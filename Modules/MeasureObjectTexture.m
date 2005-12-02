@@ -185,29 +185,12 @@ for i = 1:6
 
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImage".
-    fieldname = ['', ImageName];
-    %%% Checks whether the image exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that loads a greyscale image.  You specified that the desired image was named ', ImageName, ' which should have produced an image in the handles structure called ', fieldname, '. The module cannot locate this image.']);
-    end
-    OrigImage = handles.Pipeline.(fieldname);
-
-
-    %%% Checks that the original image is two-dimensional (i.e. not a color
-    %%% image), which would disrupt several of the image functions.
-    if ndims(OrigImage) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because this module requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-    end
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
 
     if ~strcmp(ObjectName,'Image')
         %%% Retrieves the label matrix image that contains the segmented objects which
         %%% will be measured with this module.
-        fieldname = ['Segmented', ObjectName];
-        %%% Checks whether the image exists in the handles structure.
-        if isfield(handles.Pipeline, fieldname) == 0,
-            error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the objects identified.  You specified that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. The module cannot locate this image.']);
-        end
-        LabelMatrixImage = handles.Pipeline.(fieldname);
+        LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

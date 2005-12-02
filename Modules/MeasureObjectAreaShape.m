@@ -199,12 +199,7 @@ for i = 1:length(ObjectNameList)
 
     %%% Retrieves the label matrix image that contains the segmented objects which
     %%% will be measured with this module.
-    fieldname = ['Segmented', ObjectName];
-    %%% Checks whether the image exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname) == 0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the objects identified.  You specified in this module that the primary objects were named ',ObjectName,' which should have produced an image in the handles structure called ', fieldname, '. This module cannot locate this image.']);
-    end
-    LabelMatrixImage = handles.Pipeline.(fieldname);
+    LabelMatrixImage =  CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%

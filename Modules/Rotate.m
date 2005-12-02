@@ -106,10 +106,7 @@ Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if ~isfield(handles.Pipeline, ImageName)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to load an image. You specified that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The module cannot find this image.']);
-end
-OrigImage = handles.Pipeline.(ImageName);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
 
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -227,6 +224,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% Figure must be displayed for this module.
 CPfigure(FigureHandle);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(RotatedImage);

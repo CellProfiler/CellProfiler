@@ -58,21 +58,11 @@ drawnow
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
-fieldname = ['Segmented', SubObjectName];
-%%% Checks whether the image exists in the handles structure.
-if ~isfield(handles.Pipeline, fieldname)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified that the primary objects were named ', SubObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The module cannot locate this image.']);
-end
-SubObjectLabelMatrix = handles.Pipeline.(fieldname);
+SubObjectLabelMatrix = CPretrieveimage(handles,['Segmented', SubObjectName],ModuleName,2,0);
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
-fieldname = ['Segmented', ParentName];
-%%% Checks whether the image exists in the handles structure.
-if ~isfield(handles.Pipeline, fieldname)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified that the primary objects were named ', ParentName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  The module cannot locate this image.']);
-end
-ParentObjectLabelMatrix = handles.Pipeline.(fieldname);
+ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],ModuleName,2,0);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

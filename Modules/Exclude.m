@@ -104,11 +104,7 @@ drawnow
 
 %%% Reads (opens) the images to be used for analysis.
 %%% Checks whether the images exist in the handles structure.
-fieldname = ['Segmented',ObjectName];
-if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to identify primary objects. You specified that these objects were called ', ObjectName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
-end
-SegmentedObjectImage = handles.Pipeline.(fieldname);
+SegmentedObjectImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName);
 
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.

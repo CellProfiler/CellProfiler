@@ -69,12 +69,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-fieldname = ['',  ImageName];
-%%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to this module, you must have previously run a module to load an image. You specified in the ', ModuleName, ' module that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', fieldname, '. The ',ModuleName,' module cannot find this image.']);
-end
-OrigImage = handles.Pipeline.(fieldname);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
 
 if strcmp(LeftToRight,'No') && strcmp(TopToBottom,'No')
     error(['Image processing was canceled in the ', ModuleName, ' module because with the current settings you have not chosen to flip the image.']);

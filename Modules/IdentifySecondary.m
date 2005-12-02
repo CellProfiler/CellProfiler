@@ -276,56 +276,20 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
     %%% Reads (opens) the image you want to analyze and assigns it to a
     %%% variable.
-    fieldname = ['', ImageName];
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
-        %%% If the image is not there, an error message is produced.  The error
-        %%% is not displayed: The error function halts the current function and
-        %%% returns control to the calling function (the analyze all images
-        %%% button callback.)  That callback recognizes that an error was
-        %%% produced because of its try/catch loop and breaks out of the image
-        %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    OrigImage = handles.Pipeline.(fieldname);
-
-    if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-        CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-    end
-
-    %%% Checks that the original image is two-dimensional (i.e. not a color
-    %%% image), which would disrupt several of the image functions.
-    if ndims(OrigImage) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-    end
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
 
     %%% Retrieves the preliminary label matrix image that contains the primary
     %%% segmented objects which have only been edited to discard objects
     %%% that are smaller than a certain size.  This image
     %%% will be used as markers to segment the secondary objects with this
     %%% module.  Checks first to see whether the appropriate image exists.
-    fieldname = ['SmallRemovedSegmented', PrimaryObjectName];
-    %%% Checks whether the image exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in this module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  This module cannot locate this image.']);
-    end
-    PrelimPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
+    PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
 
     %%% Retrieves the label matrix image that contains the edited primary
     %%% segmented objects which will be used to weed out which objects are
     %%% real - not on the edges and not below or above the specified size
     %%% limits. Checks first to see whether the appropriate image exists.
-    fieldname = ['Segmented', PrimaryObjectName];
-    %%% Checks whether the image exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the preliminary primary objects identified.  You specified in this module that the primary objects were named ', PrimaryObjectName, ' as a result of the previous module, which should have produced an image called ', fieldname, ' in the handles structure.  This module cannot locate this image.']);
-    end
-    EditedPrimaryLabelMatrixImage = handles.Pipeline.(fieldname);
-
-    %%% Check that the sizes of the images are equal.
-    if (size(OrigImage) ~= size(EditedPrimaryLabelMatrixImage)) | (size(OrigImage) ~= size(PrelimPrimaryLabelMatrixImage))
-        error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
-    end
+    EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
 
     %%% Checks that the Min and Max threshold bounds have valid values
     index = strfind(ThresholdRange,',');

@@ -131,25 +131,8 @@ NameImageToCheck = tmp1;
 for ImageNumber = 1:length(NameImageToCheck);
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
-    fieldname = ['', NameImageToCheck{ImageNumber}];
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if ~isfield(handles.Pipeline, fieldname),
-        %%% If the image is not there, an error message is produced.  The error
-        %%% is not displayed: The error function halts the current function and
-        %%% returns control to the calling function (the analyze all images
-        %%% button callback.)  That callback recognizes that an error was
-        %%% produced because of its try/catch loop and breaks out of the image
-        %%% analysis loop without attempting further modules.
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', NameImageToCheck{ImageNumber}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-    end
-    %%% Reads the image.
-    ImageToCheck{ImageNumber} = handles.Pipeline.(fieldname); %#ok Ignore MLint
+    ImageToCheck{ImageNumber} = CPretrieveimage(handles,NameImageToCheck{ImageNumber},ModuleName,2,1); %#ok Ignore MLint
 
-    %%% Checks that the original image is two-dimensional (i.e. not a color
-    %%% image), which would disrupt several of the image functions.
-    if ndims(ImageToCheck{ImageNumber}) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image. You can run a Color To Gray module to convert your image to grayscale. Also, you can modify the code to handle each channel of a color image; we just have not done it yet.  This requires making the proper headings in the measurements file and displaying the results properly.'])
-    end
     NumberPixelsSaturated = sum(sum(ImageToCheck{ImageNumber} == 1));
     [m,n] = size(ImageToCheck{ImageNumber});
     TotalPixels = m*n;

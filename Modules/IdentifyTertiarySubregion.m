@@ -84,34 +84,10 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-fieldname = ['Segmented', PrimaryObjectName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    %%% If the image is not there, an error message is produced.  The error
-    %%% is not displayed: The error function halts the current function and
-    %%% returns control to the calling function (the analyze all images
-    %%% button callback.)  That callback recognizes that an error was
-    %%% produced because of its try/catch loop and breaks out of the image
-    %%% analysis loop without attempting further modules.
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', PrimaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-PrimaryObjectImage = handles.Pipeline.(fieldname);
+PrimaryObjectImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,2,0);
 
 %%% Retrieves the Secondary object segmented image.
-fieldname = ['Segmented', SecondaryObjectName];
-if isfield(handles.Pipeline, fieldname) == 0
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', SecondaryObjectName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-end
-SecondaryObjectImage = handles.Pipeline.(fieldname);
-
-%%% Checks that these images are two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(PrimaryObjectImage) ~= 2
-    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-end
-if ndims(SecondaryObjectImage) ~= 2
-    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-end
+SecondaryObjectImage = CPretrieveimage(handles,['Segmented', SecondaryObjectName],ModuleName,2,0);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

@@ -59,3 +59,9 @@ elseif ColorFlag == 3
         error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is color, but the image loaded does not fit this requirement.  This may be because the image is grayscale.']);
     end
 end
+
+if SizeFlag ~= 0
+    if any(SizeFlag ~= size(image))
+        error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
+    end
+end

@@ -87,25 +87,9 @@ drawnow
 
 %%% Reads (opens) the images you want to analyze and assigns them to
 %%% variables.
-%%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, BasicImageName) == 0
-    error(['Image processing has been canceled. Prior to running the Subtract Images module, you must have previously run a module to load an image. You specified in the Subtract Images module that this image was called ', BasicImageName, ' which should have produced a field in the handles structure called ', BasicImageName, '. The Subtract Images module cannot find this image.']);
-end
-BasicImage = handles.Pipeline.(BasicImageName);
-%%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, SubtractImageName) == 0
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the Subtract Images module, you must have previously run a module to load an image. You specified in the Subtract Images module that this image was called ', SubtractImageName, ' which should have produced a field in the handles structure called ', SubtractImageName, '. The Subtract Images module cannot find this image.']);
-end
-SubtractImage = handles.Pipeline.(SubtractImageName);
+BasicImage = CPretrieveimage(handles,BasicImageName,ModuleName,2,1);
 
-%%% Checks that the original images are two-dimensional (i.e. not a color
-%%% image), which would disrupt several of the image functions.
-if ndims(BasicImage) ~= 2
-    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-end
-if ndims(SubtractImage) ~= 2
-    error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-end
+SubtractImage = BasicImage = CPretrieveimage(handles,SubtractImageName,ModuleName,2,1);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

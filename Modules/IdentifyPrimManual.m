@@ -84,15 +84,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-%%% Checks whether the image exists in the handles structure.
-if ~isfield(handles.Pipeline, ImageName)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to load an image. You specified that this image was called ', ImageName, ' which should have produced a field in the handles structure called ', ImageName, '. The ',ModuleName,' module cannot find this image.']);
-end
-OrigImage = handles.Pipeline.(ImageName);
-
-if max(OrigImage(:)) > 1 || min(OrigImage(:)) < 0
-    CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-end
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
 
 if isempty(MaxResolution)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for "Enter the maximum image height or width (in pixels) to display for the manual identification" was invalid.'])

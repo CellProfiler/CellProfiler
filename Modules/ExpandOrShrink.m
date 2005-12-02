@@ -107,31 +107,11 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 drawnow
 
 if strcmp(ObjectChoice,'Primary')
-    %%% Retrieves the segmented image, not edited for objects along the edges or
-    %%% for size.
-    fieldname = ['UneditedSegmented', ObjectName];
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be produced by an Identify module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
-    end
-    UneditedSegmentedImage = handles.Pipeline.(fieldname);
-
-    %%% Retrieves the segmented image, only edited for small objects.
-    fieldname = ['SmallRemovedSegmented', ObjectName];
-    %%% Checks whether the image to be analyzed exists in the handles structure.
-    if isfield(handles.Pipeline, fieldname)==0,
-        error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be produced by an Identify module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
-    end
-    SmallRemovedSegmentedImage = handles.Pipeline.(fieldname);
+    UneditedSegmentedImage = CPretrieveimage(handles,['UneditedSegmented', ObjectName],ModuleName);
+    SmallRemovedSegmentedImage = CPretrieveimage(handles,['SmallRemovedSegmented', ObjectName],ModuleName);
 end
 
-%%% Retrieves the final segmented label matrix image.
-fieldname = ['Segmented', ObjectName];
-%%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)==0,
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be produced by an Identify module in which the objects were named ', ObjectName, '.  Perhaps there is a typo in the name.'])
-end
-SegmentedImage = handles.Pipeline.(fieldname);
+SegmentedImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName);
 OrigSegmentedImage = SegmentedImage;
 
 %%%%%%%%%%%%%%%%%%%%%%

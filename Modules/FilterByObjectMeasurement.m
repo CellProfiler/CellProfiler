@@ -120,8 +120,8 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-OrigImage = handles.Pipeline.(ImageName);
-LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
+LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
 
 if strcmp(MeasureChoice,'Intensity')
     fieldname = ['Intensity_',ImageName];

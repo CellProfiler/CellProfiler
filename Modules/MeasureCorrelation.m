@@ -130,22 +130,8 @@ for ImageNbr = 1:4
         ImageCount = ImageCount + 1;
         try
             %%% Checks whether image has been loaded.
-            if ~isfield(handles.Pipeline,ImageName{ImageNbr})
-                %%% If the image is not there, an error message is produced.  The error
-                %%% is not displayed: The error function halts the current function and
-                %%% returns control to the calling function (the analyze all images
-                %%% button callback.)  That callback recognizes that an error was
-                %%% produced because of its try/catch loop and breaks out of the image
-                %%% analysis loop without attempting further modules.
-                error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName{ImageNbr}, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
-            end
-            Image{ImageCount} = handles.Pipeline.(ImageName{ImageNbr}); %#ok Ignore MLint
+            Image{ImageCount} = CPretrieveimage(handles,ImageName{ImageNbr},ModuleName,2,0); %#ok Ignore MLint
             tmpImageName{ImageCount} = ImageName{ImageNbr}; %#ok Ignore MLint
-            %%% Checks that the original image is two-dimensional (i.e. not a color
-            %%% image), which would disrupt several of the image functions.
-            if ndims(Image{ImageCount}) ~= 2
-                error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.'])
-            end
         catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem loading the image you called ', ImageName{ImageNbr}, '.'])
         end
     end
@@ -166,14 +152,8 @@ for ObjectNameNbr = 1:6
         tmpObjectName{ObjectNameCount} = ObjectName{ObjectNameNbr}; %#ok Ignore MLint
         if ~strcmp(ObjectName{ObjectNameNbr},'Image')
             %%% Retrieves the label matrix image that contains the
-            %%% segmented objects which will be used as a mask. Checks first to see
-            %%% whether the appropriate image exists.
-            fieldname = ['Segmented', ObjectName{ObjectNameNbr}];
-            %%% Checks whether the image exists in the handles structure.
-            if isfield(handles.Pipeline, fieldname)==0,
-                error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module that generates an image with the primary objects identified.  You specified in this module that the objects were named ', ObjectName{ObjectNameNbr}, ' as a result of a previous module, which should have produced an image called ', fieldname, ' in the handles structure.  This module cannot locate this image.']);
-            end
-            LabelMatrixImage{ObjectNameCount} = handles.Pipeline.(fieldname); %#ok Ignore MLint
+            %%% segmented objects which will be used as a mask.
+            LabelMatrixImage{ObjectNameCount} = CPretrieveimage(handles,['Segmented', ObjectName{ObjectNameNbr}],ModuleName,2,0); %#ok Ignore MLint
         else
             LabelMatrixImage{ObjectNameCount} = ones(size(Image{1}));        % Use mask of ones to indicate that the correlation should be calcualted for the entire image
         end

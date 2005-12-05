@@ -27,9 +27,9 @@ h = imagesc(Image);
 %%% Embeds the Image tool submenu so that it appears when the user clicks on the image. 
 set(h,'ButtonDownFcn','CPimagetool');
 
-
+%%% Sets the user's preference for font size, which should affect tick
+%%% labels and current and future titles.
 set(gca,'fontsize',handles.Preferences.FontSize)
-
 
 %%% Applies the user's choice for colormap.
 if ndims(Image) == 2

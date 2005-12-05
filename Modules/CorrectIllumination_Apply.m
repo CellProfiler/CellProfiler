@@ -185,8 +185,8 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,2,3);
     CPimagesc(IllumCorrectFunctionImage,handles);
     title('Illumination Correction Function Image');
-    text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
-    text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');
+    text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red','fontsize',handles.Preferences.FontSize);
+    text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red','fontsize',handles.Preferences.FontSize);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

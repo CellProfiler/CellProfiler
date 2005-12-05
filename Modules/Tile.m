@@ -518,7 +518,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         %%% Creates FileNameText
         text(XLocations, YLocations, PrintableOneColumnNewFileList,...
             'HorizontalAlignment','center', 'color', 'white','visible','off', ...
-            'UserData','FileNameTextHandles');
+            'UserData','FileNameTextHandles','fontsize',handles.Preferences.FontSize);
         userData = get(ThisModuleFigureNumber,'UserData');
         userData.XLocations = XLocations;
         userData.YLocations = YLocations;

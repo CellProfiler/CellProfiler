@@ -818,15 +818,15 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     end
                     subplot(2,2,1)
                     CPimagesc(OrigImage,handles);
-                    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
+                    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     hx = subplot(2,2,2);
                     im = CPlabel2rgb(handles,Objects);
                     CPimagesc(im,handles);
-                    title(['Segmented ',ObjectName],'fontsize',handles.Preferences.FontSize);
+                    title(['Segmented ',ObjectName]);
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     CPimagesc(OutlinedObjects,handles);
-                    title('Outlined objects','fontsize',handles.Preferences.FontSize);
+                    title('Outlined objects');
 
                     %%% Report numbers
                     posx = get(hx,'Position');
@@ -979,11 +979,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 end
 
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-                handlescmap = handles.Preferences.LabelColorMap;
-                cmap = feval(handlescmap,max(64,max(Objects(:))));
-                im = label2rgb(Objects, cmap, 'k', 'shuffle');
+                im = CPlabel2rgb(handles,Objects);
                 CPimagesc(im,handles);
-                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
                     CPfigure('Tag','OutlinedFigure');
@@ -1006,7 +1004,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                 CPimagesc(OutlinedObjects,handles);
-                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
             end
         end
     end

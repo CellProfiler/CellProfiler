@@ -228,7 +228,7 @@ end
 CPfigure(FigureHandle);
 subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(RotatedImage,handles);
-title('Rotated Image','fontsize',handles.Preferences.FontSize);
+title('Rotated Image');
 try %#ok We want to ignore MLint error checking for this line.
     delete(PatienceHandle)
 end

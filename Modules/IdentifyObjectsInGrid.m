@@ -299,12 +299,12 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(ColoredLabelMatrixImage,handles);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title(['Identified ',NewObjectName],'fontsize',handles.Preferences.FontSize);
+    title(['Identified ',NewObjectName]);
     subplot(2,1,2); 
     CPimagesc(FinalOutline,handles);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
-    title(['Outlined ',NewObjectName],'fontsize',handles.Preferences.FontSize);
+    title(['Outlined ',NewObjectName]);
     set(findobj('type','line'), 'color',[.15 .15 .15])
 end
 

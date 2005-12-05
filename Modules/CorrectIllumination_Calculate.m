@@ -457,8 +457,8 @@ if any(findobj == ThisModuleFigureNumber)
             end
             subplot(2,2,2);
             CPimagesc(FinalIlluminationFunction,handles);
-            text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red');
-            text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red');
+            text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+            text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
             title('Final illumination function');
         end
     elseif strcmp(IntensityChoice,'Background')
@@ -470,8 +470,8 @@ if any(findobj == ThisModuleFigureNumber)
         if exist('FinalIlluminationFunction','var') == 1
             subplot(2,2,4);
             CPimagesc(FinalIlluminationFunction,handles);
-            text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red');
-            text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red');
+            text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+            text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
             title('Final illumination correction function');
         else subplot(2,2,4);
             title('Illumination correction function is not yet calculated');

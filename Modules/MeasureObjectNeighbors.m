@@ -144,16 +144,8 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Calculates the ColoredIncomingObjectsImage for displaying in the figure
     %%% window and saving to the handles structure.
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(IncomingLabelMatrixImage)) >= 1
-        handlescmap = handles.Preferences.LabelColorMap;
-        cmap = feval(handlescmap,max(64,max(IncomingLabelMatrixImage(:))));
-        ColoredIncomingObjectsImage = label2rgb(IncomingLabelMatrixImage,cmap,'k','shuffle');
-    else  ColoredIncomingObjectsImage = IncomingLabelMatrixImage;
-    end
+    ColoredIncomingObjectsImage = CPlabel2rgb(handles,IncomingLabelMatrixImage);
 
-    FontSize = handles.Preferences.FontSize;
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -161,11 +153,11 @@ if any(findobj == ThisModuleFigureNumber)
     end
     subplot(2,1,1); 
     CPimagesc(ColoredIncomingObjectsImage,handles); 
-    title(ObjectName,'FontSize',FontSize)
+    title(ObjectName)
     subplot(2,1,2); 
     CPimagesc(ImageOfNeighbors,handles);
-    colorbar('SouthOutside','FontSize',FontSize)
-    title([ObjectName,' colored by number of neighbors'],'FontSize',FontSize)
+    colorbar('SouthOutside')
+    title([ObjectName,' colored by number of neighbors'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

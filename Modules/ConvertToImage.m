@@ -131,10 +131,10 @@ if any(findobj == ThisModuleFigureNumber)
     end
     subplot(2,1,1);
     CPimagesc(ColoredLabelMatrixImage,handles);
-    title('Original Identified Objects','fontsize',handles.Preferences.FontSize);
+    title('Original Identified Objects');
     subplot(2,1,2);
     CPimagesc(Image,handles);
-    title('New Image','fontsize',handles.Preferences.FontSize);
+    title('New Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

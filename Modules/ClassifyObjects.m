@@ -231,7 +231,7 @@ if any(findobj == ThisModuleFigureNumber)
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         CPimagesc(NonQuantizedImage,handles);
-        title([AdjustedObjectName,' colored according to ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize)
+        title([AdjustedObjectName,' colored according to ',AdjustedFeatureName])
     end
     %%% Produce and plot histogram of original data
     subplot(2,2,2)
@@ -239,7 +239,7 @@ if any(findobj == ThisModuleFigureNumber)
     hist(Measurements,Nbins)
     set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName]);
-    title(['Histogram of ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize);
+    title(['Histogram of ',AdjustedFeatureName]);
     ylimits = ylim;
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
@@ -252,14 +252,14 @@ if any(findobj == ThisModuleFigureNumber)
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
         CPimagesc(QuantizedRGBimage,handles)
-        title(['Classified ', AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
+        title(['Classified ', AdjustedObjectName]);
     end
     %%% Produce and plot histogram
     subplot(2,2,4)
     x = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(x,bins,1);
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName])
-    title(['Histogram of ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize);
+    title(['Histogram of ',AdjustedFeatureName]);
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
     axis tight

@@ -126,5 +126,5 @@ MeanImage = reshape(Measurements,NumberRows,NumberColumns);
 TitleString = sprintf('Objects: %s, Feauture classification: %s, Feature: %s',ObjectTypename, FeatureType, handles.Measurements.(ObjectTypename).([FeatureType ,'Features']){FeatureNo});
 CPfigure, 
 CPimagesc(MeanImage,handles), 
-title(TitleString,'fontsize',handles.Preferences.FontSize), 
+title(TitleString), 
 colorbar

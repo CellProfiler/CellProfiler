@@ -27,7 +27,7 @@ userData.ImageFlag = 0;
 if nargin>0 && isfield(varargin{1},'Pipeline')
     userData.MyHandles=varargin{1};
     FigHandle=figure(varargin{3:end});
-    if nargin==3
+    if nargin>=2
         %%% This is for the typical usage:
         %%% CPfigure(handles,'Image',ThisModuleFigureNumber)
         FigureType = varargin{2};

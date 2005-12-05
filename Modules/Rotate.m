@@ -113,16 +113,26 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','Check
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 FigureHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+
+subplot(3,2,[1 2 3 4])
 ImageHandle = CPimagesc(OrigImage,handles);
+%%% OK to use axis image here.
+axis image 
 drawnow
+
+
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')
     if strcmp(RotateMethod, 'Mouse')
-        Answer2 = CPquestdlg('After closing this window by clicking OK, click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points.','Rotate image using the mouse','OK','Cancel','OK');
-        waitfor(Answer2)
-        if strcmp(Answer2, 'Cancel')
-            error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
-        end
+        %         Answer2 = CPquestdlg('After closing this window by clicking OK, click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points.','Rotate image using the mouse','OK','Cancel','OK');
+        %         waitfor(Answer2)
+        %         if strcmp(Answer2, 'Cancel')
+        %             error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+        %         end
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 400 100],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
+        displaytext = 'Click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points.';
+        set(displaytexthandle,'string',displaytext)
+
         [x,y] = getpts(FigureHandle);
         if length(x) < 2
             error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])

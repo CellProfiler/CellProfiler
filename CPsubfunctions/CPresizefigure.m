@@ -96,7 +96,7 @@ end
 %%% If the height has changed as a result of the above, adjusts the
 %%% position to be sure it's still at the top of the screen.
 if FigureHeight ~= FigPosOrig(4)
-    FigPos(2) = ScreenHeight - (FigureHeight+40);
+    FigPos(2) = ScreenHeight - (FigureHeight+80);
 end
 
 %%% Sets the newly calculated values.

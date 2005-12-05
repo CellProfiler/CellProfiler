@@ -420,11 +420,11 @@ else
         % Create buttons
         Text = uicontrol(ITh,'style','text','units','normalized','position',[.03 .85 .95 .12],'string',Title);
         set(Text,'Backgroundcolor',get(ITh,'Color'))
-        NewWindow = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .7 .9 .14],'string','Open in new window');
-        Histogram = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .58 .9 .14],'string','Show intensity histogram','Tag','Histogram');
-        MatlabWS  = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .46 .9 .14],'string','Save to work space');
-        SaveImageAs=uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .34 .9 .14],'string','Save to hard drive');
-        Cancel    = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .05 .9 .14],'string','Cancel');
+        NewWindow = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .75 .9 .12],'string','Open in new window','BackgroundColor',[.7 .7 .9]);
+        Histogram = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .6 .9 .12],'string','Show intensity histogram','Tag','Histogram','BackgroundColor',[.7 .7 .9]);
+        MatlabWS  = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .45 .9 .12],'string','Save to work space','BackgroundColor',[.7 .7 .9]);
+        SaveImageAs=uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .3 .9 .12],'string','Save to hard drive','BackgroundColor',[.7 .7 .9]);
+        Cancel    = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .05 .9 .12],'string','Cancel','BackgroundColor',[.7 .7 .9]);
 
         % Assign callback functions
         set(NewWindow,'Callback','CPimagetool(''NewWindow'');');

@@ -24,14 +24,11 @@ set(gca,'fontsize',handles.Preferences.FontSize)
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
-- Submit code to Sourceforge for distribution/easy updating? EVeryone seems to recommend this for open-source software.
-- Prepare updated manual
-- Make reference sheet with short descriptions of the modules (see manuscript table).
+- Prepare updated manual -Anne is working on this
+- Make reference sheet with short descriptions of the modules (see manuscript table). -Anne is working on this
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.
-- copy CP code onto CDs for Colin to take to ASCB meeting in San Francisco.
-NO... let's just give people the web address, so they get the freshest copy of the code!  And, it's less work for us!
 - tell the following sites that review and list software:
 www.zdnet.com	downloads.mycomputer.com	www.windows95.sk
 directory.google.com	www.libpng.org	cn.tech.yahoo.com

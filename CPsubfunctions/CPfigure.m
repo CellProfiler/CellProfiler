@@ -22,17 +22,15 @@ function FigHandle=CPfigure(varargin)
 %
 % $Revision$
 
-
 userData.Application = 'CellProfiler';
 if nargin>0 && isfield(varargin{1},'Pipeline')
     userData.MyHandles=varargin{1};
-%    FigHandle=figure(varargin{3:end});
     FigHandle=figure(varargin{3:end});
     if nargin==3
         %%% This is for the typical usage:
         %%% CPfigure(handles,'Image',ThisModuleFigureNumber)
         FigureType = varargin{2};
-        if strcmpi(FigureType,'Image')
+        if strcmpi(FigureType,'Image') && (userData.MyHandles.Current.SetBeingAnalyzed == 1)
             ZoomButtonCallback = 'button=findobj(gcf,''tag'',''endzoombutton'');if isempty(button),try, CPinteractivezoom; catch CPmsgbox(''Could not find the file called InteractiveZoomSubfunction.m which should be located in the CellProfiler folder.''); end;else,eval(get(button(1),''Callback''));end;clear button;';
             uimenu('Label','Interactive Zoom','Callback',ZoomButtonCallback);
             TempMenu = uimenu('Label','CellProfiler Image Tools');

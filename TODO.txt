@@ -1,7 +1,7 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-(Requested by Anne 12-05-05) - Take a look at the lines added to CPimagesc. Should I pass in the entire handles structure rather than just the colormap (which is taken directly from handles.Preferences.IntensityColormap?)  If so we should do a search and replace for:
+ANNE WILL DO>>>>>(Requested by Anne 12-05-05) - Take a look at the lines added to CPimagesc. Should I pass in the entire handles structure rather than just the colormap (which is taken directly from handles.Preferences.IntensityColormap?)  If so we should do a search and replace for:
 CPimagesc(Image,'ColorAlreadySoIgnore')
 CPimagesc(Image,handles.Preferences.IntensityColorMap)
 except Image could be a bunch of different names.  See also TWO OPTIONS FOR ... because that would also involve adding another argument to CPimagesc, so maybe sending handles is the best option.
@@ -25,7 +25,7 @@ DownloadNewModules	- DONE
 
 MIKE WILL DO>>>> (Requested by Anne 12-02-05) Can we prevent CP main window from being resized? If you click on it during CPresizefigure which is supposed to be operating on one of the other figure windows, it will resize the main GUI!!
 
-(Requested by Anne 12-02-05) TWO OPTIONS TO FIX FONT SIZE FOR TITLES IN ALL FIGURE WINDOWS:
+ANNE WILL DO>>>>>(Requested by Anne 12-02-05) TWO OPTIONS TO FIX FONT SIZE FOR TITLES IN ALL FIGURE WINDOWS:
 1. For every use of text that's not an image title, be sure to use 'fontsize',handles.Preferences.FontSize.
 2. add an argument to CPimagesc: FontSize, passed in as handles.Preferences.FontSize and then add this line to CPimagesc:
 set(gca,'fontsize',handles.Preferences.FontSize)

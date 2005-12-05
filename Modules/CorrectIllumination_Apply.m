@@ -118,11 +118,11 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-IllumCorrectFunctionImage = CPretrieveimage(handles,IllumCorrectFunctionImageName,ModuleName,2,0);
+IllumCorrectFunctionImage = CPretrieveimage(handles,IllumCorrectFunctionImageName,ModuleName,'MustBeGray','DontCheckScale');
 
 if strcmp(RescaleOption,'No rescaling') == 1
     MethodSpecificArguments = [];

@@ -58,7 +58,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

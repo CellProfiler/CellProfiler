@@ -131,7 +131,7 @@ NameImageToCheck = tmp1;
 for ImageNumber = 1:length(NameImageToCheck);
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
-    ImageToCheck{ImageNumber} = CPretrieveimage(handles,NameImageToCheck{ImageNumber},ModuleName,2,1); %#ok Ignore MLint
+    ImageToCheck{ImageNumber} = CPretrieveimage(handles,NameImageToCheck{ImageNumber},ModuleName,'MustBeGray','CheckScale'); %#ok Ignore MLint
 
     NumberPixelsSaturated = sum(sum(ImageToCheck{ImageNumber} == 1));
     [m,n] = size(ImageToCheck{ImageNumber});

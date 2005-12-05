@@ -121,7 +121,7 @@ drawnow
 
 %%% Reads (opens) the image to be analyzed and assigns it to a variable,
 %%% "OrigImage".
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -133,7 +133,7 @@ if strncmpi(RescaleOption,'S',1)
 elseif strncmpi(RescaleOption,'M',1)
     %%% Reads (opens) the image to be analyzed and assigns it to a variable,
     %%% "MethodSpecificArguments".
-    MethodSpecificArguments = CPretrieveimage(handles,OtherImageName,ModuleName,0,1);
+    MethodSpecificArguments = CPretrieveimage(handles,OtherImageName,ModuleName,'DontCheckColor','CheckScale');
 elseif strncmpi(RescaleOption,'G',1)
     MethodSpecificArguments = [];
 elseif strncmpi(RescaleOption,'E',1)

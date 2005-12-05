@@ -87,9 +87,9 @@ drawnow
 
 %%% Reads (opens) the images you want to analyze and assigns them to
 %%% variables.
-BasicImage = CPretrieveimage(handles,BasicImageName,ModuleName,2,1);
+BasicImage = CPretrieveimage(handles,BasicImageName,ModuleName,'MustBeGray','CheckScale');
 
-SubtractImage = CPretrieveimage(handles,SubtractImageName,ModuleName,2,1);
+SubtractImage = CPretrieveimage(handles,SubtractImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

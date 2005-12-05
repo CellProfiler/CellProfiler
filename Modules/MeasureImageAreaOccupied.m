@@ -159,7 +159,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%% Checks that the Min and Max threshold bounds have valid values
 index = strfind(ThresholdRange,',');

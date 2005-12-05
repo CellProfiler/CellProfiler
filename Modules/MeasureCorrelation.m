@@ -129,7 +129,7 @@ for ImageNbr = 1:4
         ImageCount = ImageCount + 1;
         try
             %%% Checks whether image has been loaded.
-            Image{ImageCount} = CPretrieveimage(handles,ImageName{ImageNbr},ModuleName,2,0); %#ok Ignore MLint
+            Image{ImageCount} = CPretrieveimage(handles,ImageName{ImageNbr},ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
             tmpImageName{ImageCount} = ImageName{ImageNbr}; %#ok Ignore MLint
         catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem loading the image you called ', ImageName{ImageNbr}, '.'])
         end
@@ -152,7 +152,7 @@ for ObjectNameNbr = 1:6
         if ~strcmp(ObjectName{ObjectNameNbr},'Image')
             %%% Retrieves the label matrix image that contains the
             %%% segmented objects which will be used as a mask.
-            LabelMatrixImage{ObjectNameCount} = CPretrieveimage(handles,['Segmented', ObjectName{ObjectNameNbr}],ModuleName,2,0); %#ok Ignore MLint
+            LabelMatrixImage{ObjectNameCount} = CPretrieveimage(handles,['Segmented', ObjectName{ObjectNameNbr}],ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
         else
             LabelMatrixImage{ObjectNameCount} = ones(size(Image{1}));        % Use mask of ones to indicate that the correlation should be calcualted for the entire image
         end

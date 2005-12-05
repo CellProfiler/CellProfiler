@@ -84,10 +84,10 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-PrimaryObjectImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,2,0);
+PrimaryObjectImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 %%% Retrieves the Secondary object segmented image.
-SecondaryObjectImage = CPretrieveimage(handles,['Segmented', SecondaryObjectName],ModuleName,2,0);
+SecondaryObjectImage = CPretrieveimage(handles,['Segmented', SecondaryObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

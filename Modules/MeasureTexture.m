@@ -184,12 +184,12 @@ for i = 1:6
 
     %%% Reads (opens) the image you want to analyze and assigns it to a variable,
     %%% "OrigImage".
-    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
     if ~strcmp(ObjectName,'Image')
         %%% Retrieves the label matrix image that contains the segmented objects which
         %%% will be measured with this module.
-        LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
+        LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

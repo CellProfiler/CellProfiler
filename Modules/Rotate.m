@@ -108,7 +108,7 @@ Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
 
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);

@@ -92,13 +92,13 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 drawnow
 
 %%% Reads the images.
-Image1 = CPretrieveimage(handles,Image1Name,ModuleName,2,1);
+Image1 = CPretrieveimage(handles,Image1Name,ModuleName,'MustBeGray','CheckScale');
 
-Image2 = CPretrieveimage(handles,Image2Name,ModuleName,2,1);
+Image2 = CPretrieveimage(handles,Image2Name,ModuleName,'MustBeGray','CheckScale');
 
 %%% Same for Image 3.
 if ~strcmp(Image3Name,'Do not use')
-    Image3 = CPretrieveimage(handles,Image3Name,ModuleName,2,1);
+    Image3 = CPretrieveimage(handles,Image3Name,ModuleName,'MustBeGray','CheckScale');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

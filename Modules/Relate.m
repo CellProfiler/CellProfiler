@@ -58,11 +58,11 @@ drawnow
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
-SubObjectLabelMatrix = CPretrieveimage(handles,['Segmented', SubObjectName],ModuleName,2,0);
+SubObjectLabelMatrix = CPretrieveimage(handles,['Segmented', SubObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
-ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],ModuleName,2,0);
+ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],ModuleName,'MustBeGray','DontCheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

@@ -84,7 +84,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
 
 if strcmpi(MaxResolution,'Do not resize')
     MaxResolution = Inf;

@@ -76,7 +76,7 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-IncomingLabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
+IncomingLabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

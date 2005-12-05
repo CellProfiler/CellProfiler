@@ -9,17 +9,6 @@ MIKE WILL DO>>>> (Requested by Anne 12-01-05) - Clean up ExportData files and mo
 TechDiagnosis 		- DONE
 SaveCPcode		- DONE
 DownloadNewModules	- DONE
-
-(Requested by Anne 12-02-05) I feel pretty strongly that CPretrieveimage should use text as arguments rather than numbers.  E.g. the colorflag should be 'mustbecolor' 'mustbegray' instead of 2 or 3. That way, when you are in a module and look at the line you can figure out what checks it is making. I'm happy to go through and modify this if necessary.
-
-(Requested by Anne 12-05-05)  - I get this error with the salvaged novartis pipeline; it seems to be a general problem with label2rgb? Maybe it's because I am using a different colormap (colorcube) than usual. Probably we can ignore the problem because it's not so serious?
-Warning: Region number 215 has the same color as the ZEROCOLOR.
-> In label2rgb at 87
-  In CPlabel2rgb at 30
-  In FilterByObjectMeasurement at 212
-  In CellProfiler>AnalyzeImagesButton_Callback at 3341
-  In CellProfiler>gui_mainfcn at 5159
-  In CellProfiler at 53
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - ANNE WILL DO>>> Prepare updated manual

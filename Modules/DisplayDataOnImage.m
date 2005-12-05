@@ -101,7 +101,7 @@ if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
 end
 
 %%% Reads the image.
-OrigImage = CPretrieveimage(handles,DisplayImage,ModuleName,0,1);
+OrigImage = CPretrieveimage(handles,DisplayImage,ModuleName,'DontCheckColor','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% DATA ANALYSIS %%%

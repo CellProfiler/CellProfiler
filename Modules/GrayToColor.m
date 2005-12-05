@@ -95,7 +95,7 @@ drawnow
 %%% blue.
 if ~strcmp(BlueImageName, 'Leave this black')
     %%% Read (open) the images and assign them to variables.
-    BlueImage = CPretrieveimage(handles,BlueImageName,ModuleName,2,1);
+    BlueImage = CPretrieveimage(handles,BlueImageName,ModuleName,'MustBeGray','CheckScale');
     BlueImageExists = 1;
 else
     BlueImageExists = 0;
@@ -103,13 +103,13 @@ end
 
 %%% Repeat for Green and Red.
 if ~strcmp(GreenImageName, 'Leave this black')
-    GreenImage = CPretrieveimage(handles,GreenImageName,ModuleName,2,1);
+    GreenImage = CPretrieveimage(handles,GreenImageName,ModuleName,'MustBeGray','CheckScale');
     GreenImageExists = 1;
 else GreenImageExists = 0;
 end
 
 if ~strcmp(RedImageName, 'Leave this black')
-    RedImage = CPretrieveimage(handles,RedImageName,ModuleName,2,1);
+    RedImage = CPretrieveimage(handles,RedImageName,ModuleName,'MustBeGray','CheckScale');
     RedImageExists = 1;
 else RedImageExists = 0;
 end

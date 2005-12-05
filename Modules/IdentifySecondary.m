@@ -271,20 +271,20 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%% Retrieves the preliminary label matrix image that contains the primary
 %%% segmented objects which have only been edited to discard objects
 %%% that are smaller than a certain size.  This image
 %%% will be used as markers to segment the secondary objects with this
 %%% module.  Checks first to see whether the appropriate image exists.
-PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
+PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented', PrimaryObjectName],ModuleName,'DontCheckColor','DontCheckScale',size(OrigImage));
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects which will be used to weed out which objects are
 %%% real - not on the edges and not below or above the specified size
 %%% limits. Checks first to see whether the appropriate image exists.
-EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,0,0,size(OrigImage));
+EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,'DontCheckColor','DontCheckScale',size(OrigImage));
 
 %%% Checks that the Min and Max threshold bounds have valid values
 index = strfind(ThresholdRange,',');

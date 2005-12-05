@@ -77,7 +77,7 @@ SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 drawnow
 
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
-OutlineImage = CPretrieveimage(handles,OutlineName,ModuleName,2,0,size(OrigImage));
+OutlineImage = CPretrieveimage(handles,OutlineName,ModuleName,'MustBeGray','DontCheckScale',size(OrigImage));
 
 if size(OrigImage,3) ~= 3
     if strcmp(MaxType,'Max of image')

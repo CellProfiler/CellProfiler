@@ -30,6 +30,28 @@ elseif nargin == 3
     SizeFlag = 0;
 end
 
+if ischar(ColorFlag)
+    if strcmpi(ColorFlag,'MustBeColor')
+        ColorFlag = 3;
+    elseif strcmpi(ColorFlag,'MustBeGray')
+        ColorFlag = 2;
+    elseif strcmpi(ColorFlag,'DontCheckColor')
+        ColorFlag = 0;
+    else
+        error('The value you have chosen for the colorflag is invalid.');
+    end
+end
+
+if ischar(ScaleFlag)
+    if strcmpi(ScaleFlag,'CheckScale')
+        ScaleFlag = 1;
+    elseif strcmpi(ScaleFlag,'DontCheckScale')
+        ScaleFlag = 0;
+    else
+        error('The value you have chosen for the scaleflag is invalid.');
+    end
+end
+
 %%% Checks whether the image to be analyzed exists in the handles
 %%% structure.
 if ~isfield(handles.Pipeline, ImageName)

@@ -195,7 +195,7 @@ for i = 1:length(ObjectNameList)
 
     %%% Retrieves the label matrix image that contains the segmented
     %%% objects which will be measured with this module.
-    LabelMatrixImage =  CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,2,0);
+    LabelMatrixImage =  CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%

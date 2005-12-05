@@ -127,7 +127,7 @@ end
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-OrigImage = CPretrieveimage(handles,OrigImageName,ModuleName,2,1);
+OrigImage = CPretrieveimage(handles,OrigImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

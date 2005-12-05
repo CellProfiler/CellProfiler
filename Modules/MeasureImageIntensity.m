@@ -81,7 +81,7 @@ PixelSize = str2double(handles.Settings.PixelSize);
 drawnow
 
 %%% Reads (opens) the incoming image and assigns it to a variable.
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,2,1);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

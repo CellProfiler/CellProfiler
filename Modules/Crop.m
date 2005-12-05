@@ -448,7 +448,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     drawnow
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);

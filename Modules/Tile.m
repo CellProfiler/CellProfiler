@@ -274,9 +274,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             CPresizefigure(TiledImage,'OneByOne')
         end
         %%% Displays the image.
-        %%% OK to use imagesc here instead of CPimagesc because CPimagesc
-        %%% adds the CPimagetool which disturbs the clicking functions. But
-        %%% not sure - Mike is confirming.
         CPimagesc(TiledImage);
 
         FontSize = handles.Preferences.FontSize;
@@ -541,7 +538,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 else
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
-        TextString = 'Tiled image will be shown after the last image cycle only if this window is left open.'
+        TextString = 'Tiled image will be shown after the last image cycle only if this window is left open.';
         CPfigure(handles,ThisModuleFigureNumber);
         uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
             'HorizontalAlignment','left','string',TextString,'position',...

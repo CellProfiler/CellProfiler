@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/5) (Requested by Anne 12-05-05) - The Tile module works fine now, including the hi-res button, but it dumps a bunch of variables into the general workspace. Can we make it stop?
+
+-(Mike 12/5) (Requested by Anne 12-05-05) - when opening images by doubleclicking the file list in the main GUI, the figures open with really high numbers.
+
 ANNE 12/5 >>>>>(Requested by Anne 12-02-05) TWO OPTIONS TO FIX FONT SIZE FOR TITLES IN ALL FIGURE WINDOWS:
 1. For every use of text that's not an image title, be sure to use 'fontsize',handles.Preferences.FontSize.
 2. add an argument to CPimagesc: FontSize, passed in as handles.Preferences.FontSize and then add this line to CPimagesc:

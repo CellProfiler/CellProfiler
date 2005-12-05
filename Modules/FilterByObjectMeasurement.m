@@ -258,7 +258,7 @@ Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(TargetName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
 if ~strcmp(SaveOutlines,'Do not save')
-    try handles.Pipeline.(SaveOutlines) = PrimaryObjectOutlines;
+    try handles.Pipeline.(SaveOutlines) = LogicalOutlines;
     catch
         error(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end

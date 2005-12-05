@@ -122,7 +122,7 @@ drawnow
 %%% variable.
 
 %%% Checks whether the image to be analyzed exists in the handles structure.
-if isfield(handles.Pipeline, ImageName) == 0
+if ~isfield(handles.Pipeline, ImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -266,8 +266,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     TotalWidth = RetrievedTileData.TotalWidth;
     TotalHeight = RetrievedTileData.TotalHeight;
     NewFileList = RetrievedTileData.NewFileList;
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
-        ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         %%% Activates the appropriate figure window.
         CPfigure(handles,ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -277,7 +277,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         %%% OK to use imagesc here instead of CPimagesc because CPimagesc
         %%% adds the CPimagetool which disturbs the clicking functions. But
         %%% not sure - Mike is confirming.
-        imagesc(TiledImage);
+        CPimagesc(TiledImage);
 
         FontSize = handles.Preferences.FontSize;
         ToggleGridButtonFunction = ...
@@ -440,9 +440,9 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             'set(FigHandle,''UserData'',userData);'...
             'colormap(gray);'...
             'subplot(2,1,1);'...
-            'imagesc(LoadedImage);'...
+            'CPimagesc(LoadedImage);'...
             'subplot(2,1,2);'...
-            'imagesc(CroppedImage);'];
+            'CPimagesc(CroppedImage);'];
         uicontrol('Style', 'pushbutton', ...
             'String', 'HI-RES', 'Position', [290 6 55 20], 'BackgroundColor',[.7 .7 .9],...
             'Callback',HiResFunction,'parent',ThisModuleFigureNumber,'FontSize',FontSize);
@@ -545,6 +545,6 @@ else
         CPfigure(handles,ThisModuleFigureNumber);
         uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
             'HorizontalAlignment','left','string',TextString,'position',...
-            [.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+            [.05 .85 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
 end

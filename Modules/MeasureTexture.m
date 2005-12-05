@@ -36,8 +36,8 @@ function handles = MeasureTexture(handles)
 % DifferenceEntropy       |      11
 % InformationMeasure      |      12
 % InformationMeasure2     |      13
-% Gabor1x                 |      14
-% Gabor1y                 |      15
+% GaborX                  |      14
+% GaborY                  |      15
 %
 % Texture Measurement descriptions:
 %
@@ -213,8 +213,8 @@ for i = 1:6
         'InformationMeasure2'};
 
     Gabor = [];
-    GaborFeatures    = {'Gabor1x',...
-        'Gabor1y'};
+    GaborFeatures    = {'GaborX',...
+        'GaborY'};
 
     if strcmp(ObjectName,'Image')
         ObjectCount = 1;
@@ -385,11 +385,11 @@ for i = 1:6
         end
 
         % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5 0.3 0.03],...
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.6 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
         for k = 1:10
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.5-0.04*k 0.3 0.03],...
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.6-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                 'fontsize',FontSize,'string',HaralickFeatures{k});
         end
@@ -414,7 +414,7 @@ for i = 1:6
 
             % Haralick features
             for k = 1:10
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.5-0.04*k 0.2 0.03],...
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.6-0.04*k 0.2 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
             end

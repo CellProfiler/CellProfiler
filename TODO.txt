@@ -1,7 +1,7 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-(Requested by Anne 12-05-05) - Rotate bug - see email to Mike.
+Mike - I added something below, but it's module checking and not that critical. You should probl'y focus on this other stuff and the compiling first.
 
 MIKE WILL DO>>>> (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
 
@@ -9,6 +9,16 @@ MIKE WILL DO>>>> (Requested by Anne 12-01-05) - Clean up ExportData files and mo
 TechDiagnosis 		- DONE
 SaveCPcode		- DONE
 DownloadNewModules	- DONE
+
+(Requested by Anne 12-05-05) - Anne is going through the Data Tools, image tools and help on Tuesday. Here are the only other things on the module_checks list to do:
+Anne - doublecheck CalcStatistics
+Anne - doublecheck CreateBatchSCripts (see susan's help)
+Anne - doublecheck MergeBatchOutput, esp that data is exportable.
+Anne - explain image border and table border on CreateWebPage
+Someone - check all LoadImages options
+Mike - RelateObjects (How does it handle partially overlapping objects?
+adjust the help to state how these are handled)
+Mike - Rotate: Need to verify - check lots of combinations on an image of a grid of lines or something that is easy to verify that the rotation is really working properly, and that the X,Y (for coordinate) and clockwise/counterclockwise (for ANGLE) is stated correctly. See also the bug I emailed you about on Monday afternoon.
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - ANNE WILL DO>>> Prepare updated manual

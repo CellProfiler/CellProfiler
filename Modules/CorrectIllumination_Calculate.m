@@ -417,7 +417,7 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo');
     end
@@ -434,26 +434,26 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% the 2,2,1 location.
         if strcmp(EachOrAll,'All')
             subplot(2,2,1);
-            CPimagesc(RawImage);
+            CPimagesc(RawImage,handles.Preferences.IntensityColorMap);
             if strcmp(ReadyFlag, 'Ready')
                 title('Averaged image');
             else
                 title('Averaged image calculated so far');
             end
-        else subplot(2,2,1); CPimagesc(OrigImage);
+        else subplot(2,2,1); CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         end
         if strcmp(ReadyFlag, 'Ready')
             if exist('DilatedImage','var')
-                subplot(2,2,3); CPimagesc(DilatedImage);
+                subplot(2,2,3); CPimagesc(DilatedImage,handles.Preferences.IntensityColorMap);
                 title('Dilated image');
             end
             if exist('SmoothedImage','var')
-                subplot(2,2,4); CPimagesc(SmoothedImage);
+                subplot(2,2,4); CPimagesc(SmoothedImage,handles.Preferences.IntensityColorMap);
                 title('Smoothed image');
             end
             subplot(2,2,2);
-            CPimagesc(FinalIlluminationFunction);
+            CPimagesc(FinalIlluminationFunction,handles.Preferences.IntensityColorMap);
             text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red');
             text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red');
             title('Final illumination function');
@@ -462,11 +462,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
         subplot(2,2,1);
-        CPimagesc(OrigImage);
+        CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         if exist('FinalIlluminationFunction','var') == 1
             subplot(2,2,4);
-            CPimagesc(FinalIlluminationFunction);
+            CPimagesc(FinalIlluminationFunction,handles.Preferences.IntensityColorMap);
             text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red');
             text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red');
             title('Final illumination correction function');
@@ -480,7 +480,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         %%% image.
         if exist('AverageMinimumsImage','var') == 1
             subplot(2,2,3);
-            CPimagesc(AverageMinimumsImage);
+            CPimagesc(AverageMinimumsImage,handles.Preferences.IntensityColorMap);
             title('Average minimums image');
         end
     end

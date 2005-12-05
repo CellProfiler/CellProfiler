@@ -228,32 +228,21 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Calculates the OriginalColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,1,1).
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(SegmentedImage)) >= 1
-        OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,OrigSegmentedImage);
-    else  OriginalColoredLabelMatrixImage = OrigSegmentedImage;
-    end
+    OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,OrigSegmentedImage);
     %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,1,2).
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(SegmentedImage)) >= 1
-        ShrunkenColoredLabelMatrixImage = CPlabel2rgb(handles,FinalShrunkenSegmentedImage);
-    else  ShrunkenColoredLabelMatrixImage = FinalShrunkenSegmentedImage;
-    end
+    ShrunkenColoredLabelMatrixImage = CPlabel2rgb(handles,FinalShrunkenSegmentedImage);
 
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne')
     end%%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    CPimagesc(OriginalColoredLabelMatrixImage);
+    CPimagesc(OriginalColoredLabelMatrixImage,'ColorAlreadySoIgnore');
     title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2);
-    CPimagesc(ShrunkenColoredLabelMatrixImage);
+    CPimagesc(ShrunkenColoredLabelMatrixImage,'ColorAlreadySoIgnore');
     title(ShrunkenObjectName);
 end
 

@@ -289,20 +289,19 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 if any(findobj == ThisModuleFigureNumber)
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(ColoredLabelMatrixImage,'TwoByOne')
     end
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     subplot(2,1,1); 
-    CPimagesc(ColoredLabelMatrixImage);
+    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
     title(['Identified ',NewObjectName],'fontsize',handles.Preferences.FontSize);
     subplot(2,1,2); 
-    CPimagesc(FinalOutline);
+    CPimagesc(FinalOutline,handles.Preferences.IntensityColorMap);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
     title(['Outlined ',NewObjectName],'fontsize',handles.Preferences.FontSize);

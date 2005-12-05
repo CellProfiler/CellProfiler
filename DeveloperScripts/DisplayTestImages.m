@@ -28,7 +28,6 @@ for i = 1:length(Filelist)
     imagesc(Img),
     colormap(gray)
     title(Filelist(i).name)
-    axis('image')
 end
 
 % TO DISPLAY EVERY OTHER ONE:

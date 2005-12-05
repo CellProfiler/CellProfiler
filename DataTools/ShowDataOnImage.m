@@ -35,7 +35,7 @@ function handles = ShowDataOnImage(handles)
 % The resulting figure can be saved in Matlab format (.fig) or
 % exported in a traditional image file format.
 %
-% See also SHOWIMAGE, SHOWPIXELDATA.
+% See also OpenNewImageFile, ShowOrHidePixelData.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -157,8 +157,8 @@ Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
 
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');
-FigureHandle = CPfigure; CPimagesc(ImageToDisplay), colormap(gray)
-axis image
+FigureHandle = CPfigure; 
+CPimagesc(ImageToDisplay,handles.Preferences.IntensityColorMap)
 FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
 ImageDisp = ImageFileName{1};
 title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])

@@ -239,9 +239,8 @@ PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
-drawnow
 %%% Activates the appropriate figure window.
-HistHandle = CPfigure(handles,ThisModuleFigureNumber);
+HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 h = subplot(1,1,1);
 
@@ -262,6 +261,8 @@ if strncmpi(NumberOrPercent,'N',1)
 else
     set(get(h,'YLabel'),'String','Percentage of objects')
 end
+%%% Using "axis tight" here is ok, I think, because we are displaying
+%%% data, not images.
 axis tight
 
 OneFrame = getframe(HistHandle);

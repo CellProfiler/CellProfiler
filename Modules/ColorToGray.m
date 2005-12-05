@@ -152,37 +152,25 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if strcmp(GrayOrSplit,'Combine')
     if any(findobj == ThisModuleFigureNumber) == 1;
-        drawnow
-        %%% Sets the width of the figure window to be appropriate (half width).
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            originalsize = get(ThisModuleFigureNumber, 'position');
-            newsize = originalsize;
-            newsize(3) = 0.5*originalsize(3);
-            set(ThisModuleFigureNumber, 'position', newsize);
-        end
         %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(OrigImage,'TwoByOne')
+        end
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
-        ImageHandle = CPimagesc(OrigImage);
-        set(ImageHandle,'ButtonDownFcn','CPimagetool(gco)');
-        colormap(handles.Preferences.IntensityColorMap);
+        CPimagesc(OrigImage,'ColorAlreadySoIgnore');
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
         subplot(2,1,2);
-        ImageHandle = CPimagesc(GrayscaleImage);
-        set(ImageHandle,'ButtonDownFcn','CPimagetool(gco)');
+        CPimagesc(GrayscaleImage,handles.Preferences.IntensityColorMap);
         title('Grayscale Image');
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(OrigImage,'TwoByOne')
-        end
     end
 elseif strcmp(GrayOrSplit,'Split')
     if any(findobj == ThisModuleFigureNumber) == 1;
-        drawnow
         %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(OrigImage,'TwoByTwo');
         end
@@ -190,19 +178,19 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% image.  Using CPimagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
         subplot(2,2,1);
-        CPimagesc(OrigImage);
+        CPimagesc(OrigImage,'ColorAlreadySoIgnore');
         title(['Input Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
         subplot(2,2,2);
-        CPimagesc(BlueImage);
+        CPimagesc(BlueImage,handles.Preferences.IntensityColorMap);
         title('Blue Image');
         %%% A subplot of the figure window is set to display the green image.
         subplot(2,2,3);
-        CPimagesc(GreenImage);
+        CPimagesc(GreenImage,handles.Preferences.IntensityColorMap);
         title('Green Image');
         %%% A subplot of the figure window is set to display the red image.
         subplot(2,2,4);
-        CPimagesc(RedImage);
+        CPimagesc(RedImage,handles.Preferences.IntensityColorMap);
         title('Red Image');
     end
 end

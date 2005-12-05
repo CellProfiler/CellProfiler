@@ -351,14 +351,22 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     drawnow
-    CPfigure(handles,ThisModuleFigureNumber);
+    %%% Need to put in the figure handling stuff like thhe other modules
+    %%% have.
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     subplot(2,2,1); 
-    CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap); 
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',ObjectName]);
-    subplot(2,2,3); CPimagesc(EnhancedInvertedImage); title('Inverted enhanced contrast image');
-    subplot(2,2,4); CPimagesc(FinalOutline); title([ObjectName, ' Outlines']);
-    CPFixAspectRatio(OrigImage);
+    subplot(2,2,2); 
+    CPimagesc(ColoredLabelMatrixImage,handles.Preferences.IntensityColorMap); 
+    title(['Segmented ',ObjectName]);
+    subplot(2,2,3); 
+    CPimagesc(EnhancedInvertedImage,handles.Preferences.IntensityColorMap); 
+    title('Inverted enhanced contrast image');
+    subplot(2,2,4); 
+    CPimagesc(FinalOutline,handles.Preferences.IntensityColorMap); 
+    title([ObjectName, ' Outlines']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

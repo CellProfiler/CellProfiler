@@ -1,1 +1,1 @@
-CPrgsmartdilate
+CPfigure(handles,'Image',ThisModuleFigureNumber);

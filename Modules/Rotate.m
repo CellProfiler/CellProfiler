@@ -112,9 +112,9 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,0,1);
 
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-FigureHandle = CPfigure(handles,ThisModuleFigureNumber);
+FigureHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 subplot(2,3,[1 2 4 5]);
-ImageHandle = CPimagesc(OrigImage);
+ImageHandle = CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
 drawnow
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')
@@ -227,7 +227,7 @@ end
 %%% Figure must be displayed for this module.
 CPfigure(FigureHandle);
 subplot(2,3,[1 2 4 5]);
-ImageHandle = CPimagesc(RotatedImage);
+ImageHandle = CPimagesc(RotatedImage,handles.Preferences.IntensityColorMap);
 title('Rotated Image','fontsize',handles.Preferences.FontSize);
 try %#ok We want to ignore MLint error checking for this line.
     delete(PatienceHandle)

@@ -124,16 +124,16 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
-    drawnow
-    CPfigure(handles,ThisModuleFigureNumber);
+
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(LabelMatrixImage,'TwoByOne')
     end
     subplot(2,1,1);
-    CPimagesc(ColoredLabelMatrixImage);
+    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');
     title('Original Identified Objects','fontsize',handles.Preferences.FontSize);
     subplot(2,1,2);
-    CPimagesc(Image);
+    CPimagesc(Image,'ColorAlreadySoIgnore');
     title('New Image','fontsize',handles.Preferences.FontSize);
 end
 

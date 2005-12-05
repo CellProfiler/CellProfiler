@@ -102,7 +102,7 @@ end
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 drawnow
 %%% Activates the appropriate figure window.
-HistHandle = CPfigure(handles,ThisModuleFigureNumber);
+HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 if strcmp(NumBins,'Automatic')
     imhist(OrigImage);

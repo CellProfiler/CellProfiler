@@ -13,7 +13,7 @@ function OpenNewImageFile(handles)
 % if a user wants to look at an image in order to determine which threshold
 % to use within a module, the pixel values are directly applicable.
 %
-% See also SHOWPIXELDATA, SHOWDATAONIMAGE.
+% See also ShowOrHidePixelData, ShowDataOnImage.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -59,7 +59,7 @@ else
     %%% Reads the image.
     Image = CPimread(fullfile(Pathname, FileName));
     CPfigure(handles);
-    CPimagesc(Image);
+    CPimagesc(Image,handles.Preferences.IntensityColorMap);
     colormap(gray);
     FileName = strrep(FileName,'_','\_');
     title(FileName);

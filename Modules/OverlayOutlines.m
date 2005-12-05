@@ -114,15 +114,16 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    FigHandle = CPfigure(handles,ThisModuleFigureNumber);
+    FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'OneByOne')
     end
-    CPimagesc(NewImage);
+    CPimagesc(NewImage,handles.Preferences.IntensityColorMap);
     title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    Callback = ['string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),CPimagesc(UserData{1},',handles.Preferences.IntensityColorMap,');set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;'];
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
         'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...
-        'Callback','string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),CPimagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;');
+        'Callback',Callback);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -165,30 +165,26 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo');
     end
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
     subplot(2,2,1);
-    CPimagesc(OrigImage);
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-
     %%% The mean image does not absolutely have to be present in order to
     %%% carry out the calculations if the illumination image is provided,
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
     subplot(2,2,2);
-    CPimagesc(CorrectedImage);
+    CPimagesc(CorrectedImage,handles.Preferences.IntensityColorMap);
     title('Illumination Corrected Image');
-
     subplot(2,2,3);
-    CPimagesc(IllumCorrectFunctionImage);
+    CPimagesc(IllumCorrectFunctionImage,handles.Preferences.IntensityColorMap);
     title('Illumination Correction Function Image');
-
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
     text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');
 end

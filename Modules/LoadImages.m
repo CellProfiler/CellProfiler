@@ -653,20 +653,13 @@ if any(findobj == ThisModuleFigureNumber);
     end
     for n = 1:length(ImageName)
         %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
+        CPfigure(handles,'Text',ThisModuleFigureNumber);
         if iscell(ImageName)
             TextString = [ImageName{n},': ',FileNames{n}];
         else
             TextString = [ImageName,': ',FileNames];
         end
-        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[1 1 1])
-    end
-    %%% Set white background color
-    set(ThisModuleFigureNumber,'Color',[1 1 1])
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
-        delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
-        delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
 end
 

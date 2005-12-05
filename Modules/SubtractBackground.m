@@ -207,31 +207,31 @@ if MinimumTenthMinimumPixelValue ~= 0
 
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber) == 1;
-        drawnow
         %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(OrigImage,'TwoByOne')
         end
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
-        subplot(2,1,1); CPimagesc(OrigImage);
+        subplot(2,1,1); 
+        CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% The mean image does not absolutely have to be present in order to
         %%% carry out the calculations if the illumination image is provided,
         %%% so the following subplot is only shown if MeanImage exists in the
         %%% workspace.
-        subplot(2,1,2); CPimagesc(CorrectedImage);
+        subplot(2,1,2); 
+        CPimagesc(CorrectedImage,handles.Preferences.IntensityColorMap);
         title('Corrected Image');
         %%% Displays the text.
-        Size = get(ThisModuleFigureNumber, 'position');
-        Size(1) = 0;
-        Size(2) = 0;
-        Size(4) = 20;
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', Size,'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9], 'FontSize',handles.Preferences.FontSize);
+        if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
+            displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 20],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
+        else
+            displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
+        end
         displaytext = ['Background threshold used: ', num2str(MinimumTenthMinimumPixelValue)];
         set(displaytexthandle,'string',displaytext)
-        set(ThisModuleFigureNumber,'toolbar','figure')
     end
 else CorrectedImage = OrigImage;
 end % This end goes with the if MinimumTenthMinimumPixelValue ~= 0 line above.

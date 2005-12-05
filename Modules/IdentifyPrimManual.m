@@ -113,8 +113,7 @@ drawnow
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
 CPresizefigure(LowResOrigImage,'OneByOne')
-CPimagesc(LowResOrigImage);
-colormap(handles.Preferences.IntensityColorMap);
+CPimagesc(LowResOrigImage,handles.Preferences.IntensityColorMap);
 [nrows,ncols] = size(LowResOrigImage);
 
 AxisHandle = gca;
@@ -141,18 +140,26 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 
 if any(findobj == ThisModuleFigureNumber)
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    drawnow
+
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(LowResOrigImage,'TwoByTwo');
     end
-    subplot(2,2,1); CPimagesc(LowResOrigImage); title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); CPimagesc(LowResInterior); title(['Manually Identified ',ObjectName]);
+    subplot(2,2,1); 
+    CPimagesc(LowResOrigImage,handles.Preferences.IntensityColorMap); 
+    title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,2); 
+    CPimagesc(LowResInterior,handles.Preferences.IntensityColorMap); 
+    title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
     FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
-    subplot(2,2,3); CPimagesc(FinalOutlineOnOrigImage); title([ObjectName, ' Outline']);
-    subplot(2,2,4); CPimagesc(ColoredLabelMatrixImage); title(['Identified ' ObjectName]);
+    subplot(2,2,3); 
+    CPimagesc(FinalOutlineOnOrigImage,handles.Preferences.IntensityColorMap); 
+    title([ObjectName, ' Outline']);
+    subplot(2,2,4); 
+    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
+    title(['Identified ' ObjectName]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

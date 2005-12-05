@@ -119,7 +119,7 @@ end
 if ErrorFlag
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     %%% Creates the display window.
-    DataHandle = CPfigure(handles,ThisModuleFigureNumber);
+    DataHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
     title('No objects identified.');
     CPwarndlg(['No objects were identified. This could mean that the measurements you have specified in the ',ModuleName,' are not being processed. Please verify that the Measure module precedes this module.']); 
 else
@@ -136,11 +136,10 @@ else
     drawnow
     
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    drawnow
     %%% Activates the appropriate figure window.
-    DataHandle = CPfigure(handles,ThisModuleFigureNumber);
+    DataHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
     
-    CPimagesc(OrigImage);
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     colormap(gray);
     FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};
     title([ObjectName,', ',FeatureDisp,' on ',Image])

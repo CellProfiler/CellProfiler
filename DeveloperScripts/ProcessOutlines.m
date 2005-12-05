@@ -100,8 +100,9 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     %%% Sets the width of the figure window to be appropriate (half width).
+    %%% TODO: update to new resizefigure subfunction!!
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         originalsize = get(ThisModuleFigureNumber, 'position');
         newsize = originalsize;
@@ -109,11 +110,12 @@ if any(findobj == ThisModuleFigureNumber) == 1;
         set(ThisModuleFigureNumber, 'position', newsize);
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); CPimagesc(OrigImage);
+    subplot(2,1,1); CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,1,2); CPimagesc(ObjectsIdentifiedImage); title(['Processed ',ObjectName]);
+    subplot(2,1,2); CPimagesc(ObjectsIdentifiedImage,handles.Preferences.IntensityColorMap); 
+    title(['Processed ',ObjectName]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -22,6 +22,9 @@ function im=CPlabel2rgb(handles,im)
 %
 % $Revision$
 
+%%% Note that the label2rgb function doesn't work when there are no objects
+%%% in the label matrix image, so there is an "if".
+
 if sum(sum(im)) >= 1
     cmap = eval([handles.Preferences.LabelColorMap '(max(64,max(im(:))))']);
     im = label2rgb(im, cmap, 'k', 'shuffle');

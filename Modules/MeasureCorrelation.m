@@ -217,18 +217,11 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
-    %%% Set white background color
-    set(ThisModuleFigureNumber,'Color',[1 1 1])
+    CPfigure(handles,'Text',ThisModuleFigureNumber);
     %%% Get size of window
     Position = get(ThisModuleFigureNumber,'Position');
     Height = Position(4);
     Width  = Position(3);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
-        delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
-        delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
-    end
 
     %%% Displays the results.
     Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 Height-40 Width 20],...
@@ -269,5 +262,4 @@ if any(findobj == ThisModuleFigureNumber)
             end
         end
     end
-    set(ThisModuleFigureNumber,'toolbar','figure')
 end

@@ -99,7 +99,7 @@ if strncmpi(WaitForFlag,'Y',1) == 1
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         if any(findobj == ThisModuleFigureNumber)
             TextString = 'Results will be shown after the last image cycle only if this window is left open.'
-            CPfigure(handles,ThisModuleFigureNumber);
+            CPfigure(handles,'Image',ThisModuleFigureNumber);
             uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
                 'HorizontalAlignment','left','string',TextString,'position',...
                 [.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
@@ -145,15 +145,17 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByOne')
     end
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
-    subplot(2,1,1); CPimagesc(OrigImage);
+    subplot(2,1,1); 
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); CPimagesc(SmoothedImage); 
+    subplot(2,1,2); 
+    CPimagesc(SmoothedImage,handles.Preferences.IntensityColorMap); 
     title('Smoothed Image');
 end
 

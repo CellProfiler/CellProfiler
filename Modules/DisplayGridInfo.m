@@ -105,22 +105,18 @@ drawnow
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-drawnow
 %%% Activates the appropriate figure window.
-FigHandle = CPfigure(handles,ThisModuleFigureNumber);
+FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 %%% Usually this image should be fairly large, so we are pretending it's a
 %%% 2x2 figure window rather than 1x1.
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     CPresizefigure(OrigImage,'TwoByTwo');
 end
 
-CPimagesc(OrigImage);
-colormap(handles.Preferences.IntensityColorMap);
+CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
 title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with text info displayed'])
 line(VertLinesX,VertLinesY);
 line(HorizLinesX,HorizLinesY);
-%%% Puts the standard Matlab tool bar back on.
-set(FigHandle,'Toolbar','figure');
 title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed), ' with text info displayed'],'fontsize',handles.Preferences.FontSize);
 set(findobj(FigHandle,'type','line'),'color',[.15 1 .15])
 

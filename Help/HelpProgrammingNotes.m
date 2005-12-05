@@ -12,12 +12,9 @@ helpdlg(help('HelpProgrammingNotes'))
 % included in the manual page as well.  Follow the convention of: purpose
 % of the module, description of the variables and acceptable range for
 % each, how it works (technical description), info on which images can be 
-% saved, and See also CAPITALLETTEROTHERMODULES. The license/author
+% saved, and See also NameOfModule. The license/author
 % information should be separated from the help lines with a blank line so
-% that it does not show up in the help displays.  Do not change the
-% programming notes in any modules! These are standard across all modules
-% for maintenance purposes, so anything module-specific should be kept
-% separate.
+% that it does not show up in the help displays.  
 %
 % DRAWNOW:
 % The 'drawnow' function allows figure windows to be updated and
@@ -52,13 +49,37 @@ helpdlg(help('HelpProgrammingNotes'))
 % produced for display only, the corresponding lines should be moved
 % outside this if statement.
 %
-% Display your image like this:
-% ImageHandle = CPimagesc(Image);
+% STEP 1: Find the appropriate figure window. If it is closed, usually none
+% of the remaining steps are performed.
+%   ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+%   if any(findobj == ThisModuleFigureNumber) == 1;
 %
-% This CPimagesc is important so that any images that are displayed
-% in your figure windows can be clicked on, revealing several handy
-% image tools, like saving that image, opening it in a new window, etc.
+% STEP 2: Activate the appropriate figure window so subsequent steps are
+% performed inside this window:
+%   CPfigure(handles,'Image',ThisModuleFigureNumber);
+% For figures that contain any images, choose 'Image', otherwise choose
+% 'Text'. 'Image' figures will have the RGB checkboxes which allow
+% displaying individual channels and they will also have the
+% InteractiveZoom and CellProfiler Image Tools menu items.
 %
+% STEP 3: (only during starting image cycle) Make the figure the proper
+% size:
+%   if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+%     CPresizefigure('','NarrowText')
+%   end
+% The figure is adjusted to fit the aspect ratio of the images, depending
+% on how many rows and columns of images should be displayed. The choices
+% are: OneByOne, TwoByOne, TwoByTwo, NarrowText. If a figure display is unnecessary for the module, skip STEP 2 and here use: close(ThisModuleFigureNumber) instead of CPresizefigure.
+%
+% STEP 4: Display your image:
+%   ImageHandle = CPimagesc(Image,handles.Preferences.IntensityColorMap);
+% This CPimagesc displays the image and also embeds an image tool bar which
+% will appear when you click on the displayed image. The colormap will only
+% be used if the image is two dimensional (i.e. grayscale). To speed
+% processing when displaying a color image, use 'ColorAlreadySoIgnore' in
+% place of handles.Preferences.IntensityColorMap.
+%
+% 
 % DRAWNOW BEFORE FIGURE COMMAND:
 % The "drawnow" function executes any pending figure window-related
 % commands.  In general, Matlab does not update figure windows until

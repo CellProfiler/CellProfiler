@@ -3003,7 +3003,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
             %%% Reads the image.
             Image = CPimread(fullfile(PathName, FileName));
             FigureHandle = CPfigure(handles);
-            CPimagesc(Image);
+            CPimagesc(Image,handles.Preferences.IntensityColorMap);
             colormap(gray);
             FileName = strrep(FileName,'_','\_');
             title(FileName);
@@ -3318,7 +3318,7 @@ else
                                         LeftPos = LeftPos - ScreenWidth;
                                     end
                                     handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]) = ...
-                                        CPfigure(handles,'name',[char(handles.Settings.ModuleNames(SlotNumber)), ' Display, cycle # '],...
+                                        CPfigure(handles,'','name',[char(handles.Settings.ModuleNames(SlotNumber)), ' Display, cycle # '],...
                                         'Position',[LeftPos (ScreenHeight-522) 560 442],...
                                         'color',[0.7,0.7,0.9]);
                                 end
@@ -3401,7 +3401,7 @@ else
                                 LeftPos = LeftPos - ScreenWidth;
                             end
                             ThisFigureNumber = handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]);
-                            CPfigure(handles,ThisFigureNumber);
+                            CPfigure(handles,'Image',ThisFigureNumber);
                             set(ThisFigureNumber, 'name',[(char(handles.Settings.ModuleNames(ModuleNumber))), ' Display, cycle # ']);
                             set(ThisFigureNumber, 'Position',[LeftPos (ScreenHeight-522) 560 442]);
                             %%% Sets the closing function of the window appropriately. (See way

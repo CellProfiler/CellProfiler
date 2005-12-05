@@ -269,12 +269,12 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         %%% Activates the appropriate figure window.
-        CPfigure(handles,ThisModuleFigureNumber);
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(TiledImage,'OneByOne')
         end
         %%% Displays the image.
-        CPimagesc(TiledImage);
+        CPimagesc(TiledImage,handles.Preferences.IntensityColorMap);
 
         FontSize = handles.Preferences.FontSize;
         ToggleGridButtonFunction = ...
@@ -516,7 +516,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         text(XLocations, YLocations, PrintableOneColumnNewFileList,...
             'HorizontalAlignment','center', 'color', 'white','visible','off', ...
             'UserData','FileNameTextHandles');
-        set(ThisModuleFigureNumber,'toolbar','figure')
         userData = get(ThisModuleFigureNumber,'UserData');
         userData.XLocations = XLocations;
         userData.YLocations = YLocations;
@@ -539,7 +538,7 @@ else
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         TextString = 'Tiled image will be shown after the last image cycle only if this window is left open.';
-        CPfigure(handles,ThisModuleFigureNumber);
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
         uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
             'HorizontalAlignment','left','string',TextString,'position',...
             [.05 .85 .95 .1],'BackgroundColor',[.7 .7 .9])

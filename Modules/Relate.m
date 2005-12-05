@@ -89,20 +89,20 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(ParentObjectLabelMatrix,'TwoByTwo');
     end
     subplot(2,2,1);
     ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
-    CPimagesc(ColoredParentLabelMatrixImage);
+    CPimagesc(ColoredParentLabelMatrixImage,'ColorAlreadySoIgnore');
     title(['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2);
     ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
-    CPimagesc(ColoredSubObjectLabelMatrixImage);
+    CPimagesc(ColoredSubObjectLabelMatrixImage,'ColorAlreadySoIgnore');
     title('Original Sub Objects');
     subplot(2,2,3);
     ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
-    CPimagesc(ColoredNewObjectParentLabelMatrix);
+    CPimagesc(ColoredNewObjectParentLabelMatrix,'ColorAlreadySoIgnore');
     title('New Sub Objects');
 end

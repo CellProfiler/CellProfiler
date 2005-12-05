@@ -1,6 +1,11 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+(Requested by Anne 12-05-05) - Take a look at the lines added to CPimagesc. Should I pass in the entire handles structure rather than just the colormap (which is taken directly from handles.Preferences.IntensityColormap?)  If so we should do a search and replace for:
+CPimagesc(Image,'ColorAlreadySoIgnore')
+CPimagesc(Image,handles.Preferences.IntensityColorMap)
+except Image could be a bunch of different names.  See also TWO OPTIONS FOR ... because that would also involve adding another argument to CPimagesc, so maybe sending handles is the best option.
+
 (Requested by Anne 12-01-05) - We need to change the name of the MeasureObjectTexture module to MeasureTexture, since it works for images now too, not just objects. When doing so be sure to search and replace all instances of MeasureObjectTexture in the code (esp. in See also's) and Measure Object Texture (with spaces). Also, open the Example PIPEs as matlab files and change the name by hand in Settings.ModuleNames because it's pretty easy to do it that way.
 
 (Requested by Anne 12-01-05) - Mike, check out 'dependency report' (like m lint checker) which points out two things: several 'UNKNOWN' functions which are likely errors in code, and also it points out what toolboxes we are using so that we can see if we are using anything other than the image toolbox.
@@ -19,8 +24,6 @@ DownloadNewModules	- DONE
 (Requested by Anne 12-02-05) I feel pretty strongly that CPretrieveimage should use text as arguments rather than numbers.  E.g. the colorflag should be 'mustbecolor' 'mustbegray' instead of 2 or 3. That way, when you are in a module and look at the line you can figure out what checks it is making. I'm happy to go through and modify this if necessary.
 
 MIKE WILL DO>>>> (Requested by Anne 12-02-05) Can we prevent CP main window from being resized? If you click on it during CPresizefigure which is supposed to be operating on one of the other figure windows, it will resize the main GUI!!
-
-(Requested by Anne 12-02-05) Are we using CPlabel2rgb everywhere we ought to? just curious.
 
 (Requested by Anne 12-02-05) TWO OPTIONS TO FIX FONT SIZE FOR TITLES IN ALL FIGURE WINDOWS:
 1. For every use of text that's not an image title, be sure to use 'fontsize',handles.Preferences.FontSize.

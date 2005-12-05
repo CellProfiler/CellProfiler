@@ -190,43 +190,31 @@ end
 if any(findobj == ThisModuleFigureNumber) %#ok Ignore MLint
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window.
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(NewSegmentedObjectImage)) >= 1
-        ColoredNewSegmentedObjectImage = CPlabel2rgb(handles,NewSegmentedObjectImage);
-    else  ColoredNewSegmentedObjectImage = NewSegmentedObjectImage;
-    end
-    if sum(sum(MaskRegionObjectImage)) >= 1
-        ColoredMaskRegionObjectImage = CPlabel2rgb(handles,MaskRegionObjectImage);
-    else  ColoredMaskRegionObjectImage = MaskRegionObjectImage;
-    end
-    if sum(sum(SegmentedObjectImage)) >= 1
-        ColoredSegmentedObjectImage = CPlabel2rgb(handles,SegmentedObjectImage);
-    else  ColoredSegmentedObjectImage = SegmentedObjectImage;
-    end
+    ColoredNewSegmentedObjectImage = CPlabel2rgb(handles,NewSegmentedObjectImage);
+    ColoredMaskRegionObjectImage = CPlabel2rgb(handles,MaskRegionObjectImage);
+    ColoredSegmentedObjectImage = CPlabel2rgb(handles,SegmentedObjectImage);
 
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(ColoredSegmentedObjectImage,'TwoByTwo');
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
-    CPimagesc(ColoredSegmentedObjectImage);
+    CPimagesc(ColoredSegmentedObjectImage,'ColorAlreadySoIgnore');
     title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
     subplot(2,2,2);
-    CPimagesc(ColoredNewSegmentedObjectImage);
+    CPimagesc(ColoredNewSegmentedObjectImage,'ColorAlreadySoIgnore');
     title(RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,3);
-    CPimagesc(ColoredMaskRegionObjectImage);
+    CPimagesc(ColoredMaskRegionObjectImage,'ColorAlreadySoIgnore');
     title(['Previously identified ', MaskRegionName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,4); 
-    CPimagesc(ObjectOutlinesOnOrigImage); 
+    CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
     title([ObjectName, ' Outlines on Input Image']);
 end
 

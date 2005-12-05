@@ -1,1 +1,1 @@
-Ratio
+CPfigure(handles,ThisModuleFigureNumber);

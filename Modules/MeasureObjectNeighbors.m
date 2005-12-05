@@ -155,13 +155,15 @@ if any(findobj == ThisModuleFigureNumber)
 
     FontSize = handles.Preferences.FontSize;
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(IncomingLabelMatrixImage,'TwoByOne')
     end
-    subplot(2,1,1); CPimagesc(ColoredIncomingObjectsImage); 
+    subplot(2,1,1); 
+    CPimagesc(ColoredIncomingObjectsImage,'ColorAlreadySoIgnore'); 
     title(ObjectName,'FontSize',FontSize)
-    subplot(2,1,2); CPimagesc(ImageOfNeighbors);
+    subplot(2,1,2); 
+    CPimagesc(ImageOfNeighbors,'ColorAlreadySoIgnore');
     colorbar('SouthOutside','FontSize',FontSize)
     title([ObjectName,' colored by number of neighbors'],'FontSize',FontSize)
 end

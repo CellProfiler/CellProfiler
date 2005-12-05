@@ -214,9 +214,8 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
     if ~strcmpi(FeatureType,'Ratio')
@@ -231,7 +230,8 @@ if any(findobj == ThisModuleFigureNumber)
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
-        CPimagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+%        CPimagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
+        CPimagesc(NonQuantizedImage,handles.Preferences.IntensityColorMap);
         title([AdjustedObjectName,' colored according to ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize)
     end
     %%% Produce and plot histogram of original data
@@ -242,6 +242,8 @@ if any(findobj == ThisModuleFigureNumber)
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName]);
     title(['Histogram of ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize);
     ylimits = ylim;
+    %%% Using "axis tight" here is ok, I think, because we are displaying
+    %%% data, not images.
     axis tight
     xlimits = xlim;
     axis([xlimits ylimits])
@@ -250,7 +252,7 @@ if any(findobj == ThisModuleFigureNumber)
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
-        CPimagesc(QuantizedRGBimage)
+        CPimagesc(QuantizedRGBimage,'ColorAlreadySoIgnore')
         title(['Classified ', AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
     end
     %%% Produce and plot histogram
@@ -259,6 +261,8 @@ if any(findobj == ThisModuleFigureNumber)
     h = bar(x,bins,1);
     xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName])
     title(['Histogram of ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize);
+    %%% Using "axis tight" here is ok, I think, because we are displaying
+    %%% data, not images.
     axis tight
     xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
     xlimits(2) = max(UpperBinMax,edges(end));                          % so they can be used for the second histogram

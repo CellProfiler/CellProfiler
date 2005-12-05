@@ -1,4 +1,4 @@
-function image = CPretrieveimage(handles,ImageName,ModuleName,ColorFlag,ScaleFlag,SizeFlag)
+function Image = CPretrieveimage(handles,ImageName,ModuleName,ColorFlag,ScaleFlag,SizeFlag)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -42,26 +42,26 @@ if ~isfield(handles.Pipeline, ImageName)
     error(['Image processing was canceled in the ', ModuleName, ' module because the input image could not be found.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
 end
 %%% Reads the image.
-image = handles.Pipeline.(ImageName);
+Image = handles.Pipeline.(ImageName);
 
 if ScaleFlag == 1
-    if max(image(:)) > 1 || min(image(:)) < 0
+    if max(Image(:)) > 1 || min(Image(:)) < 0
         CPwarndlg(['The first image that you loaded in the ', ModuleName, ' module is outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
     end
 end
 
 if ColorFlag == 2
-    if ndims(image) ~= 2
+    if ndims(Image) ~= 2
         error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.']);
     end
 elseif ColorFlag == 3
-    if ndims(image) ~= 3
+    if ndims(Image) ~= 3
         error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is color, but the image loaded does not fit this requirement.  This may be because the image is grayscale.']);
     end
 end
 
 if SizeFlag ~= 0
-    if any(SizeFlag ~= size(image))
+    if any(SizeFlag ~= size(Image))
         error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
     end
 end

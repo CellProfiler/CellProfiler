@@ -274,19 +274,23 @@ CropRectARI = [XBeginARI YBeginARI (XEndARI - XBeginARI) (YEndARI - YBeginARI)];
 CroppedAlignedTracedImage = imcrop(AlignedTracedImage,CropRectARI);
 CroppedAlignedRealImage = imcrop(AlignedRealImage,CropRectARI);
 
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    CPfigure(handles,ThisModuleFigureNumber);
-    subplot(2,2,1); CPimagesc(TracedImage);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
+    subplot(2,2,1); 
+    CPimagesc(TracedImage,handles.Preferences.IntensityColorMap);
     title(['Traced Input, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); CPimagesc(RealImage); title('Real Input Image');
-    subplot(2,2,3); CPimagesc(CroppedAlignedTracedImage);
+    subplot(2,2,2); 
+    CPimagesc(RealImage,handles.Preferences.IntensityColorMap); 
+    title('Real Input Image');
+    subplot(2,2,3); 
+    CPimagesc(CroppedAlignedTracedImage,handles.Preferences.IntensityColorMap);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

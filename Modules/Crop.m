@@ -301,7 +301,10 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% Displays the image and asks the user to choose points for the
             %%% ellipse.
             CroppingFigureHandle = CPfigure(handles);
-            CroppingImageHandle = CPimagesc(ImageToBeCropped);
+            %%% OK to use imagesc rather than CPimagesc, because the
+            %%% imagetoolbar is not needed.
+            CroppingImageHandle = imagesc(ImageToBeCropped);
+            colormap(handles.Preferences.IntensityColorMap);
             pixval
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
@@ -384,8 +387,15 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             if isempty(index)
                 error(['Image processing was canceled in the ', ModuleName, ' module because the format of the Left, Right pixel positions is invalid. Please include a comma.']);
             end
+            [a b c] = size(ImageToBeCropped); %#ok
+
             x1 = Pixel1(1:index-1);
             x2 = Pixel1(index+1:end);
+            %%% Note: if the pixel position is 'end', the str2double yields
+            %%% NaN which does not cause problems with this error message.
+            if (str2double(x1) > b) || (str2double(x2) > b)
+                error(['Image processing was canceled in the ', ModuleName, ' module because the coordinates you entered for the Left, Right pixel positions are outside the image.']);
+            end
 
             index = strfind(Pixel2,',');
             if isempty(index)
@@ -394,15 +404,19 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             y1 = Pixel2(1:index-1);
             y2 = Pixel2(index+1:end);
 
-            [a b c] = size(ImageToBeCropped); %#ok
+            if (str2double(y1) > a) || (str2double(y2) > a)
+                error(['Image processing was canceled in the ', ModuleName, ' module because the coordinates you entered for the Top, Bottom pixel positions are outside the image.']);
+            end
             BinaryCropImage = zeros(a,b);
             eval(['BinaryCropImage(min(' y1 ',' y2 '):max(' y1 ',' y2 '),min(' x1 ',' x2 '):max(' x1 ',' x2 ')) = 1;']);
 
         elseif strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points.
             CroppingFigureHandle = CPfigure(handles,'name','Manual Rectangle Cropping');
-            CroppingImageHandle = CPimagesc(ImageToBeCropped);
-            colormap('gray');
+            %%% OK to use imagesc rather than CPimagesc, because the
+            %%% imagetoolbar is not needed.
+            CroppingImageHandle = imagesc(ImageToBeCropped);
+            colormap(handles.Preferences.IntensityColorMap);
             title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
@@ -437,18 +451,18 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber) == 1;
     drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByOne')
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    CPimagesc(OrigImage);
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
     subplot(2,1,2);
-    CPimagesc(CroppedImage);
+    CPimagesc(CroppedImage,handles.Preferences.IntensityColorMap);
     title('Cropped Image');
 end
 

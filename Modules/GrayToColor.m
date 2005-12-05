@@ -171,23 +171,29 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(RGBImage,'TwoByTwo');
     end
     %%% A subplot of the figure window is set to display the Merged RGB
     %%% image.  Using CPimagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
-    subplot(2,2,1); CPimagesc(RGBImage);
+    subplot(2,2,1); 
+    CPimagesc(RGBImage,'ColorAlreadySoIgnore');
     title(['Merged Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the blue image.
-    subplot(2,2,2); CPimagesc(BlueImage); title('Blue Image');
+    subplot(2,2,2); 
+    CPimagesc(BlueImage,handles.Preferences.IntensityColorMap); 
+    title('Blue Image');
     %%% A subplot of the figure window is set to display the green image.
-    subplot(2,2,3); CPimagesc(GreenImage); title('Green Image');
+    subplot(2,2,3); 
+    CPimagesc(GreenImage,handles.Preferences.IntensityColorMap); 
+    title('Green Image');
     %%% A subplot of the figure window is set to display the red image.
-    subplot(2,2,4); CPimagesc(RedImage); title('Red Image');
+    subplot(2,2,4); 
+    CPimagesc(RedImage,handles.Preferences.IntensityColorMap); 
+    title('Red Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -159,35 +159,32 @@ if any(findobj == ThisModuleFigureNumber)
             AlignedRGB(:,:,3) = AlignedImage1;
         end
     end
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        %%% Sets the window to be only 250 pixels wide.
-        originalsize = get(ThisModuleFigureNumber, 'position');
-        newsize = originalsize;
-        newsize(3) = 250;
-        set(ThisModuleFigureNumber, 'position', newsize);
-    end
-    
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OriginalRGB,'TwoByOne')
+        %%% Add extra space for the text at the bottom.
+        Position = get(ThisModuleFigureNumber,'position')
+        set(ThisModuleFigureNumber,'position',[Position(1),Position(2)-40,Position(3),Position(4)+40])
     end
     if strcmp(AdjustImage,'Yes')
         %%% A subplot of the figure window is set to display the original
         %%% image.
-        subplot(2,1,1);
-        CPimagesc(OriginalRGB);
+        subplot(5,1,1:2);
+        CPimagesc(OriginalRGB,handles.Preferences.IntensityColorMap);
         title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the adjusted
         %%%  image.
-        subplot(2,1,2);
-        CPimagesc(AlignedRGB);
+        subplot(5,1,3:4);
+        CPimagesc(AlignedRGB,handles.Preferences.IntensityColorMap);
         title('Aligned Images');
     end
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 0 235 30],'fontname','helvetica','backgroundcolor',[0.7,0.7,0.9],'FontSize',handles.Preferences.FontSize);
+    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 40],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
+    else
+        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
+    end
     set(displaytexthandle,'string',['Offset: ',Results])
-%    set(ThisModuleFigureNumber,'toolbar','figure')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

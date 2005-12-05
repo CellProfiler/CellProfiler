@@ -201,23 +201,23 @@ if any(findobj == ThisModuleFigureNumber);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,SubregionObjectImage);
     SecondaryObjectImage = CPlabel2rgb(handles,SecondaryObjectImage);
     PrimaryObjectImage = CPlabel2rgb(handles,PrimaryObjectImage);
-    drawnow
+
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(PrimaryObjectImage,'TwoByTwo');
     end
     subplot(2,2,1); 
-    CPimagesc(PrimaryObjectImage); 
+    CPimagesc(PrimaryObjectImage,'ColorAlreadySoIgnore'); 
     title([PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); 
-    CPimagesc(SecondaryObjectImage); 
+    CPimagesc(SecondaryObjectImage,'ColorAlreadySoIgnore'); 
     title([SecondaryObjectName, ' Image']);
     subplot(2,2,3); 
-    CPimagesc(ColoredLabelMatrixImage); 
+    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
     title([SubregionObjectName, ' Image']);
     subplot(2,2,4); 
-    CPimagesc(FinalOutline); 
+    CPimagesc(FinalOutline,handles.Preferences.IntensityColorMap); 
     title([SubregionObjectName, ' Outlines']);
 end
 

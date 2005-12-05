@@ -811,26 +811,21 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 if any(findobj == ThisModuleFigureNumber)
-                    drawnow
                     %%% Activates the appropriate figure window.
-                    CPfigure(handles,ThisModuleFigureNumber);
+                    CPfigure(handles,'Image',ThisModuleFigureNumber);
                     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                         CPresizefigure(OrigImage,'TwoByTwo')
                     end
                     subplot(2,2,1)
-                    CPimagesc(OrigImage);
+                    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
                     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'fontsize',handles.Preferences.FontSize);
                     hx = subplot(2,2,2);
-                    if sum(sum(Objects(:)))>0
-                        im = CPlabel2rgb(handles,Objects);
-                    else
-                        im = Objects;
-                    end
-                    CPimagesc(im);
+                    im = CPlabel2rgb(handles,Objects);
+                    CPimagesc(im,'ColorAlreadySoIgnore');
                     title(['Segmented ',ObjectName],'fontsize',handles.Preferences.FontSize);
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                    CPimagesc(OutlinedObjects);
+                    CPimagesc(OutlinedObjects,handles.Preferences.IntensityColorMap);
                     title('Outlined objects','fontsize',handles.Preferences.FontSize);
 
                     %%% Report numbers
@@ -881,25 +876,24 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     LineIntensity = max(OrigImage(:));
                     ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
-                    drawnow
-                    CPfigure(handles,ThisModuleFigureNumber);
+                    CPfigure(handles,'Image',ThisModuleFigureNumber);
                     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                         CPresizefigure(OrigImage,'TwoByTwo');
                     end
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1); CPimagesc(OrigImage);
+                    subplot(2,2,1); CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
                     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
                     subplot(2,2,2);
-                    CPimagesc(ColoredLabelMatrixImage); 
+                    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
                     title(['Identified ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); CPimagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
-                    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage); 
+                    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
                     title([ObjectName, ' Outlines on Input Image']);
                 end
             end
@@ -986,7 +980,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 handlescmap = handles.Preferences.LabelColorMap;
                 cmap = feval(handlescmap,max(64,max(Objects(:))));
                 im = label2rgb(Objects, cmap, 'k', 'shuffle');
-                CPimagesc(im);
+                CPimagesc(im,'ColorAlreadySoIgnore');
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
@@ -1009,7 +1003,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                 subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                 OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                CPimagesc(OutlinedObjects);
+                CPimagesc(OutlinedObjects,handles.Preferences.IntensityColorMap);
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}),'fontsize',handles.Preferences.FontSize);
             end
         end

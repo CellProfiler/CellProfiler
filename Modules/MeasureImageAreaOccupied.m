@@ -189,22 +189,22 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByOne')
     end
-    %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); 
-    CPimagesc(OrigImage);
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,1,2); 
-    CPimagesc(ThresholdedOrigImage); 
+    CPimagesc(ThresholdedOrigImage,handles.Preferences.IntensityColorMap); 
     title('Thresholded Image');
-    if handles.Current.SetBeingAnalyzed == 1
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [65 -10 250 45],'fontname','fixedwidth','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
+    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 40],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
     else
         displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
     end

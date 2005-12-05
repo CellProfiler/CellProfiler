@@ -160,7 +160,7 @@ end
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 drawnow
 %%% Activates the appropriate figure window.
-FigHandle = CPfigure(handles,ThisModuleFigureNumber);
+FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 if PlotType == 4
     CPplotmeasurement(handles,FigHandle,PlotType,1,ObjectName,FeatureType,FeatureNo,ObjectName2,FeatureType2,FeatureNo2);

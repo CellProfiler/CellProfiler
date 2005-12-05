@@ -1,4 +1,4 @@
-function h = CPimagesc(Image)
+function h = CPimagesc(Image,Colormap)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -26,3 +26,7 @@ function h = CPimagesc(Image)
 h = imagesc(Image);
 %%% Embeds the Image tool submenu so that it appears when the user clicks on the image. 
 set(h,'ButtonDownFcn','CPimagetool');
+%%% Applies the user's choice for colormap.
+if ndims(Image) == 2
+    colormap(Colormap);
+end

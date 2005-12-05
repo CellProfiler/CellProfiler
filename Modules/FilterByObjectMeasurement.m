@@ -188,32 +188,30 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo');
     end
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,2,1); CPimagesc(OrigImage);
+    subplot(2,2,1); 
+    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the colored label
+    %%% A subplot of the figure window is set to display the label
     %%% matrix image.
-    subplot(2,2,3); CPimagesc(LabelMatrixImage);
+    subplot(2,2,3); 
+    CPimagesc(LabelMatrixImage,handles.Preferences.IntensityColorMap);
     title(['Original ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    try
-        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    catch
-        ColoredLabelMatrixImage = FinalLabelMatrixImage;
-    end
-    subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage);
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
+    
+    subplot(2,2,2); 
+    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');
     title(['Filtered ' ObjectName]);
-    %%% A subplot of the figure window is set to display the inverted original
-    %%% image with watershed lines drawn to divide up clusters of objects.
-    subplot(2,2,4); CPimagesc(ObjectOutlinesOnOrigImage);
+    subplot(2,2,4); 
+    CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap);
     title([TargetName, ' Outlines on Input Image']);
 end
 

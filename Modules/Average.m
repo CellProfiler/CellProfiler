@@ -129,22 +129,12 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) == 1;
-    %     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    %         originalsize = get(ThisModuleFigureNumber, 'position');
-    %         newsize = originalsize;
-    %         newsize(2) = originalsize(2) + originalsize(4)/2;
-    %         newsize(3) = originalsize(3)/2;
-    %         newsize(4) = originalsize(4)/2;
-    %         set(ThisModuleFigureNumber, 'position', newsize);
-    %         drawnow
-    %     end
-    drawnow
     %%% Activates the appropriate figure window.
-    CPfigure(handles,ThisModuleFigureNumber);
-    CPimagesc(AveragedImage);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(AveragedImage,'OneByOne')
     end
+    CPimagesc(AveragedImage,handles.Preferences.IntensityColorMap);
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
         %%% The averaged image is displayed the first time through the set.
         %%% For subsequent cycles, this figure is not updated at all, to

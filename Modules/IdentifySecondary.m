@@ -669,12 +669,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,2,2).
-    %%% Note that the label2rgb function doesn't work when there are no objects
-    %%% in the label matrix image, so there is an "if".
-    if sum(sum(FinalLabelMatrixImage)) >= 1
-        ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    else  ColoredLabelMatrixImage = FinalLabelMatrixImage;
-    end
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     %%% Calculates OutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,3).
     %%% Note: these outlines are not perfectly accurate; for some reason it
@@ -716,7 +711,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo');
         end
         subplot(2,2,IdentChoiceNumber);
-        CPimagesc(ObjectOutlinesOnOrigImage);
+        CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap);
         title(IdentChoiceList(IdentChoiceNumber));
     end
 
@@ -802,9 +797,8 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         if any(findobj == ThisModuleFigureNumber)
-            drawnow
             %%% Activates the appropriate figure window.
-            CPfigure(handles,ThisModuleFigureNumber);
+            CPfigure(handles,'Image',ThisModuleFigureNumber);
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 CPresizefigure(OrigImage,'TwoByTwo');
             end
@@ -812,17 +806,25 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
-            subplot(2,2,1); CPimagesc(OrigImage); title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+            subplot(2,2,1); 
+            CPimagesc(OrigImage,handles.Preferences.IntensityColorMap); 
+            title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
-            subplot(2,2,2); CPimagesc(ColoredLabelMatrixImage); title(['Segmented ',SecondaryObjectName]);
+            subplot(2,2,2); 
+            CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
+            title(['Segmented ',SecondaryObjectName]);
             %%% A subplot of the figure window is set to display the original image
             %%% with secondary object outlines drawn on top.
-            subplot(2,2,3); CPimagesc(ObjectOutlinesOnOrigImage); title([SecondaryObjectName, ' Outlines on Input Image']);
+            subplot(2,2,3); 
+            CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
+            title([SecondaryObjectName, ' Outlines on Input Image']);
             %%% A subplot of the figure window is set to display the original
             %%% image with outlines drawn for both the primary and secondary
             %%% objects.
-            subplot(2,2,4); CPimagesc(BothOutlinesOnOrigImage); title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+            subplot(2,2,4); 
+            CPimagesc(BothOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
+            title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

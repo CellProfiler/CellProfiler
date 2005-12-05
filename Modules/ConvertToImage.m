@@ -127,7 +127,7 @@ if any(findobj == ThisModuleFigureNumber)
 
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(LabelMatrixImage,'TwoByOne')
+        CPresizefigure(LabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
     subplot(2,1,1);
     CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');

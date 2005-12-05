@@ -170,11 +170,11 @@ RGBImage(:,:,3) = immultiply(double(BlueImage),str2double(BlueAdjustmentFactor))
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber);
+if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(RGBImage,'TwoByTwo');
+        CPresizefigure(RGBImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the Merged RGB
     %%% image.  Using CPimagesc or image instead of imshow doesn't work when

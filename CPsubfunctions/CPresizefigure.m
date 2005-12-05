@@ -1,4 +1,4 @@
-function CPresizefigure(OrigImage,Layout)
+function CPresizefigure(OrigImage,Layout,FigHandle)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -22,14 +22,14 @@ function CPresizefigure(OrigImage,Layout)
 %
 % $Revision: 2807 $
 
-FigPosOrig = get(gcf,'Position');
+FigPosOrig = get(FigHandle,'Position');
 FigPos = FigPosOrig;
 
 %%% Handles Text display windows.
-if strcmp(Layout,'NarrowText')
-    FigPos(3) = .5*FigPos(3);
+if strcmp(Layout,'NarrowText') && (FigPos(3) ~= 280)
+    FigPos(3) = 280;
     %%% Sets the figure position and size.
-    set(gcf,'Position',FigPos);
+    set(FigHandle,'Position',FigPos);
     return
 end
 
@@ -104,4 +104,4 @@ FigPos(3) = FigureWidth;
 FigPos(4) = FigureHeight;
 
 %%% Sets the figure position and size.
-set(gcf,'Position',FigPos);
+set(FigHandle,'Position',FigPos);

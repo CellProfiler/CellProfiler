@@ -151,11 +151,11 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if strcmp(GrayOrSplit,'Combine')
-    if any(findobj == ThisModuleFigureNumber) == 1;
+    if any(findobj == ThisModuleFigureNumber)
         %%% Activates the appropriate figure window.
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(OrigImage,'TwoByOne')
+            CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
         end
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
@@ -168,11 +168,11 @@ if strcmp(GrayOrSplit,'Combine')
         title('Grayscale Image');
     end
 elseif strcmp(GrayOrSplit,'Split')
-    if any(findobj == ThisModuleFigureNumber) == 1;
+    if any(findobj == ThisModuleFigureNumber)
         %%% Activates the appropriate figure window.
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(OrigImage,'TwoByTwo');
+            CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
         end
         %%% A subplot of the figure window is set to display the Splitd RGB
         %%% image.  Using CPimagesc or image instead of imshow doesn't work when

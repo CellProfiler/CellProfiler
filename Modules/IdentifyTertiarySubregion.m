@@ -205,7 +205,7 @@ if any(findobj == ThisModuleFigureNumber);
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(PrimaryObjectImage,'TwoByTwo');
+        CPresizefigure(PrimaryObjectImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     subplot(2,2,1); 
     CPimagesc(PrimaryObjectImage,'ColorAlreadySoIgnore'); 

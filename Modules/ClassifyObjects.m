@@ -220,7 +220,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% image.
     if ~strcmpi(FeatureType,'Ratio')
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(NonQuantizedImage,'TwoByTwo');
+            CPresizefigure(NonQuantizedImage,'TwoByTwo',ThisModuleFigureNumber);
         end
     end
     AdjustedObjectName = strrep(ObjectName,'_','\_');
@@ -230,7 +230,6 @@ if any(findobj == ThisModuleFigureNumber)
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
-%        CPimagesc(NonQuantizedImage,[min(Measurements) max(Measurements)]);
         CPimagesc(NonQuantizedImage,handles.Preferences.IntensityColorMap);
         title([AdjustedObjectName,' colored according to ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize)
     end

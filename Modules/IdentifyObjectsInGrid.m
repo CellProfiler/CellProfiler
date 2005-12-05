@@ -292,7 +292,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(ColoredLabelMatrixImage,'TwoByOne')
+        CPresizefigure(ColoredLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     subplot(2,1,1); 

@@ -225,7 +225,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     %%% Calculates the OriginalColoredLabelMatrixImage for displaying in the figure
     %%% window in subplot(2,1,1).
     OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,OrigSegmentedImage);
@@ -236,7 +236,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne')
+        CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end%%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
     CPimagesc(OriginalColoredLabelMatrixImage,'ColorAlreadySoIgnore');

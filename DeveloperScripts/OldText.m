@@ -1,1 +1,1 @@
-Measure Object Texture
+CPresizefigure

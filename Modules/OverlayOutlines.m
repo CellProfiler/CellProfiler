@@ -116,7 +116,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OrigImage,'OneByOne')
+        CPresizefigure(OrigImage,'OneByOne',ThisModuleFigureNumber)
     end
     CPimagesc(NewImage,handles.Preferences.IntensityColorMap);
     title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);

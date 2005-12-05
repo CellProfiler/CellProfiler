@@ -814,7 +814,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     %%% Activates the appropriate figure window.
                     CPfigure(handles,'Image',ThisModuleFigureNumber);
                     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                        CPresizefigure(OrigImage,'TwoByTwo')
+                        CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber)
                     end
                     subplot(2,2,1)
                     CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
@@ -878,7 +878,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                     CPfigure(handles,'Image',ThisModuleFigureNumber);
                     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                        CPresizefigure(OrigImage,'TwoByTwo');
+                        CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
                     end
                     %%% A subplot of the figure window is set to display the original image.
                     subplot(2,2,1); CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);

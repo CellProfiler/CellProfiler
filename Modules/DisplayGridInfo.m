@@ -110,7 +110,7 @@ FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 %%% Usually this image should be fairly large, so we are pretending it's a
 %%% 2x2 figure window rather than 1x1.
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    CPresizefigure(OrigImage,'TwoByTwo');
+    CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
 end
 
 CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);

@@ -271,7 +271,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         %%% Activates the appropriate figure window.
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(TiledImage,'OneByOne')
+            CPresizefigure(TiledImage,'OneByOne',ThisModuleFigureNumber)
         end
         %%% Displays the image.
         CPimagesc(TiledImage,handles.Preferences.IntensityColorMap);

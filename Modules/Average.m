@@ -128,20 +128,20 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(AveragedImage,'OneByOne')
+        CPresizefigure(AveragedImage,'OneByOne',ThisModuleFigureNumber)
     end
     CPimagesc(AveragedImage,handles.Preferences.IntensityColorMap);
-    if strncmpi(SourceIsLoadedOrPipeline, 'L',1) == 1
+    if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% The averaged image is displayed the first time through the set.
         %%% For subsequent cycles, this figure is not updated at all, to
         %%% prevent the need to load the averaged image from the handles
         %%% structure.
         title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
-    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1) == 1
+    elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         %%% The accumulated averaged image so far is displayed each time
         %%% through the pipeline.
         title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);

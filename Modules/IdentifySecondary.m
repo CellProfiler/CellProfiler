@@ -708,7 +708,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPfigure(handles,SecondaryTestFig);
         end
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo');
+            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',ThisModuleFigureNumber);
         end
         subplot(2,2,IdentChoiceNumber);
         CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap);
@@ -800,7 +800,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% Activates the appropriate figure window.
             CPfigure(handles,'Image',ThisModuleFigureNumber);
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                CPresizefigure(OrigImage,'TwoByTwo');
+                CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
             end
             ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/numel(FinalLabelMatrixImage);
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...

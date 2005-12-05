@@ -162,7 +162,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OriginalRGB,'TwoByOne')
+        CPresizefigure(OriginalRGB,'TwoByOne',ThisModuleFigureNumber)
         %%% Add extra space for the text at the bottom.
         Position = get(ThisModuleFigureNumber,'position')
         set(ThisModuleFigureNumber,'position',[Position(1),Position(2)-40,Position(3),Position(4)+40])

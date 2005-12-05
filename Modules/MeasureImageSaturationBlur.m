@@ -181,11 +181,11 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Text',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText')
+        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
     end
     if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text','units','normalized','position', [0.1 0.1 0.8 0.8],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'horizontalalignment','left','FontSize',handles.Preferences.FontSize);

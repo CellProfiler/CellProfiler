@@ -52,7 +52,7 @@ helpdlg(help('HelpProgrammingNotes'))
 % STEP 1: Find the appropriate figure window. If it is closed, usually none
 % of the remaining steps are performed.
 %   ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-%   if any(findobj == ThisModuleFigureNumber) == 1;
+%   if any(findobj == ThisModuleFigureNumber)
 %
 % STEP 2: Activate the appropriate figure window so subsequent steps are
 % performed inside this window:
@@ -65,7 +65,7 @@ helpdlg(help('HelpProgrammingNotes'))
 % STEP 3: (only during starting image cycle) Make the figure the proper
 % size:
 %   if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-%     CPresizefigure('','NarrowText')
+%     CPresizefigure('','NarrowText',ThisModuleFigureNumber)
 %   end
 % The figure is adjusted to fit the aspect ratio of the images, depending
 % on how many rows and columns of images should be displayed. The choices

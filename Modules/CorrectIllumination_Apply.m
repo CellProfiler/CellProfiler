@@ -164,11 +164,11 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) == 1;
+if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OrigImage,'TwoByTwo');
+        CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.

@@ -187,7 +187,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(AdjacentImage,'OneByOne')
+        CPresizefigure(AdjacentImage,'OneByOne',ThisModuleFigureNumber)
     end
     CPimagesc(AdjacentImage,handles.Preferences.IntensityColorMap);
     title(['Adjacent Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);

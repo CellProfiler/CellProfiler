@@ -248,7 +248,7 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText')
+        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
     end
     for n = 1:length(ImageName)
         drawnow

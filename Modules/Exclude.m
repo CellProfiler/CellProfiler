@@ -187,7 +187,7 @@ if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save')
     LineIntensity = max(ColoredMaskRegionObjectImage(:));
     ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 end    
-if any(findobj == ThisModuleFigureNumber) %#ok Ignore MLint
+if any(findobj == ThisModuleFigureNumber)
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
     %%% window.
     ColoredNewSegmentedObjectImage = CPlabel2rgb(handles,NewSegmentedObjectImage);
@@ -197,7 +197,7 @@ if any(findobj == ThisModuleFigureNumber) %#ok Ignore MLint
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(ColoredSegmentedObjectImage,'TwoByTwo');
+        CPresizefigure(ColoredSegmentedObjectImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);

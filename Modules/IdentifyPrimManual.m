@@ -112,7 +112,7 @@ drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
-CPresizefigure(LowResOrigImage,'OneByOne')
+CPresizefigure(LowResOrigImage,'OneByOne',ThisModuleFigureNumber)
 CPimagesc(LowResOrigImage,handles.Preferences.IntensityColorMap);
 [nrows,ncols] = size(LowResOrigImage);
 
@@ -144,7 +144,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(LowResOrigImage,'TwoByTwo');
+        CPresizefigure(LowResOrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     subplot(2,2,1); 
     CPimagesc(LowResOrigImage,handles.Preferences.IntensityColorMap); 

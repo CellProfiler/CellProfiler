@@ -1,11 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-ANNE WILL DO>>>>>(Requested by Anne 12-05-05) - Take a look at the lines added to CPimagesc. Should I pass in the entire handles structure rather than just the colormap (which is taken directly from handles.Preferences.IntensityColormap?)  If so we should do a search and replace for:
-CPimagesc(Image,'ColorAlreadySoIgnore')
-CPimagesc(Image,handles.Preferences.IntensityColorMap)
-except Image could be a bunch of different names.  See also TWO OPTIONS FOR ... because that would also involve adding another argument to CPimagesc, so maybe sending handles is the best option.
-
 MIKE WILL DO>>>> (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
 
 -It seems that in several places, like MeasureImageSaturationBlur, we say "Percent" when we actually mean fraction. We should go through all modules/data tools looking for the word percent and make sure that we change it one way or the other so it's accurate & consistent.  Otherwise, if it says 0.08 we don't know whether that is 8% or .08%
@@ -17,15 +12,10 @@ DownloadNewModules	- DONE
 
 (Requested by Anne 12-02-05) I feel pretty strongly that CPretrieveimage should use text as arguments rather than numbers.  E.g. the colorflag should be 'mustbecolor' 'mustbegray' instead of 2 or 3. That way, when you are in a module and look at the line you can figure out what checks it is making. I'm happy to go through and modify this if necessary.
 
-ANNE WILL DO>>>>>(Requested by Anne 12-02-05) TWO OPTIONS TO FIX FONT SIZE FOR TITLES IN ALL FIGURE WINDOWS:
-1. For every use of text that's not an image title, be sure to use 'fontsize',handles.Preferences.FontSize.
-2. add an argument to CPimagesc: FontSize, passed in as handles.Preferences.FontSize and then add this line to CPimagesc:
-set(gca,'fontsize',handles.Preferences.FontSize)
-
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
-- Prepare updated manual -Anne is working on this
-- Make reference sheet with short descriptions of the modules (see manuscript table). -Anne is working on this
+- ANNE WILL DO>>> Prepare updated manual
+- ANNE WILL DO>>> Make reference sheet with short descriptions of the modules (see manuscript table).
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.

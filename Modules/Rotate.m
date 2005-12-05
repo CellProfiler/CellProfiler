@@ -113,7 +113,6 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','Check
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 FigureHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
-subplot(2,3,[1 2 4 5]);
 ImageHandle = CPimagesc(OrigImage,handles);
 drawnow
 
@@ -214,8 +213,10 @@ elseif strcmp(CropEdges,'Yes')
     [x y] = size(OrigImage);
     Ycrop = floor(abs((y*sin(theta) - x*cos(theta))*cos(theta)*sin(theta)/(sin(theta)^2-cos(theta)^2)));
     Xcrop = floor(abs((x*sin(theta) - y*cos(theta))*cos(theta)*sin(theta)/(sin(theta)^2-cos(theta)^2)));
+    Ycrop = max(1,Ycrop);
+    Xcrop = max(1,Xcrop);
     [lengthX lengthY] = size(BeforeCropRotatedImage);
-    RotatedImage = BeforeCropRotatedImage(Ycrop:lengthY-Ycrop,Xcrop:lengthX-Xcrop);
+    RotatedImage = BeforeCropRotatedImage(Xcrop:lengthX-Xcrop,Ycrop:lengthY-Ycrop);
 else
     error(['Image processing was canceled in the ', ModuleName, ' module because the value of CropEdges is not recognized.']);
 end
@@ -223,12 +224,30 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%
 %%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
 %%% Figure must be displayed for this module.
 CPfigure(FigureHandle);
-subplot(2,3,[1 2 4 5]);
-ImageHandle = CPimagesc(RotatedImage,handles);
-title('Rotated Image');
+
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+if any(findobj == ThisModuleFigureNumber)
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
+    end
+    %%% A subplot of the figure window is set to display the original image.
+    subplot(2,1,1); 
+    CPimagesc(OrigImage,handles); 
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    %%% A subplot of the figure window is set to display the rotated
+    %%% Image.
+    subplot(2,1,2); 
+    CPimagesc(RotatedImage,handles); 
+    title('Rotated Image');
+end
+
+
 try %#ok We want to ignore MLint error checking for this line.
     delete(PatienceHandle)
 end

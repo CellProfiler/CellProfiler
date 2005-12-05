@@ -138,7 +138,7 @@ else
     %%% Activates the appropriate figure window.
     DataHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
     
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     colormap(gray);
     FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};
     title([ObjectName,', ',FeatureDisp,' on ',Image])

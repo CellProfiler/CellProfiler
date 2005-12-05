@@ -173,17 +173,17 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
     subplot(2,2,1);
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% The mean image does not absolutely have to be present in order to
     %%% carry out the calculations if the illumination image is provided,
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
     subplot(2,2,2);
-    CPimagesc(CorrectedImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(CorrectedImage,handles);
     title('Illumination Corrected Image');
     subplot(2,2,3);
-    CPimagesc(IllumCorrectFunctionImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(IllumCorrectFunctionImage,handles);
     title('Illumination Correction Function Image');
     text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red');
     text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red');

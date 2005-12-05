@@ -114,15 +114,15 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1); 
-    CPimagesc(BasicImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(BasicImage,handles); 
     title([BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,2); 
-    CPimagesc(SubtractImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(SubtractImage,handles); 
     title([SubtractImageName, ' image']);
     subplot(2,2,3); 
-    CPimagesc(ResultingImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(ResultingImage,handles); 
     title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
 end
 

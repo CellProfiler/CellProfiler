@@ -711,7 +711,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',ThisModuleFigureNumber);
         end
         subplot(2,2,IdentChoiceNumber);
-        CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap);
+        CPimagesc(ObjectOutlinesOnOrigImage,handles);
         title(IdentChoiceList(IdentChoiceNumber));
     end
 
@@ -807,23 +807,23 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
             subplot(2,2,1); 
-            CPimagesc(OrigImage,handles.Preferences.IntensityColorMap); 
+            CPimagesc(OrigImage,handles); 
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
             subplot(2,2,2); 
-            CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
+            CPimagesc(ColoredLabelMatrixImage,handles); 
             title(['Segmented ',SecondaryObjectName]);
             %%% A subplot of the figure window is set to display the original image
             %%% with secondary object outlines drawn on top.
             subplot(2,2,3); 
-            CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
+            CPimagesc(ObjectOutlinesOnOrigImage,handles); 
             title([SecondaryObjectName, ' Outlines on Input Image']);
             %%% A subplot of the figure window is set to display the original
             %%% image with outlines drawn for both the primary and secondary
             %%% objects.
             subplot(2,2,4); 
-            CPimagesc(BothOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
+            CPimagesc(BothOutlinesOnOrigImage,handles); 
             title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
         end
 

@@ -239,10 +239,10 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end%%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    CPimagesc(OriginalColoredLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(OriginalColoredLabelMatrixImage,handles);
     title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2);
-    CPimagesc(ShrunkenColoredLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(ShrunkenColoredLabelMatrixImage,handles);
     title(ShrunkenObjectName);
 end
 

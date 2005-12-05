@@ -82,12 +82,12 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); 
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(OrigImage,handles); 
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Inverted
     %%% Image.
     subplot(2,1,2); 
-    CPimagesc(InvertedImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(InvertedImage,handles); 
     title('Inverted Image');
 end
 

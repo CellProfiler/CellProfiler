@@ -130,10 +130,10 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(LabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
     subplot(2,1,1);
-    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredLabelMatrixImage,handles);
     title('Original Identified Objects','fontsize',handles.Preferences.FontSize);
     subplot(2,1,2);
-    CPimagesc(Image,'ColorAlreadySoIgnore');
+    CPimagesc(Image,handles);
     title('New Image','fontsize',handles.Preferences.FontSize);
 end
 

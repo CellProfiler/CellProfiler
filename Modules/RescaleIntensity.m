@@ -165,12 +165,12 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1); 
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Rescaled
     %%% Image.
     subplot(2,1,2); 
-    CPimagesc(RescaledImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(RescaledImage,handles); 
     title('Rescaled Image');
 end
 

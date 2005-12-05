@@ -37,14 +37,7 @@ if ~isempty(varargin)
                 drawnow
                 CPfigure(handles);
                 data = get(get(ITh,'UserData'),'Cdata');
-                if ndims(data) == 2
-                    CPimagesc(data);
-                    axis image;
-                    colormap gray;    % Scalar image
-                else
-                    CPimagesc(data);
-                    axis image;                    % RGB image
-                end
+                CPimagesc(data,handles);
                 title(get(get(get(get(ITh,'UserData'),'parent'),'title'),'string'));
             case {'Histogram'}                                % Produce histogram (only for scalar images)
                 drawnow

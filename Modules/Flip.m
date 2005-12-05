@@ -115,12 +115,12 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
     subplot(2,1,2);
-    CPimagesc(FlippedImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(FlippedImage,handles);
     title('Flipped Image');
 end
 

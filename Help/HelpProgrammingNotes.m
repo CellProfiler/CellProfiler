@@ -72,12 +72,10 @@ helpdlg(help('HelpProgrammingNotes'))
 % are: OneByOne, TwoByOne, TwoByTwo, NarrowText. If a figure display is unnecessary for the module, skip STEP 2 and here use: close(ThisModuleFigureNumber) instead of CPresizefigure.
 %
 % STEP 4: Display your image:
-%   ImageHandle = CPimagesc(Image,handles.Preferences.IntensityColorMap);
+%   ImageHandle = CPimagesc(Image,handles);
 % This CPimagesc displays the image and also embeds an image tool bar which
-% will appear when you click on the displayed image. The colormap will only
-% be used if the image is two dimensional (i.e. grayscale). To speed
-% processing when displaying a color image, use 'ColorAlreadySoIgnore' in
-% place of handles.Preferences.IntensityColorMap.
+% will appear when you click on the displayed image. The handles are passed
+% in so the user's preferences for font size and colormap are used.
 %
 % 
 % DRAWNOW BEFORE FIGURE COMMAND:

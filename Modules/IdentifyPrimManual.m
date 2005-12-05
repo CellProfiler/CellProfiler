@@ -113,7 +113,7 @@ drawnow
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
 CPresizefigure(LowResOrigImage,'OneByOne',ThisModuleFigureNumber)
-CPimagesc(LowResOrigImage,handles.Preferences.IntensityColorMap);
+CPimagesc(LowResOrigImage,handles);
 [nrows,ncols] = size(LowResOrigImage);
 
 AxisHandle = gca;
@@ -147,18 +147,18 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(LowResOrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     subplot(2,2,1); 
-    CPimagesc(LowResOrigImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(LowResOrigImage,handles); 
     title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); 
-    CPimagesc(LowResInterior,handles.Preferences.IntensityColorMap); 
+    CPimagesc(LowResInterior,handles); 
     title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
     FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
     subplot(2,2,3); 
-    CPimagesc(FinalOutlineOnOrigImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(FinalOutlineOnOrigImage,handles); 
     title([ObjectName, ' Outline']);
     subplot(2,2,4); 
-    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
+    CPimagesc(ColoredLabelMatrixImage,handles); 
     title(['Identified ' ObjectName]);
 end
 

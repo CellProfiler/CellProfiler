@@ -113,7 +113,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
 end
 
-CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+CPimagesc(OrigImage,handles);
 title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with text info displayed'])
 line(VertLinesX,VertLinesY);
 line(HorizLinesX,HorizLinesY);

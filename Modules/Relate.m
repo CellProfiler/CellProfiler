@@ -95,14 +95,14 @@ if any(findobj == ThisModuleFigureNumber)
     end
     subplot(2,2,1);
     ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
-    CPimagesc(ColoredParentLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredParentLabelMatrixImage,handles);
     title(['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2);
     ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
-    CPimagesc(ColoredSubObjectLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredSubObjectLabelMatrixImage,handles);
     title('Original Sub Objects');
     subplot(2,2,3);
     ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
-    CPimagesc(ColoredNewObjectParentLabelMatrix,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredNewObjectParentLabelMatrix,handles);
     title('New Sub Objects');
 end

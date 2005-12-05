@@ -1,1 +1,1 @@
-CPfigure(handles,'Image',ThisModuleFigureNumber);
+handles)

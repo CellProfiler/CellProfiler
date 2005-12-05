@@ -208,16 +208,16 @@ if any(findobj == ThisModuleFigureNumber);
         CPresizefigure(PrimaryObjectImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     subplot(2,2,1); 
-    CPimagesc(PrimaryObjectImage,'ColorAlreadySoIgnore'); 
+    CPimagesc(PrimaryObjectImage,handles); 
     title([PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,2); 
-    CPimagesc(SecondaryObjectImage,'ColorAlreadySoIgnore'); 
+    CPimagesc(SecondaryObjectImage,handles); 
     title([SecondaryObjectName, ' Image']);
     subplot(2,2,3); 
-    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore'); 
+    CPimagesc(ColoredLabelMatrixImage,handles); 
     title([SubregionObjectName, ' Image']);
     subplot(2,2,4); 
-    CPimagesc(FinalOutline,handles.Preferences.IntensityColorMap); 
+    CPimagesc(FinalOutline,handles); 
     title([SubregionObjectName, ' Outlines']);
 end
 

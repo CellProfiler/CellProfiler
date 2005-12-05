@@ -201,20 +201,20 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,2,1);
-    CPimagesc(ColoredSegmentedObjectImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredSegmentedObjectImage,handles);
     title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
     subplot(2,2,2);
-    CPimagesc(ColoredNewSegmentedObjectImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredNewSegmentedObjectImage,handles);
     title(RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
     subplot(2,2,3);
-    CPimagesc(ColoredMaskRegionObjectImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredMaskRegionObjectImage,handles);
     title(['Previously identified ', MaskRegionName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,2,4); 
-    CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(ObjectOutlinesOnOrigImage,handles); 
     title([ObjectName, ' Outlines on Input Image']);
 end
 

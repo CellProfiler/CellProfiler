@@ -160,10 +160,10 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(IncomingLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
     subplot(2,1,1); 
-    CPimagesc(ColoredIncomingObjectsImage,'ColorAlreadySoIgnore'); 
+    CPimagesc(ColoredIncomingObjectsImage,handles); 
     title(ObjectName,'FontSize',FontSize)
     subplot(2,1,2); 
-    CPimagesc(ImageOfNeighbors,'ColorAlreadySoIgnore');
+    CPimagesc(ImageOfNeighbors,handles);
     colorbar('SouthOutside','FontSize',FontSize)
     title([ObjectName,' colored by number of neighbors'],'FontSize',FontSize)
 end

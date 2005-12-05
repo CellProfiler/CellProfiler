@@ -129,12 +129,12 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the figure window is set to display the original
     %%% image.
     subplot(2,1,1);
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.
     subplot(2,1,2);
-    CPimagesc(ThresholdedImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(ThresholdedImage,handles);
     title('Thresholded Image');
 end
 

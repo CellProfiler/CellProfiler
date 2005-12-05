@@ -355,17 +355,17 @@ if any(findobj == ThisModuleFigureNumber)
     %%% have.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     subplot(2,2,1); 
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(OrigImage,handles); 
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     subplot(2,2,2); 
-    CPimagesc(ColoredLabelMatrixImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(ColoredLabelMatrixImage,handles); 
     title(['Segmented ',ObjectName]);
     subplot(2,2,3); 
-    CPimagesc(EnhancedInvertedImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(EnhancedInvertedImage,handles); 
     title('Inverted enhanced contrast image');
     subplot(2,2,4); 
-    CPimagesc(FinalOutline,handles.Preferences.IntensityColorMap); 
+    CPimagesc(FinalOutline,handles); 
     title([ObjectName, ' Outlines']);
 end
 

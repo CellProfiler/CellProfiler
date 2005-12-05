@@ -304,7 +304,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% OK to use imagesc rather than CPimagesc, because the
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);
-            colormap(handles.Preferences.IntensityColorMap);
+            colormap(handles);
             pixval
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
@@ -416,7 +416,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% OK to use imagesc rather than CPimagesc, because the
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);
-            colormap(handles.Preferences.IntensityColorMap);
+            colormap(handles);
             title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
@@ -456,12 +456,12 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
     subplot(2,1,1);
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
     subplot(2,1,2);
-    CPimagesc(CroppedImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(CroppedImage,handles);
     title('Cropped Image');
 end
 

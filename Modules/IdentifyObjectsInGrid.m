@@ -296,12 +296,12 @@ if any(findobj == ThisModuleFigureNumber)
     end
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     subplot(2,1,1); 
-    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredLabelMatrixImage,handles);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
     title(['Identified ',NewObjectName],'fontsize',handles.Preferences.FontSize);
     subplot(2,1,2); 
-    CPimagesc(FinalOutline,handles.Preferences.IntensityColorMap);
+    CPimagesc(FinalOutline,handles);
     line(VertLinesX,VertLinesY);
     line(HorizLinesX,HorizLinesY);
     title(['Outlined ',NewObjectName],'fontsize',handles.Preferences.FontSize);

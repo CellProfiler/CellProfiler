@@ -171,12 +171,12 @@ if any(findobj == ThisModuleFigureNumber)
         %%% A subplot of the figure window is set to display the original
         %%% image.
         subplot(5,1,1:2);
-        CPimagesc(OriginalRGB,handles.Preferences.IntensityColorMap);
+        CPimagesc(OriginalRGB,handles);
         title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the adjusted
         %%%  image.
         subplot(5,1,3:4);
-        CPimagesc(AlignedRGB,handles.Preferences.IntensityColorMap);
+        CPimagesc(AlignedRGB,handles);
         title('Aligned Images');
     end
     if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))

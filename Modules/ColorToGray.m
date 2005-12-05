@@ -159,12 +159,12 @@ if strcmp(GrayOrSplit,'Combine')
         end
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,1,1);
-        CPimagesc(OrigImage,'ColorAlreadySoIgnore');
+        CPimagesc(OrigImage,handles);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
         subplot(2,1,2);
-        CPimagesc(GrayscaleImage,handles.Preferences.IntensityColorMap);
+        CPimagesc(GrayscaleImage,handles);
         title('Grayscale Image');
     end
 elseif strcmp(GrayOrSplit,'Split')
@@ -178,19 +178,19 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% image.  Using CPimagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
         subplot(2,2,1);
-        CPimagesc(OrigImage,'ColorAlreadySoIgnore');
+        CPimagesc(OrigImage,handles);
         title(['Input Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
         subplot(2,2,2);
-        CPimagesc(BlueImage,handles.Preferences.IntensityColorMap);
+        CPimagesc(BlueImage,handles);
         title('Blue Image');
         %%% A subplot of the figure window is set to display the green image.
         subplot(2,2,3);
-        CPimagesc(GreenImage,handles.Preferences.IntensityColorMap);
+        CPimagesc(GreenImage,handles);
         title('Green Image');
         %%% A subplot of the figure window is set to display the red image.
         subplot(2,2,4);
-        CPimagesc(RedImage,handles.Preferences.IntensityColorMap);
+        CPimagesc(RedImage,handles);
         title('Red Image');
     end
 end

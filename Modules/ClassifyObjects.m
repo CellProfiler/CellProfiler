@@ -230,7 +230,7 @@ if any(findobj == ThisModuleFigureNumber)
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
-        CPimagesc(NonQuantizedImage,handles.Preferences.IntensityColorMap);
+        CPimagesc(NonQuantizedImage,handles);
         title([AdjustedObjectName,' colored according to ',AdjustedFeatureName],'fontsize',handles.Preferences.FontSize)
     end
     %%% Produce and plot histogram of original data
@@ -251,7 +251,7 @@ if any(findobj == ThisModuleFigureNumber)
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
-        CPimagesc(QuantizedRGBimage,'ColorAlreadySoIgnore')
+        CPimagesc(QuantizedRGBimage,handles)
         title(['Classified ', AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
     end
     %%% Produce and plot histogram

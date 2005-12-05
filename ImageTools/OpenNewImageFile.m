@@ -59,7 +59,7 @@ else
     %%% Reads the image.
     Image = CPimread(fullfile(Pathname, FileName));
     CPfigure(handles);
-    CPimagesc(Image,handles.Preferences.IntensityColorMap);
+    CPimagesc(Image,handles);
     colormap(gray);
     FileName = strrep(FileName,'_','\_');
     title(FileName);

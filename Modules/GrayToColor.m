@@ -180,19 +180,19 @@ if any(findobj == ThisModuleFigureNumber)
     %%% image.  Using CPimagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
     subplot(2,2,1); 
-    CPimagesc(RGBImage,'ColorAlreadySoIgnore');
+    CPimagesc(RGBImage,handles);
     title(['Merged Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the blue image.
     subplot(2,2,2); 
-    CPimagesc(BlueImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(BlueImage,handles); 
     title('Blue Image');
     %%% A subplot of the figure window is set to display the green image.
     subplot(2,2,3); 
-    CPimagesc(GreenImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(GreenImage,handles); 
     title('Green Image');
     %%% A subplot of the figure window is set to display the red image.
     subplot(2,2,4); 
-    CPimagesc(RedImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(RedImage,handles); 
     title('Red Image');
 end
 

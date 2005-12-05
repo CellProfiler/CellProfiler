@@ -263,7 +263,7 @@ else
             %%% click on it to mark the control spot.
             ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
             CPfigure(handles,'Image',ThisModuleFigureNumber);
-            CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+            CPimagesc(OrigImage,handles);
             %%% Sets the top, left of the grid based on mouse clicks.
             title({'Click on the center of the top left control spot, then press Enter.','If you make an error, the Delete or Backspace key will delete the previously selected point.','If multiple points are clicked, the last point clicked will be used. BE PATIENT!'})
             drawnow
@@ -330,7 +330,7 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     set(gca,'fontsize',handles.Preferences.FontSize)
     %%% Draws the lines.
     line(VertLinesX,VertLinesY);

@@ -200,22 +200,22 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the figure window is set to display the original
     %%% image.
     subplot(2,2,1); 
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the label
     %%% matrix image.
     subplot(2,2,3); 
-    CPimagesc(LabelMatrixImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(LabelMatrixImage,handles);
     title(['Original ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     
     subplot(2,2,2); 
-    CPimagesc(ColoredLabelMatrixImage,'ColorAlreadySoIgnore');
+    CPimagesc(ColoredLabelMatrixImage,handles);
     title(['Filtered ' ObjectName]);
     subplot(2,2,4); 
-    CPimagesc(ObjectOutlinesOnOrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(ObjectOutlinesOnOrigImage,handles);
     title([TargetName, ' Outlines on Input Image']);
 end
 

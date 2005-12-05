@@ -152,10 +152,10 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
     subplot(2,1,1); 
-    CPimagesc(OrigImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2); 
-    CPimagesc(SmoothedImage,handles.Preferences.IntensityColorMap); 
+    CPimagesc(SmoothedImage,handles); 
     title('Smoothed Image');
 end
 

@@ -134,7 +134,7 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(AveragedImage,'OneByOne',ThisModuleFigureNumber)
     end
-    CPimagesc(AveragedImage,handles.Preferences.IntensityColorMap);
+    CPimagesc(AveragedImage,handles);
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% The averaged image is displayed the first time through the set.
         %%% For subsequent cycles, this figure is not updated at all, to

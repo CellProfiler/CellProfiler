@@ -1,1 +1,1 @@
-CPfigure(handles,ThisModuleFigureNumber);
+Measure Object Texture

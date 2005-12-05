@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/02) (Requested by Anne 12-01-05) - We need to change the name of the MeasureObjectTexture module to MeasureTexture, since it works for images now too, not just objects. When doing so be sure to search and replace all instances of MeasureObjectTexture in the code (esp. in See also's) and Measure Object Texture (with spaces). Also, open the Example PIPEs as matlab files and change the name by hand in Settings.ModuleNames because it's pretty easy to do it that way.
+
 (12/02, everyone) - Check through each module (~2 per day):
 THIS HAS ALREADY BEEN DONE FOR ALL:
 	- (Requested by Anne 9-01-05) - We'd like to make the variable descriptions

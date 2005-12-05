@@ -15,7 +15,7 @@ function handles = DisplayHistogram(handles)
 % numbered list of the features measured by that module.
 %
 % See also DisplayImageHistogram, MeasureObjectAreaShape,
-% MeasureObjectIntensity, MeasureObjectTexture, MeasureCorrelation,
+% MeasureObjectIntensity, MeasureTexture, MeasureCorrelation,
 % MeasureObjectNeighbors, CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.

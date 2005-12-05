@@ -1,6 +1,6 @@
-function handles = MeasureObjectTexture(handles)
+function handles = MeasureTexture(handles)
 
-% Help for the Measure Object Texture module:
+% Help for the Measure Texture module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:

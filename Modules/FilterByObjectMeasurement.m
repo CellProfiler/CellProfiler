@@ -10,8 +10,8 @@ function handles = FilterByObjectMeasurement(handles)
 %
 % This module removes objects based on their measurements produced by
 % another module (e.g. Measure Object Area Shape, Measure Object Intensity,
-% Measure Object Texture). All objects outside of the specified parameters
-% will be discarded.
+% Measure Texture). All objects outside of the specified parameters will be
+% discarded.
 %
 % Feature Number:
 % The feature number specifies which feature from the Measure module will
@@ -32,8 +32,8 @@ function handles = FilterByObjectMeasurement(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also MeasureObjectAreaShape, MeasureObjectIntensity,
-% MeasureObjectTexture, MeasureCorrelation, CalculateRatios.
+% See also MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture,
+% MeasureCorrelation, CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

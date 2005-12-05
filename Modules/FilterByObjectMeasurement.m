@@ -33,7 +33,7 @@ function handles = FilterByObjectMeasurement(handles)
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture,
-% MeasureCorrelation, CalculateRatios.
+% MeasureCorrelation, CalculateRatios, MeasureObjectNeighbors.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -76,10 +76,11 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements do you want to filter by?  This module must be run after a Measure module.
 %choiceVAR03 = AreaShape
-%choiceVAR03 = Intensity
-%choiceVAR03 = Texture
 %choiceVAR03 = Correlation
+%choiceVAR03 = Intensity
+%choiceVAR03 = Neighbors
 %choiceVAR03 = Ratio
+%choiceVAR03 = Texture
 %inputtypeVAR03 = popupmenu
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -129,6 +130,9 @@ if strcmp(MeasureChoice,'Intensity')
 elseif strcmp(MeasureChoice,'Texture')
     fieldname = ['Texture_',ImageName];
     MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+elseif strcmp(MeasureChoice,'Neighbors')
+    fieldname = 'NumberNeighbors';
+    MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,1);
 elseif strcmp(MeasureChoice,'Ratio')
     MeasureInfo = handles.Measurements.(RatioNum).(MeasureChoice){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
 else

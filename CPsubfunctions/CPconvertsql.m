@@ -68,13 +68,17 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         if strfind(ssf, 'Description')
             continue;
         end
-
+        
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
         elseif isfield(substruct, [ssf 'Text']),
             names = handles.Measurements.(SubFieldname).([ssf 'Text']);
         elseif isfield(substruct, [ssf 'Description'])
-            names = handles.Measurements.(SubFieldname).([ssf 'Description']);
+            if length(handles.Measurements.(SubFieldname).(ssf)) ~= handles.Current.NumberOfImageSets
+                continue;
+            else
+                names = handles.Measurements.(SubFieldname).([ssf 'Description']);
+            end
         else
             names = {ssf};
         end
@@ -293,22 +297,18 @@ for img_idx = FirstSet:LastSet
 
     fprintf(fimage,'\t');
     formatstr = ['%g' repmat('\t%g',1,size(perobjectvals_mean, 2)-1)];
-    if size(perobjectvals_mean,1)==1,
+    if size(perobjectvals_mean,1)==1
         fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
         fprintf(fimage,'\t');
         for i= 1:size(perobjectvals_mean,2),
-            fprintf(fimage,'\t','');%ignore NaN
+            fprintf(fimage,'\t',''); %ignore NaN
         end
-        %fprintf(fimage, 'atest');
         fprintf(fimage, '\n');
-
     else
-
         fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
         fprintf(fimage,'\t');
         fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
         fprintf(fimage, '\n');
-
     end
 end
 
@@ -327,5 +327,5 @@ function sc=cleanup(s)
 sc = s;
 sc(strfind(s,' ')) = '_';
 if (length(sc) >= 64)
-    warning(['Column name ' sc ' too long in CPconvertsql.'])
+    warning(['Column name ' sc ' too long in CPconvertsql.']) %#ok Ignore MLint
 end

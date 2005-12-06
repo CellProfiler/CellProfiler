@@ -38,13 +38,6 @@ if ~exist('handles','var')
     error('This is not a CellProfiler output file.');
 end
 
-try FontSize = handles.Preferences.FontSize;
-    %%% We used to store the font size in Current, so this line makes old
-    %%% output files compatible. Shouldn't be necessary with any files made
-    %%% after November 15th, 2006.
-catch FontSize = handles.Current.FontSize;
-end
-
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~isfield(handles,'Measurements')
     errordlg('The selected file does not contain any measurements.')
@@ -59,7 +52,7 @@ for i=1:length(handles.Measurements)
     end
 end
 
-[Selection, ok] = listdlg('ListString',MeasFieldnames,'ListSize', [300 400],...
+[Selection, ok] = listdlg('ListString',MeasFieldnames,'ListSize', [300 200],...
     'Name','Select measurement',...
     'PromptString','Which object do you want to export locations from?',...
     'CancelString','Cancel',...
@@ -74,7 +67,41 @@ ObjectTypename = MeasFieldnames{Selection};
 if isfield(handles.Measurements.(ObjectTypename),'Location')
     Locations = handles.Measurements.(ObjectTypename).Location;
 else
-    error('The object you have chosen does not have location measurements.')
+    error('The object you have chosen does not have location measurements.');
+end
+
+AcceptableAnswers = 0;
+while AcceptableAnswers == 0
+    Prompts{1} = 'What do you want the x,y location of the first object to be (in final units)?';
+    Prompts{2} = 'How many units per pixel (e.g. microns)?';
+
+    Defaults{1} = '0,0';
+    Defaults{2} = '10';
+
+    Answers = inputdlg(Prompts(1:2),'Export Locations Settings',1,Defaults(1:2),'on');
+
+    FirstObjectLocation = Answers{1};
+    comma = strfind(FirstObjectLocation,',');
+    commaerrortext = 'The x,y location must be entered in the following format: 0,0';
+    if length(comma) > 1
+        uiwait(CPwarndlg(commaerrortext));
+        continue
+    else
+        FirstSpotX = str2double(FirstObjectLocation(1:comma-1));
+        FirstSpotY = str2double(FirstObjectLocation(comma+1:end));
+        if isempty(FirstSpotX) || isempty(FirstSpotY)
+            uiwait(CPwarndlg(commaerrortext));
+            continue
+        end
+    end
+
+    PixelUnits = str2double(Answers{2});
+    if isempty(PixelUnits)
+        uiwait(CPwarndlg('Units per pixel must be a valid number.'));
+        continue
+    end
+
+    AcceptableAnswers = 1;
 end
 
 for ImageNumber = 1:length(Locations)
@@ -83,8 +110,11 @@ for ImageNumber = 1:length(Locations)
     if fid == -1
         error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
     end
+    FixedLocations = Locations{ImageNumber}*PixelUnits;
+    FixedLocations(:,1) = FixedLocations(:,1) - (FixedLocations(1,1)-FirstSpotX);
+    FixedLocations(:,2) = FixedLocations(:,2) - (FixedLocations(1,2)-FirstSpotY);
     for ObjectNumber = 1:size(Locations{ImageNumber},1)
-        fprintf(fid,[Locations{ImageNumber}(ObjectNumber,1),'\t',Locations{ImageNumber}(ObjectNumber,2),'\n']);
+        fprintf(fid,[num2str(FixedLocations(ObjectNumber,1)),'\t',num2str(FixedLocations(ObjectNumber,2)),'\n']);
     end
-    fclose(fid)
+    fclose(fid);
 end

@@ -4,8 +4,6 @@ Mike's TODO list
 
 -(Requested by Anne 12-02-05) In Classify objects, it looks like display won't work if using Ratios. Does that still make sense, or is it outdated?
 
-- Jason: Design method for scaling grid and getting locations
-
 - Website: Include Forum on main page, think of layout
 
 - Test SaveImageAs

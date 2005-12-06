@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/6) Fix Help problems in compiled CellProfiler
+
 -(Mike 12/6 ExportLocations) Jason: Design method for scaling grid and getting locations
 
 -(Mike 12/5) It seems that in several places, like MeasureImageSaturationBlur, we say "Percent" when we actually mean fraction. We should go through all modules/data tools looking for the word percent and make sure that we change it one way or the other so it's accurate & consistent.  Otherwise, if it says 0.08 we don't know whether that is 8% or .08%

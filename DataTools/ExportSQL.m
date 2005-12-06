@@ -1,4 +1,4 @@
-function ExportSQL2(handles)
+function ExportSQL(handles)
 
 % Help for the ExportSQl tool:
 % Category: Data Tools

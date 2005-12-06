@@ -3840,7 +3840,7 @@ if isdeployed
         end
     end
     if ~isempty(Option)
-        GeneralIndividualModuleHelpText = handles.Current.Help{Option};
+        GeneralIndividualModuleHelpText = handles.Current.Help{Option-1};
     end
 else
     GeneralIndividualModuleHelpText = help('HelpIndividualModule');

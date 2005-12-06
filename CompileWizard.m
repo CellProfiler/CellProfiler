@@ -28,7 +28,7 @@ for i=1:length(ImageToolfilelist)
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
-fprintf(fid,['handles.Current.ImageToolsFilenames = {',ToolList,'};\n']);
+fprintf(fid,['handles.Current.ImageToolsFilenames = {''Image tools'' ',ToolList,'};\n']);
 fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\n');
 fprintf(fid,['%%#function ',ToolListNoQuotes,'\n\n']);
 
@@ -56,11 +56,35 @@ for i=1:length(DataToolfilelist)
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
-fprintf(fid,['handles.Current.DataToolsFilenames = {',ToolList,'};\n']);
+fprintf(fid,['handles.Current.DataToolsFilenames = {''Data tools'' ',ToolList,'};\n']);
 fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\n');
 fprintf(fid,['%%#function ',ToolListNoQuotes,'\n\n']);
 
 clear ToolList ToolListNoQuotes
+
+DataToolfilelist = dir('Modules/*.m');
+fprintf(fid,'%%%%%% MODULES HELP\n');
+for i=1:length(DataToolfilelist)
+    ToolName = DataToolfilelist(i).name;
+    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);
+    body = char(strread(help(DataToolfilelist(i).name),'%s','delimiter','','whitespace',''));
+    for j = 1:size(body,1)
+        fixedtext = fixthistext(body(j,:));
+        newtext = ['''',fixedtext,'\\n''...\n'];
+        fprintf(fid,newtext);
+    end
+    fprintf(fid,']);\n\n');
+    fprintf(fid,['ToolHelp{',num2str(i),'} = ',ToolName(1:end-2),'Help;\n\n']);
+    if exist('ToolList','var')
+        ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
+    else
+        ToolList = ['''',ToolName(1:end-2),''''];
+    end
+end
+fprintf(fid,['handles.Current.ModuleFilenames = {',ToolList,'};\n']);
+fprintf(fid,'handles.Current.ModuleHelp = ToolHelp;\n\n');
+
+clear ToolList
 
 Helpfilelist = dir('Help/*.m');
 fprintf(fid,'%%%%%% HELP\n');
@@ -82,7 +106,7 @@ for i=1:length(Helpfilelist)
         ToolList = ['''',ToolName(1:end-2),''''];
     end
 end
-fprintf(fid,['handles.Current.HelpFilenames = {',ToolList,'};\n']);
+fprintf(fid,['handles.Current.HelpFilenames = {''Help'' ',ToolList,'};\n']);
 fprintf(fid,'handles.Current.Help = ToolHelp;\n\n');
 
 clear ToolList
@@ -191,7 +215,7 @@ fclose(fid);
 
 function fixedtext = fixthistext(text)
 
-fixedtext = strrep(text,'''','''''');
+fixedtext = strrep(text,'''','''''''''');
 fixedtext = strrep(fixedtext,'\','\\\\');
 fixedtext = strrep(fixedtext,'%','%%%%');
 

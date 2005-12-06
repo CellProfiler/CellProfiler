@@ -8,8 +8,6 @@ Mike's TODO list
 
 - Test SaveImageAs
 
-- Look through ExportDataToFiles
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - New images for Scott Floyd

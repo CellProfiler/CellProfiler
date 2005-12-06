@@ -141,8 +141,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
     % for calling from data tool, no tableprefix is asked from user, leave
     % it as blank
-    CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet,'');
-
+    CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);
 end % End loop over data files
 
 %%% Done, let the user know if this function was called as a data tool and restore the handles structure

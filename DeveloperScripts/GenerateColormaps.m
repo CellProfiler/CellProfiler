@@ -1,0 +1,10 @@
+figure,
+ColorImg = label2rgb(Image,'winter','k','shuffle'); subplot(3,3,1), imagesc(ColorImg), title('winter')
+ColorImg = label2rgb(Image,'summer','k','shuffle'); subplot(3,3,2), imagesc(ColorImg), title('summer')
+ColorImg = label2rgb(Image,'spring','k','shuffle'); subplot(3,3,3), imagesc(ColorImg), title('spring')
+ColorImg = label2rgb(Image,'autumn','k','shuffle'); subplot(3,3,4), imagesc(ColorImg), title('autumn')
+ColorImg = label2rgb(Image,'colorcube','k','shuffle'); subplot(3,3,5), imagesc(ColorImg), title('colorcube')
+ColorImg = label2rgb(Image,'cool','k','shuffle'); subplot(3,3,6), imagesc(ColorImg), title('cool')
+ColorImg = label2rgb(Image,'hsv','k','shuffle'); subplot(3,3,7), imagesc(ColorImg), title('hsv')
+ColorImg = label2rgb(Image,'hot','k','shuffle'); subplot(3,3,8), imagesc(ColorImg), title('hot')
+ColorImg = label2rgb(Image,'jet','k','shuffle'); subplot(3,3,9), imagesc(ColorImg), title('jet')

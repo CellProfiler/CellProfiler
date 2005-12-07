@@ -1,8 +1,9 @@
+- Combine code for ExportData and ExportDatabase (CPconvertsql) and make ExportData a module
 
-- (Periodically) - Check Matlab Central for useful code to incorporate into
-       CellProfiler or its modules (last checked on 9-16-04:
-       Biotech/medical, Graphics (all 3 categories), Image Processing,
-       Utilities - GUI Tools & examples, and Misc.) 
+- (Periodically)
+- Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities
+- GUI Tools & examples, and Misc.
+
 ---------------------------------------------------
 THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 - update the image file formats that are readable in LoadImages modules and saveable in SaveImages module and SaveImageAs Image tool. 

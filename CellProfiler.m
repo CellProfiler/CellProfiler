@@ -102,6 +102,7 @@ if isdeployed
         clear SavedPreferences
     end
     handles.Current.DefaultModuleDirectory = fullfile(pwd,'Modules');
+    handles.Preferences.DefaultModuleDirectory = fullfile(pwd,'Modules');
 else
     try
         load(fullfile(matlabroot,'CellProfilerPreferences.mat'))
@@ -134,29 +135,33 @@ try
         handles.Preferences.DefaultModuleDirectory = LoadedPreferences.DefaultModuleDirectory;
     end
 end
-%%% If the Default Module Directory has not yet been successfully
-%%% identified (i.e., it is not present in the loaded preferences or
-%%% the directory does not exist), look at where the CellProfiler.m
-%%% file is located and see whether there is a subdirectory within
-%%% that directory, called "Modules".  If so, use that subdirectory as
-%%% the default module directory. If not, use the current directory.
-if isfield(handles.Preferences,'DefaultModuleDirectory') == 0
-    CellProfilerPathname = fileparts(which('CellProfiler'));
-    %%% Checks whether the Modules subdirectory exists.
-    if exist(fullfile(CellProfilerPathname,'Modules'), 'dir')
-        CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
-        handles.Preferences.DefaultModuleDirectory = CellProfilerModulePathname;
-    else
-        handles.Preferences.DefaultModuleDirectory = handles.Current.StartupDirectory;
+
+if ~isdeployed
+    %%% If the Default Module Directory has not yet been successfully
+    %%% identified (i.e., it is not present in the loaded preferences or
+    %%% the directory does not exist), look at where the CellProfiler.m
+    %%% file is located and see whether there is a subdirectory within
+    %%% that directory, called "Modules".  If so, use that subdirectory as
+    %%% the default module directory. If not, use the current directory.
+    if ~isfield(handles.Preferences,'DefaultModuleDirectory')
+        CellProfilerPathname = fileparts(which('CellProfiler'));
+        %%% Checks whether the Modules subdirectory exists.
+        if exist(fullfile(CellProfilerPathname,'Modules'), 'dir')
+            CellProfilerModulePathname = fullfile(CellProfilerPathname,'Modules');
+            handles.Preferences.DefaultModuleDirectory = CellProfilerModulePathname;
+        else
+            handles.Preferences.DefaultModuleDirectory = handles.Current.StartupDirectory;
+        end
     end
 end
+
 %%% Similar approach for the DefaultOutputDirectory.
 try
     if exist(LoadedPreferences.DefaultOutputDirectory, 'dir')
         handles.Preferences.DefaultOutputDirectory = LoadedPreferences.DefaultOutputDirectory;
     end
 end
-if isfield(handles.Preferences,'DefaultOutputDirectory') == 0
+if ~isfield(handles.Preferences,'DefaultOutputDirectory')
     handles.Preferences.DefaultOutputDirectory = handles.Current.StartupDirectory;
 end
 %%% Similar approach for the DefaultImageDirectory.
@@ -2779,6 +2784,12 @@ ModuleDirEditBox = uicontrol(...
     'String',handles.Preferences.DefaultModuleDirectory,...
     'Style','edit',...
     'Tag','ModuleDirEditBox');
+
+if isdeployed
+    set(ModuleDirTextBox,'visible','off')
+    set(ModuleDirBrowseButton,'visible','off')
+    set(ModuleDirEditBox,'visible','off')
+end
 
 SaveButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...

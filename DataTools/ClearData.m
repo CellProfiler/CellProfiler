@@ -3,11 +3,14 @@ function handles = ClearData(handles)
 % Help for the Clear Data tool:
 % Category: Data Tools
 %
-% This tool lets the user remove a measurement or
-% data field from a CellProfiler output file. The same
-% measurement can be removed from several files.
+% SHORT DESCRIPTION:
+% Allows removing information/measurements from an output file.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
 %
-% See also ADDDATA VIEWDATA.
+% This tool lets the user remove a measurement or data field from a
+% CellProfiler output file. The same measurement can be removed from
+% several files.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -33,9 +36,9 @@ function handles = ClearData(handles)
 
 %%% Ask the user to choose the file from which directory to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Select directory where CellProfiler output files are located');
+    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Choose the folder that contains the output file(s) to remove data from');
 else
-    Pathname = uigetdir(pwd,'Select directory where CellProfiler output files are located');
+    Pathname = uigetdir(pwd,'Choose the folder that contains the output file(s) to remove data from');
 end
 %%% Check if cancel button pressed
 if Pathname == 0
@@ -50,15 +53,17 @@ SelectedFiles = SelectedFiles(~cellfun('isempty',strfind(SelectedFiles,'OUT')));
 
 %%% Let the user select the files
 [selection,ok] = listdlg('liststring',SelectedFiles,'name','Select output files',...
-    'PromptString','Select CellProfiler output files. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
+    'PromptString','Choose CellProfiler output files to remove data from. Use Ctrl+Click or Shift+Click to choose multiple files.','listsize',[300 500]);
 if ~ok, return, end
 SelectedFiles = SelectedFiles(selection);
 
-%%% Load the specified CellProfiler output file
+%%% Load the first specified CellProfiler output file so we can choose the
+%%% feature to be removed.
 try
+    clear handles;
     load(fullfile(Pathname, SelectedFiles{1}));
 catch
-    errordlg('Selected file is not a Matlab file')
+    errordlg([SelectedFiles{1},' is not a Matlab file'])
     return
 end
 
@@ -88,6 +93,7 @@ for FileNbr = 1:length(SelectedFiles)
 
     %%% Load the specified CellProfiler output file
     try
+        clear handles
         load(fullfile(Pathname, SelectedFiles{FileNbr}));
     catch
         errors{FileNbr} = [SelectedFiles{FileNbr},' is not a Matlab file'];

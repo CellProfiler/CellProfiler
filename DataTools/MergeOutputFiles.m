@@ -1,11 +1,19 @@
 function MergeOutputFiles(handles)
 
-% Help for the MergeOutputFiles tool:
+% Help for the Merge Output Files tool:
 % Category: Data Tools
 %
-% This tool merges CellProfiler output files. The focus is on
-% the measurement structure, no image data will be stored
-% in the final output file.
+% SHORT DESCRIPTION:
+% Merges together output files produced by the Create Batch Scripts module
+% into one regular CellProfiler output file. 
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
+%
+% This tool merges CellProfiler output files that were created using the
+% Create Batch Scripts module. No image data will be stored in the final
+% output file, even if it was present in the original files. Be careful
+% that the resulting file that will be produced is not too large to be
+% opened in memory on your computer.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

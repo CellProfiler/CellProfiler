@@ -3,10 +3,10 @@ function GenerateHistogramMovie(handles)
 % Help for the Generate Histogram Movie tool:
 % Category: Data Tools
 %
-% This tool will create a movie of the histogram of any measurement
-% selected.
-%
-% See also HISTOGRAM.
+% SHORT DESCRIPTION:
+% Creates a movie of the histogram of any measurement.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -57,7 +57,6 @@ for k = 1:length(tmp)
 end
 
 %%% Do the plotting
-
 titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
 %%% Plots a line chart, where the X dimensions are incremented
@@ -66,7 +65,7 @@ titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){Fea
 
 for l = 1:length(MeasurementMean)
 
-    h = CPfigure('Position',[1 500 792 813],'visible','off');
+    FigureHandle = CPfigure('Position',[1 500 792 813],'visible','off');
 
     %subplot('position',[0.1 0.55 .8 0.18])
     hold on
@@ -86,13 +85,13 @@ for l = 1:length(MeasurementMean)
     title(titlestr,'Fontname','Helvetica','fontsize',FontSize+2)
     %axis([0 length(MeasurementsMean)+1 0 600])
 
-    set(gcf,'Color','w')
+    set(FigureHandle,'Color','w')
 
     if l==1
         [filename,pathname] = uiputfile('*.avi');
         Xmo=avifile(fullfile(pathname,filename));
     end
-    Xmo=addframe(Xmo,h);
+    Xmo=addframe(Xmo,FigureHandle);
     l %#ok Ignore MLint We want to see which frame we are at.
     close
 end

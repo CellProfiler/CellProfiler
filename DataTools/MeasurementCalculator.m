@@ -3,8 +3,10 @@ function MeasurementCalculator(handles)
 % Help for the Measurement Calculator tool:
 % Category: Data Tools
 %
-% This tool allows the user to perform multiplications and
-% divisions of already extracted measurements.
+% SHORT DESCRIPTION:
+% Allows the user to multiply or divide measurements in output files.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

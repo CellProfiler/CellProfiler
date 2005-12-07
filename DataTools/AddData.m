@@ -3,11 +3,18 @@ function AddData(handles)
 % Help for the Add Data tool:
 % Category: Data Tools
 %
-% Use this tool if you would like text information about each image to
-% be recorded in the output file along with measurements (e.g. Gene
-% names, accession numbers, or sample numbers).
-% The text information must be specified in a separate text file
-% with the following syntax:
+% SHORT DESCRIPTION:
+% Allows adding information for each image cycle to an output file.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
+%
+% Use this tool if you would like text information about each image to be
+% recorded in the output file along with measurements (e.g. Gene names,
+% accession numbers, or sample numbers). The same measurement can be added
+% to several files.
+%
+% The information to be added must be in a separate text file with the
+% following syntax:
 %
 % IDENTIFIER <identfier>
 % DESCRIPTION <description>
@@ -28,9 +35,6 @@ function AddData(handles)
 % Gene X
 % Gene Y
 % Gene Z
-%
-%
-% See also CLEARDATA VIEWDATA.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -56,9 +60,9 @@ function AddData(handles)
 
 %%% Select file with text information to be added
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.*'),'Pick file with text information');
+    [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.*'),'Choose the file containing the data');
 else
-    [filename, pathname] = uigetfile('*.*','Pick file with text information');
+    [filename, pathname] = uigetfile('*.*','Choose the file containing the data');
 end
 
 if filename == 0 %User canceled
@@ -67,9 +71,9 @@ end
 
 %%% Ask the user to choose the file from which to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Select directory where CellProfiler output files are located');
+    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Choose the folder that contains the output file(s) to add data to');
 else
-    Pathname = uigetdir('Select directory that contains the output file(s) to add data to');
+    Pathname = uigetdir('Choose the folder that contains the output file(s) to add data to');
 end
 %%% Check if cancel button pressed
 if Pathname == 0
@@ -84,13 +88,13 @@ SelectedFiles = SelectedFiles(~cellfun('isempty',strfind(SelectedFiles,'OUT')));
 
 %%% Let the user select the files
 [selection,ok] = listdlg('liststring',SelectedFiles,'name','Select output files',...
-    'PromptString','Select CellProfiler output files. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
+    'PromptString','Choose CellProfiler output files to add data to. Use Ctrl+Click or Shift+Click to choose multiple files.','listsize',[300 500]);
 if ~ok, return, end
 SelectedFiles = SelectedFiles(selection);
 
-FieldName = inputdlg('What would you like the save the data as?');
+FieldName = inputdlg('What name would you like to give this data (what heading)?');
 
-%%% Loop over the selected files and remove the selected feature
+%%% Loop over the selected files and add the selected feature
 %%% An cell array is used to indicated any errors in the processing
 errors = cell(length(SelectedFiles),1);
 for FileNbr = 1:length(SelectedFiles)
@@ -126,10 +130,9 @@ for FileNbr = 1:length(SelectedFiles)
         errors{FileNbr} = ['Could not save updated ',SelectedFiles{FileNbr},' file.'];
         continue
     end
-
 end
 
-%%% Finished, display success of warning windows if we failed for some data set
+%%% Finished, display success or warning windows if we failed for some data set
 error_index = find(~cellfun('isempty',errors));
 if isempty(error_index)
     CPmsgbox('Data successfully added.')

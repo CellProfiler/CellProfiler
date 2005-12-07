@@ -1,13 +1,17 @@
 function ConvertBatchFiles(handles)
 
-% Help for the ConvertBatchFiles tool:
+% Help for the Convert Batch Files tool:
 % Category: Data Tools
 %
-% ConvertBatchFiles is a temporary tool that converts
-% batch files to regular CellProfiler output files.
-% It does so by removing empty entries in the
-% handles.Measurements structure. It saves new files
-% with 'Converted' as a prefix in the filename.
+% SHORT DESCRIPTION:
+% Converts output files produced by the Create Batch Scripts module into
+% regular CellProfiler output files.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
+%
+% This module converts batch files to regular CellProfiler output files. It
+% does so by removing empty entries in the handles.Measurements structure.
+% It saves new files with 'Converted' as a prefix in the filename.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -3,13 +3,16 @@ function PlotMeasurement(handles)
 % Help for the Plot Measurement tool:
 % Category: Data Tools
 %
-% This tool allows the user to plot either a bar chart or a line chart of
-% the mean and standard deviation of a measurement.
-% As prompted, select a CellProfiler output file containing the measurements,
-% choose the measurement parameter to be displayed, and choose the display
-% type.
+% SHORT DESCRIPTION:
+% Allows plotting bar charts, line charts, or scatter plots.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
 %
-% See also HISTOGRAM.
+% Bar charts, line charts and one dimensional scatter plots show the mean
+% and standard deviation of a measurement. Two dimensional scatter plots
+% allow plotting one measuerement versus another. As prompted, select a
+% CellProfiler output file containing the measurements, choose the
+% measurement parameter to be displayed, and choose the display type.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

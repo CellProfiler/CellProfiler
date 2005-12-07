@@ -3,12 +3,14 @@ function ViewData(handles)
 % Help for the View Data tool:
 % Category: Data Tools
 %
-% This tool views any text data that has been stored in a
-% CellProfiler output file. It can be useful to check that
-% text data added with the AddData tool is associated with
-% the correct image sets.
+% SHORT DESCRIPTION:
+% Allows viewing data or measurements in a CellProfiler output file.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
 %
-% See also CLEARDATA ADDDATA.
+% This tool views any text data that has been stored in a CellProfiler
+% output file. It can be useful to check that text data added with the
+% AddData tool is associated with the correct image sets.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

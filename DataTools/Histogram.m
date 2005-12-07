@@ -3,29 +3,41 @@ function Histogram(handles)
 % Help for the Histogram tool:
 % Category: Data Tools
 %
-% The individual object measurements can be displayed in histogram
-% format using this tool.  As prompted, select the output file
-% containing the measurements, then choose the measurement parameter
-% to be displayed, and the sample information label.
+% SHORT DESCRIPTION:
+% Displays a histogram of individual object measurements.
+% *************************************************************************
+% Note: this tool is beta-version and has not been thoroughly checked.
 %
-% You may then choose which images' measurements to display or export
-% (To display data from only one image, enter that image's number as
-% both the first and last sample); the number of bins to be used; the
-% minimum and maximum values to be used for the histogram (on the X
-% axis); whether you want all the objects' data to be displayed in a
-% single (cumulative) histogram or in separate histograms; whether you
-% want to calculate histogram data only for objects meeting a
-% threshold in a measurement (you will be asked later which
-% measurement to use for this thresholding); whether you
-% want the Y axis (number of cells) to be absolute (the same for all
-% histograms) or relative (scaled to fit the maximum value for that
-% sample); whether you want to display the results as a compressed
-% histogram (heatmap) rather than a conventional histogram; whether
-% you want to export the data (tab-delimited format, which can be
-% opened in Excel); whether you want each row in the exported histogram
-% to contain an image or a bin; and whether you want to display the
-% histograms (Impractical when exporting large amounts of data). It may
-% take some time to then process the data.
+% The object measurements can be displayed in histogram format using this
+% tool.  As prompted, select the output file containing the measurements,
+% then choose the measurement parameter to be displayed, and the sample
+% information label (not sure if this is functional right now). It may take
+% some time to then process the data.
+%
+% Settings:
+%
+% * Which images' measurements to display or export - To display data from
+% only one image, enter that image's number as both the first and last
+% sample)
+% * The number of bins to be used
+% * The minimum and maximum values to be used for the histogram - on the X
+% axis
+% * Whether you want all the objects' data to be displayed in a single
+% (cumulative) histogram or in separate histograms
+% * Whether you want to calculate histogram data only for objects meeting a
+% threshold in a measurement - you will be asked later which measurement to
+% use for this thresholding
+% * Whether you want the Y axis (number of cells) to be absolute (the same
+% for all histograms) or relative (scaled to fit the maximum value for that
+% sample)
+% * Whether you want to display the results as a compressed histogram
+% (heatmap) rather than a conventional histogram
+% * Whether you want to export the data - tab-delimited format, which can
+% be opened in Excel
+% * Whether you want each row in the exported histogram to contain an image
+% or a bin
+% * Whether you want to display the histograms (Impractical when exporting
+% large amounts of data). 
 %
 % X axis labels for histograms: Typically, the X axis labels will be
 % too crowded.  This default state is shown because you might want to
@@ -64,15 +76,12 @@ function Histogram(handles)
 % or greater than the label, but less than the label on the bar to its
 % right.
 %
-% POTENTIAL IMPROVEMENT:
-% - You will then have the option of loading names for
-% each image so that each histogram you make will be labeled with
-% those names (if the measurement file does not already have names
-% embedded). If you choose to import sample names here, you will need
-% to select a text file that contains one name for every sample, even
+% Potential improvement: You might want to load names (using LoadText
+% module or AddData data tool) for each image so that each histogram you
+% make will be labeled with those names. We hope to someday improve the
+% module to allow this. If you choose to import sample names here, you will
+% need to select a text file that contains one name for every sample, even
 % if you only plan to view a subset of the image data as histograms.
-%
-% See also PLOTMEASUREMENTS.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

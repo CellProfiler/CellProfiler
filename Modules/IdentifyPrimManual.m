@@ -112,19 +112,26 @@ drawnow
 
 %%% Displays the image in a new figure window.
 FigureHandle = CPfigure;
-CPresizefigure(LowResOrigImage,'OneByOne',ThisModuleFigureNumber)
+% ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+%%% We are making it large so it's easier to outline the object of
+%%% interest.
+CPresizefigure(LowResOrigImage,'TwoByTwo',FigureHandle)
+%%% We cannot use CPimagesc here because it interferes with the custom
+%%% getpoints function (whereas the Matlab getpts function would be fine).
+%%% Or maybe we can...
 CPimagesc(LowResOrigImage,handles);
-[nrows,ncols] = size(LowResOrigImage);
 
 AxisHandle = gca;
 title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecutive points to outline the region of interest.']},...
+    {'The backspace key or right mouse button will erase the last clicked point.'},...
     {'Press enter when finished, the first and last points will be connected automatically.'},...
-    {'The backspace key or right mouse button will erase the last clicked point.'}],'fontsize',handles.Preferences.FontSize);
+    {'Then be patient while waiting for processing to complete.'}],'fontsize',handles.Preferences.FontSize);
 
 %%% Manual outline of the object, see local function 'getpoints' below.
 %%% Continue until user has drawn a valid shape
 [x,y] = getpoints(AxisHandle);
 close(FigureHandle)
+[nrows,ncols] = size(LowResOrigImage);
 [X,Y] = meshgrid(1:ncols,1:nrows);
 LowResInterior = inpolygon(X,Y, x,y);
 FinalLabelMatrixImage = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
@@ -205,13 +212,17 @@ end
 
 function [xpts_spline,ypts_spline] = getpoints(AxisHandle)
 
-Position = get(gca,'Position');
+Position = get(AxisHandle,'Position');
 FigureHandle = (get(AxisHandle, 'Parent'));
 PointHandles = [];
 xpts = [];
 ypts = [];
 NbrOfPoints = 0;
 done = 0;
+%%% Turns off the CPimagetool function because it interferes with getting
+%%% points.
+ImageHandle = get(AxisHandle,'children');
+set(ImageHandle,'ButtonDownFcn','');
 
 hold on
 while ~done;
@@ -278,3 +289,4 @@ while ~done;
     end
 end
 hold off
+set(ImageHandle,'ButtonDownFcn','CPimagetool');

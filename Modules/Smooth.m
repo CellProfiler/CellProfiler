@@ -98,16 +98,14 @@ if strncmpi(WaitForFlag,'Y',1) == 1
         %%% the next cycle.
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         if any(findobj == ThisModuleFigureNumber)
-            TextString = 'Results will be shown after the last image cycle only if this window is left open.'
             CPfigure(handles,'Image',ThisModuleFigureNumber);
-            uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
-                'HorizontalAlignment','left','string',TextString,'position',...
-                [.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+            title('Results will be shown after the last image cycle only if this window is left open.')
         end
         return
     elseif strcmp(ReadyFlag, 'Ready') == 1
         %%% If the smoothed image has already been calculated, the module
-        %%% aborts until the next cycle.
+        %%% aborts until the next cycle. Otherwise we continue in this
+        %%% module and calculate the smoothed image.
         if isfield(handles.Pipeline, SmoothedImageName) == 1
             return
         end

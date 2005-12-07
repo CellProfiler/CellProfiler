@@ -121,7 +121,8 @@ drawnow
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
 
-%%% Checks whether the image to be analyzed exists in the handles structure.
+%%% OK to not use CPretrieveimage here, because we only want to check that
+%%% the images have been loaded; we do not need to retrieve them yet.
 if ~isfield(handles.Pipeline, ImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
@@ -544,8 +545,5 @@ else
     if any(findobj == ThisModuleFigureNumber)
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         title('Tiled image will be shown after the last image cycle only if this window is left open.');
-%        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,...
- %           'HorizontalAlignment','left','string',TextString,'position',...
- %           [.05 .85 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
 end

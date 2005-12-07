@@ -327,7 +327,7 @@ if SetBeingAnalyzed == 1
             %%% Determines the number of movie sets to be analyzed.
             NumberOfMovieSets = fix(length(FileNames)/ImagesPerSet);
             if rem(NumberOfMovieSets,1) ~= 0
-                error(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (',length(FileNames),') found in the specified directory is not a multiple of the number of movies per set (',MoviesPerSet,').'])
+                error(['Image processing was canceled in the ', ModuleName, ' module because the number of movie files (',length(FileNames),') found in the specified directory is not a multiple of the number of movies per set (',ImagesPerSet,').'])
             end
             handles.Current.NumberOfMovieSets = NumberOfMovieSets;
 

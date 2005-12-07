@@ -305,7 +305,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);
             colormap(handles);
-            pixval
+            impixelinfo
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
             [a b c] = size(ImageToBeCropped);

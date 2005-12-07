@@ -118,7 +118,7 @@ for i=1:length(ImageName)
 
     %%% Removes the image from the pipeline to save memory if requested.
     if strncmpi(DeletePipeline,'Y',1) == 1
-        handles.Pipeline = rmfield(handles.Pipeline,fieldname);
+        handles.Pipeline = rmfield(handles.Pipeline,ImageName{i});
     end
 end
 

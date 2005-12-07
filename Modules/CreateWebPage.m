@@ -37,8 +37,18 @@ function handles = CreateWebPage(handles)
 % one level above the images. If the HTML file and the images will all be
 % in the same folder, answer Same as the images.
 %
-% Table border
-% Image border
+% Table border: If desired, there will be lines around each image,
+% creating a table. The thickness and color of these lines can be selected.
+%
+% Spacing between images: If this is set to greater than zero, there will
+% be an additional frame, the same color as the table border, around each
+% image. The spacing is the space between the frames that surround each
+% image.
+%
+% Image border width: This is the distance between each image and its
+% frame. If the spacing between images is zero, you will not see the frame
+% itself, but the image border width will still affect the spacing between
+% images.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -201,6 +211,9 @@ drawnow
 if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed == NumberOfImageSets) && strcmp(CreateBA,'After'))
     NumOrigImage = numel(handles.Pipeline.(['FileList' OrigImage]));
     if ~strcmp(ThumbImage,'Do not use')
+        if ~isfield(handles.Pipeline,['FileList' ThumbImage]);
+            error(['Image processing was canceled in the ', ModuleName, ' module because the thumbnail images were not available on the hard drive. You must use load thumbnail images that already exist on the hard drive, or you must use a Save Images module prior to this module and choose the update file names option.']);
+        end
         NumThumbImage = numel(handles.Pipeline.(['FileList' ThumbImage]));
         if NumOrigImage ~= NumThumbImage
             error(['Image processing was canceled in the ', ModuleName, ' module because the number of original images and thumbnail images do not match']);
@@ -226,10 +239,12 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
 
         HTMLSavePath = OrigImagePathName(1:LastDirPos-2);
         OrigImagePathName = OrigImagePathName(LastDirPos:end);
-        try
-            ThumbImagePathName = ThumbImagePathName(LastDirPos:end);
-        catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the folder ', ThumbImagePathName,' could not be found in the module ',ModuleName,'.']);
+        if ~strcmp(ThumbImage,'Do not use')
+            try
+                ThumbImagePathName = ThumbImagePathName(LastDirPos:end);
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because the folder ', ThumbImagePathName,' could not be found in the module ',ModuleName,'.']);
+            end
         end
     else
         HTMLSavePath = OrigImagePathName;

@@ -149,8 +149,8 @@ for i = 1:length(ObjectNameList)
     %%% "OrigImage".
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
 
-    %%% Checks that the original image is two-dimensional (i.e. not a color
-    %%% image), which would disrupt several of the image functions.
+    %%% If the image is three dimensional (i.e. color), the three channels
+    %%% are added together in order to measure object intensity.
     if ndims(OrigImage) ~= 2
         s = size(OrigImage);
         if (length(s) == 3 && s(3) == 3)

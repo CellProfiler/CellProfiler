@@ -89,7 +89,7 @@ drawnow
 
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %If you change anything here, make sure the image tool SaveImageAs is
-%consistent.
+%consistent, in CPimagetool.
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
@@ -110,12 +110,8 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = In what file format do you want to save images (figures must be saved as fig, which is only openable in Matlab)?
 %choiceVAR04 = bmp
-%choiceVAR04 = cur
-%choiceVAR04 = fts
-%choiceVAR04 = fits
 %choiceVAR04 = gif
 %choiceVAR04 = hdf
-%choiceVAR04 = ico
 %choiceVAR04 = jpg
 %choiceVAR04 = jpeg
 %choiceVAR04 = pbm
@@ -124,18 +120,21 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = png
 %choiceVAR04 = pnm
 %choiceVAR04 = ppm
-%choiceVAR04 = rad
+%choiceVAR04 = ras
 %choiceVAR04 = tif
 %choiceVAR04 = tiff
 %choiceVAR04 = xwd
-%choiceVAR04 = mat
-%choiceVAR04 = fig
 %choiceVAR04 = avi
+%choiceVAR04 = fig
+%choiceVAR04 = mat
 %inputtypeVAR04 = popupmenu
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%%%%%%%%%%%%%%%%%%%%% NOTE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THOSE FORMATS
+%%% These formats listed are the only possible ones, according to the
+%%% imwrite function, plus avi, mat, and fig for which this module contains
+%%% special code for handling.
 
 %pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory.
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -174,7 +173,7 @@ RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %defaultVAR11 = gray
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Enter any optional parameter's here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
+%textVAR12 = Enter any optional parameters here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
 %defaultVAR12 = /
 OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
@@ -396,6 +395,10 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
                 %%% to prevent a bunch of annoying weird errors. I assume
                 %%% the avi format is always 8-bit (=256 levels).
                 eval(['ChosenColormap = colormap(',ColorMap,'(256));']);
+                %%% It's ok that this shows up as an error in the
+                %%% dependency report, I think, because the variable
+                %%% ChosenColormap will not exist until the eval function
+                %%% is carried out.
                 try movie2avi(Movie,FileAndPathName,'colormap',ChosenColormap)
                 catch error(['Image processing was canceled in the ', ModuleName, ' module because there was an error saving the movie to the hard drive.'])
                 end

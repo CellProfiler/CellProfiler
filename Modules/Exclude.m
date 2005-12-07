@@ -84,8 +84,8 @@ MaskRegionName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For the remaining objects, do you want to retain their original number or renumber them consecutively?
-%choiceVAR04 = Retain
 %choiceVAR04 = Renumber
+%choiceVAR04 = Retain
 Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
@@ -109,25 +109,17 @@ SegmentedObjectImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleN
 %%% Identify Primary modules, not Identify Secondary modules.
 fieldname = ['UneditedSegmented',ObjectName];
 if isfield(handles.Pipeline, fieldname)
-    UneditedSegmentedObjectImage = handles.Pipeline.(fieldname);
+    UneditedSegmentedObjectImage = CPretrieveimage(handles,fieldname,ModuleName);
 end
 
 fieldname = ['SmallRemovedSegmented',ObjectName];
 if isfield(handles.Pipeline, fieldname)
-    SmallRemovedSegmentedObjectImage = handles.Pipeline.(fieldname);
+    SmallRemovedSegmentedObjectImage = CPretrieveimage(handles,fieldname,ModuleName);
 end
 
 %%% The final, edited version of the Masked objects is the only one
 %%% which must be loaded here.
-fieldname = ['Segmented',MaskRegionName];
-if ~isfield(handles.Pipeline, fieldname)
-    error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running this module, you must have previously run a module to identify primary objects. You specified that these objects were called ', MaskRegionName, ' which should have produced a field in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot find this image.']);
-end
-MaskRegionObjectImage = handles.Pipeline.(fieldname);
-
-if size(SegmentedObjectImage) ~= size(MaskRegionObjectImage)
-    error(['Image processing was canceled in the ', ModuleName, ' module because the two images in which primary objects were identified (', MaskRegionName, ' and ', ObjectName, ') are not the same size.']);
-end
+MaskRegionObjectImage = CPretrieveimage(handles,['Segmented',MaskRegionName],ModuleName,'DontCheckColor','DontCheckScale',size(SegmentedObjectImage));
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -181,11 +173,6 @@ if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save')
     %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
     %%% which leaves the PrimaryObjectOutlines.
     PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
-    %%% Overlays the object outlines on the mask region image.
-    ObjectOutlinesOnOrigImage = ColoredMaskRegionObjectImage;
-    %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(ColoredMaskRegionObjectImage(:));
-    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 end    
 if any(findobj == ThisModuleFigureNumber)
     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
@@ -193,6 +180,11 @@ if any(findobj == ThisModuleFigureNumber)
     ColoredNewSegmentedObjectImage = CPlabel2rgb(handles,NewSegmentedObjectImage);
     ColoredMaskRegionObjectImage = CPlabel2rgb(handles,MaskRegionObjectImage);
     ColoredSegmentedObjectImage = CPlabel2rgb(handles,SegmentedObjectImage);
+    %%% Overlays the object outlines on the mask region image.
+    ObjectOutlinesOnOrigImage = ColoredMaskRegionObjectImage;
+    %%% Determines the grayscale intensity to use for the cell outlines.
+    LineIntensity = max(ColoredMaskRegionObjectImage(:));
+    ObjectOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
 
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);

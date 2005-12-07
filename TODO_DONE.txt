@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Anne 12/7) - Did dependency report on Modules folder: only toolbox needed is image processing toolbox. All variables are ok (only one 'Unknown' and that's because it's the result of an eval function).
+
 -(Mike 12/6) Fix Help problems in compiled CellProfiler
 
 -(Mike 12/6 ExportLocations) Jason: Design method for scaling grid and getting locations

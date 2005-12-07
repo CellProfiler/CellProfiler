@@ -5,11 +5,18 @@
        Utilities - GUI Tools & examples, and Misc.) 
 ---------------------------------------------------
 THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
-- update the image file formats that are readable in LoadImages modules. 
+- update the image file formats that are readable in LoadImages modules and saveable in SaveImages module and SaveImageAs Image tool. 
 - update the colormaps available.
 - For many functions we have made our own CP versions - check the new matlab code to see if they've changed anything that would warrant us re-creating the CP subfunctions to use the new code.
 ---------------------------------------------------
 
+- Make some subfunctions for redundant code in AddData, ClearData.
+
+- Make a data tool for normalization - see the help in Data Layout for starters.
+
+- See 'Potential improvement' in the Histogram data tool.
+
+- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
 - (Requested by Anne 12-01-05) - Make compiled CellProfiler work on cluster
 

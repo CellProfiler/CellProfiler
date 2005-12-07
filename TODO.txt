@@ -8,7 +8,9 @@ TechDiagnosis 		- DONE
 SaveCPcode		- DONE
 DownloadNewModules	- DONE
 
-(Requested by Anne 12-05-05) - Anne is going through the Data Tools, image tools and help on Tuesday. Here are the only other things on the module_checks list to do:
+- Mike should do >> Edit HelpCPInstallGuide for compiled versions.
+
+(Requested by Anne 12-05-05) - Here are the only other things on the module_checks list to do:
 Anne - doublecheck CalcStatistics
 Anne - doublecheck CreateBatchSCripts (see susan's help)
 Anne - doublecheck MergeBatchOutput, esp that data is exportable.

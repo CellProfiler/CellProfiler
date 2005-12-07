@@ -6,13 +6,18 @@ TechDiagnosis 		- DONE
 SaveCPcode		- DONE
 DownloadNewModules	- DONE
 
+(Requested by Anne 12-07-05)  Things unneeded/to be disabled in the compiled version (They aren't super-urgent but i thought i'd note things as i realize it): the option to change the Default Modules folder in the Set Preferences.
+
+(Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
+
+(Requested by Anne 12-07-05)  Does AddData/ViewData work for numerical *and* text information? If so, adjust the help to state this.  Also, does LoadText module work the same way?  We might want to rename LoadText to be LoadData if so.
+
 - Mike should do >> Edit HelpCPInstallGuide for compiled versions.
 
 (Requested by Anne 12-05-05) - Here are the only other things on the module_checks list to do:
 Anne - doublecheck CalcStatistics
 Anne - doublecheck CreateBatchSCripts (see susan's help)
 Anne - doublecheck MergeBatchOutput, esp that data is exportable.
-Anne - explain image border and table border on CreateWebPage
 Someone - check all LoadImages options
 Mike - RelateObjects (How does it handle partially overlapping objects?
 adjust the help to state how these are handled)

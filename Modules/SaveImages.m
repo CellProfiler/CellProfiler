@@ -475,7 +475,9 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
             end
         end
     else
-        try eval(['imwrite(Image, FileAndPathName, FileFormat', FileSavingParameters,')']);
+        Image=Image/min(min(Image(Image~=0)));
+        eval(['ChosenColormap = colormap(',ColorMap,'(max(max(Image))));']);
+        try eval(['imwrite(Image, ChosenColormap, FileAndPathName, FileFormat', FileSavingParameters,')']);
         catch
             error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
         end

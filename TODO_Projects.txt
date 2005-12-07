@@ -1,5 +1,7 @@
 - Combine code for ExportData and ExportDatabase (CPconvertsql) and make ExportData a module
 
+- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
+
 - (Periodically)
 - Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities
 - GUI Tools & examples, and Misc.

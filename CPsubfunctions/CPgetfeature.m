@@ -43,7 +43,7 @@ end
 
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~isfield(handles,'Measurements')
-    errordlg('The selected file does not contain any measurements.')
+    CPerrordlg('The selected file does not contain any measurements.')
     ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
     return
 end
@@ -60,7 +60,7 @@ end
 
 %%% Error detection.
 if isempty(MeasFieldnames)
-    errordlg('No measurements were found.')
+    CPerrordlg('No measurements were found.')
     ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
     return
 end

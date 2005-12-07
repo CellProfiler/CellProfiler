@@ -430,7 +430,8 @@ if strncmpi(CumulativeHistogram, 'Y',1) == 1
         OutputMeasurements{1,1} = OutputMeasurements{1,1}(OutputMeasurements{1,2} <= ThresholdValue);
     elseif strcmpi(GreaterOrLessThan,'=') == 1
         OutputMeasurements{1,1} = OutputMeasurements{1,1}(OutputMeasurements{1,2} == ThresholdValue);
-    else error(['The value you entered for the method to threshold ', GreaterOrLessThan, ' was not valid.  Acceptable entries are >, >=, =, <=, <.']);
+    else CPerrordlg(['The value you entered for the method to threshold ', GreaterOrLessThan, ' was not valid.  Acceptable entries are >, >=, =, <=, <.']);
+        return
     end
 
     if isempty(OutputMeasurements{1,1}) == 1
@@ -483,7 +484,8 @@ else
             OutputMeasurements{CompressedImageNumber,1} = ListOfMeasurements{CompressedImageNumber,1}(ListOfMeasurements{CompressedImageNumber,2} <= ThresholdValue);
         elseif strcmpi(GreaterOrLessThan,'=') == 1
             OutputMeasurements{CompressedImageNumber,1} = ListOfMeasurements{CompressedImageNumber,1}(ListOfMeasurements{CompressedImageNumber,2} == ThresholdValue);
-        else error(['The value you entered for the method to threshold ', GreaterOrLessThan, ' was not valid.  Acceptable entries are >, >=, =, <=, <.']);
+        else CPerrordlg(['The value you entered for the method to threshold ', GreaterOrLessThan, ' was not valid.  Acceptable entries are >, >=, =, <=, <.']);
+            return
         end
         if isempty(OutputMeasurements{CompressedImageNumber}) == 1
             HistogramData = [];

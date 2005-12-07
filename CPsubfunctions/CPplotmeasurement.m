@@ -151,7 +151,7 @@ elseif PlotType == 4
         hold on
         for k = FirstImage:LastImage
             if size(Measurements1{k},1) ~= size(Measurements2{k})
-                errordlg('The number object for the chosen measurements does not match.')
+                CPerrordlg('The number of objects for the chosen measurements does not match.')
                 return
             end
             if ~isempty(Measurements1{k})
@@ -163,7 +163,7 @@ elseif PlotType == 4
         hold on
         for k = 1:length(Measurements1)
             if size(Measurements1{k},1) ~= size(Measurements2{k})
-                errordlg('The number object for the chosen measurements does not match.')
+                CPerrordlg('The number of objects for the chosen measurements does not match.')
                 return
             end
             if ~isempty(Measurements1{k})

@@ -22,6 +22,20 @@ function handles = SaveImages(handles)
 % images, non-8 bit images, images coming from subdirectories, multiple
 % incoming movie files, or filenames made by numerical increments.
 %
+% Update file names within CellProfiler? 
+% This allows downstream modules (e.g. Create Web Page) to look up the
+% newly saved files on the hard drive. Normally, whatever files are present
+% on the hard drive when CellProfiler processing begins (and when the
+% LoadImages module processes its first cycle) are the only files that are
+% accessible within CellProfiler. This setting allows the newly saved files
+% to be accessible to downstream modules. This setting might yield unusual
+% consequences if you are using the Save Images module to save an image
+% directly as loaded (e.g. using the Save Images module to convert file
+% formats), because it will, in some places in the output file, overwrite
+% the file names of the loaded files with the file names of the the saved
+% files. Because this function is rarely needed and may introduce
+% complications, the default answer is "No".
+%
 % Special notes for saving in movie format (avi):
 % The movie will be saved after the last cycle is processed. You have the
 % option to also save the movie periodically during image processing, so
@@ -177,26 +191,34 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = /
 OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = Warning! It is possible to overwrite existing files using this module!
+%textVAR13 = Update file names within CellProfiler? See help for details.
+%choiceVAR13 = No
+%choiceVAR13 = Yes
+UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
 
-%%%VariableRevisionNumber = 11
+%textVAR14 = Warning! It is possible to overwrite existing files using this module!
+
+%%%VariableRevisionNumber = 12
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% FILE PROCESSING %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.Current.SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+
+if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
     try
         if iscell(handles.Pipeline.(['Filename', ImageFileName]))
-            FileName = handles.Pipeline.(['Filename', ImageFileName]){handles.Current.SetBeingAnalyzed};
+            FileName = handles.Pipeline.(['Filename', ImageFileName]){SetBeingAnalyzed};
         else
             FileName = handles.Pipeline.(['Filename', ImageFileName]);
         end
         [temp FileName] = fileparts(FileName); %#ok Ignore MLint
     catch
         if strcmp(ImageFileName,'N')
-            FileName = TwoDigitString(handles.Current.SetBeingAnalyzed);
+            FileName = TwoDigitString(SetBeingAnalyzed);
         else
             Spaces = isspace(FileName);
             if any(Spaces)
@@ -207,7 +229,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
     end
 
     if strcmp(Appendage,'N')
-        FileName = [FileName TwoDigitString(handles.Current.SetBeingAnalyzed)];
+        FileName = [FileName TwoDigitString(SetBeingAnalyzed)];
     else
         if ~strcmp(Appendage,'\')
             Spaces = isspace(Appendage);
@@ -254,6 +276,54 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         if ~any(strcmp(FileFormat,CPimread)) && ~strcmp(FileFormat,'avi')
             error(['Image processing was canceled in the ', ModuleName, ' module because the image file type entered is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab, or see the help for this module.'])
         end
+    end
+    
+    %%% Creates the fields that the LoadImages module normally creates when
+    %%% loading images.
+    if strcmp(UpdateFileOrNot,'Yes')
+        %%% Stores file and path name data in handles.Pipeline.
+        handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
+        handles.Pipeline.(['Pathname',ImageName]) = PathName;
+        handles.Pipeline.(['Filename',ImageName])(SetBeingAnalyzed) = {FileName};
+
+        %%% Sets the initial values, which may get added to if we need to
+        %%% append in the next step.
+        FileNames = FileName;
+        PathNames = PathName;
+        FileNamesText = ['Filename ', ImageName];
+        PathNamesText = ['Path ', ImageName];
+        
+        %%% Stores file and path name data in handles.Measurements. Since
+        %%% there may be several load/save modules in the pipeline which
+        %%% all write to the handles.Measurements.Image.FileName field, we
+        %%% store filenames in an "appending" style. Here we check if any
+        %%% of the modules above the current module in the pipeline has
+        %%% written to handles.Measurements.Image.Filenames. Then we should
+        %%% append the current filenames and path names to the already
+        %%% written ones. If this is the first module to put anything into
+        %%% the handles.Measurements.Image structure (though I think this
+        %%% is not really possible for SaveImages), then this section is
+        %%% skipped and the FileNamesText fields are created with their
+        %%% initial entry coming from this module.
+        if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
+                isfield(handles.Measurements.Image,'FileNames') && length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
+            % Get existing file/path names. Returns a cell array of names
+            ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
+            ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
+            ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
+            ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
+            % Append current file names to existing file names
+            FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
+            FileNames     = cat(2,ExistingFileNames,FileNames);
+            PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
+            PathNames     = cat(2,ExistingPathNames,PathNames);
+        end
+
+        %%% Write to the handles.Measurements.Image structure
+        handles.Measurements.Image.FileNamesText                   = FileNamesText;
+        handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
+        handles.Measurements.Image.PathNamesText                   = PathNamesText;
+        handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
     end
 
     FileAndPathName = fullfile(PathName, FileName);
@@ -318,7 +388,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi')
-        if handles.Current.SetBeingAnalyzed == 1 &&  strcmp(CheckOverwrite,'Y')
+        if SetBeingAnalyzed == 1 &&  strcmp(CheckOverwrite,'Y')
             %%% Checks whether the new image name is going to overwrite
             %%% the original file, but only on the first cycle,
             %%% because otherwise the check would be done on each frame
@@ -335,7 +405,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
             end
         end
         fieldname = ['Movie', ImageName];
-        if handles.Current.SetBeingAnalyzed == 1
+        if SetBeingAnalyzed == 1
             NumberExistingFrames = 0;
             %%% Preallocates the variable which signficantly speeds processing
             %%% time.
@@ -371,12 +441,12 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && handles.C
         %%% time to save the movie file.
         TimeToSave = 0;
         if MovieIsNumber == 1
-            if rem(handles.Current.SetBeingAnalyzed,MovieSavingIncrement) == 0 || handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+            if rem(SetBeingAnalyzed,MovieSavingIncrement) == 0 || SetBeingAnalyzed == handles.Current.NumberOfImageSets
                 TimeToSave = 1;
             end
         else
             if strncmpi(SaveMovieWhen,'L',1)
-                if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                if SetBeingAnalyzed == handles.Current.NumberOfImageSets
                     TimeToSave = 1;
                 end
             end
@@ -419,7 +489,7 @@ drawnow
 
 %%% The figure window display is unnecessary for this module, so it is
 %%% closed during the starting image cycle.
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+if SetBeingAnalyzed == handles.Current.StartingImageSet
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)

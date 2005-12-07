@@ -46,7 +46,7 @@ load(fullfile(RawPathname, RawFileName));
 
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~exist('handles','var')
-    errordlg('The selected file does not seem to be a CellProfiler output file.')
+    CPerrordlg('The selected file does not seem to be a CellProfiler output file.')
     return
 end
 
@@ -80,7 +80,7 @@ for ImageSetNbr = 1:length(Measurements1)
 
     % Check so tmp1 and tmp2 have the same size
     if length(tmp1) ~= length(tmp2)
-        errordlg('The selected measurements do not have the same number of objects.')
+        CPerrordlg('The selected measurements do not have the same number of objects.')
         return
     end
 
@@ -225,7 +225,7 @@ while 1
     if get(calculatebutton,'UserData') == 1                  % The Calculate button pressed
         UserInput = get(Window,'UserData');
         if ~isfield(UserInput,'FeatureNo1') || ~isfield(UserInput,'FeatureNo2')
-            errordlg('Please choose two features!')          % Check that both feature fields are filled out...
+            CPerrordlg('Please choose two features!')          % Check that both feature fields are filled out...
             set(calculatebutton,'UserData',0);               % Reset button press
         else
             % If both features are selected we can continue

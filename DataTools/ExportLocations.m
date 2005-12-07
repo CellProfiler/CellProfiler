@@ -35,12 +35,13 @@ end
 load(fullfile(RawPathname, RawFileName));
 
 if ~exist('handles','var')
-    error('This is not a CellProfiler output file.');
+    CPerrordlg('This is not a CellProfiler output file.');
+    return
 end
 
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~isfield(handles,'Measurements')
-    errordlg('The selected file does not contain any measurements.')
+    CPerrordlg('The selected file does not contain any measurements.')
     return
 end
 
@@ -49,6 +50,10 @@ MeasFieldnames = fieldnames(handles.Measurements);
 for i=1:length(handles.Measurements)
     if strcmp(MeasFieldnames{i},'Image')
         MeasFieldnames(i) = [];
+    end
+    if isempty(MeasFieldnames)
+        CPerrordlg('The output file you have chosen does not have location measurements.');
+        return
     end
 end
 
@@ -67,7 +72,8 @@ ObjectTypename = MeasFieldnames{Selection};
 if isfield(handles.Measurements.(ObjectTypename),'Location')
     Locations = handles.Measurements.(ObjectTypename).Location;
 else
-    error('The object you have chosen does not have location measurements.');
+    CPerrordlg('The object you have chosen does not have location measurements.');
+    return
 end
 
 AcceptableAnswers = 0;
@@ -108,7 +114,8 @@ for ImageNumber = 1:length(Locations)
     filename = [ObjectTypename,'_Locations_Image_',num2str(ImageNumber),'.csv'];
     fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,filename),'w');
     if fid == -1
-        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+        CPerrordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+        return
     end
     FixedLocations = Locations{ImageNumber}*PixelUnits;
     FixedLocations(:,1) = FixedLocations(:,1) - (FixedLocations(1,1)-FirstSpotX);

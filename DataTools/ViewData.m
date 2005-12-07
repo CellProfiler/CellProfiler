@@ -48,12 +48,14 @@ end
 try
     load(fullfile(Pathname, FileName));
 catch
-    errordlg('Selected file is not a Matlab file.')
+    CPerrordlg('Selected file is not a Matlab file.')
+    return
 end
 
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~exist('handles','var')
-    errordlg('Selected file is not a CellProfiler output file.')
+    CPerrordlg('Selected file is not a CellProfiler output file.')
+    return
 end
 
 FinalOK = 0;

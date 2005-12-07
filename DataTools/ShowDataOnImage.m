@@ -139,14 +139,14 @@ end
 try
     [ImageToDisplay, handles] = CPimread(fullfile(Pathname,FileName), handles);
 catch
-    errordlg(['Error opening image ', FileName, ' in folder ', Pathname])
+    CPerrordlg(['Error opening image ', FileName, ' in folder ', Pathname])
     return
 end
 %%% Extracts the measurement values.
 
 tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
 if isempty(tmp) ,
-    errordlg('Error: there is no object measurement in your file ')
+    CPerrordlg('Error: there is no object measurement in your file ')
     return
 end
 ListOfMeasurements = tmp(:,FeatureNo);

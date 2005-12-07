@@ -272,3 +272,21 @@ helpdlg(help('HelpProgrammingNotes'))
 %%% We are not using CPhelpdlg because this allows the help to be accessed
 %%% from the command line of Matlab. The code of theis module (helpdlg) is
 %%% never run from inside CP anyway.
+
+
+% Error messages:
+% In data tools & image tools:
+% CPerrordlg(['The value you entered for the method to threshold ', GreaterOrLessThan, ' was not valid.  Acceptable entries are >, >=, =, <=, <.']);
+%        return
+% In modules and I think also in CPsubfunctions (no need for "return"):
+% error('Your error message here.')
+%
+% CPsubfunctions:
+% Depends whether the calling function has error handling. For functions
+% called from modules, error() is fine; for functions called from data
+% tools that nest the CPsubfunction in a try/catch with its own error
+% handling, error() is fine. For functions called from data tools that do
+% not have error handling, CPerrordlg(''), return is needed.
+%
+% In general, we should have our goal be to use mostly error('') within
+% subfunctions and have the calling function handle errors appropriately.

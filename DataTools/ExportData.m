@@ -51,13 +51,13 @@ if isfield(Loaded,'handles')
     handles = Loaded.handles;
     clear Loaded
 else
-    errordlg('The selected file does not seem to be a CellProfiler output file.')
+    CPerrordlg('The selected file does not seem to be a CellProfiler output file.')
     return
 end
 
 %%% Opens a window that lets the user chose what to export
 try ExportInfo = ObjectsToExport(handles,RawFileName);
-catch errordlg(lasterr)
+catch CPerrordlg(lasterr)
     return
 end
 
@@ -69,7 +69,7 @@ if isempty(ExportInfo.ObjectNames)
     if isfield(ExportInfo,'ExportProcessInfo')
         if strcmp(ExportInfo.ExportProcessInfo,'Yes')
             try CPtextpipe(handles,ExportInfo,RawFileName,RawPathname);
-            catch errordlg(lasterr)
+            catch CPerrordlg(lasterr)
                 return
             end
         end
@@ -84,7 +84,7 @@ waitbarhandle = CPwaitbar(0,'');
 %%% Export process info
 if strcmp(ExportInfo.ExportProcessInfo,'Yes')
     try CPtextpipe(handles,ExportInfo,RawFileName,RawPathname);
-    catch errordlg(lasterr)
+    catch CPerrordlg(lasterr)
         return
     end
 end
@@ -92,7 +92,7 @@ end
 %%% Export measurements
 if ~isempty(ExportInfo.MeasurementFilename)
     try WriteMeasurements(handles,ExportInfo,RawPathname);
-    catch errordlg(lasterr)
+    catch CPerrordlg(lasterr)
         return
     end
 end

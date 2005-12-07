@@ -41,7 +41,7 @@ if ~nargin
         try
             addpath(genpath(fileparts(which('CellProfiler.m'))))
             savepath
-        catch errordlg('You changed the name of CellProfiler.m file!!');
+        catch CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
         end
     end
 end

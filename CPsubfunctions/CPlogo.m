@@ -5,9 +5,9 @@ function Logo = CPlogo
 % Layer1 = Logo1(:,:,1);
 % Layer2 = Logo1(:,:,2);
 % Layer3 = Logo1(:,:,3);
-% Layer1(Layer1 == 1) = .7;
-% Layer2(Layer2 == 1) = .7;
-% Layer3(Layer3 == 1) = .9;
+% Layer1(Layer1 >= .8) = .7;
+% Layer2(Layer2 >= .8) = .7;
+% Layer3(Layer3 >= .8) = .9;
 %
 % At this point, I opened each Layer as a variable and copied and pasted
 % into this file. At the end of each line I had to fix the end of statement

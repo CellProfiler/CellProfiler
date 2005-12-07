@@ -63,13 +63,13 @@ try
     clear handles;
     load(fullfile(Pathname, SelectedFiles{1}));
 catch
-    errordlg([SelectedFiles{1},' is not a Matlab file'])
+    CPerrordlg([SelectedFiles{1},' is not a Matlab file'])
     return
 end
 
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~exist('handles','var')
-    errordlg([SelectedFiles{1} ,' is not a CellProfiler output file.'])
+    CPerrordlg([SelectedFiles{1} ,' is not a CellProfiler output file.'])
     return
 end
 

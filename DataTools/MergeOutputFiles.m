@@ -61,7 +61,7 @@ files = files(selection);
 %%% Load the first file and check if it seems to be a CellProfiler file
 load(fullfile(Pathname, files{1}));
 if ~exist('handles','var')
-    errordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{1}))
+    CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{1}))
     return
 end
 
@@ -102,7 +102,7 @@ for fileno = 2:length(files)
     %%% Load the file and check that it seems to be a CellProfiler file
     load(fullfile(Pathname, files{fileno}));
     if ~exist('handles','var')
-        errordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{fileno}))
+        CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{fileno}))
         return
     end
 
@@ -110,12 +110,12 @@ for fileno = 2:length(files)
     %%% Compare the modules used. If they don't match, abort.
     modulenames = handles.Settings.ModuleNames;
     if length(modulenames) ~= length(supermodules)
-        errordlg(sprintf('Inconsistency in file %s.',files{fileno}))
+        CPerrordlg(sprintf('Inconsistency in file %s.',files{fileno}))
         return
     end
     for j = 1:length(modulenames)
         if ~strcmp(modulenames{j},supermodules{j})
-            errordlg(sprintf('Inconsistency in file %s.',files{fileno}))
+            CPerrordlg(sprintf('Inconsistency in file %s.',files{fileno}))
             return
         end
     end

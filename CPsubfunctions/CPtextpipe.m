@@ -133,5 +133,5 @@ end
 %% Save to a .txt file.
 fclose(fid);
 if ~isstr(RawPathname) || ~isstr(RawFilename)
-    helpdlg('The pipeline .txt file has been written.');
+    CPhelpdlg('The pipeline .txt file has been written.');
 end

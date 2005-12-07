@@ -1,8 +1,11 @@
 function CPimagetool(varargin)
 
-% This function opens or updates the Image Tool window. It should be
-% invoked when the user clicks on an image produced by a module. 
-%
+% This function opens or updates the Image Tool window when the user clicks
+% on an image produced by a module. The tool is embedded by the CPimagesc
+% function which is used to display almost all images in CellProfiler. The
+% help is contained in a file called ImageToolWindow in the image tools
+% folder.
+ 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -30,30 +33,45 @@ function CPimagetool(varargin)
 if ~isempty(varargin)
     handles = guidata(findall(0,'tag','figure1'));
     action = varargin{1};
-    [foo, ITh] = gcbo;
-    if ishandle(get(ITh,'UserData'))  % The user might have closed the figure with the current image handle, check that it exists!
+    [foo, ImageToolWindowHandle] = gcbo;
+    if ishandle(get(ImageToolWindowHandle,'UserData'))  % The user might have closed the figure with the current image handle, check that it exists!
+        ImageHandle = get(ImageToolWindowHandle,'UserData');
         switch action
             case {'NewWindow'}        % Show image in a new window
-                drawnow
-                CPfigure(handles);
-                data = get(get(ITh,'UserData'),'Cdata');
+                %%% Retrieves the image data.
+                data = get(ImageHandle,'Cdata');
+                %%% Opens a new figure window.
+                FigureHandle = figure;
+                CPfigure(handles,'Image',FigureHandle);
                 CPimagesc(data,handles);
-                title(get(get(get(get(ITh,'UserData'),'parent'),'title'),'string'));
+                title(get(get(get(ImageHandle,'parent'),'title'),'string'));
             case {'Histogram'}                                % Produce histogram (only for scalar images)
-                drawnow
                 CPfigure(handles);
-                data = get(get(ITh,'UserData'),'Cdata');
+                data = get(ImageHandle,'Cdata');
                 hist(data(:),min(200,round(length(data(:))/150)));
-                title(['Histogram for ' get(get(get(get(ITh,'UserData'),'parent'),'title'),'string')])
+                title(['Histogram for ' get(get(get(ImageHandle,'parent'),'title'),'string')])
                 grid on
             case {'MatlabWS'}                                 % Store image in Matlab base work space
-                assignin('base','Image',get(get(ITh,'UserData'),'Cdata'));
+                assignin('base','Image',get(ImageHandle,'Cdata'));
                     try CPmsgbox('The image is now saved as the variable ''Image'' in the Matlab workspace.');
                     catch msgbox('The image is now saved as the variable ''Image'' in the Matlab workspace.');
                     end
+            case {'MeasureLength'}
+                %%% Places the measure length tool onto the axis containing the image.
+                LineHandle = imdistline(get(ImageHandle,'parent'));
+                %%% Retrieves a bunch of information about the line that was placed on the
+                %%% image.
+                api = iptgetapi(LineHandle);
+                %%% Using that retrieved data, looks up the handle to the text label.
+                LabelHandle = api.getLabelHandle();
+                %%% Changes the font size of the text label - if handles
+                %%% are not available we do not want this to fail, though.
+                try
+                    set(LabelHandle,'fontsize',handles.Preferences.FontSize)
+                end
             case {'SaveImageAs'}
-                Image = get(get(ITh,'UserData'),'Cdata');
-                
+                Image = get(ImageHandle,'Cdata');
+
                 SaveImageHandle = findobj('tag','SaveImageHandle');
                 if ~isempty(SaveImageHandle)
                     close(SaveImageHandle);
@@ -159,6 +177,12 @@ if ~isempty(varargin)
                     'String','Which file format would you like to use?',...
                     'Style','text');
 
+                %%% Writeable file formats using imwrite command. We cannot
+                %%% get this list from CPimread because not all readable
+                %%% formats are also writeable. We have adjusted the Save
+                %%% Images module to also save avi, fig, and mat files.
+                Formats = {'bmp','gif','hdf','jpg','jpeg','pbm','pcx','pgm','png','pnm','ppm','ras','tif','tiff','xwd','avi','fig','mat'};
+                
                 uicontrol(...
                     'Parent',SaveImageHandle,...
                     'Units','normalized',...
@@ -168,7 +192,7 @@ if ~isempty(varargin)
                     'FontSize',handles.Preferences.FontSize,...
                     'FontWeight','bold',...
                     'Position',[0.75 0.53 0.23 0.07],...
-                    'String',CPimread(),...
+                    'String',Formats,...
                     'Style','popupmenu',...
                     'Tag','ExtensionPopupMenu');
 
@@ -382,50 +406,54 @@ if ~isempty(varargin)
 else
     handle = gcbo;
     % Check if the Image Tool window already is open
-    ITh = findobj('Tag','Image Tool');
-    if ~isempty(ITh)
-        CPfigure(ITh);
-        set(ITh,'UserData',handle);                                  % Store the new handle in the UserData property
-        th = findobj(get(ITh,'children'),'style','text');            % Get handle to text object
+    ImageToolWindowHandle = findobj('Tag','Image Tool');
+    if ~isempty(ImageToolWindowHandle)
+        CPfigure(ImageToolWindowHandle);
+        set(ImageToolWindowHandle,'UserData',handle);                                  % Store the new handle in the UserData property
+        th = findobj(get(ImageToolWindowHandle,'children'),'style','text');            % Get handle to text object
 
         Title = get(get(get(handle,'Parent'),'Title'),'String');      % Get title of image
         set(th,'string',Title);                                       % Put new text
 
         % Enable histogram function if 2D image
         if ndims(get(handle,'Cdata')) == 2
-            set(findobj(get(ITh,'children'),'tag','Histogram'),'Enable','on')
+            set(findobj(get(ImageToolWindowHandle,'children'),'tag','Histogram'),'Enable','on')
         else
-            set(findobj(get(ITh,'children'),'tag','Histogram'),'Enable','off')
+            set(findobj(get(ImageToolWindowHandle,'children'),'tag','Histogram'),'Enable','off')
         end
 
     else  
         drawnow
         % Create Image Tool window
-        ITh = CPfigure;
-        set(ITh,'units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off','Tag','Image Tool','Name','Image Tool');
-        set(ITh,'UserData',handle);
-        pos = get(ITh,'position');
-        set(ITh,'position',[pos(1) pos(2) 2 3]);
+        ImageToolWindowHandle = CPfigure;
+        set(ImageToolWindowHandle,'units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off','Tag','Image Tool','Name','Image Tool');
+        set(ImageToolWindowHandle,'UserData',handle);
+        pos = get(ImageToolWindowHandle,'position');
+        set(ImageToolWindowHandle,'position',[pos(1) pos(2) 2 3.4]);
 
         % Get title of image
         Title = get(get(get(handle,'Parent'),'Title'),'String');
 
         % Create buttons
-        Text = uicontrol(ITh,'style','text','units','normalized','position',[.03 .85 .95 .12],'string',Title);
-        set(Text,'Backgroundcolor',get(ITh,'Color'))
-        NewWindow = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .75 .9 .12],'string','Open in new window','BackgroundColor',[.7 .7 .9]);
-        Histogram = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .6 .9 .12],'string','Show intensity histogram','Tag','Histogram','BackgroundColor',[.7 .7 .9]);
-        MatlabWS  = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .45 .9 .12],'string','Save to work space','BackgroundColor',[.7 .7 .9]);
-        SaveImageAs=uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .3 .9 .12],'string','Save to hard drive','BackgroundColor',[.7 .7 .9]);
-        Cancel    = uicontrol(ITh,'style','pushbutton','units','normalized','position',[.05 .05 .9 .12],'string','Cancel','BackgroundColor',[.7 .7 .9]);
-
+        Text = uicontrol(ImageToolWindowHandle,'style','text','units','normalized','position',[.03 .85 .95 .12],'string',Title);
+        set(Text,'Backgroundcolor',get(ImageToolWindowHandle,'Color'))
+        NewWindow =     uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .80 .9 .12],'string','Open in new window','BackgroundColor',[.7 .7 .9]);
+        Histogram =     uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .66 .9 .12],'string','Show intensity histogram','Tag','Histogram','BackgroundColor',[.7 .7 .9]);
+        MeasureLength = uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .52 .9 .12],'string','Measure Length','Tag','MeasureLength','BackgroundColor',[.7 .7 .9]); 
+        MatlabWS  =     uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .40 .9 .12],'string','Save to work space','BackgroundColor',[.7 .7 .9]);
+        SaveImageAs=    uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .26 .9 .12],'string','Save to hard drive','BackgroundColor',[.7 .7 .9]);
+        Cancel    =     uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.25 .05 .7 .12],'string','Cancel','BackgroundColor',[.7 .7 .9]);     
+        Help    =       uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .05 .15 .12],'string','?','BackgroundColor',[.7 .7 .9]);     
+        
         % Assign callback functions
         set(NewWindow,'Callback','CPimagetool(''NewWindow'');');
         set(Histogram,'Callback','CPimagetool(''Histogram'');');
+        set(MeasureLength,'Callback','CPimagetool(''MeasureLength'');');
         set(MatlabWS,'Callback','CPimagetool(''MatlabWS'');');
         set(SaveImageAs,'Callback','CPimagetool(''SaveImageAs'');');
-        set(Cancel,'Callback','[foo,ITh] = gcbo;close(ITh); clear foo ITh;');
-
+        set(Cancel,'Callback','[foo,ImageToolWindowHandle] = gcbo;close(ImageToolWindowHandle); clear foo ImageToolWindowHandle;');
+        set(Help,'Callback','CPtextdisplaybox(help(''ImageToolWindow''),''Help for the Image Tool Window'')');
+        
         % Currently, no histogram function for RGB images
         if ndims(get(handle,'Cdata')) ~= 2
             set(Histogram,'Enable','off')

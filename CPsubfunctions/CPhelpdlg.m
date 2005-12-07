@@ -1,4 +1,4 @@
-function varargout = helpdlg(HelpString,DlgName)
+function varargout = CPhelpdlg(HelpString,DlgName)
 %HELPDLG Help dialog box.
 %  HANDLE = HELPDLG(HELPSTRING,DLGNAME) displays the 
 %  message HelpString in a dialog box with title DLGNAME.  

@@ -22,9 +22,12 @@ function Image = CPretrieveimage(handles,ImageName,ModuleName,ColorFlag,ScaleFla
 %
 % $Revision: 2802 $
 
+%%% Fills in missing arguments, if necessary.
 if nargin == 5
+%%% CPretrieveimage(handles,ImageName,ModuleName,ColorFlag,ScaleFlag)
     SizeFlag = 0;
 elseif nargin == 3
+%%% CPretrieveimage(handles,ImageName,ModuleName)
     ColorFlag = 0;
     ScaleFlag = 0;
     SizeFlag = 0;

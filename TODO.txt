@@ -1,15 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
--(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
-TechDiagnosis 		- DONE
-SaveCPcode		- DONE
-DownloadNewModules	- DONE
-
-(Requested by Anne 12-07-05)  Things unneeded/to be disabled in the compiled version (They aren't super-urgent but i thought i'd note things as i realize it): the option to change the Default Modules folder in the Set Preferences.
-
-(Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
-
 (Requested by Anne 12-07-05)  Does AddData/ViewData work for numerical *and* text information? If so, adjust the help to state this.  Also, does LoadText module work the same way?  We might want to rename LoadText to be LoadData if so.
 
 - Mike should do >> Edit HelpCPInstallGuide for compiled versions.
@@ -21,6 +12,8 @@ Anne - doublecheck MergeBatchOutput, esp that data is exportable.
 Someone - check all LoadImages options
 
 Mike - Rotate: Need to verify - check lots of combinations on an image of a grid of lines or something that is easy to verify that the rotation is really working properly, and that the X,Y (for coordinate) and clockwise/counterclockwise (for ANGLE) is stated correctly. See also the bug I emailed you about on Monday afternoon.
+
+(Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:

@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 11/22 isdeployed) (Requested by Anne 11-21-05)  We need to disable certain buttons/menu items when running the compiled version, e.g. eval, propedit, image tool > Save to workspace and probably other stuff too. What is the command that allows us to determine if we are using compiled code?
+TechDiagnosis 		- DONE
+SaveCPcode		- DONE
+DownloadNewModules	- DONE
+
+-(Mike 12/7) (Requested by Anne 12-07-05)  Things unneeded/to be disabled in the compiled version (They aren't super-urgent but i thought i'd note things as i realize it): the option to change the Default Modules folder in the Set Preferences.
+
 -(Colin 12/7) (Requested by Anne 12-1-05) - When using the image tool 'save to hard drive', The colormap i chose for a grayscale image does not seem to be used - the image comes out gray.
 
 -(Mike 12/7) RelateObjects (How does it handle partially overlapping objects?

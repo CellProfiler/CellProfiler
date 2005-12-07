@@ -4,8 +4,6 @@ Mike's TODO list
 
 - Website: Include Forum on main page, think of layout
 
-- Test SaveImageAs
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - New images for Scott Floyd

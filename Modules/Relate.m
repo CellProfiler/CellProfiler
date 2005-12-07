@@ -8,7 +8,10 @@ function handles = Relate(handles)
 % (e.g. nucleus) become its children.
 % *************************************************************************
 %
-%  Allows counting the number of objects within each parent object.
+%  Allows counting the number of objects within each parent object. An
+%  object will be considered a child even if the edge is the only part
+%  touching a parent object. If an object is touching two parent objects,
+%  the objects parent will be the higher numbered parent.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

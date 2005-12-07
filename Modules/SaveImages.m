@@ -354,7 +354,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
     drawnow
 
     FileSavingParameters = [];
-    if ~strcmp(BitDepth,'8')
+    if ~strcmp(BitDepth,'8') && (strcmp(FileFormat,'jpg') || strcmp(FileFormat,'jpeg') || strcmp(FileFormat,'png'))
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
         %%% In jpeg format at 12 and 16 bits, the mode must be set to
         %%% lossless to avoid failure of the imwrite function.

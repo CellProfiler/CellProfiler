@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 12/7) (Requested by Anne 12-1-05) - When using the image tool 'save to hard drive', The colormap i chose for a grayscale image does not seem to be used - the image comes out gray.
+
 -(Mike 12/7) RelateObjects (How does it handle partially overlapping objects?
 adjust the help to state how these are handled)
 

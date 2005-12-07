@@ -71,7 +71,7 @@ Image = handles.Pipeline.(ImageName);
 
 if ScaleFlag == 1
     if max(Image(:)) > 1 || min(Image(:)) < 0
-        CPwarndlg(['The first image that you loaded in the ', ModuleName, ' module is outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
+        CPwarndlg(['The image loaded in the ', ModuleName, ' module is outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
     end
 end
 

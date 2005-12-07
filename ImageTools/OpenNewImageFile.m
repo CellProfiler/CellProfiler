@@ -3,17 +3,14 @@ function OpenNewImageFile(handles)
 % Help for the Open New Image File tool:
 % Category: Image Tools
 %
-% Use this tool to open an image and display it (for example, in order
-% to check the background pixel intensity or to determine pixel
-% coordinates, or to check which wavelength it is).
+% SHORT DESCRIPTION:
+% Opens an image file in a new window.
+% *************************************************************************
 %
-% The Open New Image File button shows pixel values in the range 0 to 1.
-% Images are loaded into CellProfiler in this range so that modules behave
-% consistently. The display is set to the same range so that, for example,
-% if a user wants to look at an image in order to determine which threshold
-% to use within a module, the pixel values are directly applicable.
-%
-% See also ShowOrHidePixelData, ShowDataOnImage.
+% Use this tool to open an image and display it. Images are loaded into
+% CellProfiler in the range of 0 to 1 so that modules behave consistently.
+% The display is contrast stretched so that the brightest pixel in the
+% image is white and the darkest is black for easier viewing.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -56,11 +53,16 @@ CPcd(TempCD);
 %%% happen.
 if FileName == 0
 else
-    %%% Reads the image.
-    Image = CPimread(fullfile(Pathname, FileName));
-    CPfigure(handles);
+    try
+        %%% Reads the image.
+        Image = CPimread(fullfile(Pathname, FileName));
+    catch CPerrordlg(lasterr)
+        return
+    end
+    %%% Opens a new figure window.
+    FigureHandle = figure;
+    CPfigure(handles,'Image',FigureHandle);
     CPimagesc(Image,handles);
-    colormap(gray);
     FileName = strrep(FileName,'_','\_');
     title(FileName);
 end

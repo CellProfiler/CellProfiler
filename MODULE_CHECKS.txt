@@ -22,7 +22,7 @@ CorrectIllumination_Calculate	Mike,        Anne
 
 CreateBatchScripts		Mike,        Anne (Doublecheck after Susan updates the help)
 
-CreateWebPage			Mike,        Anne (need to explain what image border and table border is)
+CreateWebPage			Mike,        Anne 
 
 Crop				Mike,        Anne
 
@@ -117,7 +117,7 @@ Tile			            ,        Anne
 WriteSQLFiles
 
 
-%%% Data Tools %%%
+%%% Data Tools %%%		Anne looked at the data tools' help briefly, marked them all as beta because untested!
 
 ViewData
 
@@ -147,7 +147,7 @@ ClearData
 
 AddData
 
-%%% Image Tools %%%
+%%% Image Tools %%%		Anne checked all image tools & their help.
 
 OpenNewImageFile
 

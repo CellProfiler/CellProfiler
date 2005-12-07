@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/7) Fix CPimagetool button locations, fix SetPreferences help button locations
+
 -(Mike 12/7) (Requested by Anne 12-01-05) - Clean up ExportData files and move old versions to outdated. I think the data tool should be called ExportData (not "ToFiles"). Are we going to have a corresponding module(s). right now, it looks like we have WriteSQLfiles as a module - I wanted to check whether this is sharing code with the new ExportData tool and whether it can be expanded to WriteExcelFiles. The module versions should be renamed ExportDataExcel and ExportDataSQL when they are finished up. I assume we need two separate modules because their settings are all different.
 
 -(Anne 12/7) - Did dependency report on Modules folder: only toolbox needed is image processing toolbox. All variables are ok (only one 'Unknown' and that's because it's the result of an eval function).

@@ -115,13 +115,15 @@ for FileNbr = 1:length(SelectedFiles)
     end
 
     tempVarValues=handles.Settings.VariableValues;
-    tempModuleNumber = handles.Current.CurrentModuleNumber;
-    handles.Settings.VariableValues{1,1}=fullfile(pathname,filename);
+    tempCurrentField = handles.Current;
+    handles.Settings.VariableValues{1,1}=filename;
     handles.Settings.VariableValues{1,2}=FieldName;
+    handles.Settings.VariableValues{1,3}=pathname;
     handles.Current.CurrentModuleNumber='01';
+    handles.Current.SetBeingAnalyzed=1;
     handles = LoadText(handles);
     handles.Settings.VariableValues=tempVarValues;
-    handles.Current.CurrentModuleNumber=tempModuleNumber;
+    handles.Current=tempCurrentField;
 
     %%% Save the updated CellProfiler output file
     try

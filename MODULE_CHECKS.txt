@@ -153,32 +153,41 @@ OpenNewImageFile
 
 ShowOrHidePixelData
 
-CPimagetool or whatever it's called that has the embedded functions in it now.
+ImageToolWindow (formerly CPimagetool)
 
-%%% Help Files %%%
+InteractiveZoom
 
-HelpTechDiagnosis
+%%% Help Files %%%%%%%%%%%%%%%%%%%%%
 
 HelpProgrammingNotes
 
-HelpPreferences
+HelpAnalyzeImages (button in main GUI)
 
-HelpPixelSize
+HelpIndividualModule (button in main GUI and Add module window)
 
-HelpPipelineOfModules
+HelpGettingStarted (button in Add module window)
 
-HelpObjectProcessing
+DONE >>> HelpCPInstallGuide (TODO: guide for compiled versions)
 
-HelpMatLabCrash
+DONE >>> HelpPipelineOfModules (will remove)
 
-HelpIndividualModule
+DONE >>> HelpObjectProcessing (will remove)
 
-HelpGettingStarted
+DONE >>> HelpPreferences (shown in Set prefs window)
 
-HelpDefaultOutputDirectory
+DONE >>> HelpPixelSize (button in main GUI and in Set Prefs)
 
-HelpDefaultImageDirectory
+DONE >>> HelpDefaultOutputFolder (button on main GUI)
 
-HelpCPInstallGuide
+DONE >>> HelpDefaultImageFolder (button on main GUI)
 
-HelpAnalyzeImage
+DONE >>> HelpFastMode (Set Prefs button)
+
+DONE >>> HelpColormaps (Set Prefs button)
+
+DONE >>> HelpSkipErrors (Set Prefs button)
+
+DONE >>> HelpMatLabCrash
+
+DONE >>> HelpTechDiagnosis
+

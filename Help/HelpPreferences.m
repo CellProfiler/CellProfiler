@@ -1,15 +1,17 @@
 function HelpPreferences
-helpdlg(help(HelpPreferences))
+helpdlg(help('HelpPreferences'))
 
-% SET PREFERENCES: 
-% This allows you to set the default pixel size, the default font size
-% for CellProfiler displays, the default image directory, the default
-% output directory, and the directory containing CellProfiler modules.
-% This is just for convenience, and can be reset later, if you would
-% like.  This step creates a file called CellProfilerPreferences.mat
-% in the directory which is loaded every time you start up
-% CellProfiler. If you do not have permission to write files to the
-% root directory of Matlab, it saves the file in the current
-% directory, but then the defaults will only be used when
-% CellProfiler is launched from that directory. If you do not have
-% write permission in either location, you are out of luck.
+% File > Set Preferences: The default preferences file (CellProfilerPreferences.mat) is 
+% loaded upon starting up CellProfiler and is located in the folder where the software is
+% running (or the Matlab root in CellProfiler Developer's version). If you do not have 
+% permission to write files in that location, it saves the file in the current folder 
+% (Developer's version), but then the preferences will only be used when CellProfiler is 
+% launched from that folder. If you do not have write permission in either location, save 
+% them as personal preferences and use File > Load Preferences each time you start CellProfiler.
+
+%%% NOTE: THE TEXT IS VERY WIDE HERE SO THAT IT FITS INTO THE SET
+%%% PREFERENCES WINDOW.
+
+%%% We are not using CPhelpdlg because this allows the help to be accessed
+%%% from the command line of Matlab. The code of theis module (helpdlg) is
+%%% never run from inside CP anyway.

@@ -34,3 +34,7 @@ helpdlg(help('HelpAnalyzeImages'))
 % so that only the first set will be analyzed.  Or, if using
 % 'LoadImagesText' you can make the identifying text specific enough
 % that it will recognize only one image set in the folder.
+
+%%% We are not using CPhelpdlg because this allows the help to be accessed
+%%% from the command line of Matlab. The code of theis module (helpdlg) is
+%%% never run from inside CP anyway.

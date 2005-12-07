@@ -8,6 +8,10 @@ helpdlg(help('HelpIndividualModule'))
 % adjusted by selecting module(s) and using the Move up '^' and Move down
 % 'v' buttons. The '-' button will delete selected module(s) from the
 % pipeline. Clicking a module in the pipeline will reveal its settings in
-% the space to the right of the selected module. For the developer's
-% version of CellProfiler, properly formatted image analysis modules are
+% the space to the right of the selected module. For CellProfiler
+% Developer's version , properly formatted image analysis modules are
 % Matlab m-files that end with .m.
+
+%%% We are not using CPhelpdlg because this allows the help to be accessed
+%%% from the command line of Matlab. The code of theis module (helpdlg) is
+%%% never run from inside CP anyway.

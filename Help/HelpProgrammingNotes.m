@@ -127,6 +127,9 @@ helpdlg(help('HelpProgrammingNotes'))
 %   Fields currently in handles.Settings: PixelSize, ModuleNames,
 % VariableValues, NumbersOfVariables, VariableRevisionNumbers.
 %
+% This is where you should retrieve the PixelSize if necessary, not in
+% handles.Preferences.
+%
 % handles.Pipeline:
 %       This substructure is deleted at the beginning of the
 % analysis run (see 'Which substructures are deleted prior to an
@@ -265,3 +268,7 @@ helpdlg(help('HelpProgrammingNotes'))
 % associated with a variable number. Also, the defaultVAR01 value will
 % inadvertently overwrite saved settings when loading a saved pipeline if
 % it is located after infotypeVAR01 or inputtypeVAR01.
+
+%%% We are not using CPhelpdlg because this allows the help to be accessed
+%%% from the command line of Matlab. The code of theis module (helpdlg) is
+%%% never run from inside CP anyway.

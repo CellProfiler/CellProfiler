@@ -1,12 +1,14 @@
 function HelpTechDiagnosis
 helpdlg(help('HelpTechDiagnosis'))
 
+% Technical diagnosis mode is available using File > Tech Diagnosis.
+%
+% This is only to be used in CellProfiler Developer's version.
+% It allows you to access the workspace of CellProfiler directly at the
+% command line of Matlab, including looking into the handles structure.
+%
+% Type "return" at the command line of Matlab to exit this mode.
 
-% TECHNICAL DIAGNOSIS: 
-%
-%DO NOT USE THIS IF YOU ARE NOT TRYING TO PROGRAM ANYTHING.  
-%
-%The user is able to see and modify variable in the current workspace.  It
-%is possible to go into handles and look at each element on the main GUI.
-%
-%TYPE "RETURN" TO END.
+%%% We are not using CPhelpdlg because this allows the help to be accessed
+%%% from the command line of Matlab. The code of theis module (helpdlg) is
+%%% never run from inside CP anyway.

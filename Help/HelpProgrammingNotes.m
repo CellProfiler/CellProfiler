@@ -273,7 +273,9 @@ helpdlg(help('HelpProgrammingNotes'))
 %%% from the command line of Matlab. The code of theis module (helpdlg) is
 %%% never run from inside CP anyway.
 
-
+% For CellProfiler Developer's version , properly
+% formatted image analysis modules are Matlab m-files that end with .m.
+%
 % Error messages:
 % In data tools & image tools:
 % CPerrordlg(['The value you entered for the method to threshold ', GreaterOrLessThan, ' was not valid.  Acceptable entries are >, >=, =, <=, <.']);

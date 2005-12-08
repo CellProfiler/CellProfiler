@@ -145,10 +145,10 @@ Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%%%%%%%%%%%%%%%%%%%%% NOTE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THOSE FORMATS
 %%% These formats listed are the only possible ones, according to the
 %%% imwrite function, plus avi, mat, and fig for which this module contains
 %%% special code for handling.
+%%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THOSE FORMATS
 
 %pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory.
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -183,7 +183,7 @@ SaveMovieWhen = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = For grayscale images, specify the colormap to use (e.g. gray, jet, bone) if you are saving movie (avi) files.
+%textVAR11 = For grayscale images, specify the colormap to use (see help). This is critical for movie (avi) files. Choosing anything other than gray may degrade image quality or result in image stretching.
 %defaultVAR11 = gray
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
@@ -198,6 +198,11 @@ UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
 %textVAR14 = Warning! It is possible to overwrite existing files using this module!
+
+%%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%If you change anything here, make sure the image tool SaveImageAs is
+%consistent, in CPimagetool.
+%%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%VariableRevisionNumber = 12
 
@@ -474,12 +479,21 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
                 end
             end
         end
-    else
-        Image=Image/min(min(Image(Image~=0)));
-        eval(['ChosenColormap = colormap(',ColorMap,'(max(max(Image))));']);
-        try eval(['imwrite(Image, ChosenColormap, FileAndPathName, FileFormat', FileSavingParameters,')']);
-        catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+    else  %%% For all other image formats, including most normal ones.
+        if strcmpi(ColorMap,'gray') || ndims(Image) == 3
+            %%% For color images or for grayscale saved in gray format, we do
+            %%% not want to alter the image by applying a colormap.
+            try eval(['imwrite(Image, FileAndPathName, FileFormat', FileSavingParameters,')']);
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+            end
+        else
+            Image=Image/min(min(Image(Image~=0)));
+            eval(['ChosenColormap = colormap(',ColorMap,'(max(max(Image))));']);
+            try eval(['imwrite(Image, ChosenColormap, FileAndPathName, FileFormat', FileSavingParameters,')']);
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
+            end
         end
     end
 end

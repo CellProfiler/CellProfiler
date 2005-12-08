@@ -3,12 +3,12 @@ helpdlg(help('HelpColormaps'))
 
 % Default colormaps can be set in File > Set preferences.
 %
-% Label colormap - affects how objects are colored. Colorcube is not
-% recommended because some intensity values are displayed as black. Jet is
-% the default.
+% Label colormap - affects how objects are colored. Colorcube (and possibly
+% other colormaps) is not recommended because some intensity values are
+% displayed as black. Jet is the default.
 %
 % Intensity colormap - affects how grayscale images are displayed.
-% Colorcube (and possibly other colormaps) are not recommended because some
+% Colorcube (and possibly other colormaps) is not recommended because some
 % intensity values are displayed as black. Gray is recommended.
 %
 % Choose from these colormaps:

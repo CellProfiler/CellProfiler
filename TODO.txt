@@ -23,6 +23,7 @@ www.zdnet.com	downloads.mycomputer.com	www.windows95.sk
 directory.google.com	www.libpng.org	cn.tech.yahoo.com
 www.dmoz.org	softload.narod.ru	www.chinabyte.com
 www.winsite.com	www.cheta.net www.open-bio.org    caBIG
+- Post something on biostuff .mit.edu
 - Get the email addresses of all corresponding authors from all the research articles Anne has collected, and also microscope facility directors and send them an email telling them to visit cellprofiler.org and sign up for the email list if desired.
 - The Broad institute has done a lot of thinking and infrastructure for distributing free software. They have narrowed down to 3 licenses (GPL, a variant of academic open source, and one other) that their scientists use and they also have pages to help register users who download their software etc. this might be useful for us.
 - Send copy of software to people in communist countries:

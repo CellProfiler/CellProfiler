@@ -292,3 +292,8 @@ helpdlg(help('HelpProgrammingNotes'))
 %
 % In general, we should have our goal be to use mostly error('') within
 % subfunctions and have the calling function handle errors appropriately.
+%
+%In case the settings file was created with an
+% outdated version of a module, some of the behavior of settings may
+% have changed, so CellProfiler warns you and guides you through
+% converting your old settings file to something usable.

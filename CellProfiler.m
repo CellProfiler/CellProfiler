@@ -3849,26 +3849,8 @@ CPerrordlg(ErrorExplanation);
 %%%%%%%%%%%%%%%%%%%%
 
 function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-%%% First, check to see whether there is a specific module loaded.
-%%% If not, it opens a help dialog which explains how to pick one.
-%%% The numeral 10 allows line breaks.
-% if isdeployed
-%     for i = 1:length(handles.Current.HelpFilenames)
-%         if strfind(handles.Current.HelpFilenames{i},'HelpIndividualModule')
-%             Option = i;
-%         end
-%     end
-%     if ~isempty(Option)
-%         GeneralIndividualModuleHelpText = handles.Current.Help{Option-1};
-%     end
-% else
-%     GeneralIndividualModuleHelpText = help('HelpIndividualModule');
-% end
 
-GeneralIndividualModuleHelpText =[];
-
-NoModuleSelectedHelpMsg = ['You do not have an analysis module loaded. Add a module to the pipeline using the + button. Select a module in the pipeline and click the "?" button below the pipeline to see help for each individual module' 10 10 ...
-    GeneralIndividualModuleHelpText];
+NoModuleSelectedHelpMsg = 'You do not have an analysis module loaded. Add a module to the pipeline using the + button. Clicking the "?" button below the pipeline when a module is selected will then reveal help for that module.';
 ModuleNumber = whichactive(handles);
 if ModuleNumber == 0
     CPtextdisplaybox(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');
@@ -3894,7 +3876,7 @@ else
             %%% Calls external subfunction: a nice text display box with a slider if the help is too long.
             CPtextdisplaybox(HelpText,'CellProfiler image analysis module help');
         else
-            CPtextdisplaybox(['Sorry, there is no help information for this image analysis module.',GeneralIndividualModuleHelpText],'Image analysis module help');
+            CPtextdisplaybox('Sorry, there is no help information for this image analysis module.','Image analysis module help');
         end
     catch
         CPtextdisplaybox(NoModuleSelectedHelpMsg,'Help for choosing an analysis module');

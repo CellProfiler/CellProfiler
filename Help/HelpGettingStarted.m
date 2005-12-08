@@ -3,9 +3,11 @@ helpdlg(help('HelpGettingStarted'))
 
 % The best way to learn how to use CellProfiler is to load an example
 % pipeline (from www.cellprofiler.org) and try it out. Or, you can build a
-% pipeline from scratch (below).
+% pipeline from scratch. A pipeline is a sequential set of individual image
+% analysis modules.
 %
-% LOADING A PIPELINE: 
+% ************************   LOADING A PIPELINE   ************************
+%
 % STEP 1: Put the images and pipeline into a folder on your computer.
 %
 % STEP 2: Load the pipeline using File > Load Pipeline in the main menu of
@@ -20,9 +22,13 @@ helpdlg(help('HelpGettingStarted'))
 % Data Tools are accessible in the main menu of CellProfiler and allow you
 % to plot, view, or export your measurements (e.g. to Excel).
 %
-% BUILDING A PIPELINE FROM SCRATCH:
+% STEP 6: If you modify the modules or settings in the pipeline, you can
+% save the pipeline using File > Save Pipeline. See the end of this
+% document for more information on pipeline files.
+%
+% *****************   BUILDING A PIPELINE FROM SCRATCH   *****************
+%
 % STEP 1: Build an image analysis pipeline from individual modules 
-% (this help info is also available in HelpIndividualModule)
 % Choose image analysis modules to add to your analysis routine (your
 % "pipeline") by clicking '+'. Typically, the first module which must be
 % run is the Load Images module, where you specify the identity of the
@@ -79,38 +85,19 @@ helpdlg(help('HelpGettingStarted'))
 % folder. Once the settings look good for a few test images, you can change
 % the Load Images module to recognize all images in your folder.
 %
+% STEP 6: Save your pipeline
+% This step can be done at any time using File > Save Pipeline. 
 %
-%
-%
-% Pipeline of modules: LOAD 
-% A pipeline is just a sequential set of individual image analysis
-% modules. A pipeline of modules, along with settings you previously
-% selected for each image analysis module within it, can be loaded all
-% at once rather than adding image analysis modules individually and
-% manually typing in their settings. An example saved settings file
-% and a corresponding set of images is available for download from
-% cellprofiler.org. A pipeline can be loaded from a previously saved
-% settings file (made using the 'Save' button), or from an output file
-% previously created by running a pipeline. CellProfiler automatically
-% determines which type of file you have selected and extracts the
-% relevant information.  In case the settings file was created with an
-% outdated version of a module, some of the behavior of settings may
-% have changed, so CellProfiler warns you and guides you through
-% converting your old settings file to something usable.
-%
-% Pipeline of modules: SAVE
-% Once you have loaded the desired image analysis modules and modified
-% all of the settings as desired, you may save this pipeline for
-% future use by clicking 'Save' and naming the file. This creates a
-% small file containing all of the image analysis modules, and their
-% settings, plus the pixel size.  It does not store any imported
-% sample information or the folder of images to be analyzed, etc.
+% Note about CellProfiler "PIPE" pipeline files: A pipeline can be loaded
+% from a pipeline file or from any output file created using the pipeline.
+% A pipeline file is very small and is therefore more convenient for
+% sharing with colleagues. It also allows you to save your work on a
+% pipeline even if it's not ready to run yet. Loading/Saving Pipeline files
+% will load/save these: the image analysis modules, their settings, and the
+% pixel size. It will not save the default image or output folder.
 %
 % See also Help (main menu of CellProfiler) and "?" buttons in the main
 % window.
-%
-
-
 
 %%% We are not using CPhelpdlg because this allows the help to be accessed
 %%% from the command line of Matlab. The code of theis module (helpdlg) is

@@ -9,8 +9,6 @@ Anne - doublecheck CreateBatchSCripts (see susan's help)
 Anne - doublecheck MergeBatchOutput, esp that data is exportable.
 Someone - check all LoadImages options
 
-Mike - Rotate: Need to verify - check lots of combinations on an image of a grid of lines or something that is easy to verify that the rotation is really working properly, and that the X,Y (for coordinate) and clockwise/counterclockwise (for ANGLE) is stated correctly. See also the bug I emailed you about on Monday afternoon.
-
 (Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
 
 ---------------------------------------------------

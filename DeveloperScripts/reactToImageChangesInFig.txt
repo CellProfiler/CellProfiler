@@ -1,0 +1,51 @@
+> From: support@mathworks.com
+> Date: December 7, 2005 3:59:02 PM EST
+> To: carpenter@wi.mit.edu
+> Subject: RE: Why do I receive an error when I use IMPIXELINFO ?
+> Reply-To: support@mathworks.com
+>
+> Hello Anne,
+>
+> I am writing in reference to your Service Request # 1-20IF28 regarding  
+> 'Why do I receive an error when I use IMPIXELINFO?'.
+>
+> You were receiving this error due to a bug in Image Processing Toolbox  
+> 5.1 in the way the function IMPIXELINFO handles subplots.
+>
+> In order to workaround this issue, please do the following in MATLAB:
+>
+> 1. Type at the command line:
+>
+> cd([matlabroot,'\toolbox\images\imuitools\private'])
+>
+> This changes the current directory to  'private' directory in the path  
+> mentioned above.
+>
+> 2. In this directory, save the M-file 'reactToImageChangesInFig.m' as  
+> 'reactToImageChangesInFigOld.m'.
+>
+> 3. Save the attached M-file 'reactToImageChangesInFig.m' in the  
+> directory above with the same name.
+>
+> After making these changes, you should not receive any errors for the  
+> code you sent me. If you need further assistance regarding this issue,  
+> please reply to this email preserving the THREAD ID listed below. If  
+> you have a new technical support question, please submit a new request  
+> here:
+>
+> http://www.mathworks.com/contact_TS.html.
+>
+> Sincerely,
+> Smita
+> Application Support Engineer
+> Technical Support Department
+> The MathWorks, Inc.
+> Phone: (508) 647-7000 option 5
+>
+> Self-Service:
+> http://www.mathworks.com/support
+>
+> File Exchange and Newsgroup Access:
+> http://www.mathworks.com/matlabcentral/
+>
+> [THREAD ID:1-20IDJT]

@@ -3852,20 +3852,22 @@ function IndividualModuleHelp_Callback(hObject, eventdata, handles) %#ok We want
 %%% First, check to see whether there is a specific module loaded.
 %%% If not, it opens a help dialog which explains how to pick one.
 %%% The numeral 10 allows line breaks.
-if isdeployed
-    for i = 1:length(handles.Current.HelpFilenames)
-        if strfind(handles.Current.HelpFilenames{i},'HelpIndividualModule')
-            Option = i;
-        end
-    end
-    if ~isempty(Option)
-        GeneralIndividualModuleHelpText = handles.Current.Help{Option-1};
-    end
-else
-    GeneralIndividualModuleHelpText = help('HelpIndividualModule');
-end
+% if isdeployed
+%     for i = 1:length(handles.Current.HelpFilenames)
+%         if strfind(handles.Current.HelpFilenames{i},'HelpIndividualModule')
+%             Option = i;
+%         end
+%     end
+%     if ~isempty(Option)
+%         GeneralIndividualModuleHelpText = handles.Current.Help{Option-1};
+%     end
+% else
+%     GeneralIndividualModuleHelpText = help('HelpIndividualModule');
+% end
 
-NoModuleSelectedHelpMsg = ['You do not have an analysis module loaded.' 10 10 ...
+GeneralIndividualModuleHelpText =[];
+
+NoModuleSelectedHelpMsg = ['You do not have an analysis module loaded. Add a module to the pipeline using the + button. Select a module in the pipeline and click the "?" button below the pipeline to see help for each individual module' 10 10 ...
     GeneralIndividualModuleHelpText];
 ModuleNumber = whichactive(handles);
 if ModuleNumber == 0
@@ -3882,17 +3884,10 @@ else
                 end
             end
             if ~isempty(Option)
-                SpecificModuleHelp = handles.Current.ModuleHelp{Option};
-                HelpText = ['GENERAL HELP:' 10 ...
-                    GeneralIndividualModuleHelpText, 10, 10 ...
-                    'MODULE-SPECIFIC HELP:' 10 ...
-                    SpecificModuleHelp];
+                HelpText = handles.Current.ModuleHelp{Option};
             end
         else
-            HelpText = ['GENERAL HELP:' 10 ...
-                GeneralIndividualModuleHelpText, 10, 10 ...
-                'MODULE-SPECIFIC HELP:' 10 ...
-                help(char(ModuleName))];
+            HelpText = [help(char(ModuleName))];
         end
         DoesHelpExist = exist('HelpText','var');
         if DoesHelpExist == 1
@@ -4984,7 +4979,7 @@ h17 = uicontrol(...
     'BackgroundColor',[.7 .7 .9],...
     'Callback','handles = guidata(findobj(''tag'',''figure1''));for i = 1:length(handles.Current.HelpFilenames), if strfind(handles.Current.HelpFilenames{i},''HelpOutputFilename''), Option = i;end,end,if ~isempty(Option),CPtextdisplaybox(handles.Current.Help{Option-1},''CellProfiler Help'');end;clear ans handles Option i;',...
     'FontWeight','bold',...
-    'Position',[700 8 12 22],...
+    'Position',[683 8 12 22],...
     'String','?',...
     'Tag','OutputFilenameHelp',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...

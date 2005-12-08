@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
+- Update pipelines!
+
 - Mike should do >> Edit HelpCPInstallGuide for compiled versions.
 
 (Requested by Anne 12-05-05) - Here are the only other things on the module_checks list to do:

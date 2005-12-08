@@ -16,30 +16,14 @@ function handles = ConvertToImage(handles)
 % a graylevel pixel intensity value corresponding to its number (also
 % called label), so it usually results in objects on the left side of the
 % image being very dark, and progressing towards white on the right side of
-% the image. You can choose "Color" with a "Gray" colormap to produce jumbled
-% gray objects.
+% the image. You can choose "Color" with a "Gray" colormap to produce
+% jumbled gray objects.
 %
 % Colormap:
 % Affect how the objects are colored. You can look up your default colormap
 % under File > Set Preferences.  Look in matlab help online (try Google) to
-% see what the following available colormaps look like:
-% Jet
-% HSV
-% Hot
-% Cool
-% Spring
-% Summer
-% Autumn
-% Winter
-% Gray
-% Bone
-% Copper
-% Pink
-% Lines
-% Colorcube
-% Flag
-% Prism
-% White
+% see what the available colormaps look like. See also Help > HelpColormaps
+% in the main CellProfiler window.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -88,7 +72,25 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 ImageMode = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For COLOR, what do you want the colormap to be?
-%defaultVAR04 = Default
+%choiceVAR04 = Default
+%choiceVAR04 = Jet
+%choiceVAR04 = HSV
+%choiceVAR04 = Hot
+%choiceVAR04 = Cool
+%choiceVAR04 = Spring
+%choiceVAR04 = Summer
+%choiceVAR04 = Autumn
+%choiceVAR04 = Winter
+%choiceVAR04 = Gray
+%choiceVAR04 = Bone
+%choiceVAR04 = Copper
+%choiceVAR04 = Pink
+%choiceVAR04 = Lines
+%choiceVAR04 = Colorcube
+%choiceVAR04 = Flag
+%choiceVAR04 = Prism
+%choiceVAR04 = White
+%inputtypeVAR04 = popupmenu
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1

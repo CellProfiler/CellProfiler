@@ -1,7 +1,8 @@
 function HelpProgrammingNotes
 helpdlg(help('HelpProgrammingNotes'))
 
-% PROGRAMMING NOTE
+% Programming Notes for CellProfiler Developer's version
+%
 % HELP:
 % The first unbroken block of lines will be extracted as help by
 % CellProfiler's 'Help for this analysis module' button as well as Matlab's
@@ -297,3 +298,18 @@ helpdlg(help('HelpProgrammingNotes'))
 % outdated version of a module, some of the behavior of settings may
 % have changed, so CellProfiler warns you and guides you through
 % converting your old settings file to something usable.
+
+% CellProfiler Developer's note:
+% If you want to save images that are produced by other modules but that
+% are not given an official name in the settings boxes for that module,
+% alter the code for the module to save those images to the handles
+% structure and then use the Save Images module.
+% The code should look like this:
+% fieldname = ['SomethingDescriptive(optional)',ImageorObjectNameFromSettingsBox];
+% handles.Pipeline.(fieldname) = ImageProducedBytheModule;
+% Example 1:
+% fieldname = ['Segmented', ObjectName];
+% handles.Pipeline.(fieldname) = SegmentedObjectImage;
+% Example 2:
+% fieldname = CroppedImageName;
+% handles.Pipeline.(fieldname) = CroppedImage;

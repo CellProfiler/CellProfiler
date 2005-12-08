@@ -58,21 +58,6 @@ function handles = SaveImages(handles)
 % the results to a compressed movie format, like .mov using third-party
 % software. For suggested third-party software, see the help for the Load
 % Images module.
-%
-% Developer's note:
-% If you want to save images that are produced by other modules but that
-% are not given an official name in the settings boxes for that module,
-% alter the code for the module to save those images to the handles
-% structure and then use the Save Images module.
-% The code should look like this:
-% fieldname = ['SomethingDescriptive(optional)',ImageorObjectNameFromSettingsBox];
-% handles.Pipeline.(fieldname) = ImageProducedBytheModule;
-% Example 1:
-% fieldname = ['Segmented', ObjectName];
-% handles.Pipeline.(fieldname) = SegmentedObjectImage;
-% Example 2:
-% fieldname = CroppedImageName;
-% handles.Pipeline.(fieldname) = CroppedImage;
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -184,7 +169,25 @@ RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
 %textVAR11 = For grayscale images, specify the colormap to use (see help). This is critical for movie (avi) files. Choosing anything other than gray may degrade image quality or result in image stretching.
-%defaultVAR11 = gray
+%choiceVAR11 = Gray
+%choiceVAR11 = Default
+%choiceVAR11 = Jet
+%choiceVAR11 = HSV
+%choiceVAR11 = Hot
+%choiceVAR11 = Cool
+%choiceVAR11 = Spring
+%choiceVAR11 = Summer
+%choiceVAR11 = Autumn
+%choiceVAR11 = Winter
+%choiceVAR11 = Bone
+%choiceVAR11 = Copper
+%choiceVAR11 = Pink
+%choiceVAR11 = Lines
+%choiceVAR11 = Colorcube
+%choiceVAR11 = Flag
+%choiceVAR11 = Prism
+%choiceVAR11 = White
+%inputtypeVAR11 = popupmenu
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = Enter any optional parameters here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
@@ -212,6 +215,10 @@ UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+
+if strcmpi(ColorMap,'Default') == 1
+    ColorMap = handles.Preferences.IntensityColorMap;
+end
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
     try

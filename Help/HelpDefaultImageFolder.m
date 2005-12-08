@@ -10,9 +10,10 @@ helpdlg(help('HelpDefaultImageFolder'))
 %
 % The contents of the folder are shown to the left, which allows you to
 % check file names or look at the order of images from within CellProfiler.
-% Selecting file names in this list does not do anything. To refresh the
-% contents of this window, press enter in the default image directory edit
-% box.
+% Doubleclicking image file names in this list will open them.
+% Doubleclicking on PIPE or OUT files will ask if you want to load a
+% pipeline from the file. To refresh the contents of this window, press
+% enter in the default image directory edit box.
 % 
 % You will have the option within the Load Images module to retrieve images
 % from other folders, but the folder selected here will be the default.
@@ -31,7 +32,8 @@ helpdlg(help('HelpDefaultImageFolder'))
 % in case you make an error, then go to File > Open and select
 % CellProfiler.m.  Find the line that looks like the following and add any
 % extensions:
-%   DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|doc|rtf|txt|csv)$', 'once');
+%   DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|
+%                                        doc|rtf|txt|csv)$', 'once');
 % Save the file.  You do not need to relaunch Matlab or CellProfiler for
 % this change to take effect.
 

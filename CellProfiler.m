@@ -3047,12 +3047,12 @@ if strcmp(get(gcf,'SelectionType'),'open')
     flag = 0;
     if strcmpi(FileName(end-3:end),'.mat')
         test = load(fullfile(PathName,FileName));
-        if isfield(test,'Settings')
+        if isfield(test,'Settings') || isfield(test,'handles')
             flag = 1;
         end
     end
 
-    if flag
+    if flag == 1
         Answer = CPquestdlg('Would you like to load the pipeline from this file?','Confirm','Yes','No','Yes');
         if strcmp(Answer,'Yes')
             eventdata.SettingsPathname = PathName;

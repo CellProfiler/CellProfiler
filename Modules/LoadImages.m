@@ -32,6 +32,16 @@ function handles = LoadImages(handles)
 % filename as .tif to load an image from a different subfolder of the
 % parent of the default image folder.
 %
+% Note: You can test a pipeline's settings on a single image cycle by
+% setting the Load Images module appropriately.  For example, if loading by
+% order, you can set the number of images per set to equal the total number
+% of images in the folder (even if it is thousands) so that only the first
+% cycle will be analyzed.  Or, if loading by text, you can make the
+% identifying text specific enough that it will recognize only one group of
+% images in the folder. Once the settings look good for a few test images,
+% you can change the Load Images module to recognize all images in your
+% folder.
+%
 % Settings:
 %
 % How do you want to load these files?

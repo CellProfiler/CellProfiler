@@ -4,7 +4,8 @@ helpdlg(help('HelpGettingStarted'))
 % The best way to learn how to use CellProfiler is to load an example
 % pipeline (from www.cellprofiler.org) and try it out. Or, you can build a
 % pipeline from scratch. A pipeline is a sequential set of individual image
-% analysis modules.
+% analysis modules. See also Help (main menu of CellProfiler) and "?"
+% buttons in the main window.
 %
 % ************************   LOADING A PIPELINE   ************************
 %
@@ -28,7 +29,7 @@ helpdlg(help('HelpGettingStarted'))
 %
 % *****************   BUILDING A PIPELINE FROM SCRATCH   *****************
 %
-% STEP 1: Build an image analysis pipeline from individual modules 
+% STEP 1: Place modules in a new pipeline.
 % Choose image analysis modules to add to your analysis routine (your
 % "pipeline") by clicking '+'. Typically, the first module which must be
 % run is the Load Images module, where you specify the identity of the
@@ -63,8 +64,7 @@ helpdlg(help('HelpGettingStarted'))
 %
 % STEP 3: Set the default image folder, default output folder, pixel
 % size, and output filename.
-% For more information, click the "?" buttons near these boxes in the main
-% window.
+% For more help, click their nearby "?" buttons in the main window.
 %
 % STEP 4: Click "Analyze images" to start processing.
 % All of the images in the selected folder(s) will be analyzed using the
@@ -85,8 +85,11 @@ helpdlg(help('HelpGettingStarted'))
 % folder. Once the settings look good for a few test images, you can change
 % the Load Images module to recognize all images in your folder.
 %
-% STEP 6: Save your pipeline
+% STEP 6: Save your pipeline.
 % This step can be done at any time using File > Save Pipeline. 
+%
+%
+%
 %
 % Note about CellProfiler "PIPE" pipeline files: A pipeline can be loaded
 % from a pipeline file or from any output file created using the pipeline.
@@ -95,9 +98,6 @@ helpdlg(help('HelpGettingStarted'))
 % pipeline even if it's not ready to run yet. Loading/Saving Pipeline files
 % will load/save these: the image analysis modules, their settings, and the
 % pixel size. It will not save the default image or output folder.
-%
-% See also Help (main menu of CellProfiler) and "?" buttons in the main
-% window.
 
 %%% We are not using CPhelpdlg because this allows the help to be accessed
 %%% from the command line of Matlab. The code of theis module (helpdlg) is

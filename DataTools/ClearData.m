@@ -74,7 +74,7 @@ if ~exist('handles','var')
 end
 
 %%% Let the user select which feature to delete
-Suffix = {'Features','Text'};
+Suffix = {'Features','Text','Description'};
 [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
 
 %%% If Cancel button pressed
@@ -111,7 +111,7 @@ for FileNbr = 1:length(SelectedFiles)
 
     %%% If there is only one feature for this feature type, we should remove the entire field
     %%% from the handles structure
-    if size(data{1},2) == 1
+    if size(data{1},2) == 1 || strcmp(Suffix{SuffixNbr},'Description')
 
         % Remove the data field and the associated field with suffix 'Text'/'Features'
         handles.Measurements.(ObjectTypename) = rmfield(handles.Measurements.(ObjectTypename),FeatureType);
@@ -122,7 +122,6 @@ for FileNbr = 1:length(SelectedFiles)
         if isempty(fieldnames(handles.Measurements.(ObjectTypename)))
             handles.Measurements = rmfield(handles.Measurements,ObjectTypename);
         end
-
         %%% Otherwise we need to loop over the image sets and remove the column indicated by
         %%% 'FeatureNbr'
     else
@@ -132,7 +131,8 @@ for FileNbr = 1:length(SelectedFiles)
         end
         handles.Measurements.(ObjectTypename).(FeatureType) = data;
 
-        %%% Remove the feature from the associated description field with suffix 'Features' or 'Text'
+        %%% Remove the feature from the associated description field with
+        %%% suffix 'Features', 'Text', or 'Description'
         text = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]);
         text = cat(2,text(1:FeatureNbr-1),text(FeatureNbr+1:end));
         handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]) = text;

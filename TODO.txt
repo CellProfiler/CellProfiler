@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 November 21, 2005
 
-(Requested by Anne 12-07-05)  Does AddData/ViewData work for numerical *and* text information? If so, adjust the help to state this.  Also, does LoadText module work the same way?  We might want to rename LoadText to be LoadData if so.
-
 - Mike should do >> Edit HelpCPInstallGuide for compiled versions.
 
 (Requested by Anne 12-05-05) - Here are the only other things on the module_checks list to do:

@@ -8,9 +8,9 @@ function ViewData(handles)
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %
-% This tool views any text data that has been stored in a CellProfiler
-% output file. It can be useful to check that text data added with the
-% AddData tool is associated with the correct image sets.
+% This tool views any text data or measurements that have been stored in a
+% CellProfiler output file. It can be useful to check that any text data
+% added with the AddData tool is associated with the correct image sets.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -62,7 +62,7 @@ FinalOK = 0;
 while FinalOK == 0
 
     %%% Let the user select which feature to view
-    Suffix = {'Features','Text'};
+    Suffix = {'Features','Text','Description'};
     [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
     if isempty(ObjectTypename),return,end
 
@@ -72,13 +72,26 @@ while FinalOK == 0
     %%% Generate a cell array with strings to display
     NbrOfImageSets = length(handles.Measurements.(ObjectTypename).(FeatureType));
     TextToDisplay = cell(NbrOfImageSets,1);
+    
+    if strcmp(Suffix{SuffixNbr},'Description')
+        if NbrOfImageSets > length(handles.Measurements.Image.FileNames)
+            error('There are more text descriptions than image files. This has not yet been supported.');
+        end
+    end
+    
     for ImageSet = 1:NbrOfImageSets
 
         % Numeric or text?
         if strcmp(Suffix{SuffixNbr},'Features')
-            info = num2str(mean(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}(:,FeatureNbr)));
+            if length(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}) >= FeatureNbr
+                info = num2str(mean(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}(:,FeatureNbr)));
+            else
+                info = 'No Objects Identified';
+            end
         elseif strcmp(Suffix{SuffixNbr},'Text')
             info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}{FeatureNbr};
+        elseif strcmp(Suffix{SuffixNbr},'Description')
+            info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet};
         end
 
         TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...

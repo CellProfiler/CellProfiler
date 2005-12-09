@@ -7,6 +7,7 @@ function handles = WriteSQLFiles(handles)
 % Exports data in database readable format, including an importing file
 % with column names.
 % *************************************************************************
+% Note: this module is beta-version and has not been thoroughly checked.
 %
 % This module exports measurements to a SQL compatible format.
 % It creates a MySQL script and associated data files. It calls

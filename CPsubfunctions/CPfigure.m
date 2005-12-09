@@ -22,6 +22,22 @@ function FigHandle=CPfigure(varargin)
 %
 % $Revision$
 
+drawnow
+%    Note about the "drawnow" before the figure command:
+% The "drawnow" function executes any pending figure window-related
+% commands.  In general, Matlab does not update figure windows until
+% breaks between image analysis modules, or when a few select commands
+% are used. "figure" and "drawnow" are two of the commands that allow
+% Matlab to pause and carry out any pending figure window- related
+% commands (like zooming, or pressing timer pause or cancel buttons or
+% pressing a help button.)  If the drawnow command is not used
+% immediately prior to the figure(ThisAlgFigureNumber) line, then
+% immediately after the figure line executes, the other commands that
+% have been waiting are executed in the other windows.  Then, when
+% Matlab returns to this module and goes to the subplot line, the
+% figure which is active is not necessarily the correct one. This
+% results in strange things like the subplots appearing in the timer
+% window or in the wrong figure window, or in help dialog boxes.
 userData.Application = 'CellProfiler';
 userData.ImageFlag = 0;
 if nargin>0 && isfield(varargin{1},'Pipeline')

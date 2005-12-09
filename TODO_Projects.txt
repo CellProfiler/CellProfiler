@@ -1,3 +1,7 @@
+- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
+
+- The Manual COmpiler chokes on the images for CorrectIllumination_Apply and _Calculate due to the underscore in their names - need to fix.
+
 - Check that MergeBatchOutputs works and that the files it produces are exportable.
 
 - Check CalcStatistics to make sure it's processing numbers properly.

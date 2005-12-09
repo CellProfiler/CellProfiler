@@ -1,9 +1,7 @@
 function HelpCPInstallGuide
 helpdlg(help('HelpCPInstallGuide'))
 
-% CellProfiler Installation Guide (see below for Developer's version):
-%
-% CellProfiler Installation Guide
+% *************************************************************************
 %
 % Installing CellProfiler.exe on PC's:
 %
@@ -15,6 +13,8 @@ helpdlg(help('HelpCPInstallGuide'))
 %
 % 3. Run CellProfiler.exe (The first time the program is run, it will take
 % a bit longer to de-compress the CTF file).
+%
+% *************************************************************************
 %
 % CellProfiler Installation Guide: Developer's version
 % 

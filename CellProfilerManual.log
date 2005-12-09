@@ -1,4 +1,4 @@
-This is pdfeTeX, Version 3.141592-1.30.4-2.2 (Web2C 7.5.5) (format=pdflatex 2005.12.4)  9 DEC 2005 13:13
+This is pdfeTeX, Version 3.141592-1.30.4-2.2 (Web2C 7.5.5) (format=pdflatex 2005.12.4)  9 DEC 2005 13:34
 entering extended mode
 \write18 enabled.
 **CellProfilerManual.tex
@@ -131,7 +131,7 @@ File: Promotional/ImagesForManual/CPScreenshot.png Graphic file (type png)
  <./Promotional/ImagesForManual/CPScreenshot.png>] [7] [8] [9] [10] [11] [12] [
 13] [14] [15] [16]
 [17]
-Overfull \hbox (34.24062pt too wide) in paragraph at lines 278--278
+Overfull \hbox (34.24062pt too wide) in paragraph at lines 287--287
 []  \OT1/cmtt/m/n/10 them as personal preferences and use File > Load Preferenc
 es each time you start CellProfiler.[] 
  []
@@ -242,4 +242,4 @@ esky/cm/cmtt10.pfb></usr/local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/c
 mss10.pfb></usr/local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/cmssbx10.p
 fb></usr/local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/cmss17.pfb></usr/
 local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/cmr10.pfb>
-Output written on CellProfilerManual.pdf (130 pages, 13735480 bytes).
+Output written on CellProfilerManual.pdf (130 pages, 13735689 bytes).

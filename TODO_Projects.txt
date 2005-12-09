@@ -2,6 +2,8 @@
 
 - The Manual COmpiler chokes on the images for CorrectIllumination_Apply and _Calculate due to the underscore in their names - need to fix.
 
+- We want the manual compiler to generate a page towards the beginning with all the short descriptions from each module and tool as a Quick Reference Guide.
+
 - Check that MergeBatchOutputs works and that the files it produces are exportable.
 
 - Check CalcStatistics to make sure it's processing numbers properly.

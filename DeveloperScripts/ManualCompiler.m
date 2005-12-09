@@ -14,6 +14,9 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 %%% that the page numbers are placed appropriately.  Possibly run it
 %%% again, if it says something like  "references may have changed"
 %%% near the last page of output.
+%
+% For some reason, the program has trouble reading tif files, so we use png
+% files for all images.
 
 fid = fopen('CellProfilerManual.tex', 'w');
 fwrite(fid,tex_start());
@@ -23,6 +26,7 @@ fwrite(fid,tex_start());
 % that, but in the meantime, they are saved png image files.
 fwrite(fid,tex_page(tex_center(tex_image('CPCoverPage.png', '1.0\textwidth'))));
 fwrite(fid,tex_page(tex_center(tex_image('CPCredits.png', '1.0\textwidth'))));
+fwrite(fid,tex_page(tex_center(tex_image('CPCredits2.png', '1.0\textwidth'))));
 
 % 2. Table of contents - Retrieve the list of modules.
 % each module is annotated on the line after "Help for the X module:",
@@ -40,29 +44,31 @@ s = ['Introduction' '\dotfill \pageref{Introduction}\\'];
 fwrite(fid,s);
 s = ['Installation' '\dotfill \pageref{Installation}\\'];
 fwrite(fid,s);
+s = ['Getting Started with CellProfiler' '\dotfill \pageref{GettingStartedwithCellProfiler}\\'];
+fwrite(fid,s);
 s = ['Help' '\dotfill \pageref{Help}\\'];
 fwrite(fid,s);
 
 fwrite(fid,tex_vertical_space('1em'));
-fwrite(fid,tex_bold(tex_large('File Handling modules:\\')));
+fwrite(fid,tex_bold(tex_large('File Processing modules:\\')));
 for i=1:length(filelist),
-  if file_in_category(['Modules/' filelist(i).name], 'File Handling'),
+  if file_in_category(['Modules/' filelist(i).name], 'File Processing'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 
 fwrite(fid,tex_vertical_space('1em'));
-fwrite(fid,tex_bold(tex_large('Pre-processing modules:\\')));
+fwrite(fid,tex_bold(tex_large('Image Processing modules:\\')));
 for i=1:length(filelist),
-  if file_in_category(['Modules/' filelist(i).name], 'Pre-processing'),
+  if file_in_category(['Modules/' filelist(i).name], 'Image Processing'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
 
 fwrite(fid,tex_vertical_space('1em'));
-fwrite(fid,tex_bold(tex_large('Object Identification modules:\\')));
+fwrite(fid,tex_bold(tex_large('Object Processing modules:\\')));
 for i=1:length(filelist),
-  if file_in_category(['Modules/' filelist(i).name], 'Object Identification'),
+  if file_in_category(['Modules/' filelist(i).name], 'Object Processing'),
     fwrite(fid,tex_toc_entry(filelist(i).name));
   end
 end
@@ -104,7 +110,7 @@ fwrite(fid, tex_onecolumn());
 
 % 3. Extract 'help' lines from CellProfiler.m where there is a
 % description of CellProfiler and the Example image analysis.
-% Screenshot of CellProfiler (within ExampleImages). Would be nice to
+% Screenshot of CellProfiler (within Promotional/ImagesForManual). Would be nice to
 % have this automatically generated.
 % fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
 heading = tex_center(tex_huge(['Introduction \\']));
@@ -112,24 +118,29 @@ body = [tex_label(['Introduction']) tex_preformatted(help('CellProfiler.m'))];
 im = tex_center(tex_image('CPScreenshot.png', '1.0\textwidth'));
 fwrite(fid,tex_page([heading body im]));
 
-% 4. Extract 'help' lines from CPInstallGuide.m, have the title of the
-% page be "CPInstallGuide", or "CellProfiler Installation Guide", if
-% that's convenient.
+% 4. Extract 'help' lines from CPInstallGuide.m.
 body = [tex_label(['Installation']) tex_preformatted(help('HelpCPInstallGuide.m'))];
 heading = tex_center(tex_huge(['Installation \\']));
+fwrite(fid, tex_page([heading body]))
+
+% 4.5 Extract 'help' lines from HelpGettingStarted.m.
+body = [tex_label(['GettingStartedwithCellProfiler']) tex_preformatted(help('HelpGettingStarted.m'))];
+heading = tex_center(tex_huge(['Getting Started with CellProfiler \\']));
 fwrite(fid, tex_page([heading body]));
 
 % 5. Extract 'help' lines from anything in the help folder starting
 % with 'Help' (the order is not critical here).
 path(fullfile(pwd,'Help'), path);
 filelist = dir('Help/Help*.m');
+FirstSection = 0;
 for i=1:length(filelist),
     base = basename(filelist(i).name);
-    if (strcmp(base, 'HelpCPInstallGuide') == 1),
+    if (strcmp(base, 'HelpCPInstallGuide') == 1) || (strcmp(base, 'HelpGettingStarted')),
         continue;
     end
-    if i == 1
+    if FirstSection == 0
         fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));    
+        FirstSection = 1
     else
         fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
     end
@@ -139,7 +150,7 @@ end
 % bold font at the top of the page. Extract the lines after "Help for
 % ...." and before the license begins, using the Matlab 'help'
 % function. Print this below the module name. Open the corresponding
-% image file (in the ExampleImages folder, these always have the exact
+% image file (in the Promotional/ImagesForManual folder, these always have the exact
 % name as the algorithm), if it exists, and place this at the bottom
 % of the page.
 filelist = dir('Modules/*.m');
@@ -151,7 +162,7 @@ for i=1:length(filelist),
   heading = tex_center(tex_huge(['Module: ' base '\\']));
   body = [tex_label(['Module:' base]) tex_preformatted(help(filelist(i).name))];
   im = '';
-  if (length(dir(['ExampleImages/' base '.*'])) > 0),
+  if (length(dir(['Promotional/ImagesForManual/' base '.*'])) > 0),
     im = tex_center(tex_image(base, '1.0\textwidth'));
   end
   fwrite(fid,tex_page([heading body im]));
@@ -192,7 +203,7 @@ function sout = tex_center(sin)
 sout = ['\begin{center}' sin '\end{center}'];
 
 function sout = tex_image(sin, width)
-sout = ['\includegraphics[width=' width ']{ExampleImages/' sin '}'];
+sout = ['\includegraphics[width=' width ']{Promotional/ImagesForManual/' sin '}'];
 
 function sout = tex_huge(sin)
 sout = ['{\huge ' sin '}'];

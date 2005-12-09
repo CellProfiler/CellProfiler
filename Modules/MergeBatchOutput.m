@@ -7,6 +7,7 @@ function handles = MergeBatchOutput(handles)
 % Combines output files together which were run as separate batches using
 % the Create Batch Scripts module.
 % *************************************************************************
+% Note: this module is beta-version and has not been thoroughly checked.
 %
 % After a batch run has completed (using scripts created by the Create
 % Batch Scripts module), the individual output files contain results from a

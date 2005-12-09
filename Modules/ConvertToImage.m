@@ -73,23 +73,23 @@ ImageMode = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For COLOR, what do you want the colormap to be?
 %choiceVAR04 = Default
-%choiceVAR04 = Jet
-%choiceVAR04 = HSV
-%choiceVAR04 = Hot
-%choiceVAR04 = Cool
-%choiceVAR04 = Spring
-%choiceVAR04 = Summer
-%choiceVAR04 = Autumn
-%choiceVAR04 = Winter
-%choiceVAR04 = Gray
-%choiceVAR04 = Bone
-%choiceVAR04 = Copper
-%choiceVAR04 = Pink
-%choiceVAR04 = Lines
-%choiceVAR04 = Colorcube
-%choiceVAR04 = Flag
-%choiceVAR04 = Prism
-%choiceVAR04 = White
+%choiceVAR04 = autumn
+%choiceVAR04 = bone
+%choiceVAR04 = colorcube
+%choiceVAR04 = cool
+%choiceVAR04 = copper
+%choiceVAR04 = flag
+%choiceVAR04 = gray
+%choiceVAR04 = hot
+%choiceVAR04 = hsv
+%choiceVAR04 = jet
+%choiceVAR04 = lines
+%choiceVAR04 = pink
+%choiceVAR04 = prism
+%choiceVAR04 = spring
+%choiceVAR04 = summer
+%choiceVAR04 = white
+%choiceVAR04 = winter
 %inputtypeVAR04 = popupmenu
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -106,7 +106,7 @@ if strcmp(ImageMode,'Binary (black & white)')
 elseif strcmp(ImageMode,'Grayscale')
     Image = double(LabelMatrixImage / max(max(LabelMatrixImage)));
 elseif strcmp(ImageMode,'Color')
-    if strcmp(ColorMap,'Default')
+    if strcmpi(ColorMap,'Default')
         Image = CPlabel2rgb(handles,LabelMatrixImage);
     else
         try

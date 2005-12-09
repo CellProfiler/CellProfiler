@@ -7,18 +7,10 @@ November 21, 2005
 
 - Update pipelines!
 
-(Requested by Anne 12-05-05) - Here are the only other things on the module_checks list to do:
-Anne - doublecheck CalcStatistics
-Anne - doublecheck CreateBatchSCripts (see susan's help)
-Anne - doublecheck MergeBatchOutput, esp that data is exportable.
-Someone - check all LoadImages options
-
 (Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
-- ANNE WILL DO>>> Prepare updated manual
-- ANNE WILL DO>>> Make reference sheet with short descriptions of the modules (see manuscript table).
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
 - Make a tutorial to demonstrate how CP is used.

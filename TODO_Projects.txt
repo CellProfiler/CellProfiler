@@ -1,3 +1,5 @@
+Someone - check all LoadImages options
+
 - Write help for the CPaverageimages.m subfunction.
 
 - Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.

@@ -2,14 +2,12 @@ function varargout = CellProfiler(varargin)
 
 % CellProfilerTM cell image analysis software
 %
-% CellProfiler cell image analysis software is designed for
-% biologists without training in computer vision or programming to
-% quantitatively measure phenotypes from thousands of images
-% automatically. CellProfiler.m creates a user interface which allows the
-% analysis of large numbers of images.  New modules can be written for the
-% software using Matlab.
+% CellProfiler cell image analysis software is designed for biologists
+% without training in computer vision or programming to quantitatively
+% measure phenotypes from thousands of images automatically. 
 %
-% Typing CellProfiler at the command line launches the program.
+% CellProfiler Developer's version allows you to write your own modules and
+% tools for CellProfiler using Matlab.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

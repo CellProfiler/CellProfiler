@@ -3,9 +3,18 @@ helpdlg(help('HelpCPInstallGuide'))
 
 % CellProfiler Installation Guide (see below for Developer's version):
 %
+% CellProfiler Installation Guide
 %
+% Installing CellProfiler.exe on PC's:
 %
+% 1. Run the MCRInstaller.exe file included with CellProfiler software and
+% install the MCR files.
 %
+% 2. Copy CellProfiler.exe, CellProfiler.ctf, and the Modules directory to
+% any folder, but they must stay in the same path (e.g. C:\CellProfiler).
+%
+% 3. Run CellProfiler.exe (The first time the program is run, it will take
+% a bit longer to de-compress the CTF file).
 %
 % CellProfiler Installation Guide: Developer's version
 % 

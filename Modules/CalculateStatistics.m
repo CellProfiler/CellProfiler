@@ -6,6 +6,7 @@ function handles = CalculateStatistics(handles)
 % SHORT DESCRIPTION:
 % Calculates the V and Z' factors for measurements made from images.
 % *************************************************************************
+% Note: this module is beta-version and has not been thoroughly checked.
 %
 % The V and Z' factors are statistical measures of assay quality and are
 % calculated for each measurement that you have made in the pipeline. This

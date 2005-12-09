@@ -271,7 +271,7 @@ for i = 1:length(ObjectNameList)
             cmin = max(ycord)-diameter+1;
             if cmin < 1
                 cmin = 1;
-                rmax = diameter;
+                cmax = diameter;
             end
 
             BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;

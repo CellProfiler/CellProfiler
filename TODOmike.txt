@@ -1,8 +1,8 @@
 Mike's TODO list
+
 - For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.
 
 - Update pipeline.
-
 
 - (Requested by Anne 12-09-05)-- Check CalcStatistics to make sure it's processing numbers properly.
 

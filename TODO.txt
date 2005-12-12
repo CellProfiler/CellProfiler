@@ -21,6 +21,8 @@ the analysis of cell micrograph, I saw you and your colleagues' great work on Ce
                                                            Xiang Jian
 xiangjianjian0@hotmail.com
 ------------------------------------------
+- Figures save handles in UserData, what should really be there? (get rid of stuff that shouldnt, saved fig files are huge)
+
 - (Requested by Anne 12-12-05)- The test mode for IdentifyPrimAuto does not have the CP image tools in the menu bar.
 
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.

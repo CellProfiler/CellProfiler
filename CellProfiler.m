@@ -3891,6 +3891,11 @@ ToolsHelpSubfunction(handles, 'Data Tools', ListOfTools)
 
 function HelpFiles_Callback(hObject,eventdata, handles)
 ListOfHelp = handles.Current.HelpFilenames;
+for i=1:length(ListOfHelp)
+    if strncmpi(ListOfHelp{i},'help',4)
+        ListOfHelp{i} = ListOfHelp{i}(5:end);
+    end
+end
 ToolsHelpSubfunction(handles,'Help',ListOfHelp)
 
 %%% SUBFUNCTION %%%

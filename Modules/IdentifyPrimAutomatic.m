@@ -822,7 +822,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     hx = subplot(2,2,2);
                     im = CPlabel2rgb(handles,Objects);
                     CPimagesc(im,handles);
-                    title(['Segmented ',ObjectName]);
+                    title(['Identified ',ObjectName]);
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     CPimagesc(OutlinedObjects,handles);
@@ -835,7 +835,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f',Threshold),'FontSize',handles.Preferences.FontSize);
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
-                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of segmented objects: %d',NumOfObjects),'FontSize',handles.Preferences.FontSize);
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Number of identified objects: %d',NumOfObjects),'FontSize',handles.Preferences.FontSize);
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.16 posx(3)+0.1 0.08],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('90%% of objects within diameter range [%0.1f, %0.1f] pixels',...
                         Lower90Limit,Upper90Limit),'FontSize',handles.Preferences.FontSize);
@@ -973,7 +973,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 SegmentedFigures = findobj('Tag','SegmentedFigure');
                 if isempty(SegmentedFigures)
                     CPfigure('Tag','SegmentedFigure');
-                    uicontrol('style','text','units','normalized','string','SEGMENTED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                    uicontrol('style','text','units','normalized','string','IDENTIFIED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 else
                     CPfigure(SegmentedFigures(1));
                 end

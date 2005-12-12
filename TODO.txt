@@ -12,7 +12,8 @@ www.dmoz.org	softload.narod.ru	www.chinabyte.com
 www.winsite.com	www.cheta.net www.open-bio.org    caBIG
 - Post something on biostuff .mit.edu
 - Get the email addresses of all corresponding authors from all the research articles Anne has collected, and also microscope facility directors and send them an email telling them to visit cellprofiler.org and sign up for the email list if desired.
-- Send copy of software to people in communist countries:
+- I emailed him on Dec 12th b/c it looks like he downloaded....
+Send copy of software to people in communist countries:
 On Nov 28, 2005, at 4:50 AM, wrote:
 Dear Miss Carpenter:
     Say hello to you first.I am a student from HangZhou--A beautiful city in China. I study
@@ -228,23 +229,13 @@ Repeat until convergence.
 
 The iterations can be performed on a low-resolution version of the original image, e.g. 200x200 pixels, so I don't think it's time-consuming.  This will involve figuring out how to call a downstream Identify module to use the settings and code from the downstream module (otherwise we'd have to build background subtraction into every identify module). 
 
-
-
 ++  (Requested by Anne) -Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
-
-
 
 ++  (Requested by Anne) -Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
 
-
-
 ++  (Requested by Anne) -Implement the algorithm for identifying objects based on granulometry from Prodanov, Heeroma, and Marani, J Neuroscience Methods 2005. The code may be available from the authors directly, or supplemental journal data, or from ImageJ. This might be a good practice to build an interface which allows ImageJ routines to be run within CellProfiler.
 
-
-
-+++  (Requested by Anne) -Make a user-scoring module that allows the user to view and
-
-       annotate each image manually. Show control side by side (1-4 at
++++  (Requested by Anne) -Make a user-scoring module that allows the user to view and annotate each image manually. Show control side by side (1-4 at
 
        a time) and add that assessment to the data structure. Maybe
 

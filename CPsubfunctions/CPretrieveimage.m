@@ -86,7 +86,13 @@ elseif ColorFlag == 3
 end
 
 if SizeFlag ~= 0
-    if any(SizeFlag ~= size(Image))
-        error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
+    %%% The try is necessary because if either image does not have the
+    %%% proper number of dimensions, things will fail otherwise. If one of
+    %%% the images (the SizeFlag or the Image itself) is 3-D (color), then
+    %%% only the X Y dimensions are checked for size.
+    try if any(SizeFlag(1:2) ~= size(Image(:,:,1)))
+            error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
+        end
+    catch error(['Image processing was canceled in the ', ModuleName, ' module. The incoming images are not all of equal size.']);
     end
 end

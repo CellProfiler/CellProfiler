@@ -122,7 +122,7 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScal
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-IllumCorrectFunctionImage = CPretrieveimage(handles,IllumCorrectFunctionImageName,ModuleName,'MustBeGray','DontCheckScale');
+IllumCorrectFunctionImage = CPretrieveimage(handles,IllumCorrectFunctionImageName,ModuleName,'MustBeGray','DontCheckScale',size(OrigImage));
 
 if strcmp(RescaleOption,'No rescaling') == 1
     MethodSpecificArguments = [];

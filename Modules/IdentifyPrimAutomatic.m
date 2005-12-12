@@ -447,7 +447,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+[handles,OrigThreshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
 
 %%% Sets up loop for test mode.
 if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,18}),'Yes')
@@ -463,6 +463,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
         LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
         WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
+        Threshold = OrigThreshold;
 
         if strcmp(LaplaceValues,'/')
 
@@ -881,21 +882,21 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
                     end
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1); 
+                    subplot(2,2,1);
                     CPimagesc(OrigImage,handles);
                     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
                     subplot(2,2,2);
-                    CPimagesc(ColoredLabelMatrixImage,handles); 
+                    CPimagesc(ColoredLabelMatrixImage,handles);
                     title(['Identified ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); CPimagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
-                    subplot(2,2,4); 
-                    CPimagesc(ObjectOutlinesOnOrigImage,handles); 
+                    subplot(2,2,4);
+                    CPimagesc(ObjectOutlinesOnOrigImage,handles);
                     title([ObjectName, ' Outlines on Input Image']);
                 end
             end

@@ -3,17 +3,14 @@ November 21, 2005
 
 - For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.
 
-- Put "Make Paypal donation" on website? Need to ask the Development office  if it's allowed to collect donations...
-
 - Update pipelines!
-
-(Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
 
 ---------------------------------------------------
 JUST PRIOR TO PUBLIC RELEASE:
 - For each common application (e.g. cell count, yeast colony count, staining intensity, cell cycle, nuclear/cytoplasmic translocation) and cell type (e.g. human, yeast, drosophila), make an example pipeline file and a nice pdf document showing the results: We should use the 'test mode' option in IdentifyPrimAutomatic to show all the possibilities, and then show results from the ideal pipeline. This will give people a good starting place for their images. Anne has example images and starting points for new pipelines in the ExampleFlyImages folder.
 - Design an informational brochure
-- Make a tutorial to demonstrate how CP is used.
+
+WHEN MAC VERSION IS READY/WE ARE CONFIDENT THAT EVERYTHING IS WORKING:
 - tell the following sites that review and list software:
 www.zdnet.com	downloads.mycomputer.com	www.windows95.sk
 directory.google.com	www.libpng.org	cn.tech.yahoo.com
@@ -21,7 +18,6 @@ www.dmoz.org	softload.narod.ru	www.chinabyte.com
 www.winsite.com	www.cheta.net www.open-bio.org    caBIG
 - Post something on biostuff .mit.edu
 - Get the email addresses of all corresponding authors from all the research articles Anne has collected, and also microscope facility directors and send them an email telling them to visit cellprofiler.org and sign up for the email list if desired.
-- The Broad institute has done a lot of thinking and infrastructure for distributing free software. They have narrowed down to 3 licenses (GPL, a variant of academic open source, and one other) that their scientists use and they also have pages to help register users who download their software etc. this might be useful for us.
 - Send copy of software to people in communist countries:
 On Nov 28, 2005, at 4:50 AM, wrote:
 Dear Miss Carpenter:

@@ -12,7 +12,9 @@ helpdlg(help('HelpCPInstallGuide'))
 % any folder, but they must stay in the same path (e.g. C:\CellProfiler).
 %
 % 3. Run CellProfiler.exe (The first time the program is run, it will take
-% a bit longer to de-compress the CTF file).
+% a bit longer to de-compress the CTF file). If text appears to be too big,
+% you can change the default font size by going to File -> Set Preferences,
+% then save preferences with a smaller font size.
 %
 % 4. (Optional) To run an example image analysis (very quick & useful!),
 % download an example image set and pipeline from www.cellprofiler.org

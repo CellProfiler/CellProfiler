@@ -50,7 +50,11 @@ xiangjianjian0@hotmail.com
 
 - GUI Tools & examples, and Misc.
 
+- (requested by Anne 12-13-05) - If we use xlsread anywhere, apparently we can now use it for mac and pc: Service Request ID: 1-QXCUJ: reported on September 15,2004 regarding MATLAB 7.0 (R14):  Why does XLSREAD on Mac OS X produce different results than on Windows in MATLAB?
+http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3
 
+- (requested by Anne 12-13-05) - If we use propedit anywhere, apparently we can now use it for mac and pc: Service Request ID: 1-RR6M1: reported on September 29,2004 regarding MATLAB 7.0 (R14): Why do I receive an error when I use the PROPEDIT function in MATLAB 7.0 (R14)?
+http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 
 ---------------------------------------------------
 

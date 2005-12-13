@@ -84,7 +84,9 @@ openFigures = [];
 
 %%% Determines the startup directory.
 handles.Current.StartupDirectory = pwd;
-addpath(pwd);
+if ~isdeployed
+    addpath(pwd);
+end
 handles.FunctionHandles.LoadPipelineCallback = @LoadPipeline_Callback;
 %%% Retrieves preferences from CellProfilerPreferences.mat, if possible.
 %%% Try loading CellProfilerPreferences.mat first from the matlabroot
@@ -2850,7 +2852,9 @@ if exist('EnteredPreferences','var') == 1
         %%% filenameslistbox, by faking a click on the DefaultImageDirectoryEditBox.
         handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
         %%% Adds the default module directory to Matlab's search path.
-        addpath(handles.Preferences.DefaultModuleDirectory)
+        if ~isdeployed
+            addpath(handles.Preferences.DefaultModuleDirectory)
+        end
 
         %%% Set new fontsize
         names = fieldnames(handles);
@@ -4254,7 +4258,9 @@ if exist('EnteredPreferences','var')
         %%% filenameslistbox, by faking a click on the DefaultImageDirectoryEditBox.
         handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
         %%% Adds the default module directory to Matlab's search path.
-        addpath(handles.Preferences.DefaultModuleDirectory)
+        if ~isdeployed
+            addpath(handles.Preferences.DefaultModuleDirectory)
+        end
 
         %%% Set new fontsize
         names = fieldnames(handles);

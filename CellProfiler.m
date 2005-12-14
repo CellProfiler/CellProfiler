@@ -2160,10 +2160,18 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 CurrentString = {CurrentString};
             else
                 if ischar(UserEntry)
-                    if ~strcmp(StrSet,'n/a') && ~strcmp(StrSet,'/')
-                        CurrentString(numel(CurrentString)+1) = {StrSet};
+                    if size(StrSet,1) == 1
+                        if ~strcmp(StrSet,'n/a') && ~strcmp(StrSet,'/')
+                            CurrentString(numel(CurrentString)+1) = {StrSet};
+                        end
+                        set(ModList(i),'String',CurrentString);
+                    else
+                        OrigValues = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'value');
+                        if ~strcmp(StrSet{OrigValues},'n/a') && ~strcmp(StrSet{OrigValues},'/')
+                            CurrentString(numel(CurrentString)+1) = {StrSet{OrigValues}};
+                        end
+                        set(ModList(i),'String',CurrentString);
                     end
-                    set(ModList(i),'String',CurrentString);
                 else
                     if ~strcmp(StrSet(UserEntry),'n/a') && ~strcmp(StrSet(UserEntry),'/')
                         CurrentString(numel(CurrentString)+1) = StrSet(UserEntry);
@@ -2175,7 +2183,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     end
 end
 
-if strcmp(get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'style'), 'edit')
+if strcmp(get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'style'),'edit')
     handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
 else
     if ischar(UserEntry)

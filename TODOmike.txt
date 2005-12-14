@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- is it ok to remove HelpCPinstall guide from SVN, because then we only have to keep the web version up to date? Presumably no one will be installing who already has a version of CP but who does not have internet access?
+
 - SBS image set
 
 - For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.

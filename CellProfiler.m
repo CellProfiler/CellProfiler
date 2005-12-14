@@ -453,9 +453,9 @@ uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Call
 uimenu(HelpMenu,'Label','Image Tools Help','Callback','CellProfiler(''ImageToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 %uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
-if ~isdeployed
-    uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
-end
+% if ~isdeployed
+%     uimenu(HelpMenu,'Label','Download New Modules','Callback','CellProfiler(''DownloadModules_Callback'',gcbo,[],guidata(gcbo));');
+% end
 
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
@@ -3954,7 +3954,7 @@ elseif strcmp(ImageDataOrHelp,'Data Tools')
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Help')
     set(ToolsHelpWindowHandle,'name','General Help');
-    TextString = 'Please choose specific help below:';
+    TextString = sprintf('CellProfiler version 1.3123\n\nPlease choose specific help below:');
 end
 
 FontSize = handles.Preferences.FontSize;

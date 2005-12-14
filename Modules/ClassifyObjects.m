@@ -82,26 +82,31 @@ FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 1
 FeatureNbr = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = To create evenly spaced bins, enter number of bins, or type "C:1 2 3 4" to custom define the bin edges, or type P:XXX, where XXX is the numerical threshold to measure the percent of objects that are above a threshold.
-%defaultVAR04 = 3
-NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
+%infotypeVAR04 = imagegroup
+%inputtypeVAR04 = popupmenu
+Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = To create evenly spaced bins, enter the lower limit for the lower bin
-%defaultVAR05 = 0
-LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = To create evenly spaced bins, enter number of bins, or type "C:1 2 3 4" to custom define the bin edges, or type P:XXX, where XXX is the numerical threshold to measure the percent of objects that are above a threshold.
+%defaultVAR05 = 3
+NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = To create evenly spaced bins, enter the upper limit for the upper bin
-%defaultVAR06 = 100
-UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = To create evenly spaced bins, enter the lower limit for the lower bin
+%defaultVAR06 = 0
+LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = What do you want to call the resulting color-coded image?
-%choiceVAR07 = Do not save
-%choiceVAR07 = ColorClassifiedNuclei
-%inputtypeVAR07 = popupmenu custom
-%infotypeVAR07 = imagegroup indep
-SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = To create evenly spaced bins, enter the upper limit for the upper bin
+%defaultVAR07 = 100
+UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%%%VariableRevisionNumber = 3
+%textVAR08 = What do you want to call the resulting color-coded image?
+%choiceVAR08 = Do not save
+%choiceVAR08 = ColorClassifiedNuclei
+%inputtypeVAR08 = popupmenu custom
+%infotypeVAR08 = imagegroup indep
+SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -142,6 +147,10 @@ else
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have previously run a module that generates an image with the objects identified.  You specified in the ', ModuleName, ' module that the primary objects were named ',FeatureType,' which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);
 end
 
+if strcmp(FeatureType,'Intensity') || strcmp(FeatureType,'Texture')
+    FeatureType = [FeatureType, '_', Image];
+end
+
 if ~strcmp(FeatureType,'Ratio')
     %%% Checks whether the feature type exists in the handles structure.
     if ~isfield(handles.Measurements.(ObjectName),FeatureType)
@@ -176,6 +185,10 @@ else
     edges = linspace(LowerBinMin,UpperBinMax,NbrOfBins+1);
 end
 
+if any(isinf(edges)) == 1
+    error(['Image processing was canceled in the ', ModuleName, ' module because you cannot enter Infinity as one of the bin edges because it affects the plotting function. This could be changed in the code if we set the first and last bin edges to equal the min and max actual data values but in the meantime please enter an actual numerical value.']);
+end
+
 edges(1) = edges(1) - sqrt(eps);   % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));
 bins = zeros(1,NbrOfBins);
@@ -200,7 +213,7 @@ if ~strcmpi(FeatureType,'Ratio')
     QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
     QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
     handlescmap = handles.Preferences.LabelColorMap;
-    cmap = [0 0 0;feval(handlescmap,max(64,length(bins)))];
+    cmap = [0 0 0;feval(handlescmap,length(bins))];
     QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
     FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 else
@@ -225,27 +238,35 @@ if any(findobj == ThisModuleFigureNumber)
     end
     AdjustedObjectName = strrep(ObjectName,'_','\_');
     AdjustedFeatureName = strrep(FeatureName,'_','\_');
+        AdjustedFeatureType = strrep(FeatureType,'_','\_');
+
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         CPimagesc(NonQuantizedImage,handles);
+        IntensityColormap = handles.Preferences.IntensityColorMap;
+        colormap(feval(IntensityColormap,max(Measurements)))
         title([AdjustedObjectName,' colored according to ',AdjustedFeatureName])
     end
+
     %%% Produce and plot histogram of original data
     subplot(2,2,2)
-    Nbins = min(round(NbrOfObjects/5),40);
-    hist(Measurements,Nbins)
-    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-    xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName]);
-    title(['Histogram of ',AdjustedFeatureName]);
-    ylimits = ylim;
+    Nbins = min(round(NbrOfObjects),40);
+    hist(Measurements,Nbins);
+    %%% Took this out: don't want to use misleading colors.
+    %%%    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
+    xlabel(AdjustedFeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(['# of ',AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
+    title(['Histogram of ',AdjustedFeatureType],'fontsize',handles.Preferences.FontSize);
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
+    ylimits = ylim;
     axis tight
     xlimits = xlim;
-    axis([xlimits ylimits])
+    axis([xlimits ylimits]);
+
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
     if ~strcmpi(FeatureType,'Ratio')
@@ -258,16 +279,18 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,2,4)
     x = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(x,bins,1);
-    xlabel(AdjustedFeatureName),ylabel(['#',AdjustedObjectName])
-    title(['Histogram of ',AdjustedFeatureName]);
+    xlabel(AdjustedFeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(['# of ',AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
+    title(['Classified by ',AdjustedFeatureType],'fontsize',handles.Preferences.FontSize);
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
     axis tight
     xlimits(1) = min(xlimits(1),LowerBinMin);                          % Extend limits if necessary and save them
     xlimits(2) = max(UpperBinMax,edges(end));                          % so they can be used for the second histogram
-    axis([xlimits ylim])
-    handlescmap = handles.Preferences.LabelColorMap;
-    set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(64,NbrOfBins)));
+    axis([xlimits ylim]);
+    %%% Took this out: don't want to use misleading colors.
+%     handlescmap = handles.Preferences.LabelColorMap;
+%     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(64,NbrOfBins)));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

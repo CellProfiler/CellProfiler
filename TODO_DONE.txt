@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- Fix File > Set Preferences FastMode/SkipErrors.
+
 -(Mike 12/09) Edit HelpCPInstallGuide for compiled versions.
 
 -(Mike 12/08) Rotate: Need to verify - check lots of combinations on an image of a grid of lines or something that is easy to verify that the rotation is really working properly, and that the X,Y (for coordinate) and clockwise/counterclockwise (for ANGLE) is stated correctly. See also the bug I emailed you about on Monday afternoon.

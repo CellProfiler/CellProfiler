@@ -100,8 +100,6 @@ TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %infotypeVAR10 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = If an image slot is not being used, type a slash  /  in the box.
-
 %textVAR11 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
 %choiceVAR11 = mat
 %choiceVAR11 = bmp

@@ -3553,8 +3553,11 @@ else
                         end
                         handles.Pipeline = tempPipe;
                     end
-                    eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
-                        get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    try eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
+                            get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    catch CPerrordlg('There was an error saving the output file. Please check whether you have permission and space to write to that location.');
+                        break;
+                    end
                     if strcmp(handles.Preferences.StripPipeline,'Yes')
                         %%% restores the handles.Pipeline structure if
                         %%% it was removed above.

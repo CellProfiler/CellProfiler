@@ -272,7 +272,7 @@ if any(findobj == ThisModuleFigureNumber)
     if ~strcmpi(FeatureType,'Ratio')
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
-        CPimagesc(QuantizedRGBimage,handles)
+        CPimagesc(QuantizedRGBimage,handles);
         title(['Classified ', AdjustedObjectName]);
     end
     %%% Produce and plot histogram

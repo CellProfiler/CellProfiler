@@ -23,6 +23,8 @@ the analysis of cell micrograph, I saw you and your colleagues' great work on Ce
                                                            Xiang Jian
 xiangjianjian0@hotmail.com
 ------------------------------------------
+- (Requested by Anne 12-15-05)- Should we somehow refresh memory after every cycle of CP? It gets slower and slower with each cycle which can be fixed by using Restart module, so something must be up with the memory handling. See matlab's pack function, perhaps.
+
 - (Requested by Anne 12-15-05)- Allow doubleclicking a .fig file in the image folder list box and have the figure window open.
 
 - (Requested by Anne 12-15-05)- Measure Correlation's text is white.

@@ -6,6 +6,8 @@ Mike's TODO list
 
 - Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
 
+- (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
+
 - SBS image set
 
 - For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.

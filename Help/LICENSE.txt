@@ -1,9 +1,23 @@
 CellProfiler is distributed under the GNU General Public License,
 and disclaimer, included below.
 
+Developed by the Whitehead Institute for Biomedical Research.
+Copyright 2003,2004,2005.
+
+Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Susan Ma
+%   Wyman Li
+
 Please credit CellProfiler in publications by citing the website
-(www.cellprofiler.org) and the publication (in preparation, Carpenter AE, et al.), and send us the publication or its citation by
-email: cellprofiler@csail.mit.edu .  This will help us to maintain funding for the project and continue to improve and support it.
+(www.cellprofiler.org) and the publication (see website for reference) and post the citation on our Forum (see our website for link).  This will help us to maintain funding for the project and continue to improve and support it.
 
 CellProfiler has been developed as an open source project at a
 non-profit institution.  Commercial users who find it useful should

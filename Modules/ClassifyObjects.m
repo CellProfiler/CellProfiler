@@ -167,12 +167,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(FeatureType,'Ratio')
-    Measurements = handles.Measurements.(ObjectName).Ratios{handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
-else
-    % Get Measurements
-    Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
-end
+% Get Measurements
+Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
+
 
 if PercentFlag == 1
     edges = [LowerBinMin,MidPointToUse,UpperBinMax];

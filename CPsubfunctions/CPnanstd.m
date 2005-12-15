@@ -25,7 +25,7 @@ function y = CPnanstd(varargin)
 %   $Revision: 2.10.2.5 $  $Date: 2004/07/28 04:38:43 $
 
 % Call nanvar(x,flag,dim) with as many inputs as needed
-y = sqrt(nanvar(varargin{:}));
+y = sqrt(CPnanvar(varargin{:}));
 
 function y = CPnanvar(x,w,dim)
 %NANVAR Variance, ignoring NaNs.

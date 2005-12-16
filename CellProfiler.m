@@ -3363,6 +3363,7 @@ else
             startingImageSet = 1;
             handles.Current.StartingImageSet = startingImageSet;
             while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
+                pack
                 setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                 a=clock;
                 begin_set=a(5:6);

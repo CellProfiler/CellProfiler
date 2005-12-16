@@ -23,7 +23,14 @@ the analysis of cell micrograph, I saw you and your colleagues' great work on Ce
                                                            Xiang Jian
 xiangjianjian0@hotmail.com
 ------------------------------------------
-- (Requested by Anne 12-16-05)- I was not able to load a pipeline from an OUT file that was produced by a pipeline that loaded an avi movie - it said the file was not a valid OUT or PIPE file, even though otherwise the file seems fine.
+
+- (Requested by Anne 12-16-05)- In the plot measurement window, when choosing line plot, are the grey lines stdev or the range? the black = mean I assume. We need to add this documentation to the help for this tool.
+
+- (Requested by Anne 12-16-05)- Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example:
+handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}
+for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray)
+    handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2);
+end
 
 - (Requested by Anne 12-16-05)- Is the Save Image window (from the image tool sub-window) and the image tool sub-window itself using the usr's choice of font size?
 

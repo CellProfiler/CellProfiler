@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/16) (Anne 12/15) - write a developer script to create a table of module name and short description. Same for image and data tools.  Ultimately, this code should be added to the ManualCOmpiler in DevScripts so that the table is put into the beginning of the manual as a quick reference guide (maybe after all the Help and before the individual module descirptions).
+
+-(Mike 12/16) Anne 12/15 - Track PC vs Mac vs developer's version downloads.
+
 -(Mike 12/16) (Requested by Anne 12-15-05)- the Set Pref's window says 'directory' in a few places instead of 'folder'; please change to be consistent.
 
 -(Mike 12/16) (Requested by Anne 12-15-05)- Measure Correlation's text is white.

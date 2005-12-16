@@ -1,9 +1,5 @@
 Mike's TODO list
 
-- (Anne 12/15) - write a developer script to create a table of module name and short description. Same for image and data tools.  Ultimately, this code should be added to the ManualCOmpiler in DevScripts so that the table is put into the beginning of the manual as a quick reference guide (maybe after all the Help and before the individual module descirptions).
-
-- Anne 12/15 - Track PC vs Mac vs developer's version downloads.
-
 - Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
 
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!

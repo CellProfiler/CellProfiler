@@ -1,10 +1,10 @@
 Mike's TODO list
 
+- SBS image set: Need fresh data for dose response chart for Wortmannin only (like David's ppt slide). just need the excel data. Also, need supplemental table of the Z and V factors for any measure whose Z FACTOR is above 0.5. For this, we need to make sure we have the full measure name (e.g. which compartment, etc).
+
 - Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
 
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
-
-- SBS image set
 
 - For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.
 

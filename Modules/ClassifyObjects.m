@@ -106,7 +106,13 @@ UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7
 %infotypeVAR08 = imagegroup indep
 SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 4
+%textVAR09 = Do you want the absolute number of objects or percentage of object?
+%choiceVAR09 = Absolute
+%choiceVAR09 = Percentage
+%inputtypeVAR09 = popupmenu
+AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -311,4 +317,8 @@ FeatureName = FeatureName(~isspace(FeatureName));                    % Remove sp
 %%% We are truncating the ObjectName in case it's really long.
 MaxLengthOfFieldname = min(20,length(FeatureName));
 handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ClassifyFeatureNames;
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins};
+if strcmp(AbsoluteOrPercentage,'Percentage')
+    handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};
+else
+    handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins};
+end

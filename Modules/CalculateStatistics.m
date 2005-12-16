@@ -84,7 +84,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             test=eps;
         end
         %%% Filter out Experiment and Image fields
-        if ~strcmp(ObjectName,'Experiment') && ~strcmp(ObjectName,'Image')
+        if ~strcmp(ObjectName,'Experiment')
 
             try
                 %%% Get all fieldnames in Measurements.(ObjectName)
@@ -104,6 +104,11 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                         %%% MeasureFeatureName may not be 8 characters long
                         if ~strcmp(MeasureFeatureName(1:8),'Location')
 
+                            if strcmp(MeasureFeatureName,'ModuleErrorFeatures')
+                                continue;
+                            end
+
+
                             %%% Get Features
                             MeasureFeatures = handles.Measurements.(ObjectName).(MeasureFeatureName);
 
@@ -117,7 +122,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
                             for k = 1:handles.Current.NumberOfImageSets
                                 for l = 1:length(MeasureFeatures)
-                                        Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
+                                    Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
                                 end
                             end
 

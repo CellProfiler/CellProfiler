@@ -12,6 +12,14 @@ function handles = SplitOrSpliceMovie(handles)
 %
 % Settings:
 %
+% Where are the existing avi-formatted movies?
+% Typing a period (.) will use the default image folder. Relative folder
+% locations will work also (e.g.   ../SIBLINGFOLDER)
+%
+% Where do you want to put the resulting files?
+% Typing a period (.) will use the default output folder. Relative folder
+% locations will work also (e.g.   ../SIBLINGFOLDER)
+%
 % For SPLICE, what is the common text in your movie file names?
 % The files to be spliced should all be located within a single folder. You
 % can choose a subset of movies in the folder to splice by specifying
@@ -92,6 +100,24 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)
+    end
+end
+
+%%% Get the pathname and check that it exists
+if strncmp(ExistingPath,'.',1)
+    if length(ExistingPath) == 1
+        ExistingPath = handles.Current.DefaultImageDirectory;
+    else
+        ExistingPath = fullfile(handles.Current.DefaultImageDirectory,ExistingPath(2:end));
+    end
+end
+
+%%% Get the pathname and check that it exists
+if strncmp(FinalPath,'.',1)
+    if length(FinalPath) == 1
+        FinalPath = handles.Current.DefaultOutputDirectory;
+    else
+        FinalPath = fullfile(handles.Current.DefaultOutputDirectory,FinalPath(2:end));
     end
 end
 

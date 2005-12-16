@@ -2,6 +2,11 @@ function ExportLocations(handles)
 
 % Help for the Export Locations tool:
 % Category: Data Tools
+%
+% SHORT DESCRIPTION:
+% Export center locations of objects. Good for creating locations list for
+% microscope.
+% *************************************************************************
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

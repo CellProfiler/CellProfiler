@@ -3,6 +3,10 @@ function ExportData(handles)
 % Help for the Export Data tool:
 % Category: Data Tools
 %
+% SHORT DESCRIPTION:
+% Export measurements into excel file.
+% *************************************************************************
+%
 % Once image analysis is complete, use this tool to select the
 % output file to extract the measurements and other information about
 % the analysis.  The data will be converted to a tab-delimited text file

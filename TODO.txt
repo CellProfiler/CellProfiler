@@ -1,30 +1,15 @@
 CellProfiler cell image analysis software development 
-December 12, 2005
+December 16, 2005
 
-- Design an informational brochure
+- (Requested by Anne 12-16-05)- Design an informational brochure
 
-WHEN MAC VERSION IS READY/WE ARE CONFIDENT THAT EVERYTHING IS WORKING:
+- (Requested by Anne 12-16-05)- ClassifyObjects fails if there are no objects in the image, I think.
 
-- tell the following sites that review and list software:
-www.zdnet.com	downloads.mycomputer.com	www.windows95.sk
-directory.google.com	www.libpng.org	cn.tech.yahoo.com
-www.dmoz.org	softload.narod.ru	www.chinabyte.com
-www.winsite.com	www.cheta.net www.open-bio.org    caBIG
-- email cameron@wi.mit.edu for internal/external website announcement.
-- Post something on biostuff .mit.edu
-- Get the email addresses of all corresponding authors from all the research articles Anne has collected, and also microscope facility directors and send them an email telling them to visit cellprofiler.org and sign up for the email list if desired.
-- I emailed him on Dec 12th b/c it looks like he downloaded....
-Send copy of software to people in communist countries:
-On Nov 28, 2005, at 4:50 AM, wrote:
-Dear Miss Carpenter:
-    Say hello to you first.I am a student from HangZhou--A beautiful city in China. I study
-the analysis of cell micrograph, I saw you and your colleagues' great work on CellProfiler Project.I am eager for the CellProfiler Tm,acoording to the profier(pdf), It seems that the matlab version is very suitabale for all of people such as a beginner like me,so if allowable, I ask for a copy of the software.It is of no convenience cause that we can not get in the website of www.cellprofiler.org from China.Thanks very much!
-                                                           yours sincerely
-                                                           Xiang Jian
-xiangjianjian0@hotmail.com
-------------------------------------------
+- (Requested by Anne 12-16-05)- Try to make a cute icon for the Mac and PC compiled CellProfiler.
 
 - (Requested by Anne 12-16-05)- In the plot measurement window, when choosing line plot, are the grey lines stdev or the range? the black = mean I assume. We need to add this documentation to the help for this tool.
+
+- (Requested by Anne 12-16-05)- Filter by object measurement: if you are NOT using intensity or texture, i think it goes and retrieves the image anyway, because I had left a color image in the 'which image' variable and it complained that the image was a color image and errored out, even though it should not be using that image at all if i am filtering by area shape.
 
 - (Requested by Anne 12-16-05)- Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example:
 handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}

@@ -1,5 +1,124 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Anne 12/16) Publicly announced CellProfiler:
+------------------------------------------------
+ISAC website: brajwa@purdue.edu
+This might be appropriate to list in the Freeware/Shareware portion of your website, alongside NIH Image:
+
+
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure cells in thousands of images automatically.
+
+This is the LAST email you will receive from this mailing list. If you wish to continue to receive updates on CellProfiler, please register as a member of our Forum and you will automatically receive (very infrequent) updates from the CellProfiler team.
+
+Anne Carpenter
+CellProfiler
+------------------------------------------------
+Flow cytometry facility at Purdue, Imaging centers at WIBR and MIT and Harvard.
+jpr@flowcyt.cyto.purdue.edu, watson@wi.mit.edu, matsudaira@wi.mit.edu, caroline_shamu@hms.harvard.edu
+
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure cells in thousands of images automatically.
+
+This is the LAST email you will receive from this mailing list. If you wish to continue to receive updates on CellProfiler, please register as a member of our Forum and you will automatically receive (very infrequent) updates from the CellProfiler team.
+
+Anne Carpenter
+CellProfiler
+------------------------------------------------
+To allen.parmelee@tufts.edu
+I do not know whether this would be of interest to the boston user group website or mail lists - it's image cytometry...
+
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure cells in thousands of images automatically.
+
+Anne Carpenter
+CellProfiler
+
+------------------------------------------------
+ emailed ncicb@pop.nci.nih.gov    caBIG
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure cells in thousands of images automatically.
+
+I thought this might be useful to link on your list of bioinformatics software.
+------------------------------------------------
+submitted to www.mathworks.com:
+Thank you for your submission. Your file will be published within the next 2-3 business days. 
+ Login:  carpenter@wi.mit.edu
+ Password: 1104267
+ The login information and temporary password provided above allow you to update your submission or modify your author information.  You will have access to the login screen only after your file has been published. You will not be able to make changes to your submission and author information before that.
+  Please contact files@mathworks.com if you have any further questions. 
+------------------------------------------------
+Ray will submit to freshmeat.net
+------------------------------------------------
+To PNG image website (newt@pobox.com):
+for the Scientific section of your website, you might want to link to my software:
+-----
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure cells in thousands of images automatically.
+
+Have fun!
+
+Anne Carpenter
+CellProfiler
+------------------------------------------------
+Submitted to www.dmoz.org, which links to directory.google.com:
+CellProfiler is free open-source image analysis software designed for biologists without training in computer vision or programming to quantitatively measure cells in thousands of images automatically.
+------------------------------------------------
+www.zdnet.com, submitted this via website:
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
+------------------------------------------------
+www.open-bio.org, sent this message:
+
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler!   www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
+
+This is the LAST email you will receive from this mailing list. If you wish to continue to receive updates on CellProfiler, please register as a member of our Forum and you will automatically receive (very infrequent) updates from the CellProfiler team.
+
+Have fun!
+
+Anne Carpenter
+CellProfiler
+------------------------------------------------
+biostuff.mit.edu, posted this message:
+
+We are pleased to announce the first public release of the free, open-source cell image analysis software CellProfiler, developed as a collaboration between MIT and the Whitehead Institute!
+
+www.cellprofiler.org
+
+CellProfiler is designed for biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
+
+Have fun!
+
+Anne Carpenter, Postdoc in Sabatini Lab at WIBR
+
+------------------------------------------------
+Sent an email (below) to 192 people on the email list:
+
+xiangjianjian0@hotmail.com, cameron@wi.mit.edu, aach@genetics.med.harvard.edu, James.Ackman@huskymail.uconn.edu, AndelovaH@lfhk.cuni.cz, narini@definiens.com, atkinson@bcm.tmc.edu, austinc@mail.nih.gov, mbaatz@definiens.com, tballou@alum.wustl.edu, buzz@ludwig.ucl.ac.uk, asbel@uiuc.edu, vytas@drugs.bsd.uchicago.edu, abirch@gmail.com, Colin.Blackmore@perkinelmer.com, lbleicher@scitegic.com, Andre.Blondiau@nmi.de, dutch_boltz@merck.com, ben@phy.ucsf.edu, cbonnard@isrec-sg1.unil.ch, joeb@universal-imaging.com, elliot@ucsd.edu, m.boutros@dkfz-heidelberg.de, jbradner@partners.org, laurent.brino@canceropole-ge.org, stephen.bunnell@tufts.edu, ncaplen@mail.nih.gov, diannec@kvremcwb.com, Ada.Cavalcanti-Adam@urz.uni-heidelberg.de, nicolas.cebron@uni-konstanz.de, ytc_hcs@yahoo.com, antony@biotrue.net, ACGREEN@mail.dstl.gov.uk, thomas.chung@sbcglobal.net, MCIK@PRDBE.jnj.com, colinc@mit.edu, pclemons@broad.harvard.edu, acohen@wisemail.weizmann.ac.il, mcollins@cellomics.com, cconrad@metasystems.org, Patrick.Courtney@perkinelmer.com, patrik.dahlen@bioimage.com, james.deeds@novartis.com, imagingworkbench@sbcglobal.net, diaz.victormanuel@hsr.it, sdiederichs@bics.bwh.harvard.edu, dietzel@lrz.uni-muenchen.de, ibrahima@videotron.ca, ulrike_eggert@hms.harvard.edu, cem_elbi@merck.com, seliasof@broad.harvard.edu, jelliott@nist.gov, jgevans@wi.mit.edu, fava@mpi-cbg.de, francesca_santini@merck.com, friman@bwh.harvard.edu, daniela.gabriel@novartis.com, Y.Garini@tnw.tudelft.nl, ralph_j.garippa@roche.com, stephan.geley@uibk.ac.at, vgelfand@uiuc.edu, Guenter.Giese@mpimf-heidelberg.mpg.de, michal_goldfish@yahoo.com, polina@csail.mit.edu, pgoodwin@apllc.com, a.gough@worldnet.att.net, scott.gruver@vanderbilt.edu, tguo@mit.edu, yuriy-gusev@ouhsc.edu, guy.voirin@csem.ch, haggarty@fas.harvard.edu, kyle_hart@rallyscientific.com, stephen.helliwell@novartis.com, Arne.Heydorn@bioimage.com, erlend.hodneland@biomed.uib.no, HoldenDP@appliedbiosystems.com, JingHuang@mednet.ucla.edu, hunter@mcb.harvard.edu, hyun@cc.ucsf.edu, yvonne.ibig@novartis.com, jinglese@mail.nih.gov, yoginho@usa.net, baj2107@columbia.edu, rajarvis@gmail.com, xiangjianjian0@hotmail.com, paj18@pitt.edu, thouis@csail.mit.edu, rjosest@bwh.harvard.edu, djulian@ufl.edu, katzenel@uiuc.edu, bbk@mit.edu, dbk@umist.ac.uk, prashant.khodade@gmail.com, akiger@ucsd.edu, jkim@molbio.mgh.harvard.edu, Evgeny.Kireev@invitrogen.com, juergen@hedges-klenk.com, korn@mpi-cbg.de, A.Kovacic@unsw.edu.au, kozak@mpi-cbg.de, phak004@mail.uni-wuerzburg.de, krausz@mpi-cbg.de, gkremers@science.uva.nl, akuznets@uchicago.edu, mrl@wi.mit.edu, CALaris@beckman.com, kjleck@ibn.a-star.edu.sg, Dariusz.Leszczynski@stuk.fi, szl116@psu.edu, Feng.Liang@invitrogen.com, liebel@embl.de, yanfeng@wi.mit.edu, dludgate@bccancer.bc.ca, clluengo@lbl.gov, peter.lundh@ucl.ac.uk, xuefang_ma@wi.mit.edu, mancini@bcm.tmc.edu, manj@ece.ucsb.edu, bobm@stanford.edu, bprevot@receptor.med.harvard.edu, Max.Sonnleitner@uar.at, mamcin@umich.edu, GMcNamara@coh.org, mdmcwilliams@beckman.com, smiller@blueshiftbiotech.com, ronm@wisemail.weizmann.ac.il, birbaumer@imsb.biol.ethz.ch, timothy_mitchison@hms.harvard.edu, murphy@cmu.edu, niederle@mpi-cbg.de, eorourke@molbio.mgh.harvard.edu, orlovni@mail.nih.gov, paiha@imp.univie.ac.at, Patrice.Bouchard@cnrc-nrc.gc.ca, serge.pelet@bc.biol.ethz.ch, richard_peltier@merck.com, Pengdong.Xiao@anu.edu.au, zperlman@fas.harvard.edu, perrimon@receptor.med.harvard.edu, jhprice10@yahoo.com, peter.ramm@invictaresearch.com, rao.movva@novartis.com, wsr@nih.gov, iravkin@vitrabio.com, brhee@utk.edu, srogers@bio.unc.edu, froth@hms.harvard.edu, Sarah.Ryan@biogenidec.com, sabatini@wi.mit.edu, Sabina.Winograd-Katz@weizmann.ac.il, scelfo@gmail.com, andreas.scheel@gmx.net, D.Schiffmann@dundee.ac.uk, mark.schurdak@abbott.com, kmscudder@usermail.com, seldin@essen-instruments.com, jbs@temple.edu, h.shen@umist.ac.uk, cshumate@blueshiftbiotech.com, kaylene_simpson@hms.harvard.edu, msipe@cellomics.com, francesco.sola@nervianoms.com, sophie.brachat@novartis.com, psorger@mit.edu, Harald.Stachelscheid@charite.de, bstaffopoulos@maia-scientific.com, Frank.straube@pharma.novartis.com, FrankStraube@web.de, berta_strulovici@merck.com, nicos@itsa.ucsf.edu, judy@MIT.EDU, Sai_Subramaniam@merck.com, dsudar@lbl.gov, jhs45@cornell.edu, susannej.szabo@pharma.novartis.com, tany@mri.co.jp, a_tarachandani@merck.com, st34@duke.edu, dthirstr@fhcrc.org, gthompson@cybexintl.com, KVACKER1@PRDBE.JNJ.COM, L.J.vanVliet@tnw.tudelft.nl, b.j.vermolen@tnw.tudelft.nl, JVictor@api.com, voldman@mit.edu, valmik@alum.mit.edu, X.Wang@dkfz-heidelberg.de, wangy1@ornl.gov, Jennifer.Wilson@Dal.Ca, stephen_wong@hms.harvard.edu, jerry.wu@sanger.ac.uk, dzahniser@dxvision.com, michael@zahniser.net
+
+We are pleased to announce the first public release of the free,
+open-source cell image analysis software CellProfiler!
+www.cellprofiler.org
+
+This is the LAST email you will receive from this mailing list. If you
+wish to continue to receive updates on CellProfiler, please register as
+a member of our Forum and you will automatically receive (very
+infrequent) updates from the CellProfiler team.
+
+Have fun!
+
+Anne Carpenter
+CellProfiler
+------------------------------------------------
+
 -(Mike 12/16) (Anne 12/15) - write a developer script to create a table of module name and short description. Same for image and data tools.  Ultimately, this code should be added to the ManualCOmpiler in DevScripts so that the table is put into the beginning of the manual as a quick reference guide (maybe after all the Help and before the individual module descirptions).
 
 -(Mike 12/16) Anne 12/15 - Track PC vs Mac vs developer's version downloads.

@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/16) (Requested by Anne 12-15-05)- the Set Pref's window says 'directory' in a few places instead of 'folder'; please change to be consistent.
+
+-(Mike 12/16) (Requested by Anne 12-15-05)- Measure Correlation's text is white.
+
 - Fix File > Set Preferences FastMode/SkipErrors.
 
 -(Mike 12/09) Edit HelpCPInstallGuide for compiled versions.

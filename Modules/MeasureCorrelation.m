@@ -225,7 +225,7 @@ if any(findobj == ThisModuleFigureNumber)
 
     %%% Displays the results.
     Displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text', 'position', [0 Height-40 Width 20],...
-        'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center','fontweight','bold');
+        'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','center','fontweight','bold');
     TextToDisplay = ['Average correlations in cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     set(Displaytexthandle,'string',TextToDisplay)
 
@@ -235,7 +235,7 @@ if any(findobj == ThisModuleFigureNumber)
         %%% Don't write any object type name in the first colum
         if ObjectNameNbr > 0         
             h = uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-110 70 25],...
-                'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center',...
+                'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','center',...
                 'fontweight','bold');
             set(h,'string',ObjectName{ObjectNameNbr});
         end
@@ -246,7 +246,7 @@ if any(findobj == ThisModuleFigureNumber)
                 %%% First column, write image names
                 if ObjectNameNbr == 0               
                     h = uicontrol(ThisModuleFigureNumber,'style','text','position',[20 Height-120-40*row 120 40],...
-                        'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','left',...
+                        'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left',...
                         'fontweight','bold');
                     TextToDisplay = sprintf('%s and \n%s',ImageName{i},ImageName{j});
                     set(h,'string',TextToDisplay);
@@ -254,7 +254,7 @@ if any(findobj == ThisModuleFigureNumber)
                     %%% Calculate the average correlation over the objects
                     c = mean(handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation{handles.Current.SetBeingAnalyzed}(:,FeatureNbr));
                     uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-125-40*row 70 40],...
-                        'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[1,1,1],'horizontalalignment','center',...
+                        'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','center',...
                         'string',sprintf('%0.2f',c));
                     FeatureNbr = FeatureNbr + 1;
                 end

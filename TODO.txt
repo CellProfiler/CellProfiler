@@ -33,10 +33,6 @@ xiangjianjian0@hotmail.com
 
 - (Requested by Anne 12-15-05)- Allow doubleclicking a .fig file in the image folder list box and have the figure window open.
 
-- (Requested by Anne 12-15-05)- Measure Correlation's text is white.
-
-- (Requested by Anne 12-15-05)- the Set Pref's window says 'directory' in a few places instead of 'folder'; please change to be consistent.
-
 - (Requested by Anne 12-15-05)- Most of the text doesn't fit on the Timer window buttons.
 
 - (Requested by Anne 12-15-05)- IdentifyPrimAutomatic says 'Outlined Objects' in the figure window instead of 'Outlined Nuclei' or 'Cells'.

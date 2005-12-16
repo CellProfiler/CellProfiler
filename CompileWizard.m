@@ -8,7 +8,7 @@ fid = fopen('CompileWizardText.m','w');
 
 ImageToolfilelist = dir('ImageTools/*.m');
 fprintf(fid,'%%%%%% IMAGE TOOL HELP\n');
-fprintf(fid,'ToolHelpInfo = ''Help information from individual image tool files, which are Matlab m-files located within the ImageTools directory:'';\n\n');
+fprintf(fid,'ToolHelpInfo = ''Help information for individual image tools:'';\n\n');
 for i=1:length(ImageToolfilelist)
     ToolName = ImageToolfilelist(i).name;
     fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);
@@ -36,7 +36,7 @@ clear ToolList ToolListNoQuotes
 
 DataToolfilelist = dir('DataTools/*.m');
 fprintf(fid,'%%%%%% DATA TOOL HELP\n');
-fprintf(fid,'ToolHelpInfo = ''Help information from individual data tool files, which are Matlab m-files located within the DataTools directory:'';\n\n');
+fprintf(fid,'ToolHelpInfo = ''Help information for individual data tools:'';\n\n');
 for i=1:length(DataToolfilelist)
     ToolName = DataToolfilelist(i).name;
     fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);

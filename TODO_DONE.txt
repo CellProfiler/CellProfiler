@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Requested by Anne 12-09-05)-- Check CalcStatistics to make sure it's processing numbers properly.
+
 -(Anne 12/16) Publicly announced CellProfiler:
 ------------------------------------------------
 ISAC website: brajwa@purdue.edu

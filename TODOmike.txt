@@ -14,8 +14,6 @@ Mike's TODO list
 
 - For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.
 
-- (Requested by Anne 12-09-05)-- Check CalcStatistics to make sure it's processing numbers properly.
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - (Requested by Anne 10-31-05) - It'd be fun to see how long an image processing run takes on Matlab developer's version vs. the compiled version (which ought to be faster).  Eventually, we probably should do some real test runs (on the final version) so we can state in the paper the expected difference in speed between the two versions.

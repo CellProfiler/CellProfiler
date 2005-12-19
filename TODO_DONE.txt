@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
--(Pipeline won't work with released version, we changed CalculateRatios) Anne 12/15 - SBS image set: Need fresh data for dose response chart for Wortmannin only (like David's ppt slide). just need the excel data. Also, need supplemental table of the Z and V factors for any measure whose Z FACTOR is above 0.5. For this, we need to make sure we have the full measure name (e.g. which compartment, etc). Also, we need the final image set and PIPE to be zipped and put online as an example (if we are sure it's final).
+-(Mike 12/19) (Requested by Anne 12-16-05)- ClassifyObjects fails if there are no objects in the image, I think.
+
+-(Mike 12/19 Pipeline won't work with released version, we changed CalculateRatios) Anne 12/15 - SBS image set: Need fresh data for dose response chart for Wortmannin only (like David's ppt slide). just need the excel data. Also, need supplemental table of the Z and V factors for any measure whose Z FACTOR is above 0.5. For this, we need to make sure we have the full measure name (e.g. which compartment, etc). Also, we need the final image set and PIPE to be zipped and put online as an example (if we are sure it's final).
 
 - (Requested by Anne 12-09-05)-- Check CalcStatistics to make sure it's processing numbers properly.
 

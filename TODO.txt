@@ -3,8 +3,6 @@ December 16, 2005
 
 - (Requested by Anne 12-16-05)- Design an informational brochure
 
-- (Requested by Anne 12-16-05)- ClassifyObjects fails if there are no objects in the image, I think.
-
 - (Requested by Anne 12-16-05)- Try to make a cute icon for the Mac and PC compiled CellProfiler.
 
 - (Requested by Anne 12-16-05)- In the plot measurement window, when choosing line plot, are the grey lines stdev or the range? the black = mean I assume. We need to add this documentation to the help for this tool.

@@ -210,15 +210,20 @@ if ~strcmpi(FeatureType,'Ratio')
     % measurements and the quantized measurements
     NonQuantizedImage = zeros(size(LabelMatrixImage));
     props = regionprops(LabelMatrixImage,'PixelIdxList');              % Pixel indexes for objects fast
-    for k = 1:NbrOfObjects
-        NonQuantizedImage(props(k).PixelIdxList) = Measurements(k);
+    if ~isempty(props)
+        for k = 1:NbrOfObjects
+            NonQuantizedImage(props(k).PixelIdxList) = Measurements(k);
+        end
+        QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
+        QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
+        handlescmap = handles.Preferences.LabelColorMap;
+        cmap = [0 0 0;feval(handlescmap,length(bins))];
+        QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
+        FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
+    else
+        QuantizedRGBimage = NonQuantizedImage;
+        FeatureName = ObjectName;
     end
-    QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
-    QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
-    handlescmap = handles.Preferences.LabelColorMap;
-    cmap = [0 0 0;feval(handlescmap,length(bins))];
-    QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
-    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 else
     FeatureName = ObjectName;
 end

@@ -92,9 +92,10 @@ function handles = MeasureObjectAreaShape(handles)
 % *MinorAxisLength - The length (in pixels) of the minor axis of the
 % ellipse that has the same normalized second central moments as the
 % region.
+% *Perimeter - the total number of pixels around the boundary of each
+% region in the image.
 %
-% In addition, the following two features are calculated:
-% Perimeter
+% In addition, the following  feature is calculated:
 % Form factor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
 % object
 

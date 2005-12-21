@@ -1,6 +1,95 @@
 Mike's TODO list
 
+Anne 12/21 - answer the form factor question i emailed you.
+
+Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
+
 Anne 12/21 - need the list of modules w/short descriptions to be in their categories.
+
+Anne 12/21 - I cannot remember if this is resolved... please let me know what the status is and if it changes the description in the module help (and therefore the description in the paper).
+-------
+	From: 	  friman@bwh.harvard.edu
+	Subject: 	Re: zernike
+	Date: 	November 16, 2005 4:32:14 PM EST
+	To: 	  carpenter@wi.mit.edu
+
+Hi Anne!
+
+The Zernike moments are not that straightforward to use or interpret. They
+describe more the shape of an object than just the border of the object.
+Perhaps Fig. 2 in "Automated Recognition of Patterns Characteristic of
+Subcellular Structures in Fluorescence Microscopy Images" by Boland et al
+can give you some hint of how they work.
+
+I'm not really happy with the current Zernike implementation in
+CellProfiler (or how the Zernike measurements are used by Boland et al.).
+The reason is the following line in the MeasureShape module:
+
+diameter = floor(sqrt(4/pi*mean(cat(1,props.Area)))+1);
+
+which fixes the diameter a disc/circular area (the so-called Zernike
+polynomials are only defined on a 2D disc) within which the measurement is
+made. If an object is bigger or smaller than the disc the measurement will
+not be good (Fig. 2 in Boland et al. shows an example where the object are
+smaller than the disc). This means that, for example, the area of the
+objects/cells is a confounding factor in the Zernike measurements. I would
+therefore be careful when reporting the Zernike measurements. I would
+first
+check if they correlate well with some other measurement, such as the size
+of the objects.
+
+To get a higher quality Zernike features, the diameter above should be
+adapted to each object. This means that the following code
+
+% Calculate the Zernike basis functions
+[x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
+r = sqrt(x.^2+y.^2);
+phi = atan(y./(x+eps));
+Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
+for k = 1:size(Zernikeindex,1)
+    n = Zernikeindex(k,1);
+    m = Zernikeindex(k,2);
+    s = zeros(size(x));
+    for l = 0:(n-m)/2;
+         s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) *
+fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+    end
+    s(r>1) = 0;
+    Zf(:,:,k) = s;
+end
+
+has to be moved inside the loop a few lines further down
+
+for Object = 1:NumObjects
+....
+end
+
+and the diameter variable set so that the object fits within a circle of
+that diameter (perhaps you can use the major axis measurement to decide a
+suitable diameter size). Then the Zernike measurements would give
+size-invariant shape features. It will take some more time to compute the
+features, but I would recommend that you do this.
+
+Unfortunately, this will not help you with an interpretation. The first
+papers on Zernike moments for shape measurements
+appear to be the following:
+
+A. Khotanzad and Y. H. Hong
+"Rotation invariant pattern recognition using Zernike moments," in Proc.
+9th ICPR Rome, Italy, Nov. 1988, pp. 326-328
+
+Khotanzad A, Hong YH: Invariant image recognition by Zernike
+moments. IEEE Trans Pattern Anal Machine Intell 12:489Ð497, 1990
+
+Perhaps you can find some more information on the interpretation in the
+latter paper.
+
+Well, I hope this answer is more useful than confusing!
+
+Best regards,
+Ola
+
+---------
 
 Anne 12/19 Yeast SCMD images - process and produce nice figure.
 

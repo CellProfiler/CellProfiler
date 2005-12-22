@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/22) Anne 12/21 - answer the form factor question i emailed you.
+
+-(Mike 12/22) Anne 12/21 - need the list of modules w/short descriptions to be in their categories.
+
+-(Mike 12/22) Anne 12/21 - I cannot remember if this is resolved... please let me know what the status is and if it changes the description in the module help (and therefore the description in the paper).
+
 -(Mike 12/22) Anne 12/16 - Put folders for all of your projects so far on sabatini3_ata (our new server). These all should have the same format 2005_12_16_ProjectName so we can keep things straight. I will move my projects there too. I'd move everything from the local computers (G5's and PC) there and put them in a folder for deletion on the desktop of those computers and when we are sure that server is being backed up we can delete the local copies. This will allow us to easily share data, keep projects straight, work on our projects from any of our computers, and have the data backed up (the G5's and PC are not backed up so if they die all your data is gone!).
 
 - (Mike 12/21) Anne 12/19 - post in han's images on the web.

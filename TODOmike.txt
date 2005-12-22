@@ -1,12 +1,6 @@
 Mike's TODO list
 
-Anne 12/21 - answer the form factor question i emailed you.
-
-Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
-
-Anne 12/21 - need the list of modules w/short descriptions to be in their categories.
-
-Anne 12/21 - I cannot remember if this is resolved... please let me know what the status is and if it changes the description in the module help (and therefore the description in the paper).
+- Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
 
 - Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
 

@@ -4,7 +4,9 @@ function ImageToolWindow(handles)
 % Category: Image Tools
 %
 % SHORT DESCRIPTION:
-% The Image Tool Window opens when you click on any image.
+% The Image Tool Window opens when you click on any image and allows
+% opening the image in a new window, displaying a pixel intensity
+% histogram, measuring length in the image, and saving the image. 
 % *************************************************************************
 %
 % The Image Tool Window contains these functions:
